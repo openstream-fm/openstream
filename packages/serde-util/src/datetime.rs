@@ -3,26 +3,24 @@ use chrono::{self, Utc};
 use bson;
 
 /**
- * Serialize as chrono::DateTime in human-readable formats and 
- * as bson::DateTime in non human-readable formats  
+ * Serialize as `chrono::DateTime` in human-readable formats and 
+ * as `bson::DateTime` in non human-readable formats  
  */
-pub fn serialize<S>(ser: S, date: chrono::DateTime<Utc> ) -> Result<S::Ok, S::Error> 
-where S: Serializer {
+pub fn serialize<S: Serializer>(date: &chrono::DateTime<Utc>, ser: S) -> Result<S::Ok, S::Error>{
   if ser.is_human_readable() {
     Serialize::serialize(&date, ser)
   } else {
-    let target = bson::DateTime::from(date);
+    let target: bson::DateTime = date.clone().into();
     Serialize::serialize(&target, ser)
   }
 } 
 
 
 /**
- * Deserialize chrono::DateTime from chrono::DateTime in human-readable formats and 
- * from bson::DateTime in non human-readable formats  
+ * Deserialize `chrono::DateTime` from `chrono::DateTime` in human-readable formats and 
+ * from `bson::DateTime` in non human-readable formats  
  */
-pub fn deserialize<'de, D>(de: D) -> Result<chrono::DateTime<Utc>, D::Error>
-where D: Deserializer<'de> {
+pub fn deserialize<'de, D: Deserializer<'de>>(de: D) -> Result<chrono::DateTime<Utc>, D::Error> {
     if de.is_human_readable() {
       Deserialize::deserialize(de)
     } else {
@@ -30,4 +28,47 @@ where D: Deserializer<'de> {
       let target: chrono::DateTime<Utc> = temp.into();
       Ok(target)
     }
+}
+
+pub mod option {
+
+  use chrono::Utc;
+  use serde::{Serialize, Deserialize, Serializer, Deserializer};
+
+  /**
+   * Serialize as `Option<chrono::DateTime>` in human-readable formats and 
+   * as `Option<bson::DateTime>` in non human-readable formats  
+   */
+  pub fn serialize<S: Serializer>(opt: &Option<chrono::DateTime<Utc>>, ser: S) -> Result<S::Ok, S::Error> {
+    if ser.is_human_readable() {
+      opt.serialize(ser)
+    } else {
+      match opt {
+        None => ().serialize(ser),
+        Some(date) => {
+          let target: bson::DateTime = date.clone().into();
+          target.serialize(ser)
+        }
+      } 
+    }
+  }
+
+  /**
+ * Deserialize `Option<chrono::DateTime>` from `Option<chrono::DateTime>` in human-readable formats and 
+ * from `Option<bson::DateTime>` in non human-readable formats  
+ */
+  pub fn deserialize<'de, D: Deserializer<'de>>(de: D) -> Result<Option<chrono::DateTime<Utc>>, D::Error> {
+    if de.is_human_readable() {
+      Deserialize::deserialize(de)
+    } else {
+      let opt: Option<bson::DateTime> = Deserialize::deserialize(de)?;
+      match opt {
+        None => Ok(None),
+        Some(date) => {
+          Ok(Some(date.into()))
+        }
+      }
+    }
+  }
+
 }

@@ -1,4 +1,9 @@
 [workspace]
 members = [
+    "packages/db",
+    "packages/uid",
+    "packages/crypt",
+    "packages/ffmpeg",
     "packages/serde-util",
+    "packages/stream-util",
 ]
