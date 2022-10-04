@@ -1,6 +1,11 @@
 [workspace]
 members = [
+    "bin",
+    "source-client",
+    "packages/source",
+    "packages/sender",
     "packages/db",
+    "packages/prex",
     "packages/uid",
     "packages/crypt",
     "packages/ffmpeg",

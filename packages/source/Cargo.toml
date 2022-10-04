@@ -1,0 +1,17 @@
+[package]
+name = "source"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bytes = "1.2.1"
+static_init = "1.0.3"
+tokio = { version = "1.21.2", features = ["full"] }
+ffmpeg = { path = "../ffmpeg" }
+parking_lot = "0.12.1"
+hyper = { version = "0.14.20", features = ["full"] }
+prex = { path = "../prex" }
+
+[features]
