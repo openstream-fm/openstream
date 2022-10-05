@@ -20,7 +20,7 @@ static LAGGED: AtomicUsize = AtomicUsize::new(0);
 
 pub fn start() -> impl Future<Output=()> {
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 20200));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 20200));
 
     let server = Server::try_bind(&addr).expect("hyper bind")
         .http1_half_close(true)
