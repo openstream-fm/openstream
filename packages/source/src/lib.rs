@@ -7,8 +7,9 @@ use std::net::SocketAddr;
 use std::time::Duration;
 use std::future::Future;
 
-use hyper::{Server, Version, header::{HeaderValue, CONNECTION}};
+use hyper::{Server, Version, StatusCode, header::{HeaderValue, CONNECTION}, Body};
 
+use prex::{Request, Response, Next};
 
 /*
 #[dynamic]
@@ -17,6 +18,8 @@ static CHANNEL_COUNT: AtomicUsize = AtomicUsize::new(0);
 static BYTES_READED: AtomicUsize = AtomicUsize::new(0);
 static LAGGED: AtomicUsize = AtomicUsize::new(0);
 */
+
+static BODY: &'static [u8] = &[0u8;1024 * 1024];  
 
 pub fn start() -> impl Future<Output=()> {
 
@@ -38,7 +41,11 @@ pub fn start() -> impl Future<Output=()> {
     app.with(http_1_0_version);
     app.with(connection_close);
 
-    app.with(|_, _| async { format!("hello") });
+    app.with(|_, _| async {
+        let mut res = Response::new(StatusCode::OK);
+        *res.body_mut() = Body::from(BODY);
+        res
+    });
 
     let app = app.build().expect("prex app build");
 
@@ -47,13 +54,13 @@ pub fn start() -> impl Future<Output=()> {
     }
 }
 
-async fn connection_close(req: prex::Request, next: prex::Next) -> prex::Response {
+async fn connection_close(req: Request, next: Next) -> prex::Response {
     let mut res = next.run(req).await;
     res.headers_mut().insert(CONNECTION, HeaderValue::from_static("close"));
     res
 }
 
-async fn http_1_0_version(req: prex::Request, next: prex::Next) -> prex::Response {
+async fn http_1_0_version(req: Request, next: Next) -> prex::Response {
     let mut res = next.run(req).await;
     *res.version_mut() = Version::HTTP_10;
     res
