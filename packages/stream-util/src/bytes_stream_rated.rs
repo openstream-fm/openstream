@@ -189,3 +189,31 @@ where S: Stream<Item=B>,
     BytesStreamRated::from(self, rate)
   }
 }
+
+#[cfg(test)]
+pub mod test {
+  use tokio_stream::StreamExt;
+  use super::*;
+
+  #[tokio::test]
+  async fn bytes_stream_rated() {
+    let rate = 128 * 1000;
+    let total: usize = 128 * 150; 
+    let stream = async_stream::stream! {
+      for _ in 0..(total / 128) {
+        yield Bytes::from(vec![0u8;128]);
+      }  
+    };
+
+    let start = Instant::now();
+    let vec = stream.rated(rate).collect::<Vec<Bytes>>().await;
+    let elapsed = start.elapsed().as_millis();
+    let expected = (total * 1000 / rate) as u128;
+    
+    assert!(vec.len() == total / 128);
+
+    assert!(elapsed <= expected + 5);
+    assert!(elapsed >= expected - 5);
+    println!("bytes_stream_rated, expected time elapsed {expected}ms, actual time elapsed: {elapsed}ms")
+  }
+}

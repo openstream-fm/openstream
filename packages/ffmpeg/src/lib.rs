@@ -1,5 +1,5 @@
 use std::fmt::{self, Display, Formatter};
-use tokio::process::{Command, Child, ChildStderr, ChildStdin, ChildStdout};
+use tokio::process::{Command, Child, ChildStdin, ChildStdout};
 use std::process::Stdio;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -65,7 +65,6 @@ impl Display for Format {
 
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[non_exhaustive]
 pub struct FfmpegConfig {
   pub bin: &'static str,
   pub loglevel: LogLevel,
@@ -177,20 +176,20 @@ impl Ffmpeg {
     cmd.kill_on_drop(true);
 
     cmd.stdin(Stdio::piped());
-    cmd.stderr(Stdio::piped());
+    cmd.stderr(Stdio::inherit());
     cmd.stdout(Stdio::piped());
 
     let mut child = cmd.spawn()?;
 
     let stdin = child.stdin.take().unwrap();
-    let stderr = child.stderr.take().unwrap();
+    //let stderr = child.stderr.take().unwrap();
     let stdout = child.stdout.take().unwrap();
     
     Ok(FfmpegSpawn {
       config: self.config,
       child,
       stdin,
-      stderr,
+      //stderr,
       stdout,
     })
 
@@ -205,6 +204,6 @@ pub struct FfmpegSpawn {
   pub config: FfmpegConfig,
   pub child: Child,
   pub stdin: ChildStdin,
-  pub stderr: ChildStderr,
+  //pub stderr: ChildStderr,
   pub stdout: ChildStdout
 }

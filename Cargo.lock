@@ -93,6 +93,7 @@ version = "0.1.0"
 dependencies = [
  "sender",
  "source",
+ "stream",
  "tokio",
 ]
 
@@ -289,6 +290,12 @@ dependencies = [
  "tokio",
  "uid",
 ]
+
+[[package]]
+name = "debug_print"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f215f9b7224f49fb73256115331f677d868b34d18b65dbe4db392e6021eea90"
 
 [[package]]
 name = "derivative"
@@ -1011,6 +1018,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "producer"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "hyper",
+ "tokio",
+]
+
+[[package]]
 name = "quick-error"
 version = "1.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1331,19 +1347,15 @@ name = "source"
 version = "0.1.0"
 dependencies = [
  "bytes",
+ "debug_print",
  "ffmpeg",
  "hyper",
  "parking_lot 0.12.1",
  "prex",
  "static_init",
+ "stream-util",
  "tokio",
-]
-
-[[package]]
-name = "source-client"
-version = "0.1.0"
-dependencies = [
- "tokio",
+ "tokio-stream",
 ]
 
 [[package]]
@@ -1381,9 +1393,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "stream"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "hyper",
+ "prex",
+ "source",
+ "tokio",
+]
+
+[[package]]
 name = "stream-util"
 version = "0.1.0"
 dependencies = [
+ "async-stream",
  "bytes",
  "pin-project",
  "tokio",

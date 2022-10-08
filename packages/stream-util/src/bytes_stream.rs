@@ -22,10 +22,10 @@ enum State {
 
 #[pin_project]
 pub struct TryBytesStream<R> {
-  /// chunk for each Bytes item in the stream
-  /// the last one may have less size than chunk_size
   state: State,
   buf: BytesMut,
+  /// size for each Bytes item in the stream
+  /// expect for the last one that may have less
   chunk_size: usize,
   
   #[pin]
@@ -34,6 +34,9 @@ pub struct TryBytesStream<R> {
 
 impl<R: AsyncRead> TryBytesStream<R> {
   pub fn from(inner: R, chunk_size: usize) -> Self {
+    
+    assert!(chunk_size != 0, "chunk_size cannot be 0");
+
     Self {
       state: State::Open,
       buf: BytesMut::new(),
@@ -63,8 +66,7 @@ impl<R: AsyncRead> Stream for TryBytesStream<R> {
     'outer: loop {
     
       if this.buf.len() >= *this.chunk_size {
-        let mut buf = this.buf.split_off(*this.chunk_size);
-        std::mem::swap(&mut buf, &mut this.buf);
+        let buf = this.buf.split_to(*this.chunk_size);
         let bytes = buf.freeze();
         return Poll::Ready(Some(Ok(bytes)));
       }
@@ -102,6 +104,46 @@ impl<R: AsyncRead> Stream for TryBytesStream<R> {
           }
         }
       }
+    }
+  }
+}
+
+#[cfg(test)]
+mod test {
+  
+  use std::io::Cursor;
+  use tokio_stream::StreamExt;
+
+use super::*;
+
+  #[tokio::test]
+  async fn into_bytes_stream () {
+    
+    // (chunks_size, full_chunks, remaining)
+    let values = [
+      (1, 1, 0),
+      (200, 2, 0),
+      (256, 5, 0),
+      (2000, 11, 5),
+      (392, 28, 25),
+      (1052, 105, 104),
+    ];
+
+    for (chunk_size, full_chunks, remaining) in values.into_iter() {
+      let buf = vec![0u8; chunk_size * full_chunks + remaining];
+      let reader = Cursor::new(buf);
+      let stream = reader.into_bytes_stream(chunk_size).map(Result::unwrap);
+      let result: Vec<Bytes> = stream.collect().await;
+
+      let expected = {
+        let mut vec = vec![Bytes::from(vec![0u8;chunk_size]);full_chunks];
+        if remaining != 0 {
+          vec.push(Bytes::from(vec![0u8;remaining]));
+        }
+        vec
+      };
+
+      assert_eq!(result, expected);
     }
   }
 }

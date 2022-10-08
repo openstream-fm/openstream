@@ -8,7 +8,6 @@ pub struct BytesStreamChunked<S> {
   chunk_size: usize,
   buf: BytesMut,
   done: bool,
-  
   #[pin]
   inner: S,
 }
@@ -25,8 +24,7 @@ where S: Stream<Item=B>,
 
     'outer: loop {
       if this.buf.len() >= *this.chunk_size {
-        let mut buf = this.buf.split_off(*this.chunk_size);
-        std::mem::swap(&mut buf, &mut this.buf);
+        let buf = this.buf.split_to(*this.chunk_size);
         let bytes = buf.freeze();
         return Poll::Ready(Some(bytes));
       }
@@ -94,7 +92,6 @@ pub struct TryBytesStreamChunked<S> {
   chunk_size: usize,
   buf: BytesMut,
   done: bool,
-  
   #[pin]
   inner: S,
 }
@@ -111,8 +108,7 @@ where S: Stream<Item=Result<B, E>>,
 
     'outer: loop {
       if this.buf.len() >= *this.chunk_size {
-        let mut buf = this.buf.split_off(*this.chunk_size);
-        std::mem::swap(&mut buf, &mut this.buf);
+        let buf = this.buf.split_to(*this.chunk_size);
         let bytes = buf.freeze();
         return Poll::Ready(Some(Ok(bytes)));
       }
@@ -135,7 +131,6 @@ where S: Stream<Item=Result<B, E>>,
         },
         
         Poll::Ready(Some(Err(e))) => {
-          *this.done = true;
           return Poll::Ready(Some(Err(e)));
         }
         
