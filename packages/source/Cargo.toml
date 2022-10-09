@@ -16,5 +16,6 @@ prex = { path = "../prex" }
 stream-util = { path = "../stream-util" }
 tokio-stream = "0.1.10"
 debug_print = "1.0.0"
+regex_static = "0.1.1"
 
 [features]

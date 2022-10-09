@@ -1,4 +1,4 @@
-pub const CHARSET: &str = "0123456789abcdefghjkmnpqrstuvwxy";
+pub const CHARSET: &str = "123456789abcdefghjkmnpqrstuvwxyz";
 
 pub fn uid(len: usize) -> String {
     random_string::generate(len, CHARSET)
@@ -11,6 +11,6 @@ mod test {
 
     #[test]
     fn charset_length() {
-        assert!(CHARSET.len() == 32);
+        assert_eq!(CHARSET.len(), 32);
     }
 }

@@ -1,24 +1,13 @@
-use std::net::SocketAddr;
+#[tokio::main]
+async fn main() {
 
-use tokio::runtime;
-
-fn main() {
-
-    let rt = runtime::Builder::new_multi_thread()
-        .enable_all()
-        .build().expect("tokio runtime build");
-
-    rt.block_on(async_main());
-}
-
-
-async fn async_main() {
-
-    let source_addr = SocketAddr::from(([0, 0, 0, 0], 20500));
-    let handle = tokio::spawn(source::server::start(source_addr));
+    let handle1 = tokio::spawn(source::server::start(([0, 0, 0, 0], 20500)));
+    //let handle1 = tokio::spawn(source::start());
+    let handle2 = tokio::spawn(stream::start());
 
     tokio::select! {
-        r = handle => r.expect("source panicked").expect("source errored"),
-        //r = handle2 => r.expect("stream panicked")
+        r = handle1 => r.expect("source panicked").expect("source errored"),
+        //r = handle1 => r.expect("source panicked"),
+        r = handle2 => r.expect("stream panicked"),
     };
 }

@@ -10,8 +10,8 @@ use hyper::{Version, HeaderMap, Method, header::HeaderName, http::HeaderValue};
 
 use debug_print::*;
 
-pub const MAX_REQUEST_HEAD_SIZE: usize = 10 * 1024;
-pub const MAX_RESPONSE_HEAD_SIZE: usize = 10 * 1024;
+pub const MAX_REQUEST_HEAD_SIZE: usize = 8 * 1024;
+pub const MAX_RESPONSE_HEAD_SIZE: usize = 8 * 1024;
 
 pub struct RequestHead {
   pub version: Version,
@@ -173,16 +173,17 @@ pub async fn write_response_head<W: AsyncWrite + Unpin>(writer: &mut W, head: Re
     Some(reason) => write!(reason.as_bytes()),
     None => write!(b"Unknown"),
   };
-  
-  write!(b"\r\n");
 
+
+  write!(b"\r\n");
+  
   for (name, value) in head.headers.iter() {
     write!(name.as_ref());
     write!(b": ");
     write!(value.as_bytes());
     write!(b"\r\n");
   }
-
+  
   if add_trailing_newline {
     write!(b"\r\n");
   }
@@ -192,16 +193,6 @@ pub async fn write_response_head<W: AsyncWrite + Unpin>(writer: &mut W, head: Re
   
   Ok(())
 
-}
-
-pub async fn write_headers<W: AsyncWrite + Unpin>(writer: &mut W, headers: &HeaderMap) -> Result<(), std::io::Error> {
-  for (name, value) in headers.iter() {
-    writer.write(name.as_ref()).await?;
-    writer.write(b"\r\n").await?;
-    writer.write(value.as_bytes()).await?;
-  }
-  
-  Ok(())
 }
 
 #[cfg(test)]

@@ -87,9 +87,9 @@ pub fn start() -> impl Future<Output=()> {
     //app.with(http_1_0_version);
     //app.with(connection_close);
     
-    app.any("/source/:id", source_allow);
-    app.any("/source/:id", source_accept);
-    app.any("/source/:id", source);
+    app.any("/:id/source", source_allow);
+    app.any("/:id/source", source_accept);
+    app.any("/:id/source", source);
 
     let app = app.build().expect("prex app build source");
 
@@ -111,13 +111,13 @@ async fn logger(req: Request, next: Next) -> prex::Response {
     res
 }
 
-async fn connection_close(req: Request, next: Next) -> prex::Response {
+async fn _connection_close(req: Request, next: Next) -> prex::Response {
     let mut res = next.run(req).await;
     res.headers_mut().insert(CONNECTION, HeaderValue::from_static("close"));
     res
 }
 
-async fn http_1_0_version(req: Request, next: Next) -> prex::Response {
+async fn _http_1_0_version(req: Request, next: Next) -> prex::Response {
     let mut res = next.run(req).await;
     *res.version_mut() = Version::HTTP_10;
     res
@@ -200,7 +200,7 @@ async fn source(req: Request, _next: Next) -> prex::Response {
     };
 
     let FfmpegSpawn {
-        //stderr: _,
+        stderr: _,
         stdin,
         stdout,
         child: _,

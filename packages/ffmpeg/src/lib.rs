@@ -1,5 +1,5 @@
 use std::fmt::{self, Display, Formatter};
-use tokio::process::{Command, Child, ChildStdin, ChildStdout};
+use tokio::process::{Command, Child, ChildStdin, ChildStdout, ChildStderr};
 use std::process::Stdio;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -81,7 +81,7 @@ pub struct FfmpegConfig {
 
 impl FfmpegConfig {
   pub const BIN: &'static str = "ffmpeg";
-  pub const LOGLEVEL: LogLevel = LogLevel::Fatal;
+  pub const LOGLEVEL: LogLevel = LogLevel::Error;
   pub const KBITRATE: u16 = 128;
   pub const KMINRATE: u16 = Self::KBITRATE;
   pub const KMAXRATE: u16 = Self::KBITRATE;
@@ -133,6 +133,7 @@ impl Ffmpeg {
     let mut cmd = Command::new(self.config.bin);
 
     // input
+    cmd.arg("-i");
     cmd.arg("-");
 
     // format
@@ -173,23 +174,28 @@ impl Ffmpeg {
     cmd.arg("-loglevel");
     cmd.arg(self.config.loglevel.as_str());
 
+    // output
+    cmd.arg("-");
+
+    println!("{:#?}", cmd);
+
     cmd.kill_on_drop(true);
 
     cmd.stdin(Stdio::piped());
-    cmd.stderr(Stdio::inherit());
+    cmd.stderr(Stdio::piped());
     cmd.stdout(Stdio::piped());
 
     let mut child = cmd.spawn()?;
 
     let stdin = child.stdin.take().unwrap();
-    //let stderr = child.stderr.take().unwrap();
+    let stderr = child.stderr.take().unwrap();
     let stdout = child.stdout.take().unwrap();
     
     Ok(FfmpegSpawn {
       config: self.config,
       child,
       stdin,
-      //stderr,
+      stderr,
       stdout,
     })
 
@@ -204,6 +210,6 @@ pub struct FfmpegSpawn {
   pub config: FfmpegConfig,
   pub child: Child,
   pub stdin: ChildStdin,
-  //pub stderr: ChildStderr,
+  pub stderr: ChildStderr,
   pub stdout: ChildStdout
 }
