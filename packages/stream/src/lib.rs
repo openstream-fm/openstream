@@ -26,7 +26,7 @@ async fn handle(req: Request, _next: Next) -> Response {
     // unwrap: "id" is a required param in path definition
     let id = req.param("id").unwrap();
 
-    let mut stream = match source::subscribe(id) {
+    let mut stream = match channels::subscribe(id) {
         Some(stream) => stream,
         None => {
             let mut res = Response::new(StatusCode::NOT_FOUND);
@@ -41,7 +41,7 @@ async fn handle(req: Request, _next: Next) -> Response {
         loop {
             match stream.recv().await {
                 // if lagged we ignore the error and continue with the oldest message buffered in the channel
-                // TODO: maybe we should advance to the newest message with try_recv?
+                // TODO: maybe we should advance to the newest message with stream.resubscribe
                 Err(RecvError::Lagged(_)) => continue,
                 
                 // Here the channel has been dropped

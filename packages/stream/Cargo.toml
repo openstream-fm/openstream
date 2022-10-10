@@ -9,5 +9,5 @@ edition = "2021"
 bytes = "1.2.1"
 hyper = { version = "0.14.20", features = ["full"] }
 prex = { version = "0.1.0", path = "../prex" }
-source = { version = "0.1.0", path = "../source" }
 tokio = { version = "1.21.2", features = ["full"] }
+channels = { path = "../channels" }

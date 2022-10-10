@@ -5,8 +5,23 @@ import { setTimeout } from "timers/promises";
 
 const file = readFileSync("./audio.aac");
 
+const write = async (socket, data) => {
+  socket.write(data);
+  await once(socket, "drain");
+}
+
+/*
+const pipe = async (readable, writable, peeker) => {
+  for await (const buf of readable) {
+    peeker(data);
+    await write(writable, buf);
+  }
+}
+*/
+
 const client = async (id) => {
-  const socket = net.connect({ host: "127.0.0.1", port: 20500 });
+  const socket = net.connect({ host: "192.168.1.102", port: 80 });
+  //const socket = net.connect({ host: "source.openstream.test", port: 80 });
 
   socket.on("connect", async () => {
     
@@ -39,7 +54,7 @@ const client = async (id) => {
         process.stdout.write("< ");
       }
 
-      process.stdout.write(buf.toString("utf-8").replaceAll("\r\n", "\r\n< "));
+      process.stdout.write(buf.toString("utf-8").replaceAll("\n", "\n< "));
     })
 
     socket.on("close", () => {
@@ -48,9 +63,8 @@ const client = async (id) => {
     })
 
     while(true) {
-      console.log("> @FILE");
-      socket.write(file);
-      await once(socket, "writable");
+      console.log(`> @FILE => ${id}`);
+      await write(socket, file);
     }
   })
 }
@@ -62,4 +76,4 @@ const createClients = async (n) => {
   }
 }
 
-createClients(1000);
+createClients(1);

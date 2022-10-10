@@ -6,7 +6,9 @@ members = [
     "packages/source",
     "packages/stream",
 
+    "packages/channels",
     "packages/db",
+
     "packages/prex",
     "packages/uid",
     "packages/crypt",
