@@ -177,8 +177,6 @@ impl Ffmpeg {
     // output
     cmd.arg("-");
 
-    println!("{:#?}", cmd);
-
     cmd.kill_on_drop(true);
 
     cmd.stdin(Stdio::piped());

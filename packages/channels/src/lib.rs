@@ -32,27 +32,39 @@ pub struct Channel {
 }
 
 pub fn transmit(id: String) -> Option<Transmitter> {
-    let mut map = CHANNELS.write();
-    match map.entry(id.clone()) {
-        Entry::Occupied(_) => None,
-        Entry::Vacant(entry) => {
-            let (sender, _) = channel(CHANNEL_CAPACITY);
-            let channel = Channel {
-                id: id.clone(),
-                sender: sender.clone(),
-                burst: Deque::new()
-            };
+    
+    let (tx, count) = {
+        
+        let mut map = CHANNELS.write();
+        
+        match map.entry(id.clone()) {
+            
+            Entry::Occupied(_) => return None,
+            
+            Entry::Vacant(entry) => {
+                let (sender, _) = channel(CHANNEL_CAPACITY);
+                let channel = Channel {
+                    id: id.clone(),
+                    sender: sender.clone(),
+                    burst: Deque::new()
+                };
 
-            entry.insert(channel);
+                entry.insert(channel);
 
-            let tx = Transmitter {
-                id,
-                sender
-            };
+                let tx = Transmitter {
+                    id: id.clone(),
+                    sender
+                };
 
-            Some(tx)
+                (tx, map.len())
+            }
         }
-    }
+    };
+
+    println!("[INFO] [CHANNELS] transitter created for channel {id} => {count} transmitters");
+        
+    Some(tx)
+
 }
 
 pub fn subscribe(id: &str) -> Option<Receiver> {
