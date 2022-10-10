@@ -114,11 +114,11 @@ pub async fn source(mut socket: TcpStream, head: RequestHead, leading_buf: Vec<u
   });
   
   let _broadcast_handle = tokio::spawn(async move {
-    let stream = stdout.into_bytes_stream(2048).rated(16 * 1024);
+    let stream = stdout.into_bytes_stream(16 * 1024).rated(16 * 1024);
     tokio::pin!(stream);
     while let Some(result) = stream.next().await {
       let bytes = result?;
-      // this only fails when no subscribers but that is ok
+      // this only fails when there are no subscribers but that is ok
       let _ = channel.send(bytes);
     }
 

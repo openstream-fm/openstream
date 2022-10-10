@@ -51,7 +51,7 @@ async fn handle(req: Request, _next: Next) -> Response {
                 Ok(bytes) => {
                     match body_sender.send_data(bytes).await {
                         Err(_) => break,
-                        Ok(_) => continue,
+                        Ok(()) => continue,
                     };
                 }
             }
