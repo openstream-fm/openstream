@@ -20,8 +20,8 @@ const pipe = async (readable, writable, peeker) => {
 */
 
 const client = async (id) => {
-  //const socket = net.connect({ host: "192.168.1.102", port: 20500 });
-  const socket = net.connect({ host: "source.openstream.test", port: 80 });
+  const socket = net.connect({ host: "192.168.1.102", port: 20500 });
+  //const socket = net.connect({ host: "source.openstream.test", port: 80 });
 
   socket.on("connect", async () => {
     
@@ -76,4 +76,4 @@ const createClients = async (n) => {
   }
 }
 
-createClients(50);
+createClients(1);

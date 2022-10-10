@@ -16,8 +16,8 @@ pub use transmitter::Transmitter;
  * Size of the burst in items
  * burst size in bytes will be <= (BURST_LEN * CHUNK_SIZE)
  */
-pub const BURST_LEN: usize = 8;
-pub const CHANNEL_CAPACITY: usize = 8;
+pub const BURST_LEN: usize = 12;
+pub const CHANNEL_CAPACITY: usize = 12;
 
 #[dynamic]
 pub(crate) static CHANNELS: RwLock<HashMap<String, Channel>> = RwLock::new(HashMap::new());
