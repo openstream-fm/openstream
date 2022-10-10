@@ -8,5 +8,4 @@ edition = "2021"
 [dependencies]
 tokio = { version = "1.21.2", features = ["full"] }
 source = { path = "../../packages/source" }
-sender = { path = "../../packages/sender" }
 stream = { version = "0.1.0", path = "../../packages/stream" }
