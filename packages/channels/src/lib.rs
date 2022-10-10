@@ -61,7 +61,7 @@ pub fn transmit(id: String) -> Option<Transmitter> {
         }
     };
 
-    println!("[INFO] [CHANNELS] transitter created for channel {id} => {count} transmitters");
+    println!("[channels] transitter created for channel {id} => {count} transmitters");
         
     Some(tx)
 
@@ -86,7 +86,7 @@ pub fn subscribe(id: &str) -> Option<Receiver> {
 
     let count = SUBSCRIBER_COUNT.fetch_add(1, Ordering::SeqCst) + 1;
 
-    println!("[INFO] [CHANNELS] subscriber created for channel {} => {} subscribers", rx.channel_id, count);
+    println!("[channels] subscriber created for channel {} => {} subscribers", rx.channel_id, count);
 
     Some(rx)
 }

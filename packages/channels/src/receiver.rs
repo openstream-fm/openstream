@@ -41,6 +41,6 @@ impl Receiver {
 impl Drop for Receiver {
   fn drop(&mut self) {
     let count = SUBSCRIBER_COUNT.fetch_sub(1, Ordering::SeqCst) - 1; 
-    println!("[INFO] [CHANNELS] subscriber dropped for channel {} => {} subscribers", self.channel_id, count);
+    println!("[channels] subscriber dropped for channel {} => {} subscribers", self.channel_id, count);
   }
 }

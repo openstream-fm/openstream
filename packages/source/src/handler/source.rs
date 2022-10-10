@@ -19,7 +19,7 @@ pub async fn source(mut socket: TcpStream, head: RequestHead, leading_buf: Vec<u
     Some(h) => h.as_bytes().eq_ignore_ascii_case(b"100-continue")
   };
 
-  let channel = match channels::transmit(id) {
+  let channel = match channels::transmit(id.clone()) {
     Some(channel) => channel,
     None => {
       let body = b"This mountpoint is already in use, try again later";
@@ -96,16 +96,56 @@ pub async fn source(mut socket: TcpStream, head: RequestHead, leading_buf: Vec<u
 
   let (mut socket_read, mut socket_write) = socket.into_split();
 
-  let _write_handle = tokio::spawn(async move {
-    if leading_buf.len() != 0 {
-      stdin.write_all(leading_buf.as_ref()).await?;
-    };
+  let _write_handle = {
+    
+    let id = id.clone();
 
-    // TODO: implement chunked encoding 
-    tokio::io::copy(&mut socket_read, &mut stdin).await.expect("io::copy to ffmpeg stdin");
+    tokio::spawn(async move {
+      
+      if leading_buf.len() != 0 {
+        println!("[source] channel {id} writing leading_buf to ffmpeg stdin, {} bytes", leading_buf.len());
+        stdin.write_all(leading_buf.as_ref()).await?;
+      };
 
-    Result::<(), std::io::Error>::Ok(())
-  });
+      let mut buf = [0u8; 2048];
+
+      let result: Result::<(), std::io::Error> = loop {
+
+        match socket_read.read(&mut buf).await {
+          
+          Err(e) => {
+            println!("[source] channel {id}: net read error: {e}");
+            break Err(e);
+          },
+          
+          Ok(0) => {
+            println!("[source] channel {id}: net read end");
+            break Ok(())
+          },
+
+          Ok(n) => {
+            
+            println!("[source] channel {id}: net read data, {n} bytes");
+            
+            match stdin.write_all(&buf[0..n]).await {
+              
+              Err(e) => {
+                println!("[source] channel {id}: ffmpeg write error: {e}");
+                break Err(e)
+              }
+
+              Ok(()) => {
+                println!("[source] channel {id}: ffmpeg write data: {n} bytes")
+              }
+
+            }
+          }
+        }
+      };
+
+      result
+    })
+  };
 
   let stderr_handle = tokio::spawn(async move {
     let mut buf = vec![];
@@ -113,19 +153,42 @@ pub async fn source(mut socket: TcpStream, head: RequestHead, leading_buf: Vec<u
     Result::<Vec<u8>, std::io::Error>::Ok(buf)
   });
   
-  let _broadcast_handle = tokio::spawn(async move {
-    let stream = stdout.into_bytes_stream(16 * 1024).rated(16 * 1024);
-    tokio::pin!(stream);
-    while let Some(result) = stream.next().await {
-      let bytes = result?;
-      // this only fails when there are no subscribers but that is ok
-      let _ = channel.send(bytes);
-    }
+  let _broadcast_handle = {
+    
+    let id = id.clone();
+    
+    tokio::spawn(async move {
+      
+      let stream = stdout.into_bytes_stream(16 * 1024).rated(16 * 1024);
+      
+      tokio::pin!(stream);
+      
+      loop {
 
-    Result::<(), std::io::Error>::Ok(())
-  });
+        match stream.next().await {
+          
+          None => {
+            println!("[source] channel {id}: ffmpeg stdout end");
+            break Ok(());
+          },
+
+          Some(Err(e)) => {
+            println!("[source] channel {id}: ffmpeg stdout error: {e}");
+            break Err(e);        
+          },
+
+          Some(Ok(bytes)) => {
+            println!("[source] channel {id}: ffmpeg stdout data: {} bytes", bytes.len());
+            // this only fails when there are no subscribers but that is ok
+            let _ = channel.send(bytes);
+          }
+        }
+      }
+    })
+  };
 
   let exit = child.wait().await?;
+  println!("[source] channel {id}: ffmpeg child end: exit {exit}");
 
   if exit.success() {
     let body = b"Data streamed successfully";

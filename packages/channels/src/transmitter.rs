@@ -35,10 +35,10 @@ impl Drop for Transmitter {
 
         match opt {
             None => {
-                println!("[WARN] [CHANNELS] transmitter dropped for channel {}, transmitter not found in channel map, {} open transmitters", self.id, len)
+                println!("[WARN] [channels] transmitter dropped for channel {}, transmitter not found in channel map, {} open transmitters", self.id, len)
             },
             Some(()) => {
-                println!("[INFO] [CHANNELS] transmitter dropped for channel {} => {} transmitters", self.id, len)
+                println!("[channels] transmitter dropped for channel {} => {} transmitters", self.id, len)
             }
         }
     }
