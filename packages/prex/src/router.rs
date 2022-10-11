@@ -21,12 +21,6 @@ pub struct Router {
 }
 
 impl Router {
-  pub(crate) fn _debug_routes(&self) {
-    for entry in self.endpoints.iter() {
-      println!("{:?}", entry.matcher.pattern)
-    }
-  }
-
   pub fn new() -> Self {
     Self {
       endpoints: Arc::new(vec![]),
@@ -187,7 +181,7 @@ pub mod builder {
       };
 
       let endpoint = crate::endpoint::Endpoint {
-        matcher: matcher,
+        matcher,
         handler: entry.handler,
       };
 

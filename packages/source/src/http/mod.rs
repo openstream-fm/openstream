@@ -1,9 +1,8 @@
 pub mod error;
 
-use std::str::FromStr;
-
-use debug_print::debug_println;
 use hyper::{header::HeaderName, http::HeaderValue, HeaderMap, Method, Version};
+use log::*;
+use std::str::FromStr;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 
 use self::error::{ReadHeadError, WriteHeadError};
@@ -63,7 +62,7 @@ macro_rules! headers {
 pub async fn read_request_head<R: AsyncRead + Unpin>(
   reader: &mut R,
 ) -> Result<RequestHead, ReadHeadError> {
-  debug_println!("read_request_head");
+  trace!("read_request_head");
 
   let mut buf = [0u8; MAX_REQUEST_HEAD_SIZE];
   let mut i = 0usize;
@@ -83,13 +82,13 @@ pub async fn read_request_head<R: AsyncRead + Unpin>(
     i += 1;
   };
 
-  debug_println!("head size => {i} bytes");
+  trace!("head size => {i} bytes");
 
   parse_request_head(slice).await
 }
 
 pub async fn parse_request_head(buf: &[u8]) -> Result<RequestHead, ReadHeadError> {
-  debug_println!("parse_request_head");
+  trace!("parse_request_head");
 
   let string = String::from_utf8_lossy(buf);
 
@@ -100,7 +99,7 @@ pub async fn parse_request_head(buf: &[u8]) -> Result<RequestHead, ReadHeadError
     Some(line) => parse_head_line(line)?,
   };
 
-  debug_println!("leading => {method} {uri} {version:?}");
+  trace!("leading => {method} {uri} {version:?}");
 
   let mut headers = HeaderMap::new();
   for line in lines {
@@ -117,7 +116,7 @@ pub async fn parse_request_head(buf: &[u8]) -> Result<RequestHead, ReadHeadError
           Ok(value) => value,
         };
 
-        debug_println!("header => {name}: {}", value.to_str().unwrap());
+        trace!("header => {name}: {}", value.to_str().unwrap());
         headers.append(name, value);
       }
     }
@@ -171,7 +170,7 @@ pub async fn write_response_head<W: AsyncWrite + Unpin>(
   head: ResponseHead,
   add_trailing_newline: bool,
 ) -> Result<(), WriteHeadError> {
-  debug_println!("serializing head");
+  trace!("serializing head");
 
   let mut buf = [0u8; MAX_RESPONSE_HEAD_SIZE];
   let mut len = 0usize;
@@ -218,7 +217,7 @@ pub async fn write_response_head<W: AsyncWrite + Unpin>(
     write!(b"\r\n");
   }
 
-  debug_println!("writing response head to socket: len => {len}");
+  trace!("writing response head to socket: len => {len}");
   writer.write_all(&buf[0..len]).await?;
 
   Ok(())

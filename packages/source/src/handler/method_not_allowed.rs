@@ -1,9 +1,9 @@
-use debug_print::debug_println;
 use hyper::{
   header::{ALLOW, CONTENT_LENGTH, CONTENT_TYPE},
   http::HeaderValue,
   Method, StatusCode, Version,
 };
+use log::*;
 use tokio::{io::AsyncWriteExt, net::TcpStream};
 
 use crate::{
@@ -18,7 +18,7 @@ pub async fn method_not_allowed(
   req: RequestHead,
   allow: HeaderValue,
 ) -> Result<(), HandlerError> {
-  debug_println!("method_not_allowed: {} {}", req.method, req.uri);
+  trace!("method_not_allowed: {} {}", req.method, req.uri);
 
   let status = StatusCode::METHOD_NOT_ALLOWED;
   let body = b"405 Method Not Allowed";
@@ -39,10 +39,10 @@ pub async fn method_not_allowed(
   write_response_head(&mut socket, head, true).await?;
 
   if req.method != &Method::HEAD {
-    debug_println!("writing body to socket");
+    trace!("writing body to socket");
     socket.write_all(body).await?;
   }
-  debug_println!("shutting down socket");
+  trace!("shutting down socket");
   socket.flush().await?;
 
   Ok(())

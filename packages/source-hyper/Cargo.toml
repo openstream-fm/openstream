@@ -11,6 +11,7 @@ channels = { version = "0.1.0", path = "../channels" }
 constants = { version = "0.1.0", path = "../../config/constants" }
 ffmpeg = { version = "0.1.0", path = "../ffmpeg" }
 hyper = "0.14.20"
+log = "0.4.17"
 prex = { version = "0.1.0", path = "../prex" }
 stream-util = { version = "0.1.0", path = "../stream-util" }
 tokio = { version = "1.21.2", features = ["full"] }

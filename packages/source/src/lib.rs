@@ -10,6 +10,7 @@ use debug_print::debug_println;
 use error::HandlerError;
 use http::RequestHead;
 use hyper::{http::HeaderValue, Method};
+use log::*;
 use std::{net::SocketAddr, str::FromStr};
 use tokio::net::{TcpListener, TcpStream};
 
@@ -20,11 +21,10 @@ pub async fn start(
 
   let listener = TcpListener::bind(addr).await?;
 
-  println!("source server bound to {addr}");
+  info!("source server bound to {addr}");
 
   loop {
     let (socket, addr) = listener.accept().await?;
-    debug_println!("accept: {}", addr);
     let _ = tokio::spawn(handle_connection(socket, addr));
   }
 }
@@ -38,7 +38,7 @@ pub async fn handle_connection(socket: TcpStream, _addr: SocketAddr) -> Result<(
   let mut reader = tokio::io::BufReader::new(socket);
 
   let head = read_request_head(&mut reader).await?;
-  debug_println!("head readed");
+  trace!("head readed");
 
   // need to copy here because we'll use socket again as non buffered reader
   // and tokio doesn't provide a way to get the buffer as owned

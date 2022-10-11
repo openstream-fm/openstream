@@ -213,7 +213,7 @@ pub mod test {
 
     assert!(elapsed <= expected + 5);
     assert!(elapsed >= expected - 5);
-    println!(
+    eprintln!(
       "bytes_stream_rated, expected time elapsed {expected}ms, actual time elapsed: {elapsed}ms"
     )
   }

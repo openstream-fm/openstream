@@ -1,15 +1,15 @@
 use crate::error::HandlerError;
 use crate::http::{write_response_head, RequestHead, ResponseHead};
 use crate::{headers, text_plain};
-use debug_print::debug_println;
 use hyper::header::{CONTENT_LENGTH, CONTENT_TYPE};
 use hyper::http::HeaderValue;
 use hyper::{Method, StatusCode, Version};
+use log::*;
 use tokio::io::AsyncWriteExt;
 use tokio::net::TcpStream;
 
 pub async fn status(mut socket: TcpStream, req: RequestHead) -> Result<(), HandlerError> {
-  debug_println!("status: {} {}", req.method, req.uri);
+  trace!("`[request] status: {} {}", req.method, req.uri);
 
   let status = StatusCode::OK;
   let body = b"200 OK";
@@ -29,11 +29,11 @@ pub async fn status(mut socket: TcpStream, req: RequestHead) -> Result<(), Handl
   write_response_head(&mut socket, head, true).await?;
 
   if req.method != &Method::HEAD {
-    debug_println!("writing body to socket");
+    trace!("writing body to socket");
     socket.write_all(body).await?;
   }
 
-  debug_println!("shutting down socket");
+  trace!("shutting down socket");
   socket.flush().await?;
 
   Ok(())

@@ -13,7 +13,7 @@ pub fn start() -> impl Future<Output = ()> + Send + Sync + 'static {
   let app = app.build().expect("prex app build stream");
 
   let addr = SocketAddr::from(([0, 0, 0, 0], 20300));
-  println!("stream server bound to {addr}");
+  info!("stream server bound to {addr}");
 
   async move {
     let server = Server::try_bind(&addr).expect("hyper bind stream");

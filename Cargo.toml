@@ -19,4 +19,5 @@ members = [
     "packages/ffmpeg",
     "packages/serde-util",
     "packages/stream-util",
+    "packages/logger",
 ]

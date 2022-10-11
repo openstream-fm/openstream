@@ -1,5 +1,6 @@
 use super::CHANNELS;
 use bytes::Bytes;
+use log::*;
 use tokio::sync::broadcast::{self, error::SendError};
 
 #[derive(Debug)]
@@ -37,10 +38,10 @@ impl Drop for Transmitter {
 
     match opt {
       None => {
-        println!("[WARN] [channels] transmitter dropped for channel {}, transmitter not found in channel map, {} open transmitters", self.id, len)
+        warn!("[channels] transmitter dropped for channel {}, transmitter not found in channel map, {} open transmitters", self.id, len)
       }
       Some(()) => {
-        println!(
+        debug!(
           "[channels] transmitter dropped for channel {} => {} transmitters",
           self.id, len
         )

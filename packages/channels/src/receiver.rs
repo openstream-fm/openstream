@@ -1,7 +1,7 @@
-use std::sync::atomic::Ordering;
-
 use bytes::Bytes;
 use heapless::Deque;
+use log::*;
+use std::sync::atomic::Ordering;
 use tokio::sync::broadcast::{self, error::RecvError};
 
 use constants::STREAM_BURST_LENGTH;
@@ -41,7 +41,7 @@ impl Receiver {
 impl Drop for Receiver {
   fn drop(&mut self) {
     let count = SUBSCRIBER_COUNT.fetch_sub(1, Ordering::SeqCst) - 1;
-    println!(
+    debug!(
       "[channels] subscriber dropped for channel {} => {} subscribers",
       self.channel_id, count
     );

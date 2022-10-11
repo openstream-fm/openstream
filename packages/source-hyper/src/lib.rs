@@ -4,6 +4,7 @@ use hyper::body::HttpBody;
 use hyper::header::{HeaderValue, ALLOW, CONTENT_TYPE};
 use hyper::HeaderMap;
 use hyper::{Body, Method, Server, StatusCode};
+use log::*;
 use prex::{Next, Request, Response};
 use std::future::Future;
 use std::net::SocketAddr;
@@ -24,7 +25,7 @@ pub fn start() -> impl Future<Output = ()> {
     .http1_preserve_header_case(false);
   //.tcp_sleep_on_accept_errors(true);
 
-  println!("hyper source server bound to {}", addr);
+  info!("hyper source server bound to {}", addr);
 
   let mut app = prex::prex();
 
@@ -50,11 +51,10 @@ async fn logger(req: Request, next: Next) -> prex::Response {
 
   let status = res.status();
 
-  println!("{method} {path} => {status}");
+  debug!("[request] {method} {path} => {status}");
 
   res
 }
-
 
 async fn source(mut req: Request, _next: Next) -> prex::Response {
   enum SourceMethod {
@@ -138,15 +138,15 @@ async fn source(mut req: Request, _next: Next) -> prex::Response {
       loop {
         match chunks.next().await {
           None => {
-            println!("[source]: channel {id}: ffmpeg stdout end");
+            debug!("[source]: channel {id}: ffmpeg stdout end");
             break;
           }
           Some(Err(e)) => {
-            println!("[sorce]: channel {id}: ffmpeg stdout error: {e}");
+            debug!("[sorce]: channel {id}: ffmpeg stdout error: {e}");
             break;
           }
           Some(Ok(bytes)) => {
-            println!(
+            debug!(
               "[source]: channel {id}: ffmpeg stdout data: {} bytes",
               bytes.len()
             );
@@ -166,29 +166,29 @@ async fn source(mut req: Request, _next: Next) -> prex::Response {
       loop {
         match req.data().await {
           None => {
-            println!("[source] channel {id}: recv body end");
+            debug!("[source] channel {id}: recv body end");
             break;
           }
 
           Some(Err(e)) => {
-            println!("[source] channel {id}: recv body error: {e}");
+            debug!("[source] channel {id}: recv body error: {e}");
             break;
           }
 
           Some(Ok(data)) => {
-            println!(
+            debug!(
               "[source] channel {id}: recv body data: {} bytes",
               data.len()
             );
 
             match stdin.write_all(data.as_ref()).await {
               Err(e) => {
-                println!("[source] channel {id} stdin error: {e}");
+                debug!("[source] channel {id} stdin error: {e}");
                 break;
               }
 
               Ok(()) => {
-                println!("[source] channel {id} stdin write: {} bytes", data.len());
+                debug!("[source] channel {id} stdin write: {} bytes", data.len());
               }
             }
           }
@@ -200,7 +200,7 @@ async fn source(mut req: Request, _next: Next) -> prex::Response {
 
   let exit = match child.wait().await {
     Err(e) => {
-      println!("[source] channel {id}: ffmpeg child error: {e}");
+      debug!("[source] channel {id}: ffmpeg child error: {e}");
       let mut headers = HeaderMap::with_capacity(1);
       headers.append(CONTENT_TYPE, HeaderValue::from_static("text/plain"));
 
@@ -216,7 +216,7 @@ async fn source(mut req: Request, _next: Next) -> prex::Response {
     Ok(exit) => exit,
   };
 
-  println!("[source] channel {id}: ffmpeg child end: {exit}");
+  debug!("[source] channel {id}: ffmpeg child end: {exit}");
 
   if exit.success() {
     let mut res = Response::new(StatusCode::OK);

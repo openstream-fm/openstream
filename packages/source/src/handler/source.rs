@@ -1,10 +1,11 @@
 use constants::STREAM_CHUNK_SIZE;
-use debug_print::debug_println;
+
 use ffmpeg::{Ffmpeg, FfmpegConfig, FfmpegSpawn};
 use hyper::{
   header::{CONTENT_LENGTH, CONTENT_TYPE},
   HeaderMap, Method, StatusCode, Version,
 };
+use log::*;
 use tokio::{
   io::{AsyncReadExt, AsyncWriteExt},
   net::TcpStream,
@@ -25,7 +26,7 @@ pub async fn source(
   leading_buf: Vec<u8>,
   id: String,
 ) -> Result<(), HandlerError> {
-  debug_println!("source: {} {} => id: {}", head.method, head.uri, id);
+  trace!("source: {} {} => id: {}", head.method, head.uri, id);
 
   // if not PUT is SOURCE checked in router
   let _is_put = head.method == Method::PUT;
@@ -128,7 +129,7 @@ pub async fn source(
 
     tokio::spawn(async move {
       if leading_buf.len() != 0 {
-        println!(
+        debug!(
           "[source] channel {id} writing leading_buf to ffmpeg stdin, {} bytes",
           leading_buf.len()
         );
@@ -140,26 +141,26 @@ pub async fn source(
       let result: Result<(), std::io::Error> = loop {
         match socket_read.read(&mut buf).await {
           Err(e) => {
-            println!("[source] channel {id}: net read error: {e}");
+            debug!("[source] channel {id}: net read error: {e}");
             break Err(e);
           }
 
           Ok(0) => {
-            println!("[source] channel {id}: net read end");
+            debug!("[source] channel {id}: net read end");
             break Ok(());
           }
 
           Ok(n) => {
-            println!("[source] channel {id}: net read data, {n} bytes");
+            debug!("[source] channel {id}: net read data, {n} bytes");
 
             match stdin.write_all(&buf[0..n]).await {
               Err(e) => {
-                println!("[source] channel {id}: ffmpeg write error: {e}");
+                debug!("[source] channel {id}: ffmpeg write error: {e}");
                 break Err(e);
               }
 
               Ok(()) => {
-                println!("[source] channel {id}: ffmpeg write data: {n} bytes")
+                debug!("[source] channel {id}: ffmpeg write data: {n} bytes")
               }
             }
           }
@@ -189,17 +190,17 @@ pub async fn source(
       loop {
         match stream.next().await {
           None => {
-            println!("[source] channel {id}: ffmpeg stdout end");
+            debug!("[source] channel {id}: ffmpeg stdout end");
             break Ok(());
           }
 
           Some(Err(e)) => {
-            println!("[source] channel {id}: ffmpeg stdout error: {e}");
+            debug!("[source] channel {id}: ffmpeg stdout error: {e}");
             break Err(e);
           }
 
           Some(Ok(bytes)) => {
-            println!(
+            debug!(
               "[source] channel {id}: ffmpeg stdout data: {} bytes",
               bytes.len()
             );
@@ -212,7 +213,7 @@ pub async fn source(
   };
 
   let exit = child.wait().await?;
-  println!("[source] channel {id}: ffmpeg child end: exit {exit}");
+  debug!("[source] channel {id}: ffmpeg child end: exit {exit}");
 
   if exit.success() {
     let body = b"Data streamed successfully";

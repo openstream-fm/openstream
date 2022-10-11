@@ -1,5 +1,6 @@
 use bytes::Bytes;
 use heapless::Deque;
+use log::*;
 use parking_lot::RwLock;
 use static_init::dynamic;
 use std::collections::hash_map::Entry;
@@ -53,7 +54,7 @@ pub fn transmit(id: String) -> Option<Transmitter> {
     }
   };
 
-  println!("[channels] transitter created for channel {id} => {count} transmitters");
+  debug!("[channels] transitter created for channel {id} => {count} transmitters");
 
   Some(tx)
 }
@@ -75,7 +76,7 @@ pub fn subscribe(id: &str) -> Option<Receiver> {
 
   let count = SUBSCRIBER_COUNT.fetch_add(1, Ordering::SeqCst) + 1;
 
-  println!(
+  debug!(
     "[channels] subscriber created for channel {} => {} subscribers",
     rx.channel_id, count
   );
