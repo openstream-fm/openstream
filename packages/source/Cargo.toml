@@ -15,7 +15,6 @@ hyper = { version = "0.14.20", features = ["full"] }
 prex = { path = "../prex" }
 stream-util = { path = "../stream-util" }
 tokio-stream = "0.1.10"
-debug_print = "1.0.0"
 regex_static = "0.1.1"
 channels = { path = "../channels" }
 constants = { version = "0.1.0", path = "../../config/constants" }

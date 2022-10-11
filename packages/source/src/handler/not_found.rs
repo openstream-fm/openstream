@@ -1,7 +1,6 @@
 use crate::error::HandlerError;
 use crate::http::{write_response_head, RequestHead, ResponseHead};
 use crate::{content_length, headers, text_plain};
-use debug_print::debug_println;
 use hyper::header::{CONTENT_LENGTH, CONTENT_TYPE};
 use hyper::{Method, StatusCode, Version};
 use log::*;

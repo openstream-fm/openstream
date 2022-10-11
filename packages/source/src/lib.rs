@@ -6,7 +6,6 @@ use crate::{
   handler::{method_not_allowed, not_found, source, status},
   http::read_request_head,
 };
-use debug_print::debug_println;
 use error::HandlerError;
 use http::RequestHead;
 use hyper::{http::HeaderValue, Method};
