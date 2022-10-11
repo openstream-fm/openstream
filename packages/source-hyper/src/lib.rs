@@ -168,34 +168,42 @@ async fn source(mut req: Request, _next: Next) -> prex::Response {
         })
     };
 
-    loop {
-        match req.data().await {
-            None => {
-                println!("[source] channel {id}: recv body end");
-                break;
-            },
-
-            Some(Err(e)) => {
-                println!("[source] channel {id}: recv body error: {e}");
-                break;
-            },
-
-            Some(Ok(data)) => {
-                println!("[source] channel {id}: recv body data: {} bytes", data.len());
-                
-                match stdin.write_all(data.as_ref()).await {
-                    Err(e) => {
-                        println!("[source] channel {id} stdin error: {e}");
+    // move stdin to drop early
+    {
+        let id = id.clone();
+        
+        tokio::spawn(async move {
+            loop {
+                match req.data().await {
+                    None => {
+                        println!("[source] channel {id}: recv body end");
                         break;
                     },
 
-                    Ok(()) => {
-                        println!("[source] channel {id} stdin write: {} bytes", data.len());
+                    Some(Err(e)) => {
+                        println!("[source] channel {id}: recv body error: {e}");
+                        break;
+                    },
+
+                    Some(Ok(data)) => {
+                        println!("[source] channel {id}: recv body data: {} bytes", data.len());
+                        
+                        match stdin.write_all(data.as_ref()).await {
+                            Err(e) => {
+                                println!("[source] channel {id} stdin error: {e}");
+                                break;
+                            },
+
+                            Ok(()) => {
+                                println!("[source] channel {id} stdin write: {} bytes", data.len());
+                            }
+                        }
                     }
                 }
-            }
-        }
-    };
+            };
+        }).await.unwrap();
+    }
+
 
     let exit = match child.wait().await {
         Err(e) => {
@@ -215,7 +223,7 @@ async fn source(mut req: Request, _next: Next) -> prex::Response {
         Ok(exit) => exit
     };
 
-    println!("[source] channel {id}: ffmpeg child end: exit {exit}");
+    println!("[source] channel {id}: ffmpeg child end: {exit}");
   
     if exit.success() {
         let mut res = Response::new(StatusCode::OK);
