@@ -83,7 +83,7 @@ pub async fn source(mut socket: TcpStream, head: RequestHead, leading_buf: Vec<u
 
     let head = ResponseHead { version, status, headers };
 
-    write_response_head(&mut socket, head, false).await?;
+    write_response_head(&mut socket, head, true).await?;
   } else {
     let version = Version::HTTP_10;
     let status = StatusCode::OK;
@@ -91,7 +91,7 @@ pub async fn source(mut socket: TcpStream, head: RequestHead, leading_buf: Vec<u
 
     let head = ResponseHead { version, status, headers };
     
-    write_response_head(&mut socket, head, false).await?;
+    write_response_head(&mut socket, head, true).await?;
   }
 
   let (mut socket_read, mut socket_write) = socket.into_split();
