@@ -1,0 +1,16 @@
+[package]
+name = "source-hyper"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bytes = "1.2.1"
+channels = { version = "0.1.0", path = "../channels" }
+ffmpeg = { version = "0.1.0", path = "../ffmpeg" }
+hyper = "0.14.20"
+prex = { version = "0.1.0", path = "../prex" }
+stream-util = { version = "0.1.0", path = "../stream-util" }
+tokio = { version = "1.21.2", features = ["full"] }
+tokio-stream = "0.1.10"
