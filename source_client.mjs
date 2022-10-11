@@ -41,7 +41,7 @@ const client = async (id) => {
     
     console.log(`socket ${id} opened`);
     
-    const method = "PUT";
+    const method = "SOURCE";
     const url = `/${id}/source`;
     const version = "HTTP/1.0";
     const headers = {

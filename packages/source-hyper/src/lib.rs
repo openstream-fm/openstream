@@ -23,7 +23,7 @@ pub fn start() -> impl Future<Output=()> {
         //.http1_preserve_header_case(false)
         //.tcp_sleep_on_accept_errors(true);
 
-    println!("source server bound to {}", addr);
+    println!("hyper source server bound to {}", addr);
 
     let mut app = prex::prex();
 

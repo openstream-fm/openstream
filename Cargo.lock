@@ -116,6 +116,7 @@ name = "bin"
 version = "0.1.0"
 dependencies = [
  "source",
+ "source-hyper",
  "stream",
  "tokio",
 ]
@@ -1538,6 +1539,20 @@ dependencies = [
  "prex",
  "regex_static",
  "static_init",
+ "stream-util",
+ "tokio",
+ "tokio-stream",
+]
+
+[[package]]
+name = "source-hyper"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "channels",
+ "ffmpeg",
+ "hyper",
+ "prex",
  "stream-util",
  "tokio",
  "tokio-stream",

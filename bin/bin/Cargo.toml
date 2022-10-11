@@ -8,4 +8,5 @@ edition = "2021"
 [dependencies]
 tokio = { version = "1.21.2", features = ["full"] }
 source = { path = "../../packages/source" }
+source-hyper = { version = "0.1.0", path = "../../packages/source-hyper" }
 stream = { version = "0.1.0", path = "../../packages/stream" }

@@ -4,6 +4,7 @@ members = [
     "bin/producer",
 
     "packages/source",
+    "packages/source-hyper",
     "packages/stream",
 
     "packages/channels",
