@@ -1,12 +1,9 @@
 use constants::STREAM_CHUNK_SIZE;
 use ffmpeg::{Ffmpeg, FfmpegConfig, FfmpegSpawn};
 use hyper::body::HttpBody;
-use hyper::header::{ACCEPT_ENCODING, ALLOW, CONTENT_TYPE};
+use hyper::header::{HeaderValue, ALLOW, CONTENT_TYPE};
 use hyper::HeaderMap;
-use hyper::{
-  header::{HeaderValue, CONNECTION},
-  Body, Method, Server, StatusCode, Version,
-};
+use hyper::{Body, Method, Server, StatusCode};
 use prex::{Next, Request, Response};
 use std::future::Future;
 use std::net::SocketAddr;
@@ -58,37 +55,6 @@ async fn logger(req: Request, next: Next) -> prex::Response {
   res
 }
 
-async fn _connection_close(req: Request, next: Next) -> prex::Response {
-  let mut res = next.run(req).await;
-  res
-    .headers_mut()
-    .insert(CONNECTION, HeaderValue::from_static("close"));
-  res
-}
-
-async fn _http_1_0_version(req: Request, next: Next) -> prex::Response {
-  let mut res = next.run(req).await;
-  *res.version_mut() = Version::HTTP_10;
-  res
-}
-
-async fn _source_allow(req: Request, next: Next) -> prex::Response {
-  let mut res = next.run(req).await;
-  res
-    .headers_mut()
-    .entry(ALLOW)
-    .or_insert_with(|| HeaderValue::from_static("PUT, SOURCE"));
-  res
-}
-
-async fn _source_accept(req: Request, next: Next) -> prex::Response {
-  let mut res = next.run(req).await;
-  res
-    .headers_mut()
-    .entry(ACCEPT_ENCODING)
-    .or_insert_with(|| HeaderValue::from_static("identity"));
-  res
-}
 
 async fn source(mut req: Request, _next: Next) -> prex::Response {
   enum SourceMethod {
