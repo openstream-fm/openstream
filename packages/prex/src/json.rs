@@ -1,9 +1,9 @@
-use serde::Serialize;
-use serde_json;
+use super::response::Response;
+use hyper::header::HeaderValue;
 use hyper::Body;
 use hyper::StatusCode;
-use hyper::header::{HeaderValue};
-use super::response::Response;
+use serde::Serialize;
+use serde_json;
 
 pub struct Json<T>(pub T);
 
@@ -14,7 +14,7 @@ impl<T: Serialize> Into<Response> for Json<T> {
         let mut res = Response::new(StatusCode::OK);
         *res.body_mut() = Body::from(v);
         res
-      },
+      }
 
       Err(_e) => {
         let mut res = Response::new(StatusCode::INTERNAL_SERVER_ERROR);
@@ -27,14 +27,14 @@ impl<T: Serialize> Into<Response> for Json<T> {
 
 impl<S: Into<StatusCode>, T: Serialize> Into<Response> for (S, Json<T>) {
   fn into(self) -> Response {
-    match serde_json::to_string(&self.1.0) {
+    match serde_json::to_string(&self.1 .0) {
       Ok(v) => {
         let mut res = Response::new(self.0.into());
         res.set_content_type(HeaderValue::from_static("application/json"));
         res.set_charset(HeaderValue::from_static("utf-8"));
         *res.body_mut() = Body::from(v);
         res
-      },
+      }
 
       Err(_e) => {
         let mut res = Response::new(StatusCode::INTERNAL_SERVER_ERROR);

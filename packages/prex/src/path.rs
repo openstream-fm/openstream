@@ -3,7 +3,7 @@ const SLASH: char = '/';
 pub fn join(left: &str, right: &str) -> String {
   let left = left.trim_matches(SLASH);
   let right = right.trim_matches(SLASH);
-  
+
   if right == "" {
     format!("/{}", left)
   } else if left == "" {
@@ -14,7 +14,6 @@ pub fn join(left: &str, right: &str) -> String {
 }
 
 pub fn normalize(path: &str) -> String {
-  
   let mut new_path = String::new();
 
   if !path.starts_with(SLASH) {
@@ -42,15 +41,12 @@ pub fn normalize(path: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-  
+
   use super::normalize;
 
   #[test]
-  fn normalize_remove_trailing () {
-    assert_eq!(
-      String::from("/one/two/three"),
-      normalize("/one/two/three/")
-    );
+  fn normalize_remove_trailing() {
+    assert_eq!(String::from("/one/two/three"), normalize("/one/two/three/"));
 
     assert_eq!(
       String::from("/one/two/three"),
@@ -78,19 +74,14 @@ mod tests {
 
   #[test]
   fn normalize_prepend() {
-    assert_eq!(
-      String::from("/one/two/three"),
-      normalize("one/two/three")
-    );
+    assert_eq!(String::from("/one/two/three"), normalize("one/two/three"));
   }
 
-
-  #[test] 
+  #[test]
   fn normalize_all() {
     assert_eq!(
       String::from("/one/two/three"),
       normalize("/one//two///three////")
     )
   }
-
 }

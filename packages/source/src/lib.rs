@@ -1,17 +1,21 @@
+mod error;
 mod handler;
 mod http;
-mod error;
 
-use std::{net::SocketAddr, str::FromStr};
+use crate::{
+  handler::{method_not_allowed, not_found, source, status},
+  http::read_request_head,
+};
 use debug_print::debug_println;
 use error::HandlerError;
 use http::RequestHead;
-use hyper::{Method, http::HeaderValue};
+use hyper::{http::HeaderValue, Method};
+use std::{net::SocketAddr, str::FromStr};
 use tokio::net::{TcpListener, TcpStream};
-use crate::{http::read_request_head, handler::{status, method_not_allowed, source, not_found}};
 
-pub async fn start(addr: impl Into<SocketAddr>) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-  
+pub async fn start(
+  addr: impl Into<SocketAddr>,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
   let addr = addr.into();
 
   let listener = TcpListener::bind(addr).await?;
@@ -22,16 +26,15 @@ pub async fn start(addr: impl Into<SocketAddr>) -> Result<(), Box<dyn std::error
     let (socket, addr) = listener.accept().await?;
     debug_println!("accept: {}", addr);
     let _ = tokio::spawn(handle_connection(socket, addr));
-  };
+  }
 }
 
 pub async fn handle_connection(socket: TcpStream, _addr: SocketAddr) -> Result<(), HandlerError> {
-  
   // this increases performance by aprox 5%
-  // we'll do infrequent large writes so this makes sense 
+  // we'll do infrequent large writes so this makes sense
   socket.set_nodelay(true)?;
 
-  // using buf reader here increases performance by aprox 6% 
+  // using buf reader here increases performance by aprox 6%
   let mut reader = tokio::io::BufReader::new(socket);
 
   let head = read_request_head(&mut reader).await?;
@@ -44,7 +47,7 @@ pub async fn handle_connection(socket: TcpStream, _addr: SocketAddr) -> Result<(
 
   match (&head.method, head.uri.as_str()) {
     (&Method::GET, "/status") => status(socket, head).await,
-    (_, "/status") => method_not_allowed(socket, head, HeaderValue::from_static("GET")).await, 
+    (_, "/status") => method_not_allowed(socket, head, HeaderValue::from_static("GET")).await,
     _ => {
       if let Some(id) = is_source_client_uri(&head) {
         if head.method == Method::PUT || head.method == Method::from_str("SOURCE").unwrap() {

@@ -1,13 +1,13 @@
 use hyper::Method;
 use regex::Regex;
 
-use crate::params::Params;
 use crate::error::RouterBuilderError;
+use crate::params::Params;
 
 #[derive(Eq, PartialEq, Clone, Copy)]
 pub enum MatchType {
   Exact,
-  Scope
+  Scope,
 }
 
 #[derive(Clone)]
@@ -18,7 +18,6 @@ pub struct Matcher {
 }
 
 impl Matcher {
-
   pub fn all() -> Self {
     Self {
       method: None,
@@ -70,7 +69,6 @@ impl Matcher {
   }
 
   pub fn compile_pattern_str(pat: &str) -> String {
-    
     let path = format!("/{}", pat.trim_matches('/'));
 
     let mut compiled = String::new();
@@ -82,22 +80,21 @@ impl Matcher {
       if index >= chars.len() {
         break 'root;
       }
-    
+
       let ch = chars[index];
       index += 1;
 
       if ch != ':' {
-        
         let mut literal = String::new();
         literal.push(ch);
-        
+
         'literal: loop {
           if index >= chars.len() {
             break 'literal;
-          } 
+          }
 
           let ch = chars[index];
-          
+
           if ch == ':' {
             break 'literal;
           } else {
@@ -105,9 +102,8 @@ impl Matcher {
             literal.push(ch);
           }
         }
-        
-        compiled.push_str(regex::escape(literal.as_str()).as_str());
 
+        compiled.push_str(regex::escape(literal.as_str()).as_str());
       } else {
         // start named param
         let mut name = String::new();
@@ -118,7 +114,7 @@ impl Matcher {
             index += 1;
             name.push(ch);
           } else {
-            break 'name
+            break 'name;
           }
         }
 
@@ -127,7 +123,7 @@ impl Matcher {
           compiled.push_str(regex::escape(":").as_str());
           continue 'root;
         }
-        
+
         if chars.get(index) == Some(&'(') {
           index += 1;
           let mut open_paren_count = 1;
@@ -135,32 +131,32 @@ impl Matcher {
           'pattern: for inner in index..chars.len() {
             index += 1;
             let ch = chars[inner];
-            
+
             match ch {
               '(' => {
                 if escape_count % 2 == 0 {
                   open_paren_count += 1;
                 }
                 pattern.push(ch);
-              },
+              }
 
               ')' => {
                 if escape_count % 2 == 0 {
                   open_paren_count -= 1;
                 }
-                
+
                 if open_paren_count == 0 {
                   break 'pattern;
                 } else {
                   pattern.push(ch);
                 }
-              },
+              }
 
               ch => {
                 pattern.push(ch);
               }
             }
-            
+
             if ch == '\\' {
               escape_count += 1;
             } else {
@@ -174,27 +170,23 @@ impl Matcher {
         }
 
         compiled.push_str(format!("(?P<{}>{})", name, pattern).as_str())
-
       }
     }
 
     compiled
   }
 
-
   pub fn compile_pattern(pat: &str, match_type: MatchType) -> Result<Regex, RouterBuilderError> {
-    
-    let compiled = Self::compile_pattern_str(pat);  
-    
-    let re = match match_type {
+    let compiled = Self::compile_pattern_str(pat);
 
+    let re = match match_type {
       MatchType::Exact => {
         if compiled == "/" || compiled == "" {
           Regex::new("^/?$")
         } else {
           Regex::new(format!("^{}/?$", compiled.trim_end_matches('/')).as_str())
         }
-      },
+      }
       MatchType::Scope => {
         if compiled == "/" || compiled == "" {
           Regex::new("^/?")
@@ -206,7 +198,10 @@ impl Matcher {
 
     match re {
       Ok(re) => Ok(re),
-      Err(e) => Err(RouterBuilderError::RouteRegexError{ path: pat.to_string(), description: e.to_string() })
+      Err(e) => Err(RouterBuilderError::RouteRegexError {
+        path: pat.to_string(),
+        description: e.to_string(),
+      }),
     }
   }
 
@@ -221,7 +216,7 @@ impl Matcher {
 
 #[cfg(test)]
 mod tests {
-  use super::{Matcher};
+  use super::Matcher;
 
   #[test]
   fn test_pattern_compiler() {

@@ -8,6 +8,7 @@ members = [
     "packages/source",
     "packages/source-hyper",
     "packages/stream",
+    "packages/upload",
 
     "packages/channels",
     "packages/db",

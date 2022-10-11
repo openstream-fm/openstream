@@ -1,6 +1,6 @@
 use hyper;
-use std::ops::{Deref, DerefMut};
 use std::net::SocketAddr;
+use std::ops::{Deref, DerefMut};
 
 use crate::params::Params;
 
@@ -15,11 +15,10 @@ pub struct Parts {
 pub struct Request {
   pub(crate) request: hyper::Request<hyper::Body>,
   pub(crate) params: Params,
-  pub(crate) remote_addr: SocketAddr
+  pub(crate) remote_addr: SocketAddr,
 }
 
 impl Request {
-
   #[inline]
   pub fn from_parts(parts: Parts) -> Self {
     Self {
@@ -47,11 +46,9 @@ impl Request {
   pub fn remote_addr_mut(&mut self) -> &mut SocketAddr {
     &mut self.remote_addr
   }
-
 }
 
 impl Request {
-  
   #[inline]
   pub fn param(&self, key: &str) -> Option<&str> {
     self.params.get(key)
@@ -63,10 +60,10 @@ impl Deref for Request {
   fn deref(&self) -> &Self::Target {
     &self.request
   }
-} 
+}
 
 impl DerefMut for Request {
   fn deref_mut(&mut self) -> &mut Self::Target {
     &mut self.request
   }
-} 
+}

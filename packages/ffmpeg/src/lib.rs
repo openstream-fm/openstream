@@ -1,6 +1,6 @@
 use std::fmt::{self, Display, Formatter};
-use tokio::process::{Command, Child, ChildStdin, ChildStdout, ChildStderr};
 use std::process::Stdio;
+use tokio::process::{Child, ChildStderr, ChildStdin, ChildStdout, Command};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LogLevel {
@@ -37,7 +37,6 @@ impl Display for LogLevel {
   }
 }
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Format {
   MP3,
@@ -52,7 +51,7 @@ impl Format {
       Self::MP3 => "mp3",
       Self::AAC => "aac",
       Self::OGG => "ogg",
-      Self::WEBM => "webm"
+      Self::WEBM => "webm",
     }
   }
 }
@@ -62,7 +61,6 @@ impl Display for Format {
     write!(f, "{}", self.as_str())
   }
 }
-
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FfmpegConfig {
@@ -77,39 +75,38 @@ pub struct FfmpegConfig {
   pub channels: u8,
   pub novideo: bool,
   pub threads: u8,
-  pub readrate: bool
+  pub readrate: bool,
 }
 
 impl FfmpegConfig {
-  
   /// path to ffmpeg bin
   pub const BIN: &'static str = "ffmpeg";
-  
+
   /// log level
   pub const LOGLEVEL: LogLevel = LogLevel::Error;
-  
+
   /// output bitrate
   pub const KBITRATE: u16 = 128;
   pub const KMINRATE: u16 = Self::KBITRATE;
   pub const KMAXRATE: u16 = Self::KBITRATE;
   pub const KBUFSIZE: u16 = Self::KBITRATE;
-  
+
   // output format
   pub const FORMAT: Format = Format::MP3;
-  
+
   // output frequency
   pub const FREQ: u16 = 44100;
-  
+
   /// output number of channels
   pub const CHANNELS: u8 = 2;
-  
+
   /// number of threads to use
   pub const THREADS: u8 = 1;
-  
+
   /// disable video output
   pub const NOVIDEO: bool = true;
-  
-  /// whether to read input at play rate or not 
+
+  /// whether to read input at play rate or not
   pub const READRATE: bool = false;
 }
 
@@ -134,23 +131,19 @@ impl Default for FfmpegConfig {
 
 #[derive(Default, Debug)]
 pub struct Ffmpeg {
-  config: FfmpegConfig
+  config: FfmpegConfig,
 }
 
 impl Ffmpeg {
-
   pub fn new() -> Self {
     Self::default()
   }
 
   pub fn with_config(config: FfmpegConfig) -> Self {
-    Self {
-      config
-    }
+    Self { config }
   }
 
   pub fn spawn(self) -> Result<FfmpegSpawn, std::io::Error> {
-
     let mut cmd = Command::new(self.config.bin);
 
     if self.config.readrate {
@@ -164,12 +157,12 @@ impl Ffmpeg {
     // format
     cmd.arg("-f");
     cmd.arg(self.config.format.as_str());
-    
+
     // no video
     if self.config.novideo {
       cmd.arg("-vn");
     }
-  
+
     // channels
     cmd.arg("-ac");
     cmd.arg(self.config.channels.to_string());
@@ -213,7 +206,7 @@ impl Ffmpeg {
     let stdin = child.stdin.take().unwrap();
     let stderr = child.stderr.take().unwrap();
     let stdout = child.stdout.take().unwrap();
-    
+
     Ok(FfmpegSpawn {
       config: self.config,
       child,
@@ -221,7 +214,6 @@ impl Ffmpeg {
       stderr,
       stdout,
     })
-
   }
 
   pub fn config(&self) -> &FfmpegConfig {
@@ -234,5 +226,5 @@ pub struct FfmpegSpawn {
   pub child: Child,
   pub stdin: ChildStdin,
   pub stderr: ChildStderr,
-  pub stdout: ChildStdout
+  pub stdout: ChildStdout,
 }

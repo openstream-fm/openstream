@@ -1,8 +1,8 @@
-use serde::{de::Error, Serializer, Deserializer, Serialize, Deserialize};
-use bytes::Bytes;
-use bson::Binary;
-use std::sync::Arc;
 use base64;
+use bson::Binary;
+use bytes::Bytes;
+use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
+use std::sync::Arc;
 
 /**
  * Trait for types that can be de/serialized to/from bytes
@@ -14,7 +14,6 @@ pub trait SerdeBytes: Sized {
 }
 
 impl SerdeBytes for Bytes {
-  
   fn from_bson_binary(src: Binary) -> Self {
     Self::from(src.bytes)
   }
@@ -30,9 +29,8 @@ impl SerdeBytes for Bytes {
 }
 
 impl SerdeBytes for Vec<u8> {
-  
   fn from_bson_binary(src: Binary) -> Self {
-    src.bytes   
+    src.bytes
   }
 
   fn from_base64(src: &str) -> Result<Self, base64::DecodeError> {
@@ -80,7 +78,10 @@ pub fn deserialize<'de, D: Deserializer<'de>, T: SerdeBytes>(de: D) -> Result<T,
     let helper: &str = Deserialize::deserialize(de)?;
     match T::from_base64(helper) {
       Ok(v) => Ok(v),
-      Err(e) => Err(D::Error::custom(format!("Cannot decode binary as base64: ({})", e)))
+      Err(e) => Err(D::Error::custom(format!(
+        "Cannot decode binary as base64: ({})",
+        e
+      ))),
     }
   } else {
     let bin: Binary = Deserialize::deserialize(de)?;

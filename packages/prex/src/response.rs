@@ -1,8 +1,8 @@
 use hyper;
-use hyper::StatusCode;
-use hyper::Body;
 use hyper::header;
 use hyper::header::HeaderValue;
+use hyper::Body;
+use hyper::StatusCode;
 
 use std::ops::{Deref, DerefMut};
 
@@ -13,7 +13,7 @@ pub struct Parts {
   pub response: hyper::Response<Body>,
   pub error: Option<Box<dyn Error + Send + 'static>>,
   pub content_type: Option<HeaderValue>,
-  pub charset: Option<HeaderValue>
+  pub charset: Option<HeaderValue>,
 }
 
 #[derive(Debug)]
@@ -21,11 +21,10 @@ pub struct Response {
   pub(crate) response: hyper::Response<Body>,
   pub(crate) error: Option<Box<dyn Error + Send + 'static>>,
   content_type: Option<HeaderValue>,
-  charset: Option<HeaderValue>
+  charset: Option<HeaderValue>,
 }
 
 impl Response {
-  
   #[inline]
   pub fn into_parts(self) -> Parts {
     Parts {
@@ -42,7 +41,7 @@ impl Response {
       response: parts.response,
       error: parts.error,
       content_type: parts.content_type,
-      charset: parts.charset
+      charset: parts.charset,
     }
   }
 
@@ -60,7 +59,9 @@ impl Response {
 
   pub fn redirect(status: impl Into<StatusCode>, location: impl Into<HeaderValue>) -> Self {
     let mut response = Self::new(status.into());
-    response.headers_mut().insert(header::LOCATION, location.into());
+    response
+      .headers_mut()
+      .insert(header::LOCATION, location.into());
     response
   }
 
@@ -118,7 +119,7 @@ impl Response {
   }
 
   #[inline]
-  pub fn set_charset(&mut self, value: impl Into<HeaderValue>) ->  &mut Self {
+  pub fn set_charset(&mut self, value: impl Into<HeaderValue>) -> &mut Self {
     *self.charset_mut() = Some(value.into());
     self
   }
@@ -150,11 +151,10 @@ impl<T: Into<Response>, E: Into<Response>> From<Result<T, E>> for Response {
   fn from(r: Result<T, E>) -> Self {
     match r {
       Ok(r) => r.into(),
-      Err(e) => e.into()
+      Err(e) => e.into(),
     }
   }
 }
-
 
 impl<S: Into<StatusCode>, B: Into<Body>> From<(S, B)> for Response {
   fn from(r: (S, B)) -> Self {
@@ -191,18 +191,22 @@ impl Into<hyper::Response<Body>> for Response {
     let charset = self.charset().map(|v| v.clone());
     let mut response = self.response;
     match (content_type, charset) {
-      (Some(content_type), Some(charset)) => {
-        match (content_type.to_str(), charset.to_str()) {
-          (Ok(content_type), Ok(charset)) => {
-            response.headers_mut().insert(header::CONTENT_TYPE, HeaderValue::from_str(format!("{};charset={}", content_type, charset).as_str()).unwrap());
-          },
-          _ => {}
+      (Some(content_type), Some(charset)) => match (content_type.to_str(), charset.to_str()) {
+        (Ok(content_type), Ok(charset)) => {
+          response.headers_mut().insert(
+            header::CONTENT_TYPE,
+            HeaderValue::from_str(format!("{};charset={}", content_type, charset).as_str())
+              .unwrap(),
+          );
         }
+        _ => {}
       },
 
       (Some(content_type), None) => {
-        response.headers_mut().insert(header::CONTENT_TYPE, content_type.clone());
-      },
+        response
+          .headers_mut()
+          .insert(header::CONTENT_TYPE, content_type.clone());
+      }
       _ => {}
     }
 

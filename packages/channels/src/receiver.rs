@@ -18,29 +18,32 @@ use crate::SUBSCRIBER_COUNT;
  */
 pub struct Receiver {
   #[allow(unused)]
-  pub(crate) channel_id: String,  
+  pub(crate) channel_id: String,
   pub(crate) receiver: broadcast::Receiver<Bytes>,
   // this is an owned copy of the burst at subscription time (Bytes instances are copied by reference)
-  pub(crate) burst: Deque<Bytes, STREAM_BURST_LENGTH>
+  pub(crate) burst: Deque<Bytes, STREAM_BURST_LENGTH>,
 }
 
 impl Receiver {
-    /**
-     * Receive the next Bytes value
-     * first the internal burst of the channel will be drained
-     * and then the broadcasting channel will be called to get new values
-     */
-    pub async fn recv(&mut self) -> Result<Bytes, RecvError> {
-        match self.burst.pop_front() {
-            Some(bytes) => Ok(bytes),
-            None => self.receiver.recv().await
-        }
+  /**
+   * Receive the next Bytes value
+   * first the internal burst of the channel will be drained
+   * and then the broadcasting channel will be called to get new values
+   */
+  pub async fn recv(&mut self) -> Result<Bytes, RecvError> {
+    match self.burst.pop_front() {
+      Some(bytes) => Ok(bytes),
+      None => self.receiver.recv().await,
     }
+  }
 }
 
 impl Drop for Receiver {
   fn drop(&mut self) {
-    let count = SUBSCRIBER_COUNT.fetch_sub(1, Ordering::SeqCst) - 1; 
-    println!("[channels] subscriber dropped for channel {} => {} subscribers", self.channel_id, count);
+    let count = SUBSCRIBER_COUNT.fetch_sub(1, Ordering::SeqCst) - 1;
+    println!(
+      "[channels] subscriber dropped for channel {} => {} subscribers",
+      self.channel_id, count
+    );
   }
 }

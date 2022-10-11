@@ -1,25 +1,19 @@
 use regex::Regex;
 use std::time::Duration;
 
-use hyper::Method;
-use hyper::StatusCode;
 use hyper::header::HeaderValue;
 use hyper::header::{
-  ACCESS_CONTROL_ALLOW_ORIGIN,
-  ACCESS_CONTROL_ALLOW_METHODS,
-  ACCESS_CONTROL_ALLOW_CREDENTIALS,
-  ACCESS_CONTROL_ALLOW_HEADERS,
-  ACCESS_CONTROL_EXPOSE_HEADERS,
-  ACCESS_CONTROL_MAX_AGE,
-  ALLOW,
-  ORIGIN,
-  VARY,
+  ACCESS_CONTROL_ALLOW_CREDENTIALS, ACCESS_CONTROL_ALLOW_HEADERS, ACCESS_CONTROL_ALLOW_METHODS,
+  ACCESS_CONTROL_ALLOW_ORIGIN, ACCESS_CONTROL_EXPOSE_HEADERS, ACCESS_CONTROL_MAX_AGE, ALLOW,
+  ORIGIN, VARY,
 };
+use hyper::Method;
+use hyper::StatusCode;
 
 use crate::handler::Handler;
+use crate::Next;
 use crate::Request;
 use crate::Response;
-use crate::Next;
 
 use async_trait::async_trait;
 
@@ -27,7 +21,7 @@ pub struct Cors {
   allow_origin: AllowOrigin,
   allow_methods: Option<HeaderValue>,
   allow_headers: Option<HeaderValue>,
-  expose_headers: Option<HeaderValue>,  
+  expose_headers: Option<HeaderValue>,
   allow_credentials: HeaderValue,
   max_age: HeaderValue,
 }
@@ -43,11 +37,12 @@ fn has_vary(header: &str, value: &str) -> bool {
 }
 
 fn add_vary(res: &mut Response, value: &'static str) {
-  
   let vary = res.headers().get(VARY).map(|v| v.clone());
 
   if vary.is_none() {
-    res.headers_mut().insert(VARY, HeaderValue::from_static(value));
+    res
+      .headers_mut()
+      .insert(VARY, HeaderValue::from_static(value));
     return;
   }
 
@@ -76,14 +71,18 @@ impl Handler for Cors {
       let mut res = Response::new(StatusCode::OK);
       match &self.allow_origin {
         AllowOrigin::Fixed(v) => {
-          res.headers_mut().insert(ACCESS_CONTROL_ALLOW_ORIGIN, v.clone());
-        },
+          res
+            .headers_mut()
+            .insert(ACCESS_CONTROL_ALLOW_ORIGIN, v.clone());
+        }
         AllowOrigin::Variable(v) => {
           add_vary(&mut res, "origin");
           if let Some(origin_header) = req.headers().get(ORIGIN) {
             if let Ok(origin) = origin_header.to_str() {
               if v.allow(origin) {
-                res.headers_mut().insert(ACCESS_CONTROL_ALLOW_ORIGIN, origin_header.clone());
+                res
+                  .headers_mut()
+                  .insert(ACCESS_CONTROL_ALLOW_ORIGIN, origin_header.clone());
               }
             }
           }
@@ -93,7 +92,6 @@ impl Handler for Cors {
       if let Some(v) = self.allow_methods.as_ref().map(|v| v.clone()) {
         res.headers_mut().insert(ALLOW, v.clone());
         res.headers_mut().insert(ACCESS_CONTROL_ALLOW_METHODS, v);
-
       }
 
       if let Some(v) = self.allow_headers.as_ref().map(|v| v.clone()) {
@@ -104,27 +102,36 @@ impl Handler for Cors {
         res.headers_mut().insert(ACCESS_CONTROL_EXPOSE_HEADERS, v);
       }
 
-      res.headers_mut().insert(ACCESS_CONTROL_ALLOW_CREDENTIALS, self.allow_credentials.clone());
+      res.headers_mut().insert(
+        ACCESS_CONTROL_ALLOW_CREDENTIALS,
+        self.allow_credentials.clone(),
+      );
 
-      res.headers_mut().insert(ACCESS_CONTROL_MAX_AGE, self.max_age.clone());
+      res
+        .headers_mut()
+        .insert(ACCESS_CONTROL_MAX_AGE, self.max_age.clone());
 
-      return res
+      return res;
     }
 
     let origin = req.headers().get(ORIGIN).map(|v| v.clone());
 
     let mut res = next.run(req).await;
-    
+
     match &self.allow_origin {
       AllowOrigin::Fixed(v) => {
-        res.headers_mut().insert(ACCESS_CONTROL_ALLOW_ORIGIN, v.clone());
-      },
+        res
+          .headers_mut()
+          .insert(ACCESS_CONTROL_ALLOW_ORIGIN, v.clone());
+      }
       AllowOrigin::Variable(v) => {
         add_vary(&mut res, "origin");
         if let Some(origin_header) = origin {
           if let Ok(origin_str) = origin_header.to_str() {
             if v.allow(origin_str) {
-              res.headers_mut().insert(ACCESS_CONTROL_ALLOW_ORIGIN, origin_header.clone());
+              res
+                .headers_mut()
+                .insert(ACCESS_CONTROL_ALLOW_ORIGIN, origin_header.clone());
             }
           }
         }
@@ -170,7 +177,7 @@ impl Cors {
   pub fn allow_credentials(mut self, v: bool) -> Self {
     self.allow_credentials = match v {
       true => HeaderValue::from_static("true"),
-      false => HeaderValue::from_static("false")
+      false => HeaderValue::from_static("false"),
     };
     self
   }
@@ -180,7 +187,6 @@ impl Cors {
     self
   }
 }
-
 
 pub trait IntoHeaderValueOption {
   fn into_header_value_option(self) -> Option<HeaderValue>;
@@ -210,8 +216,6 @@ impl IntoHeaderValueOption for &'static str {
   }
 }
 
-
-
 pub trait VariableAllowOrigin: Send + Sync + 'static {
   fn allow(&self, origin: &str) -> bool;
 }
@@ -226,7 +230,7 @@ impl VariableAllowOrigin for Vec<String> {
   fn allow(&self, origin: &str) -> bool {
     for item in self.iter() {
       if item == origin {
-        return true
+        return true;
       }
     }
     false
@@ -237,7 +241,7 @@ impl VariableAllowOrigin for Vec<&'static str> {
   fn allow(&self, origin: &str) -> bool {
     for item in self.iter() {
       if item == &origin {
-        return true
+        return true;
       }
     }
     false
@@ -245,7 +249,9 @@ impl VariableAllowOrigin for Vec<&'static str> {
 }
 
 impl<F> VariableAllowOrigin for F
-where F: Send + Sync + 'static + Fn(&str) -> bool {
+where
+  F: Send + Sync + 'static + Fn(&str) -> bool,
+{
   fn allow(&self, origin: &str) -> bool {
     (self)(origin)
   }
@@ -253,7 +259,7 @@ where F: Send + Sync + 'static + Fn(&str) -> bool {
 
 pub enum AllowOrigin {
   Fixed(HeaderValue),
-  Variable(Box<dyn VariableAllowOrigin>)
+  Variable(Box<dyn VariableAllowOrigin>),
 }
 
 pub trait IntoAllowOrigin {
@@ -262,8 +268,10 @@ pub trait IntoAllowOrigin {
 
 impl IntoAllowOrigin for String {
   fn into_allow_origin(self) -> AllowOrigin {
-    AllowOrigin::Fixed(HeaderValue::from_str(&self).expect("Invalid header value in cors.allow_origin()"))
-  }  
+    AllowOrigin::Fixed(
+      HeaderValue::from_str(&self).expect("Invalid header value in cors.allow_origin()"),
+    )
+  }
 }
 
 impl IntoAllowOrigin for &'static str {
@@ -296,8 +304,10 @@ impl IntoAllowOrigin for Regex {
   }
 }
 
-impl<F> IntoAllowOrigin for F 
-where F: Send + Sync + 'static + Fn(&str) -> bool {
+impl<F> IntoAllowOrigin for F
+where
+  F: Send + Sync + 'static + Fn(&str) -> bool,
+{
   fn into_allow_origin(self) -> AllowOrigin {
     AllowOrigin::Variable(Box::new(self))
   }

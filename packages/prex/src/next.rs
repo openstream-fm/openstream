@@ -1,6 +1,6 @@
+use crate::endpoint::Endpoint;
 use crate::request::Request;
 use crate::response::Response;
-use crate::endpoint::Endpoint;
 
 use std::sync::Arc;
 

@@ -1,7 +1,7 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-use serde_util::datetime;
 use chrono::{DateTime, Utc};
+use serde_util::datetime;
 
 use crate::model;
 
@@ -9,16 +9,16 @@ pub const CL_NAME: &str = "accounts";
 pub const UID_LEN: usize = 8;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all="camelCase")]
+#[serde(rename_all = "camelCase")]
 pub struct Account {
-  #[serde(rename="_id")]
+  #[serde(rename = "_id")]
   id: String,
   name: String,
   email: String,
   password: Option<String>,
-  #[serde(with="datetime")]
+  #[serde(with = "datetime")]
   created_at: DateTime<Utc>,
-  #[serde(with="datetime")]
+  #[serde(with = "datetime")]
   updated_at: DateTime<Utc>,
 }
 

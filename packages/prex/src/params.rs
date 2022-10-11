@@ -9,7 +9,6 @@ pub struct Params {
 }
 
 impl Params {
-  
   #[inline]
   pub fn new() -> Self {
     Self::default()
@@ -34,7 +33,6 @@ impl Params {
 }
 
 impl Index<&str> for Params {
-
   type Output = str;
 
   #[inline]

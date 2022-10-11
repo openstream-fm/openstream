@@ -1,8 +1,8 @@
+use bytes::{Bytes, BytesMut};
+use pin_project::pin_project;
+use std::task::Poll;
 use tokio::io::{AsyncRead, ReadBuf};
 use tokio_stream::Stream;
-use bytes::{Bytes, BytesMut};
-use std::task::Poll;
-use pin_project::pin_project;
 
 pub trait IntoTryBytesStream<R> {
   fn into_bytes_stream(self, chunk_size: usize) -> TryBytesStream<R>;
@@ -27,14 +27,13 @@ pub struct TryBytesStream<R> {
   /// size for each Bytes item in the stream
   /// expect for the last one that may have less
   chunk_size: usize,
-  
+
   #[pin]
   inner: R,
 }
 
 impl<R: AsyncRead> TryBytesStream<R> {
   pub fn from(inner: R, chunk_size: usize) -> Self {
-    
     assert!(chunk_size != 0, "chunk_size cannot be 0");
 
     Self {
@@ -54,17 +53,16 @@ impl<R: AsyncRead> TryBytesStream<R> {
   }
 }
 
-
 impl<R: AsyncRead> Stream for TryBytesStream<R> {
-  
   type Item = Result<Bytes, std::io::Error>;
 
-  fn poll_next(self: std::pin::Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> std::task::Poll<Option<Self::Item>> {
-
+  fn poll_next(
+    self: std::pin::Pin<&mut Self>,
+    cx: &mut std::task::Context<'_>,
+  ) -> std::task::Poll<Option<Self::Item>> {
     let mut this = self.project();
 
     'outer: loop {
-    
       if this.buf.len() >= *this.chunk_size {
         let buf = this.buf.split_to(*this.chunk_size);
         let bytes = buf.freeze();
@@ -85,13 +83,12 @@ impl<R: AsyncRead> Stream for TryBytesStream<R> {
       let mut read_buf = ReadBuf::new(&mut slice);
 
       match this.inner.as_mut().poll_read(cx, &mut read_buf) {
-        
         Poll::Pending => return Poll::Pending,
-        
+
         Poll::Ready(Err(e)) => {
           *this.state = State::Closed;
           return Poll::Ready(Some(Err(e)));
-        },
+        }
 
         Poll::Ready(Ok(())) => {
           let filled = read_buf.filled();
@@ -110,15 +107,14 @@ impl<R: AsyncRead> Stream for TryBytesStream<R> {
 
 #[cfg(test)]
 mod test {
-  
+
   use std::io::Cursor;
   use tokio_stream::StreamExt;
 
-use super::*;
+  use super::*;
 
   #[tokio::test]
-  async fn into_bytes_stream () {
-    
+  async fn into_bytes_stream() {
     // (chunks_size, full_chunks, remaining)
     let values = [
       (1, 1, 0),
@@ -136,9 +132,9 @@ use super::*;
       let result: Vec<Bytes> = stream.collect().await;
 
       let expected = {
-        let mut vec = vec![Bytes::from(vec![0u8;chunk_size]);full_chunks];
+        let mut vec = vec![Bytes::from(vec![0u8; chunk_size]); full_chunks];
         if remaining != 0 {
-          vec.push(Bytes::from(vec![0u8;remaining]));
+          vec.push(Bytes::from(vec![0u8; remaining]));
         }
         vec
       };
