@@ -3,6 +3,8 @@ members = [
     "bin/bin",
     "bin/producer",
 
+    "config/constants",
+
     "packages/source",
     "packages/source-hyper",
     "packages/stream",

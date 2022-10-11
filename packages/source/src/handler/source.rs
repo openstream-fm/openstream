@@ -1,7 +1,7 @@
+use constants::STREAM_CHUNK_SIZE;
 use debug_print::debug_println;
 use ffmpeg::{FfmpegSpawn, FfmpegConfig, Ffmpeg};
 use hyper::{header::{CONTENT_LENGTH, CONTENT_TYPE}, Version, StatusCode, HeaderMap, Method};
-use stream_util::{IntoTryBytesStream, IntoTryBytesStreamRated};
 use tokio::{net::TcpStream, io::{AsyncWriteExt, AsyncReadExt}};
 use tokio_stream::StreamExt;
 
@@ -43,7 +43,12 @@ pub async fn source(mut socket: TcpStream, head: RequestHead, leading_buf: Vec<u
     }
   };
 
-  let ff_spawn  = match Ffmpeg::with_config(FfmpegConfig::default()).spawn() {
+  let ffmpeg_config = FfmpegConfig {
+    readrate: true,
+    ..FfmpegConfig::default()
+  };
+
+  let ff_spawn  = match Ffmpeg::with_config(ffmpeg_config).spawn() {
     
     Err(_) => {
 
@@ -154,12 +159,15 @@ pub async fn source(mut socket: TcpStream, head: RequestHead, leading_buf: Vec<u
   });
   
   let _broadcast_handle = {
+
+    use stream_util::*;
     
     let id = id.clone();
     
     tokio::spawn(async move {
-      
-      let stream = stdout.into_bytes_stream(16 * 1024).rated(16 * 1024);
+    
+
+      let stream = stdout.into_bytes_stream(STREAM_CHUNK_SIZE);
       
       tokio::pin!(stream);
       

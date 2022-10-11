@@ -219,6 +219,7 @@ name = "channels"
 version = "0.1.0"
 dependencies = [
  "bytes",
+ "constants",
  "heapless",
  "parking_lot 0.12.1",
  "static_init",
@@ -250,6 +251,10 @@ dependencies = [
  "crypto-common",
  "inout",
 ]
+
+[[package]]
+name = "constants"
+version = "0.1.0"
 
 [[package]]
 name = "core-foundation-sys"
@@ -1532,6 +1537,7 @@ version = "0.1.0"
 dependencies = [
  "bytes",
  "channels",
+ "constants",
  "debug_print",
  "ffmpeg",
  "hyper",
@@ -1550,6 +1556,7 @@ version = "0.1.0"
 dependencies = [
  "bytes",
  "channels",
+ "constants",
  "ffmpeg",
  "hyper",
  "prex",

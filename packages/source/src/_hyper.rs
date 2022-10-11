@@ -189,7 +189,12 @@ async fn source(req: Request, _next: Next) -> prex::Response {
     // need cloning here because of 'static requirements of future
     let id = id.to_string();
 
-    let ff_spawn  = match Ffmpeg::with_config(FfmpegConfig::default()).spawn() {
+    let ffmpeg_config = FfmpegConfig {
+        readrate: true,
+        ..FfmpegConfig::default()
+    };
+
+    let ff_spawn  = match Ffmpeg::with_config(ffmpeg_config).spawn() {
         Err(_) => {
             // FORBIDEN (403) is used to communicate all sorts of errors
             let mut res = Response::new(StatusCode::INTERNAL_SERVER_ERROR);
@@ -211,7 +216,8 @@ async fn source(req: Request, _next: Next) -> prex::Response {
         use stream_util::*;
         use tokio_stream::StreamExt;
         
-        let chunks = stdout.into_bytes_stream(8 * 1024).rated(config.kbitrate as usize / 8 * 1024);
+        let chunks = stdout.into_bytes_stream(STREAM_CHUNK_SIZE);
+        
         tokio::pin!(chunks);
 
         loop {

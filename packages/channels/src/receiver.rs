@@ -4,9 +4,9 @@ use bytes::Bytes;
 use heapless::Deque;
 use tokio::sync::broadcast::{self, error::RecvError};
 
-use crate::SUBSCRIBER_COUNT;
+use constants::STREAM_BURST_LENGTH;
 
-use super::BURST_LEN;
+use crate::SUBSCRIBER_COUNT;
 
 #[derive(Debug)]
 /**
@@ -21,7 +21,7 @@ pub struct Receiver {
   pub(crate) channel_id: String,  
   pub(crate) receiver: broadcast::Receiver<Bytes>,
   // this is an owned copy of the burst at subscription time (Bytes instances are copied by reference)
-  pub(crate) burst: Deque<Bytes, BURST_LEN>
+  pub(crate) burst: Deque<Bytes, STREAM_BURST_LENGTH>
 }
 
 impl Receiver {
@@ -31,7 +31,7 @@ impl Receiver {
      * and then the broadcasting channel will be called to get new values
      */
     pub async fn recv(&mut self) -> Result<Bytes, RecvError> {
-        match self.burst.pop_back() {
+        match self.burst.pop_front() {
             Some(bytes) => Ok(bytes),
             None => self.receiver.recv().await
         }

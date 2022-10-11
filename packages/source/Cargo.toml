@@ -18,5 +18,6 @@ tokio-stream = "0.1.10"
 debug_print = "1.0.0"
 regex_static = "0.1.1"
 channels = { path = "../channels" }
+constants = { version = "0.1.0", path = "../../config/constants" }
 
 [features]

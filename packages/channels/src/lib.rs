@@ -12,12 +12,7 @@ mod transmitter;
 pub use receiver::Receiver;
 pub use transmitter::Transmitter;
 
-/** 
- * Size of the burst in items
- * burst size in bytes will be <= (BURST_LEN * CHUNK_SIZE)
- */
-pub const BURST_LEN: usize = 12;
-pub const CHANNEL_CAPACITY: usize = 12;
+use constants::{STREAM_CHANNNEL_CAPACITY, STREAM_BURST_LENGTH};
 
 #[dynamic]
 pub(crate) static CHANNELS: RwLock<HashMap<String, Channel>> = RwLock::new(HashMap::new());
@@ -27,7 +22,7 @@ pub(crate) static SUBSCRIBER_COUNT: AtomicUsize = AtomicUsize::new(0);
 pub struct Channel {
     #[allow(unused)]
     id: String,
-    burst: Deque<Bytes, BURST_LEN>,
+    burst: Deque<Bytes, STREAM_BURST_LENGTH>,
     sender: broadcast::Sender<Bytes>,
 }
 
@@ -42,7 +37,7 @@ pub fn transmit(id: String) -> Option<Transmitter> {
             Entry::Occupied(_) => return None,
             
             Entry::Vacant(entry) => {
-                let (sender, _) = channel(CHANNEL_CAPACITY);
+                let (sender, _) = channel(STREAM_CHANNNEL_CAPACITY);
                 let channel = Channel {
                     id: id.clone(),
                     sender: sender.clone(),

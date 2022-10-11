@@ -13,10 +13,10 @@ impl Transmitter {
         {
             if let Some(channel) = CHANNELS.write().get_mut(self.id.as_str()) {
                 if channel.burst.is_full() {
-                    channel.burst.pop_back();
+                    channel.burst.pop_front();
                 }
                 // since we just removed one item, this will never fail
-                channel.burst.push_front(bytes.clone()).expect("burst append");
+                channel.burst.push_back(bytes.clone()).expect("burst append");
             }
         }
 

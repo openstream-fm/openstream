@@ -77,20 +77,40 @@ pub struct FfmpegConfig {
   pub channels: u8,
   pub novideo: bool,
   pub threads: u8,
+  pub readrate: bool
 }
 
 impl FfmpegConfig {
+  
+  /// path to ffmpeg bin
   pub const BIN: &'static str = "ffmpeg";
+  
+  /// log level
   pub const LOGLEVEL: LogLevel = LogLevel::Error;
+  
+  /// output bitrate
   pub const KBITRATE: u16 = 128;
   pub const KMINRATE: u16 = Self::KBITRATE;
   pub const KMAXRATE: u16 = Self::KBITRATE;
   pub const KBUFSIZE: u16 = Self::KBITRATE;
+  
+  // output format
   pub const FORMAT: Format = Format::MP3;
+  
+  // output frequency
   pub const FREQ: u16 = 44100;
+  
+  /// output number of channels
   pub const CHANNELS: u8 = 2;
+  
+  /// number of threads to use
   pub const THREADS: u8 = 1;
+  
+  /// disable video output
   pub const NOVIDEO: bool = true;
+  
+  /// whether to read input at play rate or not 
+  pub const READRATE: bool = false;
 }
 
 impl Default for FfmpegConfig {
@@ -107,6 +127,7 @@ impl Default for FfmpegConfig {
       channels: Self::CHANNELS,
       threads: Self::THREADS,
       novideo: Self::NOVIDEO,
+      readrate: Self::READRATE,
     }
   }
 }
@@ -131,6 +152,10 @@ impl Ffmpeg {
   pub fn spawn(self) -> Result<FfmpegSpawn, std::io::Error> {
 
     let mut cmd = Command::new(self.config.bin);
+
+    if self.config.readrate {
+      cmd.arg("-re");
+    }
 
     // input
     cmd.arg("-i");

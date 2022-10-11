@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 bytes = "1.2.1"
+constants = { version = "0.1.0", path = "../../config/constants" }
 heapless = "0.7.16"
 parking_lot = "0.12.1"
 static_init = "1.0.3"
