@@ -11,3 +11,4 @@ hyper = { version = "0.14.20", features = ["full"] }
 prex = { version = "0.1.0", path = "../prex" }
 tokio = { version = "1.21.2", features = ["full"] }
 channels = { path = "../channels" }
+log = "0.4.17"
