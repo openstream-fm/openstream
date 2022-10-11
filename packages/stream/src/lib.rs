@@ -1,8 +1,8 @@
 use hyper::{header::CONTENT_TYPE, http::HeaderValue, Body, Server, StatusCode};
+use log::*;
 use prex::{Next, Request, Response};
 use std::future::Future;
 use std::net::SocketAddr;
-
 use tokio::sync::broadcast::error::RecvError;
 
 pub fn start() -> impl Future<Output = ()> + Send + Sync + 'static {
