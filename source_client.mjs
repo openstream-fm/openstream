@@ -3,11 +3,23 @@ import { readFileSync } from "fs";
 import net from "net";
 import { setTimeout } from "timers/promises";
 
-const file = readFileSync("./audio.aac");
+const file = readFileSync("./audio.mp3");
+
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const write = async (socket, data) => {
   socket.write(data);
   await once(socket, "drain");
+}
+
+const chunks = function * (buffer, size) {
+  let start = 0;
+  while(true) {
+    if (start >= buffer.length) return;
+    let chunk = buffer.subarray(start, start + size);
+    start = start + size;
+    yield chunk;
+  }
 }
 
 /*
@@ -64,7 +76,15 @@ const client = async (id) => {
 
     while(true) {
       console.log(`> @FILE => ${id}`);
-      await write(socket, file);
+      const start = Date.now();
+      const byterate = 16 * 1024;
+      let written = 0;
+      for (const chunk of chunks(buffer, 1024)) {
+        await write(socket, chunk);
+        written += chunk.length;
+        const until = start + ((written / byterate) * 1000);
+        await sleep(until - Date.now());
+      }
     }
   })
 }
