@@ -126,6 +126,7 @@ dependencies = [
 name = "bin"
 version = "0.1.0"
 dependencies = [
+ "log",
  "logger",
  "source",
  "source-hyper",
