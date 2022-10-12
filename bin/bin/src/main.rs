@@ -1,11 +1,19 @@
 use log::*;
 
-#[tokio::main]
-async fn main() {
+fn main() {
   proctitle::set_title("openstream-rs");
 
   logger::init();
 
+  let rt = tokio::runtime::Builder::new_multi_thread()
+    .enable_all()
+    .build()
+    .unwrap();
+
+  rt.block_on(tokio_main())
+}
+
+async fn tokio_main() {
   info!("openstream process started");
 
   let handle1 = tokio::spawn(source::start(([0, 0, 0, 0], 20500)));
