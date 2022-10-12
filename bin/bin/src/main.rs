@@ -2,6 +2,8 @@ use log::*;
 
 #[tokio::main]
 async fn main() {
+  proctitle::set_title("openstream-rs");
+
   logger::init();
 
   info!("openstream process started");

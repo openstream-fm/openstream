@@ -12,3 +12,4 @@ source-hyper = { path = "../../packages/source-hyper" }
 stream = { path = "../../packages/stream" }
 logger = { path = "../../packages/logger" }
 log = "0.4.17"
+proctitle = "0.1.1"
