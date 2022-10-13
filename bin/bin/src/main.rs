@@ -1,12 +1,11 @@
 use log::*;
 
 fn main() {
-  libuv::setup_args().expect("libuv setup args");
-  libuv::set_process_title("openstream-rs").expect("libuv set process title");
+  //libuv::setup_args().expect("libuv setup args");
+  //libuv::set_process_title("openstream-rs").expect("libuv set process title");
   //let title = libuv::get_process_title().expect("libuv get process title");
 
-  //println!("process title set to: {}", title);
-  //proctitle::set_title("openstream-rs");
+  proctitle::set_title("openstream-rs");
 
   logger::init();
 
