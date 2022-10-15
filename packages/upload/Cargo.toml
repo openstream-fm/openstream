@@ -6,3 +6,16 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+bytes = "1.2.1"
+chrono = "0.4.22"
+constants = { version = "0.1.0", path = "../../config/constants" }
+db = { version = "0.1.0", path = "../db" }
+hex = "0.4.3"
+log = "0.4.17"
+md-5 = "0.10.5"
+mongodb = "2.3.1"
+stream-util = { version = "0.1.0", path = "../stream-util" }
+tokio = { version = "1.21.2", features = ["full"] }
+tokio-stream = "0.1.11"
+
+[features]

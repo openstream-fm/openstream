@@ -5,14 +5,16 @@ members = [
 
     "config/constants",
 
-    "packages/source",
-    "packages/source-hyper",
+    "packages/stream",
+    "packages/source-alt",
     "packages/stream",
     "packages/upload",
+    "packages/api",
 
     "packages/channels",
     "packages/db",
 
+    "packages/owo",
     "packages/prex",
     "packages/uid",
     "packages/crypt",

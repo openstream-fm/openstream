@@ -8,9 +8,11 @@ edition = "2021"
 [dependencies]
 tokio = { version = "1.21.2", features = ["full"] }
 source = { path = "../../packages/source" }
-source-hyper = { path = "../../packages/source-hyper" }
+source-alt = { path = "../../packages/source-alt" }
 stream = { path = "../../packages/stream" }
 logger = { path = "../../packages/logger" }
 log = "0.4.17"
-proctitle = "0.1.1"
-libuv = "2.5.0"
+
+[features]
+# proctitle = "0.1.1"
+# libuv = "2.5.0"

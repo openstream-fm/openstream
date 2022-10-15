@@ -1,32 +1,34 @@
 use crate::model;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-
 use serde_util::as_f64;
 
-pub const CL_NAME: &str = "audio_files";
+pub const CL_NAME: &str = "audio_file";
 pub const UID_LEN: usize = 12;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AudioFile {
   #[serde(rename = "_id")]
-  id: String,
-  account_id: String,
-  md5: String,
+  pub id: String,
+  pub account_id: String,
+  pub md5: String,
 
   #[serde(with = "as_f64")]
-  size: usize,
-  duration: f64,
+  pub len: usize,
+  pub duration_ms: f64,
   #[serde(with = "as_f64")]
-  rate: usize,
+  pub bytes_sec: usize,
 
   #[serde(with = "as_f64")]
-  chunks: usize,
-
+  pub chunk_count: usize,
   #[serde(with = "as_f64")]
-  chunk_size: usize,
+  pub chunk_len: usize,
 
-  chunk_duration: f64,
+  pub chunk_duration_ms: f64,
+
+  #[serde(with = "serde_util::datetime")]
+  pub created_at: DateTime<Utc>,
 }
 
 model!(AudioFile);

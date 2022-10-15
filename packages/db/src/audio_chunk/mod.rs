@@ -1,5 +1,6 @@
 use crate::model;
 use bytes::Bytes;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_util::as_f64;
 
@@ -10,24 +11,29 @@ pub const UID_LEN: usize = 16;
 #[serde(rename_all = "camelCase")]
 pub struct AudioChunk {
   #[serde(rename = "_id")]
-  id: String,
-  audio_file_id: String,
-  account_id: String,
+  pub id: String,
+  pub audio_file_id: String,
+  pub account_id: String,
 
-  start_time: f64,
-  end_time: f64,
-
-  #[serde(with = "as_f64")]
-  i: usize,
+  pub start_ms: f64,
+  pub end_ms: f64,
 
   #[serde(with = "as_f64")]
-  size: usize,
-  duration: f64,
+  pub i: usize,
+
   #[serde(with = "as_f64")]
-  rate: usize,
+  pub len: usize,
+
+  pub duration_ms: f64,
+
+  #[serde(with = "as_f64")]
+  pub bytes_sec: usize,
 
   #[serde(with = "serde_util::bytes")]
-  data: Bytes,
+  pub data: Bytes,
+
+  #[serde(with = "serde_util::datetime")]
+  pub created_at: DateTime<Utc>,
 }
 
 model!(AudioChunk);

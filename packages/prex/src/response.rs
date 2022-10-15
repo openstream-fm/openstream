@@ -92,6 +92,20 @@ impl Response {
     self
   }
 
+  /// consumes this response returning only the body
+  #[inline]
+  pub fn into_body(self) -> Body {
+    self.response.into_body()
+  }
+
+  /// takes the body if this response replacing it with Body::empty
+  #[inline]
+  pub fn take_body(&mut self) -> Body {
+    let mut body = Body::empty();
+    std::mem::swap(self.body_mut(), &mut body);
+    body
+  }
+
   #[inline]
   pub fn content_type(&self) -> Option<&HeaderValue> {
     self.content_type.as_ref()

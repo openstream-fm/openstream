@@ -7,17 +7,15 @@ edition = "2021"
 
 [dependencies]
 bytes = "1.2.1"
-static_init = "1.0.3"
-tokio = { version = "1.21.2", features = ["full"] }
-ffmpeg = { path = "../ffmpeg" }
-parking_lot = "0.12.1"
-hyper = { version = "0.14.20", features = ["full"] }
-prex = { path = "../prex" }
-stream-util = { path = "../stream-util" }
-tokio-stream = "0.1.10"
-regex_static = "0.1.1"
-channels = { path = "../channels" }
+channels = { version = "0.1.0", path = "../channels" }
 constants = { version = "0.1.0", path = "../../config/constants" }
+ffmpeg = { version = "0.1.0", path = "../ffmpeg" }
+hyper = "0.14.20"
 log = "0.4.17"
+owo = { version = "3.5.0", path = "../owo" }
+prex = { version = "0.1.0", path = "../prex" }
+stream-util = { version = "0.1.0", path = "../stream-util" }
+tokio = { version = "1.21.2", features = ["full"] }
+tokio-stream = "0.1.10"
 
 [features]

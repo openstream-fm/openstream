@@ -1,8 +1,8 @@
+use crate::params::Params;
 use hyper;
+use hyper::Body;
 use std::net::SocketAddr;
 use std::ops::{Deref, DerefMut};
-
-use crate::params::Params;
 
 #[derive(Debug)]
 pub struct Parts {
@@ -35,6 +35,20 @@ impl Request {
       request: self.request,
       params: self.params,
     }
+  }
+
+  /// consumes this request returning only the body
+  #[inline]
+  pub fn into_body(self) -> Body {
+    self.request.into_body()
+  }
+
+  /// takes the body if this request replacing it with Body::empty
+  #[inline]
+  pub fn take_body(&mut self) -> Body {
+    let mut body = Body::empty();
+    std::mem::swap(self.body_mut(), &mut body);
+    body
   }
 
   #[inline]

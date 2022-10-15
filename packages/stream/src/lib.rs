@@ -1,5 +1,6 @@
 use hyper::{header::CONTENT_TYPE, http::HeaderValue, Body, Server, StatusCode};
 use log::*;
+use owo::*;
 use prex::{Next, Request, Response};
 use std::future::Future;
 use std::net::SocketAddr;
@@ -13,7 +14,7 @@ pub fn start() -> impl Future<Output = ()> + Send + Sync + 'static {
   let app = app.build().expect("prex app build stream");
 
   let addr = SocketAddr::from(([0, 0, 0, 0], 20300));
-  info!("stream server bound to {addr}");
+  info!("stream server bound to {}", addr.yellow());
 
   async move {
     let server = Server::try_bind(&addr).expect("hyper bind stream");
