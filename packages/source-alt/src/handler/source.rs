@@ -124,10 +124,10 @@ pub async fn source(
 
   let (mut socket_read, mut socket_write) = socket.into_split();
 
-  let _write_handle = {
+  let write_handle = {
     let id = id.clone();
 
-    tokio::spawn(async move {
+    async move {
       if leading_buf.len() != 0 {
         debug!(
           "[source] channel {id} writing leading_buf to ffmpeg stdin, {} bytes",
@@ -168,21 +168,21 @@ pub async fn source(
       };
 
       result
-    })
+    }
   };
 
-  let stderr_handle = tokio::spawn(async move {
+  let stderr_handle = async move {
     let mut buf = vec![];
     stderr.read_to_end(&mut buf).await?;
     Result::<Vec<u8>, std::io::Error>::Ok(buf)
-  });
+  };
 
-  let _broadcast_handle = {
+  let broadcast_handle = {
     use stream_util::*;
 
     let id = id.clone();
 
-    tokio::spawn(async move {
+    async move {
       let stream = stdout.into_bytes_stream(STREAM_CHUNK_SIZE);
 
       tokio::pin!(stream);
@@ -209,14 +209,17 @@ pub async fn source(
           }
         }
       }
-    })
+    }
   };
 
-  let exit = child.wait().await?;
+  let (status, _broadcast, stderr, _write) =
+    tokio::join!(child.wait(), broadcast_handle, stderr_handle, write_handle);
+
+  let exit = status?;
   debug!("[source] channel {id}: ffmpeg child end: exit {exit}");
 
   if exit.success() {
-    let body = b"Data streamed successfully";
+    let body = b"data streamed successfully";
     let version = Version::HTTP_10;
     let status = StatusCode::OK;
     let mut headers = headers!(2);
@@ -235,15 +238,12 @@ pub async fn source(
 
     Ok(())
   } else {
-    let body = match stderr_handle.await {
-      Err(_) => format!("Internal error allocating stream converter (stderr panic)"),
-      Ok(r) => match r {
-        Err(_) => format!("Internal error allocating stream converter (stderr error)"),
-        Ok(v) => {
-          let stderr_out = String::from_utf8_lossy(v.as_ref());
-          format!("Error converting the audio stream, possibly the audio is corrupted or is using a not supported format: {stderr_out}")
-        }
-      },
+    let body = match stderr {
+      Err(_) => format!("internal error allocating stream converter (stderr 1)"),
+      Ok(v) => {
+        let out = String::from_utf8_lossy(v.as_ref());
+        format!("error converting the audio stream, possibly the audio is corrupted or is using a not supported format: {out}")
+      }
     };
 
     let version = Version::HTTP_10;

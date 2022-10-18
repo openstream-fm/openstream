@@ -135,18 +135,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bin"
-version = "0.1.0"
-dependencies = [
- "log",
- "logger",
- "source",
- "source-alt",
- "stream",
- "tokio",
-]
-
-[[package]]
 name = "bit_field"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -276,6 +264,16 @@ checksum = "d1873270f8f7942c191139cb8a40fd228da6c3fd2fc376d7e92d47aa14aeb59e"
 dependencies = [
  "crypto-common",
  "inout",
+]
+
+[[package]]
+name = "client"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "futures",
+ "hyper",
+ "tokio",
 ]
 
 [[package]]
@@ -418,6 +416,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "dotenv"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77c90badedccf4105eca100756a0b1289e191f6fcbdadd3cee1d2f614f97da8f"
+
+[[package]]
 name = "embedded-hal"
 version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -465,7 +469,9 @@ dependencies = [
 name = "ffmpeg"
 version = "0.1.0"
 dependencies = [
+ "bytes",
  "tokio",
+ "tokio-stream",
 ]
 
 [[package]]
@@ -906,7 +912,9 @@ dependencies = [
 name = "logger"
 version = "0.1.0"
 dependencies = [
+ "log",
  "pretty_env_logger",
+ "sensible-env-logger",
 ]
 
 [[package]]
@@ -1061,6 +1069,19 @@ name = "once_cell"
 version = "1.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e82dad04139b71a90c080c8463fe0dc7902db5192d939bd0950f074d014339e1"
+
+[[package]]
+name = "openstream"
+version = "0.1.0"
+dependencies = [
+ "dotenv",
+ "log",
+ "logger",
+ "source",
+ "source-alt",
+ "stream",
+ "tokio",
+]
 
 [[package]]
 name = "os_info"
@@ -1474,6 +1495,17 @@ name = "semver-parser"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
+
+[[package]]
+name = "sensible-env-logger"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ced68043c576cfe54922c96140aeee81bbf55b419ec61595057ea4301a294f31"
+dependencies = [
+ "chrono",
+ "log",
+ "pretty_env_logger",
+]
 
 [[package]]
 name = "serde"
@@ -2082,6 +2114,7 @@ dependencies = [
  "chrono",
  "constants",
  "db",
+ "ffmpeg",
  "hex",
  "log",
  "md-5",

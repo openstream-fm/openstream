@@ -1,7 +1,8 @@
 [workspace]
 members = [
-    "bin/bin",
+    "bin/openstream",
     "bin/producer",
+    "bin/client",
 
     "config/constants",
 

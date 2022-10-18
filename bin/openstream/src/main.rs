@@ -1,7 +1,10 @@
 use log::*;
 
+static VERSION: &str = env!("CARGO_PKG_VERSION");
+
 fn main() {
   logger::init();
+  let _ = dotenv::dotenv();
 
   let rt = tokio::runtime::Builder::new_multi_thread()
     .enable_all()
@@ -13,15 +16,22 @@ fn main() {
 }
 
 async fn tokio_main() {
-  info!("openstream process started");
+  info!("openstream v{VERSION} process started");
 
-  //let handle1 = tokio::spawn(source::start(([0, 0, 0, 0], 20500)));
+  //let handle1 = tokio::spawn(source_alt::start(([0, 0, 0, 0], 20500)));
   let handle2 = tokio::spawn(source::start());
   let handle3 = tokio::spawn(stream::start());
 
   tokio::select! {
       //r = handle1 => r.expect("source panicked").expect("source errored"),
-      r = handle2 => r.expect("source terminated"),
-      _ = handle3 => panic!("stream terminated"),
+      r = handle2 => {
+        r.expect("source panicked");
+        info!("source terminated");
+      },
+
+      r = handle3 => {
+        r.expect("stream panicked");
+        info!("stream terminated");
+      }
   };
 }

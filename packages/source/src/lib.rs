@@ -26,7 +26,7 @@ pub fn start() -> impl Future<Output = ()> {
     .http1_preserve_header_case(false);
   //.tcp_sleep_on_accept_errors(true);
 
-  info!("hyper source server bound to {}", addr.yellow());
+  info!("source server bound to {}", addr.yellow());
 
   let mut app = prex::prex();
 
@@ -117,18 +117,16 @@ async fn source(mut req: Request, _next: Next) -> prex::Response {
     config: _,
   } = ff_spawn;
 
-  let stderr_handler = {
-    tokio::spawn(async move {
-      let mut data = Vec::new();
-      stderr.read_to_end(&mut data).await?;
-      Result::<Vec<u8>, std::io::Error>::Ok(data)
-    })
+  let stderr_handle = async move {
+    let mut data = Vec::new();
+    stderr.read_to_end(&mut data).await?;
+    Result::<Vec<u8>, std::io::Error>::Ok(data)
   };
 
-  let _stdout_handler = {
+  let stdout_handle = {
     let id = id.clone();
 
-    tokio::spawn(async move {
+    async move {
       use stream_util::*;
       use tokio_stream::StreamExt;
 
@@ -156,10 +154,10 @@ async fn source(mut req: Request, _next: Next) -> prex::Response {
           }
         }
       }
-    })
+    }
   };
 
-  {
+  let write_handle = {
     let id = id.clone();
 
     // move stdin to drop on close
@@ -196,10 +194,14 @@ async fn source(mut req: Request, _next: Next) -> prex::Response {
         }
       }
     }
-    .await;
-  }
+  };
 
-  let exit = match child.wait().await {
+  let status_handle = async move { child.wait().await };
+
+  let (status, _write, _stdout, stderr) =
+    tokio::join!(status_handle, write_handle, stdout_handle, stderr_handle);
+
+  let exit = match status {
     Err(e) => {
       debug!("[source] channel {id}: ffmpeg child error: {e}");
       let mut headers = HeaderMap::with_capacity(1);
@@ -228,16 +230,13 @@ async fn source(mut req: Request, _next: Next) -> prex::Response {
 
     res
   } else {
-    let body = match stderr_handler.await {
+    let body = match stderr {
       Err(_) => format!("internal error allocating stream converter (stderr 1)"),
 
-      Ok(r) => match r {
-        Err(_) => format!("internal error allocating stream converter (stderr 2)"),
-        Ok(v) => {
-          let stderr_out = String::from_utf8_lossy(v.as_ref());
-          format!("error converting the audio stream (exit), possibly the audio is corrupted or is using a not supported format: {stderr_out}")
-        }
-      },
+      Ok(v) => {
+        let out = String::from_utf8_lossy(v.as_ref());
+        format!("error converting the audio stream (exit), possibly the audio is corrupted or is using a not supported format: {out}")
+      }
     };
 
     let body = Body::from(body);

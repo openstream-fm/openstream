@@ -10,6 +10,7 @@ bytes = "1.2.1"
 chrono = "0.4.22"
 constants = { version = "0.1.0", path = "../../config/constants" }
 db = { version = "0.1.0", path = "../db" }
+ffmpeg = { version = "0.1.0", path = "../ffmpeg" }
 hex = "0.4.3"
 log = "0.4.17"
 md-5 = "0.10.5"

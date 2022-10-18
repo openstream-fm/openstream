@@ -2,6 +2,8 @@ use std::fmt::{self, Display, Formatter};
 use std::process::Stdio;
 use tokio::process::{Child, ChildStderr, ChildStdin, ChildStdout, Command};
 
+pub mod metadata;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LogLevel {
   Quiet,

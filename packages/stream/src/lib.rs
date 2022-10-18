@@ -31,7 +31,7 @@ async fn handle(req: Request, _next: Next) -> Response {
     None => {
       let mut res = Response::new(StatusCode::NOT_FOUND);
       *res.body_mut() = Body::from(format!(
-        "Stream with id {id} is not actively streaming right now"
+        "stream with id {id} is not actively streaming right now"
       ));
       return res;
     }

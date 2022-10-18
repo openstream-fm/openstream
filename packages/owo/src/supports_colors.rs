@@ -4,13 +4,13 @@ use core::fmt;
 /// A display wrapper which applies a transformation based on if the given stream supports
 /// colored terminal output
 pub struct SupportsColorsDisplay<'a, InVal, Out, ApplyFn>(
-    pub(crate) &'a InVal,
-    pub(crate) ApplyFn,
-    pub(crate) supports_color::Stream,
+  pub(crate) &'a InVal,
+  pub(crate) ApplyFn,
+  pub(crate) supports_color::Stream,
 )
 where
-    InVal: ?Sized,
-    ApplyFn: Fn(&'a InVal) -> Out;
+  InVal: ?Sized,
+  ApplyFn: Fn(&'a InVal) -> Out;
 
 use crate::OVERRIDE;
 

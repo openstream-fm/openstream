@@ -12,7 +12,7 @@ use core::sync::atomic::{AtomicU8, Ordering};
 /// inferring if colors are supported.
 #[cfg(feature = "supports-colors")]
 pub fn set_override(enabled: bool) {
-    OVERRIDE.set_force(enabled)
+  OVERRIDE.set_force(enabled)
 }
 
 /// Remove any override value for whether or not colors are supported. This means
@@ -22,7 +22,7 @@ pub fn set_override(enabled: bool) {
 /// This override can be set using [`set_override`].
 #[cfg(feature = "supports-colors")]
 pub fn unset_override() {
-    OVERRIDE.unset()
+  OVERRIDE.unset()
 }
 
 pub(crate) static OVERRIDE: Override = Override::none();
@@ -35,25 +35,25 @@ const FORCE_DISABLE: u8 = 0b10;
 const NO_FORCE: u8 = 0b00;
 
 impl Override {
-    const fn none() -> Self {
-        Self(AtomicU8::new(NO_FORCE))
-    }
+  const fn none() -> Self {
+    Self(AtomicU8::new(NO_FORCE))
+  }
 
-    fn inner(&self) -> u8 {
-        self.0.load(Ordering::SeqCst)
-    }
+  fn inner(&self) -> u8 {
+    self.0.load(Ordering::SeqCst)
+  }
 
-    pub(crate) fn is_force_enabled_or_disabled(&self) -> (bool, bool) {
-        let inner = self.inner();
+  pub(crate) fn is_force_enabled_or_disabled(&self) -> (bool, bool) {
+    let inner = self.inner();
 
-        (inner == FORCE_ENABLE, inner == FORCE_DISABLE)
-    }
+    (inner == FORCE_ENABLE, inner == FORCE_DISABLE)
+  }
 
-    fn set_force(&self, enable: bool) {
-        self.0.store(FORCE_MASK | (enable as u8), Ordering::SeqCst)
-    }
+  fn set_force(&self, enable: bool) {
+    self.0.store(FORCE_MASK | (enable as u8), Ordering::SeqCst)
+  }
 
-    fn unset(&self) {
-        self.0.store(0, Ordering::SeqCst);
-    }
+  fn unset(&self) {
+    self.0.store(0, Ordering::SeqCst);
+  }
 }

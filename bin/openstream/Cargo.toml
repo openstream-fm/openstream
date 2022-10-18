@@ -1,5 +1,5 @@
 [package]
-name = "bin"
+name = "openstream"
 version = "0.1.0"
 edition = "2021"
 
@@ -12,6 +12,7 @@ source-alt = { path = "../../packages/source-alt" }
 stream = { path = "../../packages/stream" }
 logger = { path = "../../packages/logger" }
 log = "0.4.17"
+dotenv = "0.15.0"
 
 [features]
 # proctitle = "0.1.1"
