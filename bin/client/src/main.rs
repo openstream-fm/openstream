@@ -1,10 +1,9 @@
 use bytes::Bytes;
-use futures::stream::FuturesUnordered;
-use futures::StreamExt;
 use hyper::body::HttpBody;
-use hyper::{Body, Client, Method, Request, Uri};
+use hyper::{Body, Client, Request};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
+use tokio::sync::oneshot;
 
 static CURRENT_CLIENTS: AtomicUsize = AtomicUsize::new(0);
 static HISTORIC_CLIENTS: AtomicUsize = AtomicUsize::new(0);
@@ -13,25 +12,34 @@ static ERRORS: AtomicUsize = AtomicUsize::new(0);
 
 static BODY: Bytes = Bytes::from_static(include_bytes!("../../../audio.mp3"));
 
-const C: usize = 5_000;
+const C: usize = 50_000;
 
 #[tokio::main]
 async fn main() {
-  let _ = tokio::join!(clients(C), producer());
+  let (send, recv) = oneshot::channel::<()>();
+  let _ = tokio::try_join!(
+    tokio::spawn(clients(C, recv)),
+    tokio::spawn(producer(send)),
+    tokio::spawn(print_stats())
+  )
+  .unwrap();
 }
 
-async fn producer() {
+async fn producer(ready: oneshot::Sender<()>) {
   let client = Client::new();
   let (mut tx, body) = Body::channel();
 
   let sender = async move {
+    tx.send_data(BODY.clone()).await.unwrap();
+    ready.send(()).unwrap();
+
     loop {
       tx.send_data(BODY.clone()).await.unwrap();
     }
   };
 
   let request = Request::builder()
-    .uri("http://192.168.0.102:20600/1/source")
+    .uri("http://127.0.0.1:20600/1/source")
     .method("SOURCE")
     .body(body)
     .unwrap();
@@ -41,23 +49,26 @@ async fn producer() {
   let _ = tokio::join!(response, sender);
 }
 
-async fn clients(n: usize) {
-  let mut queue = FuturesUnordered::new();
-  for i in 0..n {
-    queue.push(client())
-  }
+async fn clients(n: usize, ready: oneshot::Receiver<()>) {
+  ready.await.unwrap();
 
-  loop {
-    match queue.next().await {
-      Some(Err(e)) => {
-        ERRORS.fetch_add(1, Ordering::Relaxed);
-      }
-      Some(Ok(_)) => {}
-      None => {}
-    };
-    CURRENT_CLIENTS.fetch_sub(1, Ordering::Relaxed);
-    queue.push(client());
-  }
+  tokio::spawn(async move {
+    for _i in 0..n {
+      tokio::spawn(async {
+        loop {
+          match client().await {
+            Err(_) => {
+              ERRORS.fetch_add(1, Ordering::Relaxed);
+            }
+            _ => {}
+          };
+          CURRENT_CLIENTS.fetch_sub(1, Ordering::Relaxed);
+        }
+      });
+    }
+  })
+  .await
+  .unwrap();
 }
 
 async fn client() -> Result<(), hyper::Error> {
@@ -65,7 +76,9 @@ async fn client() -> Result<(), hyper::Error> {
   HISTORIC_CLIENTS.fetch_add(1, Ordering::Relaxed);
 
   let client = Client::new();
-  let mut res = client.get("http://192.168.0.102:20300/stream/1").await?;
+  let mut res = client
+    .get("http://127.0.0.1:20300/stream/1".parse().unwrap())
+    .await?;
   while let Some(data) = res.data().await {
     let data = data?;
     BYTES_READED.fetch_add(data.len(), Ordering::Relaxed);
@@ -92,6 +105,6 @@ async fn print_stats() {
     println!("{historic_clients} all time connections");
     println!("{errors} errors");
     println!("{} MB", bytes_readed as f64 / 1024 as f64 / 1024 as f64);
-    println!("{} MB/sec", speed / 1024 * 1024);
+    println!("{} MB/sec", speed / 1024 / 1024);
   }
 }
