@@ -51,14 +51,17 @@ async fn producer(base: String, ready: oneshot::Sender<()>) {
   let client = Client::new();
   let (mut tx, body) = Body::channel();
 
-  let sender = async move {
+  let _sender = tokio::spawn(async move {
     tx.send_data(BODY.clone()).await.unwrap();
     ready.send(()).unwrap();
 
     loop {
-      tx.send_data(BODY.clone()).await.unwrap();
+      match tx.send_data(BODY.clone()).await {
+        Ok(_) => continue,
+        Err(_e) => break,
+      }
     }
-  };
+  });
 
   let request = Request::builder()
     .uri(format!("{base}/1/source"))
@@ -66,9 +69,22 @@ async fn producer(base: String, ready: oneshot::Sender<()>) {
     .body(body)
     .unwrap();
 
-  let response = client.request(request);
+  let response = client.request(request).await;
 
-  let _ = tokio::join!(response, sender);
+  let mut response = match response {
+    Ok(response) => response,
+    Err(e) => panic!("response error: {:?}", e),
+  };
+
+  println!("status: {:?}", response.status());
+
+  let body = hyper::body::to_bytes(response.body_mut())
+    .await
+    .expect("response body");
+
+  let body = String::from_utf8_lossy(body.as_ref());
+
+  println!("body: {body}");
 }
 
 async fn clients(n: usize, base: String, ready: oneshot::Receiver<()>) {
