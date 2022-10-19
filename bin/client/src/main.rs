@@ -31,6 +31,8 @@ async fn main() {
     Err(_) => 100,
   };
 
+  let mountpoint_id = std::env::var("S").unwrap_or(String::from("1"));
+
   let _: Uri = source_base.parse().expect("SOURCE_BASE_URL invalid URL");
   let _: Uri = stream_base.parse().expect("STREAM_BASE_URL invalid URL");
 
@@ -39,20 +41,21 @@ async fn main() {
     Err(_) => DEFAULT_C,
   };
 
+  println!("mounpoint id: {mountpoint_id}");
   println!("source base: {source_base}");
   println!("stream base: {stream_base}");
   println!("concurrency: {c}");
   println!("delay: {delay}");
 
   let _ = tokio::try_join!(
-    tokio::spawn(producer(source_base)),
-    tokio::spawn(clients(c, stream_base, delay)),
+    tokio::spawn(producer(source_base, mountpoint_id.clone())),
+    tokio::spawn(clients(c, stream_base, mountpoint_id, delay)),
     tokio::spawn(print_stats())
   )
   .unwrap();
 }
 
-async fn producer(base: String) {
+async fn producer(base: String, id: String) {
   let client = Client::new();
   let (mut tx, body) = Body::channel();
 
@@ -66,7 +69,7 @@ async fn producer(base: String) {
   });
 
   let response = client
-    .put(format!("{base}/1/source"))
+    .put(format!("{base}/{id}/source"))
     .body(body)
     .send()
     .await
@@ -80,16 +83,17 @@ async fn producer(base: String) {
   panic!("producer terminated");
 }
 
-async fn clients(n: usize, base: String, delay: u64) {
+async fn clients(n: usize, base: String, id: String, delay: u64) {
   tokio::time::sleep(Duration::from_millis(1_000)).await;
 
   tokio::spawn(async move {
     for _i in 0..n {
       tokio::time::sleep(Duration::from_millis(delay)).await;
       let base = base.clone();
+      let id = id.clone();
       tokio::spawn(async move {
         loop {
-          match client(base.as_str()).await {
+          match client(base.as_str(), id.as_str()).await {
             Err(_) => {
               ERRORS.fetch_add(1, Ordering::Relaxed);
             }
@@ -104,12 +108,12 @@ async fn clients(n: usize, base: String, delay: u64) {
   .unwrap();
 }
 
-async fn client(base: &str) -> Result<(), reqwest::Error> {
+async fn client(base: &str, id: &str) -> Result<(), reqwest::Error> {
   CURRENT_CLIENTS.fetch_add(1, Ordering::Relaxed);
   HISTORIC_CLIENTS.fetch_add(1, Ordering::Relaxed);
 
   let client = Client::new();
-  let mut res = client.get(format!("{base}/stream/1")).send().await?;
+  let mut res = client.get(format!("{base}/stream/{id}")).send().await?;
 
   while let Some(data) = res.chunk().await? {
     BYTES_READED.fetch_add(data.len(), Ordering::Relaxed);
