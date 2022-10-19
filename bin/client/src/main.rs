@@ -1,7 +1,8 @@
 use bytes::Bytes;
 use hyper::body::HttpBody;
-use hyper::{Body, Client, Request};
+use hyper::{Body, Client, Request, Uri};
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::oneshot;
 
@@ -12,20 +13,32 @@ static ERRORS: AtomicUsize = AtomicUsize::new(0);
 
 static BODY: Bytes = Bytes::from_static(include_bytes!("../../../audio.mp3"));
 
-const C: usize = 50_000;
+const DEFAULT_C: usize = 1_000;
 
 #[tokio::main]
 async fn main() {
+  let base: Arc<Uri> = Arc::new(
+    std::env::var("TARGET")
+      .expect("TARGET env not set")
+      .parse()
+      .expect("Invalid URL"),
+  );
+
+  let c: usize = match std::env::var("C") {
+    Ok(c) => c.parse().unwrap_or(DEFAULT_C),
+    Err(_) => DEFAULT_C,
+  };
+
   let (send, recv) = oneshot::channel::<()>();
   let _ = tokio::try_join!(
-    tokio::spawn(clients(C, recv)),
-    tokio::spawn(producer(send)),
+    tokio::spawn(clients(c, base.clone(), recv)),
+    tokio::spawn(producer(base, send)),
     tokio::spawn(print_stats())
   )
   .unwrap();
 }
 
-async fn producer(ready: oneshot::Sender<()>) {
+async fn producer(base: Arc<Uri>, ready: oneshot::Sender<()>) {
   let client = Client::new();
   let (mut tx, body) = Body::channel();
 
@@ -39,7 +52,7 @@ async fn producer(ready: oneshot::Sender<()>) {
   };
 
   let request = Request::builder()
-    .uri("http://127.0.0.1:20600/1/source")
+    .uri(format!("{base}/1/source"))
     .method("SOURCE")
     .body(body)
     .unwrap();
@@ -49,14 +62,16 @@ async fn producer(ready: oneshot::Sender<()>) {
   let _ = tokio::join!(response, sender);
 }
 
-async fn clients(n: usize, ready: oneshot::Receiver<()>) {
+async fn clients(n: usize, base: Arc<Uri>, ready: oneshot::Receiver<()>) {
   ready.await.unwrap();
 
   tokio::spawn(async move {
     for _i in 0..n {
-      tokio::spawn(async {
+      let base = base.clone();
+      tokio::spawn(async move {
         loop {
-          match client().await {
+          let base = base.clone();
+          match client(base.clone()).await {
             Err(_) => {
               ERRORS.fetch_add(1, Ordering::Relaxed);
             }
@@ -71,13 +86,13 @@ async fn clients(n: usize, ready: oneshot::Receiver<()>) {
   .unwrap();
 }
 
-async fn client() -> Result<(), hyper::Error> {
+async fn client(base: Arc<Uri>) -> Result<(), hyper::Error> {
   CURRENT_CLIENTS.fetch_add(1, Ordering::Relaxed);
   HISTORIC_CLIENTS.fetch_add(1, Ordering::Relaxed);
 
   let client = Client::new();
   let mut res = client
-    .get("http://127.0.0.1:20300/stream/1".parse().unwrap())
+    .get(format!("{base}/stream/1").parse().expect("client uri"))
     .await?;
   while let Some(data) = res.data().await {
     let data = data?;
