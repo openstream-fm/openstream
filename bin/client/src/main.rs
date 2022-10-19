@@ -82,6 +82,7 @@ async fn clients(n: usize, base: String, ready: oneshot::Receiver<()>) {
 
   tokio::spawn(async move {
     for _i in 0..n {
+      tokio::time::sleep(Duration::from_millis(500)).await;
       let base = base.clone();
       tokio::spawn(async move {
         loop {
