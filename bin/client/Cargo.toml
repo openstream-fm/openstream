@@ -10,4 +10,7 @@ bytes = "1.2.1"
 dotenv = "0.15.0"
 futures = "0.3.24"
 hyper = { version = "0.14.20", features = ["full"] }
+reqwest = { version = "0.11.12", features = ["rustls"] }
 tokio = { version = "1.21.2", features = ["full"] }
+
+[features]

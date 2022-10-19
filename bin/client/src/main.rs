@@ -1,6 +1,6 @@
 use bytes::Bytes;
-use hyper::body::HttpBody;
-use hyper::{Body, Client, Request, Uri};
+use hyper::{Body, Uri};
+use reqwest::Client;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 use tokio::sync::oneshot;
@@ -63,28 +63,18 @@ async fn producer(base: String, ready: oneshot::Sender<()>) {
     }
   });
 
-  let request = Request::builder()
-    .uri(format!("{base}/1/source"))
-    .method("SOURCE")
+  let response = client
+    .put(format!("{base}/1/source"))
     .body(body)
-    .unwrap();
-
-  let response = client.request(request).await;
-
-  let mut response = match response {
-    Ok(response) => response,
-    Err(e) => panic!("response error: {:?}", e),
-  };
-
-  println!("status: {:?}", response.status());
-
-  let body = hyper::body::to_bytes(response.body_mut())
+    .send()
     .await
-    .expect("response body");
+    .expect("producer send().await");
 
-  let body = String::from_utf8_lossy(body.as_ref());
+  println!("producer status: {:?}", response.status());
 
-  println!("body: {body}");
+  let body = response.text().await.expect("producer text().await");
+
+  println!("producer body: {body}");
 }
 
 async fn clients(n: usize, base: String, ready: oneshot::Receiver<()>) {
@@ -110,16 +100,14 @@ async fn clients(n: usize, base: String, ready: oneshot::Receiver<()>) {
   .unwrap();
 }
 
-async fn client(base: &str) -> Result<(), hyper::Error> {
+async fn client(base: &str) -> Result<(), reqwest::Error> {
   CURRENT_CLIENTS.fetch_add(1, Ordering::Relaxed);
   HISTORIC_CLIENTS.fetch_add(1, Ordering::Relaxed);
 
   let client = Client::new();
-  let mut res = client
-    .get(format!("{base}/stream/1").parse().expect("client uri"))
-    .await?;
-  while let Some(data) = res.data().await {
-    let data = data?;
+  let mut res = client.get(format!("{base}/stream/1")).send().await?;
+
+  while let Some(data) = res.chunk().await? {
     BYTES_READED.fetch_add(data.len(), Ordering::Relaxed);
   }
 
