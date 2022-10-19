@@ -3,7 +3,6 @@ use hyper::{Body, Uri};
 use reqwest::Client;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
-use tokio::sync::oneshot;
 
 static CURRENT_CLIENTS: AtomicUsize = AtomicUsize::new(0);
 static HISTORIC_CLIENTS: AtomicUsize = AtomicUsize::new(0);

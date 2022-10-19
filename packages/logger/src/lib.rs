@@ -17,8 +17,8 @@ pub fn init() {
   logger.format_indent(Some(3));
 
   logger.parse_filters(filters.as_str());
-  logger.filter_module("hyper", LevelFilter::Error);
-  logger.filter_module("mio", LevelFilter::Error);
+  //logger.filter_module("hyper", LevelFilter::Error);
+  //logger.filter_module("mio", LevelFilter::Error);
 
   if let Some(ref v) = style {
     logger.parse_write_style(v.as_str());
