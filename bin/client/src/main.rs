@@ -27,21 +27,28 @@ async fn main() {
     .trim_end_matches('/')
     .to_string();
 
-  println!("source base: {source_base}");
-  println!("stream base: {stream_base}");
+  let delay: u64 = match std::env::var("D") {
+    Ok(s) => s.parse().unwrap_or(100),
+    Err(_) => 100,
+  };
 
   let _: Uri = source_base.parse().expect("SOURCE_BASE_URL invalid URL");
   let _: Uri = stream_base.parse().expect("STREAM_BASE_URL invalid URL");
 
   let c: usize = match std::env::var("C") {
-    Ok(c) => c.parse().unwrap_or(DEFAULT_C),
+    Ok(s) => s.parse().unwrap_or(DEFAULT_C),
     Err(_) => DEFAULT_C,
   };
+
+  println!("source base: {source_base}");
+  println!("stream base: {stream_base}");
+  println!("concurrency: {c}");
+  println!("delay: {delay}");
 
   let (send, recv) = oneshot::channel::<()>();
   let _ = tokio::try_join!(
     tokio::spawn(producer(source_base, send)),
-    tokio::spawn(clients(c, stream_base, recv)),
+    tokio::spawn(clients(c, stream_base, delay, recv)),
     tokio::spawn(print_stats())
   )
   .unwrap();
@@ -77,12 +84,12 @@ async fn producer(base: String, ready: oneshot::Sender<()>) {
   println!("producer body: {body}");
 }
 
-async fn clients(n: usize, base: String, ready: oneshot::Receiver<()>) {
+async fn clients(n: usize, base: String, delay: u64, ready: oneshot::Receiver<()>) {
   ready.await.unwrap();
 
   tokio::spawn(async move {
     for _i in 0..n {
-      tokio::time::sleep(Duration::from_millis(500)).await;
+      tokio::time::sleep(Duration::from_millis(delay)).await;
       let base = base.clone();
       tokio::spawn(async move {
         loop {
