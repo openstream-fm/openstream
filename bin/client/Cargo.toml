@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 bytes = "1.2.1"
+dotenv = "0.15.0"
 futures = "0.3.24"
 hyper = { version = "0.14.20", features = ["full"] }
 tokio = { version = "1.21.2", features = ["full"] }

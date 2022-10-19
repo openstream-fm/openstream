@@ -2,7 +2,6 @@ use bytes::Bytes;
 use hyper::body::HttpBody;
 use hyper::{Body, Client, Request, Uri};
 use std::sync::atomic::{AtomicUsize, Ordering};
-use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::oneshot;
 
@@ -17,12 +16,19 @@ const DEFAULT_C: usize = 1_000;
 
 #[tokio::main]
 async fn main() {
-  let base: Arc<Uri> = Arc::new(
-    std::env::var("TARGET")
-      .expect("TARGET env not set")
-      .parse()
-      .expect("Invalid URL"),
-  );
+  let _ = dotenv::dotenv();
+
+  let source_base = std::env::var("SOURCE_BASE_URL")
+    .expect("SOURCE_BASE_URL env not set")
+    .trim_end_matches('/')
+    .to_string();
+  let stream_base = std::env::var("STREAM_BASE_URL")
+    .expect("STREAM_BASE_URL env not set")
+    .trim_end_matches('/')
+    .to_string();
+
+  let _: Uri = source_base.parse().expect("SOURCE_BASE invalid URL");
+  let _: Uri = stream_base.parse().expect("STREAM_BASE invalid URL");
 
   let c: usize = match std::env::var("C") {
     Ok(c) => c.parse().unwrap_or(DEFAULT_C),
@@ -31,14 +37,14 @@ async fn main() {
 
   let (send, recv) = oneshot::channel::<()>();
   let _ = tokio::try_join!(
-    tokio::spawn(clients(c, base.clone(), recv)),
-    tokio::spawn(producer(base, send)),
+    tokio::spawn(producer(source_base, send)),
+    tokio::spawn(clients(c, stream_base, recv)),
     tokio::spawn(print_stats())
   )
   .unwrap();
 }
 
-async fn producer(base: Arc<Uri>, ready: oneshot::Sender<()>) {
+async fn producer(base: String, ready: oneshot::Sender<()>) {
   let client = Client::new();
   let (mut tx, body) = Body::channel();
 
@@ -62,7 +68,7 @@ async fn producer(base: Arc<Uri>, ready: oneshot::Sender<()>) {
   let _ = tokio::join!(response, sender);
 }
 
-async fn clients(n: usize, base: Arc<Uri>, ready: oneshot::Receiver<()>) {
+async fn clients(n: usize, base: String, ready: oneshot::Receiver<()>) {
   ready.await.unwrap();
 
   tokio::spawn(async move {
@@ -70,8 +76,7 @@ async fn clients(n: usize, base: Arc<Uri>, ready: oneshot::Receiver<()>) {
       let base = base.clone();
       tokio::spawn(async move {
         loop {
-          let base = base.clone();
-          match client(base.clone()).await {
+          match client(base.as_str()).await {
             Err(_) => {
               ERRORS.fetch_add(1, Ordering::Relaxed);
             }
@@ -86,7 +91,7 @@ async fn clients(n: usize, base: Arc<Uri>, ready: oneshot::Receiver<()>) {
   .unwrap();
 }
 
-async fn client(base: Arc<Uri>) -> Result<(), hyper::Error> {
+async fn client(base: &str) -> Result<(), hyper::Error> {
   CURRENT_CLIENTS.fetch_add(1, Ordering::Relaxed);
   HISTORIC_CLIENTS.fetch_add(1, Ordering::Relaxed);
 
