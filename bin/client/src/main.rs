@@ -45,23 +45,19 @@ async fn main() {
   println!("concurrency: {c}");
   println!("delay: {delay}");
 
-  let (send, recv) = oneshot::channel::<()>();
   let _ = tokio::try_join!(
-    tokio::spawn(producer(source_base, send)),
-    tokio::spawn(clients(c, stream_base, delay, recv)),
+    tokio::spawn(producer(source_base)),
+    tokio::spawn(clients(c, stream_base, delay)),
     tokio::spawn(print_stats())
   )
   .unwrap();
 }
 
-async fn producer(base: String, ready: oneshot::Sender<()>) {
+async fn producer(base: String) {
   let client = Client::new();
   let (mut tx, body) = Body::channel();
 
   let _sender = tokio::spawn(async move {
-    tx.send_data(BODY.clone()).await.unwrap();
-    ready.send(()).unwrap();
-
     loop {
       match tx.send_data(BODY.clone()).await {
         Ok(_) => continue,
@@ -82,10 +78,11 @@ async fn producer(base: String, ready: oneshot::Sender<()>) {
   let body = response.text().await.expect("producer text().await");
 
   println!("producer body: {body}");
+  panic!("producer terminated");
 }
 
-async fn clients(n: usize, base: String, delay: u64, ready: oneshot::Receiver<()>) {
-  ready.await.unwrap();
+async fn clients(n: usize, base: String, delay: u64) {
+  tokio::time::sleep(Duration::from_millis(1_000)).await;
 
   tokio::spawn(async move {
     for _i in 0..n {
@@ -125,6 +122,7 @@ async fn client(base: &str) -> Result<(), reqwest::Error> {
 async fn print_stats() {
   let mut prev = 0;
   let mut interval = tokio::time::interval(Duration::from_secs(1));
+  interval.tick().await;
   loop {
     interval.tick().await;
     let bytes_readed = BYTES_READED.load(Ordering::Relaxed);
