@@ -27,8 +27,11 @@ async fn main() {
     .trim_end_matches('/')
     .to_string();
 
-  let _: Uri = source_base.parse().expect("SOURCE_BASE invalid URL");
-  let _: Uri = stream_base.parse().expect("STREAM_BASE invalid URL");
+  println!("source base: {source_base}");
+  println!("stream base: {stream_base}");
+
+  let _: Uri = source_base.parse().expect("SOURCE_BASE_URL invalid URL");
+  let _: Uri = stream_base.parse().expect("STREAM_BASE_URL invalid URL");
 
   let c: usize = match std::env::var("C") {
     Ok(c) => c.parse().unwrap_or(DEFAULT_C),
