@@ -2,15 +2,25 @@ mod error;
 mod handler;
 mod http;
 
-use crate::handler::{method_not_allowed, not_found, source, status};
-use crate::http::read_request_head;
 use error::HandlerError;
 use http::RequestHead;
 use hyper::{http::HeaderValue, Method};
 use log::*;
+use once_cell::sync::OnceCell;
 use owo::*;
 use std::{net::SocketAddr, str::FromStr};
 use tokio::net::{TcpListener, TcpStream};
+
+use channels::ChannelMap;
+
+use crate::handler::{method_not_allowed, not_found, source, status};
+use crate::http::read_request_head;
+
+static CHANNELS: OnceCell<ChannelMap> = OnceCell::new();
+
+pub(crate) fn channels() -> &'static ChannelMap {
+  CHANNELS.get_or_init(|| ChannelMap::new())
+}
 
 pub async fn start(
   addr: impl Into<SocketAddr>,

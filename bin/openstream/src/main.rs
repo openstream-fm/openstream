@@ -1,8 +1,15 @@
 use log::*;
 
+use channels::ChannelMap;
+use owo::*;
+use source::SourceServer;
+use std::sync::Arc;
+use stream::StreamServer;
+use tokio::try_join;
+
 static VERSION: &str = env!("CARGO_PKG_VERSION");
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
   logger::init();
   let _ = dotenv::dotenv();
 
@@ -15,23 +22,22 @@ fn main() {
   rt.block_on(tokio_main())
 }
 
-async fn tokio_main() {
-  info!("openstream v{VERSION} process started");
+async fn tokio_main() -> Result<(), Box<dyn std::error::Error>> {
+  info!(
+    "openstream {}{} process started",
+    "v".yellow(),
+    VERSION.yellow()
+  );
 
-  //let handle1 = tokio::spawn(source_alt::start(([0, 0, 0, 0], 20500)));
-  let handle2 = tokio::spawn(source::start());
-  let handle3 = tokio::spawn(stream::start());
+  let channels = Arc::new(ChannelMap::new());
 
-  tokio::select! {
-      //r = handle1 => r.expect("source panicked").expect("source errored"),
-      r = handle2 => {
-        r.expect("source panicked");
-        info!("source terminated");
-      },
+  let source = SourceServer::new(([0, 0, 0, 0], 20600), channels.clone());
+  let stream = StreamServer::new(([0, 0, 0, 0], 20300), channels.clone());
 
-      r = handle3 => {
-        r.expect("stream panicked");
-        info!("stream terminated");
-      }
-  };
+  let source_fut = source.start()?;
+  let stream_fut = stream.start()?;
+
+  let ((), ()) = try_join!(source_fut, stream_fut)?;
+
+  Ok(())
 }

@@ -66,9 +66,9 @@ dependencies = [
 
 [[package]]
 name = "async-trait"
-version = "0.1.57"
+version = "0.1.58"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76464446b8bc32758d7e88ee1a804d9914cd9b1cb264c029899680b0be29826f"
+checksum = "1e805d94e6b5001b651426cf4cd446b1ab5f319d27bab5c644f61de0a804360c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1021,6 +1021,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "mixed"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "ffmpeg",
+ "hyper",
+ "prex",
+ "tokio",
+]
+
+[[package]]
 name = "mongodb"
 version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1192,9 +1203,11 @@ dependencies = [
 name = "openstream"
 version = "0.1.0"
 dependencies = [
+ "channels",
  "dotenv",
  "log",
  "logger",
+ "owo",
  "source",
  "source-alt",
  "stream",
@@ -1857,6 +1870,7 @@ dependencies = [
 name = "source"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "bytes",
  "channels",
  "constants",
@@ -1880,6 +1894,7 @@ dependencies = [
  "ffmpeg",
  "hyper",
  "log",
+ "once_cell",
  "owo",
  "parking_lot 0.12.1",
  "prex",
@@ -1943,6 +1958,7 @@ dependencies = [
 name = "stream"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "bytes",
  "channels",
  "hyper",

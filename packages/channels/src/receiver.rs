@@ -6,7 +6,7 @@ use tokio::sync::broadcast::{self, error::RecvError};
 
 use constants::STREAM_BURST_LENGTH;
 
-use crate::SUBSCRIBER_COUNT;
+use crate::ChannelMap;
 
 #[derive(Debug)]
 /**
@@ -22,6 +22,7 @@ pub struct Receiver {
   pub(crate) receiver: broadcast::Receiver<Bytes>,
   // this is an owned copy of the burst at subscription time (Bytes instances are copied by reference)
   pub(crate) burst: Deque<Bytes, STREAM_BURST_LENGTH>,
+  pub(crate) channels: ChannelMap,
 }
 
 impl Receiver {
@@ -40,7 +41,7 @@ impl Receiver {
 
 impl Drop for Receiver {
   fn drop(&mut self) {
-    let count = SUBSCRIBER_COUNT.fetch_sub(1, Ordering::SeqCst) - 1;
+    let count = self.channels.inner.rx_count.fetch_sub(1, Ordering::SeqCst) - 1;
     debug!(
       "[channels] subscriber dropped for channel {} => {} subscribers",
       self.channel_id, count

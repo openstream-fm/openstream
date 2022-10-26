@@ -13,6 +13,8 @@ stream = { path = "../../packages/stream" }
 logger = { path = "../../packages/logger" }
 log = "0.4.17"
 dotenv = "0.15.0"
+channels = { version = "0.1.0", path = "../../packages/channels" }
+owo = { version = "3.5.0", path = "../../packages/owo" }
 
 [features]
 # proctitle = "0.1.1"

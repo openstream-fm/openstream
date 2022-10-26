@@ -41,7 +41,7 @@ impl<E> From<mongodb::error::Error> for UploadError<E> {
 
 async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>>(
   account_id: String,
-  audio_file_id: Option<String>,
+  audio_file_id: String,
   size_limit: usize,
   filename: String,
   data: S,
@@ -51,8 +51,6 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
   tokio::pin!(data);
 
   let mut hasher = Md5::new();
-
-  let audio_file_id = audio_file_id.unwrap_or_else(|| db::audio_file::uid());
 
   let mut file_len = 0;
   let mut file_duration_ms = 0.0;
@@ -165,7 +163,7 @@ pub async fn upload_audio_file<E: Error, S: Stream<Item = Result<Bytes, E>>>(
   db::audio_upload_operation::insert(&operation).await?;
 
   let result =
-    upload_audio_file_internal(account_id, Some(audio_file_id), size_limit, filename, data).await;
+    upload_audio_file_internal(account_id, audio_file_id, size_limit, filename, data).await;
 
   match result.as_ref() {
     Ok(_) => {
@@ -184,7 +182,7 @@ pub async fn upload_audio_file<E: Error, S: Stream<Item = Result<Bytes, E>>>(
       operation.state = State::Error {
         cancelled_at: Utc::now(),
         error: format!("{}", e),
-        error_debug: format!("{:#?}", e),
+        error_debug: format!("{:?}", e),
       };
 
       let r = db::audio_upload_operation::replace(&operation.id, &operation).await;

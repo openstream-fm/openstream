@@ -2,10 +2,10 @@ use bytes::Bytes;
 use heapless::Deque;
 use log::*;
 use parking_lot::RwLock;
-use static_init::dynamic;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Arc;
 use tokio::sync::broadcast::{self, channel};
 
 mod receiver;
@@ -15,71 +15,101 @@ pub use transmitter::Transmitter;
 
 use constants::{STREAM_BURST_LENGTH, STREAM_CHANNNEL_CAPACITY};
 
-#[dynamic]
-pub(crate) static CHANNELS: RwLock<HashMap<String, Channel>> = RwLock::new(HashMap::new());
+pub type Burst = Deque<Bytes, STREAM_BURST_LENGTH>;
 
-pub(crate) static SUBSCRIBER_COUNT: AtomicUsize = AtomicUsize::new(0);
-
+#[derive(Debug)]
 pub struct Channel {
   #[allow(unused)]
   id: String,
-  burst: Deque<Bytes, STREAM_BURST_LENGTH>,
+  burst: Arc<RwLock<Burst>>,
   sender: broadcast::Sender<Bytes>,
 }
 
-pub fn transmit(id: String) -> Option<Transmitter> {
-  let (tx, count) = {
-    let mut map = CHANNELS.write();
-
-    match map.entry(id.clone()) {
-      Entry::Occupied(_) => return None,
-
-      Entry::Vacant(entry) => {
-        let (sender, _) = channel(STREAM_CHANNNEL_CAPACITY);
-        let channel = Channel {
-          id: id.clone(),
-          sender: sender.clone(),
-          burst: Deque::new(),
-        };
-
-        entry.insert(channel);
-
-        let tx = Transmitter {
-          id: id.clone(),
-          sender,
-        };
-
-        (tx, map.len())
-      }
-    }
-  };
-
-  debug!("[channels] transitter created for channel {id} => {count} transmitters");
-
-  Some(tx)
+#[derive(Debug, Clone)]
+pub struct ChannelMap {
+  pub(crate) inner: Arc<ChannelMapInner>,
 }
 
-pub fn subscribe(id: &str) -> Option<Receiver> {
-  let rx = {
-    let chans = CHANNELS.read();
+impl ChannelMap {
+  pub fn new() -> Self {
+    Self {
+      inner: Arc::new(ChannelMapInner {
+        map: RwLock::new(HashMap::new()),
+        rx_count: AtomicUsize::new(0),
+      }),
+    }
+  }
+}
 
-    let channel = chans.get(id)?;
+#[derive(Debug)]
+pub struct ChannelMapInner {
+  pub(crate) map: RwLock<HashMap<String, Channel>>,
+  // we dont need tx_count as is the same as map.len()
+  pub(crate) rx_count: AtomicUsize,
+}
 
-    let rx = Receiver {
-      channel_id: id.to_string(),
-      burst: channel.burst.clone(),
-      receiver: channel.sender.subscribe(),
+impl ChannelMap {
+  pub fn transmit(&self, id: String) -> Option<Transmitter> {
+    let (tx, count) = {
+      let mut map = self.inner.map.write();
+
+      match map.entry(id.clone()) {
+        Entry::Occupied(_) => return None,
+
+        Entry::Vacant(entry) => {
+          let (sender, _) = channel(STREAM_CHANNNEL_CAPACITY);
+
+          let burst = Arc::new(RwLock::new(Burst::new()));
+
+          let channel = Channel {
+            id: id.clone(),
+            sender: sender.clone(),
+            burst: burst.clone(),
+          };
+
+          entry.insert(channel);
+
+          let tx = Transmitter {
+            id: id.clone(),
+            sender,
+            channels: self.clone(),
+            burst,
+          };
+
+          (tx, map.len())
+        }
+      }
     };
 
-    rx
-  };
+    debug!("[channels] transitter created for channel {id} => {count} transmitters");
 
-  let count = SUBSCRIBER_COUNT.fetch_add(1, Ordering::SeqCst) + 1;
+    Some(tx)
+  }
 
-  debug!(
-    "[channels] subscriber created for channel {} => {} subscribers",
-    rx.channel_id, count
-  );
+  pub fn subscribe(&self, id: &str) -> Option<Receiver> {
+    let rx = {
+      let map = self.inner.map.read();
 
-  Some(rx)
+      let channel = map.get(id)?;
+
+      let rx = Receiver {
+        channel_id: id.to_string(),
+        // this will make a snapshot of the burst at subscription time (not clone the Arc<RwLock<>>)
+        burst: channel.burst.read().clone(),
+        receiver: channel.sender.subscribe(),
+        channels: self.clone(),
+      };
+
+      rx
+    };
+
+    let count = self.inner.rx_count.fetch_add(1, Ordering::SeqCst) + 1;
+
+    debug!(
+      "[channels] subscriber created for channel {} => {} subscribers",
+      rx.channel_id, count
+    );
+
+    Some(rx)
+  }
 }

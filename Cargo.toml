@@ -3,6 +3,7 @@ members = [
     "bin/openstream",
     "bin/producer",
     "bin/client",
+    "bin/mixed",
 
     "config/constants",
 

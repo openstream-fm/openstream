@@ -1,5 +1,5 @@
 [package]
-name = "stream"
+name = "mixed"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,13 +7,7 @@ edition = "2021"
 
 [dependencies]
 bytes = "1.2.1"
+ffmpeg = { version = "0.1.0", path = "../../packages/ffmpeg" }
 hyper = { version = "0.14.20", features = ["full"] }
-prex = { version = "0.1.0", path = "../prex" }
+prex = { version = "0.1.0", path = "../../packages/prex" }
 tokio = { version = "1.21.2", features = ["full"] }
-channels = { path = "../channels" }
-log = "0.4.17"
-owo = { version = "3.5.0", path = "../owo" }
-async-trait = "0.1.58"
-
-[features]
-

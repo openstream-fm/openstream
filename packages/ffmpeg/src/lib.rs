@@ -51,7 +51,7 @@ impl Format {
   pub fn as_str(&self) -> &'static str {
     match *self {
       Self::MP3 => "mp3",
-      Self::AAC => "aac",
+      Self::AAC => "adts",
       Self::OGG => "ogg",
       Self::WEBM => "webm",
     }
