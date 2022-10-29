@@ -54,7 +54,7 @@ impl SourceServer {
       .http1_title_case_headers(false)
       .http1_preserve_header_case(false);
 
-    info!("stream server bound to {}", self.inner.addr.yellow());
+    info!("source server bound to {}", self.inner.addr.yellow());
 
     let mut app = prex::prex();
 

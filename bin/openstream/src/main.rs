@@ -1,9 +1,14 @@
+use config::Both;
 use log::*;
 
 use channels::ChannelMap;
 use owo::*;
+use rust_ipify::ipify;
 use source::SourceServer;
-use std::sync::Arc;
+use std::{
+  net::{IpAddr, Ipv4Addr},
+  sync::Arc,
+};
 use stream::StreamServer;
 use tokio::try_join;
 
@@ -29,15 +34,114 @@ async fn tokio_main() -> Result<(), Box<dyn std::error::Error>> {
     VERSION.yellow()
   );
 
+  let config_path = "./config.toml";
+
+  let canonical_config_path = match std::fs::canonicalize(config_path) {
+    Err(_) => String::from(config_path),
+    Ok(path) => path.to_string_lossy().to_string(),
+  };
+
+  info!(
+    "loading config file from {}",
+    canonical_config_path.yellow()
+  );
+
+  let config = config::load(config_path)?;
+
+  debug!("resolved config: {:#?}", config);
+
+  let client = mongodb::Client::with_uri_str(config.mongodb.url.as_str())
+    .await
+    .expect("failed to create mongodb client");
+
+  if client.default_database().is_none() {
+    panic!("no database specified in config, under [mongodb] url");
+  }
+
+  info!("connecting to mongodb...");
+  client
+    .default_database()
+    .unwrap()
+    .run_command(mongodb::bson::doc! { "ping": 1 }, None)
+    .await?;
+
+  info!("mongodb client connected");
+
+  db::init(client);
+
+  info!("retrieving public ip...");
+  let ip: Ipv4Addr = ipify::get_ip4_string()?.parse()?;
+  info!("public ip obtained: {}", ip.yellow());
+
   let channels = Arc::new(ChannelMap::new());
 
-  let source = SourceServer::new(([0, 0, 0, 0], 20600), channels.clone());
-  let stream = StreamServer::new(([0, 0, 0, 0], 20300), channels.clone());
+  let config::Config {
+    mongodb: _,
+    interfaces,
+  } = config;
 
-  let source_fut = source.start()?;
-  let stream_fut = stream.start()?;
+  match interfaces {
+    config::Interfaces::Both(Both {
+      source: source_config,
+      stream: stream_config,
+    }) => {
+      let source = SourceServer::new(
+        ([0, 0, 0, 0], source_config.receiver.port),
+        channels.clone(),
+      );
+      let stream = StreamServer::new(([0, 0, 0, 0], stream_config.port), channels);
 
-  let ((), ()) = try_join!(source_fut, stream_fut)?;
+      let source_fut = source.start()?;
+      let stream_fut = stream.start()?;
+
+      tokio::spawn(async move {
+        tokio::signal::ctrl_c()
+          .await
+          .expect("failed to listen for SIGINT signal");
+        info!("{} received, starting graceful shutdown", "SIGINT".yellow());
+        source.graceful_shutdown();
+        stream.graceful_shutdown();
+      });
+
+      let ((), ()) = try_join!(source_fut, stream_fut)?;
+    }
+
+    config::Interfaces::Source(config) => {
+      let source = SourceServer::new(([0, 0, 0, 0], config.receiver.port), channels);
+
+      let source_fut = source.start()?;
+
+      tokio::spawn(async move {
+        tokio::signal::ctrl_c()
+          .await
+          .expect("failed to listen for SIGINT signal");
+
+        info!("{} received, starting graceful shutdown", "SIGINT".yellow());
+
+        source.graceful_shutdown();
+      });
+
+      source_fut.await?;
+    }
+
+    config::Interfaces::Stream(config) => {
+      let stream = StreamServer::new(([0, 0, 0, 0], config.port), channels);
+
+      let stream_fut = stream.start()?;
+
+      tokio::spawn(async move {
+        tokio::signal::ctrl_c()
+          .await
+          .expect("failed to listen for SIGINT signal");
+
+        info!("{} received, starting graceful shutdown", "SIGINT".yellow());
+
+        stream.graceful_shutdown();
+      });
+
+      stream_fut.await?;
+    }
+  };
 
   Ok(())
 }

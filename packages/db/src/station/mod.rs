@@ -1,9 +1,5 @@
-use crate::model;
+use crate::Model;
 use serde::{Deserialize, Serialize};
-
-pub const CL_NAME: &str = "stations";
-pub const UID_LEN: usize = 10;
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Station {
@@ -16,4 +12,11 @@ pub struct Station {
   square_image: Option<String>,
 }
 
-model!(Station);
+impl Model for Station {
+  fn uid_len() -> usize {
+    10
+  }
+  fn cl_name() -> &'static str {
+    "stations"
+  }
+}

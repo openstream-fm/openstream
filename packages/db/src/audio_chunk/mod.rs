@@ -1,11 +1,8 @@
-use crate::model;
+use crate::Model;
 use bytes::Bytes;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_util::as_f64;
-
-pub const CL_NAME: &str = "audio_chunks";
-pub const UID_LEN: usize = 16;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -36,4 +33,12 @@ pub struct AudioChunk {
   pub created_at: DateTime<Utc>,
 }
 
-model!(AudioChunk);
+impl Model for AudioChunk {
+  fn uid_len() -> usize {
+    16
+  }
+
+  fn cl_name() -> &'static str {
+    "audio_chunks"
+  }
+}

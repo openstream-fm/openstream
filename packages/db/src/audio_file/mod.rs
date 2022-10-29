@@ -1,10 +1,7 @@
-use crate::model;
+use crate::Model;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_util::as_f64;
-
-pub const CL_NAME: &str = "audio_file";
-pub const UID_LEN: usize = 12;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -35,7 +32,15 @@ pub struct AudioFile {
   pub metadata: Metadata,
 }
 
-model!(AudioFile);
+impl Model for AudioFile {
+  fn uid_len() -> usize {
+    12
+  }
+
+  fn cl_name() -> &'static str {
+    "audio_files"
+  }
+}
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
 #[serde(rename_all = "camelCase")]

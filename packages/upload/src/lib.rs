@@ -6,6 +6,7 @@ use constants::{AUDIO_FILE_BYTERATE, AUDIO_FILE_CHUNK_SIZE};
 use db::audio_chunk::AudioChunk;
 use db::audio_file::{AudioFile, Metadata};
 use db::audio_upload_operation::{AudioUploadOperation, State};
+use db::Model;
 use log::*;
 use md5::{Digest, Md5};
 use std::error::Error;
@@ -87,7 +88,7 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
           let end_ms = start_ms + duration_ms;
 
           let document = AudioChunk {
-            id: db::audio_chunk::uid(),
+            id: AudioChunk::uid(),
             account_id: account_id.clone(),
             audio_file_id: audio_file_id.clone(),
             duration_ms,
@@ -100,7 +101,7 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
             created_at: Utc::now(),
           };
 
-          db::audio_chunk::cl().insert_one(document, None).await?;
+          AudioChunk::insert(&document).await?;
         }
       }
     }
@@ -139,7 +140,7 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
     metadata,
   };
 
-  db::audio_file::insert(&file).await?;
+  AudioFile::insert(&file).await?;
 
   Ok(file)
 }
@@ -151,7 +152,7 @@ pub async fn upload_audio_file<E: Error, S: Stream<Item = Result<Bytes, E>>>(
   filename: String,
   data: S,
 ) -> Result<AudioFile, UploadError<E>> {
-  let audio_file_id = audio_file_id.unwrap_or_else(|| db::audio_file::uid());
+  let audio_file_id = audio_file_id.unwrap_or_else(|| AudioFile::uid());
 
   let mut operation = AudioUploadOperation {
     id: audio_file_id.clone(),
@@ -160,7 +161,7 @@ pub async fn upload_audio_file<E: Error, S: Stream<Item = Result<Bytes, E>>>(
     state: db::audio_upload_operation::State::Pending,
   };
 
-  db::audio_upload_operation::insert(&operation).await?;
+  AudioUploadOperation::insert(&operation).await?;
 
   let result =
     upload_audio_file_internal(account_id, audio_file_id, size_limit, filename, data).await;
@@ -171,7 +172,7 @@ pub async fn upload_audio_file<E: Error, S: Stream<Item = Result<Bytes, E>>>(
         commited_at: Utc::now(),
       };
 
-      let r = db::audio_upload_operation::replace(&operation.id, &operation).await;
+      let r = AudioUploadOperation::replace(&operation.id, &operation).await;
       match r {
         Err(e) => warn!("error updating audio upload operation after success: {}", e),
         _ => {}
@@ -185,7 +186,7 @@ pub async fn upload_audio_file<E: Error, S: Stream<Item = Result<Bytes, E>>>(
         error_debug: format!("{:?}", e),
       };
 
-      let r = db::audio_upload_operation::replace(&operation.id, &operation).await;
+      let r = AudioUploadOperation::replace(&operation.id, &operation).await;
       match r {
         Err(e) => warn!("error updating audio upload operation after error: {}", e),
         _ => {}

@@ -1,12 +1,7 @@
-use serde::{Deserialize, Serialize};
-
+use crate::Model;
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use serde_util::datetime;
-
-use crate::model;
-
-pub const CL_NAME: &str = "accounts";
-pub const UID_LEN: usize = 8;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -22,4 +17,12 @@ pub struct Account {
   updated_at: DateTime<Utc>,
 }
 
-model!(Account);
+impl Model for Account {
+  fn uid_len() -> usize {
+    8
+  }
+
+  fn cl_name() -> &'static str {
+    "accounts"
+  }
+}

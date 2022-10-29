@@ -1,9 +1,7 @@
-use crate::model;
+use crate::audio_file::AudioFile;
+use crate::Model;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-
-pub const CL_NAME: &str = "audio_upload_operation";
-pub const UID_LEN: usize = super::audio_file::UID_LEN;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -36,7 +34,14 @@ pub struct AudioUploadOperation {
   pub state: State,
 }
 
-model!(AudioUploadOperation);
+impl Model for AudioUploadOperation {
+  fn uid_len() -> usize {
+    AudioFile::uid_len()
+  }
+  fn cl_name() -> &'static str {
+    "audio_upload_operations"
+  }
+}
 
 #[cfg(test)]
 mod test {
