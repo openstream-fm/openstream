@@ -5,10 +5,7 @@ use channels::ChannelMap;
 use owo::*;
 use rust_ipify::ipify;
 use source::SourceServer;
-use std::{
-  net::{IpAddr, Ipv4Addr},
-  sync::Arc,
-};
+use std::{net::Ipv4Addr, sync::Arc};
 use stream::StreamServer;
 use tokio::try_join;
 

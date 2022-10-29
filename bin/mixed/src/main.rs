@@ -23,8 +23,8 @@ async fn main() {
 async fn mixed(_: Request, _: Next) -> Response {
   static MP3: &[u8] = include_bytes!("../samples/mp3.mp3");
   static AAC: &[u8] = include_bytes!("../samples/aac.aac");
-  static OGG: &[u8] = include_bytes!("../samples/ogg.ogg");
-  static WEBM: &[u8] = include_bytes!("../samples/webm.webm");
+  //static OGG: &[u8] = include_bytes!("../samples/ogg.ogg");
+  //static WEBM: &[u8] = include_bytes!("../samples/webm.webm");
 
   let mut body = vec![];
   for _ in 0..1 {
