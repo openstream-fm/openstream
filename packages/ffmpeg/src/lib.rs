@@ -78,6 +78,7 @@ pub struct FfmpegConfig {
   pub novideo: bool,
   pub threads: u8,
   pub readrate: bool,
+  pub copycodec: bool,
 }
 
 impl FfmpegConfig {
@@ -88,7 +89,7 @@ impl FfmpegConfig {
   pub const LOGLEVEL: LogLevel = LogLevel::Error;
 
   /// output bitrate
-  pub const KBITRATE: u16 = 128;
+  pub const KBITRATE: u16 = 320;
   pub const KMINRATE: u16 = Self::KBITRATE;
   pub const KMAXRATE: u16 = Self::KBITRATE;
   pub const KBUFSIZE: u16 = Self::KBITRATE;
@@ -110,6 +111,9 @@ impl FfmpegConfig {
 
   /// whether to read input at play rate or not
   pub const READRATE: bool = false;
+
+  /// whether to copy as is the audio codec of the source
+  pub const COPYCODEC: bool = false;
 }
 
 impl Default for FfmpegConfig {
@@ -127,6 +131,7 @@ impl Default for FfmpegConfig {
       threads: Self::THREADS,
       novideo: Self::NOVIDEO,
       readrate: Self::READRATE,
+      copycodec: Self::COPYCODEC,
     }
   }
 }
@@ -137,11 +142,7 @@ pub struct Ffmpeg {
 }
 
 impl Ffmpeg {
-  pub fn new() -> Self {
-    Self::default()
-  }
-
-  pub fn with_config(config: FfmpegConfig) -> Self {
+  pub fn new(config: FfmpegConfig) -> Self {
     Self { config }
   }
 
@@ -155,6 +156,12 @@ impl Ffmpeg {
     // input
     cmd.arg("-i");
     cmd.arg("-");
+
+    // copy codec
+    if self.config.copycodec {
+      cmd.arg("-c:a");
+      cmd.arg("copy");
+    }
 
     // format
     cmd.arg("-f");

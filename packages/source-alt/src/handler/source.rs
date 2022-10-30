@@ -65,7 +65,7 @@ pub async fn source(
     ..FfmpegConfig::default()
   };
 
-  let ff_spawn = match Ffmpeg::with_config(ffmpeg_config).spawn() {
+  let ff_spawn = match Ffmpeg::new(ffmpeg_config).spawn() {
     Err(_) => {
       let body = b"Error allocating internal stream converter, try again later or report it to the administrators";
 

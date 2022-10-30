@@ -165,7 +165,7 @@ impl Handler for SourceHandler {
       ..FfmpegConfig::default()
     };
 
-    let ff_spawn = match Ffmpeg::with_config(ffmpeg_config).spawn() {
+    let ff_spawn = match Ffmpeg::new(ffmpeg_config).spawn() {
       Err(_) => {
         // FORBIDEN (403) is used to communicate all sorts of errors
         let mut res = Response::new(StatusCode::INTERNAL_SERVER_ERROR);
