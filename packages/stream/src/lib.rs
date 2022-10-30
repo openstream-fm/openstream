@@ -1,19 +1,17 @@
 use async_trait::async_trait;
 use channels::ChannelMap;
+use cond_count::CondCount;
 use hyper::{header::CONTENT_TYPE, http::HeaderValue, Body, Server, StatusCode};
 use log::*;
 use owo::*;
 use prex::{handler::Handler, Next, Request, Response};
+use shutdown::Shutdown;
 use std::future::Future;
 use std::net::SocketAddr;
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use tokio::sync::{broadcast::error::RecvError, Notify};
+use tokio::sync::broadcast::error::RecvError;
 
-const OPEN: bool = false;
-const CLOSED: bool = true;
-
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct StreamServer {
   inner: Arc<StreamServerInner>,
 }
@@ -22,37 +20,45 @@ pub struct StreamServer {
 struct StreamServerInner {
   addr: SocketAddr,
   channels: Arc<ChannelMap>,
-  shutdown_signal: Notify,
-  closed: AtomicBool,
+  shutdown: Shutdown,
+  cond_count: CondCount,
 }
 
 impl StreamServer {
-  pub fn new<A: Into<SocketAddr>>(addr: A, channels: Arc<ChannelMap>) -> Self {
+  pub fn new<A: Into<SocketAddr>>(
+    addr: A,
+    channels: Arc<ChannelMap>,
+    shutdown: Shutdown,
+    cond_count: CondCount,
+  ) -> Self {
     Self {
       inner: Arc::new(StreamServerInner {
         addr: addr.into(),
         channels,
-        shutdown_signal: Notify::new(),
-        closed: AtomicBool::new(OPEN),
+        shutdown,
+        cond_count,
       }),
     }
   }
 
   pub fn start(
-    &self,
+    self,
   ) -> Result<impl Future<Output = Result<(), hyper::Error>> + 'static, hyper::Error> {
     let mut app = prex::prex();
 
-    let handle = StreamHandler::new(self.clone());
+    let handle = StreamHandler::new(self.inner.channels.clone(), self.inner.shutdown.clone());
 
     app.get("/stream/:id", handle);
 
     let app = app.build().expect("prex app build stream");
 
     let signal = {
-      let me = self.clone();
+      let shutdown = self.inner.shutdown.clone();
       async move {
-        me.inner.shutdown_signal.notified().await;
+        if shutdown.is_closed() {
+          return;
+        }
+        shutdown.notified().await;
       }
     };
 
@@ -62,24 +68,27 @@ impl StreamServer {
 
     Ok(async move {
       server.serve(app).with_graceful_shutdown(signal).await?;
+      drop(self);
       Ok(())
     })
   }
+}
 
-  pub fn graceful_shutdown(&self) {
-    self.inner.closed.store(CLOSED, Ordering::SeqCst);
-    self.inner.shutdown_signal.notify_waiters();
+impl Drop for StreamServerInner {
+  fn drop(&mut self) {
+    self.cond_count.wait();
   }
 }
 
 #[derive(Debug, Clone)]
 struct StreamHandler {
-  server: StreamServer,
+  channels: Arc<ChannelMap>,
+  shutdown: Shutdown,
 }
 
 impl StreamHandler {
-  pub fn new(server: StreamServer) -> Self {
-    Self { server }
+  pub fn new(channels: Arc<ChannelMap>, shutdown: Shutdown) -> Self {
+    Self { channels, shutdown }
   }
 }
 
@@ -89,7 +98,7 @@ impl Handler for StreamHandler {
     // unwrap: "id" is a required param in path definition
     let id = req.param("id").unwrap();
 
-    let mut stream = match self.server.inner.channels.subscribe(id) {
+    let mut stream = match self.channels.subscribe(id) {
       Some(stream) => stream,
       None => {
         let mut res = Response::new(StatusCode::NOT_FOUND);
@@ -103,12 +112,12 @@ impl Handler for StreamHandler {
     let (mut body_sender, response_body) = Body::channel();
 
     tokio::spawn({
-      let me = self.clone();
+      let shutdown = self.shutdown.clone();
       async move {
         loop {
           let r = stream.recv().await;
 
-          if me.server.inner.closed.load(Ordering::SeqCst) == CLOSED {
+          if shutdown.is_closed() {
             break;
           }
 

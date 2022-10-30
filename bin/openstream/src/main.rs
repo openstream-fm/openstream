@@ -2,8 +2,10 @@ use config::Both;
 use log::*;
 
 use channels::ChannelMap;
+use cond_count::CondCount;
 use owo::*;
 use rust_ipify::ipify;
+use shutdown::Shutdown;
 use source::SourceServer;
 use std::{net::Ipv4Addr, sync::Arc};
 use stream::StreamServer;
@@ -70,23 +72,37 @@ async fn tokio_main() -> Result<(), Box<dyn std::error::Error>> {
   let ip: Ipv4Addr = ipify::get_ip4_string()?.parse()?;
   info!("public ip obtained: {}", ip.yellow());
 
-  let channels = Arc::new(ChannelMap::new());
-
   let config::Config {
     mongodb: _,
     interfaces,
   } = config;
+
+  let shutdown = Shutdown::new();
 
   match interfaces {
     config::Interfaces::Both(Both {
       source: source_config,
       stream: stream_config,
     }) => {
+      let condcount = CondCount::new();
+      let channels = Arc::new(ChannelMap::new(condcount.clone()));
+      //let source_condcount = CondCount::new();
+      //let source_channels = Arc::new(ChannelMap::new(source_condcount.clone()));
       let source = SourceServer::new(
         ([0, 0, 0, 0], source_config.receiver.port),
         channels.clone(),
+        shutdown.clone(),
+        condcount.clone(),
       );
-      let stream = StreamServer::new(([0, 0, 0, 0], stream_config.port), channels);
+
+      //let stream_condcount = CondCount::new();
+      //let stream_channels = Arc::new(ChannelMap::new(stream_condcount.clone()));
+      let stream = StreamServer::new(
+        ([0, 0, 0, 0], stream_config.port),
+        channels,
+        shutdown.clone(),
+        condcount,
+      );
 
       let source_fut = source.start()?;
       let stream_fut = stream.start()?;
@@ -96,15 +112,21 @@ async fn tokio_main() -> Result<(), Box<dyn std::error::Error>> {
           .await
           .expect("failed to listen for SIGINT signal");
         info!("{} received, starting graceful shutdown", "SIGINT".yellow());
-        source.graceful_shutdown();
-        stream.graceful_shutdown();
+        shutdown.shutdown();
       });
 
       let ((), ()) = try_join!(source_fut, stream_fut)?;
     }
 
     config::Interfaces::Source(config) => {
-      let source = SourceServer::new(([0, 0, 0, 0], config.receiver.port), channels);
+      let cond_count = CondCount::new();
+      let channels = Arc::new(ChannelMap::new(cond_count.clone()));
+      let source = SourceServer::new(
+        ([0, 0, 0, 0], config.receiver.port),
+        channels,
+        shutdown.clone(),
+        cond_count,
+      );
 
       let source_fut = source.start()?;
 
@@ -115,14 +137,21 @@ async fn tokio_main() -> Result<(), Box<dyn std::error::Error>> {
 
         info!("{} received, starting graceful shutdown", "SIGINT".yellow());
 
-        source.graceful_shutdown();
+        shutdown.shutdown();
       });
 
       source_fut.await?;
     }
 
     config::Interfaces::Stream(config) => {
-      let stream = StreamServer::new(([0, 0, 0, 0], config.port), channels);
+      let cond_count = CondCount::new();
+      let channels = Arc::new(ChannelMap::new(cond_count.clone()));
+      let stream = StreamServer::new(
+        ([0, 0, 0, 0], config.port),
+        channels,
+        shutdown.clone(),
+        cond_count,
+      );
 
       let stream_fut = stream.start()?;
 
@@ -133,7 +162,7 @@ async fn tokio_main() -> Result<(), Box<dyn std::error::Error>> {
 
         info!("{} received, starting graceful shutdown", "SIGINT".yellow());
 
-        stream.graceful_shutdown();
+        shutdown.shutdown();
       });
 
       stream_fut.await?;

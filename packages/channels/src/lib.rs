@@ -13,6 +13,8 @@ mod transmitter;
 pub use receiver::Receiver;
 pub use transmitter::Transmitter;
 
+use cond_count::CondCount;
+
 use constants::{STREAM_BURST_LENGTH, STREAM_CHANNNEL_CAPACITY};
 
 pub type Burst = Deque<Bytes, STREAM_BURST_LENGTH>;
@@ -27,25 +29,27 @@ pub struct Channel {
 
 #[derive(Debug, Clone)]
 pub struct ChannelMap {
-  pub(crate) inner: Arc<ChannelMapInner>,
+  pub(crate) inner: Arc<Inner>,
 }
 
 impl ChannelMap {
-  pub fn new() -> Self {
+  pub fn new(cond_count: CondCount) -> Self {
     Self {
-      inner: Arc::new(ChannelMapInner {
+      inner: Arc::new(Inner {
         map: RwLock::new(HashMap::new()),
         rx_count: AtomicUsize::new(0),
+        cond_count,
       }),
     }
   }
 }
 
 #[derive(Debug)]
-pub struct ChannelMapInner {
+pub struct Inner {
   pub(crate) map: RwLock<HashMap<String, Channel>>,
   // we dont need tx_count as is the same as map.len()
   pub(crate) rx_count: AtomicUsize,
+  pub(crate) cond_count: CondCount,
 }
 
 impl ChannelMap {
@@ -69,11 +73,13 @@ impl ChannelMap {
 
           entry.insert(channel);
 
+          self.inner.cond_count.increment();
           let tx = Transmitter {
             id: id.clone(),
             sender,
             channels: self.clone(),
             burst,
+            counter_ref: self.inner.cond_count.instance(),
           };
 
           (tx, map.len())
@@ -92,12 +98,14 @@ impl ChannelMap {
 
       let channel = map.get(id)?;
 
+      self.inner.cond_count.increment();
       let rx = Receiver {
         channel_id: id.to_string(),
         // this will make a snapshot of the burst at subscription time (not clone the Arc<RwLock<>>)
         burst: channel.burst.read().clone(),
         receiver: channel.sender.subscribe(),
         channels: self.clone(),
+        counter_ref: self.inner.cond_count.instance(),
       };
 
       rx

@@ -1,7 +1,9 @@
 use bytes::Bytes;
+use cond_count::Ref;
 use log::*;
 use parking_lot::RwLock;
 use std::sync::Arc;
+use std::time::Duration;
 use tokio::sync::broadcast::{self, error::SendError};
 
 use crate::Burst;
@@ -12,6 +14,7 @@ pub struct Transmitter {
   pub(crate) sender: broadcast::Sender<Bytes>,
   pub(crate) channels: ChannelMap,
   pub(crate) burst: Arc<RwLock<Burst>>,
+  pub(crate) counter_ref: Ref,
 }
 
 impl Transmitter {
@@ -49,5 +52,11 @@ impl Drop for Transmitter {
         )
       }
     }
+
+    let counter_ref = self.counter_ref.clone();
+    tokio::spawn(async move {
+      tokio::time::sleep(Duration::from_millis(1_500)).await;
+      drop(counter_ref);
+    });
   }
 }

@@ -1,5 +1,7 @@
+use ::shutdown::Shutdown;
 use async_trait::async_trait;
 use channels::ChannelMap;
+use cond_count::CondCount;
 use constants::STREAM_CHUNK_SIZE;
 use ffmpeg::{Ffmpeg, FfmpegConfig, FfmpegSpawn};
 use hyper::body::HttpBody;
@@ -11,42 +13,42 @@ use owo::*;
 use prex::{handler::Handler, Next, Request, Response};
 use std::future::Future;
 use std::net::SocketAddr;
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio::sync::Notify;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct SourceServer {
   inner: Arc<SourceServerInner>,
 }
-
-const OPEN: bool = false;
-const CLOSED: bool = true;
 
 #[derive(Debug)]
 struct SourceServerInner {
   addr: SocketAddr,
   channels: Arc<ChannelMap>,
-  shutdown_signal: Notify,
-  closed: AtomicBool,
+  shutdown: Shutdown,
+  cond_count: CondCount,
 }
 
 impl SourceServer {
-  pub fn new(addr: impl Into<SocketAddr>, channels: Arc<ChannelMap>) -> Self {
+  pub fn new(
+    addr: impl Into<SocketAddr>,
+    channels: Arc<ChannelMap>,
+    shutdown: Shutdown,
+    cond_count: CondCount,
+  ) -> Self {
     Self {
       inner: Arc::new(SourceServerInner {
         addr: addr.into(),
         channels,
-        shutdown_signal: Notify::new(),
-        closed: AtomicBool::new(OPEN),
+        shutdown,
+        cond_count,
       }),
     }
   }
 
   pub fn start(
-    &self,
+    self,
   ) -> Result<impl Future<Output = Result<(), hyper::Error>> + 'static, hyper::Error> {
     let server = Server::try_bind(&self.inner.addr)?
       .http1_only(true)
@@ -63,26 +65,34 @@ impl SourceServer {
     //app.with(connection_close);
     //app.any("/:id/source", source_allow);
     //app.any("/:id/source", source_accept);
-    app.any("/:id/source", SourceHandler::new(self.clone()));
+    app.any(
+      "/:id/source",
+      SourceHandler::new(self.inner.channels.clone(), self.inner.shutdown.clone()),
+    );
 
     let app = app.build().expect("prex app build source");
 
     let signal = {
-      let me = self.clone();
+      let shutdown = self.inner.shutdown.clone();
       async move {
-        me.inner.shutdown_signal.notified().await;
+        if shutdown.is_closed() {
+          return;
+        };
+        shutdown.notified().await;
       }
     };
 
     Ok(async move {
       server.serve(app).with_graceful_shutdown(signal).await?;
+      drop(self);
       Ok(())
     })
   }
+}
 
-  pub fn graceful_shutdown(&self) {
-    self.inner.closed.store(CLOSED, Ordering::SeqCst);
-    self.inner.shutdown_signal.notify_waiters();
+impl Drop for SourceServerInner {
+  fn drop(&mut self) {
+    self.cond_count.wait();
   }
 }
 
@@ -101,12 +111,13 @@ async fn logger(req: Request, next: Next) -> prex::Response {
 
 #[derive(Debug, Clone)]
 struct SourceHandler {
-  server: SourceServer,
+  channels: Arc<ChannelMap>,
+  shutdown: Shutdown,
 }
 
 impl SourceHandler {
-  fn new(server: SourceServer) -> Self {
-    Self { server }
+  fn new(channels: Arc<ChannelMap>, shutdown: Shutdown) -> Self {
+    Self { channels, shutdown }
   }
 }
 
@@ -137,7 +148,7 @@ impl Handler for SourceHandler {
     // safety unwrap: param "id" is required in route defnition
     let id = req.param("id").unwrap().to_string();
 
-    let channel = match self.server.inner.channels.transmit(id.clone()) {
+    let channel = match self.channels.transmit(id.clone()) {
       None => {
         let mut res = Response::new(StatusCode::FORBIDDEN);
         *res.body_mut() = Body::from("this source is already in use, try again later");
@@ -220,7 +231,7 @@ impl Handler for SourceHandler {
         loop {
           let data = req.data().await;
 
-          if self.server.inner.closed.load(Ordering::SeqCst) == CLOSED {
+          if self.shutdown.is_closed() {
             break;
           }
 

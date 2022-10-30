@@ -9,12 +9,14 @@ edition = "2021"
 async-trait = "0.1.58"
 bytes = "1.2.1"
 channels = { version = "0.1.0", path = "../channels" }
+cond-count = { version = "0.1.0", path = "../cond-count" }
 constants = { version = "0.1.0", path = "../../config/constants" }
 ffmpeg = { version = "0.1.0", path = "../ffmpeg" }
 hyper = "0.14.20"
 log = "0.4.17"
 owo = { version = "3.5.0", path = "../owo" }
 prex = { version = "0.1.0", path = "../prex" }
+shutdown = { version = "0.1.0", path = "../shutdown" }
 stream-util = { version = "0.1.0", path = "../stream-util" }
 tokio = { version = "1.21.2", features = ["full"] }
 tokio-stream = "0.1.10"

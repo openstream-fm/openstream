@@ -19,6 +19,8 @@ config = { version = "0.1.0", path = "../../packages/config" }
 db = { version = "0.1.0", path = "../../packages/db" }
 mongodb = "2.3.1"
 rust_ipify = "1.1.0"
+cond-count = { version = "0.1.0", path = "../../packages/cond-count" }
+shutdown = { version = "0.1.0", path = "../../packages/shutdown" }
 
 [features]
 # proctitle = "0.1.1"

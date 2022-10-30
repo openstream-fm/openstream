@@ -14,6 +14,8 @@ channels = { path = "../channels" }
 log = "0.4.17"
 owo = { version = "3.5.0", path = "../owo" }
 async-trait = "0.1.58"
+cond-count = { version = "0.1.0", path = "../cond-count" }
+shutdown = { version = "0.1.0", path = "../shutdown" }
 
 [features]
 

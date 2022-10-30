@@ -17,6 +17,8 @@ members = [
     "packages/channels",
     "packages/db",
 
+    "packages/shutdown",
+    "packages/cond-count",
     "packages/owo",
     "packages/prex",
     "packages/uid",
