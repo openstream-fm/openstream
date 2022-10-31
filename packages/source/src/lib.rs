@@ -16,95 +16,119 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::sync::broadcast::error::RecvError;
+use tokio::try_join;
 
 #[derive(Debug)]
 pub struct SourceServer {
-  inner: Arc<SourceServerInner>,
+  source_addr: SocketAddr,
+  broadcast_addr: SocketAddr,
+  channels: Arc<ChannelMap>,
+  shutdown: Shutdown,
+  condcount: CondCount,
 }
 
 #[derive(Debug)]
-struct SourceServerInner {
-  addr: SocketAddr,
-  channels: Arc<ChannelMap>,
-  shutdown: Shutdown,
-  cond_count: CondCount,
-}
+struct SourceServerInner {}
 
 impl SourceServer {
   pub fn new(
-    addr: impl Into<SocketAddr>,
+    source_addr: impl Into<SocketAddr>,
+    broadcast_addr: impl Into<SocketAddr>,
     channels: Arc<ChannelMap>,
     shutdown: Shutdown,
-    cond_count: CondCount,
+    condcount: CondCount,
   ) -> Self {
     Self {
-      inner: Arc::new(SourceServerInner {
-        addr: addr.into(),
-        channels,
-        shutdown,
-        cond_count,
-      }),
+      source_addr: source_addr.into(),
+      broadcast_addr: broadcast_addr.into(),
+      channels,
+      shutdown,
+      condcount,
     }
   }
 
   pub fn start(
     self,
   ) -> Result<impl Future<Output = Result<(), hyper::Error>> + 'static, hyper::Error> {
-    let server = Server::try_bind(&self.inner.addr)?
+    let source = Server::try_bind(&self.source_addr)?
       .http1_only(true)
-      .http1_header_read_timeout(Duration::from_secs(5))
       .http1_title_case_headers(false)
       .http1_preserve_header_case(false);
 
-    info!("source server bound to {}", self.inner.addr.yellow());
+    info!(
+      "source receiver server bound to {}",
+      self.source_addr.yellow()
+    );
 
-    let mut app = prex::prex();
+    let broadcast = Server::try_bind(&self.broadcast_addr)?
+      .http1_only(true)
+      .http1_title_case_headers(false)
+      .http1_preserve_header_case(false);
 
-    app.with(logger);
+    info!(
+      "source broadcaster server bound to {}",
+      self.broadcast_addr.yellow()
+    );
+
+    let mut source_app = prex::prex();
+    let mut broadcast_app = prex::prex();
+
+    if log::log_enabled!(Level::Debug) {
+      source_app.with(logger);
+      broadcast_app.with(logger);
+    }
     //app.with(http_1_0_version);
     //app.with(connection_close);
     //app.any("/:id/source", source_allow);
     //app.any("/:id/source", source_accept);
-    app.any(
+    source_app.any(
       "/:id/source",
-      SourceHandler::new(self.inner.channels.clone(), self.inner.shutdown.clone()),
+      SourceHandler::new(self.channels.clone(), self.shutdown.clone()),
     );
 
-    let app = app.build().expect("prex app build source");
+    broadcast_app.get(
+      "/broadcast/:id",
+      BroadcastHandler::new(self.channels.clone(), self.shutdown.clone()),
+    );
 
-    let signal = {
-      let shutdown = self.inner.shutdown.clone();
-      async move {
-        if shutdown.is_closed() {
-          return;
-        };
-        shutdown.notified().await;
-      }
-    };
+    let source_app = source_app.build().expect("prex app build source");
+    let broadcast_app = broadcast_app.build().expect("prex app build source");
 
     Ok(async move {
-      server.serve(app).with_graceful_shutdown(signal).await?;
+      try_join!(
+        source
+          .serve(source_app)
+          .with_graceful_shutdown(self.shutdown.signal()),
+        broadcast
+          .serve(broadcast_app)
+          .with_graceful_shutdown(self.shutdown.signal()),
+      )?;
+
       drop(self);
       Ok(())
     })
   }
 }
 
-impl Drop for SourceServerInner {
+impl Drop for SourceServer {
   fn drop(&mut self) {
-    self.cond_count.wait();
+    info!("source server stopped, waiting for resources cleanup");
+    self.condcount.wait();
   }
 }
 
 async fn logger(req: Request, next: Next) -> prex::Response {
+  let start = tokio::time::Instant::now();
+
   let method = req.method().clone();
   let path = req.uri().path().to_string();
 
   let res = next.run(req).await;
-
+  let elapsed = start.elapsed().as_millis();
   let status = res.status();
 
-  debug!("[request] {method} {path} => {status}");
+  debug!("[request] {method} {path} => {status} in {}ms", elapsed);
 
   res
 }
@@ -320,5 +344,71 @@ impl Handler for SourceHandler {
 
       res
     }
+  }
+}
+
+#[derive(Debug)]
+struct BroadcastHandler {
+  channels: Arc<ChannelMap>,
+  shutdown: Shutdown,
+}
+
+impl BroadcastHandler {
+  fn new(channels: Arc<ChannelMap>, shutdown: Shutdown) -> Self {
+    Self { channels, shutdown }
+  }
+}
+
+#[async_trait]
+impl Handler for BroadcastHandler {
+  async fn call(&self, request: Request, _: Next) -> Response {
+    // unwrap: id is a required param in path defintion
+    let id = request.param("id").unwrap();
+
+    let mut rx = match self.channels.subscribe(id) {
+      None => {
+        let mut res = Response::new(StatusCode::NOT_FOUND);
+        *res.body_mut() = Body::from(format!(
+          "stream with id {id} not actively streaming from this server"
+        ));
+
+        return res;
+      }
+      Some(rx) => rx,
+    };
+
+    let (mut sender, body) = Body::channel();
+
+    tokio::spawn({
+      let shutdown = self.shutdown.clone();
+
+      async move {
+        loop {
+          let item = rx.recv().await;
+          if shutdown.is_closed() {
+            break;
+          };
+
+          match item {
+            Err(e) => match e {
+              RecvError::Closed => break,
+              RecvError::Lagged(_) => continue,
+            },
+            Ok(bytes) => match sender.send_data(bytes).await {
+              Err(_) => break,
+              Ok(()) => continue,
+            },
+          }
+        }
+      }
+    });
+
+    let mut res = Response::new(StatusCode::OK);
+    res
+      .headers_mut()
+      .append(CONTENT_TYPE, HeaderValue::from_static("audio/mpeg"));
+    *res.body_mut() = body;
+
+    res
   }
 }

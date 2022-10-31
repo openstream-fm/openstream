@@ -31,8 +31,16 @@ impl Shutdown {
     self.inner.notify.notify_waiters();
   }
 
-  pub async fn notified(&self) {
+  async fn notified(&self) {
     self.inner.notify.notified().await;
+  }
+
+  pub async fn signal(&self) {
+    if self.is_closed() {
+      return;
+    }
+
+    self.notified().await;
   }
 
   pub fn is_closed(&self) -> bool {

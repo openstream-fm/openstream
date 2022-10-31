@@ -84,24 +84,23 @@ async fn tokio_main() -> Result<(), Box<dyn std::error::Error>> {
       source: source_config,
       stream: stream_config,
     }) => {
-      let condcount = CondCount::new();
-      let channels = Arc::new(ChannelMap::new(condcount.clone()));
-      //let source_condcount = CondCount::new();
-      //let source_channels = Arc::new(ChannelMap::new(source_condcount.clone()));
+      let source_condcount = CondCount::new();
+      let source_channels = Arc::new(ChannelMap::new(source_condcount.clone()));
       let source = SourceServer::new(
         ([0, 0, 0, 0], source_config.receiver.port),
-        channels.clone(),
+        ([0, 0, 0, 0], source_config.broadcaster.port),
+        source_channels,
         shutdown.clone(),
-        condcount.clone(),
+        source_condcount,
       );
 
-      //let stream_condcount = CondCount::new();
-      //let stream_channels = Arc::new(ChannelMap::new(stream_condcount.clone()));
+      let stream_condcount = CondCount::new();
+      let stream_channels = Arc::new(ChannelMap::new(stream_condcount.clone()));
       let stream = StreamServer::new(
         ([0, 0, 0, 0], stream_config.port),
-        channels,
+        stream_channels,
         shutdown.clone(),
-        condcount,
+        stream_condcount,
       );
 
       let source_fut = source.start()?;
@@ -119,13 +118,14 @@ async fn tokio_main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     config::Interfaces::Source(config) => {
-      let cond_count = CondCount::new();
-      let channels = Arc::new(ChannelMap::new(cond_count.clone()));
+      let condcount = CondCount::new();
+      let channels = Arc::new(ChannelMap::new(condcount.clone()));
       let source = SourceServer::new(
         ([0, 0, 0, 0], config.receiver.port),
+        ([0, 0, 0, 0], config.broadcaster.port),
         channels,
         shutdown.clone(),
-        cond_count,
+        condcount,
       );
 
       let source_fut = source.start()?;

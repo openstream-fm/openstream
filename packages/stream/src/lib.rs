@@ -13,31 +13,27 @@ use tokio::sync::broadcast::error::RecvError;
 
 #[derive(Debug)]
 pub struct StreamServer {
-  inner: Arc<StreamServerInner>,
-}
-
-#[derive(Debug)]
-struct StreamServerInner {
   addr: SocketAddr,
   channels: Arc<ChannelMap>,
   shutdown: Shutdown,
-  cond_count: CondCount,
+  condcount: CondCount,
 }
+
+#[derive(Debug)]
+struct StreamServerInner {}
 
 impl StreamServer {
   pub fn new<A: Into<SocketAddr>>(
     addr: A,
     channels: Arc<ChannelMap>,
     shutdown: Shutdown,
-    cond_count: CondCount,
+    condcount: CondCount,
   ) -> Self {
     Self {
-      inner: Arc::new(StreamServerInner {
-        addr: addr.into(),
-        channels,
-        shutdown,
-        cond_count,
-      }),
+      addr: addr.into(),
+      channels,
+      shutdown,
+      condcount,
     }
   }
 
@@ -46,37 +42,34 @@ impl StreamServer {
   ) -> Result<impl Future<Output = Result<(), hyper::Error>> + 'static, hyper::Error> {
     let mut app = prex::prex();
 
-    let handle = StreamHandler::new(self.inner.channels.clone(), self.inner.shutdown.clone());
+    let handle = StreamHandler::new(self.channels.clone(), self.shutdown.clone());
 
     app.get("/stream/:id", handle);
 
     let app = app.build().expect("prex app build stream");
 
-    let signal = {
-      let shutdown = self.inner.shutdown.clone();
-      async move {
-        if shutdown.is_closed() {
-          return;
-        }
-        shutdown.notified().await;
-      }
-    };
+    let server = Server::try_bind(&self.addr)?
+      .http1_only(true)
+      .http1_title_case_headers(false)
+      .http1_preserve_header_case(false);
 
-    let server = Server::try_bind(&self.inner.addr)?;
-
-    info!("stream server bound to {}", self.inner.addr.yellow());
+    info!("stream server bound to {}", self.addr.yellow());
 
     Ok(async move {
-      server.serve(app).with_graceful_shutdown(signal).await?;
+      server
+        .serve(app)
+        .with_graceful_shutdown(self.shutdown.signal())
+        .await?;
       drop(self);
       Ok(())
     })
   }
 }
 
-impl Drop for StreamServerInner {
+impl Drop for StreamServer {
   fn drop(&mut self) {
-    self.cond_count.wait();
+    info!("stream server stopped, waiting for resources cleanup");
+    self.condcount.wait();
   }
 }
 
