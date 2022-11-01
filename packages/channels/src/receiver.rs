@@ -1,5 +1,5 @@
 use bytes::Bytes;
-use cond_count::Ref;
+use cond_count::Token;
 use heapless::Deque;
 use log::*;
 use std::{sync::atomic::Ordering, time::Duration};
@@ -24,7 +24,7 @@ pub struct Receiver {
   // this is an owned copy of the burst at subscription time (Bytes instances are copied by reference)
   pub(crate) burst: Deque<Bytes, STREAM_BURST_LENGTH>,
   pub(crate) channels: ChannelMap,
-  pub(crate) counter_ref: Ref,
+  pub(crate) token: Token,
 }
 
 impl Receiver {
@@ -49,10 +49,12 @@ impl Drop for Receiver {
       self.channel_id, count
     );
 
-    let counter_ref = self.counter_ref.clone();
-    tokio::spawn(async move {
-      tokio::time::sleep(Duration::from_millis(1_000)).await;
-      drop(counter_ref);
+    tokio::spawn({
+      let token = self.token.clone();
+      async move {
+        tokio::time::sleep(Duration::from_millis(1_000)).await;
+        drop(token);
+      }
     });
   }
 }

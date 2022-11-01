@@ -8,13 +8,12 @@ use prex::{handler::Handler, Next, Request, Response};
 use shutdown::Shutdown;
 use std::future::Future;
 use std::net::SocketAddr;
-use std::sync::Arc;
 use tokio::sync::broadcast::error::RecvError;
 
 #[derive(Debug)]
 pub struct StreamServer {
   addr: SocketAddr,
-  channels: Arc<ChannelMap>,
+  channels: ChannelMap,
   shutdown: Shutdown,
   condcount: CondCount,
 }
@@ -23,16 +22,14 @@ pub struct StreamServer {
 struct StreamServerInner {}
 
 impl StreamServer {
-  pub fn new<A: Into<SocketAddr>>(
-    addr: A,
-    channels: Arc<ChannelMap>,
-    shutdown: Shutdown,
-    condcount: CondCount,
-  ) -> Self {
+  pub fn new<A: Into<SocketAddr>>(addr: A, shutdown: Shutdown) -> Self {
+    let condcount = CondCount::new();
+    let channels = ChannelMap::new(condcount.clone());
+
     Self {
       addr: addr.into(),
-      channels,
       shutdown,
+      channels,
       condcount,
     }
   }
@@ -42,9 +39,10 @@ impl StreamServer {
   ) -> Result<impl Future<Output = Result<(), hyper::Error>> + 'static, hyper::Error> {
     let mut app = prex::prex();
 
-    let handle = StreamHandler::new(self.channels.clone(), self.shutdown.clone());
-
-    app.get("/stream/:id", handle);
+    app.get(
+      "/stream/:id",
+      StreamHandler::new(self.channels.clone(), self.shutdown.clone()),
+    );
 
     let app = app.build().expect("prex app build stream");
 
@@ -68,19 +66,19 @@ impl StreamServer {
 
 impl Drop for StreamServer {
   fn drop(&mut self) {
-    info!("stream server stopped, waiting for resources cleanup");
+    info!("stream server dropped, waiting for resources cleanup");
     self.condcount.wait();
   }
 }
 
 #[derive(Debug, Clone)]
 struct StreamHandler {
-  channels: Arc<ChannelMap>,
+  channels: ChannelMap,
   shutdown: Shutdown,
 }
 
 impl StreamHandler {
-  pub fn new(channels: Arc<ChannelMap>, shutdown: Shutdown) -> Self {
+  pub fn new(channels: ChannelMap, shutdown: Shutdown) -> Self {
     Self { channels, shutdown }
   }
 }

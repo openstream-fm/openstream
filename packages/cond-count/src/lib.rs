@@ -1,3 +1,4 @@
+use log::*;
 use parking_lot::{Condvar, Mutex};
 use std::sync::Arc;
 
@@ -7,11 +8,13 @@ pub struct CondCount {
 }
 
 impl CondCount {
-  pub fn increment(&self) {
+  #[allow(unused)]
+  fn increment(&self) {
     self.inner.increment();
   }
 
-  pub fn decrement(&self) {
+  #[allow(unused)]
+  fn decrement(&self) {
     self.inner.decrement();
   }
 
@@ -19,8 +22,8 @@ impl CondCount {
     self.inner.wait()
   }
 
-  pub fn instance(&self) -> Ref {
-    Ref::new(self.inner.clone())
+  pub fn token(&self) -> Token {
+    Token::new(self.inner.clone())
   }
 }
 
@@ -54,6 +57,13 @@ impl Inner {
   }
 }
 
+impl Drop for Inner {
+  fn drop(&mut self) {
+    info!("dropcounter droppped, waiting for resource cleanup");
+    self.wait();
+  }
+}
+
 impl CondCount {
   pub fn new() -> Self {
     Self {
@@ -66,26 +76,26 @@ impl CondCount {
 }
 
 #[derive(Debug, Clone)]
-pub struct Ref {
+pub struct Token {
   #[allow(unused)]
-  inner: Arc<InnerRef>,
+  inner: Arc<TokenInner>,
 }
 
 #[derive(Debug)]
-pub struct InnerRef {
+pub struct TokenInner {
   counter: Arc<Inner>,
 }
 
-impl Ref {
+impl Token {
   fn new(counter: Arc<Inner>) -> Self {
     counter.increment();
     Self {
-      inner: Arc::new(InnerRef { counter }),
+      inner: Arc::new(TokenInner { counter }),
     }
   }
 }
 
-impl Drop for InnerRef {
+impl Drop for TokenInner {
   fn drop(&mut self) {
     self.counter.decrement();
   }

@@ -13,8 +13,6 @@ use owo::*;
 use prex::{handler::Handler, Next, Request, Response};
 use std::future::Future;
 use std::net::SocketAddr;
-use std::sync::Arc;
-use std::time::Duration;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::sync::broadcast::error::RecvError;
 use tokio::try_join;
@@ -23,7 +21,7 @@ use tokio::try_join;
 pub struct SourceServer {
   source_addr: SocketAddr,
   broadcast_addr: SocketAddr,
-  channels: Arc<ChannelMap>,
+  channels: ChannelMap,
   shutdown: Shutdown,
   condcount: CondCount,
 }
@@ -35,10 +33,11 @@ impl SourceServer {
   pub fn new(
     source_addr: impl Into<SocketAddr>,
     broadcast_addr: impl Into<SocketAddr>,
-    channels: Arc<ChannelMap>,
     shutdown: Shutdown,
-    condcount: CondCount,
   ) -> Self {
+    let condcount = CondCount::new();
+    let channels = ChannelMap::new(condcount.clone());
+
     Self {
       source_addr: source_addr.into(),
       broadcast_addr: broadcast_addr.into(),
@@ -113,7 +112,7 @@ impl SourceServer {
 
 impl Drop for SourceServer {
   fn drop(&mut self) {
-    info!("source server stopped, waiting for resources cleanup");
+    info!("source server dropped, waiting for resources cleanup");
     self.condcount.wait();
   }
 }
@@ -135,12 +134,12 @@ async fn logger(req: Request, next: Next) -> prex::Response {
 
 #[derive(Debug, Clone)]
 struct SourceHandler {
-  channels: Arc<ChannelMap>,
+  channels: ChannelMap,
   shutdown: Shutdown,
 }
 
 impl SourceHandler {
-  fn new(channels: Arc<ChannelMap>, shutdown: Shutdown) -> Self {
+  fn new(channels: ChannelMap, shutdown: Shutdown) -> Self {
     Self { channels, shutdown }
   }
 }
@@ -349,12 +348,12 @@ impl Handler for SourceHandler {
 
 #[derive(Debug)]
 struct BroadcastHandler {
-  channels: Arc<ChannelMap>,
+  channels: ChannelMap,
   shutdown: Shutdown,
 }
 
 impl BroadcastHandler {
-  fn new(channels: Arc<ChannelMap>, shutdown: Shutdown) -> Self {
+  fn new(channels: ChannelMap, shutdown: Shutdown) -> Self {
     Self { channels, shutdown }
   }
 }

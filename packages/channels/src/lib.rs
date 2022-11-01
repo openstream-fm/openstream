@@ -33,12 +33,12 @@ pub struct ChannelMap {
 }
 
 impl ChannelMap {
-  pub fn new(cond_count: CondCount) -> Self {
+  pub fn new(condcount: CondCount) -> Self {
     Self {
       inner: Arc::new(Inner {
         map: RwLock::new(HashMap::new()),
         rx_count: AtomicUsize::new(0),
-        cond_count,
+        condcount,
       }),
     }
   }
@@ -49,7 +49,7 @@ pub struct Inner {
   pub(crate) map: RwLock<HashMap<String, Channel>>,
   // we dont need tx_count as is the same as map.len()
   pub(crate) rx_count: AtomicUsize,
-  pub(crate) cond_count: CondCount,
+  pub(crate) condcount: CondCount,
 }
 
 impl ChannelMap {
@@ -73,13 +73,12 @@ impl ChannelMap {
 
           entry.insert(channel);
 
-          self.inner.cond_count.increment();
           let tx = Transmitter {
             id: id.clone(),
             sender,
             channels: self.clone(),
             burst,
-            counter_ref: self.inner.cond_count.instance(),
+            token: self.inner.condcount.token(),
           };
 
           (tx, map.len())
@@ -98,14 +97,13 @@ impl ChannelMap {
 
       let channel = map.get(id)?;
 
-      self.inner.cond_count.increment();
       let rx = Receiver {
         channel_id: id.to_string(),
         // this will make a snapshot of the burst at subscription time (not clone the Arc<RwLock<>>)
         burst: channel.burst.read().clone(),
         receiver: channel.sender.subscribe(),
         channels: self.clone(),
-        counter_ref: self.inner.cond_count.instance(),
+        token: self.inner.condcount.token(),
       };
 
       rx

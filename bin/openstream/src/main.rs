@@ -1,13 +1,11 @@
 use config::Both;
 use log::*;
 
-use channels::ChannelMap;
-use cond_count::CondCount;
 use owo::*;
 use rust_ipify::ipify;
 use shutdown::Shutdown;
 use source::SourceServer;
-use std::{net::Ipv4Addr, sync::Arc};
+use std::net::Ipv4Addr;
 use stream::StreamServer;
 use tokio::try_join;
 
@@ -84,24 +82,13 @@ async fn tokio_main() -> Result<(), Box<dyn std::error::Error>> {
       source: source_config,
       stream: stream_config,
     }) => {
-      let source_condcount = CondCount::new();
-      let source_channels = Arc::new(ChannelMap::new(source_condcount.clone()));
       let source = SourceServer::new(
         ([0, 0, 0, 0], source_config.receiver.port),
         ([0, 0, 0, 0], source_config.broadcaster.port),
-        source_channels,
         shutdown.clone(),
-        source_condcount,
       );
 
-      let stream_condcount = CondCount::new();
-      let stream_channels = Arc::new(ChannelMap::new(stream_condcount.clone()));
-      let stream = StreamServer::new(
-        ([0, 0, 0, 0], stream_config.port),
-        stream_channels,
-        shutdown.clone(),
-        stream_condcount,
-      );
+      let stream = StreamServer::new(([0, 0, 0, 0], stream_config.port), shutdown.clone());
 
       let source_fut = source.start()?;
       let stream_fut = stream.start()?;
@@ -118,14 +105,10 @@ async fn tokio_main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     config::Interfaces::Source(config) => {
-      let condcount = CondCount::new();
-      let channels = Arc::new(ChannelMap::new(condcount.clone()));
       let source = SourceServer::new(
         ([0, 0, 0, 0], config.receiver.port),
         ([0, 0, 0, 0], config.broadcaster.port),
-        channels,
         shutdown.clone(),
-        condcount,
       );
 
       let source_fut = source.start()?;
@@ -144,14 +127,7 @@ async fn tokio_main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     config::Interfaces::Stream(config) => {
-      let cond_count = CondCount::new();
-      let channels = Arc::new(ChannelMap::new(cond_count.clone()));
-      let stream = StreamServer::new(
-        ([0, 0, 0, 0], config.port),
-        channels,
-        shutdown.clone(),
-        cond_count,
-      );
+      let stream = StreamServer::new(([0, 0, 0, 0], config.port), shutdown.clone());
 
       let stream_fut = stream.start()?;
 
