@@ -113,7 +113,7 @@ async fn client(base: &str, id: &str) -> Result<(), reqwest::Error> {
   HISTORIC_CLIENTS.fetch_add(1, Ordering::Relaxed);
 
   let client = Client::new();
-  let mut res = client.get(format!("{base}/stream/{id}")).send().await?;
+  let mut res = client.get(format!("{base}/broadcast/{id}")).send().await?;
 
   while let Some(data) = res.chunk().await? {
     BYTES_READED.fetch_add(data.len(), Ordering::Relaxed);
