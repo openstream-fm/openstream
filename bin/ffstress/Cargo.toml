@@ -1,17 +1,10 @@
 [package]
-name = "client"
+name = "ffstress"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bytes = "1.2.1"
-dotenv = "0.15.0"
 ffmpeg = { version = "0.1.0", path = "../../packages/ffmpeg" }
-futures = "0.3.24"
-hyper = { version = "0.14.20", features = ["full"] }
-reqwest = { version = "0.11.12", features = ["rustls"] }
 tokio = { version = "1.21.2", features = ["full"] }
-
-[features]

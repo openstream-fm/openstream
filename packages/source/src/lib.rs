@@ -4,6 +4,7 @@ use channels::ChannelMap;
 use cond_count::CondCount;
 use constants::STREAM_CHUNK_SIZE;
 use ffmpeg::{Ffmpeg, FfmpegConfig, FfmpegSpawn};
+use futures::future::try_join_all;
 use hyper::body::HttpBody;
 use hyper::header::{HeaderValue, ALLOW, CONTENT_TYPE};
 use hyper::HeaderMap;
@@ -15,12 +16,11 @@ use std::future::Future;
 use std::net::SocketAddr;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::sync::broadcast::error::RecvError;
-use tokio::try_join;
 
 #[derive(Debug)]
 pub struct SourceServer {
-  source_addr: SocketAddr,
-  broadcast_addr: SocketAddr,
+  source_addrs: Vec<SocketAddr>,
+  broadcast_addrs: Vec<SocketAddr>,
   channels: ChannelMap,
   shutdown: Shutdown,
   condcount: CondCount,
@@ -31,16 +31,16 @@ struct SourceServerInner {}
 
 impl SourceServer {
   pub fn new(
-    source_addr: impl Into<SocketAddr>,
-    broadcast_addr: impl Into<SocketAddr>,
+    source_addrs: Vec<SocketAddr>,
+    broadcast_addrs: Vec<SocketAddr>,
     shutdown: Shutdown,
   ) -> Self {
     let condcount = CondCount::new();
     let channels = ChannelMap::new(condcount.clone());
 
     Self {
-      source_addr: source_addr.into(),
-      broadcast_addr: broadcast_addr.into(),
+      source_addrs,
+      broadcast_addrs,
       channels,
       shutdown,
       condcount,
@@ -50,60 +50,62 @@ impl SourceServer {
   pub fn start(
     self,
   ) -> Result<impl Future<Output = Result<(), hyper::Error>> + 'static, hyper::Error> {
-    let source = Server::try_bind(&self.source_addr)?
-      .http1_only(true)
-      .http1_title_case_headers(false)
-      .http1_preserve_header_case(false);
+    let mut futs = vec![];
 
-    info!(
-      "source receiver server bound to {}",
-      self.source_addr.yellow()
-    );
+    for addr in &self.source_addrs {
+      let source = Server::try_bind(&addr)?
+        .http1_only(true)
+        .http1_title_case_headers(false)
+        .http1_preserve_header_case(false);
 
-    let broadcast = Server::try_bind(&self.broadcast_addr)?
-      .http1_only(true)
-      .http1_title_case_headers(false)
-      .http1_preserve_header_case(false);
+      info!("source receiver server bound to {}", addr.yellow());
 
-    info!(
-      "source broadcaster server bound to {}",
-      self.broadcast_addr.yellow()
-    );
+      let mut app = prex::prex();
 
-    let mut source_app = prex::prex();
-    let mut broadcast_app = prex::prex();
+      if log::log_enabled!(Level::Debug) {
+        app.with(logger);
+      }
 
-    if log::log_enabled!(Level::Debug) {
-      source_app.with(logger);
-      broadcast_app.with(logger);
+      app.any(
+        "/:id/source",
+        SourceHandler::new(self.channels.clone(), self.shutdown.clone()),
+      );
+
+      let app = app.build().expect("prex app build source");
+
+      futs.push(
+        source
+          .serve(app)
+          .with_graceful_shutdown(self.shutdown.signal()),
+      )
     }
-    //app.with(http_1_0_version);
-    //app.with(connection_close);
-    //app.any("/:id/source", source_allow);
-    //app.any("/:id/source", source_accept);
-    source_app.any(
-      "/:id/source",
-      SourceHandler::new(self.channels.clone(), self.shutdown.clone()),
-    );
 
-    broadcast_app.get(
-      "/broadcast/:id",
-      BroadcastHandler::new(self.channels.clone(), self.shutdown.clone()),
-    );
+    for addr in &self.broadcast_addrs {
+      let broadcast = Server::try_bind(&addr)?
+        .http1_only(true)
+        .http1_title_case_headers(false)
+        .http1_preserve_header_case(false);
 
-    let source_app = source_app.build().expect("prex app build source");
-    let broadcast_app = broadcast_app.build().expect("prex app build source");
+      info!("source broadcaster server bound to {}", addr.yellow());
+
+      let mut app = prex::prex();
+
+      app.get(
+        "/broadcast/:id",
+        BroadcastHandler::new(self.channels.clone(), self.shutdown.clone()),
+      );
+
+      let app = app.build().expect("prex app build source");
+
+      futs.push(
+        broadcast
+          .serve(app)
+          .with_graceful_shutdown(self.shutdown.signal()),
+      );
+    }
 
     Ok(async move {
-      try_join!(
-        source
-          .serve(source_app)
-          .with_graceful_shutdown(self.shutdown.signal()),
-        broadcast
-          .serve(broadcast_app)
-          .with_graceful_shutdown(self.shutdown.signal()),
-      )?;
-
+      try_join_all(futs).await?;
       drop(self);
       Ok(())
     })

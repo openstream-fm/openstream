@@ -1,12 +1,16 @@
 [package]
-name = "ffmpeg"
+name = "spsc"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bytes = "1.2.1"
-constants = { version = "0.1.0", path = "../../config/constants" }
-tokio = { version = "1", features = [ "full" ] }
+async-stream = "0.3.3"
+log = "0.4.17"
+parking_lot = "0.12.1"
+pin-project = "1.0.12"
 tokio-stream = "0.1.11"
+
+[dev-dependencies]
+tokio = { version = "1.21.2", features = ["full"] }

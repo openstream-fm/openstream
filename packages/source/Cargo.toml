@@ -12,6 +12,7 @@ channels = { version = "0.1.0", path = "../channels" }
 cond-count = { version = "0.1.0", path = "../cond-count" }
 constants = { version = "0.1.0", path = "../../config/constants" }
 ffmpeg = { version = "0.1.0", path = "../ffmpeg" }
+futures = "0.3.25"
 hyper = "0.14.20"
 log = "0.4.17"
 owo = { version = "3.5.0", path = "../owo" }

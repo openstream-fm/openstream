@@ -1,3 +1,4 @@
+use constants;
 use std::fmt::{self, Display, Formatter};
 use std::process::Stdio;
 use tokio::process::{Child, ChildStderr, ChildStdin, ChildStdout, Command};
@@ -69,10 +70,10 @@ pub struct FfmpegConfig {
   pub bin: &'static str,
   pub loglevel: LogLevel,
   pub format: Format,
-  pub kbitrate: u16,
-  pub kminrate: u16,
-  pub kmaxrate: u16,
-  pub kbufsize: u16,
+  pub kbitrate: usize,
+  pub kminrate: usize,
+  pub kmaxrate: usize,
+  pub kbufsize: usize,
   pub freq: u16,
   pub channels: u8,
   pub novideo: bool,
@@ -89,10 +90,10 @@ impl FfmpegConfig {
   pub const LOGLEVEL: LogLevel = LogLevel::Error;
 
   /// output bitrate
-  pub const KBITRATE: u16 = 320;
-  pub const KMINRATE: u16 = Self::KBITRATE;
-  pub const KMAXRATE: u16 = Self::KBITRATE;
-  pub const KBUFSIZE: u16 = Self::KBITRATE;
+  pub const KBITRATE: usize = constants::STREAM_KBITRATE;
+  pub const KMINRATE: usize = Self::KBITRATE;
+  pub const KMAXRATE: usize = Self::KBITRATE;
+  pub const KBUFSIZE: usize = Self::KBITRATE;
 
   // output format
   pub const FORMAT: Format = Format::MP3;

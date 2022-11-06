@@ -1,10 +1,12 @@
 use async_trait::async_trait;
 use channels::ChannelMap;
 use cond_count::CondCount;
+use futures::future::try_join_all;
 use hyper::{header::CONTENT_TYPE, http::HeaderValue, Body, Server, StatusCode};
 use log::*;
 use owo::*;
 use prex::{handler::Handler, Next, Request, Response};
+use serde::{Deserialize, Serialize};
 use shutdown::Shutdown;
 use std::future::Future;
 use std::net::SocketAddr;
@@ -12,22 +14,27 @@ use tokio::sync::broadcast::error::RecvError;
 
 #[derive(Debug)]
 pub struct StreamServer {
-  addr: SocketAddr,
+  addrs: Vec<SocketAddr>,
   channels: ChannelMap,
   shutdown: Shutdown,
   condcount: CondCount,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+pub struct Status {
+  status: usize,
 }
 
 #[derive(Debug)]
 struct StreamServerInner {}
 
 impl StreamServer {
-  pub fn new<A: Into<SocketAddr>>(addr: A, shutdown: Shutdown) -> Self {
+  pub fn new(addrs: Vec<SocketAddr>, shutdown: Shutdown) -> Self {
     let condcount = CondCount::new();
     let channels = ChannelMap::new(condcount.clone());
 
     Self {
-      addr: addr.into(),
+      addrs,
       shutdown,
       channels,
       condcount,
@@ -37,27 +44,36 @@ impl StreamServer {
   pub fn start(
     self,
   ) -> Result<impl Future<Output = Result<(), hyper::Error>> + 'static, hyper::Error> {
-    let mut app = prex::prex();
+    let mut futs = vec![];
 
-    app.get(
-      "/stream/:id",
-      StreamHandler::new(self.channels.clone(), self.shutdown.clone()),
-    );
+    for addr in &self.addrs {
+      let server = Server::try_bind(&addr)?
+        .http1_only(true)
+        .http1_title_case_headers(false)
+        .http1_preserve_header_case(false);
 
-    let app = app.build().expect("prex app build stream");
+      info!("stream server bound to {}", addr.yellow());
 
-    let server = Server::try_bind(&self.addr)?
-      .http1_only(true)
-      .http1_title_case_headers(false)
-      .http1_preserve_header_case(false);
+      let mut app = prex::prex();
 
-    info!("stream server bound to {}", self.addr.yellow());
+      app.get("/status", StatusHandler::new());
+
+      app.get(
+        "/stream/:id",
+        StreamHandler::new(self.channels.clone(), self.shutdown.clone()),
+      );
+
+      let app = app.build().expect("prex app build stream");
+
+      let fut = server
+        .serve(app)
+        .with_graceful_shutdown(self.shutdown.signal());
+
+      futs.push(fut);
+    }
 
     Ok(async move {
-      server
-        .serve(app)
-        .with_graceful_shutdown(self.shutdown.signal())
-        .await?;
+      try_join_all(futs).await?;
       drop(self);
       Ok(())
     })
@@ -139,5 +155,26 @@ impl Handler for StreamHandler {
     *res.body_mut() = response_body;
 
     res
+  }
+}
+
+#[derive(Debug)]
+struct StatusHandler;
+
+#[async_trait]
+impl Handler for StatusHandler {
+  async fn call(&self, _: Request, _: Next) -> Response {
+    let mut res = Response::new(StatusCode::OK);
+    let body = Body::from(r#"{"status":200}"#);
+    res.set_content_type(HeaderValue::from_static("application/json"));
+    res.set_charset(HeaderValue::from_static("utf-8"));
+    *res.body_mut() = body;
+    res
+  }
+}
+
+impl StatusHandler {
+  fn new() -> Self {
+    Self {}
   }
 }

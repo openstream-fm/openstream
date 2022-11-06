@@ -1,15 +1,18 @@
 use bytes::Bytes;
+use ffmpeg::{Ffmpeg, FfmpegConfig, FfmpegSpawn};
 use hyper::{Body, Uri};
 use reqwest::Client;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
+static CONNECTING_CLIENTS: AtomicUsize = AtomicUsize::new(0);
 static CURRENT_CLIENTS: AtomicUsize = AtomicUsize::new(0);
 static HISTORIC_CLIENTS: AtomicUsize = AtomicUsize::new(0);
 static BYTES_READED: AtomicUsize = AtomicUsize::new(0);
 static ERRORS: AtomicUsize = AtomicUsize::new(0);
 
-static BODY: Bytes = Bytes::from_static(include_bytes!("../../../audio.mp3"));
+static BODY: &[u8] = include_bytes!("../../../audio.mp3");
 
 const DEFAULT_C: usize = 1_000;
 
@@ -21,10 +24,17 @@ async fn main() {
     .expect("SOURCE_BASE_URL env not set")
     .trim_end_matches('/')
     .to_string();
-  let stream_base = std::env::var("STREAM_BASE_URL")
+
+  let stream_host = std::env::var("STREAM_HOST")
     .expect("STREAM_BASE_URL env not set")
     .trim_end_matches('/')
     .to_string();
+
+  let ports: Vec<u16> = std::env::var("STREAM_PORTS")
+    .expect("no PORTS ENV")
+    .split(",")
+    .map(|s| s.trim().parse().expect("invalid STREAM_PORTS env"))
+    .collect();
 
   let delay: u64 = match std::env::var("D") {
     Ok(s) => s.parse().unwrap_or(100),
@@ -34,7 +44,6 @@ async fn main() {
   let mountpoint_id = std::env::var("S").unwrap_or(String::from("1"));
 
   let _: Uri = source_base.parse().expect("SOURCE_BASE_URL invalid URL");
-  let _: Uri = stream_base.parse().expect("STREAM_BASE_URL invalid URL");
 
   let c: usize = match std::env::var("C") {
     Ok(s) => s.parse().unwrap_or(DEFAULT_C),
@@ -43,13 +52,14 @@ async fn main() {
 
   println!("mounpoint id: {mountpoint_id}");
   println!("source base: {source_base}");
-  println!("stream base: {stream_base}");
+  println!("stream host: {stream_host}");
+  println!("stream ports: {ports:?}");
   println!("concurrency: {c}");
   println!("delay: {delay}");
 
   let _ = tokio::try_join!(
     tokio::spawn(producer(source_base, mountpoint_id.clone())),
-    tokio::spawn(clients(c, stream_base, mountpoint_id, delay)),
+    tokio::spawn(clients(c, stream_host, ports, mountpoint_id, delay)),
     tokio::spawn(print_stats())
   )
   .unwrap();
@@ -59,12 +69,31 @@ async fn producer(base: String, id: String) {
   let client = Client::new();
   let (mut tx, body) = Body::channel();
 
-  let _sender = tokio::spawn(async move {
+  let config = FfmpegConfig {
+    readrate: true,
+    ..Default::default()
+  };
+
+  let FfmpegSpawn {
+    child: _child,
+    mut stdin,
+    mut stdout,
+    ..
+  } = Ffmpeg::new(config).spawn().expect("ffmpeg spawn");
+
+  tokio::spawn(async move {
     loop {
-      match tx.send_data(BODY.clone()).await {
-        Ok(_) => continue,
-        Err(_e) => break,
-      }
+      stdin.write_all(BODY).await.expect("ffmpeg write");
+    }
+  });
+
+  let _sender = tokio::spawn(async move {
+    let mut buf = [0u8; 8000];
+    loop {
+      let n = stdout.read(&mut buf).await.expect("ffmpeg read");
+      tx.send_data(Bytes::copy_from_slice(&buf[0..n]))
+        .await
+        .expect("producer send_data");
     }
   });
 
@@ -73,7 +102,7 @@ async fn producer(base: String, id: String) {
     .body(body)
     .send()
     .await
-    .expect("producer send().await");
+    .expect("producer send request");
 
   println!("producer status: {:?}", response.status());
 
@@ -83,17 +112,21 @@ async fn producer(base: String, id: String) {
   panic!("producer terminated");
 }
 
-async fn clients(n: usize, base: String, id: String, delay: u64) {
+async fn clients(n: usize, host: String, ports: Vec<u16>, id: String, delay: u64) {
   tokio::time::sleep(Duration::from_millis(1_000)).await;
 
+  let http_client = Client::new();
+
   tokio::spawn(async move {
-    for _i in 0..n {
+    for i in 0..n {
       tokio::time::sleep(Duration::from_millis(delay)).await;
-      let base = base.clone();
+      let port = ports[i % ports.len()];
+      let host = host.clone();
       let id = id.clone();
+      let http_client = http_client.clone();
       tokio::spawn(async move {
         loop {
-          match client(base.as_str(), id.as_str()).await {
+          match client(&http_client, host.as_str(), port, id.as_str()).await {
             Err(_) => {
               ERRORS.fetch_add(1, Ordering::Relaxed);
             }
@@ -108,12 +141,47 @@ async fn clients(n: usize, base: String, id: String, delay: u64) {
   .unwrap();
 }
 
-async fn client(base: &str, id: &str) -> Result<(), reqwest::Error> {
+/*
+async fn client(base: &str, id: &str) -> Result<(), std::io::Error> {
+  let url: Uri = base.parse().unwrap();
+  let addr = SocketAddr::from(([0, 0, 0, 0], url.port_u16().unwrap_or(80)));
+
+  CONNECTING_CLIENTS.fetch_add(1, Ordering::Relaxed);
+
+  let mut socket = TcpStream::connect(addr).await?;
+
+  CONNECTING_CLIENTS.fetch_sub(1, Ordering::Relaxed);
   CURRENT_CLIENTS.fetch_add(1, Ordering::Relaxed);
   HISTORIC_CLIENTS.fetch_add(1, Ordering::Relaxed);
 
-  let client = Client::new();
-  let mut res = client.get(format!("{base}/broadcast/{id}")).send().await?;
+  socket
+    .write_all(format!("GET /broadcast/{id} HTTP/1.0\r\n").as_bytes())
+    .await?;
+  socket
+    .write_all(format!("host: localhost\r\n\r\n").as_bytes())
+    .await?;
+
+  let mut buf = [0; 8000];
+  loop {
+    let n = socket.read(&mut buf).await?;
+    if n == 0 {
+      break;
+    }
+    BYTES_READED.fetch_add(n, Ordering::Relaxed);
+  }
+
+  Ok(())
+}
+*/
+async fn client(client: &Client, host: &str, port: u16, id: &str) -> Result<(), reqwest::Error> {
+  CURRENT_CLIENTS.fetch_add(1, Ordering::Relaxed);
+  HISTORIC_CLIENTS.fetch_add(1, Ordering::Relaxed);
+
+  //let client = Client::new();
+  let mut res = client
+    .get(format!("http://{host}:{port}/broadcast/{id}"))
+    .send()
+    .await?;
 
   while let Some(data) = res.chunk().await? {
     BYTES_READED.fetch_add(data.len(), Ordering::Relaxed);
@@ -134,9 +202,11 @@ async fn print_stats() {
 
     let historic_clients = HISTORIC_CLIENTS.load(Ordering::Relaxed);
     let current_clients = CURRENT_CLIENTS.load(Ordering::Relaxed);
+    let connecting_clients = CONNECTING_CLIENTS.load(Ordering::Relaxed);
     let errors = ERRORS.load(Ordering::Relaxed);
 
     println!("==========================================");
+    println!("{connecting_clients} connecting clients");
     println!("{current_clients} open connections");
     println!("{historic_clients} all time connections");
     println!("{errors} errors");

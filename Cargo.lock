@@ -273,6 +273,7 @@ version = "0.1.0"
 dependencies = [
  "bytes",
  "dotenv",
+ "ffmpeg",
  "futures",
  "hyper",
  "reqwest",
@@ -515,8 +516,17 @@ name = "ffmpeg"
 version = "0.1.0"
 dependencies = [
  "bytes",
+ "constants",
  "tokio",
  "tokio-stream",
+]
+
+[[package]]
+name = "ffstress"
+version = "0.1.0"
+dependencies = [
+ "ffmpeg",
+ "tokio",
 ]
 
 [[package]]
@@ -1809,9 +1819,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.86"
+version = "1.0.87"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "41feea4228a6f1cd09ec7a3593a682276702cd67b5273544757dae23c096f074"
+checksum = "6ce777b7b150d76b9cf60d28b55f5847135a003f7d7350c6be7a773508ce7d45"
 dependencies = [
  "indexmap",
  "itoa",
@@ -1927,6 +1937,7 @@ dependencies = [
  "cond-count",
  "constants",
  "ffmpeg",
+ "futures",
  "hyper",
  "log",
  "owo",
@@ -1975,6 +1986,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "spsc"
+version = "0.1.0"
+dependencies = [
+ "async-stream",
+ "log",
+ "parking_lot 0.12.1",
+ "pin-project",
+ "tokio",
+ "tokio-stream",
+]
+
+[[package]]
 name = "stable_deref_trait"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2016,10 +2039,13 @@ dependencies = [
  "bytes",
  "channels",
  "cond-count",
+ "futures",
  "hyper",
  "log",
  "owo",
  "prex",
+ "serde",
+ "serde_json",
  "shutdown",
  "tokio",
 ]

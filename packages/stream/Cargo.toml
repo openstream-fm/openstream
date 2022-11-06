@@ -16,6 +16,9 @@ owo = { version = "3.5.0", path = "../owo" }
 async-trait = "0.1.58"
 cond-count = { version = "0.1.0", path = "../cond-count" }
 shutdown = { version = "0.1.0", path = "../shutdown" }
+serde_json = "1.0.87"
+serde = "1.0.147"
+futures = "0.3.25"
 
 [features]
 

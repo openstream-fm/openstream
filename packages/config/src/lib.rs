@@ -3,6 +3,8 @@ use std::path::Path;
 
 pub mod raw {
 
+  use std::net::SocketAddr;
+
   use serde::{Deserialize, Serialize};
   use url::Url;
 
@@ -20,7 +22,7 @@ pub mod raw {
 
   #[derive(Debug, Clone, Serialize, Deserialize)]
   pub struct Stream {
-    pub port: u16,
+    pub addrs: Vec<SocketAddr>,
     pub public_base_url: Url,
   }
 
@@ -32,13 +34,13 @@ pub mod raw {
 
   #[derive(Debug, Clone, Serialize, Deserialize)]
   pub struct SourceReceiver {
-    pub port: u16,
+    pub addrs: Vec<SocketAddr>,
     pub public_base_url: Url,
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize)]
   pub struct SourceBroadcaster {
-    pub port: u16,
+    pub addrs: Vec<SocketAddr>,
     /// if not set, this will default to http://PUBLIC_IP:PORT
     pub public_base_url: Option<Url>,
   }

@@ -83,12 +83,12 @@ async fn tokio_main() -> Result<(), Box<dyn std::error::Error>> {
       stream: stream_config,
     }) => {
       let source = SourceServer::new(
-        ([0, 0, 0, 0], source_config.receiver.port),
-        ([0, 0, 0, 0], source_config.broadcaster.port),
+        source_config.receiver.addrs,
+        source_config.broadcaster.addrs,
         shutdown.clone(),
       );
 
-      let stream = StreamServer::new(([0, 0, 0, 0], stream_config.port), shutdown.clone());
+      let stream = StreamServer::new(stream_config.addrs, shutdown.clone());
 
       let source_fut = source.start()?;
       let stream_fut = stream.start()?;
@@ -106,8 +106,8 @@ async fn tokio_main() -> Result<(), Box<dyn std::error::Error>> {
 
     config::Interfaces::Source(config) => {
       let source = SourceServer::new(
-        ([0, 0, 0, 0], config.receiver.port),
-        ([0, 0, 0, 0], config.broadcaster.port),
+        config.receiver.addrs,
+        config.broadcaster.addrs,
         shutdown.clone(),
       );
 
@@ -127,7 +127,7 @@ async fn tokio_main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     config::Interfaces::Stream(config) => {
-      let stream = StreamServer::new(([0, 0, 0, 0], config.port), shutdown.clone());
+      let stream = StreamServer::new(config.addrs, shutdown.clone());
 
       let stream_fut = stream.start()?;
 

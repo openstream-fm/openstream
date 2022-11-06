@@ -4,6 +4,7 @@ members = [
     "bin/producer",
     "bin/client",
     "bin/mixed",
+    "bin/ffstress",
 
     "config/constants",
 
@@ -17,6 +18,7 @@ members = [
     "packages/channels",
     "packages/db",
 
+    "packages/spsc",
     "packages/shutdown",
     "packages/cond-count",
     "packages/owo",

@@ -36,11 +36,8 @@ impl Shutdown {
     self.inner.notify.notify_waiters();
   }
 
-  pub fn signal<'a>(&'a self) -> Signal<'a> {
-    Signal {
-      closed: &self.inner.closed,
-      notified: self.inner.notify.notified(),
-    }
+  pub fn signal(&self) -> Signal {
+    Signal::new(self.inner.clone())
   }
 
   pub fn is_closed(&self) -> bool {
@@ -54,20 +51,31 @@ impl Shutdown {
 
 #[derive(Debug)]
 #[pin_project]
-pub struct Signal<'a> {
-  closed: &'a AtomicBool,
+pub struct Signal {
+  inner: Arc<Inner>,
   #[pin]
-  notified: Notified<'a>,
+  notified: Notified<'static>,
 }
 
-impl Future for Signal<'_> {
+impl Signal {
+  fn new(inner: Arc<Inner>) -> Self {
+    let notified = inner.notify.notified();
+
+    // safety: this is 'static because we have a clone of the Arc in the same struct and we never mutate it
+    let notified = unsafe { std::mem::transmute::<Notified<'_>, Notified<'static>>(notified) };
+
+    Self { inner, notified }
+  }
+}
+
+impl Future for Signal {
   type Output = ();
   fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
     let me = self.project();
     match me.notified.poll(cx) {
       Poll::Ready(()) => Poll::Ready(()),
       Poll::Pending => {
-        if me.closed.load(Ordering::SeqCst) == CLOSED {
+        if me.inner.closed.load(Ordering::SeqCst) == CLOSED {
           Poll::Ready(())
         } else {
           Poll::Pending
