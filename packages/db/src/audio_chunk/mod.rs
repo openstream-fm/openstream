@@ -1,6 +1,7 @@
 use crate::Model;
 use bytes::Bytes;
 use chrono::{DateTime, Utc};
+use mongodb::{bson::doc, IndexModel};
 use serde::{Deserialize, Serialize};
 use serde_util::as_f64;
 
@@ -40,5 +41,14 @@ impl Model for AudioChunk {
 
   fn cl_name() -> &'static str {
     "audio_chunks"
+  }
+
+  fn indexes() -> Vec<IndexModel> {
+    let account_id = IndexModel::builder().keys(doc! { "accountId": 1 }).build();
+    let audio_file_id = IndexModel::builder()
+      .keys(doc! { "audio_file_id": 1 })
+      .build();
+
+    vec![account_id, audio_file_id]
   }
 }

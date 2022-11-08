@@ -1,7 +1,8 @@
 use async_trait::async_trait;
+use log::*;
 use mongodb::{
   results::{InsertOneResult, UpdateResult},
-  Client, Collection, Database,
+  Client, Collection, Database, IndexModel,
 };
 use once_cell::sync::OnceCell;
 use serde::{de::DeserializeOwned, Serialize};
@@ -10,7 +11,9 @@ pub mod account;
 pub mod audio_chunk;
 pub mod audio_file;
 pub mod audio_upload_operation;
+pub mod metadata;
 pub mod station;
+pub mod user;
 
 static CLIENT: OnceCell<Client> = OnceCell::new();
 
@@ -18,6 +21,16 @@ pub fn init(client: Client) {
   CLIENT
     .set(client)
     .expect("[internal] mongodb client initialized more than once");
+}
+
+pub async fn ensure_indexes() -> Result<(), mongodb::error::Error> {
+  account::Account::ensure_indexes().await?;
+  audio_chunk::AudioChunk::ensure_indexes().await?;
+  audio_file::AudioFile::ensure_indexes().await?;
+  user::User::ensure_indexes().await?;
+  station::Station::ensure_indexes().await?;
+  audio_upload_operation::AudioUploadOperation::ensure_indexes().await?;
+  Ok(())
 }
 
 pub fn client_ref() -> &'static Client {
@@ -51,6 +64,40 @@ pub trait Model: Sized + Send + Sync + Serialize + DeserializeOwned {
 
   fn cl() -> Collection<Self> {
     Self::cl_as()
+  }
+
+  fn indexes() -> Vec<IndexModel> {
+    vec![]
+  }
+
+  async fn ensure_indexes() -> Result<(), mongodb::error::Error> {
+    let idxs = Self::indexes();
+    if idxs.len() == 0 {
+      debug!(
+        "ensuring indexes for collection {} => no indexes, skiping",
+        Self::cl_name()
+      );
+    } else {
+      debug!(
+        "ensuring indexes for collection {} => {} indexes",
+        Self::cl_name(),
+        idxs.len()
+      );
+
+      if log_enabled!(Level::Trace) {
+        for idx in idxs.iter() {
+          trace!(
+            "ensuring index for collection {} => {:?}",
+            Self::cl_name(),
+            idx
+          );
+        }
+      }
+
+      Self::cl().create_indexes(idxs, None).await?;
+    }
+
+    Ok(())
   }
 
   async fn insert(

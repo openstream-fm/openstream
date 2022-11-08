@@ -5,6 +5,7 @@ members = [
     "bin/client",
     "bin/mixed",
     "bin/ffstress",
+    "bin/hls-logger",
 
     "config/constants",
 

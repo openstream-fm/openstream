@@ -1,6 +1,7 @@
 use crate::audio_file::AudioFile;
 use crate::Model;
 use chrono::{DateTime, Utc};
+use mongodb::{bson::doc, IndexModel};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -38,8 +39,14 @@ impl Model for AudioUploadOperation {
   fn uid_len() -> usize {
     AudioFile::uid_len()
   }
+
   fn cl_name() -> &'static str {
     "audio_upload_operations"
+  }
+
+  fn indexes() -> Vec<IndexModel> {
+    let account_id = IndexModel::builder().keys(doc! { "accountId": 1 }).build();
+    vec![account_id]
   }
 }
 

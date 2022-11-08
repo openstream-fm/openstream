@@ -1,5 +1,6 @@
 use crate::Model;
 use chrono::{DateTime, Utc};
+use mongodb::{bson::doc, IndexModel};
 use serde::{Deserialize, Serialize};
 use serde_util::as_f64;
 
@@ -39,6 +40,13 @@ impl Model for AudioFile {
 
   fn cl_name() -> &'static str {
     "audio_files"
+  }
+
+  fn indexes() -> Vec<IndexModel> {
+    let account_id = IndexModel::builder().keys(doc! { "accountId": 1 }).build();
+    let md5 = IndexModel::builder().keys(doc! { "md5": 1 }).build();
+
+    vec![account_id, md5]
   }
 }
 

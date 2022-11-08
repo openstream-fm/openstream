@@ -12,7 +12,6 @@ use std::{net::SocketAddr, str::FromStr};
 use tokio::net::{TcpListener, TcpStream};
 
 use channels::ChannelMap;
-use cond_count::CondCount;
 
 use crate::handler::{method_not_allowed, not_found, source, status};
 use crate::http::read_request_head;
@@ -20,7 +19,7 @@ use crate::http::read_request_head;
 static CHANNELS: OnceCell<ChannelMap> = OnceCell::new();
 
 pub(crate) fn channels() -> &'static ChannelMap {
-  CHANNELS.get_or_init(|| ChannelMap::new(CondCount::new()))
+  CHANNELS.get_or_init(|| ChannelMap::new())
 }
 
 pub async fn start(

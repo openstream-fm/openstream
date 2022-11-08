@@ -33,12 +33,12 @@ pub struct ChannelMap {
 }
 
 impl ChannelMap {
-  pub fn new(condcount: CondCount) -> Self {
+  pub fn new() -> Self {
     Self {
       inner: Arc::new(Inner {
         map: RwLock::new(HashMap::new()),
         rx_count: AtomicUsize::new(0),
-        condcount,
+        condcount: CondCount::new(),
       }),
     }
   }

@@ -36,7 +36,7 @@ impl SourceServer {
     shutdown: Shutdown,
   ) -> Self {
     let condcount = CondCount::new();
-    let channels = ChannelMap::new(condcount.clone());
+    let channels = ChannelMap::new();
 
     Self {
       source_addrs,

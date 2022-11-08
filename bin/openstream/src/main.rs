@@ -66,6 +66,9 @@ async fn tokio_main() -> Result<(), Box<dyn std::error::Error>> {
 
   db::init(client);
 
+  info!("ensuring mongodb indexes");
+  db::ensure_indexes().await?;
+
   info!("retrieving public ip...");
   let ip: Ipv4Addr = ipify::get_ip4_string()?.parse()?;
   info!("public ip obtained: {}", ip.yellow());

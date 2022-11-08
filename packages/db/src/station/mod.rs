@@ -1,5 +1,8 @@
+use crate::metadata::Metadata;
 use crate::Model;
+use mongodb::{bson::doc, IndexModel};
 use serde::{Deserialize, Serialize};
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Station {
@@ -10,13 +13,21 @@ pub struct Station {
   description: String,
   port_image: Option<String>,
   square_image: Option<String>,
+  user_metadata: Metadata,
+  system_metadata: Metadata,
 }
 
 impl Model for Station {
   fn uid_len() -> usize {
     10
   }
+
   fn cl_name() -> &'static str {
     "stations"
+  }
+
+  fn indexes() -> Vec<IndexModel> {
+    let account_id = IndexModel::builder().keys(doc! { "accountId": 1 }).build();
+    vec![account_id]
   }
 }

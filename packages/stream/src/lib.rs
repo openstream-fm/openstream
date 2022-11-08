@@ -31,7 +31,7 @@ struct StreamServerInner {}
 impl StreamServer {
   pub fn new(addrs: Vec<SocketAddr>, shutdown: Shutdown) -> Self {
     let condcount = CondCount::new();
-    let channels = ChannelMap::new(condcount.clone());
+    let channels = ChannelMap::new();
 
     Self {
       addrs,
