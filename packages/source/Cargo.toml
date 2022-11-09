@@ -9,7 +9,7 @@ edition = "2021"
 async-trait = "0.1.58"
 bytes = "1.2.1"
 channels = { version = "0.1.0", path = "../channels" }
-cond-count = { version = "0.1.0", path = "../cond-count" }
+drop-tracer = { version = "0.1.0", path = "../drop-tracer" }
 constants = { version = "0.1.0", path = "../../config/constants" }
 ffmpeg = { version = "0.1.0", path = "../ffmpeg" }
 futures = "0.3.25"

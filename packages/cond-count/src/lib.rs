@@ -3,11 +3,11 @@ use parking_lot::{Condvar, Mutex};
 use std::sync::Arc;
 
 #[derive(Debug, Clone)]
-pub struct CondCount {
+pub struct DropTracer {
   inner: Arc<Inner>,
 }
 
-impl CondCount {
+impl DropTracer {
   #[allow(unused)]
   fn increment(&self) {
     self.inner.increment();
@@ -59,12 +59,12 @@ impl Inner {
 
 impl Drop for Inner {
   fn drop(&mut self) {
-    info!("dropcounter droppped, waiting for resource cleanup");
+    info!("drop tracer droppped, waiting for resources cleanup");
     self.wait();
   }
 }
 
-impl CondCount {
+impl DropTracer {
   pub fn new() -> Self {
     Self {
       inner: Arc::new(Inner {

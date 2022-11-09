@@ -232,8 +232,8 @@ name = "channels"
 version = "0.1.0"
 dependencies = [
  "bytes",
- "cond-count",
  "constants",
+ "drop-tracer",
  "heapless",
  "log",
  "parking_lot 0.12.1",
@@ -277,17 +277,6 @@ dependencies = [
  "futures",
  "hyper",
  "reqwest",
- "tokio",
-]
-
-[[package]]
-name = "cond-count"
-version = "0.1.0"
-dependencies = [
- "futures",
- "log",
- "parking_lot 0.12.1",
- "pin-project",
  "tokio",
 ]
 
@@ -458,6 +447,17 @@ name = "dotenv"
 version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "77c90badedccf4105eca100756a0b1289e191f6fcbdadd3cee1d2f614f97da8f"
+
+[[package]]
+name = "drop-tracer"
+version = "0.1.0"
+dependencies = [
+ "futures",
+ "log",
+ "parking_lot 0.12.1",
+ "pin-project",
+ "tokio",
+]
 
 [[package]]
 name = "embedded-hal"
@@ -847,6 +847,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "hyper-rustls"
+version = "0.23.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d87c48c02e0dc5e3b849a2041db3029fd066650f8f717c07bf8ed78ccb895cac"
+dependencies = [
+ "http",
+ "hyper",
+ "rustls",
+ "tokio",
+ "tokio-rustls",
+]
+
+[[package]]
 name = "hyper-tls"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -925,6 +938,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a5bbe824c507c5da5956355e86a746d82e0e1464f65d862cc5e71da70e94b2c"
 dependencies = [
  "cfg-if",
+]
+
+[[package]]
+name = "ip"
+version = "0.1.0"
+dependencies = [
+ "reqwest",
 ]
 
 [[package]]
@@ -1102,7 +1122,7 @@ dependencies = [
  "rand",
  "rustc_version_runtime",
  "rustls",
- "rustls-pemfile",
+ "rustls-pemfile 0.3.0",
  "serde",
  "serde_bytes",
  "serde_with",
@@ -1253,10 +1273,11 @@ name = "openstream"
 version = "0.1.0"
 dependencies = [
  "channels",
- "cond-count",
  "config",
  "db",
  "dotenv",
+ "drop-tracer",
+ "ip",
  "log",
  "logger",
  "mongodb",
@@ -1574,6 +1595,7 @@ dependencies = [
  "http",
  "http-body",
  "hyper",
+ "hyper-rustls",
  "hyper-tls",
  "ipnet",
  "js-sys",
@@ -1584,16 +1606,19 @@ dependencies = [
  "percent-encoding",
  "pin-project-lite",
  "rustls",
+ "rustls-pemfile 1.0.1",
  "serde",
  "serde_json",
  "serde_urlencoded",
  "tokio",
  "tokio-native-tls",
+ "tokio-rustls",
  "tower-service",
  "url",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
+ "webpki-roots",
  "winreg 0.10.1",
 ]
 
@@ -1698,6 +1723,15 @@ name = "rustls-pemfile"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ee86d63972a7c661d1536fefe8c3c8407321c3df668891286de28abcd087360"
+dependencies = [
+ "base64",
+]
+
+[[package]]
+name = "rustls-pemfile"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0864aeff53f8c05aa08d86e5ef839d3dfcf07aeba2db32f12db0ef716e87bd55"
 dependencies = [
  "base64",
 ]
@@ -1946,8 +1980,8 @@ dependencies = [
  "async-trait",
  "bytes",
  "channels",
- "cond-count",
  "constants",
+ "drop-tracer",
  "ffmpeg",
  "futures",
  "hyper",
@@ -1966,8 +2000,8 @@ version = "0.1.0"
 dependencies = [
  "bytes",
  "channels",
- "cond-count",
  "constants",
+ "drop-tracer",
  "ffmpeg",
  "hyper",
  "log",
@@ -2050,7 +2084,7 @@ dependencies = [
  "async-trait",
  "bytes",
  "channels",
- "cond-count",
+ "drop-tracer",
  "futures",
  "hyper",
  "log",

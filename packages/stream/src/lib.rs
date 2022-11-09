@@ -1,6 +1,5 @@
 use async_trait::async_trait;
 use channels::ChannelMap;
-use cond_count::CondCount;
 use futures::future::try_join_all;
 use hyper::{header::CONTENT_TYPE, http::HeaderValue, Body, Server, StatusCode};
 use log::*;
@@ -17,7 +16,6 @@ pub struct StreamServer {
   addrs: Vec<SocketAddr>,
   channels: ChannelMap,
   shutdown: Shutdown,
-  condcount: CondCount,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
@@ -30,14 +28,12 @@ struct StreamServerInner {}
 
 impl StreamServer {
   pub fn new(addrs: Vec<SocketAddr>, shutdown: Shutdown) -> Self {
-    let condcount = CondCount::new();
     let channels = ChannelMap::new();
 
     Self {
       addrs,
       shutdown,
       channels,
-      condcount,
     }
   }
 
@@ -82,8 +78,7 @@ impl StreamServer {
 
 impl Drop for StreamServer {
   fn drop(&mut self) {
-    info!("stream server dropped, waiting for resources cleanup");
-    self.condcount.wait();
+    info!("stream server dropped");
   }
 }
 

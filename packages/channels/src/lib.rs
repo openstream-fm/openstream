@@ -13,7 +13,7 @@ mod transmitter;
 pub use receiver::Receiver;
 pub use transmitter::Transmitter;
 
-use cond_count::CondCount;
+use drop_tracer::DropTracer;
 
 use constants::{STREAM_BURST_LENGTH, STREAM_CHANNNEL_CAPACITY};
 
@@ -38,7 +38,7 @@ impl ChannelMap {
       inner: Arc::new(Inner {
         map: RwLock::new(HashMap::new()),
         rx_count: AtomicUsize::new(0),
-        condcount: CondCount::new(),
+        drop_tracer: DropTracer::new(),
       }),
     }
   }
@@ -49,7 +49,7 @@ pub struct Inner {
   pub(crate) map: RwLock<HashMap<String, Channel>>,
   // we dont need tx_count as is the same as map.len()
   pub(crate) rx_count: AtomicUsize,
-  pub(crate) condcount: CondCount,
+  pub(crate) drop_tracer: DropTracer,
 }
 
 impl ChannelMap {
@@ -78,7 +78,7 @@ impl ChannelMap {
             sender,
             channels: self.clone(),
             burst,
-            token: self.inner.condcount.token(),
+            token: self.inner.drop_tracer.token(),
           };
 
           (tx, map.len())
@@ -103,7 +103,7 @@ impl ChannelMap {
         burst: channel.burst.read().clone(),
         receiver: channel.sender.subscribe(),
         channels: self.clone(),
-        token: self.inner.condcount.token(),
+        token: self.inner.drop_tracer.token(),
       };
 
       rx

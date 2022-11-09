@@ -11,17 +11,32 @@
 
   --red-rgb: 255, 65, 54;
   --red: rgb(var(--red-rgb));
-
+  --blue-rgb: 0, 116, 217;
+  --blue: rgb(var(--blue-rgb));
   --green: #2ECC40;
+  --bg-gray-rgb: 244, 244, 244;
+  --bg-gray: rgb(var(--bg-gray-rgb));
 
   --z-top: 1000;
   --z-drawer-wide: 1100;
+
+  --some-shadow: 0 4px 20px 0 rgb(0 0 0 / 5%);
 }
 
-html, body, #app {
-  min-height: 100%;
-  min-width: 100%;
+html {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+body, #app {
+  display: flex;
+  flex-grow: 1;
   margin: 0;
+  align-self: stretch;
+  justify-self: stretch;
 }
 
 *, *:after, *:before {

@@ -3,8 +3,6 @@ name = "openstream"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 tokio = { version = "1.21.2", features = ["full"] }
 source = { path = "../../packages/source" }
@@ -19,9 +17,6 @@ config = { version = "0.1.0", path = "../../packages/config" }
 db = { version = "0.1.0", path = "../../packages/db" }
 mongodb = "2.3.1"
 rust_ipify = "1.1.0"
-cond-count = { version = "0.1.0", path = "../../packages/cond-count" }
+drop-tracer = { version = "0.1.0", path = "../../packages/drop-tracer" }
 shutdown = { version = "0.1.0", path = "../../packages/shutdown" }
-
-[features]
-# proctitle = "0.1.1"
-# libuv = "2.5.0"
+ip = { version = "0.1.0", path = "../../packages/ip" }

@@ -111,6 +111,7 @@
     color: #333;
     font-size: 1.15rem;
     padding: 0 0 0 1rem;
+    white-space: nowrap;
   }
 
   .status-value {
@@ -122,6 +123,7 @@
     font-weight: 500;
     background: var(--color);
     box-shadow: 0 4px 8px 0 rgb(0 0 0 / 12%), 0 2px 4px 0 rgb(0 0 0 / 8%);
+    white-space: nowrap;
   }
 
   .info {

@@ -9,6 +9,7 @@ members = [
 
     "config/constants",
 
+    "packages/ip",
     "packages/config",
     "packages/stream",
     "packages/source-alt",
@@ -21,7 +22,7 @@ members = [
 
     "packages/spsc",
     "packages/shutdown",
-    "packages/cond-count",
+    "packages/drop-tracer",
     "packages/owo",
     "packages/prex",
     "packages/uid",

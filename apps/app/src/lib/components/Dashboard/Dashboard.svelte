@@ -9,7 +9,7 @@
     width: 100%;
     display: flex;
     flex-direction: row;
-    background: #f4f4f4;
+    background: var(--bg-gray);
   }
 
   .content {

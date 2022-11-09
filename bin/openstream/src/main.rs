@@ -2,10 +2,8 @@ use config::Both;
 use log::*;
 
 use owo::*;
-use rust_ipify::ipify;
 use shutdown::Shutdown;
 use source::SourceServer;
-use std::net::Ipv4Addr;
 use stream::StreamServer;
 use tokio::try_join;
 
@@ -66,11 +64,11 @@ async fn tokio_main() -> Result<(), Box<dyn std::error::Error>> {
 
   db::init(client);
 
-  info!("ensuring mongodb indexes");
+  info!("ensuring mongodb indexes...");
   db::ensure_indexes().await?;
 
   info!("retrieving public ip...");
-  let ip: Ipv4Addr = ipify::get_ip4_string()?.parse()?;
+  let ip = ip::get_ip_v4().await?;
   info!("public ip obtained: {}", ip.yellow());
 
   let config::Config {

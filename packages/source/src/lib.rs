@@ -1,7 +1,6 @@
 use ::shutdown::Shutdown;
 use async_trait::async_trait;
 use channels::ChannelMap;
-use cond_count::CondCount;
 use constants::STREAM_CHUNK_SIZE;
 use ffmpeg::{Ffmpeg, FfmpegConfig, FfmpegSpawn};
 use futures::future::try_join_all;
@@ -23,7 +22,6 @@ pub struct SourceServer {
   broadcast_addrs: Vec<SocketAddr>,
   channels: ChannelMap,
   shutdown: Shutdown,
-  condcount: CondCount,
 }
 
 #[derive(Debug)]
@@ -35,7 +33,6 @@ impl SourceServer {
     broadcast_addrs: Vec<SocketAddr>,
     shutdown: Shutdown,
   ) -> Self {
-    let condcount = CondCount::new();
     let channels = ChannelMap::new();
 
     Self {
@@ -43,7 +40,6 @@ impl SourceServer {
       broadcast_addrs,
       channels,
       shutdown,
-      condcount,
     }
   }
 
@@ -114,8 +110,7 @@ impl SourceServer {
 
 impl Drop for SourceServer {
   fn drop(&mut self) {
-    info!("source server dropped, waiting for resources cleanup");
-    self.condcount.wait();
+    info!("source server dropped");
   }
 }
 
