@@ -1,6 +1,7 @@
 .forms-input {
   display: block;
   flex: 1;
+  width: 1rem; /* fix min-width issue */
   border: 0;
   outline: 0;
   padding: var(--spacing);
