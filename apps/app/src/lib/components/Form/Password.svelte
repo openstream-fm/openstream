@@ -21,7 +21,7 @@
   const click = () => {
     let t = clickToken;
     clickToken = false;
-    if (t) {
+    if (!t) {
       visible = !visible;
     }
   }
