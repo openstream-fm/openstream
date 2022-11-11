@@ -7,7 +7,7 @@
   .label {
     pointer-events: none;
     position: absolute;
-    color: #ccc;
+    color: #aaa;
     transition: color 250ms ease, transform 150ms ease;
     margin: var(--spacing);
   }

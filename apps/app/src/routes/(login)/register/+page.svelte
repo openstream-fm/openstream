@@ -3,9 +3,7 @@
 	import Password from "$lib/components/Form/Password.svelte";
 	import TextField from "$lib/components/Form/TextField.svelte";
 	import { ripple } from "$lib/ripple";
-	import { fly, scale } from "svelte/transition";
-	import { form } from "../transitions";
-
+  import { form } from "../transitions";
 </script>
 <style>
 
@@ -77,29 +75,16 @@
     cursor: pointer;
     user-select: none;
     align-self: flex-end;
-    border-radius: 0.25rem;
     font-weight: 600;
   }
 
-  .password-box {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-  }
-
   .link, .comment {
-    font-size: 0.75em;
+    font-size: 0.9em;
     transition: color 200ms ease;
   }
 
   .link {
     color: rgba(var(--blue-rgb), 0.6);
-  }
-
-  .recover {
-    padding: 0.25rem 0.25em;
-    margin-top: 0.75rem;
-    align-self: flex-start;
   }
 
   .link:hover {

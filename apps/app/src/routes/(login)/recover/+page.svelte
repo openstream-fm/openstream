@@ -1,12 +1,9 @@
 <script>
 	import Email from "$lib/components/Form/Email.svelte";
-	import Password from "$lib/components/Form/Password.svelte";
-	import TextField from "$lib/components/Form/TextField.svelte";
 	import { ripple } from "$lib/ripple";
-	import { fly, scale } from "svelte/transition";
 	import { form } from "../transitions";
-
 </script>
+
 <style>
 
   .login {
@@ -18,6 +15,7 @@
     padding-inline: min(20%, max(12rem, 10%));
     padding-block: 6.5rem;
     position: relative;
+    background-image: url("$lib/img/login-bg.jpg");
     background-image: url("$lib/img/login-bg.jpg");
     background-size: cover;
     background-position: center;
@@ -77,7 +75,6 @@
     cursor: pointer;
     user-select: none;
     align-self: flex-end;
-    border-radius: 0.25rem;
     font-weight: 600;
   }
 
@@ -88,7 +85,7 @@
   }
 
   .comment {
-    font-size: 0.75em;
+    font-size: 0.9em;
     color: #aaa;
     padding: 0.25rem 0.25em;
     margin-top: 0.75rem;
@@ -97,7 +94,7 @@
   }
 
   .back {
-    font-size: 0.75em;
+    font-size: 0.9em;
     color: rgba(var(--blue-rgb), 0.6);
     padding: 0.25rem 0.25em;
     margin-top: 0.75rem;

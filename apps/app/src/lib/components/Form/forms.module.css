@@ -1,0 +1,9 @@
+.forms-input {
+  display: block;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  padding: var(--spacing);
+  min-width: 0;
+  background: transparent;
+}

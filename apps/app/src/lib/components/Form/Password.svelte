@@ -8,6 +8,23 @@
   import Label from "./Label.svelte";
 
   import { mdiEye, mdiEyeOff } from "@mdi/js";
+  import styles from "./forms.module.css"; 
+  
+  let clickToken = false;
+
+  const pointerdown = () => {
+    clickToken = true;
+    visible = !visible;
+  }
+
+  // handle enter key
+  const click = () => {
+    let t = clickToken;
+    clickToken = false;
+    if (t) {
+      visible = !visible;
+    }
+  }
 </script>
 
 <style>
@@ -17,6 +34,8 @@
     align-items: stretch;
     flex: 1;
   }
+
+  
 
   input {
     display: block;
@@ -37,7 +56,6 @@
     padding: 0;
     border: 0;
     margin: 0;
-    outline: 0;
     width: 3rem;
     font-size: 1.5em;
     border-radius: 0.25em;
@@ -45,19 +63,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #ccc;
+    color: #bbb;
     transition: background-color 200ms ease, color 200ms ease;
   }
 
   button:hover {
-    color: #999;
+    color: #888;
   }
 </style>
 
 <FieldContainer>
   <div class="wrap">
-    <input type={visible ? "text" : "password"} value={value} on:input={event => value = event.currentTarget.value} />
-    <button on:pointerdown|capture|preventDefault={() => visible = !visible}>
+    <input type={visible ? "text" : "password"} class={styles["forms-input"]} value={value} on:input={event => value = event.currentTarget.value} />
+    <button on:pointerdown|capture|preventDefault={pointerdown} on:click={click}>
       <Icon d={visible ? mdiEyeOff : mdiEye} />
     </button>
   </div>

@@ -1,14 +1,11 @@
 <script>
 	import Email from "$lib/components/Form/Email.svelte";
 	import Password from "$lib/components/Form/Password.svelte";
-	import TextField from "$lib/components/Form/TextField.svelte";
 	import { ripple } from "$lib/ripple";
-	import { fly, scale } from "svelte/transition";
-	import { form } from "../transitions";
-
+  import { form } from "../transitions";
 </script>
-<style>
 
+<style>
   .login {
     flex: 1;
     display: flex;
@@ -77,7 +74,6 @@
     cursor: pointer;
     user-select: none;
     align-self: flex-end;
-    border-radius: 0.25rem;
     font-weight: 600;
   }
 
@@ -88,7 +84,7 @@
   }
 
   .link, .comment {
-    font-size: 0.75em;
+    font-size: 0.9em;
     transition: color 200ms ease;
   }
 

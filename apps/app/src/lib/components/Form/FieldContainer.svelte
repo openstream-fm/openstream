@@ -5,7 +5,7 @@
 <style>
   .field-container {
     display: flex;
-    border-bottom: 1px #ccc solid;    
+    border-bottom: 1px #bbb solid;    
     transition: border-bottom-color 250ms ease;
     --spacing-y: 0.75rem;
     --spacing-x: 0.5rem;
