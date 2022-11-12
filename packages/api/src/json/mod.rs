@@ -1,61 +1,15 @@
+use crate::error::ApiError;
 use async_trait::async_trait;
 use hyper::header::{CONTENT_LENGTH, CONTENT_TYPE};
 use hyper::http::HeaderValue;
 use hyper::{Body, StatusCode};
+use prex::handler::Handler;
 use prex::*;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use serde_json;
-use std::error::Error;
-use std::fmt::Display;
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum ApiErrorCode {}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct ApiError {
-  status: u16,
-  code: ApiErrorCode,
-  message: String,
-}
-
-impl ApiError {
-  fn into_json_response(self) -> Response {
-    let mut res =
-      Response::new(StatusCode::from_u16(self.status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR));
-
-    let body = serde_json::to_vec(&self).expect("ApiError JSON serialize");
-
-    res
-      .headers_mut()
-      .append(CONTENT_TYPE, HeaderValue::from_static("application/json"));
-
-    res.headers_mut().append(
-      CONTENT_LENGTH,
-      HeaderValue::from_str(body.len().to_string().as_str()).unwrap(),
-    );
-
-    *res.body_mut() = Body::from(body);
-
-    res
-  }
-}
-
-impl Display for ApiError {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    write!(
-      f,
-      "ApiError: {:?}: {} => {}",
-      self.code, self.status, self.message
-    )
-  }
-}
-
-impl Error for ApiError {}
 
 #[async_trait]
-pub trait JsonHandler: Send + Sync + 'static {
+pub trait JsonHandler: Send + Sync + Sized + 'static {
   type Input: Send;
   type Output: Serialize;
   type ParseError: Into<ApiError>;
@@ -80,9 +34,10 @@ pub trait JsonHandler: Send + Sync + 'static {
     // TODO: remove this expect
     let body = serde_json::to_vec(&output).expect("JsonHandler JSON serialize");
 
-    res
-      .headers_mut()
-      .append(CONTENT_TYPE, HeaderValue::from_static("application/json"));
+    res.headers_mut().append(
+      CONTENT_TYPE,
+      HeaderValue::from_static("application/json;charset=utf-8"),
+    );
 
     res.headers_mut().append(
       CONTENT_LENGTH,
@@ -92,5 +47,18 @@ pub trait JsonHandler: Send + Sync + 'static {
     *res.body_mut() = Body::from(body);
 
     res
+  }
+
+  fn into_handler(self) -> PrexJsonHandler<Self> {
+    PrexJsonHandler(self)
+  }
+}
+
+pub struct PrexJsonHandler<T>(T);
+
+#[async_trait]
+impl<T: JsonHandler> Handler for PrexJsonHandler<T> {
+  async fn call(&self, req: Request, _next: Next) -> Response {
+    self.0.handle(req).await
   }
 }

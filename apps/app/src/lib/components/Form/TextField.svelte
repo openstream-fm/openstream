@@ -5,10 +5,10 @@
 
   import FieldContainer from "./FieldContainer.svelte";
   import Label from "./Label.svelte";
-  import styles from "./forms.module.css"; 
+  import css from "./forms.module.css"; 
 </script>
 
 <FieldContainer>
-  <input type={type} value={value} class={styles["forms-input"]} on:input={event => value = event.currentTarget.value} />
+  <input type={type} value={value} class={css["forms-input"]} on:input={event => value = event.currentTarget.value} />
   <Label {label} full={value !== ""} />
 </FieldContainer>

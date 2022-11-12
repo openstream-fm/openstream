@@ -7,7 +7,9 @@ edition = "2021"
 
 [dependencies]
 async-trait = "0.1.57"
-hyper = "0.14.20"
+db = { version = "0.1.0", path = "../db" }
+hyper = { version = "0.14.20", features = ["full"] }
+mongodb = "2.3.1"
 prex = { version = "0.1.0", path = "../prex" }
 serde = "1.0.145"
 serde_json = "1.0.86"

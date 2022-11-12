@@ -5,37 +5,13 @@
 	import { ripple } from "$lib/ripple";
   import { form } from "../transitions";
 </script>
+
 <style>
-
-  .login {
-    flex: 1;
-    display: flex;
-    align-self: stretch;
-    justify-self: stretch;
-    flex-direction: column;
-    padding-inline: min(20%, max(12rem, 10%));
-    padding-block: 6.5rem;
-    position: relative;
-    background-image: url("$lib/img/login-bg.jpg");
-    background-size: cover;
-    background-position: center;
-  }
-
-  .logo {
-    position: absolute;
-    top: 2rem;
-    left: 2rem;
-    font-size: 2rem;
-    font-weight: 500;
-    color: var(--red);
-    text-shadow: #fff 0 0 3px;
-  }
-
   .box {
     background: rgba(255,255,255,0.95);
     backdrop-filter: blur(2px);
     box-shadow: 0 4px 20px 0 rgb(0 0 0 / 12%);
-    width: max(20rem, min(30rem, 55%));
+    width: max(25rem, min(30rem, 55%));
     align-self: flex-end;
     margin: auto 0;
     padding-bottom: 5rem;
@@ -109,10 +85,6 @@
   }
 
   @media screen and (max-width: 600px) {
-    .login {
-      padding-inline: 0;
-    }
-
     .box {
       width: min(20rem, 90%);
       margin-inline: auto;
@@ -120,37 +92,34 @@
   }
 </style>
 
-<div class="login">
-  <div class="logo">openstream</div>
-  <div class="box" in:form>
-    <div class="title">Sign up</div>
-    <div class="fields">
-      <div class="field">
-        <TextField label="Your first name" value="" />
-      </div>
-      <div class="field">
-        <TextField label="Your last name" value="" />
-      </div>
-      <div class="field">
-        <TextField label="Your station's name" value="" />
-      </div>
-      <div class="field">
-        <Email label="Your email" value="" />
-      </div>
-      <div class="field">
-        <Password label="Your password" value="" />
-      </div>
-      <div class="field">
-        <Password label="Confirm your password" value="" />
-      </div>
+<div class="box" in:form>
+  <div class="title">Sign up</div>
+  <div class="fields">
+    <div class="field">
+      <TextField label="Your first name" value="" />
+    </div>
+    <div class="field">
+      <TextField label="Your last name" value="" />
+    </div>
+    <div class="field">
+      <TextField label="Your station's name" value="" />
+    </div>
+    <div class="field">
+      <Email label="Your email" value="" />
+    </div>
+    <div class="field">
+      <Password label="Your password" value="" />
+    </div>
+    <div class="field">
+      <Password label="Confirm your password" value="" />
+    </div>
 
-      <button use:ripple class="ripple-container">
-        Sign up
-      </button>
-    </div>
-    <div class="new-box">
-      <span class="comment">Already have an account?</span>
-      <a class="na link sign-in" href="/login">Sign in</a>
-    </div>
+    <button use:ripple class="ripple-container">
+      Sign up
+    </button>
+  </div>
+  <div class="new-box">
+    <span class="comment">Already have an account?</span>
+    <a class="na link sign-in" href="/login">Sign in</a>
   </div>
 </div>

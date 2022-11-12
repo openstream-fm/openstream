@@ -5,32 +5,6 @@
 </script>
 
 <style>
-
-  .login {
-    flex: 1;
-    display: flex;
-    align-self: stretch;
-    justify-self: stretch;
-    flex-direction: column;
-    padding-inline: min(20%, max(12rem, 10%));
-    padding-block: 6.5rem;
-    position: relative;
-    background-image: url("$lib/img/login-bg.jpg");
-    background-image: url("$lib/img/login-bg.jpg");
-    background-size: cover;
-    background-position: center;
-  }
-
-  .logo {
-    position: absolute;
-    top: 2rem;
-    left: 2rem;
-    font-size: 2rem;
-    font-weight: 500;
-    color: var(--red);
-    text-shadow: #fff 0 0 3px;
-  }
-
   .box {
     background: rgba(255,255,255,0.95);
     backdrop-filter: blur(2px);
@@ -107,10 +81,6 @@
   }
 
   @media screen and (max-width: 600px) {
-    .login {
-      padding-inline: 0;
-    }
-
     .box {
       width: min(20rem, 90%);
       margin-inline: auto;
@@ -118,19 +88,16 @@
   }
 </style>
 
-<div class="login">
-  <div class="logo">openstream</div>
-  <div class="box" in:form>
-    <div class="title">Recover</div>
-    <div class="fields">
-      <div class="field field-box">
-        <Email label="Email" value="" />
-        <span class="comment" href="/recover">We'll send you an e-mail to recover your account</span>
-        <a class="na back" href="/login">Back to login</a>
-      </div>
-      <button use:ripple class="ripple-container">
-        Send
-      </button>
+<div class="box" in:form>
+  <div class="title">Recover</div>
+  <div class="fields">
+    <div class="field field-box">
+      <Email label="Email" value="" />
+      <span class="comment" href="/recover">We'll send you an e-mail to recover your account</span>
+      <a class="na back" href="/login">Back to login</a>
     </div>
+    <button use:ripple class="ripple-container">
+      Send
+    </button>
   </div>
 </div>

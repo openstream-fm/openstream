@@ -1,11 +1,11 @@
 <script>
   import "$lib/css/app.css";
-  import SimpleDashboard from "$lib/components/SimpleDashboard/SimpleDashboard.svelte";
+  import LoginDashboard from "$lib/components/LoginDashboard/LoginDashboard.svelte";
 </script>
 
 <style>
 </style>
 
-<SimpleDashboard>
+<LoginDashboard>
   <slot />
-</SimpleDashboard>
+</LoginDashboard>

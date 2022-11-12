@@ -6,30 +6,6 @@
 </script>
 
 <style>
-  .login {
-    flex: 1;
-    display: flex;
-    align-self: stretch;
-    justify-self: stretch;
-    flex-direction: column;
-    padding-inline: min(20%, max(12rem, 10%));
-    padding-block: 6.5rem;
-    position: relative;
-    background-image: url("$lib/img/login-bg.jpg");
-    background-size: cover;
-    background-position: center;
-  }
-
-  .logo {
-    position: absolute;
-    top: 2rem;
-    left: 2rem;
-    font-size: 2rem;
-    font-weight: 500;
-    color: var(--red);
-    text-shadow: #fff 0 0 3px;
-  }
-
   .box {
     background: rgba(255,255,255,0.95);
     backdrop-filter: blur(2px);
@@ -120,10 +96,6 @@
   }
 
   @media screen and (max-width: 600px) {
-    .login {
-      padding-inline: 0;
-    }
-
     .box {
       width: min(20rem, 90%);
       margin-inline: auto;
@@ -131,25 +103,23 @@
   }
 </style>
 
-<div class="login">
-  <div class="logo">openstream</div>
-  <div class="box" in:form>
-    <div class="title">Sign in</div>
-    <div class="fields">
-      <div class="field">
-        <Email label="Email" value="" />
-      </div>
-      <div class="field password-box">
-        <Password label="Password" value="" />
-        <a class="na link recover" href="/recover">Forgot your password?</a>
-      </div>
-      <button use:ripple class="ripple-container">
-        Sign in
-      </button>
+
+<div class="box" in:form>
+  <div class="title">Sign in</div>
+  <div class="fields">
+    <div class="field">
+      <Email label="Email" value="" />
     </div>
-    <div class="new-box">
-      <span class="comment">New user?</span>
-      <a class="na link sign-up" href="/register">Sign up</a>
+    <div class="field password-box">
+      <Password label="Password" value="" />
+      <a class="na link recover" href="/recover">Forgot your password?</a>
     </div>
+    <button use:ripple class="ripple-container">
+      Sign in
+    </button>
+  </div>
+  <div class="new-box">
+    <span class="comment">New user?</span>
+    <a class="na link sign-up" href="/register">Sign up</a>
   </div>
 </div>

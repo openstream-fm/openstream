@@ -8,7 +8,7 @@
   import Label from "./Label.svelte";
 
   import { mdiEye, mdiEyeOff } from "@mdi/js";
-  import styles from "./forms.module.css"; 
+  import css from "./forms.module.css"; 
   
   let clickToken = false;
 
@@ -35,18 +35,6 @@
     flex: 1;
   }
 
-  
-
-  input {
-    display: block;
-    flex: 1;
-    border: 0;
-    outline: 0;
-    padding: var(--spacing);
-    min-width: 0;
-    background: transparent;
-  }
-
   button {
     user-select: none;
     cursor: pointer;
@@ -56,7 +44,7 @@
     padding: 0;
     border: 0;
     margin: 0;
-    width: 3rem;
+    width: 2.5rem;
     font-size: 1.5em;
     border-radius: 0.25em;
     align-self: stretch;
@@ -74,7 +62,7 @@
 
 <FieldContainer>
   <div class="wrap">
-    <input type={visible ? "text" : "password"} class={styles["forms-input"]} value={value} on:input={event => value = event.currentTarget.value} />
+    <input type={visible ? "text" : "password"} class={css["forms-input"]} value={value} on:input={event => value = event.currentTarget.value} />
     <button on:pointerdown|capture|preventDefault={pointerdown} on:click={click}>
       <Icon d={visible ? mdiEyeOff : mdiEye} />
     </button>

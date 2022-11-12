@@ -9,17 +9,17 @@ use serde_util::datetime;
 #[serde(rename_all = "camelCase")]
 pub struct User {
   #[serde(rename = "_id")]
-  id: String,
-  account_ids: Vec<String>,
-  name: String,
-  email: String,
-  password: Option<String>,
+  pub id: String,
+  pub account_ids: Vec<String>,
+  pub name: String,
+  pub email: String,
+  pub password: Option<String>,
   #[serde(with = "datetime")]
-  created_at: DateTime<Utc>,
+  pub created_at: DateTime<Utc>,
   #[serde(with = "datetime")]
-  updated_at: DateTime<Utc>,
-  user_metadata: Metadata,
-  system_metadata: Metadata,
+  pub updated_at: DateTime<Utc>,
+  pub user_metadata: Metadata,
+  pub system_metadata: Metadata,
 }
 
 impl Model for User {

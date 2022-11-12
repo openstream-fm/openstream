@@ -4,11 +4,11 @@
 
   import FieldContainer from "./FieldContainer.svelte";
   import Label from "./Label.svelte";
-  import styles from "./forms.module.css"; 
+  import css from "./forms.module.css"; 
 </script>
 
 
 <FieldContainer>
-  <input type="email" class={styles["forms-input"]} bind:value={value} />
+  <input type="email" class={css["forms-input"]} bind:value={value} />
   <Label {label} full={value !== ""} />
 </FieldContainer>

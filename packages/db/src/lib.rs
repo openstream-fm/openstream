@@ -3,6 +3,7 @@ use log::*;
 use mongodb::{
   results::{InsertOneResult, UpdateResult},
   Client, Collection, Database, IndexModel,
+  bson::doc,
 };
 use once_cell::sync::OnceCell;
 use serde::{de::DeserializeOwned, Serialize};
@@ -14,6 +15,7 @@ pub mod audio_upload_operation;
 pub mod metadata;
 pub mod station;
 pub mod user;
+pub mod access_token;
 
 static CLIENT: OnceCell<Client> = OnceCell::new();
 
@@ -30,6 +32,7 @@ pub async fn ensure_indexes() -> Result<(), mongodb::error::Error> {
   user::User::ensure_indexes().await?;
   station::Station::ensure_indexes().await?;
   audio_upload_operation::AudioUploadOperation::ensure_indexes().await?;
+  access_token::AccessToken::ensure_indexes().await?;
   Ok(())
 }
 
@@ -50,7 +53,7 @@ pub fn db() -> Database {
 }
 
 #[async_trait]
-pub trait Model: Sized + Send + Sync + Serialize + DeserializeOwned {
+pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
   fn uid_len() -> usize;
   fn cl_name() -> &'static str;
 
@@ -100,6 +103,10 @@ pub trait Model: Sized + Send + Sync + Serialize + DeserializeOwned {
     Ok(())
   }
 
+  async fn get_by_id(id: &str) -> Result<Option<Self>, mongodb::error::Error> {
+    Self::cl().find_one(doc!{ "_id": id }, None).await
+  }
+
   async fn insert(
     doc: impl std::borrow::Borrow<Self> + Send + Sync,
   ) -> Result<InsertOneResult, mongodb::error::Error> {
@@ -107,30 +114,11 @@ pub trait Model: Sized + Send + Sync + Serialize + DeserializeOwned {
   }
 
   async fn replace(
-    id: impl AsRef<str> + Send + Sync,
+    id: &str,
     replacement: impl std::borrow::Borrow<Self> + Send + Sync,
   ) -> Result<UpdateResult, mongodb::error::Error> {
     Self::cl()
-      .replace_one(mongodb::bson::doc! {"_id": id.as_ref()}, replacement, None)
+      .replace_one(doc! {"_id": id}, replacement, None)
       .await
   }
 }
-
-/*
-use proc_macro::TokenStream;
-use quote;
-use syn::{self, DeriveInput};
-#[proc_macro_derive(Model, attributes(cl_name, uid_len))]
-pub fn derive_model(input: TokenStream) -> TokenStream {
-  let ast: DeriveInput = syn::parse_macro_input!(input);
-  let name = &ast.ident;
-  let output = quote::quote! {
-    impl Model for #name {
-      const UID_LEN: usize = 8;
-      const CL_NAME: &'static str = "collection";
-    }
-  };
-
-  output.into()
-}
- */
