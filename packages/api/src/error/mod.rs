@@ -51,36 +51,38 @@ impl ApiError {
       Kind::TokenNotFound => format!("Access token not found"),
       Kind::TokenUserNotFound(id) => format!("User with id {id} has been deleted"),
       Kind::TokenAdminNotFound => format!("Admin has been deleted"),
-      Kind::TokenOutOfScope => format!("Token out of scope"),
+      Kind::TokenOutOfScope => format!("Access token out of scope"),
       Kind::AccountNotFound(id) => format!("Account with id {id} not found"),
     }
   }
 
   fn kind_str(&self) -> &'static str {
     match self.kind {
-      Kind::Db(_) => "DB",
-      Kind::TokenMissing => "TOKEN_MISSING",
-      Kind::TokenMalformed => "TOKEN_MALFORMED",
-      Kind::TokenNotFound => "TOKEN_NOT_FOUND",
-      Kind::TokenUserNotFound(_) => "TOKEN_USER_NOT_FOUND",
-      Kind::TokenAdminNotFound => "TOKEN_ADMIN_NOT_FOUND",
-      Kind::TokenOutOfScope => "TOKEN_OUT_OF_SCOPE",
-      Kind::AccountNotFound(_) => "ACCOUNT_NOT_FOUND",
+      Kind::Db(_) => "ERR_DB",
+      Kind::TokenMissing => "ERR_TOKEN_MISSING",
+      Kind::TokenMalformed => "ERR_TOKEN_MALFORMED",
+      Kind::TokenNotFound => "ERR_TOKEN_NOT_FOUND",
+      Kind::TokenUserNotFound(_) => "ERR_TOKEN_USER_NOT_FOUND",
+      Kind::TokenAdminNotFound => "ERR_TOKEN_ADMIN_NOT_FOUND",
+      Kind::TokenOutOfScope => "ERR_TOKEN_OUT_OF_SCOPE",
+      Kind::AccountNotFound(_) => "ERR_ACCOUNT_NOT_FOUND",
     }
+  }
+
+  pub fn as_json(&self) -> serde_json::Value {
+    serde_json::json!({
+      "error": {
+        "status": self.status().as_u16(),
+        "message": self.message(),
+        "kind": self.kind_str()
+      }
+    })
   }
 
   pub fn into_json_response(self) -> Response {
     let mut res = Response::new(self.status());
 
-    let body = serde_json::json!({
-      "error": {
-        "status": self.status().as_u16(),
-        "message": self.message(),
-        "kind": self.kind_str(),
-      }
-    });
-
-    let body = serde_json::to_vec(&body).unwrap();
+    let body = serde_json::to_vec(&self.as_json()).unwrap();
 
     res.headers_mut().append(
       CONTENT_TYPE,
