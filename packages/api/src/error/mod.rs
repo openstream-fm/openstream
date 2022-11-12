@@ -51,7 +51,7 @@ impl ApiError {
       Kind::TokenNotFound => format!("Access token not found"),
       Kind::TokenUserNotFound(id) => format!("User with id {id} has been deleted"),
       Kind::TokenAdminNotFound => format!("Admin has been deleted"),
-      Kind::TokenOutOfScope => format!("Access token out of scope"),
+      Kind::TokenOutOfScope => format!("Not enought permissions"),
       Kind::AccountNotFound(id) => format!("Account with id {id} not found"),
     }
   }

@@ -7,18 +7,18 @@ use db::account::PublicAccount;
 use prex::Request;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
-struct Endpoint {}
+#[derive(Debug, Clone)]
+pub struct Endpoint {}
 
 #[derive(Debug, Clone)]
-struct Input {
+pub struct Input {
   account: Account,
   access_token_scope: AccessTokenScope,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct Output {
+pub struct Output {
   account: PublicAccount,
 }
 
