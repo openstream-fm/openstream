@@ -26,7 +26,7 @@ pub async fn not_found(mut socket: TcpStream, req: RequestHead) -> Result<(), Ha
   write_response_head(&mut socket, head, true).await?;
 
   trace!("writing body to socket");
-  if req.method != &Method::HEAD {
+  if req.method != Method::HEAD {
     socket.write_all(body).await?;
     trace!("shutting down socket");
   }

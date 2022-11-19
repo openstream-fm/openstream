@@ -44,6 +44,12 @@ impl ChannelMap {
   }
 }
 
+impl Default for ChannelMap {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 #[derive(Debug)]
 pub struct Inner {
   pub(crate) map: RwLock<HashMap<String, Channel>>,

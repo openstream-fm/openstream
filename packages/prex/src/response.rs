@@ -6,12 +6,9 @@ use hyper::StatusCode;
 
 use std::ops::{Deref, DerefMut};
 
-use std::error::Error;
-
 #[derive(Debug)]
 pub struct Parts {
   pub response: hyper::Response<Body>,
-  pub error: Option<Box<dyn Error + Send + 'static>>,
   pub content_type: Option<HeaderValue>,
   pub charset: Option<HeaderValue>,
 }
@@ -19,7 +16,6 @@ pub struct Parts {
 #[derive(Debug)]
 pub struct Response {
   pub(crate) response: hyper::Response<Body>,
-  pub(crate) error: Option<Box<dyn Error + Send + 'static>>,
   content_type: Option<HeaderValue>,
   charset: Option<HeaderValue>,
 }
@@ -29,7 +25,6 @@ impl Response {
   pub fn into_parts(self) -> Parts {
     Parts {
       response: self.response,
-      error: self.error,
       content_type: self.content_type,
       charset: self.charset,
     }
@@ -39,7 +34,6 @@ impl Response {
   pub fn from_parts(parts: Parts) -> Self {
     Self {
       response: parts.response,
-      error: parts.error,
       content_type: parts.content_type,
       charset: parts.charset,
     }
@@ -51,7 +45,6 @@ impl Response {
 
     Self {
       response,
-      error: None,
       content_type: None,
       charset: None,
     }
@@ -74,22 +67,6 @@ impl Response {
     *response.body_mut() = Body::from(message.to_string());
 
     response
-  }
-
-  #[inline]
-  pub fn error(&self) -> Option<&Box<dyn Error + Send>> {
-    self.error.as_ref()
-  }
-
-  #[inline]
-  pub fn error_mut(&mut self) -> &mut Option<Box<dyn Error + Send>> {
-    &mut self.error
-  }
-
-  #[inline]
-  pub fn set_error(&mut self, error: impl Error + Send + 'static) -> &mut Self {
-    *self.error_mut() = Some(Box::new(error));
-    self
   }
 
   /// consumes this response returning only the body
@@ -199,27 +176,26 @@ impl DerefMut for Response {
   }
 }
 
-impl Into<hyper::Response<Body>> for Response {
-  fn into(self) -> hyper::Response<Body> {
-    let content_type = self.content_type().map(|v| v.clone());
-    let charset = self.charset().map(|v| v.clone());
-    let mut response = self.response;
+impl From<Response> for hyper::Response<Body> {
+  fn from(me: Response) -> Self {
+    let content_type = me.content_type().cloned();
+    let charset = me.charset().cloned();
+    let mut response = me.response;
     match (content_type, charset) {
-      (Some(content_type), Some(charset)) => match (content_type.to_str(), charset.to_str()) {
-        (Ok(content_type), Ok(charset)) => {
+      (Some(content_type), Some(charset)) => {
+        if let (Ok(content_type), Ok(charset)) = (content_type.to_str(), charset.to_str()) {
           response.headers_mut().insert(
             header::CONTENT_TYPE,
             HeaderValue::from_str(format!("{};charset={}", content_type, charset).as_str())
               .unwrap(),
           );
         }
-        _ => {}
-      },
+      }
 
       (Some(content_type), None) => {
         response
           .headers_mut()
-          .insert(header::CONTENT_TYPE, content_type.clone());
+          .insert(header::CONTENT_TYPE, content_type);
       }
       _ => {}
     }

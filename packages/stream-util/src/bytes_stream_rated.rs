@@ -58,7 +58,7 @@ where
   fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
     let mut this = self.project();
 
-    let start = *this.start.get_or_insert_with(|| Instant::now());
+    let start = *this.start.get_or_insert_with(Instant::now);
 
     'outer: loop {
       match this.sleep.as_mut().poll(cx) {
@@ -135,7 +135,7 @@ where
   fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
     let mut this = self.project();
 
-    let start = *this.start.get_or_insert_with(|| Instant::now());
+    let start = *this.start.get_or_insert_with(Instant::now);
 
     'outer: loop {
       match this.sleep.as_mut().poll(cx) {

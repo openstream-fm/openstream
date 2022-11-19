@@ -32,7 +32,7 @@ async fn main() {
 
   let ports: Vec<u16> = std::env::var("STREAM_PORTS")
     .expect("no PORTS ENV")
-    .split(",")
+    .split(',')
     .map(|s| s.trim().parse().expect("invalid STREAM_PORTS env"))
     .collect();
 
@@ -41,7 +41,7 @@ async fn main() {
     Err(_) => 100,
   };
 
-  let mountpoint_id = std::env::var("S").unwrap_or(String::from("1"));
+  let mountpoint_id = std::env::var("S").unwrap_or_else(|_| String::from("1"));
 
   let _: Uri = source_base.parse().expect("SOURCE_BASE_URL invalid URL");
 
@@ -126,12 +126,10 @@ async fn clients(n: usize, host: String, ports: Vec<u16>, id: String, delay: u64
       let http_client = http_client.clone();
       tokio::spawn(async move {
         loop {
-          match client(&http_client, host.as_str(), port, id.as_str()).await {
-            Err(_) => {
-              ERRORS.fetch_add(1, Ordering::Relaxed);
-            }
-            _ => {}
-          };
+          let r = client(&http_client, host.as_str(), port, id.as_str()).await;
+          if r.is_err() {
+            ERRORS.fetch_add(1, Ordering::Relaxed);
+          }
           CURRENT_CLIENTS.fetch_sub(1, Ordering::Relaxed);
         }
       });
@@ -210,7 +208,7 @@ async fn print_stats() {
     println!("{current_clients} open connections");
     println!("{historic_clients} all time connections");
     println!("{errors} errors");
-    println!("{} MB", bytes_readed as f64 / 1024 as f64 / 1024 as f64);
+    println!("{} MB", bytes_readed as f64 / 1024_f64 / 1024_f64);
     println!("{} MB/sec", speed / 1024 / 1024);
   }
 }

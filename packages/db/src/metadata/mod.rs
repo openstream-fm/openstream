@@ -65,13 +65,13 @@ impl Serialize for Metadata {
 
 impl Serialize for Value {
   fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
-    match self {
-      &Value::Null => ().serialize(s),
-      &Value::Bool(v) => v.serialize(s),
-      &Value::Number(v) => v.serialize(s),
-      &Value::String(ref v) => v.serialize(s),
-      &Value::Array(ref v) => v.serialize(s),
-      &Value::Document(ref v) => v.serialize(s),
+    match *self {
+      Value::Null => ().serialize(s),
+      Value::Bool(v) => v.serialize(s),
+      Value::Number(v) => v.serialize(s),
+      Value::String(ref v) => v.serialize(s),
+      Value::Array(ref v) => v.serialize(s),
+      Value::Document(ref v) => v.serialize(s),
     }
   }
 }

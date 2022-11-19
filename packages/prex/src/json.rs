@@ -7,9 +7,9 @@ use serde_json;
 
 pub struct Json<T>(pub T);
 
-impl<T: Serialize> Into<Response> for Json<T> {
-  fn into(self) -> Response {
-    match serde_json::to_string(&self.0) {
+impl<T: Serialize> From<Json<T>> for Response {
+  fn from(body: Json<T>) -> Response {
+    match serde_json::to_string(&body.0) {
       Ok(v) => {
         let mut res = Response::new(StatusCode::OK);
         *res.body_mut() = Body::from(v);
@@ -25,11 +25,11 @@ impl<T: Serialize> Into<Response> for Json<T> {
   }
 }
 
-impl<S: Into<StatusCode>, T: Serialize> Into<Response> for (S, Json<T>) {
-  fn into(self) -> Response {
-    match serde_json::to_string(&self.1 .0) {
+impl<S: Into<StatusCode>, T: Serialize> From<(S, Json<T>)> for Response {
+  fn from((status, body): (S, Json<T>)) -> Response {
+    match serde_json::to_string(&body.0) {
       Ok(v) => {
-        let mut res = Response::new(self.0.into());
+        let mut res = Response::new(status.into());
         res.set_content_type(HeaderValue::from_static("application/json"));
         res.set_charset(HeaderValue::from_static("utf-8"));
         *res.body_mut() = Body::from(v);

@@ -70,7 +70,7 @@ impl<R: AsyncRead> Stream for TryBytesStream<R> {
       }
 
       if matches!(*this.state, State::Closed) {
-        if this.buf.len() == 0 {
+        if this.buf.is_empty() {
           return Poll::Ready(None);
         } else {
           let buf = this.buf.split();
@@ -92,7 +92,7 @@ impl<R: AsyncRead> Stream for TryBytesStream<R> {
 
         Poll::Ready(Ok(())) => {
           let filled = read_buf.filled();
-          if filled.len() == 0 {
+          if filled.is_empty() {
             *this.state = State::Closed;
             continue 'outer;
           } else {

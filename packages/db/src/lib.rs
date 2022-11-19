@@ -1,13 +1,14 @@
 use async_trait::async_trait;
 use log::*;
 use mongodb::{
+  bson::doc,
   results::{InsertOneResult, UpdateResult},
   Client, Collection, Database, IndexModel,
-  bson::doc,
 };
 use once_cell::sync::OnceCell;
 use serde::{de::DeserializeOwned, Serialize};
 
+pub mod access_token;
 pub mod account;
 pub mod audio_chunk;
 pub mod audio_file;
@@ -15,7 +16,6 @@ pub mod audio_upload_operation;
 pub mod metadata;
 pub mod station;
 pub mod user;
-pub mod access_token;
 
 static CLIENT: OnceCell<Client> = OnceCell::new();
 
@@ -75,7 +75,7 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
 
   async fn ensure_indexes() -> Result<(), mongodb::error::Error> {
     let idxs = Self::indexes();
-    if idxs.len() == 0 {
+    if idxs.is_empty() {
       debug!(
         "ensuring indexes for collection {} => no indexes, skiping",
         Self::cl_name()
@@ -104,7 +104,7 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
   }
 
   async fn get_by_id(id: &str) -> Result<Option<Self>, mongodb::error::Error> {
-    Self::cl().find_one(doc!{ "_id": id }, None).await
+    Self::cl().find_one(doc! { "_id": id }, None).await
   }
 
   async fn insert(

@@ -10,10 +10,10 @@ pub struct Next {
 }
 
 impl Next {
-  pub async fn run(mut self: Self, mut req: Request) -> Response {
+  pub async fn run(mut self, mut req: Request) -> Response {
     for endpoint in self.enpoints.clone().iter().skip(self.index) {
       self.index += 1;
-      if let Some(params) = endpoint.matcher.r#match(req.method(), &req.uri().path()) {
+      if let Some(params) = endpoint.matcher.r#match(req.method(), req.uri().path()) {
         req.params = params;
         return endpoint.handler.call(req, self).await;
       }

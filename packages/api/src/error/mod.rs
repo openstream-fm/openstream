@@ -1,3 +1,5 @@
+#![allow(clippy::useless_format)]
+
 use hyper::header::{CONTENT_LENGTH, CONTENT_TYPE};
 use hyper::http::HeaderValue;
 use hyper::{Body, StatusCode};

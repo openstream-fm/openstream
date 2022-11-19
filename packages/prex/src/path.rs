@@ -4,9 +4,9 @@ pub fn join(left: &str, right: &str) -> String {
   let left = left.trim_matches(SLASH);
   let right = right.trim_matches(SLASH);
 
-  if right == "" {
+  if right.is_empty() {
     format!("/{}", left)
-  } else if left == "" {
+  } else if left.is_empty() {
     format!("/{}", right)
   } else {
     format!("/{}/{}", left, right)

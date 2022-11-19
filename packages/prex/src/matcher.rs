@@ -1,3 +1,4 @@
+#![allow(clippy::manual_flatten)]
 use hyper::Method;
 use regex::Regex;
 
@@ -30,18 +31,12 @@ impl Matcher {
     match &self.method {
       None => true,
       Some(method) => {
-        if method == request_method {
-          true
-        } else if method == Method::GET && request_method == Method::HEAD {
-          true
-        } else {
-          false
-        }
+        method == request_method || (method == Method::GET && request_method == Method::HEAD)
       }
     }
   }
 
-  fn match_pattern<'a>(&self, path: &'a str) -> Option<Params> {
+  fn match_pattern(&self, path: &str) -> Option<Params> {
     if self.pattern.is_none() {
       return Some(Params::default());
     }
@@ -108,8 +103,7 @@ impl Matcher {
         // start named param
         let mut name = String::new();
         let mut pattern = String::new();
-        'name: for inner in index..chars.len() {
-          let ch = chars[inner];
+        'name: for ch in chars.iter().skip(index).cloned() {
           if Self::is_param_name_char(ch) {
             index += 1;
             name.push(ch);
@@ -128,9 +122,8 @@ impl Matcher {
           index += 1;
           let mut open_paren_count = 1;
           let mut escape_count = 0;
-          'pattern: for inner in index..chars.len() {
+          'pattern: for ch in chars.iter().skip(index).cloned() {
             index += 1;
-            let ch = chars[inner];
 
             match ch {
               '(' => {
@@ -181,14 +174,14 @@ impl Matcher {
 
     let re = match match_type {
       MatchType::Exact => {
-        if compiled == "/" || compiled == "" {
+        if compiled == "/" || compiled.is_empty() {
           Regex::new("^/?$")
         } else {
           Regex::new(format!("^{}/?$", compiled.trim_end_matches('/')).as_str())
         }
       }
       MatchType::Scope => {
-        if compiled == "/" || compiled == "" {
+        if compiled == "/" || compiled.is_empty() {
           Regex::new("^/?")
         } else {
           Regex::new(format!("^{}(?:$|/)", compiled.trim_end_matches('/')).as_str())

@@ -37,6 +37,12 @@ impl Router {
   }
 }
 
+impl Default for Router {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 pub mod builder {
 
   use crate::matcher::MatchType;
@@ -238,7 +244,7 @@ pub mod builder {
       self
     }
 
-    pub fn at<'a>(&'a mut self, path: impl ToString) -> BuilderAt<'a> {
+    pub fn at(&'_ mut self, path: impl ToString) -> BuilderAt<'_> {
       BuilderAt {
         path: path.to_string(),
         builder: self,
@@ -254,7 +260,7 @@ pub mod builder {
     ) -> &mut Self {
       let inner_entry = entry::Endpoint {
         method,
-        path: path.and_then(|s| Some(s.to_string())),
+        path: path.map(|s| s.to_string()),
         handler: Box::new(handler),
         match_type,
       };
@@ -332,7 +338,7 @@ impl Service<hyper::Request<Body>> for RouterService {
   fn call(&mut self, req: hyper::Request<Body>) -> Self::Future {
     let router = self.router.clone();
 
-    let addr = self.remote_addr.clone();
+    let addr = self.remote_addr;
 
     let fut = async move {
       let request = Request::from_parts(RequestParts {

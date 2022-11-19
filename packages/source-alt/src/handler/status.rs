@@ -28,7 +28,7 @@ pub async fn status(mut socket: TcpStream, req: RequestHead) -> Result<(), Handl
 
   write_response_head(&mut socket, head, true).await?;
 
-  if req.method != &Method::HEAD {
+  if req.method != Method::HEAD {
     trace!("writing body to socket");
     socket.write_all(body).await?;
   }

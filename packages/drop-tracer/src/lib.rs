@@ -75,6 +75,12 @@ impl DropTracer {
   }
 }
 
+impl Default for DropTracer {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 #[derive(Debug, Clone)]
 pub struct Token {
   #[allow(unused)]

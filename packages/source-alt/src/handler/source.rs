@@ -1,3 +1,5 @@
+#![allow(clippy::useless_format)]
+
 use constants::STREAM_CHUNK_SIZE;
 
 use ffmpeg::{Ffmpeg, FfmpegConfig, FfmpegSpawn};
@@ -128,7 +130,7 @@ pub async fn source(
     let id = id.clone();
 
     async move {
-      if leading_buf.len() != 0 {
+      if !leading_buf.is_empty() {
         debug!(
           "[source] channel {id} writing leading_buf to ffmpeg stdin, {} bytes",
           leading_buf.len()

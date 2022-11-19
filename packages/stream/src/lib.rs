@@ -43,7 +43,7 @@ impl StreamServer {
     let mut futs = vec![];
 
     for addr in &self.addrs {
-      let server = Server::try_bind(&addr)?
+      let server = Server::try_bind(addr)?
         .http1_only(true)
         .http1_title_case_headers(false)
         .http1_preserve_header_case(false);

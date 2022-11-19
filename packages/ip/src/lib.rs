@@ -61,11 +61,11 @@ pub async fn get_ip_v4() -> Result<Ipv4Addr, Error> {
   }
 
   match res.headers().get("x-ip") {
-    None => return Err(Error::NoIpHeader),
+    None => Err(Error::NoIpHeader),
     Some(v) => match v.to_str() {
-      Err(e) => return Err(Error::ToStr(e)),
+      Err(e) => Err(Error::ToStr(e)),
       Ok(s) => {
-        let ip = Ipv4Addr::from_str(&s)?;
+        let ip = Ipv4Addr::from_str(s)?;
         Ok(ip)
       }
     },
@@ -85,11 +85,11 @@ pub async fn get_ip_v4_ssl() -> Result<Ipv4Addr, Error> {
   }
 
   match res.headers().get("x-ip") {
-    None => return Err(Error::NoIpHeader),
+    None => Err(Error::NoIpHeader),
     Some(v) => match v.to_str() {
-      Err(e) => return Err(Error::ToStr(e)),
+      Err(e) => Err(Error::ToStr(e)),
       Ok(s) => {
-        let ip = Ipv4Addr::from_str(&s)?;
+        let ip = Ipv4Addr::from_str(s)?;
         Ok(ip)
       }
     },

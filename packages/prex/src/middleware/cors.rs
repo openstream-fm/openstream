@@ -37,7 +37,7 @@ fn has_vary(header: &str, value: &str) -> bool {
 }
 
 fn add_vary(res: &mut Response, value: &'static str) {
-  let vary = res.headers().get(VARY).map(|v| v.clone());
+  let vary = res.headers().get(VARY).cloned();
 
   if vary.is_none() {
     res
@@ -67,7 +67,7 @@ fn add_vary(res: &mut Response, value: &'static str) {
 #[async_trait]
 impl Handler for Cors {
   async fn call(&self, req: Request, next: Next) -> Response {
-    if req.method() == &Method::OPTIONS {
+    if req.method() == Method::OPTIONS {
       let mut res = Response::new(StatusCode::OK);
       match &self.allow_origin {
         AllowOrigin::Fixed(v) => {
@@ -89,16 +89,16 @@ impl Handler for Cors {
         }
       }
 
-      if let Some(v) = self.allow_methods.as_ref().map(|v| v.clone()) {
+      if let Some(v) = self.allow_methods.as_ref().cloned() {
         res.headers_mut().insert(ALLOW, v.clone());
         res.headers_mut().insert(ACCESS_CONTROL_ALLOW_METHODS, v);
       }
 
-      if let Some(v) = self.allow_headers.as_ref().map(|v| v.clone()) {
+      if let Some(v) = self.allow_headers.as_ref().cloned() {
         res.headers_mut().insert(ACCESS_CONTROL_ALLOW_HEADERS, v);
       }
 
-      if let Some(v) = self.expose_headers.as_ref().map(|v| v.clone()) {
+      if let Some(v) = self.expose_headers.as_ref().cloned() {
         res.headers_mut().insert(ACCESS_CONTROL_EXPOSE_HEADERS, v);
       }
 
@@ -114,7 +114,7 @@ impl Handler for Cors {
       return res;
     }
 
-    let origin = req.headers().get(ORIGIN).map(|v| v.clone());
+    let origin = req.headers().get(ORIGIN).cloned();
 
     let mut res = next.run(req).await;
 

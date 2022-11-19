@@ -80,7 +80,7 @@ pub async fn get(mut data: Receiver<Bytes>) -> Result<FfMetadata, std::io::Error
         None => continue,
         Some(name) => {
           let name = name.trim();
-          if name == "" {
+          if name.is_empty() {
             continue;
           } else {
             name
@@ -92,7 +92,7 @@ pub async fn get(mut data: Receiver<Bytes>) -> Result<FfMetadata, std::io::Error
         None => continue,
         Some(value) => {
           let value = value.trim();
-          if value == "" {
+          if value.is_empty() {
             continue;
           } else {
             value

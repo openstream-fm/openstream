@@ -8,7 +8,7 @@ use prex::Request;
 
 use crate::error::{ApiError, Kind};
 
-pub static X_ACCESS_TOKEN: &'static str = "x-access-token";
+pub static X_ACCESS_TOKEN: &str = "x-access-token";
 
 #[derive(Debug, Clone)]
 pub enum GetAccessTokenScopeError {
@@ -35,11 +35,10 @@ impl AccessTokenScope {
   pub async fn grant_scope(&self, account_id: &str) -> Result<Account, GetAccessTokenScopeError> {
     let account = Account::get_by_id(account_id).await?;
     match account {
-      None => {
-        return Err(GetAccessTokenScopeError::AccountNotFound(
-          account_id.to_string(),
-        ))
-      }
+      None => Err(GetAccessTokenScopeError::AccountNotFound(
+        account_id.to_string(),
+      )),
+
       Some(account) => match self {
         AccessTokenScope::Admin => Ok(account),
         AccessTokenScope::User(user) => {
@@ -88,16 +87,17 @@ impl From<mongodb::error::Error> for GetAccessTokenScopeError {
   }
 }
 
-impl Into<ApiError> for GetAccessTokenScopeError {
-  fn into(self) -> ApiError {
-    match self {
-      Self::Db(e) => ApiError::from(e),
-      Self::Missing => ApiError::from(Kind::TokenMissing),
-      Self::NonUtf8 => ApiError::from(Kind::TokenMalformed),
-      Self::NotFound => ApiError::from(Kind::TokenNotFound),
-      Self::UserNotFound(id) => ApiError::from(Kind::TokenUserNotFound(id)),
-      Self::OutOfScope => ApiError::from(Kind::TokenOutOfScope),
-      Self::AccountNotFound(id) => ApiError::from(Kind::AccountNotFound(id)),
+impl From<GetAccessTokenScopeError> for ApiError {
+  fn from(v: GetAccessTokenScopeError) -> ApiError {
+    use GetAccessTokenScopeError::*;
+    match v {
+      Db(e) => ApiError::from(e),
+      Missing => ApiError::from(Kind::TokenMissing),
+      NonUtf8 => ApiError::from(Kind::TokenMalformed),
+      NotFound => ApiError::from(Kind::TokenNotFound),
+      UserNotFound(id) => ApiError::from(Kind::TokenUserNotFound(id)),
+      OutOfScope => ApiError::from(Kind::TokenOutOfScope),
+      AccountNotFound(id) => ApiError::from(Kind::AccountNotFound(id)),
     }
   }
 }

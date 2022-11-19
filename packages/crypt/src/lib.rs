@@ -1,5 +1,3 @@
-use bcrypt;
-
 pub const COST: u32 = 8;
 
 pub fn hash(plain: impl AsRef<[u8]>) -> String {

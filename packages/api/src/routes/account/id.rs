@@ -34,7 +34,7 @@ impl JsonHandler for Endpoint {
 
     let access_token_scope = request_ext::get_access_token_scope(&req).await?;
 
-    let account = access_token_scope.grant_scope(&account_id).await?;
+    let account = access_token_scope.grant_scope(account_id).await?;
 
     Ok(Self::Input {
       access_token_scope,

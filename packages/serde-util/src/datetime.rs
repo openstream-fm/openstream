@@ -10,7 +10,7 @@ pub fn serialize<S: Serializer>(date: &chrono::DateTime<Utc>, ser: S) -> Result<
   if ser.is_human_readable() {
     Serialize::serialize(&date, ser)
   } else {
-    let target: bson::DateTime = date.clone().into();
+    let target: bson::DateTime = (*date).into();
     Serialize::serialize(&target, ser)
   }
 }
@@ -48,7 +48,7 @@ pub mod option {
       match opt {
         None => ().serialize(ser),
         Some(date) => {
-          let target: bson::DateTime = date.clone().into();
+          let target: bson::DateTime = (*date).into();
           target.serialize(ser)
         }
       }

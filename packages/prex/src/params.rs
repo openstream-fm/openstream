@@ -37,6 +37,6 @@ impl Index<&str> for Params {
 
   #[inline]
   fn index(&self, index: &str) -> &Self::Output {
-    self.get(index).unwrap().as_ref()
+    self.get(index).unwrap()
   }
 }

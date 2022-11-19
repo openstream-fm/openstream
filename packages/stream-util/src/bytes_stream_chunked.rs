@@ -32,12 +32,10 @@ where
         return Poll::Ready(Some(bytes));
       }
 
-      if *this.done {
-        if this.buf.len() != 0 {
-          let buf = this.buf.split();
-          let bytes = buf.freeze();
-          return Poll::Ready(Some(bytes));
-        }
+      if *this.done && !this.buf.is_empty() {
+        let buf = this.buf.split();
+        let bytes = buf.freeze();
+        return Poll::Ready(Some(bytes));
       }
 
       match this.inner.as_mut().poll_next(cx) {
@@ -117,12 +115,10 @@ where
         return Poll::Ready(Some(Ok(bytes)));
       }
 
-      if *this.done {
-        if this.buf.len() != 0 {
-          let buf = this.buf.split();
-          let bytes = buf.freeze();
-          return Poll::Ready(Some(Ok(bytes)));
-        }
+      if *this.done && !this.buf.is_empty() {
+        let buf = this.buf.split();
+        let bytes = buf.freeze();
+        return Poll::Ready(Some(Ok(bytes)));
       }
 
       match this.inner.as_mut().poll_next(cx) {

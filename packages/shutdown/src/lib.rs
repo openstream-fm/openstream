@@ -49,6 +49,12 @@ impl Shutdown {
   }
 }
 
+impl Default for Shutdown {
+  fn default() -> Self {
+    Shutdown::new()
+  }
+}
+
 #[derive(Debug)]
 #[pin_project]
 pub struct Signal {

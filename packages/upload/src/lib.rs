@@ -111,7 +111,7 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
 
   let (meta_get, produce) = tokio::join!(meta_get, produce);
 
-  let _produce = produce?;
+  produce?;
 
   if file_len == 0 {
     return Err(UploadError::Empty);
@@ -152,7 +152,7 @@ pub async fn upload_audio_file<E: Error, S: Stream<Item = Result<Bytes, E>>>(
   filename: String,
   data: S,
 ) -> Result<AudioFile, UploadError<E>> {
-  let audio_file_id = audio_file_id.unwrap_or_else(|| AudioFile::uid());
+  let audio_file_id = audio_file_id.unwrap_or_else(AudioFile::uid);
 
   let mut operation = AudioUploadOperation {
     id: audio_file_id.clone(),
@@ -173,9 +173,8 @@ pub async fn upload_audio_file<E: Error, S: Stream<Item = Result<Bytes, E>>>(
       };
 
       let r = AudioUploadOperation::replace(&operation.id, &operation).await;
-      match r {
-        Err(e) => warn!("error updating audio upload operation after success: {}", e),
-        _ => {}
+      if let Err(e) = r {
+        warn!("error updating audio upload operation after success: {}", e)
       }
     }
 
@@ -187,9 +186,8 @@ pub async fn upload_audio_file<E: Error, S: Stream<Item = Result<Bytes, E>>>(
       };
 
       let r = AudioUploadOperation::replace(&operation.id, &operation).await;
-      match r {
-        Err(e) => warn!("error updating audio upload operation after error: {}", e),
-        _ => {}
+      if let Err(e) = r {
+        warn!("error updating audio upload operation after error: {}", e)
       }
     }
   }

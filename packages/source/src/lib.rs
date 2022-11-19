@@ -1,3 +1,5 @@
+#![allow(clippy::useless_format)]
+
 use ::shutdown::Shutdown;
 use async_trait::async_trait;
 use channels::ChannelMap;
@@ -49,7 +51,7 @@ impl SourceServer {
     let mut futs = vec![];
 
     for addr in &self.source_addrs {
-      let source = Server::try_bind(&addr)?
+      let source = Server::try_bind(addr)?
         .http1_only(true)
         .http1_title_case_headers(false)
         .http1_preserve_header_case(false);
@@ -77,7 +79,7 @@ impl SourceServer {
     }
 
     for addr in &self.broadcast_addrs {
-      let broadcast = Server::try_bind(&addr)?
+      let broadcast = Server::try_bind(addr)?
         .http1_only(true)
         .http1_title_case_headers(false)
         .http1_preserve_header_case(false);
@@ -145,14 +147,14 @@ impl SourceHandler {
 impl Handler for SourceHandler {
   async fn call(&self, mut req: Request, _next: Next) -> prex::Response {
     enum SourceMethod {
-      PUT,
-      SOURCE,
+      Put,
+      Source,
     }
 
     let _method: SourceMethod = if req.method().eq(&Method::PUT) {
-      SourceMethod::PUT
+      SourceMethod::Put
     } else if req.method().as_str().eq_ignore_ascii_case("SOURCE") {
-      SourceMethod::SOURCE
+      SourceMethod::Source
     } else {
       let mut headers = HeaderMap::with_capacity(2);
       headers.append(ALLOW, HeaderValue::from_static("PUT,SOURCE"));

@@ -30,7 +30,7 @@ async fn logger(req: Request, next: Next) -> Response {
     .uri()
     .path_and_query()
     .map(ToString::to_string)
-    .unwrap_or_else(|| String::new());
+    .unwrap_or_else(String::new);
 
   info!("{method} {uri}");
 
@@ -38,6 +38,5 @@ async fn logger(req: Request, next: Next) -> Response {
 }
 
 async fn ok(_: Request, _: Next) -> Response {
-  let res = Response::new(StatusCode::OK);
-  res
+  Response::new(StatusCode::OK)
 }
