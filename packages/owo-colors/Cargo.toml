@@ -1,5 +1,5 @@
 [package]
-name = "owo"
+name = "owo-colors"
 version = "3.5.0"
 rust-version = "1.51"
 authors = ["jam1garner <8260240+jam1garner@users.noreply.github.com>"]
@@ -28,6 +28,9 @@ required-features = ["supports-colors"]
 [features]
 supports-colors = ["supports-color"]
 alloc = []
+
+[lib]
+doctest = false
 
 [dependencies]
 supports-color = { version = "1.3", optional = true }

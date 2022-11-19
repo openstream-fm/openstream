@@ -1283,7 +1283,7 @@ dependencies = [
  "log",
  "logger",
  "mongodb",
- "owo",
+ "owo-colors",
  "rust_ipify",
  "shutdown",
  "source",
@@ -1303,7 +1303,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "owo"
+name = "owo-colors"
 version = "3.5.0"
 dependencies = [
  "supports-color",
@@ -1988,7 +1988,7 @@ dependencies = [
  "futures",
  "hyper",
  "log",
- "owo",
+ "owo-colors",
  "prex",
  "shutdown",
  "stream-util",
@@ -2008,7 +2008,7 @@ dependencies = [
  "hyper",
  "log",
  "once_cell",
- "owo",
+ "owo-colors",
  "parking_lot 0.12.1",
  "prex",
  "regex_static",
@@ -2090,7 +2090,7 @@ dependencies = [
  "futures",
  "hyper",
  "log",
- "owo",
+ "owo-colors",
  "prex",
  "serde",
  "serde_json",

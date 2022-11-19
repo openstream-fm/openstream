@@ -1,4 +1,4 @@
-use owo::{AnsiColors, DynColors, OwoColorize, Rgb, XtermColors};
+use owo_colors::{AnsiColors, DynColors, OwoColorize, Rgb, XtermColors};
 
 fn random_number() -> u32 {
   2

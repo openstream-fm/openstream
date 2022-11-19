@@ -19,7 +19,7 @@ regex_static = "0.1.1"
 channels = { path = "../channels" }
 constants = { version = "0.1.0", path = "../../config/constants" }
 log = "0.4.17"
-owo = { version = "3.5.0", path = "../owo" }
+owo-colors = { version = "3.5.0", path = "../owo-colors" }
 once_cell = "1.15.0"
 drop-tracer = { version = "0.1.0", path = "../drop-tracer" }
 

@@ -7,7 +7,7 @@ use http::RequestHead;
 use hyper::{http::HeaderValue, Method};
 use log::*;
 use once_cell::sync::OnceCell;
-use owo::*;
+use owo_colors::*;
 use std::{net::SocketAddr, str::FromStr};
 use tokio::net::{TcpListener, TcpStream};
 

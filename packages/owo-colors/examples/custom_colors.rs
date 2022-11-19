@@ -1,5 +1,5 @@
-use owo::colors::CustomColor;
-use owo::OwoColorize;
+use owo_colors::colors::CustomColor;
+use owo_colors::OwoColorize;
 
 fn main() {
   println!("{}", "custom purple".fg::<CustomColor<141, 59, 212>>());

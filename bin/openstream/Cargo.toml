@@ -12,7 +12,7 @@ logger = { path = "../../packages/logger" }
 log = "0.4.17"
 dotenv = "0.15.0"
 channels = { version = "0.1.0", path = "../../packages/channels" }
-owo = { version = "3.5.0", path = "../../packages/owo" }
+owo-colors = { version = "3.5.0", path = "../../packages/owo-colors" }
 config = { version = "0.1.0", path = "../../packages/config" }
 db = { version = "0.1.0", path = "../../packages/db" }
 mongodb = "2.3.1"

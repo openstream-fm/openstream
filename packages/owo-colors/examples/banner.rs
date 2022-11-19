@@ -1,4 +1,4 @@
-use owo::{DynColors, OwoColorize};
+use owo_colors::{DynColors, OwoColorize};
 
 const OWO: &str = r#"
                                      ██████╗ ██╗    ██╗ ██████╗ 

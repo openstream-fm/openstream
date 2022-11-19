@@ -23,7 +23,7 @@ members = [
     "packages/spsc",
     "packages/shutdown",
     "packages/drop-tracer",
-    "packages/owo",
+    "packages/owo-colors",
     "packages/prex",
     "packages/uid",
     "packages/crypt",

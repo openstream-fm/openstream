@@ -3,7 +3,7 @@ use channels::ChannelMap;
 use futures::future::try_join_all;
 use hyper::{header::CONTENT_TYPE, http::HeaderValue, Body, Server, StatusCode};
 use log::*;
-use owo::*;
+use owo_colors::*;
 use prex::{handler::Handler, Next, Request, Response};
 use serde::{Deserialize, Serialize};
 use shutdown::Shutdown;

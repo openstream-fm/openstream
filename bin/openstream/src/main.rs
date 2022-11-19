@@ -1,7 +1,7 @@
 use config::Both;
 use log::*;
 
-use owo::*;
+use owo_colors::*;
 use shutdown::Shutdown;
 use source::SourceServer;
 use stream::StreamServer;

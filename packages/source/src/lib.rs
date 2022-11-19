@@ -11,7 +11,7 @@ use hyper::header::{HeaderValue, ALLOW, CONTENT_TYPE};
 use hyper::HeaderMap;
 use hyper::{Body, Method, Server, StatusCode};
 use log::*;
-use owo::*;
+use owo_colors::*;
 use prex::{handler::Handler, Next, Request, Response};
 use std::future::Future;
 use std::net::SocketAddr;

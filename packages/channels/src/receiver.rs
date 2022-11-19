@@ -10,13 +10,6 @@ use constants::STREAM_BURST_LENGTH;
 use crate::ChannelMap;
 
 #[derive(Debug)]
-/**
- * Receiver used to subscribe to one stream channel
- * type returned from `channels::subscribe` if the `channel_id` is actively streaming
- * ```
- * let rx: channels::Receiver = channels::subscribe("channel-id")?;
- * ```
- */
 pub struct Receiver {
   #[allow(unused)]
   pub(crate) channel_id: String,
