@@ -1,12 +1,13 @@
 use async_trait::async_trait;
+use futures_util::TryStreamExt;
 use log::*;
 use mongodb::{
-  bson::doc,
+  bson::{doc, Document},
   results::{InsertOneResult, UpdateResult},
   Client, Collection, Database, IndexModel,
 };
 use once_cell::sync::OnceCell;
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 pub mod access_token;
 pub mod account;
@@ -120,5 +121,48 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
     Self::cl()
       .replace_one(doc! {"_id": id}, replacement, None)
       .await
+  }
+
+  async fn paged(
+    filter: impl Into<Option<Document>> + Send,
+    skip: u64,
+    limit: i64,
+  ) -> Result<Paged<Self>, mongodb::error::Error> {
+    let filter = filter.into();
+    let total = Self::cl().count_documents(filter.clone(), None).await?;
+    let items = Self::cl().find(filter, None).await?.try_collect().await?;
+
+    Ok(Paged {
+      total,
+      skip,
+      limit,
+      items,
+    })
+  }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Paged<T> {
+  total: u64,
+  skip: u64,
+  limit: i64,
+  items: Vec<T>,
+}
+
+impl<T> Paged<T> {
+  pub fn map<O>(self, f: impl FnMut(T) -> O) -> Paged<O> {
+    let Paged {
+      total,
+      skip,
+      limit,
+      items,
+    } = self;
+    Paged {
+      total,
+      skip,
+      limit,
+      items: items.into_iter().map(f).collect(),
+    }
   }
 }

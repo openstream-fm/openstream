@@ -37,12 +37,19 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "db",
+ "futures",
+ "futures-util",
  "hyper",
+ "log",
  "mongodb",
+ "owo-colors",
  "prex",
  "serde",
+ "serde-querystring",
  "serde_json",
+ "shutdown",
  "tokio",
+ "tokio-stream",
 ]
 
 [[package]]
@@ -446,6 +453,7 @@ dependencies = [
  "async-trait",
  "bytes",
  "chrono",
+ "futures-util",
  "lazy_static",
  "log",
  "mongodb",
@@ -1317,12 +1325,14 @@ dependencies = [
 name = "openstream"
 version = "0.1.0"
 dependencies = [
+ "api",
  "channels",
  "clap",
  "config",
  "db",
  "dotenv",
  "drop-tracer",
+ "futures",
  "ip",
  "log",
  "logger",
@@ -1907,6 +1917,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d193d69bae983fc11a79df82342761dfbf28a99fc8d203dca4c3c1b590948965"
 dependencies = [
  "serde_derive",
+]
+
+[[package]]
+name = "serde-querystring"
+version = "0.0.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f0ed49cae867c85beb7831162b9b94124d2e167bcbec36c73ed5f4d1381111b"
+dependencies = [
+ "serde",
 ]
 
 [[package]]

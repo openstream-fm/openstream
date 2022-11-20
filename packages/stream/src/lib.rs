@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use channels::ChannelMap;
-use futures::future::try_join_all;
+use futures::stream::FuturesUnordered;
+use futures::TryStreamExt;
 use hyper::{header::CONTENT_TYPE, http::HeaderValue, Body, Server, StatusCode};
 use log::*;
 use owo_colors::*;
@@ -40,7 +41,7 @@ impl StreamServer {
   pub fn start(
     self,
   ) -> Result<impl Future<Output = Result<(), hyper::Error>> + 'static, hyper::Error> {
-    let mut futs = vec![];
+    let futs = FuturesUnordered::new();
 
     for addr in &self.addrs {
       let server = Server::try_bind(addr)?
@@ -69,7 +70,7 @@ impl StreamServer {
     }
 
     Ok(async move {
-      try_join_all(futs).await?;
+      futs.try_collect().await?;
       drop(self);
       Ok(())
     })

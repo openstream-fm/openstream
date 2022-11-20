@@ -22,3 +22,5 @@ shutdown = { version = "0.1.0", path = "../../packages/shutdown" }
 ip = { version = "0.1.0", path = "../../packages/ip" }
 which = "4.3.0"
 clap = { version = "4.0.26", features = ["derive"] }
+futures = "0.3.25"
+api = { version = "0.1.0", path = "../../packages/api" }

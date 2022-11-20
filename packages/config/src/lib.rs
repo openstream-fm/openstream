@@ -1,49 +1,61 @@
+#![allow(clippy::bool_comparison)]
+
 use std::fmt::Display;
 use std::path::Path;
 
-pub mod raw {
+use std::net::SocketAddr;
 
-  use std::net::SocketAddr;
+use serde::{Deserialize, Serialize};
+use url::Url;
 
-  use serde::{Deserialize, Serialize};
-  use url::Url;
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Config {
+  pub mongodb: Mongodb,
+  pub stream: Option<Stream>,
+  pub source: Option<Source>,
+  pub api: Option<Api>,
+}
 
-  #[derive(Debug, Clone, Serialize, Deserialize)]
-  pub struct Config {
-    pub mongodb: Mongodb,
-    pub stream: Option<Stream>,
-    pub source: Option<Source>,
+impl Config {
+  pub fn has_interfaces(&self) -> bool {
+    matches!((&self.stream, &self.source, &self.api), (None, None, None)) == false
   }
+}
 
-  #[derive(Debug, Clone, Serialize, Deserialize)]
-  pub struct Mongodb {
-    pub url: Url,
-  }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Mongodb {
+  pub url: Url,
+}
 
-  #[derive(Debug, Clone, Serialize, Deserialize)]
-  pub struct Stream {
-    pub addrs: Vec<SocketAddr>,
-    pub public_base_url: Url,
-  }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Stream {
+  pub addrs: Vec<SocketAddr>,
+  pub public_base_url: Url,
+}
 
-  #[derive(Debug, Clone, Serialize, Deserialize)]
-  pub struct Source {
-    pub receiver: SourceReceiver,
-    pub broadcaster: SourceBroadcaster,
-  }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Source {
+  pub receiver: SourceReceiver,
+  pub broadcaster: SourceBroadcaster,
+}
 
-  #[derive(Debug, Clone, Serialize, Deserialize)]
-  pub struct SourceReceiver {
-    pub addrs: Vec<SocketAddr>,
-    pub public_base_url: Url,
-  }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SourceReceiver {
+  pub addrs: Vec<SocketAddr>,
+  pub public_base_url: Url,
+}
 
-  #[derive(Debug, Clone, Serialize, Deserialize)]
-  pub struct SourceBroadcaster {
-    pub addrs: Vec<SocketAddr>,
-    /// if not set, this will default to http://PUBLIC_IP:PORT
-    pub public_base_url: Option<Url>,
-  }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SourceBroadcaster {
+  pub addrs: Vec<SocketAddr>,
+  /// if not set, this will default to http://PUBLIC_IP:PORT
+  pub public_base_url: Option<Url>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Api {
+  pub addrs: Vec<SocketAddr>,
+  pub public_base_url: Option<Url>,
 }
 
 #[derive(Debug)]
@@ -88,48 +100,13 @@ impl std::error::Error for LoadConfigError {
   }
 }
 
-#[derive(Debug)]
-pub struct Config {
-  pub mongodb: raw::Mongodb,
-  pub interfaces: Interfaces,
-}
-
-#[derive(Debug)]
-pub enum Interfaces {
-  Stream(raw::Stream),
-  Source(raw::Source),
-  Both(Both),
-}
-
-#[derive(Debug)]
-pub struct Both {
-  pub source: raw::Source,
-  pub stream: raw::Stream,
-}
-
 pub fn load(path: impl AsRef<Path>) -> Result<Config, LoadConfigError> {
   let buf = std::fs::read_to_string(path)?;
-  let raw::Config {
-    mongodb,
-    stream,
-    source,
-  } = toml::from_str(buf.as_str())?;
+  let config: Config = toml::from_str(buf.as_str())?;
 
-  let config = match (source, stream) {
-    (None, None) => return Err(LoadConfigError::NoInterfaces),
-    (Some(source), None) => Config {
-      mongodb,
-      interfaces: Interfaces::Source(source),
-    },
-    (None, Some(stream)) => Config {
-      mongodb,
-      interfaces: Interfaces::Stream(stream),
-    },
-    (Some(source), Some(stream)) => Config {
-      mongodb,
-      interfaces: Interfaces::Both(Both { source, stream }),
-    },
-  };
+  if config.has_interfaces() == false {
+    return Err(LoadConfigError::NoInterfaces);
+  }
 
   Ok(config)
 }

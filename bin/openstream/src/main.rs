@@ -1,14 +1,15 @@
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
-use config::Both;
+use futures::{FutureExt, StreamExt};
 use log::*;
 
+use api::ApiServer;
 use owo_colors::*;
 use shutdown::Shutdown;
 use source::SourceServer;
 use stream::StreamServer;
-use tokio::{runtime::Runtime, try_join};
+use tokio::runtime::Runtime;
 
 static VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -121,78 +122,58 @@ async fn start_async(Start { config }: Start) -> Result<(), Box<dyn std::error::
 
   let config::Config {
     mongodb: _,
-    interfaces,
+    stream,
+    source,
+    api,
   } = config;
 
   let shutdown = Shutdown::new();
 
-  match interfaces {
-    config::Interfaces::Both(Both {
-      source: source_config,
-      stream: stream_config,
-    }) => {
-      let source = SourceServer::new(
-        source_config.receiver.addrs,
-        source_config.broadcaster.addrs,
-        shutdown.clone(),
-      );
-
-      let stream = StreamServer::new(stream_config.addrs, shutdown.clone());
-
-      let source_fut = source.start()?;
-      let stream_fut = stream.start()?;
-
-      tokio::spawn(async move {
-        tokio::signal::ctrl_c()
-          .await
-          .expect("failed to listen for SIGINT signal");
-        info!("{} received, starting graceful shutdown", "SIGINT".yellow());
-        shutdown.shutdown();
-      });
-
-      let ((), ()) = try_join!(source_fut, stream_fut)?;
+  tokio::spawn({
+    let shutdown = shutdown.clone();
+    async move {
+      tokio::signal::ctrl_c()
+        .await
+        .expect("failed to listen to SIGINT signal");
+      info!("{} received, starting graceful shutdown", "SIGINT".yellow());
+      shutdown.shutdown();
     }
+  });
 
-    config::Interfaces::Source(config) => {
-      let source = SourceServer::new(
-        config.receiver.addrs,
-        config.broadcaster.addrs,
-        shutdown.clone(),
-      );
+  let mut futs = futures::stream::FuturesUnordered::new();
 
-      let source_fut = source.start()?;
+  if let Some(source_config) = source {
+    let source = SourceServer::new(
+      source_config.receiver.addrs,
+      source_config.broadcaster.addrs,
+      shutdown.clone(),
+    );
 
-      tokio::spawn(async move {
-        tokio::signal::ctrl_c()
-          .await
-          .expect("failed to listen for SIGINT signal");
+    let fut = source.start()?;
 
-        info!("{} received, starting graceful shutdown", "SIGINT".yellow());
+    futs.push(fut.boxed());
+  }
 
-        shutdown.shutdown();
-      });
+  if let Some(stream_config) = stream {
+    let stream = StreamServer::new(stream_config.addrs, shutdown.clone());
 
-      source_fut.await?;
+    let fut = stream.start()?;
+
+    futs.push(fut.boxed());
+  }
+
+  if let Some(api_config) = api {
+    let api = ApiServer::new(api_config.addrs, shutdown.clone());
+    let fut = api.start()?;
+    futs.push(fut.boxed());
+  }
+
+  loop {
+    match futs.next().await {
+      None => break,
+      Some(item) => item?,
     }
-
-    config::Interfaces::Stream(config) => {
-      let stream = StreamServer::new(config.addrs, shutdown.clone());
-
-      let stream_fut = stream.start()?;
-
-      tokio::spawn(async move {
-        tokio::signal::ctrl_c()
-          .await
-          .expect("failed to listen for SIGINT signal");
-
-        info!("{} received, starting graceful shutdown", "SIGINT".yellow());
-
-        shutdown.shutdown();
-      });
-
-      stream_fut.await?;
-    }
-  };
+  }
 
   Ok(())
 }

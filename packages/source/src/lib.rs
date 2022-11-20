@@ -5,7 +5,8 @@ use async_trait::async_trait;
 use channels::ChannelMap;
 use constants::STREAM_CHUNK_SIZE;
 use ffmpeg::{Ffmpeg, FfmpegConfig, FfmpegSpawn};
-use futures::future::try_join_all;
+use futures::stream::FuturesUnordered;
+use futures::{StreamExt, TryStreamExt};
 use hyper::body::HttpBody;
 use hyper::header::{HeaderValue, ALLOW, CONTENT_TYPE};
 use hyper::HeaderMap;
@@ -48,7 +49,7 @@ impl SourceServer {
   pub fn start(
     self,
   ) -> Result<impl Future<Output = Result<(), hyper::Error>> + 'static, hyper::Error> {
-    let mut futs = vec![];
+    let futs = FuturesUnordered::new();
 
     for addr in &self.source_addrs {
       let source = Server::try_bind(addr)?
@@ -103,7 +104,7 @@ impl SourceServer {
     }
 
     Ok(async move {
-      try_join_all(futs).await?;
+      futs.try_collect().await?;
       drop(self);
       Ok(())
     })
@@ -216,7 +217,6 @@ impl Handler for SourceHandler {
 
       async move {
         use stream_util::*;
-        use tokio_stream::StreamExt;
 
         let chunks = stdout.into_bytes_stream(STREAM_CHUNK_SIZE);
 

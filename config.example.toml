@@ -44,3 +44,17 @@ addrs = [ "0.0.0.0:20300", "0.0.0.0:20301", "0.0.0.0:20302", "0.0.0.0:20303", "0
 # string (required)
 # public url to access the source broadcaster server
 public_base_url = "http://broad.openstream.fm"
+
+
+
+# the api server is the main interface for users and admins (and frontends for them) to interact with openstream
+[api]
+
+# string(SocketAddr)[] (required)
+# socket addrs to bind the api server to
+addrs = [ "0.0.0.0:20700" ]
+
+# string (required)
+# public url to access the source api server
+public_base_url = "http://api.openstream.fm"
+
