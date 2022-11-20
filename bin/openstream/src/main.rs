@@ -8,57 +8,64 @@ use owo_colors::*;
 use shutdown::Shutdown;
 use source::SourceServer;
 use stream::StreamServer;
-use tokio::try_join;
+use tokio::{runtime::Runtime, try_join};
 
 static VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Debug, Parser)]
-#[command(author, version, about)]
-struct Cmd {
+#[command(author, version, about = "openstream radio streaming server")]
+struct Cli {
   #[structopt(subcommand)]
-  action: Action,
+  command: Command,
 }
 
 #[derive(Debug, Subcommand)]
-enum Action {
+enum Command {
   Start(Start),
   CreateConfig(CreateConfig),
 }
 
 #[derive(Debug, Parser)]
+#[command(about = "Start openstream server(s) from a config file")]
 struct Start {
   #[clap(short, long, default_value_t = String::from("./config.toml"))]
   config: String,
 }
 
 #[derive(Debug, Parser)]
+#[command(about = "Create a default config file")]
 struct CreateConfig {
   #[clap(short, long, default_value_t = String::from("./config.toml"))]
   output: String,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-  logger::init();
-  let _ = dotenv::dotenv();
-
-  let rt = tokio::runtime::Builder::new_multi_thread()
-    .enable_all()
-    .unhandled_panic(tokio::runtime::UnhandledPanic::ShutdownRuntime)
-    .build()
-    .unwrap();
-
-  rt.block_on(cmd())
+  cmd()
 }
 
-async fn cmd() -> Result<(), Box<dyn std::error::Error>> {
-  let cmd = Cmd::parse();
-  match cmd.action {
-    Action::Start(opts) => start(opts).await,
-    Action::CreateConfig(opts) => create_config(opts).await,
+fn cmd() -> Result<(), Box<dyn std::error::Error>> {
+  let cli = Cli::parse();
+  match cli.command {
+    Command::Start(opts) => start(opts),
+    Command::CreateConfig(opts) => create_config(opts),
   }
 }
 
-async fn start(Start { config }: Start) -> Result<(), Box<dyn std::error::Error>> {
+fn runtime() -> Runtime {
+  tokio::runtime::Builder::new_multi_thread()
+    .enable_all()
+    .unhandled_panic(tokio::runtime::UnhandledPanic::ShutdownRuntime)
+    .build()
+    .unwrap()
+}
+
+fn start(opts: Start) -> Result<(), Box<dyn std::error::Error>> {
+  logger::init();
+  let _ = dotenv::dotenv();
+  runtime().block_on(start_async(opts))
+}
+
+async fn start_async(Start { config }: Start) -> Result<(), Box<dyn std::error::Error>> {
   info!(
     "openstream {}{} process started",
     "v".yellow(),
@@ -190,9 +197,7 @@ async fn start(Start { config }: Start) -> Result<(), Box<dyn std::error::Error>
   Ok(())
 }
 
-async fn create_config(
-  CreateConfig { output }: CreateConfig,
-) -> Result<(), Box<dyn std::error::Error>> {
+fn create_config(CreateConfig { output }: CreateConfig) -> Result<(), Box<dyn std::error::Error>> {
   let canonical_config_path = match std::fs::canonicalize(output.as_str()) {
     Err(_) => output.clone(),
     Ok(path) => path.to_string_lossy().to_string(),
@@ -212,7 +217,7 @@ async fn create_config(
     std::process::exit(1);
   }
 
-  tokio::fs::write(file, include_bytes!("../../../config.example.toml")).await?;
+  std::fs::write(file, include_bytes!("../../../config.example.toml"))?;
 
   eprintln!("config file created in {}", canonical_config_path.yellow());
 
