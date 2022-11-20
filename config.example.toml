@@ -1,0 +1,32 @@
+# mongodb related settings
+[mongodb]
+# string (required)
+# must have a defined database in the path and a replicaSet in the query params
+url="mongodb://localhost:27017/openstream?replicaSet=rs1"
+
+# the stream server is the where end users will connect to listen to the stations
+[stream]
+# string(SocketAddr)[] required
+# socket addrs to bind the stream server to
+addrs = [ "0.0.0.0:20200" ]
+# string (required)
+# public url to access the stream server
+public_base_url = "http://stream.openstream.fm"
+
+
+# the source receiver is the IceCast compatible server where streamers will connect to start live broadcasting
+[source.receiver]
+# string(SocketAddr)[] required
+# socket addrs to bind the source receiver server to
+addrs = [ "0.0.0.0:20600" ]
+# string (required)
+# public url to access the source receiver server
+public_base_url = "http://source.openstream.fm"
+
+# the source broadcaster server is used by stream and source receiver servers to broadcast and multiplex radio streams
+[source.broadcaster]
+# string(SocketAddr)[] required
+# socket addrs to bind the source broadcaster server to
+addrs = [ "0.0.0.0:20300", "0.0.0.0:20301", "0.0.0.0:20302", "0.0.0.0:20303", "0.0.0.0:20304" ]
+# public url to access the source broadcaster server
+public_base_url = "http://broad.openstream.fm"

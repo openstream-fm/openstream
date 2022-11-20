@@ -20,3 +20,5 @@ rust_ipify = "1.1.0"
 drop-tracer = { version = "0.1.0", path = "../../packages/drop-tracer" }
 shutdown = { version = "0.1.0", path = "../../packages/shutdown" }
 ip = { version = "0.1.0", path = "../../packages/ip" }
+which = "4.3.0"
+clap = { version = "4.0.26", features = ["derive"] }

@@ -1,3 +1,6 @@
+use std::path::PathBuf;
+
+use clap::{Parser, Subcommand};
 use config::Both;
 use log::*;
 
@@ -9,6 +12,31 @@ use tokio::try_join;
 
 static VERSION: &str = env!("CARGO_PKG_VERSION");
 
+#[derive(Debug, Parser)]
+#[command(author, version, about)]
+struct Cmd {
+  #[structopt(subcommand)]
+  action: Action,
+}
+
+#[derive(Debug, Subcommand)]
+enum Action {
+  Start(Start),
+  CreateConfig(CreateConfig),
+}
+
+#[derive(Debug, Parser)]
+struct Start {
+  #[clap(short, long, default_value_t = String::from("./config.toml"))]
+  config: String,
+}
+
+#[derive(Debug, Parser)]
+struct CreateConfig {
+  #[clap(short, long, default_value_t = String::from("./config.toml"))]
+  output: String,
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
   logger::init();
   let _ = dotenv::dotenv();
@@ -19,20 +47,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     .build()
     .unwrap();
 
-  rt.block_on(tokio_main())
+  rt.block_on(cmd())
 }
 
-async fn tokio_main() -> Result<(), Box<dyn std::error::Error>> {
+async fn cmd() -> Result<(), Box<dyn std::error::Error>> {
+  let cmd = Cmd::parse();
+  match cmd.action {
+    Action::Start(opts) => start(opts).await,
+    Action::CreateConfig(opts) => create_config(opts).await,
+  }
+}
+
+async fn start(Start { config }: Start) -> Result<(), Box<dyn std::error::Error>> {
   info!(
     "openstream {}{} process started",
     "v".yellow(),
     VERSION.yellow()
   );
 
-  let config_path = "./config.toml";
-
-  let canonical_config_path = match std::fs::canonicalize(config_path) {
-    Err(_) => String::from(config_path),
+  let canonical_config_path = match std::fs::canonicalize(config.as_str()) {
+    Err(_) => config.clone(),
     Ok(path) => path.to_string_lossy().to_string(),
   };
 
@@ -41,7 +75,7 @@ async fn tokio_main() -> Result<(), Box<dyn std::error::Error>> {
     canonical_config_path.yellow()
   );
 
-  let config = config::load(config_path)?;
+  let config = config::load(config)?;
 
   debug!("resolved config: {:#?}", config);
 
@@ -52,6 +86,13 @@ async fn tokio_main() -> Result<(), Box<dyn std::error::Error>> {
   if client.default_database().is_none() {
     panic!("no database specified in config, under [mongodb] url");
   }
+
+  let ffmpeg_path = which::which("ffmpeg")?;
+
+  info!(
+    "using system ffmpeg from {}",
+    ffmpeg_path.to_string_lossy().yellow()
+  );
 
   info!("connecting to mongodb...");
   client
@@ -145,6 +186,35 @@ async fn tokio_main() -> Result<(), Box<dyn std::error::Error>> {
       stream_fut.await?;
     }
   };
+
+  Ok(())
+}
+
+async fn create_config(
+  CreateConfig { output }: CreateConfig,
+) -> Result<(), Box<dyn std::error::Error>> {
+  let canonical_config_path = match std::fs::canonicalize(output.as_str()) {
+    Err(_) => output.clone(),
+    Ok(path) => path.to_string_lossy().to_string(),
+  };
+
+  eprintln!(
+    "creating default config file into {}",
+    canonical_config_path.yellow()
+  );
+
+  let file = PathBuf::from(output);
+
+  let exists = file.metadata().is_ok();
+
+  if exists {
+    eprintln!("file already exists, operation aborted");
+    std::process::exit(1);
+  }
+
+  tokio::fs::write(file, include_bytes!("../../../config.example.toml")).await?;
+
+  eprintln!("config file created in {}", canonical_config_path.yellow());
 
   Ok(())
 }
