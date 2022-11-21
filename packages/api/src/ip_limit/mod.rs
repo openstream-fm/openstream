@@ -1,17 +1,17 @@
-use parking_lot::Mutex;
+use parking_lot::RwLock;
 use static_init::dynamic;
 use std::collections::{btree_map::Entry, BTreeMap};
 use std::net::IpAddr;
 use std::time::Duration;
 
 #[dynamic]
-static IP_LIMIT_MAP: Mutex<BTreeMap<IpAddr, usize>> = Mutex::new(BTreeMap::new());
+static IP_LIMIT_MAP: RwLock<BTreeMap<IpAddr, usize>> = RwLock::new(BTreeMap::new());
 
 pub const LIMIT: usize = 60;
 pub const LIMIT_RESET_SECS: u64 = 60;
 
 pub fn get(ip: IpAddr) -> usize {
-  let map = IP_LIMIT_MAP.lock();
+  let map = IP_LIMIT_MAP.read();
   *map.get(&ip).unwrap_or(&0)
 }
 
@@ -29,7 +29,7 @@ pub fn hit(ip: IpAddr) -> usize {
 }
 
 fn increment(ip: IpAddr) -> usize {
-  let mut map = IP_LIMIT_MAP.lock();
+  let mut map = IP_LIMIT_MAP.write();
   match map.entry(ip) {
     Entry::Vacant(entry) => {
       entry.insert(1);
@@ -44,7 +44,7 @@ fn increment(ip: IpAddr) -> usize {
 }
 
 fn decrement(ip: IpAddr) -> usize {
-  let mut map = IP_LIMIT_MAP.lock();
+  let mut map = IP_LIMIT_MAP.write();
   if let Entry::Occupied(mut entry) = map.entry(ip) {
     let v = entry.get_mut();
     if *v <= 1 {
