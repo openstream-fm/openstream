@@ -1,3 +1,7 @@
+use crate::error::{ApiError, Kind};
+use crate::ip_limit;
+
+use config::Tokens;
 use db::{
   access_token::{AccessToken, Scope},
   account::Account,
@@ -6,12 +10,11 @@ use db::{
 };
 use prex::Request;
 
-use crate::error::{ApiError, Kind};
-
 pub static X_ACCESS_TOKEN: &str = "x-access-token";
 
 #[derive(Debug, Clone)]
 pub enum GetAccessTokenScopeError {
+  TooManyRequests,
   Db(mongodb::error::Error),
   Missing,
   NonUtf8,
@@ -23,11 +26,20 @@ pub enum GetAccessTokenScopeError {
 
 #[derive(Debug, Clone)]
 pub enum AccessTokenScope {
+  Global,
   Admin,
   User(User),
 }
 
 impl AccessTokenScope {
+  pub fn has_full_access(&self) -> bool {
+    self.is_global() || self.is_admin()
+  }
+
+  pub fn is_global(&self) -> bool {
+    matches!(self, Self::Global)
+  }
+
   pub fn is_admin(&self) -> bool {
     matches!(self, Self::Admin)
   }
@@ -40,6 +52,7 @@ impl AccessTokenScope {
       )),
 
       Some(account) => match self {
+        AccessTokenScope::Global => Ok(account),
         AccessTokenScope::Admin => Ok(account),
         AccessTokenScope::User(user) => {
           if !user.account_ids.contains(&account.id) {
@@ -55,7 +68,23 @@ impl AccessTokenScope {
 
 pub async fn get_access_token_scope(
   req: &Request,
+  tokens: &Tokens,
 ) -> Result<AccessTokenScope, GetAccessTokenScopeError> {
+  let ip = match req.headers().get("x-client-ip") {
+    Some(ip) => match ip.to_str() {
+      Ok(ip) => match ip.parse() {
+        Ok(ip) => ip,
+        Err(_e) => req.remote_addr().ip(),
+      },
+      Err(_e) => req.remote_addr().ip(),
+    },
+    None => req.remote_addr().ip(),
+  };
+
+  if ip_limit::should_reject(ip) {
+    return Err(GetAccessTokenScopeError::TooManyRequests);
+  }
+
   let token_id = match req.headers().get(X_ACCESS_TOKEN) {
     None => return Err(GetAccessTokenScopeError::Missing),
     Some(v) => match v.to_str() {
@@ -64,8 +93,15 @@ pub async fn get_access_token_scope(
     },
   };
 
+  if tokens.contains(token_id) {
+    return Ok(AccessTokenScope::Global);
+  }
+
   let doc = match AccessToken::touch(token_id).await? {
-    None => return Err(GetAccessTokenScopeError::NotFound),
+    None => {
+      ip_limit::hit(ip);
+      return Err(GetAccessTokenScopeError::NotFound);
+    }
     Some(doc) => doc,
   };
 
@@ -91,6 +127,7 @@ impl From<GetAccessTokenScopeError> for ApiError {
   fn from(v: GetAccessTokenScopeError) -> ApiError {
     use GetAccessTokenScopeError::*;
     match v {
+      TooManyRequests => ApiError::from(Kind::TooManyRequests),
       Db(e) => ApiError::from(e),
       Missing => ApiError::from(Kind::TokenMissing),
       NonUtf8 => ApiError::from(Kind::TokenMalformed),

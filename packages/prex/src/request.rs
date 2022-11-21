@@ -52,8 +52,8 @@ impl Request {
   }
 
   #[inline]
-  pub fn remote_addr(&self) -> &SocketAddr {
-    &self.remote_addr
+  pub fn remote_addr(&self) -> SocketAddr {
+    self.remote_addr
   }
 
   #[inline]

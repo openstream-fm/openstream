@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
-use futures::{FutureExt, StreamExt};
+use futures::{FutureExt, TryStreamExt};
 use log::*;
 
 use api::ApiServer;
@@ -122,6 +122,7 @@ async fn start_async(Start { config }: Start) -> Result<(), Box<dyn std::error::
 
   let config::Config {
     mongodb: _,
+    access,
     stream,
     source,
     api,
@@ -140,7 +141,7 @@ async fn start_async(Start { config }: Start) -> Result<(), Box<dyn std::error::
     }
   });
 
-  let mut futs = futures::stream::FuturesUnordered::new();
+  let futs = futures::stream::FuturesUnordered::new();
 
   if let Some(source_config) = source {
     let source = SourceServer::new(
@@ -163,17 +164,12 @@ async fn start_async(Start { config }: Start) -> Result<(), Box<dyn std::error::
   }
 
   if let Some(api_config) = api {
-    let api = ApiServer::new(api_config.addrs, shutdown.clone());
+    let api = ApiServer::new(api_config.addrs, access.tokens.clone(), shutdown.clone());
     let fut = api.start()?;
     futs.push(fut.boxed());
   }
 
-  loop {
-    match futs.next().await {
-      None => break,
-      Some(item) => item?,
-    }
-  }
+  futs.try_collect().await?;
 
   Ok(())
 }

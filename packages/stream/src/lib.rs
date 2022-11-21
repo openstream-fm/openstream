@@ -47,7 +47,8 @@ impl StreamServer {
       let server = Server::try_bind(addr)?
         .http1_only(true)
         .http1_title_case_headers(false)
-        .http1_preserve_header_case(false);
+        .http1_preserve_header_case(false)
+        .http1_keepalive(false);
 
       info!("stream server bound to {}", addr.yellow());
 

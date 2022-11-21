@@ -1,6 +1,5 @@
 #![allow(clippy::useless_format)]
 
-use ::shutdown::Shutdown;
 use async_trait::async_trait;
 use channels::ChannelMap;
 use constants::STREAM_CHUNK_SIZE;
@@ -14,6 +13,7 @@ use hyper::{Body, Method, Server, StatusCode};
 use log::*;
 use owo_colors::*;
 use prex::{handler::Handler, Next, Request, Response};
+use shutdown::Shutdown;
 use std::future::Future;
 use std::net::SocketAddr;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -55,7 +55,8 @@ impl SourceServer {
       let source = Server::try_bind(addr)?
         .http1_only(true)
         .http1_title_case_headers(false)
-        .http1_preserve_header_case(false);
+        .http1_preserve_header_case(false)
+        .http1_keepalive(false);
 
       info!("source receiver server bound to {}", addr.yellow());
 

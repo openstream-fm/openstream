@@ -1,3 +1,9 @@
+# access related settings
+[access]
+# string[] (required)
+# each global access token must have 10 characters or more 
+global_access_tokens = []
+
 # mongodb related settings
 [mongodb]
 
@@ -8,7 +14,7 @@ url="mongodb://localhost:27017/openstream?replicaSet=rs1"
 
 
 
-# the stream server is the where end users will connect to listen to the streams
+# the [stream] server is where end users will connect to listen to the streams
 [stream]
 
 # string(SocketAddr)[] (required)
@@ -21,7 +27,7 @@ public_base_url = "http://stream.openstream.fm"
 
 
 
-# the source receiver is the icecast compatible server where streamers will connect to start live broadcasting
+# the [source receiver] is the icecast compatible server where streamers will connect to start live broadcasting
 [source.receiver]
 
 # string(SocketAddr)[] (required)
@@ -34,7 +40,7 @@ public_base_url = "http://source.openstream.fm"
 
 
 
-# the source broadcaster server is where stream servers connect with source servers
+# the [source broadcaster] server is where stream servers connect with source servers
 [source.broadcaster]
 
 # string(SocketAddr)[] (required)
@@ -47,7 +53,7 @@ public_base_url = "http://broad.openstream.fm"
 
 
 
-# the api server is the main interface for users and admins (and frontends for them) to interact with openstream
+# the [api] server is the main interface for users and admins to interact with openstream server
 [api]
 
 # string(SocketAddr)[] (required)

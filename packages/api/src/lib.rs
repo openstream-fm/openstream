@@ -2,11 +2,13 @@
 #![feature(exhaustive_patterns)]
 
 pub mod error;
+pub mod ip_limit;
 pub mod json;
 pub mod request_ext;
 pub mod routes;
 
 use async_trait::async_trait;
+use config::Tokens;
 use futures::stream::FuturesUnordered;
 use futures::TryStreamExt;
 use hyper::{http::HeaderValue, Body, Server, StatusCode};
@@ -21,6 +23,7 @@ use std::net::SocketAddr;
 #[derive(Debug)]
 pub struct ApiServer {
   addrs: Vec<SocketAddr>,
+  tokens: Tokens,
   shutdown: Shutdown,
 }
 
@@ -30,8 +33,12 @@ pub struct Status {
 }
 
 impl ApiServer {
-  pub fn new(addrs: Vec<SocketAddr>, shutdown: Shutdown) -> Self {
-    Self { addrs, shutdown }
+  pub fn new(addrs: Vec<SocketAddr>, tokens: Tokens, shutdown: Shutdown) -> Self {
+    Self {
+      addrs,
+      shutdown,
+      tokens,
+    }
   }
 
   pub fn start(
@@ -43,7 +50,8 @@ impl ApiServer {
       let server = Server::try_bind(addr)?
         .http1_only(true)
         .http1_title_case_headers(false)
-        .http1_preserve_header_case(false);
+        .http1_preserve_header_case(false)
+        .http1_keepalive(false);
 
       info!("api server bound to {}", addr.yellow());
 
@@ -51,7 +59,7 @@ impl ApiServer {
 
       app.get("/status", StatusHandler::new());
 
-      app.at("/").nest(routes::router());
+      app.at("/").nest(routes::router(self.tokens.clone()));
 
       let app = app.build().expect("prex app build stream");
 

@@ -36,6 +36,7 @@ name = "api"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "config",
  "db",
  "futures",
  "futures-util",
@@ -43,11 +44,13 @@ dependencies = [
  "log",
  "mongodb",
  "owo-colors",
+ "parking_lot 0.12.1",
  "prex",
  "serde",
  "serde-querystring",
  "serde_json",
  "shutdown",
+ "static_init",
  "tokio",
  "tokio-stream",
 ]

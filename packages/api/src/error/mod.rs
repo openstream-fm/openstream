@@ -10,6 +10,7 @@ use std::fmt::Display;
 
 #[derive(Debug)]
 pub enum Kind {
+  TooManyRequests,
   ResourceNotFound,
   Db(mongodb::error::Error),
   TokenMissing,
@@ -37,6 +38,7 @@ impl From<Kind> for ApiError {
 impl ApiError {
   fn status(&self) -> StatusCode {
     match self.kind {
+      Kind::TooManyRequests => StatusCode::TOO_MANY_REQUESTS,
       Kind::ResourceNotFound => StatusCode::NOT_FOUND,
       Kind::Db(_) => StatusCode::INTERNAL_SERVER_ERROR,
       Kind::TokenMissing => StatusCode::UNAUTHORIZED,
@@ -53,6 +55,7 @@ impl ApiError {
 
   fn message(&self) -> String {
     match &self.kind {
+      Kind::TooManyRequests => format!("Too many requests"),
       Kind::ResourceNotFound => format!("Resource not found"),
       Kind::Db(_) => format!("Internal server error"),
       Kind::TokenMissing => format!("Access token is required"),
@@ -69,6 +72,7 @@ impl ApiError {
 
   fn kind_str(&self) -> &'static str {
     match self.kind {
+      Kind::TooManyRequests => "ERR_TOO_MANY_REQUESTS",
       Kind::ResourceNotFound => "ERR_RESOURCE_NOT_FOUND",
       Kind::Db(_) => "ERR_DB",
       Kind::TokenMissing => "ERR_TOKEN_MISSING",
