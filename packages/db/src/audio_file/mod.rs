@@ -34,13 +34,8 @@ pub struct AudioFile {
 }
 
 impl Model for AudioFile {
-  fn uid_len() -> usize {
-    12
-  }
-
-  fn cl_name() -> &'static str {
-    "audio_files"
-  }
+  const UID_LEN: usize = 12;
+  const CL_NAME: &'static str = "audio_files";
 
   fn indexes() -> Vec<IndexModel> {
     let account_id = IndexModel::builder().keys(doc! { "accountId": 1 }).build();

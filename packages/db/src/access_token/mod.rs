@@ -11,18 +11,37 @@ use serde_util::{as_f64, datetime};
 pub enum Scope {
   User { user_id: String },
   Admin { admin_id: String },
+  Global,
+}
+
+impl Scope {
+  pub fn is_user(&self) -> bool {
+    matches!(self, Scope::User { .. })
+  }
+
+  pub fn is_admin(&self) -> bool {
+    matches!(self, Scope::Admin { .. })
+  }
+
+  pub fn is_global(&self) -> bool {
+    matches!(self, Scope::Global)
+  }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
-#[serde(tag = "kind", rename_all = "camelCase")]
+#[serde(tag = "generatedBy", rename_all = "camelCase")]
 pub enum Kind {
-  Login,
+  #[serde(rename=""login)]
+  Login { ip: String, user_agent: String },
+  #[serde(rename = "generated")]
   Generated { title: String },
+  #[serde(rename = "cli")]
+  CliGenerated { title: String },
 }
 
 impl Kind {
   pub fn is_login(&self) -> bool {
-    matches!(self, Self::Login)
+    matches!(self, Self::Login { .. })
   }
 
   pub fn is_generated(&self) -> bool {
@@ -31,8 +50,9 @@ impl Kind {
 
   pub fn title(&self) -> Option<&str> {
     match self {
-      Self::Login => None,
+      Self::Login { .. } => None,
       Self::Generated { title } => Some(title.as_ref()),
+      Self::CliGenerated { title } => Some(title.as_ref()),
     }
   }
 }
@@ -85,16 +105,23 @@ impl AccessToken {
   pub fn title(&self) -> Option<&str> {
     self.kind.title()
   }
+
+  pub fn is_admin(&self) -> bool {
+    self.scope.is_admin()
+  }
+
+  pub fn is_user(&self) -> bool {
+    self.scope.is_user()
+  }
+
+  pub fn is_global(&self) -> bool {
+    self.scope.is_global()
+  }
 }
 
 impl Model for AccessToken {
-  fn uid_len() -> usize {
-    48
-  }
-
-  fn cl_name() -> &'static str {
-    "accessTokens"
-  }
+  const UID_LEN: usize = 48;
+  const CL_NAME: &'static str = "access_tokens";
 
   fn indexes() -> Vec<IndexModel> {
     let variant = IndexModel::builder().keys(doc! { "scope": 1 }).build();

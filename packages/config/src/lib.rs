@@ -1,6 +1,5 @@
 #![allow(clippy::bool_comparison)]
 
-use std::collections::BTreeSet;
 use std::fmt::Display;
 use std::path::Path;
 
@@ -11,7 +10,6 @@ use url::Url;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
-  pub access: Access,
   pub mongodb: Mongodb,
   pub stream: Option<Stream>,
   pub source: Option<Source>,
@@ -22,14 +20,6 @@ impl Config {
   pub fn has_interfaces(&self) -> bool {
     matches!((&self.stream, &self.source, &self.api), (None, None, None)) == false
   }
-}
-
-pub type Tokens = BTreeSet<String>;
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Access {
-  #[serde(rename = "global_access_tokens")]
-  pub tokens: Tokens,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -94,7 +84,7 @@ impl Display for LoadConfigError {
       LoadConfigError::Toml(e) => write!(f, "invalid config: {e}"),
       LoadConfigError::NoInterfaces => write!(
         f,
-        "invalid config: at least one of [stream] or [source] should be defined"
+        "invalid config: at least one of [stream], [source] or [api] must be defined"
       ),
     }
   }

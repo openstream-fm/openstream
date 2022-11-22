@@ -35,13 +35,8 @@ pub struct AudioChunk {
 }
 
 impl Model for AudioChunk {
-  fn uid_len() -> usize {
-    16
-  }
-
-  fn cl_name() -> &'static str {
-    "audio_chunks"
-  }
+  const UID_LEN: usize = 16;
+  const CL_NAME: &'static str = "audio_chunks";
 
   fn indexes() -> Vec<IndexModel> {
     let account_id = IndexModel::builder().keys(doc! { "accountId": 1 }).build();

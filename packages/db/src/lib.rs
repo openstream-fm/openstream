@@ -11,6 +11,7 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 pub mod access_token;
 pub mod account;
+pub mod admin;
 pub mod audio_chunk;
 pub mod audio_file;
 pub mod audio_upload_operation;
@@ -31,6 +32,7 @@ pub async fn ensure_indexes() -> Result<(), mongodb::error::Error> {
   audio_chunk::AudioChunk::ensure_indexes().await?;
   audio_file::AudioFile::ensure_indexes().await?;
   user::User::ensure_indexes().await?;
+  admin::Admin::ensure_indexes().await?;
   station::Station::ensure_indexes().await?;
   audio_upload_operation::AudioUploadOperation::ensure_indexes().await?;
   access_token::AccessToken::ensure_indexes().await?;
@@ -55,15 +57,15 @@ pub fn db() -> Database {
 
 #[async_trait]
 pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
-  fn uid_len() -> usize;
-  fn cl_name() -> &'static str;
+  const UID_LEN: usize;
+  const CL_NAME: &'static str;
 
   fn uid() -> String {
-    uid::uid(Self::uid_len())
+    uid::uid(Self::UID_LEN)
   }
 
   fn cl_as<T: Serialize + DeserializeOwned>() -> Collection<T> {
-    db().collection(Self::cl_name())
+    db().collection(Self::CL_NAME)
   }
 
   fn cl() -> Collection<Self> {
@@ -79,12 +81,12 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
     if idxs.is_empty() {
       debug!(
         "ensuring indexes for collection {} => no indexes, skiping",
-        Self::cl_name()
+        Self::CL_NAME
       );
     } else {
       debug!(
         "ensuring indexes for collection {} => {} indexes",
-        Self::cl_name(),
+        Self::CL_NAME,
         idxs.len()
       );
 
@@ -92,7 +94,7 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
         for idx in idxs.iter() {
           trace!(
             "ensuring index for collection {} => {:?}",
-            Self::cl_name(),
+            Self::CL_NAME,
             idx
           );
         }

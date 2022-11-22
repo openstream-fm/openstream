@@ -7,10 +7,9 @@ use serde_util::datetime;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct User {
+pub struct Admin {
   #[serde(rename = "_id")]
   pub id: String,
-  pub account_ids: Vec<String>,
   pub name: String,
   pub email: String,
   pub password: Option<String>,
@@ -18,22 +17,20 @@ pub struct User {
   pub created_at: DateTime<Utc>,
   #[serde(with = "datetime")]
   pub updated_at: DateTime<Utc>,
-  pub user_metadata: Metadata,
   pub system_metadata: Metadata,
 }
 
-impl Model for User {
+impl Model for Admin {
   const UID_LEN: usize = 6;
-  const CL_NAME: &'static str = "users";
+  const CL_NAME: &'static str = "admins";
 
   fn indexes() -> Vec<IndexModel> {
-    let account_ids = IndexModel::builder().keys(doc! { "accountIds": 1 }).build();
     let email_opts = IndexOptions::builder().unique(true).build();
     let email = IndexModel::builder()
       .keys(doc! { "email": 1 })
       .options(email_opts)
       .build();
 
-    vec![account_ids, email]
+    vec![email]
   }
 }

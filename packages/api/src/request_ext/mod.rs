@@ -1,7 +1,6 @@
 use crate::error::{ApiError, Kind};
 use crate::ip_limit;
 
-use config::Tokens;
 use db::{
   access_token::{AccessToken, Scope},
   account::Account,
@@ -68,7 +67,6 @@ impl AccessTokenScope {
 
 pub async fn get_access_token_scope(
   req: &Request,
-  tokens: &Tokens,
 ) -> Result<AccessTokenScope, GetAccessTokenScopeError> {
   let ip = match req.headers().get("x-client-ip") {
     Some(ip) => match ip.to_str() {
@@ -93,10 +91,6 @@ pub async fn get_access_token_scope(
     },
   };
 
-  if tokens.contains(token_id) {
-    return Ok(AccessTokenScope::Global);
-  }
-
   let doc = match AccessToken::touch(token_id).await? {
     None => {
       ip_limit::hit(ip);
@@ -106,6 +100,8 @@ pub async fn get_access_token_scope(
   };
 
   let scope = match doc.scope {
+    Scope::Global => AccessTokenScope::Global,
+
     Scope::Admin { admin_id: _ } => AccessTokenScope::Admin,
 
     Scope::User { user_id } => match User::get_by_id(&user_id).await? {

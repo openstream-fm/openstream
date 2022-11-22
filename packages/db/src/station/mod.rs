@@ -18,13 +18,8 @@ pub struct Station {
 }
 
 impl Model for Station {
-  fn uid_len() -> usize {
-    10
-  }
-
-  fn cl_name() -> &'static str {
-    "stations"
-  }
+  const UID_LEN: usize = 10;
+  const CL_NAME: &'static str = "stations";
 
   fn indexes() -> Vec<IndexModel> {
     let account_id = IndexModel::builder().keys(doc! { "accountId": 1 }).build();

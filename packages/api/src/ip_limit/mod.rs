@@ -13,7 +13,7 @@ pub const LIMIT: usize = 60;
 pub const LIMIT_RESET_MS: u64 = 60_000;
 
 #[cfg(test)]
-pub const LIMIT_RESET_MS: u64 = 100;
+pub const LIMIT_RESET_MS: u64 = 10;
 
 pub fn get(ip: IpAddr) -> usize {
   let map = IP_LIMIT_MAP.read();
@@ -65,24 +65,22 @@ fn decrement(ip: IpAddr) -> usize {
 }
 
 #[cfg(test)]
-mod test {
-  use super::*;
+#[tokio::test]
+async fn hit_count_and_reset() {
+  let ip = IpAddr::from([0, 0, 0, 0]);
 
-  #[tokio::test]
-  async fn hit_count_and_reset() {
-    let ip = IpAddr::from([0, 0, 0, 0]);
-
-    for _ in 0..LIMIT {
-      assert!(!should_reject(ip));
-      hit(ip);
-    }
-
-    assert!(should_reject(ip));
-
-    tokio::time::sleep(Duration::from_millis(LIMIT_RESET_MS + 10)).await;
-
-    assert_eq!(get(ip), 0);
-
+  for _ in 0..LIMIT {
     assert!(!should_reject(ip));
+    hit(ip);
   }
+
+  assert!(should_reject(ip));
+
+  tokio::time::sleep(Duration::from_millis(LIMIT_RESET_MS + 10)).await;
+
+  assert_eq!(get(ip), 0);
+
+  assert!(!should_reject(ip));
+
+  assert!(IP_LIMIT_MAP.read().is_empty())
 }

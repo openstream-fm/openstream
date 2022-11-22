@@ -24,3 +24,5 @@ which = "4.3.0"
 clap = { version = "4.0.26", features = ["derive"] }
 futures = "0.3.25"
 api = { version = "0.1.0", path = "../../packages/api" }
+chrono = "0.4.23"
+dialoguer = "0.10.2"

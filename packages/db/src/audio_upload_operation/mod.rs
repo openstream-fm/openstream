@@ -36,13 +36,8 @@ pub struct AudioUploadOperation {
 }
 
 impl Model for AudioUploadOperation {
-  fn uid_len() -> usize {
-    AudioFile::uid_len()
-  }
-
-  fn cl_name() -> &'static str {
-    "audio_upload_operations"
-  }
+  const UID_LEN: usize = AudioFile::UID_LEN;
+  const CL_NAME: &'static str = "audio_upload_operations";
 
   fn indexes() -> Vec<IndexModel> {
     let account_id = IndexModel::builder().keys(doc! { "accountId": 1 }).build();

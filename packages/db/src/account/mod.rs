@@ -58,13 +58,8 @@ impl Account {
 }
 
 impl Model for Account {
-  fn uid_len() -> usize {
-    8
-  }
-
-  fn cl_name() -> &'static str {
-    "accounts"
-  }
+  const UID_LEN: usize = 8;
+  const CL_NAME: &'static str = "accounts";
 
   fn indexes() -> Vec<IndexModel> {
     let owner_id = IndexModel::builder().keys(doc! { "ownerId": 1 }).build();

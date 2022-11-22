@@ -1,6 +1,11 @@
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
+use config::Config;
+use db::{
+  access_token::{AccessToken, Kind},
+  Model,
+};
 use futures::{FutureExt, TryStreamExt};
 use log::*;
 
@@ -24,6 +29,7 @@ struct Cli {
 enum Command {
   Start(Start),
   CreateConfig(CreateConfig),
+  CreateToken(CreateToken),
 }
 
 #[derive(Debug, Parser)]
@@ -34,7 +40,20 @@ struct Start {
 }
 
 #[derive(Debug, Parser)]
-#[command(about = "Create a default config file")]
+#[command(
+  about = "Create a new global access token to use in all openstream instances that share the same mongodb deployment"
+)]
+struct CreateToken {
+  #[clap(short, long, default_value_t = String::from("./config.toml"))]
+  config: String,
+  #[clap(short = 'y', long, default_value_t = false)]
+  assume_yes: bool,
+  #[clap(long)]
+  title: Option<String>,
+}
+
+#[derive(Debug, Parser)]
+#[command(about = "Create a default config file for later editing")]
 struct CreateConfig {
   #[clap(short, long, default_value_t = String::from("./config.toml"))]
   output: String,
@@ -49,6 +68,7 @@ fn cmd() -> Result<(), Box<dyn std::error::Error>> {
   match cli.command {
     Command::Start(opts) => start(opts),
     Command::CreateConfig(opts) => create_config(opts),
+    Command::CreateToken(opts) => token(opts),
   }
 }
 
@@ -60,13 +80,10 @@ fn runtime() -> Runtime {
     .unwrap()
 }
 
-fn start(opts: Start) -> Result<(), Box<dyn std::error::Error>> {
+async fn shared_init(config: String) -> Result<Config, Box<dyn std::error::Error>> {
   logger::init();
   let _ = dotenv::dotenv();
-  runtime().block_on(start_async(opts))
-}
 
-async fn start_async(Start { config }: Start) -> Result<(), Box<dyn std::error::Error>> {
   info!(
     "openstream {}{} process started",
     "v".yellow(),
@@ -95,13 +112,6 @@ async fn start_async(Start { config }: Start) -> Result<(), Box<dyn std::error::
     panic!("no database specified in config, under [mongodb] url");
   }
 
-  let ffmpeg_path = which::which("ffmpeg")?;
-
-  info!(
-    "using system ffmpeg from {}",
-    ffmpeg_path.to_string_lossy().yellow()
-  );
-
   info!("connecting to mongodb...");
   client
     .default_database()
@@ -116,13 +126,29 @@ async fn start_async(Start { config }: Start) -> Result<(), Box<dyn std::error::
   info!("ensuring mongodb indexes...");
   db::ensure_indexes().await?;
 
+  Ok(config)
+}
+
+fn start(opts: Start) -> Result<(), Box<dyn std::error::Error>> {
+  runtime().block_on(start_async(opts))
+}
+
+async fn start_async(Start { config }: Start) -> Result<(), Box<dyn std::error::Error>> {
+  let config = shared_init(config).await?;
+
+  let ffmpeg_path = which::which("ffmpeg")?;
+
+  info!(
+    "using system ffmpeg from {}",
+    ffmpeg_path.to_string_lossy().yellow()
+  );
+
   info!("retrieving public ip...");
   let ip = ip::get_ip_v4().await?;
   info!("public ip obtained: {}", ip.yellow());
 
   let config::Config {
     mongodb: _,
-    access,
     stream,
     source,
     api,
@@ -164,7 +190,7 @@ async fn start_async(Start { config }: Start) -> Result<(), Box<dyn std::error::
   }
 
   if let Some(api_config) = api {
-    let api = ApiServer::new(api_config.addrs, access.tokens.clone(), shutdown.clone());
+    let api = ApiServer::new(api_config.addrs, shutdown.clone());
     let fut = api.start()?;
     futs.push(fut.boxed());
   }
@@ -172,6 +198,73 @@ async fn start_async(Start { config }: Start) -> Result<(), Box<dyn std::error::
   futs.try_collect().await?;
 
   Ok(())
+}
+
+fn token(
+  CreateToken {
+    config,
+    title,
+    assume_yes,
+  }: CreateToken,
+) -> Result<(), Box<dyn std::error::Error>> {
+  runtime().block_on(async move {
+    async fn create(title: String) -> Result<AccessToken, Box<dyn std::error::Error>> {
+      let token = AccessToken {
+        id: AccessToken::uid(),
+        created_at: chrono::Utc::now(),
+        hits: 0,
+        kind: Kind::CliGenerated { title },
+        last_used_at: None,
+        scope: db::access_token::Scope::Global,
+      };
+
+      AccessToken::insert(&token).await?;
+      Ok(token)
+    }
+
+    shared_init(config).await?;
+
+    let title = {
+      if let Some(title) = title {
+        title.trim().to_string()
+      } else {
+        loop {
+          let title: String = dialoguer::Input::new()
+            .with_prompt("Title for the new access token?")
+            .allow_empty(true)
+            .interact()?;
+
+          if title.trim().is_empty() {
+            println!("The title is required");
+            continue;
+          } else {
+            break title.trim().to_string();
+          }
+        }
+      }
+    };
+
+    if assume_yes {
+      let token = create(title).await?;
+      println!("New global access token generated => {}", token.id);
+    } else {
+      let confirm = dialoguer::Confirm::new()
+        .with_prompt("This will generate a global access token to use in all openstream instances that share this mongodb deployment?")
+        .default(true)
+        .show_default(true)
+        .wait_for_newline(true)
+        .interact()?;
+
+      if confirm {
+        let token = create(title).await?;
+        println!("New global access token generated => {}", token.id);
+      } else {
+        eprintln!("Operation aborted")
+      }
+    }
+
+    Ok(())
+  })
 }
 
 fn create_config(CreateConfig { output }: CreateConfig) -> Result<(), Box<dyn std::error::Error>> {

@@ -4,7 +4,6 @@ use crate::json::JsonHandler;
 use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
 
 use async_trait::async_trait;
-use config::Tokens;
 use db::account::Account;
 use db::audio_file::AudioFile;
 use db::Model;
@@ -19,9 +18,7 @@ pub mod get {
   use super::*;
 
   #[derive(Debug, Clone)]
-  pub struct Endpoint {
-    pub tokens: Tokens,
-  }
+  pub struct Endpoint {}
 
   pub const DEFAULT_SKIP: u64 = 0;
   pub const DEFAULT_LIMIT: i64 = 60;
@@ -99,7 +96,7 @@ pub mod get {
     async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
       let account_id = req.param("account").unwrap();
 
-      let access_token_scope = request_ext::get_access_token_scope(&req, &self.tokens).await?;
+      let access_token_scope = request_ext::get_access_token_scope(&req).await?;
 
       let account = access_token_scope.grant_scope(account_id).await?;
 

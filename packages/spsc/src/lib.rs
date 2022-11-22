@@ -228,7 +228,7 @@ mod test {
   use std::time::Instant;
   use tokio_stream::StreamExt;
 
-  const N: usize = 1_000_000;
+  const N: usize = 100_000;
 
   #[tokio::test]
   async fn channel() {

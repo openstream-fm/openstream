@@ -1,9 +1,3 @@
-# access related settings
-[access]
-# string[] (required)
-# each global access token must have 10 characters or more 
-global_access_tokens = []
-
 # mongodb related settings
 [mongodb]
 
