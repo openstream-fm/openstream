@@ -68,16 +68,7 @@ impl AccessTokenScope {
 pub async fn get_access_token_scope(
   req: &Request,
 ) -> Result<AccessTokenScope, GetAccessTokenScopeError> {
-  let ip = match req.headers().get("x-client-ip") {
-    Some(ip) => match ip.to_str() {
-      Ok(ip) => match ip.parse() {
-        Ok(ip) => ip,
-        Err(_e) => req.remote_addr().ip(),
-      },
-      Err(_e) => req.remote_addr().ip(),
-    },
-    None => req.remote_addr().ip(),
-  };
+  let ip = req.isomorphic_ip();
 
   if ip_limit::should_reject(ip) {
     return Err(GetAccessTokenScopeError::TooManyRequests);

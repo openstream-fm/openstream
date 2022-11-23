@@ -7,7 +7,9 @@ edition = "2021"
 
 [dependencies]
 async-trait = "0.1.57"
+chrono = "0.4.23"
 config = { version = "0.1.0", path = "../config" }
+crypt = { version = "0.1.0", path = "../crypt" }
 db = { version = "0.1.0", path = "../db" }
 futures = "0.3.25"
 futures-util = "0.3.25"
@@ -24,3 +26,4 @@ shutdown = { version = "0.1.0", path = "../shutdown" }
 static_init = "1.0.3"
 tokio = { version = "1.21.2", features = ["full"] }
 tokio-stream = "0.1.11"
+user-agent = { version = "0.1.0", path = "../user-agent" }

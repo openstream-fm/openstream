@@ -36,7 +36,9 @@ name = "api"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "chrono",
  "config",
+ "crypt",
  "db",
  "futures",
  "futures-util",
@@ -53,6 +55,7 @@ dependencies = [
  "static_init",
  "tokio",
  "tokio-stream",
+ "user-agent",
 ]
 
 [[package]]
@@ -483,6 +486,8 @@ dependencies = [
  "tokio",
  "uid",
  "unused",
+ "user-agent",
+ "woothee",
 ]
 
 [[package]]
@@ -2686,6 +2691,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "user-agent"
+version = "0.1.0"
+dependencies = [
+ "prex",
+ "serde",
+ "static_init",
+ "woothee",
+]
+
+[[package]]
 name = "uuid"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2961,6 +2976,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "80d0f4e272c85def139476380b12f9ac60926689dd2e01d4923222f40580869d"
 dependencies = [
  "winapi",
+]
+
+[[package]]
+name = "woothee"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "896174c6a4779d4d7d4523dd27aef7d46609eda2497e370f6c998325c6bf6971"
+dependencies = [
+ "lazy_static",
+ "regex",
+ "serde",
+ "serde_derive",
 ]
 
 [[package]]

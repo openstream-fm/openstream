@@ -1,3 +1,5 @@
+use std::net::IpAddr;
+
 use crate::Model;
 use chrono::{DateTime, Utc};
 use mongodb::bson::{self, doc};
@@ -5,13 +7,14 @@ use mongodb::options::{FindOneAndUpdateOptions, ReturnDocument};
 use mongodb::IndexModel;
 use serde::{Deserialize, Serialize};
 use serde_util::{as_f64, datetime};
+use user_agent::UserAgent;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(tag = "accessType", rename_all = "camelCase")]
 pub enum Scope {
-  User { user_id: String },
-  Admin { admin_id: String },
   Global,
+  Admin { admin_id: String },
+  User { user_id: String },
 }
 
 impl Scope {
@@ -30,29 +33,26 @@ impl Scope {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(tag = "generatedBy", rename_all = "camelCase")]
-pub enum Kind {
-  #[serde(rename=""login)]
-  Login { ip: String, user_agent: String },
-  #[serde(rename = "generated")]
-  Generated { title: String },
-  #[serde(rename = "cli")]
-  CliGenerated { title: String },
+pub enum GeneratedBy {
+  Login { ip: IpAddr, user_agent: UserAgent },
+  Api { title: String },
+  Cli { title: String },
 }
 
-impl Kind {
+impl GeneratedBy {
   pub fn is_login(&self) -> bool {
     matches!(self, Self::Login { .. })
   }
 
   pub fn is_generated(&self) -> bool {
-    matches!(self, Self::Generated { title: _ })
+    matches!(self, Self::Api { title: _ })
   }
 
   pub fn title(&self) -> Option<&str> {
     match self {
       Self::Login { .. } => None,
-      Self::Generated { title } => Some(title.as_ref()),
-      Self::CliGenerated { title } => Some(title.as_ref()),
+      Self::Api { title } => Some(title.as_ref()),
+      Self::Cli { title } => Some(title.as_ref()),
     }
   }
 }
@@ -65,7 +65,7 @@ pub struct AccessToken {
   #[serde(flatten)]
   pub scope: Scope,
   #[serde(flatten)]
-  pub kind: Kind,
+  pub generated_by: GeneratedBy,
   #[serde(with = "datetime")]
   pub created_at: DateTime<Utc>,
   #[serde(with = "datetime::option")]
@@ -95,15 +95,15 @@ impl AccessToken {
 
 impl AccessToken {
   pub fn is_login(&self) -> bool {
-    self.kind.is_login()
+    self.generated_by.is_login()
   }
 
   pub fn is_generated(&self) -> bool {
-    self.kind.is_generated()
+    self.generated_by.is_generated()
   }
 
   pub fn title(&self) -> Option<&str> {
-    self.kind.title()
+    self.generated_by.title()
   }
 
   pub fn is_admin(&self) -> bool {

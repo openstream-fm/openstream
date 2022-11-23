@@ -20,6 +20,7 @@ members = [
     "packages/channels",
     "packages/db",
 
+    "packages/user-agent",
     "packages/spsc",
     "packages/shutdown",
     "packages/drop-tracer",

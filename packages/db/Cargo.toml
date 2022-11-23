@@ -19,6 +19,8 @@ quote = "1.0.21"
 log = "0.4.17"
 futures-util = "0.3.25"
 unused = "0.1.0"
+woothee = { version = "0.13.0", features = ["serde", "serde_derive"] }
+user-agent = { version = "0.1.0", path = "../user-agent" }
 
 [dev-dependencies]
 serde_json = "1.0.86"

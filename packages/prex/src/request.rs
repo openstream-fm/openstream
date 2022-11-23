@@ -1,8 +1,30 @@
 use crate::params::Params;
 use hyper;
+use hyper::body::HttpBody;
 use hyper::Body;
-use std::net::SocketAddr;
+use serde::de::DeserializeOwned;
+use std::net::{IpAddr, SocketAddr};
 use std::ops::{Deref, DerefMut};
+
+#[derive(Debug)]
+pub enum ReadBodyJsonError {
+  TooLarge(usize),
+  Hyper(hyper::Error),
+  Json(serde_json::Error),
+  PayloadInvalid(String),
+}
+
+impl From<hyper::Error> for ReadBodyJsonError {
+  fn from(e: hyper::Error) -> Self {
+    Self::Hyper(e)
+  }
+}
+
+impl From<serde_json::Error> for ReadBodyJsonError {
+  fn from(e: serde_json::Error) -> Self {
+    Self::Json(e)
+  }
+}
 
 #[derive(Debug)]
 pub struct Parts {
@@ -59,6 +81,43 @@ impl Request {
   #[inline]
   pub fn remote_addr_mut(&mut self) -> &mut SocketAddr {
     &mut self.remote_addr
+  }
+
+  pub fn isomorphic_ip(&self) -> IpAddr {
+    match self.headers().get("x-client-ip") {
+      Some(ip) => match ip.to_str() {
+        Ok(ip) => match ip.parse() {
+          Ok(ip) => ip,
+          Err(_e) => self.remote_addr().ip(),
+        },
+        Err(_e) => self.remote_addr().ip(),
+      },
+      None => self.remote_addr().ip(),
+    }
+  }
+
+  pub async fn read_body_json<'de, T: DeserializeOwned>(
+    &mut self,
+    maxlen: usize,
+  ) -> Result<T, ReadBodyJsonError> {
+    let mut buf = vec![];
+    loop {
+      let data = self.body_mut().data().await;
+      match data {
+        None => break,
+        Some(r) => {
+          let bytes = r?;
+          if (bytes.len() + buf.len()) > maxlen {
+            return Err(ReadBodyJsonError::TooLarge(maxlen));
+          }
+          buf.extend_from_slice(bytes.as_ref());
+        }
+      }
+    }
+
+    let value: T = serde_json::from_slice(&buf)?;
+
+    Ok(value)
   }
 }
 

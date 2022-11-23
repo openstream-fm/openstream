@@ -3,6 +3,7 @@
 use hyper::header::{CONTENT_LENGTH, CONTENT_TYPE};
 use hyper::http::HeaderValue;
 use hyper::{Body, StatusCode};
+use prex::request::ReadBodyJsonError;
 use prex::*;
 use serde_json;
 use std::error::Error;
@@ -22,6 +23,11 @@ pub enum Kind {
   AccountNotFound(String),
   AudioFileNotFound(String),
   QueryString(serde_querystring::Error),
+  PayloadIo(hyper::Error),
+  PayloadJson(serde_json::Error),
+  PayloadTooLarge(usize),
+  PayloadInvalid(String),
+  AuthFailed,
 }
 
 #[derive(Debug)]
@@ -49,7 +55,12 @@ impl ApiError {
       Kind::TokenOutOfScope => StatusCode::UNAUTHORIZED,
       Kind::AccountNotFound(_) => StatusCode::NOT_FOUND,
       Kind::AudioFileNotFound(_) => StatusCode::NOT_FOUND,
-      Kind::QueryString(ref _e) => StatusCode::BAD_REQUEST,
+      Kind::QueryString(_) => StatusCode::BAD_REQUEST,
+      Kind::PayloadIo(_) => StatusCode::BAD_REQUEST,
+      Kind::PayloadJson(_) => StatusCode::BAD_REQUEST,
+      Kind::PayloadTooLarge(_) => StatusCode::BAD_REQUEST,
+      Kind::PayloadInvalid(_) => StatusCode::BAD_REQUEST,
+      Kind::AuthFailed => StatusCode::BAD_REQUEST,
     }
   }
 
@@ -67,6 +78,11 @@ impl ApiError {
       Kind::AccountNotFound(id) => format!("Account with id {id} not found"),
       Kind::AudioFileNotFound(id) => format!("Audio file with id {id} not found"),
       Kind::QueryString(e) => format!("Invalid query string: {e}"),
+      Kind::PayloadIo(e) => format!("Error reading payload: {e}"),
+      Kind::PayloadJson(e) => format!("Invalid JSON payload: {e}"),
+      Kind::PayloadTooLarge(_) => format!("Payload size exceeded"),
+      Kind::PayloadInvalid(e) => format!("{e}"),
+      Kind::AuthFailed => format!("There's no user with that email and password"),
     }
   }
 
@@ -83,7 +99,12 @@ impl ApiError {
       Kind::TokenOutOfScope => "ERR_TOKEN_OUT_OF_SCOPE",
       Kind::AccountNotFound(_) => "ERR_ACCOUNT_NOT_FOUND",
       Kind::AudioFileNotFound(_) => "ERR_AUDIO_FILE_NOT_FOUND",
-      Kind::QueryString(ref _e) => "ERR_INVALID_QUERY_STRING",
+      Kind::QueryString(_) => "ERR_INVALID_QUERY_STRING",
+      Kind::PayloadIo(_) => "ERR_PAYLOAD_IO",
+      Kind::PayloadJson(_) => "ERR_PAYLOAD_JSON",
+      Kind::PayloadTooLarge(_) => "ERR_PAYLOAD_SIZE",
+      Kind::PayloadInvalid(_) => "ERR_PAYLOAD_INVALID",
+      Kind::AuthFailed => "ERR_AUTH_FAILED",
     }
   }
 
@@ -149,5 +170,16 @@ impl From<!> for ApiError {
 impl From<serde_querystring::Error> for ApiError {
   fn from(e: serde_querystring::Error) -> Self {
     Self::from(Kind::QueryString(e))
+  }
+}
+
+impl From<ReadBodyJsonError> for ApiError {
+  fn from(e: ReadBodyJsonError) -> Self {
+    match e {
+      ReadBodyJsonError::Hyper(e) => Self::from(Kind::PayloadIo(e)),
+      ReadBodyJsonError::Json(e) => Self::from(Kind::PayloadJson(e)),
+      ReadBodyJsonError::TooLarge(maxlen) => Self::from(Kind::PayloadTooLarge(maxlen)),
+      ReadBodyJsonError::PayloadInvalid(s) => Self::from(Kind::PayloadInvalid(s)),
+    }
   }
 }

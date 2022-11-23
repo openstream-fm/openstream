@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use clap::{Parser, Subcommand};
 use config::Config;
 use db::{
-  access_token::{AccessToken, Kind},
+  access_token::{AccessToken, GeneratedBy},
   Model,
 };
 use futures::{FutureExt, TryStreamExt};
@@ -213,7 +213,7 @@ fn token(
         id: AccessToken::uid(),
         created_at: chrono::Utc::now(),
         hits: 0,
-        kind: Kind::CliGenerated { title },
+        generated_by: GeneratedBy::Cli { title },
         last_used_at: None,
         scope: db::access_token::Scope::Global,
       };
