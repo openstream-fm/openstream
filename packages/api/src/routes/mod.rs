@@ -5,6 +5,7 @@ use crate::json::JsonHandler;
 
 pub mod accounts;
 pub mod login;
+pub mod users;
 
 pub fn router() -> Builder {
   let mut app = prex::prex();

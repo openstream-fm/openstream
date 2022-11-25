@@ -1,5 +1,5 @@
-use crate::metadata::Metadata;
 use crate::Model;
+use crate::{metadata::Metadata, IntoPublicScope};
 use chrono::{DateTime, Utc};
 use mongodb::{bson::doc, IndexModel};
 use serde::{Deserialize, Serialize};
@@ -41,18 +41,24 @@ pub enum PublicAccount {
   User(UserPublicAccount),
 }
 
+impl From<Account> for UserPublicAccount {
+  fn from(account: Account) -> Self {
+    Self {
+      id: account.id,
+      name: account.name,
+      owner_id: account.owner_id,
+      created_at: account.created_at,
+      updated_at: account.updated_at,
+      user_metadata: account.user_metadata,
+    }
+  }
+}
+
 impl Account {
-  pub fn into_public(self, is_admin_scope: bool) -> PublicAccount {
-    match is_admin_scope {
-      true => PublicAccount::Admin(self),
-      false => PublicAccount::User(UserPublicAccount {
-        id: self.id,
-        name: self.name,
-        owner_id: self.owner_id,
-        created_at: self.created_at,
-        updated_at: self.updated_at,
-        user_metadata: self.user_metadata,
-      }),
+  pub fn into_public(self, scope: IntoPublicScope) -> PublicAccount {
+    match scope {
+      IntoPublicScope::Admin => PublicAccount::Admin(self),
+      IntoPublicScope::User => PublicAccount::User(self.into()),
     }
   }
 }

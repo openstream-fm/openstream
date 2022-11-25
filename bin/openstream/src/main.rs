@@ -2,10 +2,8 @@ use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
 use config::Config;
-use db::{
-  access_token::{AccessToken, GeneratedBy},
-  Model,
-};
+use db::access_token::{AccessToken, GeneratedBy};
+use db::Model;
 use futures::{FutureExt, TryStreamExt};
 use log::*;
 
@@ -211,11 +209,11 @@ fn token(
     async fn create(title: String) -> Result<AccessToken, Box<dyn std::error::Error>> {
       let token = AccessToken {
         id: AccessToken::uid(),
-        created_at: chrono::Utc::now(),
-        hits: 0,
-        generated_by: GeneratedBy::Cli { title },
-        last_used_at: None,
         scope: db::access_token::Scope::Global,
+        generated_by: GeneratedBy::Cli { title },
+        created_at: chrono::Utc::now(),
+        last_used_at: None,
+        hits: 0,
       };
 
       AccessToken::insert(&token).await?;

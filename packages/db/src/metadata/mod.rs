@@ -5,10 +5,10 @@ use serde::de::Visitor;
 use serde::ser::SerializeMap;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Metadata(Document);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Document(BTreeMap<String, Value>);
 
 #[derive(Debug, Clone)]

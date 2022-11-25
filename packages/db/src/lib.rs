@@ -4,10 +4,11 @@ use log::*;
 use mongodb::{
   bson::{doc, Document},
   results::{InsertOneResult, UpdateResult},
-  Client, Collection, Database, IndexModel,
+  Client, ClientSession, Collection, Database, IndexModel,
 };
 use once_cell::sync::OnceCell;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use std::{future::Future, pin::Pin};
 
 pub mod access_token;
 pub mod account;
@@ -146,10 +147,10 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Paged<T> {
-  total: u64,
-  skip: u64,
-  limit: i64,
-  items: Vec<T>,
+  pub total: u64,
+  pub skip: u64,
+  pub limit: i64,
+  pub items: Vec<T>,
 }
 
 impl<T> Paged<T> {
@@ -165,6 +166,64 @@ impl<T> Paged<T> {
       skip,
       limit,
       items: items.into_iter().map(f).collect(),
+    }
+  }
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum IntoPublicScope {
+  Admin,
+  User,
+}
+
+#[derive(Debug)]
+pub enum TransactionError<E> {
+  Mongo(mongodb::error::Error),
+  Custom(E),
+}
+
+impl<T> From<mongodb::error::Error> for TransactionError<T> {
+  fn from(e: mongodb::error::Error) -> Self {
+    TransactionError::Mongo(e)
+  }
+}
+
+pub async fn run_transaction<T, E, F>(f: F) -> Result<T, TransactionError<E>>
+where
+  for<'a> F: Fn(
+    &'a mut ClientSession,
+  ) -> Pin<Box<dyn Future<Output = Result<T, TransactionError<E>>> + Send + 'a>>,
+{
+  let mut session = client().start_session(None).await?;
+  session.start_transaction(None).await?;
+
+  'run: loop {
+    let r = f(&mut session).await;
+
+    match r {
+      Err(e) => match e {
+        TransactionError::Custom(e) => return Err(TransactionError::Custom(e)),
+        TransactionError::Mongo(e) => {
+          if !e.contains_label(mongodb::error::TRANSIENT_TRANSACTION_ERROR) {
+            return Err(TransactionError::Mongo(e));
+          } else {
+            continue 'run;
+          }
+        }
+      },
+
+      Ok(v) => 'commit: loop {
+        match session.commit_transaction().await {
+          Ok(()) => return Ok(v),
+          Err(e) => {
+            if e.contains_label(mongodb::error::UNKNOWN_TRANSACTION_COMMIT_RESULT) {
+              continue 'commit;
+            } else {
+              return Err(TransactionError::Mongo(e));
+            }
+          }
+        }
+      },
     }
   }
 }

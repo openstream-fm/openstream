@@ -52,7 +52,7 @@ pub mod get {
         account,
       } = input;
 
-      let account = account.into_public(access_token_scope.is_admin());
+      let account = account.into_public(access_token_scope.into_public_scope());
 
       Ok(Output { account })
     }

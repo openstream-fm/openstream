@@ -1,5 +1,6 @@
 #![allow(clippy::useless_format)]
 
+use db::TransactionError;
 use hyper::header::{CONTENT_LENGTH, CONTENT_TYPE};
 use hyper::http::HeaderValue;
 use hyper::{Body, StatusCode};
@@ -21,6 +22,7 @@ pub enum Kind {
   TokenAdminNotFound,
   TokenOutOfScope,
   AccountNotFound(String),
+  UserNotFound(String),
   AudioFileNotFound(String),
   QueryString(serde_querystring::Error),
   PayloadIo(hyper::Error),
@@ -28,6 +30,7 @@ pub enum Kind {
   PayloadTooLarge(usize),
   PayloadInvalid(String),
   AuthFailed,
+  UserEmailExists,
 }
 
 #[derive(Debug)]
@@ -54,6 +57,7 @@ impl ApiError {
       Kind::TokenAdminNotFound => StatusCode::INTERNAL_SERVER_ERROR,
       Kind::TokenOutOfScope => StatusCode::UNAUTHORIZED,
       Kind::AccountNotFound(_) => StatusCode::NOT_FOUND,
+      Kind::UserNotFound(_) => StatusCode::NOT_FOUND,
       Kind::AudioFileNotFound(_) => StatusCode::NOT_FOUND,
       Kind::QueryString(_) => StatusCode::BAD_REQUEST,
       Kind::PayloadIo(_) => StatusCode::BAD_REQUEST,
@@ -61,6 +65,7 @@ impl ApiError {
       Kind::PayloadTooLarge(_) => StatusCode::BAD_REQUEST,
       Kind::PayloadInvalid(_) => StatusCode::BAD_REQUEST,
       Kind::AuthFailed => StatusCode::BAD_REQUEST,
+      Kind::UserEmailExists => StatusCode::CONFLICT,
     }
   }
 
@@ -76,6 +81,7 @@ impl ApiError {
       Kind::TokenAdminNotFound => format!("Admin has been deleted"),
       Kind::TokenOutOfScope => format!("Not enought permissions"),
       Kind::AccountNotFound(id) => format!("Account with id {id} not found"),
+      Kind::UserNotFound(id) => format!("User with id {id} not found"),
       Kind::AudioFileNotFound(id) => format!("Audio file with id {id} not found"),
       Kind::QueryString(e) => format!("Invalid query string: {e}"),
       Kind::PayloadIo(e) => format!("Error reading payload: {e}"),
@@ -83,6 +89,7 @@ impl ApiError {
       Kind::PayloadTooLarge(_) => format!("Payload size exceeded"),
       Kind::PayloadInvalid(e) => format!("{e}"),
       Kind::AuthFailed => format!("There's no user with that email and password"),
+      Kind::UserEmailExists => format!("User email already exists"),
     }
   }
 
@@ -98,6 +105,7 @@ impl ApiError {
       Kind::TokenAdminNotFound => "ERR_TOKEN_ADMIN_NOT_FOUND",
       Kind::TokenOutOfScope => "ERR_TOKEN_OUT_OF_SCOPE",
       Kind::AccountNotFound(_) => "ERR_ACCOUNT_NOT_FOUND",
+      Kind::UserNotFound(_) => "ERR_USER_NOT_FOUND",
       Kind::AudioFileNotFound(_) => "ERR_AUDIO_FILE_NOT_FOUND",
       Kind::QueryString(_) => "ERR_INVALID_QUERY_STRING",
       Kind::PayloadIo(_) => "ERR_PAYLOAD_IO",
@@ -105,6 +113,7 @@ impl ApiError {
       Kind::PayloadTooLarge(_) => "ERR_PAYLOAD_SIZE",
       Kind::PayloadInvalid(_) => "ERR_PAYLOAD_INVALID",
       Kind::AuthFailed => "ERR_AUTH_FAILED",
+      Kind::UserEmailExists => "ERR_USER_EMAIL_EXISTS",
     }
   }
 
@@ -146,6 +155,7 @@ impl Display for ApiError {
       Kind::Db(e) => write!(f, " mongo => {}", e)?,
       Kind::TokenUserNotFound(id) => write!(f, " user_id => {}", id)?,
       Kind::AccountNotFound(id) => write!(f, " account_id => {}", id)?,
+      Kind::UserNotFound(id) => write!(f, "user_id => {}", id)?,
       _ => {}
     };
 
@@ -170,6 +180,15 @@ impl From<!> for ApiError {
 impl From<serde_querystring::Error> for ApiError {
   fn from(e: serde_querystring::Error) -> Self {
     Self::from(Kind::QueryString(e))
+  }
+}
+
+impl<E: Into<ApiError>> From<TransactionError<E>> for ApiError {
+  fn from(e: TransactionError<E>) -> Self {
+    match e {
+      TransactionError::Mongo(e) => e.into(),
+      TransactionError::Custom(e) => e.into(),
+    }
   }
 }
 

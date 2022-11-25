@@ -1,6 +1,7 @@
 use crate::error::{ApiError, Kind};
 use crate::ip_limit;
 
+use db::IntoPublicScope;
 use db::{
   access_token::{AccessToken, Scope},
   account::Account,
@@ -31,6 +32,13 @@ pub enum AccessTokenScope {
 }
 
 impl AccessTokenScope {
+  pub fn into_public_scope(&self) -> IntoPublicScope {
+    match self {
+      Self::Global | Self::Admin => IntoPublicScope::Admin,
+      Self::User(_) => IntoPublicScope::User,
+    }
+  }
+
   pub fn has_full_access(&self) -> bool {
     self.is_global() || self.is_admin()
   }

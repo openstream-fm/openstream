@@ -12,7 +12,7 @@ use serde::Deserialize;
 
 pub mod get {
 
-  use db::{Model, Paged};
+  use db::{IntoPublicScope, Model, Paged};
 
   use crate::error::ApiError;
 
@@ -118,7 +118,7 @@ pub mod get {
         AccessTokenScope::Global | AccessTokenScope::Admin => {
           let page = Account::paged(None, skip, limit)
             .await?
-            .map(|item| Account::into_public(item, true));
+            .map(|item| item.into_public(IntoPublicScope::Admin));
 
           Ok(page)
         }
@@ -127,7 +127,7 @@ pub mod get {
           let filter = mongodb::bson::doc! { "accountId": { "$in": user.account_ids } };
           let page = Account::paged(filter, skip, limit)
             .await?
-            .map(|item| Account::into_public(item, false));
+            .map(|item| item.into_public(IntoPublicScope::User));
           Ok(page)
         }
       }
