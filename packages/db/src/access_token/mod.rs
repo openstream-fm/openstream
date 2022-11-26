@@ -35,6 +35,7 @@ impl Scope {
 #[serde(tag = "generatedBy", rename_all = "camelCase")]
 pub enum GeneratedBy {
   Login { ip: IpAddr, user_agent: UserAgent },
+  Register { ip: IpAddr, user_agent: UserAgent },
   Api { title: String },
   Cli { title: String },
 }
@@ -51,6 +52,7 @@ impl GeneratedBy {
   pub fn title(&self) -> Option<&str> {
     match self {
       Self::Login { .. } => None,
+      Self::Register { .. } => None,
       Self::Api { title } => Some(title.as_ref()),
       Self::Cli { title } => Some(title.as_ref()),
     }

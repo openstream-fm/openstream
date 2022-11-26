@@ -5,8 +5,8 @@ use crate::request_ext::{self, GetAccessTokenScopeError};
 use crate::error::{ApiError, Kind};
 use async_trait::async_trait;
 use db::user::{PublicUser, User};
-use db::IntoPublicScope;
 use db::Model;
+use db::PublicScope;
 use prex::Request;
 use serde::{Deserialize, Serialize};
 
@@ -82,11 +82,11 @@ pub mod get {
           };
 
           Ok(Self::Output {
-            user: user.into_public(IntoPublicScope::Admin),
+            user: user.into_public(PublicScope::Admin),
           })
         }
         AccessTokenScope::User(user) => Ok(Self::Output {
-          user: user.into_public(IntoPublicScope::User),
+          user: user.into_public(PublicScope::User),
         }),
       }
     }

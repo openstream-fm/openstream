@@ -10,7 +10,7 @@ use db::account::Account;
 use db::client;
 use db::metadata::Metadata;
 use db::user::{PublicUser, User};
-use db::{IntoPublicScope, Model, Paged};
+use db::{Model, Paged, PublicScope};
 use mongodb::bson::doc;
 use prex::request::ReadBodyJsonError;
 use prex::Request;
@@ -123,7 +123,7 @@ pub mod get {
         AccessTokenScope::Global | AccessTokenScope::Admin => {
           let page = User::paged(None, skip, limit)
             .await?
-            .map(|item| item.into_public(IntoPublicScope::Admin));
+            .map(|item| item.into_public(PublicScope::Admin));
 
           Ok(page)
         }
@@ -133,7 +133,7 @@ pub mod get {
             skip,
             limit,
             total: 1,
-            items: vec![user.into_public(IntoPublicScope::User)],
+            items: vec![user.into_public(PublicScope::User)],
           };
 
           Ok(page)
@@ -144,6 +144,8 @@ pub mod get {
 }
 
 pub mod post {
+
+  use db::run_transaction;
 
   use super::*;
 
@@ -297,42 +299,42 @@ pub mod post {
 
       let password = crypt::hash(&password);
 
-      let mut session = client().start_session(None).await?;
-      session.start_transaction(None).await?;
+      let user = run_transaction!(session => {
 
-      let email_exists = User::exists_with_session(doc! { "email": &email }, &mut session).await?;
-      if email_exists {
-        return Err(Self::HandleError::UserEmailExists);
-      }
-
-      for id in &account_ids {
-        let exists = Account::exists_with_session(id.as_str(), &mut session).await?;
-        if !exists {
-          return Err(Self::HandleError::AccountNotFound(id.clone()));
+        let email_exists = User::exists_with_session(doc! { "email": &email }, &mut session).await?;
+        if email_exists {
+          return Err(Self::HandleError::UserEmailExists);
         }
-      }
 
-      let now = Utc::now();
+        for id in &account_ids {
+          let exists = Account::exists_with_session(id.as_str(), &mut session).await?;
+          if !exists {
+            return Err(Self::HandleError::AccountNotFound(id.clone()));
+          }
+        }
 
-      let user = User {
-        id: User::uid(),
-        email,
-        password: Some(password),
-        first_name,
-        last_name,
-        account_ids,
-        user_metadata,
-        system_metadata,
-        created_at: now,
-        updated_at: now,
-      };
+        let now = Utc::now();
 
-      User::insert_with_session(&user, &mut session).await?;
+        let user = User {
+          id: User::uid(),
+          email,
+          password: Some(password),
+          first_name,
+          last_name,
+          account_ids,
+          user_metadata,
+          system_metadata,
+          created_at: now,
+          updated_at: now,
+        };
 
-      session.commit_transaction().await?;
+        User::insert_with_session(&user, &mut session).await?;
+
+        user
+      });
 
       Ok(Self::Output {
-        user: user.into_public(IntoPublicScope::Admin),
+        user: user.into_public(PublicScope::Admin),
       })
     }
   }

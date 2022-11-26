@@ -31,16 +31,7 @@ struct ExistsDocument {
   pub id: String,
 }
 
-mod sealed {
-  use mongodb::bson::Document;
-
-  pub trait Sealed {}
-
-  impl Sealed for Document {}
-  impl Sealed for String {}
-  impl Sealed for &str {}
-}
-pub trait IntoExistFilter: sealed::Sealed + Send + Sync {
+pub trait IntoExistFilter: Send + Sync {
   fn into_exists_filter(self) -> Document;
 }
 
@@ -279,7 +270,7 @@ impl<T> Paged<T> {
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
-pub enum IntoPublicScope {
+pub enum PublicScope {
   Admin,
   User,
 }

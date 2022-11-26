@@ -1,5 +1,5 @@
 use crate::metadata::Metadata;
-use crate::{IntoPublicScope, Model};
+use crate::{Model, PublicScope};
 use chrono::{DateTime, Utc};
 use mongodb::error::Result as MongoResult;
 use mongodb::ClientSession;
@@ -93,15 +93,26 @@ impl From<User> for UserPublicUser {
 }
 
 impl User {
-  pub fn into_public(self, scope: IntoPublicScope) -> PublicUser {
+  pub fn into_public(self, scope: PublicScope) -> PublicUser {
     match scope {
-      IntoPublicScope::Admin => PublicUser::Admin(self.into()),
-      IntoPublicScope::User => PublicUser::User(self.into()),
+      PublicScope::Admin => PublicUser::Admin(self.into()),
+      PublicScope::User => PublicUser::User(self.into()),
     }
   }
 
   pub async fn find_by_email(email: &str) -> MongoResult<Option<Self>> {
     Self::cl().find_one(doc! { "email": email }, None).await
+  }
+
+  pub async fn email_exists(email: &str) -> MongoResult<bool> {
+    Self::exists(doc! { "email": email }).await
+  }
+
+  pub async fn email_exists_with_session(
+    email: &str,
+    session: &mut ClientSession,
+  ) -> MongoResult<bool> {
+    Self::exists_with_session(doc! { "email": email }, session).await
   }
 
   pub async fn find_by_email_with_session(

@@ -1,5 +1,5 @@
 use crate::Model;
-use crate::{metadata::Metadata, IntoPublicScope};
+use crate::{metadata::Metadata, PublicScope};
 use chrono::{DateTime, Utc};
 use mongodb::{bson::doc, IndexModel};
 use serde::{Deserialize, Serialize};
@@ -55,10 +55,10 @@ impl From<Account> for UserPublicAccount {
 }
 
 impl Account {
-  pub fn into_public(self, scope: IntoPublicScope) -> PublicAccount {
+  pub fn into_public(self, scope: PublicScope) -> PublicAccount {
     match scope {
-      IntoPublicScope::Admin => PublicAccount::Admin(self),
-      IntoPublicScope::User => PublicAccount::User(self.into()),
+      PublicScope::Admin => PublicAccount::Admin(self),
+      PublicScope::User => PublicAccount::User(self.into()),
     }
   }
 }

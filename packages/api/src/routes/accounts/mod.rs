@@ -11,7 +11,7 @@ use db::account::Account;
 use db::account::PublicAccount;
 use db::metadata::Metadata;
 use db::run_transaction;
-use db::{IntoPublicScope, Model, Paged};
+use db::{Model, Paged, PublicScope};
 use prex::request::ReadBodyJsonError;
 use prex::Request;
 use serde::{Deserialize, Serialize};
@@ -120,7 +120,7 @@ pub mod get {
         AccessTokenScope::Global | AccessTokenScope::Admin => {
           let page = Account::paged(None, skip, limit)
             .await?
-            .map(|item| item.into_public(IntoPublicScope::Admin));
+            .map(|item| item.into_public(PublicScope::Admin));
 
           Ok(page)
         }
@@ -129,7 +129,7 @@ pub mod get {
           let filter = mongodb::bson::doc! { "accountId": { "$in": user.account_ids } };
           let page = Account::paged(filter, skip, limit)
             .await?
-            .map(|item| item.into_public(IntoPublicScope::User));
+            .map(|item| item.into_public(PublicScope::User));
           Ok(page)
         }
       }
