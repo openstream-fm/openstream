@@ -300,20 +300,14 @@ pub mod post {
       let mut session = client().start_session(None).await?;
       session.start_transaction(None).await?;
 
-      let existing = User::cl()
-        .find_one_with_session(doc! { "email": &email }, None, &mut session)
-        .await?;
-
-      if existing.is_some() {
+      let email_exists = User::exists_with_session(doc! { "email": &email }, &mut session).await?;
+      if email_exists {
         return Err(Self::HandleError::UserEmailExists);
       }
 
       for id in &account_ids {
-        let exists = Account::cl()
-          .find_one_with_session(doc! { "_id": &id }, None, &mut session)
-          .await?;
-
-        if exists.is_none() {
+        let exists = Account::exists_with_session(id.as_str(), &mut session).await?;
+        if !exists {
           return Err(Self::HandleError::AccountNotFound(id.clone()));
         }
       }
@@ -333,9 +327,9 @@ pub mod post {
         updated_at: now,
       };
 
-      User::cl()
-        .insert_one_with_session(&user, None, &mut session)
-        .await?;
+      User::insert_with_session(&user, &mut session).await?;
+
+      session.commit_transaction().await?;
 
       Ok(Self::Output {
         user: user.into_public(IntoPublicScope::Admin),

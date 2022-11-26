@@ -1,14 +1,17 @@
+use std::borrow::Borrow;
+
 use async_trait::async_trait;
 use futures_util::TryStreamExt;
 use log::*;
+use mongodb::error::Result as MongoResult;
 use mongodb::{
   bson::{doc, Document},
-  results::{InsertOneResult, UpdateResult},
+  options::FindOneOptions,
+  results::{InsertManyResult, InsertOneResult, UpdateResult},
   Client, ClientSession, Collection, Database, IndexModel,
 };
 use once_cell::sync::OnceCell;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use std::{future::Future, pin::Pin};
 
 pub mod access_token;
 pub mod account;
@@ -22,13 +25,50 @@ pub mod user;
 
 static CLIENT: OnceCell<Client> = OnceCell::new();
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct ExistsDocument {
+  #[serde(rename = "_id")]
+  pub id: String,
+}
+
+mod sealed {
+  use mongodb::bson::Document;
+
+  pub trait Sealed {}
+
+  impl Sealed for Document {}
+  impl Sealed for String {}
+  impl Sealed for &str {}
+}
+pub trait IntoExistFilter: sealed::Sealed + Send + Sync {
+  fn into_exists_filter(self) -> Document;
+}
+
+impl IntoExistFilter for Document {
+  fn into_exists_filter(self) -> Document {
+    self
+  }
+}
+
+impl IntoExistFilter for String {
+  fn into_exists_filter(self) -> Document {
+    doc! { "_id": self }
+  }
+}
+
+impl IntoExistFilter for &str {
+  fn into_exists_filter(self) -> Document {
+    doc! { "_id": self }
+  }
+}
+
 pub fn init(client: Client) {
   CLIENT
     .set(client)
     .expect("[internal] mongodb client initialized more than once");
 }
 
-pub async fn ensure_indexes() -> Result<(), mongodb::error::Error> {
+pub async fn ensure_indexes() -> MongoResult<()> {
   account::Account::ensure_indexes().await?;
   audio_chunk::AudioChunk::ensure_indexes().await?;
   audio_file::AudioFile::ensure_indexes().await?;
@@ -77,7 +117,7 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
     vec![]
   }
 
-  async fn ensure_indexes() -> Result<(), mongodb::error::Error> {
+  async fn ensure_indexes() -> MongoResult<()> {
     let idxs = Self::indexes();
     if idxs.is_empty() {
       debug!(
@@ -107,22 +147,90 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
     Ok(())
   }
 
-  async fn get_by_id(id: &str) -> Result<Option<Self>, mongodb::error::Error> {
+  async fn exists<F: IntoExistFilter>(filter: F) -> MongoResult<bool> {
+    let options = FindOneOptions::builder()
+      .projection(doc! { "_id": 1 })
+      .build();
+    let doc = Self::cl_as::<ExistsDocument>()
+      .find_one(filter.into_exists_filter(), options)
+      .await?;
+    match doc {
+      None => Ok(false),
+      Some(_) => Ok(true),
+    }
+  }
+
+  async fn exists_with_session<F: IntoExistFilter>(
+    filter: F,
+    session: &mut ClientSession,
+  ) -> Result<bool, mongodb::error::Error> {
+    let options = FindOneOptions::builder()
+      .projection(doc! { "_id": 1 })
+      .build();
+    let doc = Self::cl_as::<ExistsDocument>()
+      .find_one_with_session(filter.into_exists_filter(), options, session)
+      .await?;
+    match doc {
+      None => Ok(false),
+      Some(_) => Ok(true),
+    }
+  }
+
+  async fn get_by_id(id: &str) -> MongoResult<Option<Self>> {
     Self::cl().find_one(doc! { "_id": id }, None).await
+  }
+
+  async fn get_by_id_with_session(
+    id: &str,
+    session: &mut ClientSession,
+  ) -> MongoResult<Option<Self>> {
+    Self::cl()
+      .find_one_with_session(doc! { "_id": id }, None, session)
+      .await
   }
 
   async fn insert(
     doc: impl std::borrow::Borrow<Self> + Send + Sync,
-  ) -> Result<InsertOneResult, mongodb::error::Error> {
+  ) -> MongoResult<InsertOneResult> {
     Self::cl().insert_one(doc, None).await
+  }
+
+  async fn insert_with_session(
+    doc: impl Borrow<Self> + Send + Sync,
+    session: &mut ClientSession,
+  ) -> MongoResult<InsertOneResult> {
+    Self::cl().insert_one_with_session(doc, None, session).await
+  }
+
+  async fn insert_many(docs: &[Self]) -> MongoResult<InsertManyResult> {
+    Self::cl().insert_many(docs, None).await
+  }
+
+  async fn insert_many_with_session(
+    docs: &[Self],
+    session: &mut ClientSession,
+  ) -> MongoResult<InsertManyResult> {
+    Self::cl()
+      .insert_many_with_session(docs, None, session)
+      .await
   }
 
   async fn replace(
     id: &str,
     replacement: impl std::borrow::Borrow<Self> + Send + Sync,
-  ) -> Result<UpdateResult, mongodb::error::Error> {
+  ) -> MongoResult<UpdateResult> {
     Self::cl()
       .replace_one(doc! {"_id": id}, replacement, None)
+      .await
+  }
+
+  async fn replace_with_session(
+    id: &str,
+    replacement: impl std::borrow::Borrow<Self> + Send + Sync,
+    session: &mut ClientSession,
+  ) -> MongoResult<UpdateResult> {
+    Self::cl()
+      .replace_one_with_session(doc! {"_id": id}, replacement, None, session)
       .await
   }
 
@@ -130,7 +238,7 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
     filter: impl Into<Option<Document>> + Send,
     skip: u64,
     limit: i64,
-  ) -> Result<Paged<Self>, mongodb::error::Error> {
+  ) -> MongoResult<Paged<Self>> {
     let filter = filter.into();
     let total = Self::cl().count_documents(filter.clone(), None).await?;
     let items = Self::cl().find(filter, None).await?.try_collect().await?;
@@ -176,54 +284,16 @@ pub enum IntoPublicScope {
   User,
 }
 
-#[derive(Debug)]
-pub enum TransactionError<E> {
-  Mongo(mongodb::error::Error),
-  Custom(E),
-}
+#[macro_export]
+macro_rules! run_transaction {
+  ($session:ident => $block:block) => {{
+    let mut $session = $crate::client().start_session(None).await?;
+    $session.start_transaction(None).await?;
 
-impl<T> From<mongodb::error::Error> for TransactionError<T> {
-  fn from(e: mongodb::error::Error) -> Self {
-    TransactionError::Mongo(e)
-  }
-}
+    let r = $block;
 
-pub async fn run_transaction<T, E, F>(f: F) -> Result<T, TransactionError<E>>
-where
-  for<'a> F: Fn(
-    &'a mut ClientSession,
-  ) -> Pin<Box<dyn Future<Output = Result<T, TransactionError<E>>> + Send + 'a>>,
-{
-  let mut session = client().start_session(None).await?;
-  session.start_transaction(None).await?;
+    $session.commit_transaction().await?;
 
-  'run: loop {
-    let r = f(&mut session).await;
-
-    match r {
-      Err(e) => match e {
-        TransactionError::Custom(e) => return Err(TransactionError::Custom(e)),
-        TransactionError::Mongo(e) => {
-          if !e.contains_label(mongodb::error::TRANSIENT_TRANSACTION_ERROR) {
-            return Err(TransactionError::Mongo(e));
-          } else {
-            continue 'run;
-          }
-        }
-      },
-
-      Ok(v) => 'commit: loop {
-        match session.commit_transaction().await {
-          Ok(()) => return Ok(v),
-          Err(e) => {
-            if e.contains_label(mongodb::error::UNKNOWN_TRANSACTION_COMMIT_RESULT) {
-              continue 'commit;
-            } else {
-              return Err(TransactionError::Mongo(e));
-            }
-          }
-        }
-      },
-    }
-  }
+    r
+  }};
 }

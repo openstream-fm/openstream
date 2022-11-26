@@ -32,7 +32,7 @@ pub enum AccessTokenScope {
 }
 
 impl AccessTokenScope {
-  pub fn into_public_scope(&self) -> IntoPublicScope {
+  pub fn as_public_scope(&self) -> IntoPublicScope {
     match self {
       Self::Global | Self::Admin => IntoPublicScope::Admin,
       Self::User(_) => IntoPublicScope::User,

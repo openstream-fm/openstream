@@ -1,6 +1,8 @@
 use crate::metadata::Metadata;
 use crate::{IntoPublicScope, Model};
 use chrono::{DateTime, Utc};
+use mongodb::error::Result as MongoResult;
+use mongodb::ClientSession;
 use mongodb::{bson::doc, options::IndexOptions, IndexModel};
 use serde::{Deserialize, Serialize};
 use serde_util::datetime;
@@ -96,6 +98,19 @@ impl User {
       IntoPublicScope::Admin => PublicUser::Admin(self.into()),
       IntoPublicScope::User => PublicUser::User(self.into()),
     }
+  }
+
+  pub async fn find_by_email(email: &str) -> MongoResult<Option<Self>> {
+    Self::cl().find_one(doc! { "email": email }, None).await
+  }
+
+  pub async fn find_by_email_with_session(
+    email: &str,
+    session: &mut ClientSession,
+  ) -> MongoResult<Option<Self>> {
+    Self::cl()
+      .find_one_with_session(doc! { "email": email }, None, session)
+      .await
   }
 }
 

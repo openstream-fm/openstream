@@ -10,7 +10,7 @@ use serde_util::{as_f64, datetime};
 use user_agent::UserAgent;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
-#[serde(tag = "accessType", rename_all = "camelCase")]
+#[serde(tag = "scope", rename_all = "camelCase")]
 pub enum Scope {
   Global,
   Admin { admin_id: String },
@@ -124,10 +124,12 @@ impl Model for AccessToken {
   const CL_NAME: &'static str = "access_tokens";
 
   fn indexes() -> Vec<IndexModel> {
-    let variant = IndexModel::builder().keys(doc! { "scope": 1 }).build();
-    let kind = IndexModel::builder().keys(doc! { "kind": 1 }).build();
     let user_id = IndexModel::builder().keys(doc! { "userId": 1 }).build();
     let admin_id = IndexModel::builder().keys(doc! { "adminId": 1 }).build();
-    vec![variant, user_id, admin_id, kind]
+    let scope = IndexModel::builder().keys(doc! { "scope": 1 }).build();
+    let generated_by = IndexModel::builder()
+      .keys(doc! { "generatedBy": 1 })
+      .build();
+    vec![user_id, admin_id, scope, generated_by]
   }
 }

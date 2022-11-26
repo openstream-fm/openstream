@@ -12,6 +12,16 @@ pub fn router() -> Builder {
 
   app.post("/login", login::post::Endpoint {}.into_handler());
 
+  app.get("/users", users::get::Endpoint {}.into_handler());
+
+  app.at("/users/:user").nest({
+    let mut users = prex::prex();
+
+    users.post("/", users::post::Endpoint {}.into_handler());
+
+    users
+  });
+
   app.get("/accounts", accounts::get::Endpoint {}.into_handler());
 
   app.at("/accounts/:account").nest({

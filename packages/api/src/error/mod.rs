@@ -1,6 +1,5 @@
 #![allow(clippy::useless_format)]
 
-use db::TransactionError;
 use hyper::header::{CONTENT_LENGTH, CONTENT_TYPE};
 use hyper::http::HeaderValue;
 use hyper::{Body, StatusCode};
@@ -180,15 +179,6 @@ impl From<!> for ApiError {
 impl From<serde_querystring::Error> for ApiError {
   fn from(e: serde_querystring::Error) -> Self {
     Self::from(Kind::QueryString(e))
-  }
-}
-
-impl<E: Into<ApiError>> From<TransactionError<E>> for ApiError {
-  fn from(e: TransactionError<E>) -> Self {
-    match e {
-      TransactionError::Mongo(e) => e.into(),
-      TransactionError::Custom(e) => e.into(),
-    }
   }
 }
 

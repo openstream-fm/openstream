@@ -99,14 +99,13 @@ pub mod post {
       })
     }
 
-    async fn perform(
-      &self,
-      Input {
+    async fn perform(&self, input: Input) -> Result<Output, Self::HandleError> {
+      let Input {
         ip,
         payload,
         user_agent,
-      }: Input,
-    ) -> Result<Output, Self::HandleError> {
+      } = input;
+
       if should_reject(ip) {
         return Err(HandleError::TooManyRequests);
       }
@@ -115,7 +114,7 @@ pub mod post {
 
       let Payload { email, password } = payload;
 
-      let user = match User::cl().find_one(doc! { "email": email }, None).await? {
+      let user = match User::find_by_email(&email).await? {
         None => return Err(HandleError::NoMatchEmail),
         Some(user) => user,
       };
@@ -127,8 +126,7 @@ pub mod post {
 
       let is_match = crypt::compare(&password, user_password);
 
-      #[allow(clippy::bool_comparison)]
-      if is_match == false {
+      if !is_match {
         return Err(HandleError::NoMatchPassword);
       }
 
