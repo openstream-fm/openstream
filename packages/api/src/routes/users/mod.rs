@@ -7,7 +7,6 @@ use crate::request_ext::get_access_token_scope;
 use async_trait::async_trait;
 use chrono::Utc;
 use db::account::Account;
-use db::client;
 use db::metadata::Metadata;
 use db::user::{PublicUser, User};
 use db::{Model, Paged, PublicScope};
