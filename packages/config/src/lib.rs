@@ -13,6 +13,7 @@ pub struct Config {
   pub mongodb: Mongodb,
   pub stream: Option<Stream>,
   pub source: Option<Source>,
+  pub router: Option<Router>,
   pub api: Option<Api>,
 }
 
@@ -37,6 +38,12 @@ pub struct Stream {
 pub struct Source {
   pub receiver: SourceReceiver,
   pub broadcaster: SourceBroadcaster,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Router {
+  pub addrs: Vec<SocketAddr>,
+  pub public_base_url: Url,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

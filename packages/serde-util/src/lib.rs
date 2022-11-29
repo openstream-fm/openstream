@@ -6,10 +6,25 @@ pub mod password;
 pub mod voidable;
 
 #[cfg(test)]
-mod tests {
+mod test {
+  use bson::Bson;
+  use serde::Deserializer;
+  use serde::Serializer;
+
   #[test]
-  fn it_works() {
-    let result = 2 + 2;
-    assert_eq!(result, 4);
+  fn local_patch() {
+    assert!(bson::is_local_patch());
+  }
+
+  #[test]
+  fn serializer_is_not_human_readable() {
+    let ser = bson::Serializer::new();
+    assert!(!ser.is_human_readable())
+  }
+
+  #[test]
+  fn deserializer_is_not_human_readable() {
+    let de = bson::Deserializer::new(Bson::Null);
+    assert!(!de.is_human_readable())
   }
 }

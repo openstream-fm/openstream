@@ -122,8 +122,8 @@ impl From<GetAccessTokenScopeError> for ApiError {
   fn from(v: GetAccessTokenScopeError) -> ApiError {
     use GetAccessTokenScopeError::*;
     match v {
-      TooManyRequests => ApiError::from(Kind::TooManyRequests),
       Db(e) => ApiError::from(e),
+      TooManyRequests => ApiError::from(Kind::TooManyRequests),
       Missing => ApiError::from(Kind::TokenMissing),
       NonUtf8 => ApiError::from(Kind::TokenMalformed),
       NotFound => ApiError::from(Kind::TokenNotFound),

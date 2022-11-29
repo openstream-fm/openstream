@@ -9,6 +9,7 @@ use log::*;
 
 use api::ApiServer;
 use owo_colors::*;
+use router::RouterServer;
 use shutdown::Shutdown;
 use source::SourceServer;
 use stream::StreamServer;
@@ -150,6 +151,7 @@ async fn start_async(Start { config }: Start) -> Result<(), Box<dyn std::error::
     stream,
     source,
     api,
+    router,
   } = config;
 
   let shutdown = Shutdown::new();
@@ -190,6 +192,12 @@ async fn start_async(Start { config }: Start) -> Result<(), Box<dyn std::error::
   if let Some(api_config) = api {
     let api = ApiServer::new(api_config.addrs, shutdown.clone());
     let fut = api.start()?;
+    futs.push(fut.boxed());
+  }
+
+  if let Some(router_config) = router {
+    let router = RouterServer::new(router_config.addrs, shutdown.clone());
+    let fut = router.start()?;
     futs.push(fut.boxed());
   }
 

@@ -23,13 +23,6 @@ pub mod get {
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone)]
-  pub struct Input {
-    access_token_scope: AccessTokenScope,
-    skip: u64,
-    limit: i64,
-  }
-
   pub const DEFAULT_SKIP: u64 = 0;
   pub const DEFAULT_LIMIT: i64 = 60;
 
@@ -41,15 +34,21 @@ pub mod get {
     DEFAULT_LIMIT
   }
 
-  pub type Output = Paged<PublicAccount>;
-
-  #[derive(Debug, Deserialize)]
+  #[derive(Debug, Clone, Serialize, Deserialize)]
   struct Query {
     #[serde(default = "default_skip")]
     skip: u64,
     #[serde(default = "default_limit")]
     limit: i64,
   }
+
+  #[derive(Debug, Clone)]
+  pub struct Input {
+    access_token_scope: AccessTokenScope,
+    query: Query,
+  }
+
+  pub type Output = Paged<PublicAccount>;
 
   impl Default for Query {
     fn default() -> Self {
@@ -97,24 +96,24 @@ pub mod get {
     async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
       let access_token_scope = request_ext::get_access_token_scope(&req).await?;
 
-      let Query { skip, limit } = match req.uri().query() {
+      let query = match req.uri().query() {
         None => Default::default(),
         Some(qs) => serde_querystring::from_str(qs)?,
       };
 
       Ok(Self::Input {
         access_token_scope,
-        skip,
-        limit,
+        query,
       })
     }
 
     async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
       let Self::Input {
         access_token_scope,
-        skip,
-        limit,
+        query,
       } = input;
+
+      let Query { skip, limit } = query;
 
       match access_token_scope {
         AccessTokenScope::Global | AccessTokenScope::Admin => {

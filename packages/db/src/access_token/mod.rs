@@ -59,7 +59,7 @@ impl GeneratedBy {
   }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AccessToken {
   #[serde(rename = "_id")]
@@ -133,5 +133,58 @@ impl Model for AccessToken {
       .keys(doc! { "generatedBy": 1 })
       .build();
     vec![user_id, admin_id, scope, generated_by]
+  }
+}
+
+#[cfg(test)]
+mod test {
+  use super::*;
+
+  #[test]
+  fn serde_bson_vec() {
+    // chrono has nanosecond precision that get lost on serialize and deserialize
+    // so we use bson::DateTime::now().into() instead of Utc::now()
+    let now = bson::DateTime::now().into();
+
+    let token = AccessToken {
+      id: AccessToken::uid(),
+      created_at: now,
+      last_used_at: Some(now),
+      generated_by: GeneratedBy::Api {
+        title: String::from("Title"),
+      },
+      scope: Scope::Global,
+      hits: 0,
+    };
+
+    let vec = bson::to_vec(&token).expect("bson serialize");
+
+    let out = bson::from_slice(&vec).expect("bson deserialize");
+
+    assert_eq!(token, out);
+  }
+
+  #[test]
+  fn serde_bson_doc() {
+    // chrono has nanosecond precision that get lost on serialize and deserialize
+    // so we use bson::DateTime::now().into() instead of Utc::now()
+    let now = bson::DateTime::now().into();
+
+    let token = AccessToken {
+      id: AccessToken::uid(),
+      created_at: now,
+      last_used_at: Some(now),
+      generated_by: GeneratedBy::Api {
+        title: String::from("Title"),
+      },
+      scope: Scope::Global,
+      hits: 0,
+    };
+
+    let doc = bson::to_document(&token).expect("bson serialize");
+
+    let out = bson::from_document(doc).expect("bson deserialize");
+
+    assert_eq!(token, out);
   }
 }

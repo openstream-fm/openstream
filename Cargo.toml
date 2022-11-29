@@ -14,6 +14,7 @@ members = [
     "packages/stream",
     "packages/source-alt",
     "packages/stream",
+    "packages/router",
     "packages/upload",
     "packages/api",
 
@@ -34,3 +35,6 @@ members = [
     "packages/stream-util",
     "packages/logger",
 ]
+
+[patch.crates-io]
+bson = { path = "./patches/bson" }

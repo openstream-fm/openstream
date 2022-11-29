@@ -13,6 +13,7 @@ crypt = { version = "0.1.0", path = "../crypt" }
 db = { version = "0.1.0", path = "../db" }
 futures = "0.3.25"
 futures-util = "0.3.25"
+hex = "0.4.3"
 hyper = { version = "0.14.20", features = ["full"] }
 log = "0.4.17"
 mongodb = "2.3.1"
@@ -22,6 +23,7 @@ prex = { version = "0.1.0", path = "../prex" }
 serde = "1.0.145"
 serde-querystring = "0.0.8"
 serde_json = "1.0.86"
+sha1 = "0.10.5"
 shutdown = { version = "0.1.0", path = "../shutdown" }
 static_init = "1.0.3"
 tokio = { version = "1.21.2", features = ["full"] }

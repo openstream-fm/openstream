@@ -1,5 +1,6 @@
 use bson;
 use chrono::{self, Utc};
+use log::*;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 /**
@@ -8,8 +9,10 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
  */
 pub fn serialize<S: Serializer>(date: &chrono::DateTime<Utc>, ser: S) -> Result<S::Ok, S::Error> {
   if ser.is_human_readable() {
+    trace!("serializing date as human readable");
     Serialize::serialize(&date, ser)
   } else {
+    trace!("serializing date as NOT human readable");
     let target: bson::DateTime = (*date).into();
     Serialize::serialize(&target, ser)
   }
@@ -21,18 +24,17 @@ pub fn serialize<S: Serializer>(date: &chrono::DateTime<Utc>, ser: S) -> Result<
  */
 pub fn deserialize<'de, D: Deserializer<'de>>(de: D) -> Result<chrono::DateTime<Utc>, D::Error> {
   if de.is_human_readable() {
+    trace!("deserializing date as human readable");
     Deserialize::deserialize(de)
   } else {
-    let temp: bson::DateTime = Deserialize::deserialize(de)?;
-    let target: chrono::DateTime<Utc> = temp.into();
-    Ok(target)
+    trace!("deserializing date as NOT human readable");
+    let helper: bson::DateTime = Deserialize::deserialize(de)?;
+    Ok(helper.into())
   }
 }
 
 pub mod option {
-
-  use chrono::Utc;
-  use serde::{Deserialize, Deserializer, Serialize, Serializer};
+  use super::*;
 
   /**
    * Serialize as `Option<chrono::DateTime>` in human-readable formats and
@@ -43,10 +45,12 @@ pub mod option {
     ser: S,
   ) -> Result<S::Ok, S::Error> {
     if ser.is_human_readable() {
+      trace!("serializing optional date as human readable");
       opt.serialize(ser)
     } else {
+      trace!("serializing optional date as NOT human readable");
       match opt {
-        None => ().serialize(ser),
+        None => opt.serialize(ser),
         Some(date) => {
           let target: bson::DateTime = (*date).into();
           target.serialize(ser)
@@ -63,8 +67,10 @@ pub mod option {
     de: D,
   ) -> Result<Option<chrono::DateTime<Utc>>, D::Error> {
     if de.is_human_readable() {
+      trace!("deserializing optional date as human readable");
       Deserialize::deserialize(de)
     } else {
+      trace!("deserializing optional date as NOT human readable");
       let opt: Option<bson::DateTime> = Deserialize::deserialize(de)?;
       match opt {
         None => Ok(None),
