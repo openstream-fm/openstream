@@ -1,11 +1,12 @@
 [workspace]
 members = [
     "bin/openstream",
-    "bin/producer",
-    "bin/client",
-    "bin/mixed",
-    "bin/ffstress",
-    "bin/hls-logger",
+    
+    "internal-scripts/producer",
+    "internal-scripts/client",
+    "internal-scripts/mixed",
+    "internal-scripts/ffstress",
+    "internal-scripts/hls-logger",
 
     "config/constants",
 

@@ -34,6 +34,7 @@ enum Command {
 #[derive(Debug, Parser)]
 #[command(about = "Start openstream server(s) from a config file")]
 struct Start {
+  /// Path to the configuration file (relative to cwd)
   #[clap(short, long, default_value_t = String::from("./config.toml"))]
   config: String,
 }
@@ -43,10 +44,15 @@ struct Start {
   about = "Create a new global access token to use in all openstream instances that share the same mongodb deployment"
 )]
 struct CreateToken {
+  /// Path to the configuration file (relative to cwd)
   #[clap(short, long, default_value_t = String::from("./config.toml"))]
   config: String,
+
+  /// Do not ask for confirmation
   #[clap(short = 'y', long, default_value_t = false)]
   assume_yes: bool,
+
+  /// Use this value for the access token title instead of asking
   #[clap(long)]
   title: Option<String>,
 }
@@ -54,6 +60,7 @@ struct CreateToken {
 #[derive(Debug, Parser)]
 #[command(about = "Create a default config file for later editing")]
 struct CreateConfig {
+  /// Path to the output file (relative to cwd) to write the default config to
   #[clap(short, long, default_value_t = String::from("./config.toml"))]
   output: String,
 }
@@ -293,7 +300,7 @@ fn create_config(CreateConfig { output }: CreateConfig) -> Result<(), Box<dyn st
     std::process::exit(1);
   }
 
-  std::fs::write(file, include_bytes!("../../../config.example.toml"))?;
+  std::fs::write(file, include_bytes!("../../../config.default.toml"))?;
 
   eprintln!("config file created in {}", canonical_config_path.yellow());
 

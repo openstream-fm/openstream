@@ -17,6 +17,10 @@ pub trait JsonHandler: Send + Sync + Sized + 'static {
   type ParseError: Into<ApiError>;
   type HandleError: Into<ApiError>;
 
+  fn ignore_etag(&self) -> bool {
+    false
+  }
+
   async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError>;
 
   async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError>;
@@ -59,7 +63,7 @@ pub trait JsonHandler: Send + Sync + Sized + 'static {
     // TODO: remove this expect
     let body = serde_json::to_vec(&output).expect("JsonHandler JSON serialize");
 
-    if is_cacheable_method {
+    if is_cacheable_method && !self.ignore_etag() {
       let req_etag = req_etag.and_then(|etag| etag.to_str().map(String::from).ok());
 
       let mut hasher = Sha1::new();
@@ -68,9 +72,9 @@ pub trait JsonHandler: Send + Sync + Sized + 'static {
 
       let res_etag = format!("\"{}\"", hex::encode(hash));
 
-      let etag_match = match req_etag.as_ref() {
+      let etag_match = match req_etag {
         None => false,
-        Some(req_etag) => req_etag == &res_etag,
+        Some(ref req_etag) => req_etag == &res_etag,
       };
 
       if etag_match {
@@ -120,7 +124,7 @@ pub trait JsonHandler: Send + Sync + Sized + 'static {
   }
 }
 
-pub struct PrexJsonHandler<T>(T);
+pub struct PrexJsonHandler<T: JsonHandler>(pub T);
 
 #[async_trait]
 impl<T: JsonHandler> Handler for PrexJsonHandler<T> {
