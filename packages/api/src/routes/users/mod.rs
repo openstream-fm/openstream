@@ -14,7 +14,7 @@ use mongodb::bson::doc;
 use prex::request::ReadBodyJsonError;
 use prex::Request;
 use serde::{Deserialize, Serialize};
-use validate::is_valid_email;
+use validate::email::is_valid_email;
 
 pub mod id;
 

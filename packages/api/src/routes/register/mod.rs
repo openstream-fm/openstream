@@ -4,14 +4,15 @@ pub mod post {
   use async_trait::async_trait;
   use chrono::Utc;
   use db::access_token::{AccessToken, GeneratedBy, Scope};
-  use db::account::{Account, PublicAccount};
+  use db::account::{Account, Limit, Limits, PublicAccount};
+  use db::config::Config;
   use db::metadata::Metadata;
   use db::user::{PublicUser, User};
-  use db::{run_transaction, Model};
+  use db::{run_transaction, Model, Singleton};
   use prex::{request::ReadBodyJsonError, Request};
   use serde::{Deserialize, Serialize};
   use user_agent::{UserAgent, UserAgentExt};
-  use validate::is_valid_email;
+  use validate::email::is_valid_email;
 
   use crate::error::{ApiError, Kind};
   use crate::json::JsonHandler;
@@ -100,6 +101,8 @@ pub mod post {
     last_name: String,
     account_name: String,
     #[serde(default)]
+    limits: PayloadLimits,
+    #[serde(default)]
     account_user_metadata: Metadata,
     #[serde(default)]
     account_system_metadata: Metadata,
@@ -107,6 +110,14 @@ pub mod post {
     user_user_metadata: Metadata,
     #[serde(default)]
     user_system_metadata: Metadata,
+  }
+
+  #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+  #[serde(rename_all = "camelCase")]
+  pub struct PayloadLimits {
+    listeners: Option<u64>,
+    transfer: Option<u64>,
+    storage: Option<u64>,
   }
 
   #[derive(Debug, Clone)]
@@ -170,12 +181,13 @@ pub mod post {
         account_system_metadata,
         user_user_metadata,
         user_system_metadata,
+        limits: payload_limits,
       } = payload;
 
       let email = email.trim().to_lowercase();
       let first_name = first_name.trim().to_string();
-      let last_name = last_name.trim().to_lowercase();
-      let account_name = account_name.trim().to_lowercase();
+      let last_name = last_name.trim().to_string();
+      let account_name = account_name.trim().to_string();
 
       if email.is_empty() {
         return Err(HandleError::EmailEmpty);
@@ -201,6 +213,39 @@ pub mod post {
         return Err(HandleError::PasswordTooShort);
       }
 
+      let config = Config::get().await?;
+
+      let limits = match &access_token_scope {
+        AccessTokenScope::Admin | AccessTokenScope::Global => Limits {
+          listeners: Limit {
+            used: 0,
+            avail: payload_limits.listeners.unwrap_or(config.limits.listeners),
+          },
+          transfer: Limit {
+            used: 0,
+            avail: payload_limits.transfer.unwrap_or(config.limits.transfer),
+          },
+          storage: Limit {
+            used: 0,
+            avail: payload_limits.storage.unwrap_or(config.limits.storage),
+          },
+        },
+        AccessTokenScope::User(_) => Limits {
+          listeners: Limit {
+            used: 0,
+            avail: config.limits.listeners,
+          },
+          transfer: Limit {
+            used: 0,
+            avail: config.limits.transfer,
+          },
+          storage: Limit {
+            used: 0,
+            avail: config.limits.storage,
+          },
+        },
+      };
+
       let password = crypt::hash(password);
 
       let user_id = User::uid();
@@ -224,6 +269,7 @@ pub mod post {
         id: account_id,
         owner_id: user_id.clone(),
         name: account_name,
+        limits,
         user_metadata: account_user_metadata,
         system_metadata: account_system_metadata,
         created_at: now,

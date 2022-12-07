@@ -12,6 +12,7 @@ pub struct Account {
   pub id: String,
   pub name: String,
   pub owner_id: String, // user
+  pub limits: Limits,
   #[serde(with = "datetime")]
   pub created_at: DateTime<Utc>,
   #[serde(with = "datetime")]
@@ -27,6 +28,7 @@ pub struct UserPublicAccount {
   pub id: String,
   pub name: String,
   pub owner_id: String, // user
+  pub limits: Limits,
   #[serde(with = "datetime")]
   pub created_at: DateTime<Utc>,
   #[serde(with = "datetime")]
@@ -35,9 +37,12 @@ pub struct UserPublicAccount {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AdminPublicAccount(Account);
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum PublicAccount {
-  Admin(Account),
+  Admin(AdminPublicAccount),
   User(UserPublicAccount),
 }
 
@@ -47,6 +52,7 @@ impl From<Account> for UserPublicAccount {
       id: account.id,
       name: account.name,
       owner_id: account.owner_id,
+      limits: account.limits,
       created_at: account.created_at,
       updated_at: account.updated_at,
       user_metadata: account.user_metadata,
@@ -54,13 +60,36 @@ impl From<Account> for UserPublicAccount {
   }
 }
 
+impl From<Account> for AdminPublicAccount {
+  fn from(account: Account) -> Self {
+    Self(account)
+  }
+}
+
 impl Account {
   pub fn into_public(self, scope: PublicScope) -> PublicAccount {
     match scope {
-      PublicScope::Admin => PublicAccount::Admin(self),
+      PublicScope::Admin => PublicAccount::Admin(self.into()),
       PublicScope::User => PublicAccount::User(self.into()),
     }
   }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Limits {
+  pub listeners: Limit,
+  pub transfer: Limit,
+  pub storage: Limit,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Limit {
+  #[serde(with = "serde_util::as_f64")]
+  pub used: u64,
+  #[serde(with = "serde_util::as_f64")]
+  pub avail: u64,
 }
 
 impl Model for Account {

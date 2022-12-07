@@ -4,6 +4,7 @@ use async_trait::async_trait;
 use futures_util::TryStreamExt;
 use log::*;
 use mongodb::error::Result as MongoResult;
+use mongodb::options::ReplaceOptions;
 use mongodb::{
   bson::{doc, Document},
   options::FindOneOptions,
@@ -19,6 +20,8 @@ pub mod admin;
 pub mod audio_chunk;
 pub mod audio_file;
 pub mod audio_upload_operation;
+pub mod config;
+pub mod event;
 pub mod metadata;
 pub mod station;
 pub mod user;
@@ -59,15 +62,18 @@ pub fn init(client: Client) {
     .expect("[internal] mongodb client initialized more than once");
 }
 
-pub async fn ensure_indexes() -> MongoResult<()> {
-  account::Account::ensure_indexes().await?;
-  audio_chunk::AudioChunk::ensure_indexes().await?;
-  audio_file::AudioFile::ensure_indexes().await?;
-  user::User::ensure_indexes().await?;
-  admin::Admin::ensure_indexes().await?;
-  station::Station::ensure_indexes().await?;
-  audio_upload_operation::AudioUploadOperation::ensure_indexes().await?;
-  access_token::AccessToken::ensure_indexes().await?;
+pub async fn ensure_collections() -> MongoResult<()> {
+  config::Config::ensure_collection().await?;
+  account::Account::ensure_collection().await?;
+  audio_chunk::AudioChunk::ensure_collection().await?;
+  audio_file::AudioFile::ensure_collection().await?;
+  user::User::ensure_collection().await?;
+  admin::Admin::ensure_collection().await?;
+  station::Station::ensure_collection().await?;
+  audio_upload_operation::AudioUploadOperation::ensure_collection().await?;
+  access_token::AccessToken::ensure_collection().await?;
+  event::Event::ensure_collection().await?;
+
   Ok(())
 }
 
@@ -106,6 +112,11 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
 
   fn indexes() -> Vec<IndexModel> {
     vec![]
+  }
+
+  async fn ensure_collection() -> MongoResult<()> {
+    Self::ensure_indexes().await?;
+    Ok(())
   }
 
   async fn ensure_indexes() -> MongoResult<()> {
@@ -287,4 +298,57 @@ macro_rules! run_transaction {
 
     r
   }};
+}
+
+pub const SINGLETON_UID_LEN: usize = 1;
+fn singleton_uid() -> String {
+  String::from("0")
+}
+
+#[async_trait]
+pub trait Singleton: Model + Default + Clone {
+  async fn ensure_instance() -> Result<Self, mongodb::error::Error> {
+    run_transaction!(session => {
+      let cl = Self::cl();
+      let instance = cl.find_one_with_session(doc!{}, None, &mut session).await?;
+      match instance {
+        Some(instance) => Ok(instance),
+        None => {
+          let instance = Self::default();
+          cl.insert_one_with_session(&instance, None, &mut session).await?;
+          Ok(instance)
+        }
+      }
+    })
+  }
+
+  async fn get() -> Result<Self, mongodb::error::Error> {
+    let cl = Self::cl();
+    let instance = cl.find_one(None, None).await?;
+    Ok(instance.unwrap_or_default())
+  }
+
+  async fn get_with_session(session: &mut ClientSession) -> Result<Self, mongodb::error::Error> {
+    let cl = Self::cl();
+    let instance = cl.find_one_with_session(None, None, session).await?;
+    Ok(instance.unwrap_or_default())
+  }
+
+  async fn set(doc: impl Borrow<Self> + Send) -> Result<(), mongodb::error::Error> {
+    let cl = Self::cl();
+    let options = ReplaceOptions::builder().upsert(true).build();
+    cl.replace_one(doc! {}, doc, options).await?;
+    Ok(())
+  }
+
+  async fn set_with_session(
+    doc: impl Borrow<Self> + Send,
+    session: &mut ClientSession,
+  ) -> Result<(), mongodb::error::Error> {
+    let cl = Self::cl();
+    let options = ReplaceOptions::builder().upsert(true).build();
+    cl.replace_one_with_session(doc! {}, doc, options, session)
+      .await?;
+    Ok(())
+  }
 }

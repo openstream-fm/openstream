@@ -27,3 +27,4 @@ api = { version = "0.1.0", path = "../../packages/api" }
 chrono = "0.4.23"
 dialoguer = "0.10.2"
 router = { version = "0.1.0", path = "../../packages/router" }
+defer-lite = "1.0.0"

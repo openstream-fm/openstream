@@ -34,10 +34,22 @@ impl Scope {
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(tag = "generatedBy", rename_all = "camelCase")]
 pub enum GeneratedBy {
-  Login { ip: IpAddr, user_agent: UserAgent },
-  Register { ip: IpAddr, user_agent: UserAgent },
-  Api { title: String },
-  Cli { title: String },
+  Login {
+    #[serde(with = "serde_util::ip")]
+    ip: IpAddr,
+    user_agent: UserAgent,
+  },
+  Register {
+    #[serde(with = "serde_util::ip")]
+    ip: IpAddr,
+    user_agent: UserAgent,
+  },
+  Api {
+    title: String,
+  },
+  Cli {
+    title: String,
+  },
 }
 
 impl GeneratedBy {

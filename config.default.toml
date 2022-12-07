@@ -17,7 +17,7 @@ addrs = [ "0.0.0.0:20200" ]
 
 # string (required)
 # public url to access the stream server
-public_base_url = "http://stream-1.openstream.fm"
+public_base_url = "http://stream-0001.openstream.fm"
 
 
 # the [router] server redirects end users's clients to proper [stream] servers

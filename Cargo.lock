@@ -525,9 +525,11 @@ checksum = "3ee2393c4a91429dffb4bedf19f4d6abf27d8a732c8ce4980305d782e5426d57"
 name = "db"
 version = "0.1.0"
 dependencies = [
+ "async-stream",
  "async-trait",
  "bytes",
  "chrono",
+ "defer-lite",
  "futures-util",
  "lazy_static",
  "log",
@@ -542,8 +544,15 @@ dependencies = [
  "uid",
  "unused",
  "user-agent",
+ "validate",
  "woothee",
 ]
+
+[[package]]
+name = "defer-lite"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d6a1ef0750c0fcdb9bd00e7829fcad58e9a0a2ab7078b57c39743b973f3878ce"
 
 [[package]]
 name = "derivative"
@@ -1207,6 +1216,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "lazy-regex"
+version = "2.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ae9656bf98b413727b974a451039bc00ce546c3de9440cb4a7b65222b71e17cc"
+dependencies = [
+ "lazy-regex-proc_macros",
+ "once_cell",
+ "regex",
+]
+
+[[package]]
+name = "lazy-regex-proc_macros"
+version = "2.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "da3c3042a5f73640f091fda4175798f2b51c2107deeab18e3017873a4772dd36"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "regex",
+ "syn",
+]
+
+[[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1504,6 +1536,7 @@ dependencies = [
  "clap",
  "config",
  "db",
+ "defer-lite",
  "dialoguer",
  "dotenv",
  "drop-tracer",
@@ -2916,6 +2949,8 @@ name = "validate"
 version = "0.1.0"
 dependencies = [
  "email_address",
+ "lazy-regex",
+ "serde",
 ]
 
 [[package]]

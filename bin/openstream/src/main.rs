@@ -8,6 +8,9 @@ use futures::{FutureExt, TryStreamExt};
 use log::*;
 
 use api::ApiServer;
+use defer_lite::defer;
+use mongodb::bson::doc;
+use mongodb::bson::Document;
 use owo_colors::*;
 use router::RouterServer;
 use shutdown::Shutdown;
@@ -118,19 +121,41 @@ async fn shared_init(config: String) -> Result<Config, Box<dyn std::error::Error
     panic!("no database specified in config, under [mongodb] url");
   }
 
-  info!("connecting to mongodb...");
-  client
-    .default_database()
-    .unwrap()
-    .run_command(mongodb::bson::doc! { "ping": 1 }, None)
-    .await?;
+  info!("connecting to mongodb (and testing transactions support)...");
+  {
+    let test_cl_name = "  __transactions_test";
+    let db = client.default_database().unwrap();
+    let cl = db.collection::<Document>(test_cl_name);
 
-  info!("mongodb client connected");
+    {
+      let mut session = client.start_session(None).await?;
+      session.start_transaction(None).await?;
+
+      let cl2 = cl.clone();
+      defer! {
+        tokio::task::block_in_place(|| {
+          tokio::runtime::Handle::current().block_on(async move {
+            let _ = cl2.drop(None).await;
+          })
+        })
+      }
+
+      cl.insert_one_with_session(doc! {}, None, &mut session)
+        .await?;
+
+      cl.delete_many_with_session(doc! {}, None, &mut session)
+        .await?;
+
+      session.commit_transaction().await?;
+    }
+  }
+
+  info!("mongodb client connected and OK");
 
   db::init(client);
 
-  info!("ensuring mongodb indexes...");
-  db::ensure_indexes().await?;
+  info!("ensuring mongodb collections...");
+  db::ensure_collections().await?;
 
   Ok(config)
 }

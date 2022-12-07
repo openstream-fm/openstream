@@ -59,7 +59,12 @@ impl Inner {
 
 impl Drop for Inner {
   fn drop(&mut self) {
-    info!("drop tracer droppped, waiting for resources cleanup");
+    if log::log_enabled!(Level::Info) {
+      info!(
+        "drop tracer droppped, waiting for resources cleanup: {} handles",
+        *self.count.lock()
+      );
+    }
     self.wait();
   }
 }

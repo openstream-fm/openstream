@@ -11,7 +11,7 @@ use serde_json;
 use sha1::{Digest, Sha1};
 
 #[async_trait]
-pub trait JsonHandler: Send + Sync + Sized + 'static {
+pub trait JsonHandler: Send + Sync + Sized + Clone + 'static {
   type Input: Send;
   type Output: Serialize;
   type ParseError: Into<ApiError>;
@@ -25,7 +25,9 @@ pub trait JsonHandler: Send + Sync + Sized + 'static {
 
   async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError>;
 
-  async fn handle(&self, req: Request) -> Response {
+  /// handle consumes self because the future must be 'static, so we use clone Self on each request
+  /// the performance cost of doing this is insignificant
+  async fn handle(self, req: Request) -> Response {
     let method = req.method().clone();
     let req_etag = req.headers().get(IF_NONE_MATCH).cloned();
     let path = req.uri().path().to_string();
@@ -124,11 +126,16 @@ pub trait JsonHandler: Send + Sync + Sized + 'static {
   }
 }
 
+#[derive(Debug, Clone)]
 pub struct PrexJsonHandler<T: JsonHandler>(pub T);
 
 #[async_trait]
 impl<T: JsonHandler> Handler for PrexJsonHandler<T> {
-  async fn call(&self, req: Request, _next: Next) -> Response {
-    self.0.handle(req).await
+  async fn call(&self, req: Request, _: Next) -> Response {
+    let me = self.clone();
+    // prevent hyper from dropping the future before completion
+    tokio::spawn(async move { me.0.handle(req).await })
+      .await
+      .unwrap()
   }
 }

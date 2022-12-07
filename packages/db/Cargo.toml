@@ -21,6 +21,9 @@ futures-util = "0.3.25"
 unused = "0.1.0"
 woothee = { version = "0.13.0", features = ["serde", "serde_derive"] }
 user-agent = { version = "0.1.0", path = "../user-agent" }
+validate = { version = "0.1.0", path = "../validate" }
+defer-lite = "1.0.0"
+async-stream = "0.3.3"
 
 [dev-dependencies]
 serde_json = "1.0.86"

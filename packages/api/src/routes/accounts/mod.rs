@@ -11,7 +11,7 @@ use db::account::Account;
 use db::account::PublicAccount;
 use db::metadata::Metadata;
 use db::run_transaction;
-use db::{Model, Paged, PublicScope};
+use db::{Model, Paged, PublicScope, Singleton};
 use prex::request::ReadBodyJsonError;
 use prex::Request;
 use serde::{Deserialize, Serialize};
@@ -125,7 +125,7 @@ pub mod get {
         }
 
         AccessTokenScope::User(user) => {
-          let filter = mongodb::bson::doc! { "accountId": { "$in": user.account_ids } };
+          let filter = mongodb::bson::doc! { "_id": { "$in": user.account_ids } };
           let page = Account::paged(filter, skip, limit)
             .await?
             .map(|item| item.into_public(PublicScope::User));
@@ -138,7 +138,11 @@ pub mod get {
 
 pub mod post {
 
-  use db::user::User;
+  use db::{
+    account::{Limit, Limits},
+    config::Config,
+    user::User,
+  };
 
   use crate::error::Kind;
 
@@ -149,8 +153,18 @@ pub mod post {
   pub struct Payload {
     pub name: String,
     pub owner_id: Option<String>, // user
+    #[serde(default)]
+    pub limits: PayloadLimits,
     pub user_metadata: Option<Metadata>,
     pub system_metadata: Option<Metadata>,
+  }
+
+  #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+  #[serde(rename_all = "camelCase")]
+  pub struct PayloadLimits {
+    listeners: Option<u64>,
+    transfer: Option<u64>,
+    storage: Option<u64>,
   }
 
   #[derive(Debug, Clone)]
@@ -252,6 +266,7 @@ pub mod post {
       let Payload {
         name,
         owner_id,
+        limits: payload_limits,
         user_metadata,
         system_metadata,
       } = payload;
@@ -282,6 +297,39 @@ pub mod post {
         }
       };
 
+      let config = Config::get().await?;
+
+      let limits = match &access_token_scope {
+        AccessTokenScope::Admin | AccessTokenScope::Global => Limits {
+          listeners: Limit {
+            used: 0,
+            avail: payload_limits.listeners.unwrap_or(config.limits.listeners),
+          },
+          transfer: Limit {
+            used: 0,
+            avail: payload_limits.transfer.unwrap_or(config.limits.transfer),
+          },
+          storage: Limit {
+            used: 0,
+            avail: payload_limits.storage.unwrap_or(config.limits.storage),
+          },
+        },
+        AccessTokenScope::User(_) => Limits {
+          listeners: Limit {
+            used: 0,
+            avail: config.limits.listeners,
+          },
+          transfer: Limit {
+            used: 0,
+            avail: config.limits.transfer,
+          },
+          storage: Limit {
+            used: 0,
+            avail: config.limits.storage,
+          },
+        },
+      };
+
       let now = Utc::now();
 
       let user_metadata = user_metadata.unwrap_or_default();
@@ -290,6 +338,7 @@ pub mod post {
         id: Account::uid(),
         owner_id,
         name,
+        limits,
         system_metadata,
         user_metadata,
         created_at: now,
