@@ -7,9 +7,12 @@ use mongodb::options::{FindOneAndUpdateOptions, ReturnDocument};
 use mongodb::IndexModel;
 use serde::{Deserialize, Serialize};
 use serde_util::{as_f64, datetime};
+use ts_rs::TS;
 use user_agent::UserAgent;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/db/")]
 #[serde(tag = "scope", rename_all = "camelCase")]
 pub enum Scope {
   Global,
@@ -76,14 +79,21 @@ impl GeneratedBy {
 pub struct AccessToken {
   #[serde(rename = "_id")]
   pub id: String,
+
   #[serde(flatten)]
   pub scope: Scope,
+
   #[serde(flatten)]
   pub generated_by: GeneratedBy,
+
   #[serde(with = "datetime")]
+  /// ts: ISODate
   pub created_at: DateTime<Utc>,
+
   #[serde(with = "datetime::option")]
+  /// ts: ISODate
   pub last_used_at: Option<DateTime<Utc>>,
+
   #[serde(with = "as_f64")]
   pub hits: u64,
 }

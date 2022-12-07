@@ -20,6 +20,8 @@ pub mod id;
 
 pub mod get {
 
+  use ts_rs::TS;
+
   use super::*;
 
   #[derive(Debug, Clone)]
@@ -43,23 +45,22 @@ pub mod get {
     DEFAULT_LIMIT
   }
 
-  pub type Output = Paged<PublicUser>;
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../defs/api/users/GET/")]
+  pub struct Output(pub Paged<PublicUser>);
 
-  #[derive(Debug, Deserialize)]
+  #[derive(Debug, Default, Serialize, Deserialize, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../defs/api/users/GET/")]
   struct Query {
-    #[serde(default = "default_skip")]
-    skip: u64,
-    #[serde(default = "default_limit")]
-    limit: i64,
-  }
+    #[ts(optional)]
+    #[ts(type = "number")]
+    skip: Option<u64>,
 
-  impl Default for Query {
-    fn default() -> Self {
-      Self {
-        skip: DEFAULT_SKIP,
-        limit: DEFAULT_LIMIT,
-      }
-    }
+    #[ts(optional)]
+    #[ts(type = "number")]
+    limit: Option<i64>,
   }
 
   #[derive(Debug)]
@@ -106,8 +107,8 @@ pub mod get {
 
       Ok(Self::Input {
         access_token_scope,
-        skip,
-        limit,
+        skip: skip.unwrap_or_else(default_skip),
+        limit: limit.unwrap_or_else(default_limit),
       })
     }
 
@@ -118,26 +119,20 @@ pub mod get {
         limit,
       } = input;
 
-      match access_token_scope {
-        AccessTokenScope::Global | AccessTokenScope::Admin => {
-          let page = User::paged(None, skip, limit)
-            .await?
-            .map(|item| item.into_public(PublicScope::Admin));
+      let page = match access_token_scope {
+        AccessTokenScope::Global | AccessTokenScope::Admin => User::paged(None, skip, limit)
+          .await?
+          .map(|item| item.into_public(PublicScope::Admin)),
 
-          Ok(page)
-        }
+        AccessTokenScope::User(user) => Paged::<PublicUser> {
+          skip,
+          limit,
+          total: 1,
+          items: vec![user.into_public(PublicScope::User)],
+        },
+      };
 
-        AccessTokenScope::User(user) => {
-          let page = Paged::<PublicUser> {
-            skip,
-            limit,
-            total: 1,
-            items: vec![user.into_public(PublicScope::User)],
-          };
-
-          Ok(page)
-        }
-      }
+      Ok(Output(page))
     }
   }
 }
@@ -145,18 +140,30 @@ pub mod get {
 pub mod post {
 
   use db::run_transaction;
+  use ts_rs::TS;
 
   use super::*;
 
-  #[derive(Debug, Clone, Serialize, Deserialize)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../defs/api/users/POST/")]
   #[serde(rename_all = "camelCase")]
   pub struct Payload {
     email: String,
+
     password: String,
+
+    #[ts(optional)]
     account_ids: Option<Vec<String>>,
+
     first_name: String,
+
     last_name: String,
+
+    #[ts(optional)]
     user_metadata: Option<Metadata>,
+
+    #[ts(optional)]
     system_metadata: Option<Metadata>,
   }
 
@@ -167,7 +174,9 @@ pub mod post {
     access_token_scope: AccessTokenScope,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../defs/api/users/POST/")]
   pub struct Output {
     user: PublicUser,
   }

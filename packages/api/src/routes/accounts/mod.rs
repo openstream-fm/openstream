@@ -18,6 +18,8 @@ use serde::{Deserialize, Serialize};
 
 pub mod get {
 
+  use ts_rs::TS;
+
   use super::*;
 
   #[derive(Debug, Clone)]
@@ -26,20 +28,25 @@ pub mod get {
   pub const DEFAULT_SKIP: u64 = 0;
   pub const DEFAULT_LIMIT: i64 = 60;
 
-  fn default_skip() -> u64 {
+  pub fn default_skip() -> u64 {
     DEFAULT_SKIP
   }
 
-  fn default_limit() -> i64 {
+  pub fn default_limit() -> i64 {
     DEFAULT_LIMIT
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
+  #[ts(export)]
+  #[ts(export_to = "../../defs/api/accounts/GET/")]
   struct Query {
-    #[serde(default = "default_skip")]
-    skip: u64,
-    #[serde(default = "default_limit")]
-    limit: i64,
+    #[ts(optional)]
+    #[ts(type = "number")]
+    skip: Option<u64>,
+
+    #[ts(optional)]
+    #[ts(type = "number")]
+    limit: Option<i64>,
   }
 
   #[derive(Debug, Clone)]
@@ -49,15 +56,6 @@ pub mod get {
   }
 
   pub type Output = Paged<PublicAccount>;
-
-  impl Default for Query {
-    fn default() -> Self {
-      Self {
-        skip: DEFAULT_SKIP,
-        limit: DEFAULT_LIMIT,
-      }
-    }
-  }
 
   #[derive(Debug)]
   pub enum ParseError {
@@ -115,6 +113,9 @@ pub mod get {
 
       let Query { skip, limit } = query;
 
+      let skip = skip.unwrap_or_else(default_skip);
+      let limit = limit.unwrap_or_else(default_limit);
+
       match access_token_scope {
         AccessTokenScope::Global | AccessTokenScope::Admin => {
           let page = Account::paged(None, skip, limit)
@@ -138,32 +139,44 @@ pub mod get {
 
 pub mod post {
 
-  use db::{
-    account::{Limit, Limits},
-    config::Config,
-    user::User,
-  };
+  use db::account::{Account, Limit, Limits};
+  use db::{config::Config, user::User};
+  use ts_rs::TS;
 
   use crate::error::Kind;
 
   use super::*;
 
-  #[derive(Debug, Clone, Serialize, Deserialize)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../defs/api/accounts/POST/")]
   #[serde(rename_all = "camelCase")]
   pub struct Payload {
     pub name: String,
     pub owner_id: Option<String>, // user
-    #[serde(default)]
-    pub limits: PayloadLimits,
+    #[ts(optional)]
+    pub limits: Option<PayloadLimits>,
+    #[ts(optional)]
     pub user_metadata: Option<Metadata>,
+    #[ts(optional)]
     pub system_metadata: Option<Metadata>,
   }
 
-  #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+  #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../defs/api/accounts/POST/")]
   #[serde(rename_all = "camelCase")]
   pub struct PayloadLimits {
+    #[ts(optional)]
+    #[ts(type = "number")]
     listeners: Option<u64>,
+
+    #[ts(optional)]
+    #[ts(type = "number")]
     transfer: Option<u64>,
+
+    #[ts(optional)]
+    #[ts(type = "number")]
     storage: Option<u64>,
   }
 
@@ -173,7 +186,9 @@ pub mod post {
     payload: Payload,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../defs/api/accounts/POST/")]
   pub struct Output {
     account: PublicAccount,
   }
@@ -300,20 +315,23 @@ pub mod post {
       let config = Config::get().await?;
 
       let limits = match &access_token_scope {
-        AccessTokenScope::Admin | AccessTokenScope::Global => Limits {
-          listeners: Limit {
-            used: 0,
-            avail: payload_limits.listeners.unwrap_or(config.limits.listeners),
-          },
-          transfer: Limit {
-            used: 0,
-            avail: payload_limits.transfer.unwrap_or(config.limits.transfer),
-          },
-          storage: Limit {
-            used: 0,
-            avail: payload_limits.storage.unwrap_or(config.limits.storage),
-          },
-        },
+        AccessTokenScope::Admin | AccessTokenScope::Global => {
+          let payload_limits = payload_limits.unwrap_or_default();
+          Limits {
+            listeners: Limit {
+              used: 0,
+              avail: payload_limits.listeners.unwrap_or(config.limits.listeners),
+            },
+            transfer: Limit {
+              used: 0,
+              avail: payload_limits.transfer.unwrap_or(config.limits.transfer),
+            },
+            storage: Limit {
+              used: 0,
+              avail: payload_limits.storage.unwrap_or(config.limits.storage),
+            },
+          }
+        }
         AccessTokenScope::User(_) => Limits {
           listeners: Limit {
             used: 0,

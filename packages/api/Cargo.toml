@@ -28,5 +28,6 @@ shutdown = { version = "0.1.0", path = "../shutdown" }
 static_init = "1.0.3"
 tokio = { version = "1.21.2", features = ["full"] }
 tokio-stream = "0.1.11"
+ts-rs = { version = "6.2.1", features = ["chrono", "chrono-impl", "format"] }
 user-agent = { version = "0.1.0", path = "../user-agent" }
 validate = { version = "0.1.0", path = "../validate" }

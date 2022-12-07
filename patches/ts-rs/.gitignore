@@ -1,0 +1,6 @@
+/target
+Cargo.lock
+/.idea
+*.ts
+
+/ts-rs/tests-out

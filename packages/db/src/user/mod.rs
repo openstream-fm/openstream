@@ -6,8 +6,11 @@ use mongodb::ClientSession;
 use mongodb::{bson::doc, options::IndexOptions, IndexModel};
 use serde::{Deserialize, Serialize};
 use serde_util::datetime;
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/db/")]
 #[serde(rename_all = "camelCase")]
 pub struct User {
   #[serde(rename = "_id")]
@@ -25,7 +28,9 @@ pub struct User {
   pub system_metadata: Metadata,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/db/")]
 #[serde(rename_all = "camelCase")]
 pub struct UserPublicUser {
   #[serde(rename = "_id")]
@@ -40,7 +45,9 @@ pub struct UserPublicUser {
   pub user_metadata: Metadata,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/db/")]
 #[serde(rename_all = "camelCase")]
 pub struct AdminPublicUser {
   #[serde(rename = "_id")]
@@ -56,7 +63,9 @@ pub struct AdminPublicUser {
   pub system_metadata: Metadata,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/db/")]
 #[serde(untagged)]
 pub enum PublicUser {
   Admin(AdminPublicUser),

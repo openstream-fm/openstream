@@ -8,6 +8,7 @@ use mongodb::{options::CreateCollectionOptions, IndexModel};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use ts_rs::TS;
 
 use crate::{db, Model};
 
@@ -17,18 +18,28 @@ struct Watcher {
   tx: tokio::sync::broadcast::Sender<Arc<Event>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/db/")]
+#[ts(rename = "BaseEvent")]
 #[serde(rename_all = "camelCase")]
 pub struct Event {
   #[serde(rename = "_id")]
   id: String,
+
   #[serde(with = "serde_util::datetime")]
   created_at: DateTime<Utc>,
+
+  // working in adding support for flattened enums in ts-rs
   #[serde(flatten)]
+  #[ts(skip)]
   variant: Variant,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/db/")]
+#[ts(rename = "EventVariant")]
 #[serde(tag = "kind", content = "payload")]
 pub enum Variant {
   #[serde(rename = "listener.start")]
@@ -154,14 +165,18 @@ impl Model for Event {
   }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/db/event-payload/")]
 #[serde(rename_all = "camelCase")]
 pub struct AudioListenerStart {
   account_id: String,
   connection_id: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/db/event-payload/")]
 #[serde(rename_all = "camelCase")]
 pub struct AudioListenerEnd {
   account_id: String,

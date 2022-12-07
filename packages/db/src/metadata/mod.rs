@@ -1,17 +1,25 @@
 use std::collections::BTreeMap;
 use std::ops::{Deref, DerefMut};
 
-use serde::de::Visitor;
-use serde::ser::SerializeMap;
+//use serde::de::Visitor;
+//use serde::ser::SerializeMap;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/db/")]
 pub struct Metadata(Document);
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/db/")]
 pub struct Document(BTreeMap<String, Value>);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, TS, Serialize, Deserialize)]
+#[ts(export)]
+#[ts(export_to = "../../defs/db/")]
+#[serde(untagged)]
 pub enum Value {
   Null,
   Bool(bool),
@@ -56,13 +64,16 @@ impl Metadata {
   }
 }
 
+/*
 impl Serialize for Metadata {
   #[inline]
   fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
     (self.0).serialize(s)
   }
 }
+*/
 
+/*
 impl Serialize for Value {
   fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
     match *self {
@@ -75,7 +86,9 @@ impl Serialize for Value {
     }
   }
 }
+ */
 
+/*
 impl Serialize for Document {
   fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
     let mut doc = s.serialize_map(Some(self.len()))?;
@@ -94,7 +107,9 @@ impl Serialize for Document {
     doc.end()
   }
 }
+ */
 
+/*
 impl<'de> Deserialize<'de> for Document {
   #[inline]
   fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
@@ -230,3 +245,4 @@ impl<'de> Visitor<'de> for ValueVisitor {
     Ok(Value::Document(Document(bmap)))
   }
 }
+ */

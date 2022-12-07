@@ -5,10 +5,13 @@ use async_trait::async_trait;
 use db::account::Account;
 use db::audio_file::AudioFile;
 use db::Model;
+use mongodb::bson::doc;
 use prex::Request;
 use serde::{Deserialize, Serialize};
 
 pub mod get {
+
+  use ts_rs::TS;
 
   use crate::error::{ApiError, Kind};
 
@@ -25,7 +28,9 @@ pub mod get {
     file_id: String,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../defs/api/accounts/[account]/files/[file]/GET/")]
   #[serde(rename_all = "camelCase")]
   pub struct Output {
     item: AudioFile,
@@ -81,7 +86,7 @@ pub mod get {
         file_id,
       } = input;
 
-      let filter = mongodb::bson::doc! { "_id": &file_id, "accountId": account.id };
+      let filter = doc! { "_id": &file_id, "accountId": account.id };
 
       let item = match AudioFile::cl().find_one(filter, None).await? {
         None => return Err(HandleError::FileNotFound(file_id)),

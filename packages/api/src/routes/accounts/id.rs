@@ -9,6 +9,8 @@ use serde::{Deserialize, Serialize};
 
 pub mod get {
 
+  use ts_rs::TS;
+
   use super::*;
 
   #[derive(Debug, Clone)]
@@ -20,7 +22,9 @@ pub mod get {
     access_token_scope: AccessTokenScope,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../defs/api/accounts/[account]/GET/")]
   #[serde(rename_all = "camelCase")]
   pub struct Output {
     account: PublicAccount,

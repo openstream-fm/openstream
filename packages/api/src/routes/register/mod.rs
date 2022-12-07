@@ -11,6 +11,7 @@ pub mod post {
   use db::{run_transaction, Model, Singleton};
   use prex::{request::ReadBodyJsonError, Request};
   use serde::{Deserialize, Serialize};
+  use ts_rs::TS;
   use user_agent::{UserAgent, UserAgentExt};
   use validate::email::is_valid_email;
 
@@ -92,31 +93,57 @@ pub mod post {
     }
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../defs/api/register/POST/")]
   #[serde(rename_all = "camelCase")]
   pub struct Payload {
     email: String,
+
     password: String,
+
     first_name: String,
+
     last_name: String,
+
     account_name: String,
+
     #[serde(default)]
-    limits: PayloadLimits,
+    #[ts(optional)]
+    limits: Option<PayloadLimits>,
+
     #[serde(default)]
-    account_user_metadata: Metadata,
+    #[ts(optional)]
+    account_user_metadata: Option<Metadata>,
+
     #[serde(default)]
-    account_system_metadata: Metadata,
+    #[ts(optional)]
+    account_system_metadata: Option<Metadata>,
+
     #[serde(default)]
-    user_user_metadata: Metadata,
+    #[ts(optional)]
+    user_user_metadata: Option<Metadata>,
+
     #[serde(default)]
-    user_system_metadata: Metadata,
+    #[ts(optional)]
+    user_system_metadata: Option<Metadata>,
   }
 
-  #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+  #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../defs/api/register/POST/")]
   #[serde(rename_all = "camelCase")]
   pub struct PayloadLimits {
+    #[ts(optional)]
+    #[ts(type = "number")]
     listeners: Option<u64>,
+
+    #[ts(optional)]
+    #[ts(type = "number")]
     transfer: Option<u64>,
+
+    #[ts(optional)]
+    #[ts(type = "number")]
     storage: Option<u64>,
   }
 
@@ -128,7 +155,9 @@ pub mod post {
     pub payload: Payload,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../defs/api/register/POST/")]
   #[serde(rename_all = "camelCase")]
   pub struct Output {
     pub account: PublicAccount,
@@ -188,6 +217,12 @@ pub mod post {
       let first_name = first_name.trim().to_string();
       let last_name = last_name.trim().to_string();
       let account_name = account_name.trim().to_string();
+
+      let payload_limits = payload_limits.unwrap_or_default();
+      let account_user_metadata = account_user_metadata.unwrap_or_default();
+      let account_system_metadata = account_system_metadata.unwrap_or_default();
+      let user_user_metadata = user_user_metadata.unwrap_or_default();
+      let user_system_metadata = user_system_metadata.unwrap_or_default();
 
       if email.is_empty() {
         return Err(HandleError::EmailEmpty);

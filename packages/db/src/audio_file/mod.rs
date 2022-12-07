@@ -3,8 +3,11 @@ use chrono::{DateTime, Utc};
 use mongodb::{bson::doc, IndexModel};
 use serde::{Deserialize, Serialize};
 use serde_util::as_f64;
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/db/")]
 #[serde(rename_all = "camelCase")]
 pub struct AudioFile {
   #[serde(rename = "_id")]
@@ -13,14 +16,21 @@ pub struct AudioFile {
   pub md5: String,
 
   #[serde(with = "as_f64")]
+  #[ts(type = "number")]
   pub len: usize,
+
   pub duration_ms: f64,
+
   #[serde(with = "as_f64")]
+  #[ts(type = "number")]
   pub bytes_sec: usize,
 
   #[serde(with = "as_f64")]
+  #[ts(type = "number")]
   pub chunk_count: usize,
+
   #[serde(with = "as_f64")]
+  #[ts(type = "number")]
   pub chunk_len: usize,
 
   pub chunk_duration_ms: f64,
@@ -45,7 +55,9 @@ impl Model for AudioFile {
   }
 }
 
-#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone)]
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/db/")]
 #[serde(rename_all = "camelCase")]
 pub struct Metadata {
   pub title: Option<String>,

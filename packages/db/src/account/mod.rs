@@ -4,24 +4,35 @@ use chrono::{DateTime, Utc};
 use mongodb::{bson::doc, IndexModel};
 use serde::{Deserialize, Serialize};
 use serde_util::datetime;
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/db/")]
 #[serde(rename_all = "camelCase")]
 pub struct Account {
   #[serde(rename = "_id")]
   pub id: String,
   pub name: String,
-  pub owner_id: String, // user
+  /// uid of User
+  pub owner_id: String,
   pub limits: Limits,
+
   #[serde(with = "datetime")]
+  /// ts: ISODate
   pub created_at: DateTime<Utc>,
+
   #[serde(with = "datetime")]
+  /// ts: ISODate
   pub updated_at: DateTime<Utc>,
+
   pub user_metadata: Metadata,
   pub system_metadata: Metadata,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/")]
 #[serde(rename_all = "camelCase")]
 pub struct UserPublicAccount {
   #[serde(rename = "_id")]
@@ -29,17 +40,24 @@ pub struct UserPublicAccount {
   pub name: String,
   pub owner_id: String, // user
   pub limits: Limits,
+
   #[serde(with = "datetime")]
   pub created_at: DateTime<Utc>,
+
   #[serde(with = "datetime")]
   pub updated_at: DateTime<Utc>,
+
   pub user_metadata: Metadata,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/")]
 pub struct AdminPublicAccount(Account);
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/")]
 #[serde(untagged)]
 pub enum PublicAccount {
   Admin(AdminPublicAccount),
@@ -75,7 +93,10 @@ impl Account {
   }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/")]
+#[ts(rename = "AccountLimits")]
 #[serde(rename_all = "camelCase")]
 pub struct Limits {
   pub listeners: Limit,
@@ -83,12 +104,17 @@ pub struct Limits {
   pub storage: Limit,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/")]
+#[ts(rename = "AccountLimit")]
 #[serde(rename_all = "camelCase")]
 pub struct Limit {
   #[serde(with = "serde_util::as_f64")]
+  #[ts(type = "number")]
   pub used: u64,
   #[serde(with = "serde_util::as_f64")]
+  #[ts(type = "number")]
   pub avail: u64,
 }
 

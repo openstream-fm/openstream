@@ -3,8 +3,12 @@ use crate::Model;
 use chrono::{DateTime, Utc};
 use mongodb::{bson::doc, IndexModel};
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/db/")]
+#[ts(rename = "AudioUploadOperationState")]
 #[serde(rename_all = "camelCase")]
 #[serde(tag = "state")]
 pub enum State {
@@ -21,7 +25,10 @@ pub enum State {
   },
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/db/")]
+#[ts(rename = "BaseAudioUploadOperation")]
 #[serde(rename_all = "camelCase")]
 pub struct AudioUploadOperation {
   #[serde(rename = "_id")]
@@ -31,7 +38,9 @@ pub struct AudioUploadOperation {
   #[serde(with = "serde_util::datetime")]
   pub created_at: DateTime<Utc>,
 
+  /// working in adding support for flattened enums in ts-rs
   #[serde(flatten)]
+  #[ts(skip)]
   pub state: State,
 }
 

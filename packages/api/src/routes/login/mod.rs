@@ -8,14 +8,17 @@ pub mod post {
   use prex::{request::ReadBodyJsonError, Request};
   use serde::{Deserialize, Serialize};
   use std::net::IpAddr;
+  use ts_rs::TS;
   use user_agent::{UserAgent, UserAgentExt};
 
   use crate::error::{ApiError, Kind};
   use crate::ip_limit::{hit, should_reject};
   use crate::json::JsonHandler;
 
-  #[derive(Debug, Clone, Serialize, Deserialize)]
-  #[serde(rename = "camelCase")]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../defs/api/login/POST/")]
+  #[serde(rename_all = "camelCase")]
   pub struct Payload {
     email: String,
     password: String,
@@ -28,7 +31,9 @@ pub mod post {
     user_agent: UserAgent,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../defs/api/login/POST/")]
   #[serde(rename_all = "camelCase")]
   pub struct Output {
     token: String,

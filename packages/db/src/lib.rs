@@ -13,6 +13,7 @@ use mongodb::{
 };
 use once_cell::sync::OnceCell;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use ts_rs::TS;
 
 pub mod access_token;
 pub mod account;
@@ -254,12 +255,20 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
   }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/")]
 #[serde(rename_all = "camelCase")]
 pub struct Paged<T> {
+  #[ts(type = "number")]
   pub total: u64,
+
+  #[ts(type = "number")]
   pub skip: u64,
+
+  #[ts(type = "number")]
   pub limit: i64,
+
   pub items: Vec<T>,
 }
 

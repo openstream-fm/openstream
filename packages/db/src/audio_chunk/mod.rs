@@ -4,8 +4,11 @@ use chrono::{DateTime, Utc};
 use mongodb::{bson::doc, IndexModel};
 use serde::{Deserialize, Serialize};
 use serde_util::as_f64;
+use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/db/")]
 #[serde(rename_all = "camelCase")]
 pub struct AudioChunk {
   #[serde(rename = "_id")]
@@ -17,20 +20,26 @@ pub struct AudioChunk {
   pub end_ms: f64,
 
   #[serde(with = "as_f64")]
+  #[ts(type = "number")]
   pub i: usize,
 
   #[serde(with = "as_f64")]
+  #[ts(type = "number")]
   pub len: usize,
 
   pub duration_ms: f64,
 
   #[serde(with = "as_f64")]
+  #[ts(type = "number")]
   pub bytes_sec: usize,
 
   #[serde(with = "serde_util::bytes")]
+  #[ts(type = "string")]
+  /// ts: base64 bytes
   pub data: Bytes,
 
   #[serde(with = "serde_util::datetime")]
+  /// ts: ISODate
   pub created_at: DateTime<Utc>,
 }
 

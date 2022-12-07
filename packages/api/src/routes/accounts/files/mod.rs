@@ -13,6 +13,9 @@ use serde::Deserialize;
 
 pub mod get {
 
+  use serde::Serialize;
+  use ts_rs::TS;
+
   use crate::error::ApiError;
 
   use super::*;
@@ -31,23 +34,22 @@ pub mod get {
     DEFAULT_LIMIT
   }
 
-  pub type Output = Paged<AudioFile>;
+  #[derive(Debug, Serialize, Deserialize, Clone, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../defs/api/accounts/[account]/files/GET/")]
+  pub struct Output(Paged<AudioFile>);
 
-  #[derive(Debug, Deserialize)]
+  #[derive(Debug, Serialize, Deserialize, Default, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../defs/api/accounts/[account]/files/GET/")]
   struct Query {
-    #[serde(default = "default_skip")]
-    skip: u64,
-    #[serde(default = "default_limit")]
-    limit: i64,
-  }
+    #[ts(optional)]
+    #[ts(type = "number")]
+    skip: Option<u64>,
 
-  impl Default for Query {
-    fn default() -> Self {
-      Self {
-        skip: DEFAULT_SKIP,
-        limit: DEFAULT_LIMIT,
-      }
-    }
+    #[ts(optional)]
+    #[ts(type = "number")]
+    limit: Option<i64>,
   }
 
   #[derive(Debug, Clone)]
@@ -108,8 +110,8 @@ pub mod get {
       Ok(Self::Input {
         access_token_scope,
         account,
-        skip,
-        limit,
+        skip: skip.unwrap_or_else(default_skip),
+        limit: limit.unwrap_or_else(default_limit),
       })
     }
 
@@ -125,7 +127,7 @@ pub mod get {
 
       let page = AudioFile::paged(filter, skip, limit).await?;
 
-      Ok(page)
+      Ok(Output(page))
     }
   }
 }
