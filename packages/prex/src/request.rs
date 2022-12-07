@@ -65,7 +65,7 @@ impl Request {
     self.request.into_body()
   }
 
-  /// takes the body if this request replacing it with Body::empty
+  /// takes the body of this request replacing it with Body::empty
   #[inline]
   pub fn take_body(&mut self) -> Body {
     let mut body = Body::empty();
@@ -85,18 +85,18 @@ impl Request {
 
   pub fn isomorphic_ip(&self) -> IpAddr {
     match self.headers().get("x-client-ip") {
-      Some(ip) => match ip.to_str() {
-        Ok(ip) => match ip.parse() {
-          Ok(ip) => ip,
-          Err(_e) => self.remote_addr().ip(),
-        },
-        Err(_e) => self.remote_addr().ip(),
-      },
       None => self.remote_addr().ip(),
+      Some(ip) => match ip.to_str() {
+        Err(_e) => self.remote_addr().ip(),
+        Ok(ip) => match ip.parse() {
+          Err(_e) => self.remote_addr().ip(),
+          Ok(ip) => ip,
+        },
+      },
     }
   }
 
-  pub async fn read_body_json<'de, T: DeserializeOwned>(
+  pub async fn read_body_json<T: DeserializeOwned>(
     &mut self,
     maxlen: usize,
   ) -> Result<T, ReadBodyJsonError> {

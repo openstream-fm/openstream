@@ -1,11 +1,11 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::ops::Index;
 
 use std::string::ToString;
 
 #[derive(Debug, Default)]
 pub struct Params {
-  pub(crate) map: HashMap<String, String>,
+  pub(crate) map: BTreeMap<String, String>,
 }
 
 impl Params {
@@ -15,15 +15,8 @@ impl Params {
   }
 
   #[inline]
-  pub fn with_capacity(capacity: usize) -> Self {
-    Self {
-      map: HashMap::with_capacity(capacity),
-    }
-  }
-
-  #[inline]
   pub fn get(&self, key: &str) -> Option<&str> {
-    self.map.get(key).map(|s| s.as_ref())
+    self.map.get(key).map(AsRef::as_ref)
   }
 
   #[inline]

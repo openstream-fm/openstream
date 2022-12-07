@@ -44,7 +44,7 @@ impl Matcher {
     let pattern = self.pattern.as_ref().unwrap();
     if let Some(caps) = pattern.captures(path) {
       let names = pattern.capture_names();
-      let mut params = Params::with_capacity(names.len());
+      let mut params = Params::new();
       for name in names {
         if let Some(name) = name {
           if let Some(value) = caps.name(name) {
@@ -216,8 +216,10 @@ mod tests {
     let urls = vec![
       ("/", "/"),
       ("/:p1", "/(?P<p1>[^/]+)"),
+      ("/:p1(.+)", "/(?P<p1>.+)"),
       ("/:p1((.+))", "/(?P<p1>(.+))"),
-      (r"/:p1(\\(.+))", r"/(?P<p1>\\(.+))"),
+      (r"/:p1(\-(.+))", r"/(?P<p1>\-(.+))"),
+      (r"/:p1(.+)-:p2", r"/(?P<p1>.+)\-(?P<p2>[^/]+)"),
     ];
 
     for (left, right) in urls.iter() {
