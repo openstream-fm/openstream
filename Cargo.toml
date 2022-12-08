@@ -19,6 +19,8 @@ members = [
     "packages/upload",
     "packages/api",
 
+    "packages/http",
+
     "packages/channels",
     "packages/db",
 

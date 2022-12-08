@@ -1,0 +1,12 @@
+[package]
+name = "http"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+hyper = "0.14.23"
+prex = { version = "0.1.0", path = "../prex" }
+serde = "1.0.149"
+serde_json = "1.0.89"
