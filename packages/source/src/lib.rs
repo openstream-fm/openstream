@@ -252,7 +252,7 @@ impl Handler for SourceHandler {
       // move stdin to drop on close
       async move {
         loop {
-          let data = req.data().await;
+          let data = req.body_mut().data().await;
 
           if self.shutdown.is_closed() {
             break;

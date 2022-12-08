@@ -163,8 +163,10 @@ impl Handler for StatusHandler {
   async fn call(&self, _: Request, _: Next) -> Response {
     let mut res = Response::new(StatusCode::OK);
     let body = Body::from(r#"{"status":200}"#);
-    res.set_content_type(HeaderValue::from_static("application/json"));
-    res.set_charset(HeaderValue::from_static("utf-8"));
+    res.headers_mut().append(
+      CONTENT_TYPE,
+      HeaderValue::from_static("application/json;charset=utf-8"),
+    );
     *res.body_mut() = body;
     res
   }

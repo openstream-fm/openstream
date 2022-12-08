@@ -1,10 +1,34 @@
 use crate::params::Params;
-use hyper;
 use hyper::body::HttpBody;
-use hyper::Body;
+use hyper::http::Extensions;
+use hyper::{self, HeaderMap, Uri, Version};
+use hyper::{Body, Method};
 use serde::de::DeserializeOwned;
 use std::net::{IpAddr, SocketAddr};
-use std::ops::{Deref, DerefMut};
+
+#[derive(Debug)]
+pub struct Parts {
+  pub remote_addr: SocketAddr,
+  pub method: Method,
+  pub uri: Uri,
+  pub version: Version,
+  pub headers: HeaderMap,
+  pub extensions: Extensions,
+  pub params: Params,
+  pub body: Body,
+}
+
+#[derive(Debug)]
+pub struct Request {
+  pub(crate) remote_addr: SocketAddr,
+  pub(crate) method: Method,
+  pub(crate) uri: Uri,
+  pub(crate) version: Version,
+  pub(crate) headers: HeaderMap,
+  pub(crate) extensions: Extensions,
+  pub(crate) params: Params,
+  pub(crate) body: Body,
+}
 
 #[derive(Debug)]
 pub enum ReadBodyJsonError {
@@ -26,27 +50,18 @@ impl From<serde_json::Error> for ReadBodyJsonError {
   }
 }
 
-#[derive(Debug)]
-pub struct Parts {
-  pub remote_addr: SocketAddr,
-  pub request: hyper::Request<hyper::Body>,
-  pub params: Params,
-}
-
-#[derive(Debug)]
-pub struct Request {
-  pub(crate) request: hyper::Request<hyper::Body>,
-  pub(crate) params: Params,
-  pub(crate) remote_addr: SocketAddr,
-}
-
 impl Request {
   #[inline]
   pub fn from_parts(parts: Parts) -> Self {
     Self {
       remote_addr: parts.remote_addr,
-      request: parts.request,
+      method: parts.method,
+      uri: parts.uri,
+      headers: parts.headers,
+      extensions: parts.extensions,
+      version: parts.version,
       params: parts.params,
+      body: parts.body,
     }
   }
 
@@ -54,15 +69,94 @@ impl Request {
   pub fn into_parts(self) -> Parts {
     Parts {
       remote_addr: self.remote_addr,
-      request: self.request,
+      method: self.method,
+      uri: self.uri,
+      headers: self.headers,
+      extensions: self.extensions,
+      version: self.version,
       params: self.params,
+      body: self.body,
     }
   }
 
-  /// consumes this request returning only the body
   #[inline]
-  pub fn into_body(self) -> Body {
-    self.request.into_body()
+  pub fn remote_addr(&self) -> SocketAddr {
+    self.remote_addr
+  }
+
+  #[inline]
+  pub fn remote_addr_mut(&mut self) -> &mut SocketAddr {
+    &mut self.remote_addr
+  }
+
+  #[inline]
+  pub fn method(&self) -> &Method {
+    &self.method
+  }
+
+  #[inline]
+  pub fn method_mut(&mut self) -> &mut Method {
+    &mut self.method
+  }
+
+  #[inline]
+  pub fn uri(&self) -> &Uri {
+    &self.uri
+  }
+
+  #[inline]
+  pub fn uri_mut(&mut self) -> &mut Uri {
+    &mut self.uri
+  }
+
+  #[inline]
+  pub fn headers(&self) -> &HeaderMap {
+    &self.headers
+  }
+
+  #[inline]
+  pub fn headers_mut(&mut self) -> &mut HeaderMap {
+    &mut self.headers
+  }
+
+  #[inline]
+  pub fn extensions(&self) -> &Extensions {
+    &self.extensions
+  }
+
+  #[inline]
+  pub fn extensions_mut(&mut self) -> &mut Extensions {
+    &mut self.extensions
+  }
+
+  #[inline]
+  pub fn version(&self) -> Version {
+    self.version
+  }
+
+  #[inline]
+  pub fn version_mut(&mut self) -> &mut Version {
+    &mut self.version
+  }
+
+  #[inline]
+  pub fn params(&self) -> &Params {
+    &self.params
+  }
+
+  #[inline]
+  pub fn params_mut(&mut self) -> &mut Params {
+    &mut self.params
+  }
+
+  #[inline]
+  pub fn body(&self) -> &Body {
+    &self.body
+  }
+
+  #[inline]
+  pub fn body_mut(&mut self) -> &mut Body {
+    &mut self.body
   }
 
   /// takes the body of this request replacing it with Body::empty
@@ -74,13 +168,8 @@ impl Request {
   }
 
   #[inline]
-  pub fn remote_addr(&self) -> SocketAddr {
-    self.remote_addr
-  }
-
-  #[inline]
-  pub fn remote_addr_mut(&mut self) -> &mut SocketAddr {
-    &mut self.remote_addr
+  pub fn into_body(self) -> Body {
+    self.body
   }
 
   pub fn isomorphic_ip(&self) -> IpAddr {
@@ -125,18 +214,5 @@ impl Request {
   #[inline]
   pub fn param(&self, key: &str) -> Option<&str> {
     self.params.get(key)
-  }
-}
-
-impl Deref for Request {
-  type Target = hyper::Request<hyper::Body>;
-  fn deref(&self) -> &Self::Target {
-    &self.request
-  }
-}
-
-impl DerefMut for Request {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.request
   }
 }

@@ -341,15 +341,34 @@ impl Service<hyper::Request<Body>> for RouterService {
     let addr = self.remote_addr;
 
     let fut = async move {
+      let (parts, body) = req.into_parts();
+
       let request = Request::from_parts(RequestParts {
-        request: req,
-        params: Params::new(),
         remote_addr: addr,
+        method: parts.method,
+        uri: parts.uri,
+        headers: parts.headers,
+        extensions: parts.extensions,
+        version: parts.version,
+        body,
+        params: Params::new(),
       });
 
       let response = router.handle(request).await;
 
-      let ResponseParts { response, .. } = response.into_parts();
+      let ResponseParts {
+        status,
+        version,
+        headers,
+        extensions,
+        body,
+      } = response.into_parts();
+
+      let mut response = hyper::Response::new(body);
+      *response.status_mut() = status;
+      *response.version_mut() = version;
+      *response.headers_mut() = headers;
+      *response.extensions_mut() = extensions;
 
       Ok::<_, Infallible>(response)
     };

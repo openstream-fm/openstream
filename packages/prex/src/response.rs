@@ -1,52 +1,124 @@
 use hyper;
 use hyper::header;
 use hyper::header::HeaderValue;
+use hyper::header::CONTENT_TYPE;
+use hyper::http::Extensions;
 use hyper::Body;
+use hyper::HeaderMap;
 use hyper::StatusCode;
-
-use std::ops::{Deref, DerefMut};
+use hyper::Version;
 
 #[derive(Debug)]
 pub struct Parts {
-  pub response: hyper::Response<Body>,
-  pub content_type: Option<HeaderValue>,
-  pub charset: Option<HeaderValue>,
+  pub status: StatusCode,
+  pub version: Version,
+  pub headers: HeaderMap,
+  pub extensions: Extensions,
+  pub body: Body,
 }
 
 #[derive(Debug)]
 pub struct Response {
-  pub(crate) response: hyper::Response<Body>,
-  content_type: Option<HeaderValue>,
-  charset: Option<HeaderValue>,
+  pub(crate) status: StatusCode,
+  pub(crate) version: Version,
+  pub(crate) headers: HeaderMap,
+  pub(crate) extensions: Extensions,
+  pub(crate) body: Body,
 }
 
 impl Response {
   #[inline]
   pub fn into_parts(self) -> Parts {
     Parts {
-      response: self.response,
-      content_type: self.content_type,
-      charset: self.charset,
+      status: self.status,
+      version: self.version,
+      headers: self.headers,
+      extensions: self.extensions,
+      body: self.body,
     }
   }
 
   #[inline]
   pub fn from_parts(parts: Parts) -> Self {
     Self {
-      response: parts.response,
-      content_type: parts.content_type,
-      charset: parts.charset,
+      status: parts.status,
+      version: parts.version,
+      headers: parts.headers,
+      extensions: parts.extensions,
+      body: parts.body,
     }
   }
 
-  pub fn new(status: impl Into<StatusCode>) -> Self {
-    let mut response = hyper::Response::new(Body::empty());
-    *response.status_mut() = status.into();
+  #[inline]
+  pub fn status(&self) -> StatusCode {
+    self.status
+  }
 
+  #[inline]
+  pub fn status_mut(&mut self) -> &mut StatusCode {
+    &mut self.status
+  }
+
+  #[inline]
+  pub fn headers(&self) -> &HeaderMap {
+    &self.headers
+  }
+
+  #[inline]
+  pub fn headers_mut(&mut self) -> &mut HeaderMap {
+    &mut self.headers
+  }
+
+  #[inline]
+  pub fn extensions(&self) -> &Extensions {
+    &self.extensions
+  }
+
+  #[inline]
+  pub fn extensions_mut(&mut self) -> &mut Extensions {
+    &mut self.extensions
+  }
+
+  #[inline]
+  pub fn version(&self) -> Version {
+    self.version
+  }
+
+  #[inline]
+  pub fn version_mut(&mut self) -> &mut Version {
+    &mut self.version
+  }
+
+  #[inline]
+  pub fn body(&self) -> &Body {
+    &self.body
+  }
+
+  #[inline]
+  pub fn body_mut(&mut self) -> &mut Body {
+    &mut self.body
+  }
+
+  /// takes the body of this request replacing it with Body::empty
+  #[inline]
+  pub fn take_body(&mut self) -> Body {
+    let mut body = Body::empty();
+    std::mem::swap(self.body_mut(), &mut body);
+    body
+  }
+
+  #[inline]
+  pub fn into_body(self) -> Body {
+    self.body
+  }
+
+  pub fn new(status: impl Into<StatusCode>) -> Self {
     Self {
-      response,
-      content_type: None,
-      charset: None,
+      status: status.into(),
+      version: Version::default(),
+      body: Body::empty(),
+      extensions: Extensions::new(),
+      headers: HeaderMap::new(),
     }
   }
 
@@ -60,59 +132,14 @@ impl Response {
 
   pub(crate) fn default_not_found(message: impl ToString) -> Self {
     let mut response = Response::new(StatusCode::NOT_FOUND);
-    response
-      .set_content_type(HeaderValue::from_static("text/plain"))
-      .set_charset(HeaderValue::from_static("utf-8"));
+    response.headers_mut().append(
+      CONTENT_TYPE,
+      HeaderValue::from_static("text/plain;charset=utf-8"),
+    );
 
     *response.body_mut() = Body::from(message.to_string());
 
     response
-  }
-
-  /// consumes this response returning only the body
-  #[inline]
-  pub fn into_body(self) -> Body {
-    self.response.into_body()
-  }
-
-  /// takes the body if this response replacing it with Body::empty
-  #[inline]
-  pub fn take_body(&mut self) -> Body {
-    let mut body = Body::empty();
-    std::mem::swap(self.body_mut(), &mut body);
-    body
-  }
-
-  #[inline]
-  pub fn content_type(&self) -> Option<&HeaderValue> {
-    self.content_type.as_ref()
-  }
-
-  #[inline]
-  pub fn content_type_mut(&mut self) -> &mut Option<HeaderValue> {
-    &mut self.content_type
-  }
-
-  #[inline]
-  pub fn set_content_type(&mut self, value: impl Into<HeaderValue>) -> &mut Self {
-    *self.content_type_mut() = Some(value.into());
-    self
-  }
-
-  #[inline]
-  pub fn charset(&self) -> Option<&HeaderValue> {
-    self.charset.as_ref()
-  }
-
-  #[inline]
-  pub fn charset_mut(&mut self) -> &mut Option<HeaderValue> {
-    &mut self.charset
-  }
-
-  #[inline]
-  pub fn set_charset(&mut self, value: impl Into<HeaderValue>) -> &mut Self {
-    *self.charset_mut() = Some(value.into());
-    self
   }
 }
 
@@ -160,46 +187,5 @@ impl From<String> for Response {
     let mut res = Self::new(StatusCode::OK);
     *res.body_mut() = Body::from(b);
     res
-  }
-}
-
-impl Deref for Response {
-  type Target = hyper::Response<hyper::Body>;
-  fn deref(&self) -> &Self::Target {
-    &self.response
-  }
-}
-
-impl DerefMut for Response {
-  fn deref_mut(&mut self) -> &mut Self::Target {
-    &mut self.response
-  }
-}
-
-impl From<Response> for hyper::Response<Body> {
-  fn from(me: Response) -> Self {
-    let content_type = me.content_type().cloned();
-    let charset = me.charset().cloned();
-    let mut response = me.response;
-    match (content_type, charset) {
-      (Some(content_type), Some(charset)) => {
-        if let (Ok(content_type), Ok(charset)) = (content_type.to_str(), charset.to_str()) {
-          response.headers_mut().insert(
-            header::CONTENT_TYPE,
-            HeaderValue::from_str(format!("{};charset={}", content_type, charset).as_str())
-              .unwrap(),
-          );
-        }
-      }
-
-      (Some(content_type), None) => {
-        response
-          .headers_mut()
-          .insert(header::CONTENT_TYPE, content_type);
-      }
-      _ => {}
-    }
-
-    response
   }
 }
