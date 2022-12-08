@@ -10,7 +10,7 @@ pub fn deserialize<'de, D: Deserializer<'de>>(de: D) -> Result<IpAddr, D::Error>
   let helper = String::deserialize(de)?;
   match IpAddr::from_str(helper.as_str()) {
     Ok(v) => Ok(v),
-    Err(e) => Err(D::Error::custom(format!("Invalid ip address: {e}"))),
+    Err(e) => Err(D::Error::custom(format!("invalid ip address: {e}"))),
   }
 }
 
@@ -27,7 +27,7 @@ pub mod option {
       None => Ok(None),
       Some(v) => match IpAddr::from_str(v.as_str()) {
         Ok(v) => Ok(Some(v)),
-        Err(e) => Err(D::Error::custom(format!("Invalid ip address: {e}"))),
+        Err(e) => Err(D::Error::custom(format!("invalid ip address: {e}"))),
       },
     }
   }

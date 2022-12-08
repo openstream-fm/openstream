@@ -84,7 +84,7 @@ impl InputEmail {
 impl<'de> Deserialize<'de> for InputEmail {
   fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
     let address: &str = Deserialize::deserialize(d)?;
-    Self::new(address).map_err(|_e| D::Error::custom("Email address is invalid"))
+    Self::new(address).map_err(|_e| D::Error::custom("email address is invalid"))
   }
 }
 
