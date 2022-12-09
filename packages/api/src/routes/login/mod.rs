@@ -36,6 +36,7 @@ pub mod post {
   #[ts(export_to = "../../defs/api/login/POST/")]
   #[serde(rename_all = "camelCase")]
   pub struct Output {
+    user_id: String,
     token: String,
   }
 
@@ -135,9 +136,11 @@ pub mod post {
         return Err(HandleError::NoMatchPassword);
       }
 
+      let user_id = user.id.clone();
+
       let token = AccessToken {
         id: AccessToken::uid(),
-        scope: Scope::User { user_id: user.id },
+        scope: Scope::User { user_id },
         generated_by: GeneratedBy::Login { ip, user_agent },
         created_at: Utc::now(),
         last_used_at: None,
@@ -146,7 +149,10 @@ pub mod post {
 
       AccessToken::insert(&token).await?;
 
-      let out = Output { token: token.id };
+      let out = Output {
+        user_id: user.id,
+        token: token.id,
+      };
 
       Ok(out)
     }

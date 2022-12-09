@@ -43,11 +43,11 @@ pub mod get {
   #[ts(export)]
   #[ts(export_to = "../../defs/api/accounts/[account]/files/GET/")]
   struct Query {
-    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[ts(type = "number")]
     skip: Option<u64>,
 
-    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[ts(type = "number")]
     limit: Option<i64>,
   }

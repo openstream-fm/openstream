@@ -3469,6 +3469,7 @@ dependencies = [
  "prex",
  "serde",
  "static_init",
+ "ts-rs",
  "woothee",
 ]
 

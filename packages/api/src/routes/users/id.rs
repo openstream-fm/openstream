@@ -35,6 +35,7 @@ pub mod get {
 
   #[derive(Debug)]
   pub enum HandleError {
+    TokenOutOfScope,
     UserNotFound(String),
     Db(mongodb::error::Error),
   }
@@ -48,6 +49,7 @@ pub mod get {
   impl From<HandleError> for ApiError {
     fn from(e: HandleError) -> Self {
       match e {
+        HandleError::TokenOutOfScope => ApiError::from(Kind::TokenOutOfScope),
         HandleError::UserNotFound(id) => ApiError::from(Kind::UserNotFound(id)),
         HandleError::Db(e) => ApiError::from(Kind::Db(e)),
       }
@@ -72,26 +74,37 @@ pub mod get {
       })
     }
 
-    async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
+    async fn perform(&self, input: Input) -> Result<Output, HandleError> {
       let Self::Input {
         user_id,
         access_token_scope,
       } = input;
 
       match access_token_scope {
-        AccessTokenScope::Admin | AccessTokenScope::Global => {
+        AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
           let user = match User::get_by_id(&user_id).await? {
             None => return Err(HandleError::UserNotFound(user_id)),
             Some(user) => user,
           };
 
-          Ok(Self::Output {
+          let out = Output {
             user: user.into_public(PublicScope::Admin),
-          })
+          };
+
+          Ok(out)
         }
-        AccessTokenScope::User(user) => Ok(Self::Output {
-          user: user.into_public(PublicScope::User),
-        }),
+
+        AccessTokenScope::User(user) => {
+          if user.id != user_id {
+            return Err(HandleError::TokenOutOfScope);
+          }
+
+          let out = Output {
+            user: user.into_public(PublicScope::User),
+          };
+
+          Ok(out)
+        }
       }
     }
   }

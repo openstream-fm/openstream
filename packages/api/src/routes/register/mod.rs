@@ -108,24 +108,19 @@ pub mod post {
 
     account_name: String,
 
-    #[serde(default)]
-    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     limits: Option<PayloadLimits>,
 
-    #[serde(default)]
-    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     account_user_metadata: Option<Metadata>,
 
-    #[serde(default)]
-    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     account_system_metadata: Option<Metadata>,
 
-    #[serde(default)]
-    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     user_user_metadata: Option<Metadata>,
 
-    #[serde(default)]
-    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     user_system_metadata: Option<Metadata>,
   }
 
@@ -134,16 +129,16 @@ pub mod post {
   #[ts(export_to = "../../defs/api/register/POST/")]
   #[serde(rename_all = "camelCase")]
   pub struct PayloadLimits {
-    #[ts(optional)]
-    #[ts(type = "number")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(type = "number | null")]
     listeners: Option<u64>,
 
-    #[ts(optional)]
-    #[ts(type = "number")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(type = "number | null")]
     transfer: Option<u64>,
 
-    #[ts(optional)]
-    #[ts(type = "number")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(type = "number | null")]
     storage: Option<u64>,
   }
 
@@ -251,7 +246,7 @@ pub mod post {
       let config = Config::get().await?;
 
       let limits = match &access_token_scope {
-        AccessTokenScope::Admin | AccessTokenScope::Global => Limits {
+        AccessTokenScope::Global | AccessTokenScope::Admin(_) => Limits {
           listeners: Limit {
             used: 0,
             avail: payload_limits.listeners.unwrap_or(config.limits.listeners),

@@ -32,8 +32,8 @@ impl Model for Config {
   }
 
   async fn ensure_collection() -> Result<(), mongodb::error::Error> {
-    Self::ensure_instance().await?;
     Self::ensure_indexes().await?;
+    Self::ensure_instance().await?;
     Ok(())
   }
 }
@@ -50,10 +50,12 @@ pub struct Limits {
   #[serde(with = "serde_util::as_f64")]
   #[ts(type = "number")]
   pub listeners: u64,
+
   /// default max transfer / month in bytes for new accounts
   #[serde(with = "serde_util::as_f64")]
   #[ts(type = "number")]
   pub transfer: u64,
+
   /// default max storage in bytes for new accounts
   #[serde(with = "serde_util::as_f64")]
   #[ts(type = "number")]

@@ -4,7 +4,7 @@ import type { Metadata } from "../../../db/Metadata";
 export interface Payload {
   email: string;
   password: string;
-  accountIds?: Array<string>;
+  accountIds: Array<string>;
   firstName: string;
   lastName: string;
   userMetadata?: Metadata;

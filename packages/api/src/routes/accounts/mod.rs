@@ -40,11 +40,11 @@ pub mod get {
   #[ts(export)]
   #[ts(export_to = "../../defs/api/accounts/GET/")]
   struct Query {
-    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[ts(type = "number")]
     skip: Option<u64>,
 
-    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[ts(type = "number")]
     limit: Option<i64>,
   }
@@ -55,7 +55,10 @@ pub mod get {
     query: Query,
   }
 
-  pub type Output = Paged<PublicAccount>;
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../defs/api/accounts/GET/")]
+  pub struct Output(Paged<PublicAccount>);
 
   #[derive(Debug)]
   pub enum ParseError {
@@ -116,23 +119,20 @@ pub mod get {
       let skip = skip.unwrap_or_else(default_skip);
       let limit = limit.unwrap_or_else(default_limit);
 
-      match access_token_scope {
-        AccessTokenScope::Global | AccessTokenScope::Admin => {
-          let page = Account::paged(None, skip, limit)
-            .await?
-            .map(|item| item.into_public(PublicScope::Admin));
-
-          Ok(page)
-        }
+      let page = match access_token_scope {
+        AccessTokenScope::Global | AccessTokenScope::Admin(_) => Account::paged(None, skip, limit)
+          .await?
+          .map(|item| item.into_public(PublicScope::Admin)),
 
         AccessTokenScope::User(user) => {
           let filter = mongodb::bson::doc! { "_id": { "$in": user.account_ids } };
-          let page = Account::paged(filter, skip, limit)
+          Account::paged(filter, skip, limit)
             .await?
-            .map(|item| item.into_public(PublicScope::User));
-          Ok(page)
+            .map(|item| item.into_public(PublicScope::User))
         }
-      }
+      };
+
+      Ok(Output(page))
     }
   }
 }
@@ -154,11 +154,11 @@ pub mod post {
   pub struct Payload {
     pub name: String,
     pub owner_id: Option<String>, // user
-    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub limits: Option<PayloadLimits>,
-    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub user_metadata: Option<Metadata>,
-    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub system_metadata: Option<Metadata>,
   }
 
@@ -167,15 +167,15 @@ pub mod post {
   #[ts(export_to = "../../defs/api/accounts/POST/")]
   #[serde(rename_all = "camelCase")]
   pub struct PayloadLimits {
-    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[ts(type = "number")]
     listeners: Option<u64>,
 
-    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[ts(type = "number")]
     transfer: Option<u64>,
 
-    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[ts(type = "number")]
     storage: Option<u64>,
   }
@@ -293,7 +293,7 @@ pub mod post {
       }
 
       let (owner_id, system_metadata) = match &access_token_scope {
-        AccessTokenScope::Admin | AccessTokenScope::Global => {
+        AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
           let owner_id = match owner_id {
             None => return Err(HandleError::OwnerIdMissing),
             Some(v) => v,
@@ -315,7 +315,7 @@ pub mod post {
       let config = Config::get().await?;
 
       let limits = match &access_token_scope {
-        AccessTokenScope::Admin | AccessTokenScope::Global => {
+        AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
           let payload_limits = payload_limits.unwrap_or_default();
           Limits {
             listeners: Limit {

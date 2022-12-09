@@ -1,14 +1,17 @@
 use prex::Request;
 use serde::{Deserialize, Serialize};
 use static_init::dynamic;
+use ts_rs::TS;
 use woothee::parser::Parser;
 
 #[dynamic]
 static PARSER: Parser = Parser::default();
 
 /// UserAgent is an owned value
-/// it does allocate in favor of simplicity for users
-#[derive(Debug, Default, Clone, Serialize, Deserialize, Eq, PartialEq)]
+/// it does allocate in favor of simplicity
+#[derive(Debug, Default, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/")]
 #[serde(rename_all = "camelCase")]
 pub struct UserAgent {
   pub ua: Option<String>,

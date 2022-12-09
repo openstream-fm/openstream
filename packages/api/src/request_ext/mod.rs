@@ -1,6 +1,7 @@
 use crate::error::{ApiError, Kind};
 use crate::ip_limit;
 
+use db::admin::Admin;
 use db::PublicScope;
 use db::{
   access_token::{AccessToken, Scope},
@@ -21,20 +22,21 @@ pub enum GetAccessTokenScopeError {
   NotFound,
   UserNotFound(String),
   AccountNotFound(String),
+  AdminNotFound(String),
   OutOfScope,
 }
 
 #[derive(Debug, Clone)]
 pub enum AccessTokenScope {
   Global,
-  Admin,
+  Admin(Admin),
   User(User),
 }
 
 impl AccessTokenScope {
   pub fn as_public_scope(&self) -> PublicScope {
     match self {
-      Self::Global | Self::Admin => PublicScope::Admin,
+      Self::Global | Self::Admin(_) => PublicScope::Admin,
       Self::User(_) => PublicScope::User,
     }
   }
@@ -48,27 +50,31 @@ impl AccessTokenScope {
   }
 
   pub fn is_admin(&self) -> bool {
-    matches!(self, Self::Admin)
+    matches!(self, Self::Admin(_))
+  }
+
+  pub fn is_user(&self) -> bool {
+    matches!(self, Self::User(_))
   }
 
   pub async fn grant_scope(&self, account_id: &str) -> Result<Account, GetAccessTokenScopeError> {
+    match self {
+      AccessTokenScope::Global | AccessTokenScope::Admin(_) => {}
+      AccessTokenScope::User(user) => {
+        if !user.account_ids.iter().any(|id| id == account_id) {
+          return Err(GetAccessTokenScopeError::OutOfScope);
+        }
+      }
+    }
+
     let account = Account::get_by_id(account_id).await?;
+
     match account {
       None => Err(GetAccessTokenScopeError::AccountNotFound(
         account_id.to_string(),
       )),
 
-      Some(account) => match self {
-        AccessTokenScope::Global => Ok(account),
-        AccessTokenScope::Admin => Ok(account),
-        AccessTokenScope::User(user) => {
-          if !user.account_ids.contains(&account.id) {
-            return Err(GetAccessTokenScopeError::OutOfScope);
-          }
-
-          Ok(account)
-        }
-      },
+      Some(account) => Ok(account),
     }
   }
 }
@@ -101,7 +107,10 @@ pub async fn get_access_token_scope(
   let scope = match doc.scope {
     Scope::Global => AccessTokenScope::Global,
 
-    Scope::Admin { admin_id: _ } => AccessTokenScope::Admin,
+    Scope::Admin { admin_id } => match Admin::get_by_id(&admin_id).await? {
+      None => return Err(GetAccessTokenScopeError::AdminNotFound(admin_id)),
+      Some(admin) => AccessTokenScope::Admin(admin),
+    },
 
     Scope::User { user_id } => match User::get_by_id(&user_id).await? {
       None => return Err(GetAccessTokenScopeError::UserNotFound(user_id)),
@@ -127,9 +136,10 @@ impl From<GetAccessTokenScopeError> for ApiError {
       Missing => ApiError::from(Kind::TokenMissing),
       NonUtf8 => ApiError::from(Kind::TokenMalformed),
       NotFound => ApiError::from(Kind::TokenNotFound),
-      UserNotFound(id) => ApiError::from(Kind::TokenUserNotFound(id)),
       OutOfScope => ApiError::from(Kind::TokenOutOfScope),
-      AccountNotFound(id) => ApiError::from(Kind::AccountNotFound(id)),
+      UserNotFound(id) => ApiError::from(Kind::TokenUserNotFound(id)),
+      AdminNotFound(id) => ApiError::from(Kind::TokenAdminNotFound(id)),
+      AccountNotFound(id) => ApiError::from(Kind::TokenAccountNotFound(id)),
     }
   }
 }

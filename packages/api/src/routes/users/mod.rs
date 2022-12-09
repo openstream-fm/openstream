@@ -54,12 +54,12 @@ pub mod get {
   #[ts(export)]
   #[ts(export_to = "../../defs/api/users/GET/")]
   struct Query {
-    #[ts(optional)]
-    #[ts(type = "number")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(type = "number | null")]
     skip: Option<u64>,
 
-    #[ts(optional)]
-    #[ts(type = "number")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(type = "number | null")]
     limit: Option<i64>,
   }
 
@@ -120,7 +120,7 @@ pub mod get {
       } = input;
 
       let page = match access_token_scope {
-        AccessTokenScope::Global | AccessTokenScope::Admin => User::paged(None, skip, limit)
+        AccessTokenScope::Global | AccessTokenScope::Admin(_) => User::paged(None, skip, limit)
           .await?
           .map(|item| item.into_public(PublicScope::Admin)),
 
@@ -153,17 +153,16 @@ pub mod post {
 
     password: String,
 
-    #[ts(optional)]
-    account_ids: Option<Vec<String>>,
+    account_ids: Vec<String>,
 
     first_name: String,
 
     last_name: String,
 
-    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     user_metadata: Option<Metadata>,
 
-    #[ts(optional)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     system_metadata: Option<Metadata>,
   }
 
@@ -301,7 +300,6 @@ pub mod post {
         system_metadata,
       } = payload;
 
-      let account_ids = account_ids.unwrap_or_default();
       let user_metadata = user_metadata.unwrap_or_default();
       let system_metadata = system_metadata.unwrap_or_default();
 

@@ -3,7 +3,7 @@ use std::net::IpAddr;
 use crate::Model;
 use chrono::{DateTime, Utc};
 use mongodb::bson::{self, doc};
-use mongodb::options::{FindOneAndUpdateOptions, ReturnDocument};
+use mongodb::options::{FindOneAndUpdateOptions, IndexOptions, ReturnDocument};
 use mongodb::IndexModel;
 use serde::{Deserialize, Serialize};
 use serde_util::{as_f64, datetime};
@@ -13,6 +13,7 @@ use user_agent::UserAgent;
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
 #[ts(export)]
 #[ts(export_to = "../../defs/db/")]
+#[ts(rename = "AccessTokenScope")]
 #[serde(tag = "scope", rename_all = "camelCase")]
 pub enum Scope {
   Global,
@@ -34,16 +35,21 @@ impl Scope {
   }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/db/")]
+#[ts(rename = "AccessTokenGeneratedBy")]
 #[serde(tag = "generatedBy", rename_all = "camelCase")]
 pub enum GeneratedBy {
   Login {
     #[serde(with = "serde_util::ip")]
+    #[ts(type = "string")]
     ip: IpAddr,
     user_agent: UserAgent,
   },
   Register {
     #[serde(with = "serde_util::ip")]
+    #[ts(type = "string")]
     ip: IpAddr,
     user_agent: UserAgent,
   },
@@ -74,27 +80,31 @@ impl GeneratedBy {
   }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[ts(export_to = "../../defs/db/")]
+#[ts(rename = "BaseAccessToken")]
 #[serde(rename_all = "camelCase")]
 pub struct AccessToken {
   #[serde(rename = "_id")]
   pub id: String,
 
   #[serde(flatten)]
+  #[ts(skip)]
   pub scope: Scope,
 
   #[serde(flatten)]
+  #[ts(skip)]
   pub generated_by: GeneratedBy,
 
   #[serde(with = "datetime")]
-  /// ts: ISODate
   pub created_at: DateTime<Utc>,
 
   #[serde(with = "datetime::option")]
-  /// ts: ISODate
   pub last_used_at: Option<DateTime<Utc>>,
 
   #[serde(with = "as_f64")]
+  #[ts(type = "number")]
   pub hits: u64,
 }
 
@@ -148,13 +158,17 @@ impl Model for AccessToken {
   const CL_NAME: &'static str = "access_tokens";
 
   fn indexes() -> Vec<IndexModel> {
+    let key = IndexModel::builder()
+      .keys(doc! { "key": 1 })
+      .options(IndexOptions::builder().unique(true).build())
+      .build();
     let user_id = IndexModel::builder().keys(doc! { "userId": 1 }).build();
     let admin_id = IndexModel::builder().keys(doc! { "adminId": 1 }).build();
     let scope = IndexModel::builder().keys(doc! { "scope": 1 }).build();
     let generated_by = IndexModel::builder()
       .keys(doc! { "generatedBy": 1 })
       .build();
-    vec![user_id, admin_id, scope, generated_by]
+    vec![key, user_id, admin_id, scope, generated_by]
   }
 }
 
