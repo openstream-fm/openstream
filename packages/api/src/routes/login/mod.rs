@@ -142,6 +142,7 @@ pub mod post {
 
       let token = AccessToken {
         id: AccessToken::uid(),
+        key: AccessToken::random_key(),
         scope: Scope::User { user_id },
         generated_by: GeneratedBy::Login { ip, user_agent },
         created_at: Utc::now(),
@@ -155,7 +156,7 @@ pub mod post {
 
       let out = Output {
         user,
-        token: token.id,
+        token: token.key,
       };
 
       Ok(out)

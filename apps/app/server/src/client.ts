@@ -3,6 +3,7 @@ import fetch, { Response, RequestInit } from "node-fetch";
 import http from "http";
 import https from "https";
 import qs from "qs";
+import type { ErrorCode } from "./types";
 
 
 const qss = (v: any) => {
@@ -11,9 +12,9 @@ const qss = (v: any) => {
 
 export class ClientError extends Error {
   status: number
-  code: string
+  code: ErrorCode
 
-  constructor(status: number, code: string, message: string) {
+  constructor(status: number, code: ErrorCode, message: string) {
     super(message);
     this.status = status;
     this.code = code;
@@ -41,20 +42,20 @@ export class Client {
       ...init,
       agent: this.agent,
     }).catch(e => {
-      throw new ClientError(StatusCode.BAD_GATEWAY, "ERR_GATEWAY_FETCH", "Gateway unavailable")
+      throw new ClientError(StatusCode.BAD_GATEWAY, "FRONT_GATEWAY_FETCH", "Gateway unavailable")
     })
   }
 
   async get_json_body<T>(res: Response): Promise<T> {
 
     const body: any = await res.json().catch(e => {
-      throw new ClientError(StatusCode.BAD_GATEWAY, "ERR_GATEWAY_JSON", "Gateway error");
+      throw new ClientError(StatusCode.BAD_GATEWAY, "FRONT_GATEWAY_JSON", "Gateway error");
     })
 
     if(body?.error) {
       let message = String(body.error?.message || "Internal server error");
-      let code = String(body.error?.code || "ERR_GATEWAY_MISSING_CODE");
-      throw new ClientError(res.status, message, code);
+      let code = String(body.error?.code || "FRONT_GATEWAY_MISSING_CODE" as ErrorCode) as ErrorCode;
+      throw new ClientError(res.status, code, message);
     }
 
     return body as T;

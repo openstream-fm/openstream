@@ -2,6 +2,7 @@
 
 export interface BaseAccessToken {
   _id: string;
+  key: string;
   createdAt: string;
   lastUsedAt: string | null;
   hits: number;

@@ -1,10 +1,10 @@
 import type { Request } from "express";
-import { Unauthorized } from "./error";
+import { Unauthorized } from "./error.js";
 
 export const userToken = (req: Request): string | null => {
   const token = req.session?.user?.token;
   if(token == null) {
-    throw new Unauthorized("Session has expired", "ERR_SESSION_EXPIRED");
+    throw new Unauthorized("Session has expired", "FRONT_SESSION_EXPIRED");
   }
   return token;
 }

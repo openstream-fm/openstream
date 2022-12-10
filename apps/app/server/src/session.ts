@@ -1,6 +1,6 @@
 import _session from "express-session";
 import MongoDBSession from "connect-mongodb-session";
-import { Config } from "./config";
+import { Config } from "./config.js";
 import type { Request } from "express"
 
 const SessionStore = MongoDBSession(_session);

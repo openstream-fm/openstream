@@ -249,6 +249,7 @@ fn token(
     async fn create(title: String) -> Result<AccessToken, Box<dyn std::error::Error>> {
       let token = AccessToken {
         id: AccessToken::uid(),
+        key: AccessToken::random_key(),
         scope: db::access_token::Scope::Global,
         generated_by: GeneratedBy::Cli { title },
         created_at: chrono::Utc::now(),
@@ -284,7 +285,7 @@ fn token(
 
     if assume_yes {
       let token = create(title).await?;
-      println!("New global access token generated => {}", token.id);
+      println!("New global access token generated => {}", token.key);
     } else {
       let confirm = dialoguer::Confirm::new()
         .with_prompt("This will generate a global access token to use in all openstream instances that share this mongodb deployment?")
@@ -295,7 +296,7 @@ fn token(
 
       if confirm {
         let token = create(title).await?;
-        println!("New global access token generated => {}", token.id);
+        println!("New global access token generated => {}", token.key)
       } else {
         eprintln!("Operation aborted")
       }

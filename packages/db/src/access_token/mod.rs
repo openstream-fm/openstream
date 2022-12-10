@@ -89,6 +89,8 @@ pub struct AccessToken {
   #[serde(rename = "_id")]
   pub id: String,
 
+  pub key: String,
+
   #[serde(flatten)]
   #[ts(skip)]
   pub scope: Scope,
@@ -109,8 +111,8 @@ pub struct AccessToken {
 }
 
 impl AccessToken {
-  pub async fn touch(id: &str) -> Result<Option<AccessToken>, mongodb::error::Error> {
-    let filter = doc! { "_id": id };
+  pub async fn touch(key: &str) -> Result<Option<AccessToken>, mongodb::error::Error> {
+    let filter = doc! { "key": key };
 
     let update = doc! {
       "$set": { "lastUsedAt": bson::DateTime::now() },
@@ -128,6 +130,10 @@ impl AccessToken {
 }
 
 impl AccessToken {
+  pub fn random_key() -> String {
+    uid::uid(48)
+  }
+
   pub fn is_login(&self) -> bool {
     self.generated_by.is_login()
   }
@@ -154,7 +160,7 @@ impl AccessToken {
 }
 
 impl Model for AccessToken {
-  const UID_LEN: usize = 48;
+  const UID_LEN: usize = 24;
   const CL_NAME: &'static str = "access_tokens";
 
   fn indexes() -> Vec<IndexModel> {
@@ -184,6 +190,7 @@ mod test {
 
     let token = AccessToken {
       id: AccessToken::uid(),
+      key: AccessToken::random_key(),
       created_at: now,
       last_used_at: Some(now),
       generated_by: GeneratedBy::Api {
@@ -208,6 +215,7 @@ mod test {
 
     let token = AccessToken {
       id: AccessToken::uid(),
+      key: AccessToken::random_key(),
       created_at: now,
       last_used_at: Some(now),
       generated_by: GeneratedBy::Api {

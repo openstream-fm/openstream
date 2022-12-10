@@ -1,10 +1,11 @@
-import { BadRequest } from "./error";
+import { BadRequest } from "./error.js";
+import { ErrorCode } from "./types.js";
 
-export const validate = <T>(fn: () => T): T => {
+export const validate = <T>(fn: () => T, code: ErrorCode = "PAYLOAD_INVALID"): T => {
   try {
     return fn();
   } catch (e: any) {
-    throw new BadRequest(String(e?.message), "ERR_PAYLOAD_INVALID");
+    throw new BadRequest(String(e?.message), code);
   }
 }
 

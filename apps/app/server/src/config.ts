@@ -1,8 +1,8 @@
 import { assertEquals } from "typescript-is";
 import toml from "toml"
 import { readFileSync } from "fs";
-import { color } from "./color"
-import { Logger } from "./logger"
+import { color } from "./color.js"
+import { Logger } from "./logger.js"
 
 export type Config = {
   openstream: {

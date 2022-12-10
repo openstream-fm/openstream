@@ -9,6 +9,8 @@ use serde_json;
 use std::error::Error;
 use std::fmt::Display;
 
+use self::public::{PublicErrorCode, PublicErrorPayload};
+
 pub mod public;
 
 #[derive(Debug)]
@@ -83,7 +85,7 @@ impl ApiError {
       Kind::TokenUserNotFound(id) => format!("User with id {id} has been deleted"),
       Kind::TokenAccountNotFound(id) => format!("Account with id {id} has been deleted"),
       Kind::TokenAdminNotFound(id) => format!("Admin with id {id} has been deleted"),
-      Kind::TokenOutOfScope => format!("Not enought permissions"),
+      Kind::TokenOutOfScope => format!("Not enough permissions"),
       Kind::AccountNotFound(id) => format!("Account with id {id} not found"),
       Kind::UserNotFound(id) => format!("User with id {id} not found"),
       Kind::AudioFileNotFound(id) => format!("Audio file with id {id} not found"),
@@ -97,45 +99,37 @@ impl ApiError {
     }
   }
 
-  fn kind_str(&self) -> &'static str {
+  fn code(&self) -> PublicErrorCode {
     match self.kind {
-      Kind::TooManyRequests => "ERR_TOO_MANY_REQUESTS",
-      Kind::ResourceNotFound => "ERR_RESOURCE_NOT_FOUND",
-      Kind::Db(_) => "ERR_DB",
-      Kind::TokenMissing => "ERR_TOKEN_MISSING",
-      Kind::TokenMalformed => "ERR_TOKEN_MALFORMED",
-      Kind::TokenNotFound => "ERR_TOKEN_NOT_FOUND",
-      Kind::TokenUserNotFound(_) => "ERR_TOKEN_USER_NOT_FOUND",
-      Kind::TokenAccountNotFound(_) => "ERR_TOKEN_ACCOUNT_NOT_FOUND",
-      Kind::TokenAdminNotFound(_) => "ERR_TOKEN_ADMIN_NOT_FOUND",
-      Kind::TokenOutOfScope => "ERR_TOKEN_OUT_OF_SCOPE",
-      Kind::AccountNotFound(_) => "ERR_ACCOUNT_NOT_FOUND",
-      Kind::UserNotFound(_) => "ERR_USER_NOT_FOUND",
-      Kind::AudioFileNotFound(_) => "ERR_AUDIO_FILE_NOT_FOUND",
-      Kind::QueryString(_) => "ERR_INVALID_QUERY_STRING",
-      Kind::PayloadIo(_) => "ERR_PAYLOAD_IO",
-      Kind::PayloadJson(_) => "ERR_PAYLOAD_JSON",
-      Kind::PayloadTooLarge(_) => "ERR_PAYLOAD_SIZE",
-      Kind::PayloadInvalid(_) => "ERR_PAYLOAD_INVALID",
-      Kind::AuthFailed => "ERR_AUTH_FAILED",
-      Kind::UserEmailExists => "ERR_USER_EMAIL_EXISTS",
+      Kind::TooManyRequests => PublicErrorCode::TooManyRequests,
+      Kind::ResourceNotFound => PublicErrorCode::ResourceNotFound,
+      Kind::Db(_) => PublicErrorCode::InternalDb,
+      Kind::TokenMissing => PublicErrorCode::TokenMissing,
+      Kind::TokenMalformed => PublicErrorCode::TokenMalformed,
+      Kind::TokenNotFound => PublicErrorCode::TokenNotFound,
+      Kind::TokenUserNotFound(_) => PublicErrorCode::TokenUserNotFound,
+      Kind::TokenAccountNotFound(_) => PublicErrorCode::TokenAccountNotFound,
+      Kind::TokenAdminNotFound(_) => PublicErrorCode::TokenAdminNotFound,
+      Kind::TokenOutOfScope => PublicErrorCode::TokenOutOfScope,
+      Kind::AccountNotFound(_) => PublicErrorCode::AccountNotFound,
+      Kind::UserNotFound(_) => PublicErrorCode::UserNotFound,
+      Kind::AudioFileNotFound(_) => PublicErrorCode::AudioFileNotFound,
+      Kind::QueryString(_) => PublicErrorCode::QueryStringInvalid,
+      Kind::PayloadIo(_) => PublicErrorCode::PayloadIo,
+      Kind::PayloadJson(_) => PublicErrorCode::PayloadJson,
+      Kind::PayloadTooLarge(_) => PublicErrorCode::PayloadTooLarge,
+      Kind::PayloadInvalid(_) => PublicErrorCode::PayloadInvalid,
+      Kind::AuthFailed => PublicErrorCode::AuthFailed,
+      Kind::UserEmailExists => PublicErrorCode::UserEmailExists,
     }
-  }
-
-  pub fn as_json(&self) -> serde_json::Value {
-    serde_json::json!({
-      "error": {
-        "status": self.status().as_u16(),
-        "message": self.message(),
-        "kind": self.kind_str()
-      }
-    })
   }
 
   pub fn into_json_response(self) -> Response {
     let mut res = Response::new(self.status());
 
-    let body = serde_json::to_vec(&self.as_json()).unwrap();
+    let payload: PublicErrorPayload = self.into();
+
+    let body = serde_json::to_vec(&payload).unwrap();
 
     res.headers_mut().append(
       CONTENT_TYPE,
@@ -155,13 +149,34 @@ impl ApiError {
 
 impl Display for ApiError {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    write!(f, "ApiError: {}", self.kind_str())?;
+    write!(f, "ApiError: {:?}", self.code())?;
     match &self.kind {
       Kind::Db(e) => write!(f, " mongo => {}", e)?,
-      Kind::TokenUserNotFound(id) => write!(f, " user_id => {}", id)?,
-      Kind::AccountNotFound(id) => write!(f, " account_id => {}", id)?,
-      Kind::UserNotFound(id) => write!(f, "user_id => {}", id)?,
-      _ => {}
+
+      Kind::TokenUserNotFound(id) => write!(f, " id => {id}")?,
+      Kind::TokenAccountNotFound(id) => write!(f, " id: {id}")?,
+      Kind::TokenAdminNotFound(id) => write!(f, " id: {id}")?,
+
+      Kind::UserNotFound(id) => write!(f, " id: {id}")?,
+      Kind::AccountNotFound(id) => write!(f, " id: {id}")?,
+      Kind::AudioFileNotFound(id) => write!(f, " id: {id}")?,
+
+      Kind::PayloadIo(e) => write!(f, " inner: {e}")?,
+      Kind::PayloadInvalid(e) => write!(f, " message: {e}")?,
+      Kind::PayloadJson(e) => write!(f, " inner: {e}")?,
+      Kind::PayloadTooLarge(n) => write!(f, " max: {n}")?,
+      Kind::QueryString(e) => write!(f, " inner: {e}")?,
+
+      Kind::AuthFailed => {}
+      Kind::ResourceNotFound => {}
+
+      Kind::TokenNotFound => {}
+      Kind::TokenMalformed => {}
+      Kind::TokenMissing => {}
+      Kind::TokenOutOfScope => {}
+      Kind::TooManyRequests => {}
+
+      Kind::UserEmailExists => {}
     };
 
     Ok(())

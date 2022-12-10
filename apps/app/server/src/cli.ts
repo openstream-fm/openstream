@@ -1,18 +1,20 @@
-
-
 import { program as cmd } from "commander";
-const pkg = require("../../package.json");
-
 import chalk from "chalk";
 import fs from "fs";
 import path from "path";
-
 import { promises } from "fs";
+
+import * as config from "./config.js";
+import { ConsoleLogger, LogLevel } from "./logger.js";
+import { color } from "./color.js";
+
+import { fileURLToPath } from  "url";
+
+const __dirname =  path.dirname(fileURLToPath(import.meta.url));
+
 const { mkdir } = promises;
 
-import * as config from "./config";
-import { ConsoleLogger, Logger, LogLevel } from "./logger";
-import { color } from "./color";
+const VERSION = "0.0.1"
 
 const createConfig = (opts: { output: string }) => {
   const logger = new ConsoleLogger(LogLevel.INFO);
@@ -39,7 +41,7 @@ const start = async (opts: { config: string }) => {
   process.exit(0);
   //(await import("./server")).start(conf)
 }
-cmd.version(pkg.version);
+cmd.version(VERSION);
 
 cmd.command("start")
   .description("starts the webmail server")

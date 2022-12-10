@@ -308,6 +308,7 @@ pub mod post {
 
       let token = AccessToken {
         id: AccessToken::uid(),
+        key: AccessToken::random_key(),
         scope: Scope::User { user_id },
         generated_by: GeneratedBy::Register { ip, user_agent },
         last_used_at: None,
@@ -329,7 +330,7 @@ pub mod post {
       let out = Output {
         user: user.into_public(access_token_scope.as_public_scope()),
         account: account.into_public(access_token_scope.as_public_scope()),
-        token: token.id,
+        token: token.key,
       };
 
       Ok(out)

@@ -88,7 +88,7 @@ pub async fn get_access_token_scope(
     return Err(GetAccessTokenScopeError::TooManyRequests);
   }
 
-  let token_id = match req.headers().get(X_ACCESS_TOKEN) {
+  let token_key = match req.headers().get(X_ACCESS_TOKEN) {
     None => return Err(GetAccessTokenScopeError::Missing),
     Some(v) => match v.to_str() {
       Err(_) => return Err(GetAccessTokenScopeError::NonUtf8),
@@ -96,7 +96,7 @@ pub async fn get_access_token_scope(
     },
   };
 
-  let doc = match AccessToken::touch(token_id).await? {
+  let doc = match AccessToken::touch(token_key).await? {
     None => {
       ip_limit::hit(ip);
       return Err(GetAccessTokenScopeError::NotFound);
