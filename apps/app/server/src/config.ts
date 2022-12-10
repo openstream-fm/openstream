@@ -35,7 +35,7 @@ export type Config = {
 export const load = (filename: string, { logger: _logger }: { logger: Logger }): Config => {
   const logger = _logger.scoped("config");
 
-  logger.info(`> loading config from", ${color.yellow(filename)}`);
+  logger.info(`> loading config from ${color.yellow(filename)}`);
   
   try {
     const source = readFileSync(filename, "utf8");

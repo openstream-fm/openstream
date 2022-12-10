@@ -53,8 +53,8 @@ export class Client {
     })
 
     if(body?.error) {
-      let message = String(body.error?.message || "Internal server error");
-      let code = String(body.error?.code || "FRONT_GATEWAY_MISSING_CODE" as ErrorCode) as ErrorCode;
+      let message = typeof body.error.message ? body.error.message : "Internal server error";
+      let code = typeof body.error?.code === "string" ? (body.error.code as ErrorCode) : "FRONT_GATEWAY_MISSING_CODE";
       throw new ClientError(res.status, code, message);
     }
 
