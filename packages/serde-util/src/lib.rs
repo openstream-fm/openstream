@@ -4,8 +4,8 @@ pub mod bytes;
 pub mod datetime;
 pub mod ip;
 pub mod password;
+pub mod status_code;
 pub mod voidable;
-
 #[cfg(test)]
 mod test {
   use bson::Bson;

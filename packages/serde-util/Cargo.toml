@@ -10,5 +10,6 @@ base64 = "0.13.0"
 bson = { version = "2", features = [ "chrono-0_4" ] }
 bytes = "1.2.1"
 chrono = { version = "0.4", features = ["serde"] }
+hyper = "0.14.23"
 log = "0.4.17"
 serde = "1"

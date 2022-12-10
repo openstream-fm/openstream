@@ -1,6 +1,11 @@
+use bytes::Bytes;
 use std::fmt::{self, Display, Formatter};
-use std::process::Stdio;
+use std::process::{ExitStatus, Stdio};
+use stream_util::IntoTryBytesStream;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::process::{Child, ChildStderr, ChildStdin, ChildStdout, Command};
+use tokio::sync::mpsc;
+use tokio_stream::StreamExt;
 
 pub mod metadata;
 
@@ -230,10 +235,117 @@ impl Ffmpeg {
   }
 }
 
+#[derive(Debug)]
 pub struct FfmpegSpawn {
   pub config: FfmpegConfig,
   pub child: Child,
   pub stdin: ChildStdin,
   pub stderr: ChildStderr,
   pub stdout: ChildStdout,
+}
+
+#[derive(Debug)]
+pub enum TransformError {
+  Io(std::io::Error),
+  Exit {
+    status: ExitStatus,
+    stderr: Option<String>,
+  },
+}
+
+impl From<std::io::Error> for TransformError {
+  fn from(e: std::io::Error) -> Self {
+    Self::Io(e)
+  }
+}
+
+pub fn transform(
+  config: FfmpegConfig,
+  chunk_size: usize,
+) -> Result<
+  (
+    spsc::Sender<Bytes>,
+    mpsc::Receiver<Result<Bytes, TransformError>>,
+  ),
+  std::io::Error,
+> {
+  let cmd = Ffmpeg::new(config);
+  let spawn = cmd.spawn()?;
+
+  let FfmpegSpawn {
+    config: _,
+    mut child,
+    mut stdin,
+    stdout,
+    mut stderr,
+  } = spawn;
+
+  let (producer, receiver) = spsc::channel::<Bytes>();
+  let (sender, output) = mpsc::channel(1);
+
+  let stdin_fut = async move {
+    loop {
+      match receiver.recv().await {
+        None => break,
+        Some(bytes) => stdin.write_all(bytes.as_ref()).await?,
+      }
+    }
+
+    Ok(())
+  };
+
+  let stderr_fut = async move {
+    let mut buf = vec![];
+    stderr.read_to_end(&mut buf).await?;
+    Result::<String, std::io::Error>::Ok(String::from_utf8_lossy(&buf).to_string())
+  };
+
+  let stdout_fut = {
+    let sender = sender.clone();
+    async move {
+      let mut stream = stdout.into_bytes_stream(chunk_size);
+      loop {
+        match stream.try_next().await? {
+          None => break,
+          Some(bytes) => match sender.send(Ok(bytes)).await {
+            Ok(()) => continue,
+            Err(_) => break,
+          },
+        }
+      }
+
+      Ok(())
+    }
+  };
+
+  let child_fut = async move { child.wait().await };
+
+  tokio::spawn(async move {
+    let (child, stdin, stdout, stderr) = tokio::join!(child_fut, stdin_fut, stdout_fut, stderr_fut);
+    let err = match stdin {
+      Err(e) => Some(e),
+      Ok(()) => match child {
+        Err(e) => Some(TransformError::Io(e)),
+        Ok(status) => {
+          if !status.success() {
+            Some(TransformError::Exit {
+              status,
+              stderr: stderr.ok(),
+            })
+          } else {
+            match stdout {
+              Err(e) => Some(TransformError::Io(e)),
+              Ok(()) => None,
+            }
+          }
+        }
+      },
+    };
+
+    if let Some(err) = err {
+      let _ = sender.send(Err(err)).await;
+    }
+  });
+
+  Ok((producer, output))
 }

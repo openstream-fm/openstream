@@ -67,6 +67,7 @@ dependencies = [
  "prex",
  "serde",
  "serde-querystring",
+ "serde-util",
  "serde_json",
  "sha1",
  "shutdown",
@@ -767,8 +768,12 @@ dependencies = [
 name = "ffmpeg"
 version = "0.1.0"
 dependencies = [
+ "async-stream",
  "bytes",
  "constants",
+ "pin-project",
+ "spsc",
+ "stream-util",
  "tokio",
  "tokio-stream",
 ]
@@ -2385,6 +2390,7 @@ dependencies = [
  "bson",
  "bytes",
  "chrono",
+ "hyper",
  "log",
  "serde",
 ]

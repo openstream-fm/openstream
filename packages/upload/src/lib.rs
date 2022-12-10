@@ -1,4 +1,5 @@
 use std::fmt::Display;
+use std::process::ExitStatus;
 
 use bytes::Bytes;
 use chrono::Utc;
@@ -7,6 +8,7 @@ use db::audio_chunk::AudioChunk;
 use db::audio_file::{AudioFile, Metadata};
 use db::audio_upload_operation::{AudioUploadOperation, State};
 use db::Model;
+use ffmpeg::{transform, FfmpegConfig, TransformError};
 use log::*;
 use md5::{Digest, Md5};
 use std::error::Error;
@@ -17,22 +19,40 @@ use tokio_stream::{Stream, StreamExt};
 pub enum UploadError<E> {
   Stream(E),
   Mongo(mongodb::error::Error),
+  FfmpegSpawn(std::io::Error),
+  FfmpegExit {
+    status: ExitStatus,
+    stderr: Option<String>,
+  },
+  FfmpegIo(std::io::Error),
   SizeExceeded,
   Empty,
 }
 
-impl<E: Error> Display for UploadError<E> {
+impl<E: Display> Display for UploadError<E> {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     match self {
-      Self::Stream(e) => write!(f, "stream: {}", e),
-      Self::Mongo(e) => write!(f, "mongo: {}", e),
-      Self::SizeExceeded => write!(f, "size exceeded: file stream is too large"),
-      Self::Empty => write!(f, "empty: file stream is empty"),
+      Self::Stream(e) => write!(f, "stream: {e}"),
+      Self::Mongo(e) => write!(f, "mongo: {e}"),
+      Self::FfmpegSpawn(e) => write!(f, "ffmpeg spawn: {e}"),
+      Self::FfmpegIo(e) => write!(f, "ffmpeg io: {e}"),
+      Self::FfmpegExit { status, stderr } => {
+        write!(f, "ffmpeg exit: {status}, stderr: {:?}", stderr)
+      }
+      Self::SizeExceeded => write!(f, "size exceeded"),
+      Self::Empty => write!(f, "empty source"),
     }
   }
 }
 
-impl<E: Error> Error for UploadError<E> {}
+impl<E> From<TransformError> for UploadError<E> {
+  fn from(e: TransformError) -> Self {
+    match e {
+      TransformError::Io(e) => UploadError::FfmpegIo(e),
+      TransformError::Exit { status, stderr } => UploadError::FfmpegExit { status, stderr },
+    }
+  }
+}
 
 impl<E> From<mongodb::error::Error> for UploadError<E> {
   fn from(e: mongodb::error::Error) -> Self {
@@ -60,48 +80,27 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
   let (meta_tx, meta_rx) = tokio::sync::mpsc::channel(1);
   let meta_get = ffmpeg::metadata::get(meta_rx);
 
-  let produce = async {
+  let config = FfmpegConfig {
+    format: ffmpeg::Format::MP3,
+    kbitrate: AUDIO_FILE_BYTERATE * 8 / 1000,
+    ..Default::default()
+  };
+
+  let (writer, mut reader) =
+    transform(config, AUDIO_FILE_CHUNK_SIZE).map_err(UploadError::FfmpegSpawn)?;
+
+  let writer_f = async {
     loop {
       let item = data.next().await;
       match item {
         None => break,
         Some(Err(e)) => return Err(UploadError::Stream(e)),
         Some(Ok(bytes)) => {
-          hasher.update(bytes.as_ref());
           let _ = meta_tx.send(bytes.clone()).await;
-
-          let i = chunk_count;
-          chunk_count += 1;
-
-          let len = bytes.len();
-          file_len += len;
-
-          if file_len > size_limit {
-            return Err(UploadError::SizeExceeded);
+          match writer.send(bytes).await {
+            Ok(()) => continue,
+            Err(_) => break,
           }
-
-          let duration_ms = bytes.len() as f64 / AUDIO_FILE_BYTERATE as f64 * 1000.0;
-
-          let start_ms = file_duration_ms;
-          file_duration_ms += duration_ms;
-
-          let end_ms = start_ms + duration_ms;
-
-          let document = AudioChunk {
-            id: AudioChunk::uid(),
-            account_id: account_id.clone(),
-            audio_file_id: audio_file_id.clone(),
-            duration_ms,
-            start_ms,
-            end_ms,
-            i,
-            len,
-            bytes_sec: AUDIO_FILE_BYTERATE,
-            data: bytes,
-            created_at: Utc::now(),
-          };
-
-          AudioChunk::insert(&document).await?;
         }
       }
     }
@@ -109,9 +108,55 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
     Ok(())
   };
 
-  let (meta_get, produce) = tokio::join!(meta_get, produce);
+  let reader_f = async {
+    loop {
+      let bytes = match reader.recv().await {
+        None => break,
+        Some(r) => r?,
+      };
 
-  produce?;
+      hasher.update(bytes.as_ref());
+
+      let i = chunk_count;
+      chunk_count += 1;
+
+      let len = bytes.len();
+      file_len += len;
+
+      if file_len > size_limit {
+        return Err(UploadError::SizeExceeded);
+      }
+
+      let duration_ms = bytes.len() as f64 / AUDIO_FILE_BYTERATE as f64 * 1000.0;
+
+      let start_ms = file_duration_ms;
+      file_duration_ms += duration_ms;
+
+      let end_ms = start_ms + duration_ms;
+
+      let document = AudioChunk {
+        id: AudioChunk::uid(),
+        account_id: account_id.clone(),
+        audio_file_id: audio_file_id.clone(),
+        duration_ms,
+        start_ms,
+        end_ms,
+        i,
+        len,
+        bytes_sec: AUDIO_FILE_BYTERATE,
+        data: bytes,
+        created_at: Utc::now(),
+      };
+
+      AudioChunk::insert(&document).await?;
+    }
+
+    Ok(())
+  };
+
+  let (meta_get, write, read) = tokio::join!(meta_get, writer_f, reader_f);
+  write?;
+  read?;
 
   if file_len == 0 {
     return Err(UploadError::Empty);
@@ -174,7 +219,10 @@ pub async fn upload_audio_file<E: Error, S: Stream<Item = Result<Bytes, E>>>(
 
       let r = AudioUploadOperation::replace(&operation.id, &operation).await;
       if let Err(e) = r {
-        warn!("error updating audio upload operation after success: {}", e)
+        warn!(
+          "error updating audio upload operation after success: {} => {:?}",
+          &e, &e
+        )
       }
     }
 
@@ -187,7 +235,10 @@ pub async fn upload_audio_file<E: Error, S: Stream<Item = Result<Bytes, E>>>(
 
       let r = AudioUploadOperation::replace(&operation.id, &operation).await;
       if let Err(e) = r {
-        warn!("error updating audio upload operation after error: {}", e)
+        warn!(
+          "error updating audio upload operation after error: {} => {:?}",
+          &e, &e
+        )
       }
     }
   }

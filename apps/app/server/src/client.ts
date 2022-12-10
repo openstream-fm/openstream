@@ -1,6 +1,4 @@
 import StatusCode from "http-status-codes";
-
-import { Readable } from "stream";
 import fetch, { Response, RequestInit } from "node-fetch";
 import http from "http";
 import https from "https";

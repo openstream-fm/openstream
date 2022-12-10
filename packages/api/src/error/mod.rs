@@ -9,6 +9,8 @@ use serde_json;
 use std::error::Error;
 use std::fmt::Display;
 
+pub mod public;
+
 #[derive(Debug)]
 pub enum Kind {
   TooManyRequests,

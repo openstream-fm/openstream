@@ -6,7 +6,7 @@ import { json } from "../handler";
 import { validate } from "../validate";
 import { assertType } from "typescript-is";
 import { Client } from "../client";
-import { saveSession } from "../session";
+import { saveSession, session } from "../session";
 
 export const api = ({
   config,
@@ -22,6 +22,7 @@ export const api = ({
 
   let api = Router();
   api.use(json_body())
+  api.use(session(config));
 
   api.post("/login", json(async req => {
     const { email, password } = validate(() => assertType<import("../defs/api/login/POST/Payload").Payload>(req.body));
