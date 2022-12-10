@@ -153,7 +153,8 @@ pub mod post {
   #[serde(rename_all = "camelCase")]
   pub struct Payload {
     pub name: String,
-    pub owner_id: Option<String>, // user
+    /// User.id who created this account
+    pub owner_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limits: Option<PayloadLimits>,
     #[serde(skip_serializing_if = "Option::is_none")]

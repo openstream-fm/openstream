@@ -2,7 +2,7 @@ pub mod post {
   use async_trait::async_trait;
   use chrono::Utc;
   use db::access_token::{AccessToken, GeneratedBy, Scope};
-  use db::user::User;
+  use db::user::{User, UserPublicUser};
   use db::Model;
   use mongodb::bson::doc;
   use prex::{request::ReadBodyJsonError, Request};
@@ -36,7 +36,7 @@ pub mod post {
   #[ts(export_to = "../../defs/api/login/POST/")]
   #[serde(rename_all = "camelCase")]
   pub struct Output {
-    user_id: String,
+    user: UserPublicUser,
     token: String,
   }
 
@@ -120,6 +120,8 @@ pub mod post {
 
       let Payload { email, password } = payload;
 
+      let email = email.trim().to_lowercase();
+
       let user = match User::find_by_email(&email).await? {
         None => return Err(HandleError::NoMatchEmail),
         Some(user) => user,
@@ -149,8 +151,10 @@ pub mod post {
 
       AccessToken::insert(&token).await?;
 
+      let user = UserPublicUser::from(user);
+
       let out = Output {
-        user_id: user.id,
+        user,
         token: token.id,
       };
 

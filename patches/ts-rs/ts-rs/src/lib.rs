@@ -453,7 +453,8 @@ impl<T: TS> TS for Vec<T> {
 
 impl<K: TS, V: TS> TS for HashMap<K, V> {
     fn name() -> String {
-        "Record".to_owned()
+        //"Record".to_owned()
+        String::new()
     }
 
     fn name_with_type_args(args: Vec<String>) -> String {
@@ -463,11 +464,11 @@ impl<K: TS, V: TS> TS for HashMap<K, V> {
             "called HashMap::name_with_type_args with {} args",
             args.len()
         );
-        format!("Record<{}, {}>", args[0], args[1])
+        format!("{{ [key: {}]: {} }}", args[0], args[1])
     }
 
     fn inline() -> String {
-        format!("Record<{}, {}>", K::inline(), V::inline())
+        format!("{{ [key: {}], {} }}", K::inline(), V::inline())
     }
 
     fn dependencies() -> Vec<Dependency> {

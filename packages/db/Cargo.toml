@@ -24,7 +24,7 @@ user-agent = { version = "0.1.0", path = "../user-agent" }
 validate = { version = "0.1.0", path = "../validate" }
 defer-lite = "1.0.0"
 async-stream = "0.3.3"
-ts-rs = { version = "6.2.1", features = ["chrono", "chrono-impl", "format"] }
+ts-rs = { version = "6.2.0", features = ["chrono", "chrono-impl", "format"] }
 
 [dev-dependencies]
 serde_json = "1.0.86"

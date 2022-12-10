@@ -62,65 +62,61 @@ export class Client {
     return body as T;
   }
 
+  json_headers(token: string | null, with_payload: boolean): Record<string, string> {
+    const _token = token ? { "x-access-token": token } : {} as Record<string, string>;
+    const _content = with_payload ? { "content-type": "application/json" } : {} as Record<string, string>;
+    return {
+      ..._token,
+      ..._content,
+    }
+  }
+
   async json_request<T>(url: string, init: RequestInit): Promise<T> {
     const res = await this.fetch(`${this.baseURL}${url}`, init);
     const body = await this.get_json_body<T>(res);
     return body;
   }
 
-  async get<T>(token: string, url: string,): Promise<T> {
+  async get<T>(token: string | null, url: string,): Promise<T> {
     return await this.json_request<T>(url, {
-      headers: {
-        "x-access-token": token
-      }
+      headers: this.json_headers(token, false),
     });
   }
 
-  async delete<T>(token: string, url: string): Promise<T> {
+  async delete<T>(token: string | null, url: string): Promise<T> {
     return await this.json_request<T>(url, {
       method: "DELETE",
-      headers: {
-        "x-access-token": token
-      }
+      headers: this.json_headers(token, false),
     });
   }
 
-  async post<T>(token: string, url: string, payload: any): Promise<T> {
+  async post<T>(token: string | null, url: string, payload: any): Promise<T> {
     return await this.json_request<T>(url, {
       method: "POST",
-      headers: {
-        "x-access-token": token,
-        "content-type": "application/json",
-      },
+      headers: this.json_headers(token, true),
       body: JSON.stringify(payload)
     })
   }
 
-  async put<T>(token: string, url: string, payload: any): Promise<T> {
+  async put<T>(token: string | null, url: string, payload: any): Promise<T> {
     return await this.json_request<T>(url, {
       method: "PUT",
-      headers: {
-        "x-access-token": token,
-        "content-type": "application/json",
-      },
+      headers: this.json_headers(token, true),
       body: JSON.stringify(payload)
     })
   }
 
-  async patch<T>(token: string, url: string, payload: any): Promise<T> {
+  async patch<T>(token: string | null, url: string, payload: any): Promise<T> {
     return await this.json_request<T>(url, {
       method: "PATCH",
-      headers: {
-        "x-access-token": token,
-        "content-type": "application/json",
-      },
+      headers: this.json_headers(token, true),
       body: JSON.stringify(payload)
     })
   }
 
 
-  async login(token: string, payload: import("./defs/api/login/POST/Payload").Payload): Promise<import("./defs/api/login/POST/Output").Output> {
-    return await this.post(token, "/login", payload)
+  async login(payload: import("./defs/api/login/POST/Payload").Payload): Promise<import("./defs/api/login/POST/Output").Output> {
+    return await this.post(null, "/login", payload)
   }
 
   async register(token: string, payload: import("./defs/api/register/POST/Payload").Payload): Promise<import("./defs/api/register/POST/Output").Output> {

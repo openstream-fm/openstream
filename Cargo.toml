@@ -41,3 +41,4 @@ members = [
 
 [patch.crates-io]
 bson = { path = "./patches/bson" }
+ts-rs = { path = "./patches/ts-rs/ts-rs" }

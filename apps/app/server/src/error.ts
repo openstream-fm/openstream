@@ -1,5 +1,7 @@
 import StatusCode from "http-status-codes";
 import { ClientError } from "./client";
+import { Logger } from "./logger";
+import type { Request, Response, NextFunction } from "express";
 
 export class ApiError extends Error {
   
@@ -48,3 +50,11 @@ const Err = (status: number, default_code: string) => {
 export const Internal = Err(StatusCode.INTERNAL_SERVER_ERROR, "ERR_INTERNAL");
 export const BadRequest = Err(StatusCode.BAD_REQUEST, "ERR_BAD_REQUEST");
 export const Unauthorized = Err(StatusCode.UNAUTHORIZED, "ERR_UNAUTHORIZED");
+
+export const json_catch_handler = (logger: Logger) => {
+  return (e: Error, req: Request, res: Response, next: NextFunction) => {
+    const error = ApiError.from(e);
+    logger.warn(`API Error: ${req.method} ${req.path} => ${error.status} ${e}`)
+    res.status(error.status).json(error);
+  }
+}

@@ -102,6 +102,10 @@
  
     "paths": {
       "@defs/*": [ "../../../../defs-patches/*", "../../../../defs/*",  ]
-    }
+    },
+    
+    "plugins": [
+      { "transform": "typescript-is/lib/transform-inline/transformer" }
+    ]
   }
 }
