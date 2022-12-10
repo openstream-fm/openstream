@@ -31,7 +31,7 @@ domain = "localhost"
 
 
 # app web interface settings (optional)
-# removing the config group is the same as setting [app] enabled=false
+# removing this config group is the same as setting enabled=false
 [app]
 
 # boolean (required)
@@ -50,7 +50,7 @@ publicBaseURL = "http://localhost:23200"
 
 
 # admin web interface settings (optional)
-# removing the config group is the same as setting [admin] enabled=false
+# removing this config group is the same as setting enabled=false
 [admin]
 
 # boolea (required)
