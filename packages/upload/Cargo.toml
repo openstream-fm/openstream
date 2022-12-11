@@ -6,13 +6,16 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+async-stream = "0.3.3"
 bytes = "1.2.1"
 chrono = "0.4.22"
 constants = { version = "0.1.0", path = "../../config/constants" }
 db = { version = "0.1.0", path = "../db" }
 ffmpeg = { version = "0.1.0", path = "../ffmpeg" }
+futures-util = "0.3.25"
 hex = "0.4.3"
 log = "0.4.17"
+logger = { version = "0.1.0", path = "../logger" }
 md-5 = "0.10.5"
 mongodb = "2.3.1"
 stream-util = { version = "0.1.0", path = "../stream-util" }

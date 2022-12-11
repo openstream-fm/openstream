@@ -36,7 +36,8 @@ pub fn router() -> Builder {
 
   app
     .at("/accounts/:account/files")
-    .get(accounts::files::get::Endpoint {}.into_handler());
+    .get(accounts::files::get::Endpoint {}.into_handler())
+    .post(accounts::files::post::Endpoint {}.into_handler());
 
   app
     .at("/accounts/:account/files/:file")

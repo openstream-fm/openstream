@@ -12,7 +12,6 @@ use ffmpeg::{transform, FfmpegConfig, TransformError};
 use log::*;
 use md5::{Digest, Md5};
 use std::error::Error;
-use stream_util::*;
 use tokio_stream::{Stream, StreamExt};
 
 #[derive(Debug)]
@@ -67,15 +66,7 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
   filename: String,
   data: S,
 ) -> Result<AudioFile, UploadError<E>> {
-  let data = data.chunked(AUDIO_FILE_CHUNK_SIZE);
-
   tokio::pin!(data);
-
-  let mut hasher = Md5::new();
-
-  let mut file_len = 0;
-  let mut file_duration_ms = 0.0;
-  let mut chunk_count = 0;
 
   let (meta_tx, meta_rx) = tokio::sync::mpsc::channel(1);
   let meta_get = ffmpeg::metadata::get(meta_rx);
@@ -89,17 +80,32 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
   let (writer, mut reader) =
     transform(config, AUDIO_FILE_CHUNK_SIZE).map_err(UploadError::FfmpegSpawn)?;
 
-  let writer_f = async {
+  let writer_f = async move {
     loop {
+      trace!("upload writer recv loop");
       let item = data.next().await;
       match item {
-        None => break,
-        Some(Err(e)) => return Err(UploadError::Stream(e)),
+        None => {
+          trace!("upload writer recv end");
+          break;
+        }
+        Some(Err(e)) => {
+          trace!("upload writer recv error: {:?}", e);
+          return Err(UploadError::Stream(e));
+        }
         Some(Ok(bytes)) => {
+          let len = bytes.len();
+          trace!("upload writer recv item: {len} bytes");
           let _ = meta_tx.send(bytes.clone()).await;
           match writer.send(bytes).await {
-            Ok(()) => continue,
-            Err(_) => break,
+            Ok(()) => {
+              trace!("upload writer send item: {len} bytes");
+              continue;
+            }
+            Err(_e) => {
+              trace!("upload writer send error: SendError");
+              break;
+            }
           }
         }
       }
@@ -108,65 +114,91 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
     Ok(())
   };
 
-  let reader_f = async {
-    loop {
-      let bytes = match reader.recv().await {
-        None => break,
-        Some(r) => r?,
-      };
+  let reader_f = {
+    let audio_file_id = audio_file_id.clone();
+    let account_id = account_id.clone();
 
-      hasher.update(bytes.as_ref());
+    async move {
+      let mut hasher = Md5::new();
 
-      let i = chunk_count;
-      chunk_count += 1;
+      let mut file_len = 0;
+      let mut file_duration_ms = 0.0;
+      let mut chunk_count = 0;
 
-      let len = bytes.len();
-      file_len += len;
+      loop {
+        let bytes = match reader.recv().await {
+          None => {
+            trace!("upload reader recv end");
+            break;
+          }
+          Some(Err(e)) => {
+            trace!("upload reader recv error: {:?}", e);
+            return Err(e.into());
+          }
+          Some(Ok(bytes)) => {
+            trace!("upload reader recv item: {} bytes", bytes.len());
+            bytes
+          }
+        };
 
-      if file_len > size_limit {
-        return Err(UploadError::SizeExceeded);
+        hasher.update(bytes.as_ref());
+
+        let i = chunk_count;
+        chunk_count += 1;
+
+        let len = bytes.len();
+        file_len += len;
+
+        if file_len > size_limit {
+          trace!("upload error size exceeded");
+          return Err(UploadError::SizeExceeded);
+        }
+
+        let duration_ms = bytes.len() as f64 / AUDIO_FILE_BYTERATE as f64 * 1000.0;
+
+        let start_ms = file_duration_ms;
+        file_duration_ms += duration_ms;
+
+        let end_ms = start_ms + duration_ms;
+
+        let document = AudioChunk {
+          id: AudioChunk::uid(),
+          account_id: account_id.clone(),
+          audio_file_id: audio_file_id.clone(),
+          duration_ms,
+          start_ms,
+          end_ms,
+          i,
+          len,
+          bytes_sec: AUDIO_FILE_BYTERATE,
+          data: bytes,
+          created_at: Utc::now(),
+        };
+
+        AudioChunk::insert(&document).await?;
+        trace!("upload audio chunk #{i} inserted");
       }
 
-      let duration_ms = bytes.len() as f64 / AUDIO_FILE_BYTERATE as f64 * 1000.0;
+      let md5_array = hasher.finalize();
+      let md5 = hex::encode(md5_array);
 
-      let start_ms = file_duration_ms;
-      file_duration_ms += duration_ms;
-
-      let end_ms = start_ms + duration_ms;
-
-      let document = AudioChunk {
-        id: AudioChunk::uid(),
-        account_id: account_id.clone(),
-        audio_file_id: audio_file_id.clone(),
-        duration_ms,
-        start_ms,
-        end_ms,
-        i,
-        len,
-        bytes_sec: AUDIO_FILE_BYTERATE,
-        data: bytes,
-        created_at: Utc::now(),
-      };
-
-      AudioChunk::insert(&document).await?;
+      Ok((file_len, file_duration_ms, chunk_count, md5))
     }
-
-    Ok(())
   };
 
   let (meta_get, write, read) = tokio::join!(meta_get, writer_f, reader_f);
   write?;
-  read?;
+  let (file_len, file_duration_ms, chunk_count, md5) = read?;
 
   if file_len == 0 {
     return Err(UploadError::Empty);
   }
 
-  let md5_array = hasher.finalize();
-  let md5 = hex::encode(md5_array);
-
   let metadata = match meta_get {
-    Err(_) => Metadata::default(),
+    Err(e) => {
+      warn!("upload metadata error: {} => {:?}", e, e);
+      Metadata::default()
+    }
     Ok(map) => Metadata::from(map.into_iter()),
   };
 
@@ -186,6 +218,7 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
   };
 
   AudioFile::insert(&file).await?;
+  trace!("upload audio file uploaded");
 
   Ok(file)
 }
@@ -244,4 +277,54 @@ pub async fn upload_audio_file<E: Error, S: Stream<Item = Result<Bytes, E>>>(
   }
 
   result
+}
+
+#[cfg(test)]
+mod test {
+  use std::convert::Infallible;
+
+  use super::*;
+
+  #[tokio::test]
+  async fn upload_file() {
+    logger::init();
+
+    let client =
+      mongodb::Client::with_uri_str("mongodb://127.0.0.1:27017/openstream-test?replicaSet=rs1")
+        .await
+        .expect("failed to create mongodb client");
+
+    db::init(client);
+
+    /*
+    let data = async_stream::stream! {
+      for _ in 0..3 {
+        let file = Bytes::from_static(include_bytes!("../../../audio-5s.mp3"));
+        yield Result::<Bytes, Infallible>::Ok(file);
+      }
+    };
+    */
+
+    // let data = futures_util::stream::once(async move {
+    //   let file = Bytes::from_static(include_bytes!("../../../audio-5s.mp3"));
+    //   Result::<Bytes, Infallible>::Ok(file)
+    // });
+
+    //let data = futures_util::stream::repeat(item).take(10);
+
+    let file = Bytes::from_static(include_bytes!("../../../audio-5s.mp3"));
+    let item = Result::<Bytes, Infallible>::Ok(file);
+
+    let data = tokio_stream::iter(vec![item; 4]);
+
+    super::upload_audio_file(
+      "test-account-id".into(),
+      None,
+      usize::MAX,
+      "test-filename.mp3".into(),
+      data,
+    )
+    .await
+    .expect("upload error");
+  }
 }

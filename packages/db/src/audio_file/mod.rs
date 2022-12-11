@@ -58,6 +58,7 @@ impl Model for AudioFile {
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone, TS)]
 #[ts(export)]
 #[ts(export_to = "../../defs/db/")]
+#[ts(rename = "AudioMetadata")]
 #[serde(rename_all = "camelCase")]
 pub struct Metadata {
   pub title: Option<String>,
@@ -89,7 +90,7 @@ impl Metadata {
             Ok(v) => meta.track = Some(v),
           }
         }
-        "year" => {
+        "date" => {
           let r = value.parse();
           match r {
             Err(_) => continue,

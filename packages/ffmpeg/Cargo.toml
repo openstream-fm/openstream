@@ -9,6 +9,7 @@ edition = "2021"
 async-stream = "0.3.3"
 bytes = "1.2.1"
 constants = { version = "0.1.0", path = "../../config/constants" }
+log = "0.4.17"
 pin-project = "1.0.12"
 spsc = { version = "0.1.0", path = "../spsc" }
 stream-util = { version = "0.1.0", path = "../stream-util" }

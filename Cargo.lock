@@ -774,6 +774,7 @@ dependencies = [
  "async-stream",
  "bytes",
  "constants",
+ "log",
  "pin-project",
  "spsc",
  "stream-util",
@@ -3367,13 +3368,16 @@ checksum = "dce38ae0f337aaa57e31829022760c8222eb084c47a0efcb0e01d359a608f365"
 name = "upload"
 version = "0.1.0"
 dependencies = [
+ "async-stream",
  "bytes",
  "chrono",
  "constants",
  "db",
  "ffmpeg",
+ "futures-util",
  "hex",
  "log",
+ "logger",
  "md-5",
  "mongodb",
  "stream-util",

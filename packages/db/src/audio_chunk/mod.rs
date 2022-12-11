@@ -1,7 +1,7 @@
 use crate::Model;
 use bytes::Bytes;
 use chrono::{DateTime, Utc};
-use mongodb::{bson::doc, IndexModel};
+use mongodb::{bson::doc, options::IndexOptions, IndexModel};
 use serde::{Deserialize, Serialize};
 use serde_util::as_f64;
 use ts_rs::TS;
@@ -50,9 +50,15 @@ impl Model for AudioChunk {
   fn indexes() -> Vec<IndexModel> {
     let account_id = IndexModel::builder().keys(doc! { "accountId": 1 }).build();
     let audio_file_id = IndexModel::builder()
-      .keys(doc! { "audio_file_id": 1 })
+      .keys(doc! { "audioFileId": 1 })
       .build();
 
-    vec![account_id, audio_file_id]
+    let unique = IndexOptions::builder().unique(true).build();
+    let audio_file_id_with_index = IndexModel::builder()
+      .keys(doc! { "audioFileId": 1, "i": 1 })
+      .options(unique)
+      .build();
+
+    vec![account_id, audio_file_id, audio_file_id_with_index]
   }
 }

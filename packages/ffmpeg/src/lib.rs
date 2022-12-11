@@ -1,4 +1,5 @@
 use bytes::Bytes;
+use log::*;
 use std::fmt::{self, Display, Formatter};
 use std::process::{ExitStatus, Stdio};
 use stream_util::IntoTryBytesStream;
@@ -75,9 +76,9 @@ pub struct FfmpegConfig {
   pub loglevel: LogLevel,
   pub format: Format,
   pub kbitrate: usize,
-  pub kminrate: usize,
-  pub kmaxrate: usize,
-  pub kbufsize: usize,
+  //pub kminrate: usize,
+  //pub kmaxrate: usize,
+  //pub kbufsize: usize,
   pub freq: u16,
   pub channels: u8,
   pub novideo: bool,
@@ -95,9 +96,9 @@ impl FfmpegConfig {
 
   /// output bitrate
   pub const KBITRATE: usize = constants::STREAM_KBITRATE;
-  pub const KMINRATE: usize = Self::KBITRATE;
-  pub const KMAXRATE: usize = Self::KBITRATE;
-  pub const KBUFSIZE: usize = Self::KBITRATE;
+  //pub const KMINRATE: usize = Self::KBITRATE;
+  //pub const KMAXRATE: usize = Self::KBITRATE;
+  //pub const KBUFSIZE: usize = Self::KBITRATE;
 
   // output format
   pub const FORMAT: Format = Format::MP3;
@@ -127,9 +128,9 @@ impl Default for FfmpegConfig {
       bin: Self::BIN,
       loglevel: Self::LOGLEVEL,
       kbitrate: Self::KBITRATE,
-      kminrate: Self::KMINRATE,
-      kmaxrate: Self::KMAXRATE,
-      kbufsize: Self::KBUFSIZE,
+      //kminrate: Self::KMINRATE,
+      //kmaxrate: Self::KMAXRATE,
+      //kbufsize: Self::KBUFSIZE,
       freq: Self::FREQ,
       format: Self::FORMAT,
       channels: Self::CHANNELS,
@@ -190,13 +191,13 @@ impl Ffmpeg {
     cmd.arg(format!("{}k", self.config.kbitrate));
 
     cmd.arg("-minrate");
-    cmd.arg(format!("{}k", self.config.kminrate));
+    cmd.arg(format!("{}k", self.config.kbitrate));
 
     cmd.arg("-maxrate");
-    cmd.arg(format!("{}k", self.config.kmaxrate));
+    cmd.arg(format!("{}k", self.config.kbitrate));
 
     cmd.arg("-bufsize");
-    cmd.arg(format!("{}k", self.config.kbufsize));
+    cmd.arg(format!("{}k", self.config.kbitrate));
 
     // threads
     cmd.arg("-threads");
@@ -287,8 +288,23 @@ pub fn transform(
   let stdin_fut = async move {
     loop {
       match receiver.recv().await {
-        None => break,
-        Some(bytes) => stdin.write_all(bytes.as_ref()).await?,
+        None => {
+          trace!("transform recv end");
+          break;
+        }
+        Some(bytes) => {
+          trace!("transform recv: {} bytes", bytes.len());
+          match stdin.write_all(bytes.as_ref()).await {
+            Err(e) => {
+              trace!("transform write err: {:?}", e);
+              return Err(e.into());
+            }
+
+            Ok(()) => {
+              trace!("transform write ok: {} bytes", bytes.len());
+            }
+          };
+        }
       }
     }
 
@@ -306,12 +322,31 @@ pub fn transform(
     async move {
       let mut stream = stdout.into_bytes_stream(chunk_size);
       loop {
-        match stream.try_next().await? {
-          None => break,
-          Some(bytes) => match sender.send(Ok(bytes)).await {
-            Ok(()) => continue,
-            Err(_) => break,
-          },
+        match stream.try_next().await {
+          Err(e) => {
+            trace!("transform stdout err: {:?}", e);
+            return Err(e);
+          }
+
+          Ok(None) => {
+            trace!("transform stdout end");
+            break;
+          }
+
+          Ok(Some(bytes)) => {
+            let len = bytes.len();
+            trace!("transform stdout item: {len} bytes");
+            match sender.send(Ok(bytes)).await {
+              Ok(()) => {
+                trace!("transform stdout send received: {len} bytes");
+                continue;
+              }
+              Err(e) => {
+                trace!("transform stdout send err: {:?}", e);
+                break;
+              }
+            }
+          }
         }
       }
 
@@ -344,7 +379,10 @@ pub fn transform(
     };
 
     if let Some(err) = err {
+      trace!("transform result err: {:?}", err);
       let _ = sender.send(Err(err)).await;
+    } else {
+      trace!("transform result ok");
     }
   });
 
