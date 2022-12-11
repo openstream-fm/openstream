@@ -1729,6 +1729,7 @@ dependencies = [
 name = "openstream"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "api",
  "channels",
  "chrono",

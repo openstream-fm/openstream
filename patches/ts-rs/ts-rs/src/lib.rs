@@ -583,7 +583,7 @@ impl_primitives! {
     u32, i32, NonZeroU32, NonZeroI32,
     usize, isize, NonZeroUsize, NonZeroIsize, f32, f64 => "number",
     u64, i64, NonZeroU64, NonZeroI64,
-    u128, i128, NonZeroU128, NonZeroI128 => "bigint",
+    u128, i128, NonZeroU128, NonZeroI128 => "number",
     bool => "boolean",
     char, Path, PathBuf, String, &'static str,
     Ipv4Addr, Ipv6Addr, IpAddr, SocketAddrV4, SocketAddrV6, SocketAddr => "string",

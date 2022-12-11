@@ -20,17 +20,14 @@ pub struct AudioChunk {
   pub end_ms: f64,
 
   #[serde(with = "as_f64")]
-  #[ts(type = "number")]
   pub i: usize,
 
   #[serde(with = "as_f64")]
-  #[ts(type = "number")]
   pub len: usize,
 
   pub duration_ms: f64,
 
   #[serde(with = "as_f64")]
-  #[ts(type = "number")]
   pub bytes_sec: usize,
 
   #[serde(with = "serde_util::bytes")]

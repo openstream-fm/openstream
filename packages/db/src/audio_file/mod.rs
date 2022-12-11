@@ -16,21 +16,17 @@ pub struct AudioFile {
   pub md5: String,
 
   #[serde(with = "as_f64")]
-  #[ts(type = "number")]
   pub len: usize,
 
   pub duration_ms: f64,
 
   #[serde(with = "as_f64")]
-  #[ts(type = "number")]
   pub bytes_sec: usize,
 
   #[serde(with = "as_f64")]
-  #[ts(type = "number")]
   pub chunk_count: usize,
 
   #[serde(with = "as_f64")]
-  #[ts(type = "number")]
   pub chunk_len: usize,
 
   pub chunk_duration_ms: f64,

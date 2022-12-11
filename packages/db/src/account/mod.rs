@@ -111,10 +111,8 @@ pub struct Limits {
 #[serde(rename_all = "camelCase")]
 pub struct Limit {
   #[serde(with = "serde_util::as_f64")]
-  #[ts(type = "number")]
   pub used: u64,
   #[serde(with = "serde_util::as_f64")]
-  #[ts(type = "number")]
   pub avail: u64,
 }
 

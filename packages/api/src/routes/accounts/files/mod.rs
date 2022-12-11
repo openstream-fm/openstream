@@ -41,11 +41,9 @@ pub mod get {
   #[ts(export_to = "../../defs/api/accounts/[account]/files/GET/")]
   struct Query {
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[ts(type = "number")]
     skip: Option<u64>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[ts(type = "number")]
     limit: Option<i64>,
   }
 

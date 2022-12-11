@@ -48,17 +48,14 @@ impl Singleton for Config {}
 pub struct Limits {
   /// default max concurrent listeners for new accounts
   #[serde(with = "serde_util::as_f64")]
-  #[ts(type = "number")]
   pub listeners: u64,
 
   /// default max transfer / month in bytes for new accounts
   #[serde(with = "serde_util::as_f64")]
-  #[ts(type = "number")]
   pub transfer: u64,
 
   /// default max storage in bytes for new accounts
   #[serde(with = "serde_util::as_f64")]
-  #[ts(type = "number")]
   pub storage: u64,
 }
 

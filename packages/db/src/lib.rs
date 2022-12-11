@@ -260,15 +260,9 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
 #[ts(export_to = "../../defs/")]
 #[serde(rename_all = "camelCase")]
 pub struct Paged<T> {
-  #[ts(type = "number")]
   pub total: u64,
-
-  #[ts(type = "number")]
   pub skip: u64,
-
-  #[ts(type = "number")]
   pub limit: i64,
-
   pub items: Vec<T>,
 }
 

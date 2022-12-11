@@ -41,11 +41,9 @@ pub mod get {
   #[ts(export_to = "../../defs/api/accounts/GET/")]
   struct Query {
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[ts(type = "number")]
     skip: Option<u64>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[ts(type = "number")]
     limit: Option<i64>,
   }
 
@@ -169,15 +167,12 @@ pub mod post {
   #[serde(rename_all = "camelCase")]
   pub struct PayloadLimits {
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[ts(type = "number")]
     listeners: Option<u64>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[ts(type = "number")]
     transfer: Option<u64>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[ts(type = "number")]
     storage: Option<u64>,
   }
 

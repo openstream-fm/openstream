@@ -4,6 +4,7 @@ import http from "http";
 import https from "https";
 import qs from "qs";
 import type { ErrorCode } from "./types";
+import type { Readable } from "stream";
 
 
 const qss = (v: any) => {
@@ -200,7 +201,15 @@ export class AccountFiles {
     return await this.client.get(token, `/accounts/${accountId}/files/${fileId}`);
   }
 
-  // async post(token: string, accountId: string, query: import("./defs/api/accounts/[account]/files/POST/Query").Query, data: Readable): Promise<import("./defs/api/accounts/[account]/files/POST/Output").Output> {
-  //    return await this.client.post(token, `/users`, payload);
-  // }
+  async post(token: string, accountId: string, contentType: string, query: import("./defs/api/accounts/[account]/files/POST/Query").Query, data: Readable): Promise<import("./defs/api/accounts/[account]/files/POST/Output").Output> {
+    let res = await this.client.fetch(`/accounts/${accountId}/files${qss(query)}`, {
+      headers: {
+        "content-type": contentType,
+        "x-access-token": token,
+      },
+      body: data 
+    })
+
+    return await this.client.get_json_body(res)
+  }
 }

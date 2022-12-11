@@ -106,7 +106,6 @@ pub struct AccessToken {
   pub last_used_at: Option<DateTime<Utc>>,
 
   #[serde(with = "as_f64")]
-  #[ts(type = "number")]
   pub hits: u64,
 }
 
