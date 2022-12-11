@@ -321,8 +321,8 @@ use tower::Service;
 
 pub struct RouterService {
   router: Router,
-  #[allow(unused)]
   remote_addr: SocketAddr,
+  local_addr: SocketAddr,
 }
 
 impl Service<hyper::Request<Body>> for RouterService {
@@ -338,13 +338,15 @@ impl Service<hyper::Request<Body>> for RouterService {
   fn call(&mut self, req: hyper::Request<Body>) -> Self::Future {
     let router = self.router.clone();
 
-    let addr = self.remote_addr;
+    let remote_addr = self.remote_addr;
+    let local_addr = self.local_addr;
 
     let fut = async move {
       let (parts, body) = req.into_parts();
 
       let request = Request::from_parts(RequestParts {
-        remote_addr: addr,
+        local_addr,
+        remote_addr,
         method: parts.method,
         uri: parts.uri,
         headers: parts.headers,
@@ -394,6 +396,7 @@ impl Service<&AddrStream> for Router {
     let service = RouterService {
       router,
       remote_addr: socket.remote_addr(),
+      local_addr: socket.local_addr(),
     };
 
     let fut = async move { Ok::<_, Infallible>(service) };

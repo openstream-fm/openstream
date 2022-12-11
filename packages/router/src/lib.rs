@@ -34,6 +34,17 @@ impl RouterServer {
   ) -> Result<impl Future<Output = Result<(), hyper::Error>> + 'static, hyper::Error> {
     let futs = FuturesUnordered::new();
 
+    let mut app = prex::prex();
+
+    app.with(http::middleware::server);
+    app.get("/status", http::middleware::status);
+
+    app.get("/:id([a-zA-Z0-9]+)", RouterHandler::new());
+    app.get("/:id([a-zA-Z0-9]+).m3u", HlsHandler::new());
+    app.get("/:id([a-zA-Z0-9]+).pls", PlsHandler::new());
+
+    let app = app.build().expect("prex app build router");
+
     for addr in &self.addrs {
       let server = Server::try_bind(addr)?
         .http1_only(true)
@@ -43,18 +54,8 @@ impl RouterServer {
 
       info!("router server bound to {}", addr.yellow());
 
-      let mut app = prex::prex();
-
-      app.get("/status", StatusHandler::new());
-
-      app.get("/:id([a-zA-Z0-9]+)", RouterHandler::new());
-      app.get("/:id([a-zA-Z0-9]+).m3u", HlsHandler::new());
-      app.get("/:id([a-zA-Z0-9]+).pls", PlsHandler::new());
-
-      let app = app.build().expect("prex app build stream");
-
       let fut = server
-        .serve(app)
+        .serve(app.clone())
         .with_graceful_shutdown(self.shutdown.signal());
 
       futs.push(fut);
@@ -166,29 +167,6 @@ impl Handler for RouterHandler {
       .headers_mut()
       .append(LOCATION, HeaderValue::try_from(url).unwrap());
     res
-  }
-}
-
-#[derive(Debug)]
-struct StatusHandler;
-
-#[async_trait]
-impl Handler for StatusHandler {
-  async fn call(&self, _: Request, _: Next) -> Response {
-    let mut res = Response::new(StatusCode::OK);
-    let body = Body::from(r#"{"status":200}"#);
-    res.headers_mut().append(
-      CONTENT_TYPE,
-      HeaderValue::from_static("application/json;charset=utf-8"),
-    );
-    *res.body_mut() = body;
-    res
-  }
-}
-
-impl StatusHandler {
-  fn new() -> Self {
-    Self {}
   }
 }
 

@@ -17,6 +17,7 @@ export type Config = {
   session: {
     secret: string
     domain: string
+    maxAgeDays: number
   }
 
   admin?: {

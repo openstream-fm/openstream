@@ -1,6 +1,6 @@
 use chrono::{
-    Date, DateTime, Duration, FixedOffset, Local, NaiveDate, NaiveDateTime, NaiveTime, TimeZone,
-    Utc,
+    /*Date,*/ DateTime, Duration, FixedOffset, Local, NaiveDate, NaiveDateTime, NaiveTime,
+    TimeZone, Utc,
 };
 
 use super::{impl_primitives, TS};
@@ -38,20 +38,20 @@ impl<T: TimeZone + 'static> TS for DateTime<T> {
     }
 }
 
-impl<T: TimeZone + 'static> TS for Date<T> {
-    fn name() -> String {
-        "string".to_owned()
-    }
-    fn name_with_type_args(_: Vec<String>) -> String {
-        Self::name()
-    }
-    fn inline() -> String {
-        "string".to_owned()
-    }
-    fn dependencies() -> Vec<Dependency> {
-        vec![]
-    }
-    fn transparent() -> bool {
-        false
-    }
-}
+// impl<T: TimeZone + 'static> TS for Date<T> {
+//     fn name() -> String {
+//         "string".to_owned()
+//     }
+//     fn name_with_type_args(_: Vec<String>) -> String {
+//         Self::name()
+//     }
+//     fn inline() -> String {
+//         "string".to_owned()
+//     }
+//     fn dependencies() -> Vec<Dependency> {
+//         vec![]
+//     }
+//     fn transparent() -> bool {
+//         false
+//     }
+// }

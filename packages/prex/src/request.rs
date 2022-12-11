@@ -8,6 +8,7 @@ use std::net::{IpAddr, SocketAddr};
 
 #[derive(Debug)]
 pub struct Parts {
+  pub local_addr: SocketAddr,
   pub remote_addr: SocketAddr,
   pub method: Method,
   pub uri: Uri,
@@ -20,6 +21,7 @@ pub struct Parts {
 
 #[derive(Debug)]
 pub struct Request {
+  pub(crate) local_addr: SocketAddr,
   pub(crate) remote_addr: SocketAddr,
   pub(crate) method: Method,
   pub(crate) uri: Uri,
@@ -54,6 +56,7 @@ impl Request {
   #[inline]
   pub fn from_parts(parts: Parts) -> Self {
     Self {
+      local_addr: parts.local_addr,
       remote_addr: parts.remote_addr,
       method: parts.method,
       uri: parts.uri,
@@ -68,6 +71,7 @@ impl Request {
   #[inline]
   pub fn into_parts(self) -> Parts {
     Parts {
+      local_addr: self.local_addr,
       remote_addr: self.remote_addr,
       method: self.method,
       uri: self.uri,
@@ -77,6 +81,16 @@ impl Request {
       params: self.params,
       body: self.body,
     }
+  }
+
+  #[inline]
+  pub fn local_addr(&self) -> SocketAddr {
+    self.local_addr
+  }
+
+  #[inline]
+  pub fn local_addr_mut(&mut self) -> &mut SocketAddr {
+    &mut self.local_addr
   }
 
   #[inline]

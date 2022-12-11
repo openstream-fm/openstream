@@ -52,6 +52,7 @@ name = "api"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "bytes",
  "chrono",
  "config",
  "crypt",
@@ -59,6 +60,7 @@ dependencies = [
  "futures",
  "futures-util",
  "hex",
+ "http 0.1.0",
  "hyper",
  "log",
  "mongodb",
@@ -75,6 +77,7 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "ts-rs",
+ "upload",
  "user-agent",
  "validate",
 ]
@@ -1061,9 +1064,13 @@ name = "http"
 version = "0.1.0"
 dependencies = [
  "hyper",
+ "merge-streams",
+ "pin-project",
  "prex",
  "serde",
  "serde_json",
+ "tokio",
+ "tokio-stream",
 ]
 
 [[package]]
@@ -1512,6 +1519,16 @@ name = "memchr"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
+
+[[package]]
+name = "merge-streams"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4f84f6452969abd246e7ac1fe4fe75906c76e8ec88d898df9aef37e0f3b6a7c2"
+dependencies = [
+ "futures-core",
+ "pin-project",
+]
 
 [[package]]
 name = "mime"
@@ -2167,6 +2184,7 @@ dependencies = [
  "async-trait",
  "db",
  "futures",
+ "http 0.1.0",
  "hyper",
  "log",
  "mongodb",
@@ -2553,6 +2571,7 @@ dependencies = [
  "drop-tracer",
  "ffmpeg",
  "futures",
+ "http 0.1.0",
  "hyper",
  "log",
  "owo-colors",
@@ -2661,6 +2680,7 @@ dependencies = [
  "channels",
  "drop-tracer",
  "futures",
+ "http 0.1.0",
  "hyper",
  "log",
  "owo-colors",

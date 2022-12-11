@@ -52,6 +52,7 @@ pub enum PublicErrorCode {
   ResourceNotFound,
   TooManyRequests,
   InternalDb,
+  IoRequest,
   TokenMissing,
   TokenMalformed,
   TokenNotFound,
@@ -69,4 +70,10 @@ pub enum PublicErrorCode {
   PayloadInvalid,
   AuthFailed,
   UserEmailExists,
+
+  UploadEmpty,
+  UploadSizeExceeded,
+  UploadInternalSpawn,
+  UploadIntenralIo,
+  UploadExit,
 }

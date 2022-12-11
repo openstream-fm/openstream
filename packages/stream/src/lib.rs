@@ -41,6 +41,18 @@ impl StreamServer {
   pub fn start(
     self,
   ) -> Result<impl Future<Output = Result<(), hyper::Error>> + 'static, hyper::Error> {
+    let mut app = prex::prex();
+
+    app.with(http::middleware::server);
+    app.get("/status", http::middleware::status);
+
+    app.get(
+      "/stream/:id",
+      StreamHandler::new(self.channels.clone(), self.shutdown.clone()),
+    );
+
+    let app = app.build().expect("prex app build stream");
+
     let futs = FuturesUnordered::new();
 
     for addr in &self.addrs {
@@ -52,19 +64,8 @@ impl StreamServer {
 
       info!("stream server bound to {}", addr.yellow());
 
-      let mut app = prex::prex();
-
-      app.get("/status", StatusHandler::new());
-
-      app.get(
-        "/stream/:id",
-        StreamHandler::new(self.channels.clone(), self.shutdown.clone()),
-      );
-
-      let app = app.build().expect("prex app build stream");
-
       let fut = server
-        .serve(app)
+        .serve(app.clone())
         .with_graceful_shutdown(self.shutdown.signal());
 
       futs.push(fut);
@@ -152,28 +153,5 @@ impl Handler for StreamHandler {
     *res.body_mut() = response_body;
 
     res
-  }
-}
-
-#[derive(Debug)]
-struct StatusHandler;
-
-#[async_trait]
-impl Handler for StatusHandler {
-  async fn call(&self, _: Request, _: Next) -> Response {
-    let mut res = Response::new(StatusCode::OK);
-    let body = Body::from(r#"{"status":200}"#);
-    res.headers_mut().append(
-      CONTENT_TYPE,
-      HeaderValue::from_static("application/json;charset=utf-8"),
-    );
-    *res.body_mut() = body;
-    res
-  }
-}
-
-impl StatusHandler {
-  fn new() -> Self {
-    Self {}
   }
 }

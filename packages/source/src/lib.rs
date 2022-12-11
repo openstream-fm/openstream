@@ -49,6 +49,22 @@ impl SourceServer {
   pub fn start(
     self,
   ) -> Result<impl Future<Output = Result<(), hyper::Error>> + 'static, hyper::Error> {
+    let mut app = prex::prex();
+
+    if log::log_enabled!(Level::Debug) {
+      app.with(logger);
+    }
+
+    app.with(http::middleware::server);
+    app.get("/status", http::middleware::status);
+
+    app.any(
+      "/:id/source",
+      SourceHandler::new(self.channels.clone(), self.shutdown.clone()),
+    );
+
+    let app = app.build().expect("prex app build source");
+
     let futs = FuturesUnordered::new();
 
     for addr in &self.source_addrs {
@@ -60,25 +76,21 @@ impl SourceServer {
 
       info!("source receiver server bound to {}", addr.yellow());
 
-      let mut app = prex::prex();
-
-      if log::log_enabled!(Level::Debug) {
-        app.with(logger);
-      }
-
-      app.any(
-        "/:id/source",
-        SourceHandler::new(self.channels.clone(), self.shutdown.clone()),
-      );
-
-      let app = app.build().expect("prex app build source");
-
       futs.push(
         source
-          .serve(app)
+          .serve(app.clone())
           .with_graceful_shutdown(self.shutdown.signal()),
       )
     }
+
+    let mut app = prex::prex();
+
+    app.get(
+      "/broadcast/:id",
+      BroadcastHandler::new(self.channels.clone(), self.shutdown.clone()),
+    );
+
+    let app = app.build().expect("prex app build source");
 
     for addr in &self.broadcast_addrs {
       let broadcast = Server::try_bind(addr)?
@@ -88,18 +100,9 @@ impl SourceServer {
 
       info!("source broadcaster server bound to {}", addr.yellow());
 
-      let mut app = prex::prex();
-
-      app.get(
-        "/broadcast/:id",
-        BroadcastHandler::new(self.channels.clone(), self.shutdown.clone()),
-      );
-
-      let app = app.build().expect("prex app build source");
-
       futs.push(
         broadcast
-          .serve(app)
+          .serve(app.clone())
           .with_graceful_shutdown(self.shutdown.signal()),
       );
     }

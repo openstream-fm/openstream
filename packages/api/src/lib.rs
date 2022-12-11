@@ -7,14 +7,11 @@ pub mod json;
 pub mod request_ext;
 pub mod routes;
 
-use async_trait::async_trait;
 use futures::stream::FuturesUnordered;
 use futures::TryStreamExt;
-use hyper::header::CONTENT_TYPE;
-use hyper::{http::HeaderValue, Body, Server, StatusCode};
+use hyper::Server;
 use log::*;
 use owo_colors::*;
-use prex::{handler::Handler, Next, Request, Response};
 use serde::{Deserialize, Serialize};
 use shutdown::Shutdown;
 use std::future::Future;
@@ -39,6 +36,15 @@ impl ApiServer {
   pub fn start(
     self,
   ) -> Result<impl Future<Output = Result<(), hyper::Error>> + 'static, hyper::Error> {
+    let mut app = prex::prex();
+
+    app.with(http::middleware::server);
+    app.get("/status", http::middleware::status);
+
+    app.at("/").nest(routes::router());
+
+    let app = app.build().expect("prex app build api");
+
     let futs = FuturesUnordered::new();
 
     for addr in &self.addrs {
@@ -50,16 +56,8 @@ impl ApiServer {
 
       info!("api server bound to {}", addr.yellow());
 
-      let mut app = prex::prex();
-
-      app.get("/status", StatusHandler::new());
-
-      app.at("/").nest(routes::router());
-
-      let app = app.build().expect("prex app build stream");
-
       let fut = server
-        .serve(app)
+        .serve(app.clone())
         .with_graceful_shutdown(self.shutdown.signal());
 
       futs.push(fut);
@@ -76,28 +74,5 @@ impl ApiServer {
 impl Drop for ApiServer {
   fn drop(&mut self) {
     info!("api server dropped");
-  }
-}
-
-#[derive(Debug)]
-struct StatusHandler;
-
-#[async_trait]
-impl Handler for StatusHandler {
-  async fn call(&self, _: Request, _: Next) -> Response {
-    let mut res = Response::new(StatusCode::OK);
-    let body = Body::from(r#"{"status":200}"#);
-    res.headers_mut().append(
-      CONTENT_TYPE,
-      HeaderValue::from_static("application/json;charset=utf-8"),
-    );
-    *res.body_mut() = body;
-    res
-  }
-}
-
-impl StatusHandler {
-  fn new() -> Self {
-    Self {}
   }
 }

@@ -3,20 +3,17 @@ pub mod id;
 use crate::json::JsonHandler;
 use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
 
+use crate::error::ApiError;
 use async_trait::async_trait;
 use db::account::Account;
 use db::audio_file::AudioFile;
 use db::Model;
 use db::Paged;
 use prex::Request;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
 pub mod get {
-
-  use serde::Serialize;
-  use ts_rs::TS;
-
-  use crate::error::ApiError;
 
   use super::*;
 
@@ -128,6 +125,126 @@ pub mod get {
       let page = AudioFile::paged(filter, skip, limit).await?;
 
       Ok(Output(page))
+    }
+  }
+}
+
+pub mod post {
+
+  use bytes::Bytes;
+  use futures::Stream;
+  use serde::de::Error;
+  use upload::UploadError;
+
+  use crate::request_ext::get_access_token_scope;
+
+  use super::*;
+
+  #[derive(Debug, Clone)]
+  pub struct Endpoint {}
+
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../defs/api/accounts/[account]/files/POST/")]
+  pub struct Query {
+    pub filename: String,
+  }
+
+  #[derive(Debug, Clone)]
+  pub struct Input<S> {
+    pub account: Account,
+    pub filename: String,
+    pub stream: S,
+  }
+
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../defs/api/accounts/[account]/files/POST/")]
+  #[serde(rename_all = "camelCase")]
+  pub struct Output {
+    file: AudioFile,
+  }
+
+  impl Endpoint {
+    pub async fn perform_stream<E: std::error::Error, S: Stream<Item = Result<Bytes, E>>>(
+      &self,
+      input: Input<S>,
+    ) -> Result<Output, upload::UploadError<E>> {
+      let size_limit = (input.account.limits.storage.avail as usize)
+        .saturating_sub(input.account.limits.storage.used as usize);
+
+      let file = upload::upload_audio_file(
+        input.account.id,
+        None,
+        size_limit,
+        input.filename,
+        input.stream,
+      )
+      .await?;
+
+      Ok(Output { file })
+    }
+  }
+
+  #[derive(Debug)]
+  pub enum ParseError {
+    Token(GetAccessTokenScopeError),
+    Query(serde_querystring::Error),
+  }
+
+  impl From<GetAccessTokenScopeError> for ParseError {
+    fn from(e: GetAccessTokenScopeError) -> Self {
+      Self::Token(e)
+    }
+  }
+
+  impl From<serde_querystring::Error> for ParseError {
+    fn from(e: serde_querystring::Error) -> Self {
+      Self::Query(e)
+    }
+  }
+
+  impl From<ParseError> for ApiError {
+    fn from(e: ParseError) -> Self {
+      match e {
+        ParseError::Token(e) => e.into(),
+        ParseError::Query(e) => e.into(),
+      }
+    }
+  }
+
+  #[async_trait]
+  impl JsonHandler for Endpoint {
+    type Input = Input<hyper::Body>;
+    type Output = Output;
+    type ParseError = ParseError;
+    type HandleError = UploadError<hyper::Error>;
+
+    async fn parse(&self, request: Request) -> Result<Self::Input, ParseError> {
+      let account_id = request.param("account").unwrap();
+      let query: Query = serde_querystring::from_str(request.uri().query().unwrap_or(""))?;
+
+      let filename = query.filename.trim();
+      if filename.is_empty() {
+        return Err(serde_querystring::Error::custom("filename is required").into());
+      }
+
+      let access_token_scope = get_access_token_scope(&request).await?;
+      let account = access_token_scope.grant_scope(account_id).await?;
+
+      let stream = request.into_body();
+
+      let input = Self::Input {
+        account,
+        filename: filename.to_string(),
+        stream,
+      };
+
+      Ok(input)
+    }
+
+    async fn perform(&self, input: Self::Input) -> Result<Output, Self::HandleError> {
+      self.perform_stream(input).await
     }
   }
 }

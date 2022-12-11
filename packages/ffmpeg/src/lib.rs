@@ -259,6 +259,7 @@ impl From<std::io::Error> for TransformError {
   }
 }
 
+#[allow(clippy::type_complexity)]
 pub fn transform(
   config: FfmpegConfig,
   chunk_size: usize,

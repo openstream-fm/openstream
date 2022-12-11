@@ -9,6 +9,7 @@ edition = "2021"
 async-trait = "0.1.58"
 db = { version = "0.1.0", path = "../db" }
 futures = "0.3.25"
+http = { version = "0.1.0", path = "../http" }
 hyper = { version = "0.14.23", features = ["full"] }
 log = "0.4.17"
 mongodb = "2.3.1"

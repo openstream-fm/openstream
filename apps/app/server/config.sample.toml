@@ -28,6 +28,9 @@ secret = "supersecret"
 # shared domain name to store cookies against, must be shared between admin and app servers
 domain = "localhost"
 
+# number (required)
+# sessions will expire after specified days from the last user request
+maxAgeDays = 30
 
 
 # app web interface settings (optional)

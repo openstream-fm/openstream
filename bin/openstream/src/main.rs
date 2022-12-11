@@ -18,7 +18,7 @@ use source::SourceServer;
 use stream::StreamServer;
 use tokio::runtime::Runtime;
 
-static VERSION: &str = env!("CARGO_PKG_VERSION");
+static VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
 #[derive(Debug, Parser)]
 #[command(author, version, about = "openstream radio streaming server")]

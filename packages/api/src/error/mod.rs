@@ -8,8 +8,10 @@ use prex::*;
 use serde_json;
 use std::error::Error;
 use std::fmt::Display;
+use std::process::ExitStatus;
 
 use self::public::{PublicErrorCode, PublicErrorPayload};
+use upload::UploadError;
 
 pub mod public;
 
@@ -17,7 +19,10 @@ pub mod public;
 pub enum Kind {
   TooManyRequests,
   ResourceNotFound,
+
   Db(mongodb::error::Error),
+  Hyper(hyper::Error),
+
   TokenMissing,
   TokenNotFound,
   TokenMalformed,
@@ -35,6 +40,15 @@ pub enum Kind {
   PayloadInvalid(String),
   AuthFailed,
   UserEmailExists,
+
+  UploadEmpty,
+  UploadFfmpegExit {
+    status: ExitStatus,
+    stderr: Option<String>,
+  },
+  UploadFfmpegIo(std::io::Error),
+  UploadSpawn(std::io::Error),
+  UploadSizeExceeded,
 }
 
 #[derive(Debug)]
@@ -54,6 +68,8 @@ impl ApiError {
       Kind::TooManyRequests => StatusCode::TOO_MANY_REQUESTS,
       Kind::ResourceNotFound => StatusCode::NOT_FOUND,
       Kind::Db(_) => StatusCode::INTERNAL_SERVER_ERROR,
+      // for Kind::Hyper(e) we assume that is a network error responsability of the client so we respond BAD_REQUEST
+      Kind::Hyper(_) => StatusCode::BAD_REQUEST,
       Kind::TokenMissing => StatusCode::UNAUTHORIZED,
       Kind::TokenMalformed => StatusCode::UNAUTHORIZED,
       Kind::TokenNotFound => StatusCode::UNAUTHORIZED,
@@ -71,6 +87,12 @@ impl ApiError {
       Kind::PayloadInvalid(_) => StatusCode::BAD_REQUEST,
       Kind::AuthFailed => StatusCode::BAD_REQUEST,
       Kind::UserEmailExists => StatusCode::CONFLICT,
+
+      Kind::UploadEmpty => StatusCode::BAD_REQUEST,
+      Kind::UploadSizeExceeded => StatusCode::BAD_REQUEST,
+      Kind::UploadSpawn(_) => StatusCode::INTERNAL_SERVER_ERROR,
+      Kind::UploadFfmpegIo(_) => StatusCode::INTERNAL_SERVER_ERROR,
+      Kind::UploadFfmpegExit { .. } => StatusCode::BAD_REQUEST,
     }
   }
 
@@ -79,6 +101,7 @@ impl ApiError {
       Kind::TooManyRequests => format!("Too many requests"),
       Kind::ResourceNotFound => format!("Resource not found"),
       Kind::Db(_) => format!("Internal server error"),
+      Kind::Hyper(_) => format!("I/O request error"),
       Kind::TokenMissing => format!("Access token is required"),
       Kind::TokenMalformed => format!("Access token is malformed"),
       Kind::TokenNotFound => format!("Access token not found"),
@@ -96,6 +119,14 @@ impl ApiError {
       Kind::PayloadInvalid(e) => format!("{e}"),
       Kind::AuthFailed => format!("There's no user with that email and password"),
       Kind::UserEmailExists => format!("User email already exists"),
+
+      Kind::UploadEmpty => format!("Payload is empty"),
+      Kind::UploadSizeExceeded => format!("Audio quota exceeded"),
+      Kind::UploadSpawn(_) => format!("Internal server error"),
+      Kind::UploadFfmpegIo(_) => format!("Internal server error"),
+      Kind::UploadFfmpegExit { .. } => {
+        format!("Error procesing audio file, invalid, malformed or unsupported file or format")
+      }
     }
   }
 
@@ -104,6 +135,7 @@ impl ApiError {
       Kind::TooManyRequests => PublicErrorCode::TooManyRequests,
       Kind::ResourceNotFound => PublicErrorCode::ResourceNotFound,
       Kind::Db(_) => PublicErrorCode::InternalDb,
+      Kind::Hyper(_) => PublicErrorCode::IoRequest,
       Kind::TokenMissing => PublicErrorCode::TokenMissing,
       Kind::TokenMalformed => PublicErrorCode::TokenMalformed,
       Kind::TokenNotFound => PublicErrorCode::TokenNotFound,
@@ -121,6 +153,12 @@ impl ApiError {
       Kind::PayloadInvalid(_) => PublicErrorCode::PayloadInvalid,
       Kind::AuthFailed => PublicErrorCode::AuthFailed,
       Kind::UserEmailExists => PublicErrorCode::UserEmailExists,
+
+      Kind::UploadEmpty => PublicErrorCode::UploadEmpty,
+      Kind::UploadSizeExceeded => PublicErrorCode::UploadSizeExceeded,
+      Kind::UploadSpawn(_) => PublicErrorCode::UploadInternalSpawn,
+      Kind::UploadFfmpegIo(_) => PublicErrorCode::UploadIntenralIo,
+      Kind::UploadFfmpegExit { .. } => PublicErrorCode::UploadExit,
     }
   }
 
@@ -152,6 +190,7 @@ impl Display for ApiError {
     write!(f, "ApiError: {:?}", self.code())?;
     match &self.kind {
       Kind::Db(e) => write!(f, " mongo => {}", e)?,
+      Kind::Hyper(e) => write!(f, " hyper => {}", e)?,
 
       Kind::TokenUserNotFound(id) => write!(f, " id => {id}")?,
       Kind::TokenAccountNotFound(id) => write!(f, " id: {id}")?,
@@ -177,6 +216,14 @@ impl Display for ApiError {
       Kind::TooManyRequests => {}
 
       Kind::UserEmailExists => {}
+
+      Kind::UploadEmpty => {}
+      Kind::UploadSizeExceeded => {}
+      Kind::UploadSpawn(e) => write!(f, " inner: {e}")?,
+      Kind::UploadFfmpegIo(e) => write!(f, "inner: {e}")?,
+      Kind::UploadFfmpegExit { status, stderr } => {
+        write!(f, " status: {status}, stderr: {:?}", stderr)?
+      }
     };
 
     Ok(())
@@ -188,6 +235,12 @@ impl Error for ApiError {}
 impl From<mongodb::error::Error> for ApiError {
   fn from(e: mongodb::error::Error) -> Self {
     Self::from(Kind::Db(e))
+  }
+}
+
+impl From<hyper::Error> for ApiError {
+  fn from(e: hyper::Error) -> Self {
+    Self::from(Kind::Hyper(e))
   }
 }
 
@@ -210,6 +263,22 @@ impl From<ReadBodyJsonError> for ApiError {
       ReadBodyJsonError::Json(e) => Self::from(Kind::PayloadJson(e)),
       ReadBodyJsonError::TooLarge(maxlen) => Self::from(Kind::PayloadTooLarge(maxlen)),
       ReadBodyJsonError::PayloadInvalid(s) => Self::from(Kind::PayloadInvalid(s)),
+    }
+  }
+}
+
+impl<E: Into<ApiError>> From<UploadError<E>> for ApiError {
+  fn from(e: UploadError<E>) -> Self {
+    match e {
+      UploadError::Mongo(e) => e.into(),
+      UploadError::Empty => ApiError::from(Kind::UploadEmpty),
+      UploadError::FfmpegExit { status, stderr } => {
+        ApiError::from(Kind::UploadFfmpegExit { status, stderr })
+      }
+      UploadError::FfmpegIo(e) => ApiError::from(Kind::UploadFfmpegIo(e)),
+      UploadError::FfmpegSpawn(e) => ApiError::from(Kind::UploadSpawn(e)),
+      UploadError::SizeExceeded => ApiError::from(Kind::UploadSizeExceeded),
+      UploadError::Stream(s) => s.into(),
     }
   }
 }
