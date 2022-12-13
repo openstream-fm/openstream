@@ -3,7 +3,7 @@ use db::account::Account;
 use db::Model;
 use futures::stream::FuturesUnordered;
 use futures::TryStreamExt;
-use hyper::header::LOCATION;
+use hyper::header::{CACHE_CONTROL, LOCATION};
 use hyper::{header::CONTENT_TYPE, http::HeaderValue, Body, Server, StatusCode};
 use log::*;
 use owo_colors::*;
@@ -153,9 +153,13 @@ impl Handler for RouterHandler {
         let mut res = Response::new(status);
         *res.body_mut() = Body::from(message);
         res.headers_mut().append(
-          "content-type",
+          CONTENT_TYPE,
           HeaderValue::from_static("text/plain;charset=utf-8"),
         );
+
+        res
+          .headers_mut()
+          .append(CACHE_CONTROL, HeaderValue::from_static("no-cache"));
 
         return res;
       }
@@ -165,7 +169,12 @@ impl Handler for RouterHandler {
     let mut res = Response::new(StatusCode::FOUND);
     res
       .headers_mut()
-      .append(LOCATION, HeaderValue::try_from(url).unwrap());
+      .append(LOCATION, HeaderValue::from_str(url.as_str()).unwrap());
+
+    res
+      .headers_mut()
+      .append(CACHE_CONTROL, HeaderValue::from_static("no-cache"));
+
     res
   }
 }
@@ -191,7 +200,7 @@ pub async fn route(id: &str) -> Result<String, RouteError> {
     Some(account) => account,
   };
 
-  let url = format!("https://stream-1.openstream.test/stream/{id}");
+  let url = format!("https://stream-0001.openstream.test/stream/{id}");
   Ok(url)
 }
 

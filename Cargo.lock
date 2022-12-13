@@ -51,6 +51,7 @@ checksum = "216261ddc8289130e551ddcd5ce8a064710c0d064a4d2895c67151c92b5443f6"
 name = "api"
 version = "0.1.0"
 dependencies = [
+ "async-stream",
  "async-trait",
  "bytes",
  "chrono",
@@ -61,6 +62,7 @@ dependencies = [
  "futures-util",
  "hex",
  "http 0.1.0",
+ "http-range",
  "hyper",
  "log",
  "mongodb",
@@ -539,6 +541,7 @@ dependencies = [
  "serde-util",
  "serde_json",
  "syn",
+ "time 0.3.17",
  "tokio",
  "ts-rs",
  "uid",
@@ -1097,6 +1100,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "http-range"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "21dec9db110f5f872ed9699c3ecf50cf16f423502706ba5c72462e28d3157573"
+
+[[package]]
 name = "httparse"
 version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1312,6 +1321,17 @@ name = "is_ci"
 version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "616cde7c720bb2bb5824a224687d8f77bfd38922027f01d825cd7453be5099fb"
+
+[[package]]
+name = "iso8601-timestamp"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a02006d1462822bf11c0443af5cf8696a90b9897c63831ac473ac43af035afab"
+dependencies = [
+ "generic-array",
+ "serde",
+ "time 0.3.17",
+]
 
 [[package]]
 name = "itoa"
@@ -1672,6 +1692,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "num_threads"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2819ce041d2ee131036f4fc9d6ae7ae125a3a40e97ba64d04fe799ad9dabbb44"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "once_cell"
 version = "1.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1748,6 +1777,7 @@ dependencies = [
  "owo-colors",
  "router",
  "rust_ipify",
+ "serde-util",
  "shutdown",
  "source",
  "source-alt",
@@ -2411,8 +2441,12 @@ dependencies = [
  "bytes",
  "chrono",
  "hyper",
+ "iso8601-timestamp",
  "log",
  "serde",
+ "serde_json",
+ "time 0.3.17",
+ "ts-rs",
 ]
 
 [[package]]
@@ -2998,6 +3032,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a561bf4617eebd33bca6434b988f39ed798e527f51a1e797d0ee4f61c0a38376"
 dependencies = [
  "itoa",
+ "libc",
+ "num_threads",
  "serde",
  "time-core",
  "time-macros",
@@ -3381,6 +3417,7 @@ dependencies = [
  "logger",
  "md-5",
  "mongodb",
+ "serde-util",
  "stream-util",
  "tokio",
  "tokio-stream",

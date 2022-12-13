@@ -1,5 +1,6 @@
 #![allow(clippy::useless_format)]
 
+use http_range::HttpRangeParseError;
 use hyper::header::{CONTENT_LENGTH, CONTENT_TYPE};
 use hyper::http::HeaderValue;
 use hyper::{Body, StatusCode};
@@ -11,6 +12,7 @@ use std::fmt::Display;
 use std::process::ExitStatus;
 
 use self::public::{PublicErrorCode, PublicErrorPayload};
+use db::error::ApplyPatchError;
 use upload::UploadError;
 
 pub mod public;
@@ -49,6 +51,13 @@ pub enum Kind {
   UploadFfmpegIo(std::io::Error),
   UploadSpawn(std::io::Error),
   UploadSizeExceeded,
+
+  RangeInvalid,
+  RangeNoOverlap,
+
+  PatchEmpty,
+  PatchInvalid(String),
+  PatchOutOfScope(String),
 }
 
 #[derive(Debug)]
@@ -93,6 +102,13 @@ impl ApiError {
       Kind::UploadSpawn(_) => StatusCode::INTERNAL_SERVER_ERROR,
       Kind::UploadFfmpegIo(_) => StatusCode::INTERNAL_SERVER_ERROR,
       Kind::UploadFfmpegExit { .. } => StatusCode::BAD_REQUEST,
+
+      Kind::RangeInvalid => StatusCode::RANGE_NOT_SATISFIABLE,
+      Kind::RangeNoOverlap => StatusCode::RANGE_NOT_SATISFIABLE,
+
+      Kind::PatchEmpty => StatusCode::BAD_REQUEST,
+      Kind::PatchInvalid(_) => StatusCode::BAD_REQUEST,
+      Kind::PatchOutOfScope(_) => StatusCode::BAD_REQUEST,
     }
   }
 
@@ -127,6 +143,13 @@ impl ApiError {
       Kind::UploadFfmpegExit { .. } => {
         format!("Error procesing audio file, invalid, malformed or unsupported file or format")
       }
+
+      Kind::RangeInvalid => format!("Range invalid"),
+      Kind::RangeNoOverlap => format!("Range no satisfiable, no overlap"),
+
+      Kind::PatchEmpty => format!("Update operation is empty"),
+      Kind::PatchInvalid(message) => format!("{message}"),
+      Kind::PatchOutOfScope(message) => format!("{message}"),
     }
   }
 
@@ -159,6 +182,13 @@ impl ApiError {
       Kind::UploadSpawn(_) => PublicErrorCode::UploadInternalSpawn,
       Kind::UploadFfmpegIo(_) => PublicErrorCode::UploadIntenralIo,
       Kind::UploadFfmpegExit { .. } => PublicErrorCode::UploadExit,
+
+      Kind::RangeInvalid => PublicErrorCode::RangeInvalid,
+      Kind::RangeNoOverlap => PublicErrorCode::RangeNoOverlap,
+
+      Kind::PatchEmpty => PublicErrorCode::PatchEmpty,
+      Kind::PatchInvalid(_) => PublicErrorCode::PatchInvalid,
+      Kind::PatchOutOfScope(_) => PublicErrorCode::PatchOutOfScope,
     }
   }
 
@@ -224,6 +254,13 @@ impl Display for ApiError {
       Kind::UploadFfmpegExit { status, stderr } => {
         write!(f, " status: {status}, stderr: {:?}", stderr)?
       }
+
+      Kind::RangeInvalid => {}
+      Kind::RangeNoOverlap => {}
+
+      Kind::PatchEmpty => {}
+      Kind::PatchInvalid(message) => write!(f, " message: {message}")?,
+      Kind::PatchOutOfScope(message) => write!(f, " message: {message}")?,
     };
 
     Ok(())
@@ -279,6 +316,25 @@ impl<E: Into<ApiError>> From<UploadError<E>> for ApiError {
       UploadError::FfmpegSpawn(e) => ApiError::from(Kind::UploadSpawn(e)),
       UploadError::SizeExceeded => ApiError::from(Kind::UploadSizeExceeded),
       UploadError::Stream(s) => s.into(),
+    }
+  }
+}
+
+impl From<HttpRangeParseError> for ApiError {
+  fn from(e: HttpRangeParseError) -> Self {
+    match e {
+      HttpRangeParseError::InvalidRange => Self::from(Kind::RangeInvalid),
+      HttpRangeParseError::NoOverlap => Self::from(Kind::RangeNoOverlap),
+    }
+  }
+}
+
+impl From<ApplyPatchError> for ApiError {
+  fn from(e: ApplyPatchError) -> Self {
+    match e {
+      ApplyPatchError::PatchEmpty => ApiError::from(Kind::PatchEmpty),
+      ApplyPatchError::PatchInvalid(message) => ApiError::from(Kind::PatchInvalid(message)),
+      ApplyPatchError::OutOfScope(message) => ApiError::from(Kind::PatchOutOfScope(message)),
     }
   }
 }

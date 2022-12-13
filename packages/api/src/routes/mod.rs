@@ -32,7 +32,8 @@ pub fn router() -> Builder {
 
   app
     .at("/accounts/:account")
-    .get(accounts::id::get::Endpoint {}.into_handler());
+    .get(accounts::id::get::Endpoint {}.into_handler())
+    .put(accounts::id::patch::Endpoint {}.into_handler());
 
   app
     .at("/accounts/:account/files")
@@ -42,6 +43,10 @@ pub fn router() -> Builder {
   app
     .at("/accounts/:account/files/:file")
     .get(accounts::files::id::get::Endpoint {}.into_handler());
+
+  app
+    .at("/accounts/:account/files/:file/stream")
+    .get(accounts::files::id::stream::Handler {});
 
   // 404 catch all
   app.with(|_, _| async { ApiError::from(Kind::ResourceNotFound).into_json_response() });

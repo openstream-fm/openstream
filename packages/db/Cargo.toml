@@ -25,6 +25,7 @@ validate = { version = "0.1.0", path = "../validate" }
 defer-lite = "1.0.0"
 async-stream = "0.3.3"
 ts-rs = { version = "6.2.0", features = ["chrono", "chrono-impl", "format"] }
+time = { version = "0.3.17", features = ["serde-well-known", "local-offset", "serde-human-readable"] }
 
 [dev-dependencies]
 serde_json = "1.0.86"

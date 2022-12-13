@@ -1,9 +1,8 @@
 use crate::metadata::Metadata;
 use crate::Model;
-use chrono::{DateTime, Utc};
 use mongodb::{bson::doc, options::IndexOptions, IndexModel};
 use serde::{Deserialize, Serialize};
-use serde_util::datetime;
+use serde_util::DateTime;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -15,15 +14,9 @@ pub struct Admin {
   pub id: String,
   pub name: String,
   pub email: String,
-
   pub password: Option<String>,
-
-  #[serde(with = "datetime")]
-  pub created_at: DateTime<Utc>,
-
-  #[serde(with = "datetime")]
-  pub updated_at: DateTime<Utc>,
-
+  pub created_at: DateTime,
+  pub updated_at: DateTime,
   pub system_metadata: Metadata,
 }
 

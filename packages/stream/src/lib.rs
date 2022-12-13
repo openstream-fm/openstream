@@ -2,6 +2,7 @@ use async_trait::async_trait;
 use channels::ChannelMap;
 use futures::stream::FuturesUnordered;
 use futures::TryStreamExt;
+use hyper::header::{ACCEPT_RANGES, CACHE_CONTROL};
 use hyper::{header::CONTENT_TYPE, http::HeaderValue, Body, Server, StatusCode};
 use log::*;
 use owo_colors::*;
@@ -149,7 +150,16 @@ impl Handler for StreamHandler {
     let mut res = Response::new(StatusCode::OK);
     res
       .headers_mut()
-      .insert(CONTENT_TYPE, HeaderValue::from_static("audio/mpeg"));
+      .append(CONTENT_TYPE, HeaderValue::from_static("audio/mpeg"));
+
+    res
+      .headers_mut()
+      .append(ACCEPT_RANGES, HeaderValue::from_static("none"));
+
+    res
+      .headers_mut()
+      .append(CACHE_CONTROL, HeaderValue::from_static("no-cache"));
+
     *res.body_mut() = response_body;
 
     res

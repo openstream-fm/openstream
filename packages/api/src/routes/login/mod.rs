@@ -1,12 +1,12 @@
 pub mod post {
   use async_trait::async_trait;
-  use chrono::Utc;
   use db::access_token::{AccessToken, GeneratedBy, Scope};
   use db::user::{User, UserPublicUser};
   use db::Model;
   use mongodb::bson::doc;
   use prex::{request::ReadBodyJsonError, Request};
   use serde::{Deserialize, Serialize};
+  use serde_util::DateTime;
   use std::net::IpAddr;
   use ts_rs::TS;
   use user_agent::{UserAgent, UserAgentExt};
@@ -145,7 +145,7 @@ pub mod post {
         key: AccessToken::random_key(),
         scope: Scope::User { user_id },
         generated_by: GeneratedBy::Login { ip, user_agent },
-        created_at: Utc::now(),
+        created_at: DateTime::now(),
         last_used_at: None,
         hits: 0,
       };

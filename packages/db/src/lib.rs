@@ -22,6 +22,7 @@ pub mod audio_chunk;
 pub mod audio_file;
 pub mod audio_upload_operation;
 pub mod config;
+pub mod error;
 pub mod event;
 pub mod metadata;
 pub mod station;
@@ -179,17 +180,28 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
     }
   }
 
+  async fn get(filter: Document) -> MongoResult<Option<Self>> {
+    Self::cl().find_one(filter, None).await
+  }
+
+  async fn get_with_session(
+    filter: Document,
+    session: &mut ClientSession,
+  ) -> MongoResult<Option<Self>> {
+    Self::cl()
+      .find_one_with_session(filter, None, session)
+      .await
+  }
+
   async fn get_by_id(id: &str) -> MongoResult<Option<Self>> {
-    Self::cl().find_one(doc! { "_id": id }, None).await
+    Self::get(doc! { "_id": id }).await
   }
 
   async fn get_by_id_with_session(
     id: &str,
     session: &mut ClientSession,
   ) -> MongoResult<Option<Self>> {
-    Self::cl()
-      .find_one_with_session(doc! { "_id": id }, None, session)
-      .await
+    Self::get_with_session(doc! { "_id": id }, session).await
   }
 
   async fn insert(
@@ -289,6 +301,16 @@ pub enum PublicScope {
   User,
 }
 
+impl PublicScope {
+  pub fn is_admin(self) -> bool {
+    matches!(self, Self::Admin)
+  }
+
+  pub fn is_user(self) -> bool {
+    matches!(self, Self::User)
+  }
+}
+
 #[macro_export]
 macro_rules! run_transaction {
   ($session:ident => $block:block) => {{
@@ -354,4 +376,30 @@ pub trait Singleton: Model + Default + Clone {
       .await?;
     Ok(())
   }
+}
+
+// #[macro_export]
+// macro_rules! fetch_and_update {
+//   ($Model:ident, $id:expr, $err:expr, $session:expr, $apply:expr) => {
+//     let id = $id;
+//     $Model::get_with_session($id)
+//   };
+// }
+
+#[macro_export]
+macro_rules! fetch_and_patch {
+  ($Model:ident, $name:ident, $id:expr, $err:expr, $session:ident, $apply:expr) => {{
+    let mut $name = match $Model::get_by_id_with_session($id, &mut $session).await? {
+      Some(doc) => doc,
+      None => return $err,
+    };
+
+    // this seems like a clippy bug
+    // #[allow(clippy::unnecessary_operation)]
+    $apply;
+
+    $Model::replace_with_session($id, &$name, &mut $session).await?;
+
+    $name
+  }};
 }

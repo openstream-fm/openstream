@@ -2,7 +2,6 @@ pub mod post {
   use std::net::IpAddr;
 
   use async_trait::async_trait;
-  use chrono::Utc;
   use db::access_token::{AccessToken, GeneratedBy, Scope};
   use db::account::{Account, Limit, Limits, PublicAccount};
   use db::config::Config;
@@ -11,6 +10,7 @@ pub mod post {
   use db::{run_transaction, Model, Singleton};
   use prex::{request::ReadBodyJsonError, Request};
   use serde::{Deserialize, Serialize};
+  use serde_util::DateTime;
   use ts_rs::TS;
   use user_agent::{UserAgent, UserAgentExt};
   use validate::email::is_valid_email;
@@ -243,7 +243,7 @@ pub mod post {
         return Err(HandleError::PasswordTooShort);
       }
 
-      let config = Config::get().await?;
+      let config = <Config as Singleton>::get().await?;
 
       let limits = match &access_token_scope {
         AccessTokenScope::Global | AccessTokenScope::Admin(_) => Limits {
@@ -280,7 +280,7 @@ pub mod post {
 
       let user_id = User::uid();
       let account_id = Account::uid();
-      let now = Utc::now();
+      let now = DateTime::now();
 
       let user = User {
         id: user_id.clone(),

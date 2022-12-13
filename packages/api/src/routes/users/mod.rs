@@ -5,7 +5,6 @@ use crate::error::ApiError;
 use crate::error::Kind;
 use crate::request_ext::get_access_token_scope;
 use async_trait::async_trait;
-use chrono::Utc;
 use db::account::Account;
 use db::metadata::Metadata;
 use db::user::{PublicUser, User};
@@ -14,6 +13,7 @@ use mongodb::bson::doc;
 use prex::request::ReadBodyJsonError;
 use prex::Request;
 use serde::{Deserialize, Serialize};
+use serde_util::DateTime;
 use validate::email::is_valid_email;
 
 pub mod id;
@@ -319,7 +319,7 @@ pub mod post {
           }
         }
 
-        let now = Utc::now();
+        let now = DateTime::now();
 
         let user = User {
           id: User::uid(),

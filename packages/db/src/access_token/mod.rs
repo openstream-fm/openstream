@@ -1,12 +1,14 @@
 use std::net::IpAddr;
 
 use crate::Model;
-use chrono::{DateTime, Utc};
+// compiler bug (this is indeed used)
+#[allow(unused)]
 use mongodb::bson::{self, doc};
 use mongodb::options::{FindOneAndUpdateOptions, IndexOptions, ReturnDocument};
 use mongodb::IndexModel;
 use serde::{Deserialize, Serialize};
-use serde_util::{as_f64, datetime};
+use serde_util::as_f64;
+use serde_util::DateTime;
 use ts_rs::TS;
 use user_agent::UserAgent;
 
@@ -99,11 +101,8 @@ pub struct AccessToken {
   #[ts(skip)]
   pub generated_by: GeneratedBy,
 
-  #[serde(with = "datetime")]
-  pub created_at: DateTime<Utc>,
-
-  #[serde(with = "datetime::option")]
-  pub last_used_at: Option<DateTime<Utc>>,
+  pub created_at: DateTime,
+  pub last_used_at: Option<DateTime>,
 
   #[serde(with = "as_f64")]
   pub hits: u64,
@@ -113,8 +112,10 @@ impl AccessToken {
   pub async fn touch(key: &str) -> Result<Option<AccessToken>, mongodb::error::Error> {
     let filter = doc! { "key": key };
 
+    let now = serde_util::DateTime::now();
+
     let update = doc! {
-      "$set": { "lastUsedAt": bson::DateTime::now() },
+      "$set": { "lastUsedAt": now },
       "$inc": { "hits": 1 }
     };
 
@@ -183,9 +184,7 @@ mod test {
 
   #[test]
   fn serde_bson_vec() {
-    // chrono has nanosecond precision that get lost on serialize and deserialize
-    // so we use bson::DateTime::now().into() instead of Utc::now()
-    let now = bson::DateTime::now().into();
+    let now = DateTime::now();
 
     let token = AccessToken {
       id: AccessToken::uid(),
@@ -208,9 +207,7 @@ mod test {
 
   #[test]
   fn serde_bson_doc() {
-    // chrono has nanosecond precision that get lost on serialize and deserialize
-    // so we use bson::DateTime::now().into() instead of Utc::now()
-    let now = bson::DateTime::now().into();
+    let now = DateTime::now();
 
     let token = AccessToken {
       id: AccessToken::uid(),

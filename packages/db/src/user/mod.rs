@@ -1,11 +1,10 @@
 use crate::metadata::Metadata;
 use crate::{Model, PublicScope};
-use chrono::{DateTime, Utc};
 use mongodb::error::Result as MongoResult;
 use mongodb::ClientSession;
 use mongodb::{bson::doc, options::IndexOptions, IndexModel};
 use serde::{Deserialize, Serialize};
-use serde_util::datetime;
+use serde_util::DateTime;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -20,10 +19,8 @@ pub struct User {
   pub last_name: String,
   pub email: String,
   pub password: Option<String>,
-  #[serde(with = "datetime")]
-  pub created_at: DateTime<Utc>,
-  #[serde(with = "datetime")]
-  pub updated_at: DateTime<Utc>,
+  pub created_at: DateTime,
+  pub updated_at: DateTime,
   pub user_metadata: Metadata,
   pub system_metadata: Metadata,
 }
@@ -38,10 +35,8 @@ pub struct UserPublicUser {
   pub first_name: String,
   pub last_name: String,
   pub email: String,
-  #[serde(with = "datetime")]
-  pub created_at: DateTime<Utc>,
-  #[serde(with = "datetime")]
-  pub updated_at: DateTime<Utc>,
+  pub created_at: DateTime,
+  pub updated_at: DateTime,
   pub user_metadata: Metadata,
 }
 
@@ -55,10 +50,8 @@ pub struct AdminPublicUser {
   pub first_name: String,
   pub last_name: String,
   pub email: String,
-  #[serde(with = "datetime")]
-  pub created_at: DateTime<Utc>,
-  #[serde(with = "datetime")]
-  pub updated_at: DateTime<Utc>,
+  pub created_at: DateTime,
+  pub updated_at: DateTime,
   pub user_metadata: Metadata,
   pub system_metadata: Metadata,
 }

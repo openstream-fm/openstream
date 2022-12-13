@@ -6,7 +6,6 @@ use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
 
 use crate::error::ApiError;
 use async_trait::async_trait;
-use chrono::Utc;
 use db::account::Account;
 use db::account::PublicAccount;
 use db::metadata::Metadata;
@@ -139,6 +138,7 @@ pub mod post {
 
   use db::account::{Account, Limit, Limits};
   use db::{config::Config, user::User};
+  use serde_util::DateTime;
   use ts_rs::TS;
 
   use crate::error::Kind;
@@ -308,7 +308,7 @@ pub mod post {
         }
       };
 
-      let config = Config::get().await?;
+      let config = <Config as Singleton>::get().await?;
 
       let limits = match &access_token_scope {
         AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
@@ -344,7 +344,7 @@ pub mod post {
         },
       };
 
-      let now = Utc::now();
+      let now = DateTime::now();
 
       let user_metadata = user_metadata.unwrap_or_default();
 

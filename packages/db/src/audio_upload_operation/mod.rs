@@ -1,8 +1,8 @@
 use crate::audio_file::AudioFile;
 use crate::Model;
-use chrono::{DateTime, Utc};
 use mongodb::{bson::doc, IndexModel};
 use serde::{Deserialize, Serialize};
+use serde_util::DateTime;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -14,12 +14,10 @@ use ts_rs::TS;
 pub enum State {
   Pending,
   Success {
-    #[serde(with = "serde_util::datetime")]
-    commited_at: DateTime<Utc>,
+    commited_at: DateTime,
   },
   Error {
-    #[serde(with = "serde_util::datetime")]
-    cancelled_at: DateTime<Utc>,
+    cancelled_at: DateTime,
     error: String,
     error_debug: String,
   },
@@ -34,10 +32,7 @@ pub struct AudioUploadOperation {
   #[serde(rename = "_id")]
   pub id: String,
   pub account_id: String,
-
-  #[serde(with = "serde_util::datetime")]
-  pub created_at: DateTime<Utc>,
-
+  pub created_at: DateTime,
   /// working in adding support for flattened enums in ts-rs
   #[serde(flatten)]
   #[ts(skip)]
@@ -63,7 +58,7 @@ mod test {
     let operation = AudioUploadOperation {
       id: "id".into(),
       account_id: "account_id".into(),
-      created_at: Utc::now(),
+      created_at: DateTime::now(),
       state: State::Pending,
     };
 
@@ -75,9 +70,9 @@ mod test {
     let operation = AudioUploadOperation {
       id: "id".into(),
       account_id: "account_id".into(),
-      created_at: Utc::now(),
+      created_at: DateTime::now(),
       state: State::Success {
-        commited_at: Utc::now(),
+        commited_at: DateTime::now(),
       },
     };
 
@@ -89,9 +84,9 @@ mod test {
     let operation = AudioUploadOperation {
       id: "id".into(),
       account_id: "account_id".into(),
-      created_at: Utc::now(),
+      created_at: DateTime::now(),
       state: State::Error {
-        cancelled_at: Utc::now(),
+        cancelled_at: DateTime::now(),
         error: "error".into(),
         error_debug: "Error {}".into(),
       },

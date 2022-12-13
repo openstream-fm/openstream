@@ -14,6 +14,7 @@ use mongodb::bson::doc;
 use mongodb::bson::Document;
 use owo_colors::*;
 use router::RouterServer;
+use serde_util::DateTime;
 use shutdown::Shutdown;
 use source::SourceServer;
 use stream::StreamServer;
@@ -271,7 +272,7 @@ fn token(
         key: AccessToken::random_key(),
         scope: db::access_token::Scope::Global,
         generated_by: GeneratedBy::Cli { title },
-        created_at: chrono::Utc::now(),
+        created_at: DateTime::now(),
         last_used_at: None,
         hits: 0,
       };

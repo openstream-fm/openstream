@@ -95,7 +95,7 @@ pub trait JsonHandler: Send + Sync + Sized + Clone + 'static {
 
         res.headers_mut().append(
           CONTENT_LENGTH,
-          HeaderValue::from_str(body.len().to_string().as_str()).unwrap(),
+          HeaderValue::from_str(format!("{}", body.len()).as_str()).unwrap(),
         );
 
         *res.body_mut() = Body::from(body);

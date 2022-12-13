@@ -6,6 +6,9 @@ pub mod ip;
 pub mod password;
 pub mod status_code;
 pub mod voidable;
+
+pub use datetime::DateTime;
+
 #[cfg(test)]
 mod test {
   use bson::Bson;

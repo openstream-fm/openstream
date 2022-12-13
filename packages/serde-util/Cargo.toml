@@ -11,5 +11,9 @@ bson = { version = "2", features = [ "chrono-0_4" ] }
 bytes = "1.2.1"
 chrono = { version = "0.4", features = ["serde"] }
 hyper = "0.14.23"
+iso8601-timestamp = { version = "0.2.4", features = ["serde"] }
 log = "0.4.17"
 serde = "1"
+serde_json = { version = "1.0.89", features = ["preserve_order", "indexmap"] }
+time = { version = "0.3.17", features = ["serde-well-known", "local-offset", "serde-human-readable", "macros"] }
+ts-rs = "6.2.0"

@@ -1,11 +1,11 @@
 use async_trait::async_trait;
-use chrono::{DateTime, Utc};
 use futures_util::StreamExt;
 use log::{trace, warn};
 use mongodb::bson::{self, doc};
 use mongodb::options::FindOptions;
 use mongodb::{options::CreateCollectionOptions, IndexModel};
 use serde::{Deserialize, Serialize};
+use serde_util::DateTime;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use ts_rs::TS;
@@ -26,10 +26,7 @@ struct Watcher {
 pub struct Event {
   #[serde(rename = "_id")]
   id: String,
-
-  #[serde(with = "serde_util::datetime")]
-  created_at: DateTime<Utc>,
-
+  created_at: DateTime,
   // working in adding support for flattened enums in ts-rs
   #[serde(flatten)]
   #[ts(skip)]
@@ -52,7 +49,7 @@ impl From<Variant> for Event {
   fn from(variant: Variant) -> Self {
     Event {
       id: Event::uid(),
-      created_at: Utc::now(),
+      created_at: DateTime::now(),
       variant,
     }
   }

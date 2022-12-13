@@ -1,8 +1,7 @@
 use crate::Model;
-use chrono::{DateTime, Utc};
 use mongodb::{bson::doc, IndexModel};
 use serde::{Deserialize, Serialize};
-use serde_util::as_f64;
+use serde_util::{as_f64, DateTime};
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -31,8 +30,7 @@ pub struct AudioFile {
 
   pub chunk_duration_ms: f64,
 
-  #[serde(with = "serde_util::datetime")]
-  pub created_at: DateTime<Utc>,
+  pub created_at: DateTime,
 
   pub filename: String,
 

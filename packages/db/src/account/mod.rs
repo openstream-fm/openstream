@@ -1,9 +1,9 @@
+use crate::error::ApplyPatchError;
 use crate::Model;
 use crate::{metadata::Metadata, PublicScope};
-use chrono::{DateTime, Utc};
 use mongodb::{bson::doc, IndexModel};
 use serde::{Deserialize, Serialize};
-use serde_util::datetime;
+use serde_util::DateTime;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -18,13 +18,9 @@ pub struct Account {
   pub owner_id: String,
   pub limits: Limits,
 
-  #[serde(with = "datetime")]
-  /// ts: ISODate
-  pub created_at: DateTime<Utc>,
+  pub created_at: DateTime,
 
-  #[serde(with = "datetime")]
-  /// ts: ISODate
-  pub updated_at: DateTime<Utc>,
+  pub updated_at: DateTime,
 
   pub user_metadata: Metadata,
   pub system_metadata: Metadata,
@@ -40,13 +36,8 @@ pub struct UserPublicAccount {
   pub name: String,
   pub owner_id: String, // user
   pub limits: Limits,
-
-  #[serde(with = "datetime")]
-  pub created_at: DateTime<Utc>,
-
-  #[serde(with = "datetime")]
-  pub updated_at: DateTime<Utc>,
-
+  pub created_at: DateTime,
+  pub updated_at: DateTime,
   pub user_metadata: Metadata,
 }
 
@@ -62,6 +53,94 @@ pub struct AdminPublicAccount(Account);
 pub enum PublicAccount {
   Admin(AdminPublicAccount),
   User(UserPublicAccount),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export)]
+#[ts(export_to = "../../defs/ops/")]
+pub struct AccountPatch {
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub name: Option<String>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub user_metadata: Option<Metadata>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub system_metadata: Option<Metadata>,
+}
+
+impl Account {
+  pub fn apply_patch(
+    &mut self,
+    patch: AccountPatch,
+    scope: PublicScope,
+  ) -> Result<(), ApplyPatchError> {
+    match scope {
+      PublicScope::User => {
+        if patch.system_metadata.is_some() {
+          return Err(ApplyPatchError::out_of_scope(
+            "systemMetadata field is out of scope",
+          ));
+        }
+
+        if patch.name.is_none() && patch.user_metadata.is_none() {
+          return Err(ApplyPatchError::PatchEmpty);
+        }
+      }
+
+      PublicScope::Admin => {
+        if patch.name.is_none() && patch.user_metadata.is_none() && patch.system_metadata.is_none()
+        {
+          return Err(ApplyPatchError::PatchEmpty);
+        }
+      }
+    }
+
+    if let Some(ref name) = patch.name {
+      let name = name.trim();
+      if name.is_empty() {
+        return Err(ApplyPatchError::invalid("name cannot be empty"));
+      }
+
+      self.name = name.into();
+    }
+
+    if let Some(metadata) = patch.user_metadata {
+      self.user_metadata.merge(metadata);
+    }
+
+    if scope.is_admin() {
+      if let Some(metadata) = patch.system_metadata {
+        self.user_metadata.merge(metadata);
+      }
+    }
+
+    Ok(())
+  }
+
+  pub fn apply_admin_patch(&mut self, patch: AccountPatch) -> Result<(), ApplyPatchError> {
+    if patch.name.is_none() && patch.user_metadata.is_none() && patch.system_metadata.is_none() {
+      return Err(ApplyPatchError::PatchEmpty);
+    }
+
+    if let Some(ref name) = patch.name {
+      let name = name.trim();
+      if name.is_empty() {
+        return Err(ApplyPatchError::invalid("name cannot be empty"));
+      }
+
+      self.name = name.into()
+    }
+
+    if let Some(metadata) = patch.user_metadata {
+      self.user_metadata.merge(metadata);
+    }
+
+    if let Some(metadata) = patch.system_metadata {
+      self.system_metadata.merge(metadata);
+    }
+
+    Ok(())
+  }
 }
 
 impl From<Account> for UserPublicAccount {

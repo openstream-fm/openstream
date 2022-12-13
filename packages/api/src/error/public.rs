@@ -76,4 +76,11 @@ pub enum PublicErrorCode {
   UploadInternalSpawn,
   UploadIntenralIo,
   UploadExit,
+
+  RangeInvalid,
+  RangeNoOverlap,
+
+  PatchEmpty,
+  PatchInvalid,
+  PatchOutOfScope,
 }

@@ -1,9 +1,9 @@
 use crate::Model;
 use bytes::Bytes;
-use chrono::{DateTime, Utc};
 use mongodb::{bson::doc, options::IndexOptions, IndexModel};
 use serde::{Deserialize, Serialize};
 use serde_util::as_f64;
+use serde_util::DateTime;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -32,12 +32,9 @@ pub struct AudioChunk {
 
   #[serde(with = "serde_util::bytes")]
   #[ts(type = "string")]
-  /// ts: base64 bytes
   pub data: Bytes,
 
-  #[serde(with = "serde_util::datetime")]
-  /// ts: ISODate
-  pub created_at: DateTime<Utc>,
+  pub created_at: DateTime,
 }
 
 impl Model for AudioChunk {

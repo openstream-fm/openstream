@@ -2,7 +2,6 @@ use std::fmt::Display;
 use std::process::ExitStatus;
 
 use bytes::Bytes;
-use chrono::Utc;
 use constants::{AUDIO_FILE_BYTERATE, AUDIO_FILE_CHUNK_SIZE};
 use db::audio_chunk::AudioChunk;
 use db::audio_file::{AudioFile, Metadata};
@@ -11,6 +10,7 @@ use db::Model;
 use ffmpeg::{transform, FfmpegConfig, TransformError};
 use log::*;
 use md5::{Digest, Md5};
+use serde_util::DateTime;
 use std::error::Error;
 use tokio_stream::{Stream, StreamExt};
 
@@ -172,7 +172,7 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
           len,
           bytes_sec: AUDIO_FILE_BYTERATE,
           data: bytes,
-          created_at: Utc::now(),
+          created_at: DateTime::now(),
         };
 
         AudioChunk::insert(&document).await?;
@@ -212,7 +212,7 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
     chunk_len: AUDIO_FILE_CHUNK_SIZE,
     chunk_duration_ms: AUDIO_FILE_CHUNK_SIZE as f64 / AUDIO_FILE_BYTERATE as f64 * 1000.0,
     bytes_sec: AUDIO_FILE_BYTERATE,
-    created_at: Utc::now(),
+    created_at: DateTime::now(),
     filename,
     metadata,
   };
@@ -235,7 +235,7 @@ pub async fn upload_audio_file<E: Error, S: Stream<Item = Result<Bytes, E>>>(
   let mut operation = AudioUploadOperation {
     id: audio_file_id.clone(),
     account_id: account_id.clone(),
-    created_at: Utc::now(),
+    created_at: DateTime::now(),
     state: db::audio_upload_operation::State::Pending,
   };
 
@@ -247,7 +247,7 @@ pub async fn upload_audio_file<E: Error, S: Stream<Item = Result<Bytes, E>>>(
   match result.as_ref() {
     Ok(_) => {
       operation.state = State::Success {
-        commited_at: Utc::now(),
+        commited_at: DateTime::now(),
       };
 
       let r = AudioUploadOperation::replace(&operation.id, &operation).await;
@@ -261,7 +261,7 @@ pub async fn upload_audio_file<E: Error, S: Stream<Item = Result<Bytes, E>>>(
 
     Err(e) => {
       operation.state = State::Error {
-        cancelled_at: Utc::now(),
+        cancelled_at: DateTime::now(),
         error: format!("{}", e),
         error_debug: format!("{:?}", e),
       };
