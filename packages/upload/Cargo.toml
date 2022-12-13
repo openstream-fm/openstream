@@ -14,6 +14,7 @@ db = { version = "0.1.0", path = "../db" }
 ffmpeg = { version = "0.1.0", path = "../ffmpeg" }
 futures-util = "0.3.25"
 hex = "0.4.3"
+is_ci = "1.1.1"
 log = "0.4.17"
 logger = { version = "0.1.0", path = "../logger" }
 md-5 = "0.10.5"

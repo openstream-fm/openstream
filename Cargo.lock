@@ -3413,6 +3413,7 @@ dependencies = [
  "ffmpeg",
  "futures-util",
  "hex",
+ "is_ci",
  "log",
  "logger",
  "md-5",
