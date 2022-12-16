@@ -1,7 +1,7 @@
-[workspace]
-members = [
-    "ci"
-]
+# [workspace]
+# members = [
+#     "ci"
+# ]
 
 [package]
 name = "env_logger"

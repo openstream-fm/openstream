@@ -37,9 +37,9 @@ members = [
     "packages/serde-util",
     "packages/stream-util",
     "packages/logger",
+    "packages/env_logger",
 ]
 
 [patch.crates-io]
 bson = { path = "./patches/bson" }
 ts-rs = { path = "./patches/ts-rs/ts-rs" }
-env_logger = { path = "./patches/env_logger" }
