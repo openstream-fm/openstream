@@ -979,14 +979,14 @@ impl Log for Logger {
                 // Check the buffer style. If it's different from the logger's
                 // style then drop the buffer and recreate it.
                 if formatter.write_style() != self.writer_for(record.level()).write_style() {
-                  *formatter = Formatter::new(&self.writer_for(record.level()));
+                  *formatter = Formatter::new(self.writer_for(record.level()));
                 }
 
                 print(formatter, record);
               }
               // We don't have a previously set formatter
               None => {
-                let mut formatter = Formatter::new(&self.writer_for(record.level()));
+                let mut formatter = Formatter::new(self.writer_for(record.level()));
                 print(&mut formatter, record);
 
                 *tl_buf = Some(formatter);
@@ -994,10 +994,7 @@ impl Log for Logger {
             },
             // There's already an active borrow of the buffer (due to re-entrancy)
             Err(_) => {
-              print(
-                &mut Formatter::new(&self.writer_for(record.level())),
-                record,
-              );
+              print(&mut Formatter::new(self.writer_for(record.level())), record);
             }
           }
         })
@@ -1007,10 +1004,7 @@ impl Log for Logger {
         // The thread-local storage was not available (because its
         // destructor has already run). Create a new single-use
         // Formatter on the stack for this call.
-        print(
-          &mut Formatter::new(&self.writer_for(record.level())),
-          record,
-        );
+        print(&mut Formatter::new(self.writer_for(record.level())), record);
       }
     }
   }

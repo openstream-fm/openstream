@@ -86,7 +86,9 @@ mod styled_list;
 pub mod styles;
 
 mod enabled;
-pub(crate) use enabled::should_display_colors;
+pub use enabled::force_disable_colors;
+pub use enabled::force_enable_colors;
+pub use enabled::should_display_colors;
 
 #[cfg(feature = "supports-colors")]
 mod overrides;

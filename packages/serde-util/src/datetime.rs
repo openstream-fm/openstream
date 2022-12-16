@@ -3,8 +3,26 @@ use std::{fmt::Display, ops::Deref};
 use bson;
 use log::*;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use time::{macros::offset, OffsetDateTime};
+use static_init::dynamic;
+use time::{macros::offset, OffsetDateTime, UtcOffset};
 use ts_rs::TS;
+
+#[dynamic]
+static LOCAL_OFFSET: UtcOffset = {
+  use chrono::{Local, TimeZone};
+
+  let offset_secs = Local
+    .timestamp_opt(0, 0)
+    .unwrap()
+    .offset()
+    .local_minus_utc();
+
+  UtcOffset::from_whole_seconds(offset_secs).unwrap_or(offset!(UTC))
+};
+
+pub fn local_offset() -> UtcOffset {
+  *LOCAL_OFFSET
+}
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, TS)]
 #[ts(export)]

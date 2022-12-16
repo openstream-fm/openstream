@@ -6,7 +6,8 @@ const OFF: u8 = 2;
 
 static MASK: AtomicU8 = AtomicU8::new(UNSET);
 
-pub(crate) fn should_display_colors() -> bool {
+/// get color enablement
+pub fn should_display_colors() -> bool {
   let v = MASK.load(Ordering::Relaxed);
   if v == UNSET {
     set_from_env()
@@ -25,4 +26,14 @@ fn set_from_env() -> bool {
 
   MASK.store(ON, Ordering::Relaxed);
   true
+}
+
+/// disable colors
+pub fn force_enable_colors() {
+  MASK.store(ON, Ordering::Relaxed);
+}
+
+/// enable colors
+pub fn force_disable_colors() {
+  MASK.store(OFF, Ordering::Relaxed);
 }
