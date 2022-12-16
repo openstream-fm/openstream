@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "commander": "^9.4.1",
-    "toml": "^3.0.0"
-  }
-}
