@@ -22,10 +22,11 @@ pub mod audio_chunk;
 pub mod audio_file;
 pub mod audio_upload_operation;
 pub mod config;
+pub mod connections;
 pub mod error;
 pub mod event;
 pub mod metadata;
-pub mod station;
+pub mod play_history_item;
 pub mod user;
 
 static CLIENT: OnceCell<Client> = OnceCell::new();
@@ -71,7 +72,6 @@ pub async fn ensure_collections() -> MongoResult<()> {
   audio_file::AudioFile::ensure_collection().await?;
   user::User::ensure_collection().await?;
   admin::Admin::ensure_collection().await?;
-  station::Station::ensure_collection().await?;
   audio_upload_operation::AudioUploadOperation::ensure_collection().await?;
   access_token::AccessToken::ensure_collection().await?;
   event::Event::ensure_collection().await?;

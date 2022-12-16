@@ -532,6 +532,7 @@ dependencies = [
  "chrono",
  "defer-lite",
  "futures-util",
+ "indexmap",
  "lazy_static",
  "log",
  "mongodb",
@@ -734,7 +735,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "44533bbbb3bb3c1fa17d9f2e4e38bbbaf8396ba82193c4cb1b6445d711445d36"
 dependencies = [
  "atty",
- "humantime",
+ "humantime 1.3.0",
+ "log",
+ "regex",
+ "termcolor",
+]
+
+[[package]]
+name = "env_logger"
+version = "0.10.0"
+dependencies = [
+ "humantime 2.1.0",
+ "is-terminal",
  "log",
  "regex",
  "termcolor",
@@ -1127,6 +1139,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "humantime"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
+
+[[package]]
 name = "hyper"
 version = "0.14.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1500,9 +1518,13 @@ dependencies = [
 name = "logger"
 version = "0.1.0"
 dependencies = [
+ "chrono",
+ "env_logger 0.10.0",
  "log",
+ "owo-colors",
  "pretty_env_logger",
  "sensible-env-logger",
+ "time 0.3.17",
 ]
 
 [[package]]
@@ -1958,7 +1980,7 @@ version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "926d36b9553851b8b0005f1275891b392ee4d2d833852c417ed025477350fb9d"
 dependencies = [
- "env_logger",
+ "env_logger 0.7.1",
  "log",
 ]
 
@@ -3302,6 +3324,7 @@ version = "6.2.0"
 dependencies = [
  "chrono",
  "dprint-plugin-typescript",
+ "indexmap",
  "thiserror",
  "ts-rs-macros",
 ]

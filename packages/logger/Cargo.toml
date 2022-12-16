@@ -6,7 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+chrono = "0.4.23"
+env_logger = "0.10.0"
 log = "0.4.17"
+owo-colors = { version = "3.5.0", path = "../owo-colors" }
 #env_logger = "0.9.1"
 pretty_env_logger = "0.4.0"
 sensible-env-logger = { version = "0.3.1", features = ["chrono", "local-time"] }
+time = { version = "0.3.17", features = ["local-offset"] }
