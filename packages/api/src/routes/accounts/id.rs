@@ -10,6 +10,8 @@ use ts_rs::TS;
 
 pub mod get {
 
+  use std::convert::Infallible;
+
   use super::*;
 
   #[derive(Debug, Clone)]
@@ -34,14 +36,14 @@ pub mod get {
     type Input = Input;
     type Output = Output;
     type ParseError = GetAccessTokenScopeError;
-    type HandleError = !;
+    type HandleError = Infallible;
 
     async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
       let account_id = req.param("account").unwrap();
 
       let access_token_scope = request_ext::get_access_token_scope(&req).await?;
 
-      let account = access_token_scope.grant_scope(account_id).await?;
+      let account = access_token_scope.grant_account_scope(account_id).await?;
 
       Ok(Self::Input {
         access_token_scope,
@@ -77,7 +79,7 @@ pub mod patch {
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export)]
-  #[ts(export_to = "../../defs/api/accounts/[id]/PATCH/")]
+  #[ts(export_to = "../../defs/api/accounts/[account]/PATCH/")]
   pub struct Payload(pub AccountPatch);
 
   #[derive(Debug, Clone)]
@@ -160,7 +162,7 @@ pub mod patch {
 
       let access_token_scope = request_ext::get_access_token_scope(&req).await?;
 
-      let account = access_token_scope.grant_scope(account_id).await?;
+      let account = access_token_scope.grant_account_scope(account_id).await?;
 
       let payload: Payload = req.read_body_json(100_000).await?;
 

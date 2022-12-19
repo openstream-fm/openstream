@@ -68,8 +68,16 @@ impl GeneratedBy {
     matches!(self, Self::Login { .. })
   }
 
-  pub fn is_generated(&self) -> bool {
-    matches!(self, Self::Api { title: _ })
+  pub fn is_register(&self) -> bool {
+    matches!(self, Self::Register { .. })
+  }
+
+  pub fn is_api(&self) -> bool {
+    matches!(self, Self::Api { .. })
+  }
+
+  pub fn is_cli(&self) -> bool {
+    matches!(self, Self::Cli { .. })
   }
 
   pub fn title(&self) -> Option<&str> {
@@ -92,6 +100,7 @@ pub struct AccessToken {
   pub id: String,
 
   pub key: String,
+  pub sha256_key: String,
 
   #[serde(flatten)]
   #[ts(skip)]
@@ -130,16 +139,26 @@ impl AccessToken {
 }
 
 impl AccessToken {
-  pub fn random_key() -> String {
-    uid::uid(48)
+  pub fn random_key() -> (String, String) {
+    let key = uid::uid(48);
+    let sha = crypt::sha256(&key);
+    (key, sha)
   }
 
-  pub fn is_login(&self) -> bool {
+  pub fn is_generatyed_login(&self) -> bool {
     self.generated_by.is_login()
   }
 
-  pub fn is_generated(&self) -> bool {
-    self.generated_by.is_generated()
+  pub fn is_generated_register(&self) -> bool {
+    self.generated_by.is_register()
+  }
+
+  pub fn is_generated_api(&self) -> bool {
+    self.generated_by.is_api()
+  }
+
+  pub fn is_generated_cli(&self) -> bool {
+    self.generated_by.is_cli()
   }
 
   pub fn title(&self) -> Option<&str> {
@@ -186,9 +205,12 @@ mod test {
   fn serde_bson_vec() {
     let now = DateTime::now();
 
+    let (key, sha256_key) = AccessToken::random_key();
+
     let token = AccessToken {
       id: AccessToken::uid(),
-      key: AccessToken::random_key(),
+      key,
+      sha256_key,
       created_at: now,
       last_used_at: Some(now),
       generated_by: GeneratedBy::Api {
@@ -209,9 +231,12 @@ mod test {
   fn serde_bson_doc() {
     let now = DateTime::now();
 
+    let (key, sha256_key) = AccessToken::random_key();
+
     let token = AccessToken {
       id: AccessToken::uid(),
-      key: AccessToken::random_key(),
+      key,
+      sha256_key,
       created_at: now,
       last_used_at: Some(now),
       generated_by: GeneratedBy::Api {

@@ -163,12 +163,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9e1b586273c5702936fe7b7d6896644d8be71e6314cfe09d3167c95f712589e8"
 
 [[package]]
+name = "base64"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ea22880d78093b0cbe17c89f64a7d457941e65759157ec6cb31a31d652b05e5"
+
+[[package]]
 name = "bcrypt"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a7e7c93a3fb23b2fdde989b2c9ec4dd153063ec81f408507f84c090cd91c6641"
 dependencies = [
- "base64",
+ "base64 0.13.1",
  "blowfish",
  "getrandom",
  "zeroize",
@@ -213,7 +219,7 @@ name = "bson"
 version = "2.3.0"
 dependencies = [
  "ahash",
- "base64",
+ "base64 0.13.1",
  "chrono",
  "hex",
  "indexmap",
@@ -449,7 +455,10 @@ dependencies = [
 name = "crypt"
 version = "0.1.0"
 dependencies = [
+ "base64 0.20.0",
  "bcrypt",
+ "hex",
+ "sha2",
 ]
 
 [[package]]
@@ -555,13 +564,16 @@ dependencies = [
  "async-trait",
  "bytes",
  "chrono",
+ "crypt",
  "defer-lite",
  "futures-util",
+ "hyper",
  "indexmap",
  "lazy_static",
  "log",
  "mongodb",
  "once_cell",
+ "prex",
  "quote",
  "serde",
  "serde-util",
@@ -1126,6 +1138,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "http-auth-basic"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd2e17aacf7f4a2428def798e2ff4f4f883c0987bdaf47dd5c8bc027bc9f1ebc"
+dependencies = [
+ "base64 0.13.1",
+]
+
+[[package]]
 name = "http-body"
 version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1392,6 +1413,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "lang-util"
+version = "0.1.0"
+dependencies = [
+ "tokio",
+]
+
+[[package]]
 name = "lazy-regex"
 version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1636,7 +1664,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5a1df476ac9541b0e4fdc8e2cc48884e66c92c933cd17a1fd75e68caf75752e"
 dependencies = [
  "async-trait",
- "base64",
+ "base64 0.13.1",
  "bitflags",
  "bson",
  "chrono",
@@ -2017,6 +2045,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "futures",
+ "http-auth-basic",
  "hyper",
  "regex",
  "serde",
@@ -2197,7 +2226,7 @@ version = "0.11.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "68cc60575865c7831548863cc02356512e3f1dc2f3f82cb837d7fc4cc8f3c97c"
 dependencies = [
- "base64",
+ "base64 0.13.1",
  "bytes",
  "encoding_rs",
  "futures-core",
@@ -2352,7 +2381,7 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ee86d63972a7c661d1536fefe8c3c8407321c3df668891286de28abcd087360"
 dependencies = [
- "base64",
+ "base64 0.13.1",
 ]
 
 [[package]]
@@ -2361,7 +2390,7 @@ version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0864aeff53f8c05aa08d86e5ef839d3dfcf07aeba2db32f12db0ef716e87bd55"
 dependencies = [
- "base64",
+ "base64 0.13.1",
 ]
 
 [[package]]
@@ -2485,7 +2514,7 @@ dependencies = [
 name = "serde-util"
 version = "0.1.0"
 dependencies = [
- "base64",
+ "base64 0.13.1",
  "bson",
  "bytes",
  "chrono",
@@ -2675,6 +2704,7 @@ dependencies = [
  "bytes",
  "channels",
  "constants",
+ "db",
  "drop-tracer",
  "ffmpeg",
  "futures",
@@ -2785,14 +2815,17 @@ dependencies = [
  "async-trait",
  "bytes",
  "channels",
+ "db",
  "drop-tracer",
  "futures",
  "http 0.1.0",
  "hyper",
  "log",
+ "mongodb",
  "owo-colors",
  "prex",
  "serde",
+ "serde-util",
  "serde_json",
  "shutdown",
  "tokio",

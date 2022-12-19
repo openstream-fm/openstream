@@ -22,5 +22,6 @@ stream-util = { version = "0.1.0", path = "../stream-util" }
 tokio = { version = "1.21.2", features = ["full"] }
 tokio-stream = "0.1.10"
 http = { version = "0.1.0", path = "../http" }
+db = { version = "0.1.0", path = "../db" }
 
 [features]

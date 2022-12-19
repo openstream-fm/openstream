@@ -61,6 +61,7 @@ pub enum PublicErrorCode {
   TokenAdminNotFound,
   TokenOutOfScope,
   AccountNotFound,
+  AdminNotFound,
   UserNotFound,
   AudioFileNotFound,
   QueryStringInvalid,
@@ -69,7 +70,9 @@ pub enum PublicErrorCode {
   PayloadTooLarge,
   PayloadInvalid,
   AuthFailed,
+
   UserEmailExists,
+  AdminEmailExists,
 
   UploadEmpty,
   UploadSizeExceeded,

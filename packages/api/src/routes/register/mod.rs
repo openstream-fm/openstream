@@ -94,18 +94,14 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/register/POST/")]
+  #[ts(export, export_to = "../../defs/api/register/POST/")]
   #[serde(rename_all = "camelCase")]
+  #[serde(deny_unknown_fields)]
   pub struct Payload {
     email: String,
-
     password: String,
-
     first_name: String,
-
     last_name: String,
-
     account_name: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -125,20 +121,17 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/register/POST/")]
+  #[ts(export, export_to = "../../defs/api/register/POST/")]
   #[serde(rename_all = "camelCase")]
+  #[serde(deny_unknown_fields)]
   pub struct PayloadLimits {
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[ts(type = "number | null")]
     listeners: Option<u64>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[ts(type = "number | null")]
     transfer: Option<u64>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[ts(type = "number | null")]
     storage: Option<u64>,
   }
 
@@ -300,15 +293,19 @@ pub mod post {
         owner_id: user_id.clone(),
         name: account_name,
         limits,
+        source_password: Account::random_source_password(),
         user_metadata: account_user_metadata,
         system_metadata: account_system_metadata,
         created_at: now,
         updated_at: now,
       };
 
+      let (key, sha256_key) = AccessToken::random_key();
+
       let token = AccessToken {
         id: AccessToken::uid(),
-        key: AccessToken::random_key(),
+        key,
+        sha256_key,
         scope: Scope::User { user_id },
         generated_by: GeneratedBy::Register { ip, user_agent },
         last_used_at: None,

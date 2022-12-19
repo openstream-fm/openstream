@@ -46,20 +46,16 @@ pub mod get {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/users/GET/")]
+  #[ts(export, export_to = "../../defs/api/users/GET/")]
   pub struct Output(pub Paged<PublicUser>);
 
   #[derive(Debug, Default, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/users/GET/")]
+  #[ts(export, export_to = "../../defs/api/users/GET/")]
   struct Query {
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[ts(type = "number | null")]
     skip: Option<u64>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[ts(type = "number | null")]
     limit: Option<i64>,
   }
 
@@ -145,18 +141,14 @@ pub mod post {
   use super::*;
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/users/POST/")]
+  #[ts(export, export_to = "../../defs/api/users/POST/")]
   #[serde(rename_all = "camelCase")]
+  #[serde(deny_unknown_fields)]
   pub struct Payload {
     email: String,
-
     password: String,
-
     account_ids: Vec<String>,
-
     first_name: String,
-
     last_name: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -43,9 +43,14 @@ pub(crate) fn export_type_to<T: TS + ?Sized, P: AsRef<Path>>(path: P) -> Result<
         use dprint_plugin_typescript::{configuration::ConfigurationBuilder, format_text};
 
         let fmt_cfg = ConfigurationBuilder::new().deno().build();
-        if let Some(formatted) =
-            format_text(path.as_ref(), &buffer, &fmt_cfg).map_err(|e| Formatting(e.to_string()))?
-        {
+        if let Some(formatted) = format_text(path.as_ref(), &buffer, &fmt_cfg).map_err(|e| {
+            eprintln!("=== ts-rs formatting error for type {} ===", T::name());
+            eprintln!("{} => {:?}", e, e);
+            eprintln!("=== raw file start ===");
+            eprintln!("{}", buffer);
+            eprintln!("=== raw file end ===");
+            Formatting(e.to_string())
+        })? {
             buffer = formatted;
         }
     }

@@ -4,6 +4,7 @@ use crate::error::{ApiError, Kind};
 use crate::json::JsonHandler;
 
 pub mod accounts;
+pub mod admins;
 pub mod login;
 pub mod register;
 pub mod users;
@@ -47,6 +48,18 @@ pub fn router() -> Builder {
   app
     .at("/accounts/:account/files/:file/stream")
     .get(accounts::files::id::stream::Handler {});
+
+  // app.at("/admin-login")
+  //   .post()
+
+  app
+    .at("/admins")
+    .get(admins::get::Endpoint {}.into_handler());
+  //.post(admins::post::Endpoint {}.into_handler());
+
+  app
+    .at("/admins/:admin")
+    .get(admins::id::get::Endpoint {}.into_handler());
 
   // 404 catch all
   app.with(|_, _| async { ApiError::from(Kind::ResourceNotFound).into_json_response() });

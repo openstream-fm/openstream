@@ -7,8 +7,7 @@ use serde_util::DateTime;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../defs/db/")]
 #[serde(rename_all = "camelCase")]
 pub struct Account {
   #[serde(rename = "_id")]
@@ -17,18 +16,15 @@ pub struct Account {
   /// uid of User
   pub owner_id: String,
   pub limits: Limits,
-
   pub created_at: DateTime,
-
   pub updated_at: DateTime,
-
   pub user_metadata: Metadata,
   pub system_metadata: Metadata,
+  pub source_password: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/")]
+#[ts(export, export_to = "../../defs/")]
 #[serde(rename_all = "camelCase")]
 pub struct UserPublicAccount {
   #[serde(rename = "_id")]
@@ -42,13 +38,11 @@ pub struct UserPublicAccount {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/")]
+#[ts(export, export_to = "../../defs/")]
 pub struct AdminPublicAccount(Account);
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/")]
+#[ts(export, export_to = "../../defs/")]
 #[serde(untagged)]
 pub enum PublicAccount {
   Admin(AdminPublicAccount),
@@ -56,9 +50,9 @@ pub enum PublicAccount {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../../defs/ops/")]
 #[serde(rename_all = "camelCase")]
-#[ts(export)]
-#[ts(export_to = "../../defs/ops/")]
+#[serde(deny_unknown_fields)]
 pub struct AccountPatch {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub name: Option<String>,
@@ -110,9 +104,11 @@ impl Account {
 
     if scope.is_admin() {
       if let Some(metadata) = patch.system_metadata {
-        self.user_metadata.merge(metadata);
+        self.system_metadata.merge(metadata);
       }
     }
+
+    self.updated_at = DateTime::now();
 
     Ok(())
   }
@@ -139,6 +135,8 @@ impl Account {
       self.system_metadata.merge(metadata);
     }
 
+    self.updated_at = DateTime::now();
+
     Ok(())
   }
 }
@@ -164,11 +162,17 @@ impl From<Account> for AdminPublicAccount {
 }
 
 impl Account {
+  pub const SOURCE_PASSWORD_LEN: usize = 32;
+
   pub fn into_public(self, scope: PublicScope) -> PublicAccount {
     match scope {
       PublicScope::Admin => PublicAccount::Admin(self.into()),
       PublicScope::User => PublicAccount::User(self.into()),
     }
+  }
+
+  pub fn random_source_password() -> String {
+    uid::uid(Self::SOURCE_PASSWORD_LEN)
   }
 }
 

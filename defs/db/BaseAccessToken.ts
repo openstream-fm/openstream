@@ -4,6 +4,7 @@ import type { DateTime } from "../DateTime";
 export interface BaseAccessToken {
   _id: string;
   key: string;
+  sha256Key: string;
   createdAt: DateTime;
   lastUsedAt: DateTime | null;
   hits: number;

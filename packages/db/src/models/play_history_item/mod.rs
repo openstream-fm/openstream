@@ -11,20 +11,20 @@ use crate::Model;
 #[serde(rename_all = "camelCase")]
 pub struct PlayHistoryItem {
   #[serde(rename = "_id")]
-  id: String,
-  account_id: String,
+  pub id: String,
+  pub account_id: String,
 
   // if we dont have name and artist in file metadata
   // we don't log the play history item
   // and we reject live log requests if they doesn't include both of them
-  name: String,
-  artist: String,
+  pub name: String,
+  pub artist: String,
 
-  start_at: DateTime,
+  pub start_at: DateTime,
 
   #[ts(skip)]
   #[serde(flatten)]
-  kind: Kind,
+  pub kind: Kind,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]

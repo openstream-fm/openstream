@@ -57,7 +57,10 @@ impl AccessTokenScope {
     matches!(self, Self::User(_))
   }
 
-  pub async fn grant_scope(&self, account_id: &str) -> Result<Account, GetAccessTokenScopeError> {
+  pub async fn grant_account_scope(
+    &self,
+    account_id: &str,
+  ) -> Result<Account, GetAccessTokenScopeError> {
     match self {
       AccessTokenScope::Global | AccessTokenScope::Admin(_) => {}
       AccessTokenScope::User(user) => {
@@ -75,6 +78,28 @@ impl AccessTokenScope {
       )),
 
       Some(account) => Ok(account),
+    }
+  }
+
+  pub async fn grant_admin_write_scope(
+    &self,
+    admin_id: &str,
+  ) -> Result<Admin, GetAccessTokenScopeError> {
+    match self {
+      AccessTokenScope::User(_) => Err(GetAccessTokenScopeError::OutOfScope),
+      AccessTokenScope::Admin(admin) => {
+        if admin.id == admin_id {
+          Ok(admin.clone())
+        } else {
+          Err(GetAccessTokenScopeError::OutOfScope)
+        }
+      }
+      AccessTokenScope::Global => match Admin::get_by_id(admin_id).await? {
+        Some(admin) => Ok(admin),
+        None => Err(GetAccessTokenScopeError::AdminNotFound(
+          admin_id.to_string(),
+        )),
+      },
     }
   }
 }

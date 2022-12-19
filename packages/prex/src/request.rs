@@ -1,5 +1,6 @@
 use crate::params::Params;
 use hyper::body::HttpBody;
+use hyper::header::AUTHORIZATION;
 use hyper::http::Extensions;
 use hyper::{self, HeaderMap, Uri, Version};
 use hyper::{Body, Method};
@@ -199,6 +200,15 @@ impl Request {
     }
   }
 
+  pub fn basic_auth(&self) -> Option<BasicAuth> {
+    let header = self.headers().get(AUTHORIZATION)?.to_str().ok()?;
+    let creds = http_auth_basic::Credentials::from_header(header.to_string()).ok()?;
+    Some(BasicAuth {
+      user: creds.user_id,
+      password: creds.password,
+    })
+  }
+
   pub async fn read_body_json<T: DeserializeOwned>(
     &mut self,
     maxlen: usize,
@@ -229,4 +239,10 @@ impl Request {
   pub fn param(&self, key: &str) -> Option<&str> {
     self.params.get(key)
   }
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub struct BasicAuth {
+  pub user: String,
+  pub password: String,
 }

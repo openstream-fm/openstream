@@ -6,6 +6,10 @@ pub enum ApplyPatchError {
 }
 
 impl ApplyPatchError {
+  pub fn empty() -> Self {
+    Self::PatchEmpty
+  }
+
   pub fn invalid(message: impl ToString) -> Self {
     Self::PatchInvalid(message.to_string())
   }

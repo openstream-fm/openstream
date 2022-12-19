@@ -12,11 +12,11 @@ pub trait Handler: Send + Sync + 'static {
 }
 
 #[async_trait]
-impl<F, Fut, R> Handler for F
+impl<F, Fut, Out> Handler for F
 where
   F: Send + Sync + Clone + 'static + FnOnce(Request, Next) -> Fut,
-  Fut: Send + 'static + Future<Output = R>,
-  R: Into<Response>,
+  Fut: Send + 'static + Future<Output = Out>,
+  Out: Into<Response>,
 {
   async fn call(&self, req: Request, next: Next) -> Response {
     (self.clone())(req, next).await.into()

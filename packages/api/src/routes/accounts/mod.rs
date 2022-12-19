@@ -146,12 +146,12 @@ pub mod post {
   use super::*;
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/accounts/POST/")]
+  #[ts(export, export_to = "../../defs/api/accounts/POST/")]
   #[serde(rename_all = "camelCase")]
+  #[serde(deny_unknown_fields)]
   pub struct Payload {
     pub name: String,
-    /// User.id who created this account
+    /// user.id who created this account
     pub owner_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limits: Option<PayloadLimits>,
@@ -162,9 +162,9 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/accounts/POST/")]
+  #[ts(export, export_to = "../../defs/api/accounts/POST/")]
   #[serde(rename_all = "camelCase")]
+  #[serde(deny_unknown_fields)]
   pub struct PayloadLimits {
     #[serde(skip_serializing_if = "Option::is_none")]
     listeners: Option<u64>,
@@ -353,6 +353,7 @@ pub mod post {
         owner_id,
         name,
         limits,
+        source_password: Account::random_source_password(),
         system_metadata,
         user_metadata,
         created_at: now,

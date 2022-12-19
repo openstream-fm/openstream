@@ -95,7 +95,7 @@ pub mod get {
 
       let access_token_scope = request_ext::get_access_token_scope(&req).await?;
 
-      let account = access_token_scope.grant_scope(account_id).await?;
+      let account = access_token_scope.grant_account_scope(account_id).await?;
 
       let Query { skip, limit } = match req.uri().query() {
         None => Default::default(),
@@ -228,7 +228,7 @@ pub mod post {
       }
 
       let access_token_scope = get_access_token_scope(&request).await?;
-      let account = access_token_scope.grant_scope(account_id).await?;
+      let account = access_token_scope.grant_account_scope(account_id).await?;
 
       let stream = request.into_body();
 

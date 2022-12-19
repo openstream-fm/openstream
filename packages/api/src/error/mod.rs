@@ -7,6 +7,7 @@ use hyper::{Body, StatusCode};
 use prex::request::ReadBodyJsonError;
 use prex::*;
 use serde_json;
+use std::convert::Infallible;
 use std::error::Error;
 use std::fmt::Display;
 use std::process::ExitStatus;
@@ -24,6 +25,7 @@ pub enum Kind {
 
   Db(mongodb::error::Error),
   Hyper(hyper::Error),
+  QueryString(serde_querystring::Error),
 
   TokenMissing,
   TokenNotFound,
@@ -32,16 +34,20 @@ pub enum Kind {
   TokenAccountNotFound(String),
   TokenAdminNotFound(String),
   TokenOutOfScope,
+
   AccountNotFound(String),
+  AdminNotFound(String),
   UserNotFound(String),
   AudioFileNotFound(String),
-  QueryString(serde_querystring::Error),
+
   PayloadIo(hyper::Error),
   PayloadJson(serde_json::Error),
   PayloadTooLarge(usize),
   PayloadInvalid(String),
+
   AuthFailed,
   UserEmailExists,
+  AdminEmailExists,
 
   UploadEmpty,
   UploadFfmpegExit {
@@ -87,6 +93,7 @@ impl ApiError {
       Kind::TokenAdminNotFound(_) => StatusCode::INTERNAL_SERVER_ERROR,
       Kind::TokenOutOfScope => StatusCode::UNAUTHORIZED,
       Kind::AccountNotFound(_) => StatusCode::NOT_FOUND,
+      Kind::AdminNotFound(_) => StatusCode::NOT_FOUND,
       Kind::UserNotFound(_) => StatusCode::NOT_FOUND,
       Kind::AudioFileNotFound(_) => StatusCode::NOT_FOUND,
       Kind::QueryString(_) => StatusCode::BAD_REQUEST,
@@ -96,6 +103,7 @@ impl ApiError {
       Kind::PayloadInvalid(_) => StatusCode::BAD_REQUEST,
       Kind::AuthFailed => StatusCode::BAD_REQUEST,
       Kind::UserEmailExists => StatusCode::CONFLICT,
+      Kind::AdminEmailExists => StatusCode::CONFLICT,
 
       Kind::UploadEmpty => StatusCode::BAD_REQUEST,
       Kind::UploadSizeExceeded => StatusCode::BAD_REQUEST,
@@ -126,6 +134,7 @@ impl ApiError {
       Kind::TokenAdminNotFound(id) => format!("Admin with id {id} has been deleted"),
       Kind::TokenOutOfScope => format!("Not enough permissions"),
       Kind::AccountNotFound(id) => format!("Account with id {id} not found"),
+      Kind::AdminNotFound(id) => format!("Admin with id {id} not found"),
       Kind::UserNotFound(id) => format!("User with id {id} not found"),
       Kind::AudioFileNotFound(id) => format!("Audio file with id {id} not found"),
       Kind::QueryString(e) => format!("Invalid query string: {e}"),
@@ -135,6 +144,7 @@ impl ApiError {
       Kind::PayloadInvalid(e) => format!("{e}"),
       Kind::AuthFailed => format!("There's no user with that email and password"),
       Kind::UserEmailExists => format!("User email already exists"),
+      Kind::AdminEmailExists => format!("Admin email already exists"),
 
       Kind::UploadEmpty => format!("Payload is empty"),
       Kind::UploadSizeExceeded => format!("Audio quota exceeded"),
@@ -167,6 +177,7 @@ impl ApiError {
       Kind::TokenAdminNotFound(_) => PublicErrorCode::TokenAdminNotFound,
       Kind::TokenOutOfScope => PublicErrorCode::TokenOutOfScope,
       Kind::AccountNotFound(_) => PublicErrorCode::AccountNotFound,
+      Kind::AdminNotFound(_) => PublicErrorCode::AdminNotFound,
       Kind::UserNotFound(_) => PublicErrorCode::UserNotFound,
       Kind::AudioFileNotFound(_) => PublicErrorCode::AudioFileNotFound,
       Kind::QueryString(_) => PublicErrorCode::QueryStringInvalid,
@@ -176,6 +187,7 @@ impl ApiError {
       Kind::PayloadInvalid(_) => PublicErrorCode::PayloadInvalid,
       Kind::AuthFailed => PublicErrorCode::AuthFailed,
       Kind::UserEmailExists => PublicErrorCode::UserEmailExists,
+      Kind::AdminEmailExists => PublicErrorCode::AdminEmailExists,
 
       Kind::UploadEmpty => PublicErrorCode::UploadEmpty,
       Kind::UploadSizeExceeded => PublicErrorCode::UploadSizeExceeded,
@@ -228,6 +240,7 @@ impl Display for ApiError {
 
       Kind::UserNotFound(id) => write!(f, " id: {id}")?,
       Kind::AccountNotFound(id) => write!(f, " id: {id}")?,
+      Kind::AdminNotFound(id) => write!(f, " id: {id}")?,
       Kind::AudioFileNotFound(id) => write!(f, " id: {id}")?,
 
       Kind::PayloadIo(e) => write!(f, " inner: {e}")?,
@@ -246,6 +259,7 @@ impl Display for ApiError {
       Kind::TooManyRequests => {}
 
       Kind::UserEmailExists => {}
+      Kind::AdminEmailExists => {}
 
       Kind::UploadEmpty => {}
       Kind::UploadSizeExceeded => {}
@@ -281,8 +295,8 @@ impl From<hyper::Error> for ApiError {
   }
 }
 
-impl From<!> for ApiError {
-  fn from(value: !) -> Self {
+impl From<Infallible> for ApiError {
+  fn from(value: Infallible) -> Self {
     match value {}
   }
 }

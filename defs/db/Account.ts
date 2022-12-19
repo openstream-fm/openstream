@@ -12,4 +12,5 @@ export interface Account {
   updatedAt: DateTime;
   userMetadata: Metadata;
   systemMetadata: Metadata;
+  sourcePassword: string;
 }

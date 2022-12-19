@@ -3,11 +3,13 @@
 use async_trait::async_trait;
 use channels::ChannelMap;
 use constants::STREAM_CHUNK_SIZE;
+use db::account::Account;
+use db::Model;
 use ffmpeg::{Ffmpeg, FfmpegConfig, FfmpegSpawn};
 use futures::stream::FuturesUnordered;
 use futures::{StreamExt, TryStreamExt};
 use hyper::body::HttpBody;
-use hyper::header::{HeaderValue, ALLOW, CONTENT_TYPE};
+use hyper::header::{HeaderValue, ALLOW, CONTENT_TYPE, WWW_AUTHENTICATE};
 use hyper::HeaderMap;
 use hyper::{Body, Method, Server, StatusCode};
 use log::*;
@@ -175,7 +177,48 @@ impl Handler for SourceHandler {
     // safety unwrap: param "id" is required in route defnition
     let id = req.param("id").unwrap().to_string();
 
-    let channel = match self.channels.transmit(id.clone()) {
+    let account = match Account::get_by_id(&id).await {
+      Err(_e) => {
+        let mut res = Response::new(StatusCode::INTERNAL_SERVER_ERROR);
+        *res.body_mut() = Body::from("internal server error (db)");
+        return res;
+      }
+      Ok(None) => {
+        let mut res = Response::new(StatusCode::NOT_FOUND);
+        *res.body_mut() = Body::from(format!("station with id {id} not found"));
+        return res;
+      }
+      Ok(Some(account)) => account,
+    };
+
+    let password = account.source_password;
+
+    // TODO: implement ip limit security
+    match req.basic_auth() {
+      None => {
+        let mut res = Response::new(StatusCode::UNAUTHORIZED);
+        res.headers_mut().append(
+          WWW_AUTHENTICATE,
+          HeaderValue::from_static(r#"Basic realm="authentication", charset="UTF-8"#),
+        );
+        *res.body_mut() = Body::from("basic auth not present or malformed");
+        return res;
+      }
+
+      Some(auth) => {
+        if auth.user != "source" || auth.password != password {
+          let mut res = Response::new(StatusCode::UNAUTHORIZED);
+          res.headers_mut().append(
+            WWW_AUTHENTICATE,
+            HeaderValue::from_static(r#"Basic realm="authentication", charset="UTF-8"#),
+          );
+          *res.body_mut() = Body::from("basic auth user/password mismatch");
+          return res;
+        }
+      }
+    }
+
+    let channel = match self.channels.transmit(&id) {
       None => {
         let mut res = Response::new(StatusCode::FORBIDDEN);
         *res.body_mut() = Body::from("this source is already in use, try again later");
@@ -184,8 +227,6 @@ impl Handler for SourceHandler {
 
       Some(tx) => tx,
     };
-
-    // need cloning here because of 'static requirements of future
 
     let ffmpeg_config = FfmpegConfig {
       readrate: true,
@@ -229,19 +270,16 @@ impl Handler for SourceHandler {
         loop {
           match chunks.next().await {
             None => {
-              debug!("[source]: channel {id}: ffmpeg stdout end");
+              trace!("channel {id}: ffmpeg stdout end");
               break;
             }
             Some(Err(e)) => {
-              debug!("[sorce]: channel {id}: ffmpeg stdout error: {e}");
+              trace!("channel {id}: ffmpeg stdout error: {e}");
               break;
             }
             Some(Ok(bytes)) => {
-              debug!(
-                "[source]: channel {id}: ffmpeg stdout data: {} bytes",
-                bytes.len()
-              );
-              // only fails if there are no receivers but that is ok
+              trace!("channel {id}: ffmpeg stdout data: {} bytes", bytes.len());
+              // only fails if there are no receivers but we continue either way
               let _ = channel.send(bytes);
             }
           }
@@ -263,29 +301,26 @@ impl Handler for SourceHandler {
 
           match data {
             None => {
-              debug!("[source] channel {id}: recv body end");
+              trace!("channel {id}: recv body end");
               break;
             }
 
             Some(Err(e)) => {
-              debug!("[source] channel {id}: recv body error: {e}");
+              trace!("channel {id}: recv body error: {e}");
               break;
             }
 
             Some(Ok(data)) => {
-              debug!(
-                "[source] channel {id}: recv body data: {} bytes",
-                data.len()
-              );
+              trace!("channel {id}: recv body data: {} bytes", data.len());
 
               match stdin.write_all(data.as_ref()).await {
                 Err(e) => {
-                  debug!("[source] channel {id} stdin error: {e}");
+                  trace!("channel {id} stdin error: {e}");
                   break;
                 }
 
                 Ok(()) => {
-                  debug!("[source] channel {id} stdin write: {} bytes", data.len());
+                  trace!("channel {id} stdin write: {} bytes", data.len());
                 }
               }
             }
@@ -301,7 +336,7 @@ impl Handler for SourceHandler {
 
     let exit = match status {
       Err(e) => {
-        debug!("[source] channel {id}: ffmpeg child error: {e}");
+        warn!("channel {id}: ffmpeg child error: {} => {:?}", e, e);
         let mut headers = HeaderMap::with_capacity(1);
         headers.append(CONTENT_TYPE, HeaderValue::from_static("text/plain"));
 
@@ -317,7 +352,7 @@ impl Handler for SourceHandler {
       Ok(exit) => exit,
     };
 
-    debug!("[source] channel {id}: ffmpeg child end: {exit}");
+    trace!("channel {id}: ffmpeg child end: {exit}");
 
     if exit.success() {
       let mut res = Response::new(StatusCode::OK);
@@ -329,10 +364,14 @@ impl Handler for SourceHandler {
       res
     } else {
       let body = match stderr {
-        Err(_) => format!("internal error allocating stream converter (stderr 1)"),
+        Err(e) => {
+          warn!("channel {id}: ffmpeg exit non-zero: exit={exit} stderr_error={e}");
+          format!("internal error allocating stream converter (stderr 1)")
+        }
 
         Ok(v) => {
           let out = String::from_utf8_lossy(v.as_ref());
+          warn!("channel {id}: ffmpeg exit non-zero: exit={exit} stderr={out}");
           format!("error converting the audio stream (exit), possibly the audio is corrupted or is using a not supported format: {out}")
         }
       };

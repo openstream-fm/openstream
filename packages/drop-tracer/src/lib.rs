@@ -30,7 +30,7 @@ impl DropTracer {
 #[derive(Debug)]
 struct Inner {
   condvar: Condvar,
-  count: Mutex<usize>,
+  count: Mutex<isize>,
 }
 
 impl Inner {
@@ -41,14 +41,14 @@ impl Inner {
   fn decrement(&self) {
     let mut lock = self.count.lock();
     *lock -= 1;
-    if *lock == 0 {
+    if *lock <= 0 {
       self.condvar.notify_all();
     }
   }
 
   fn wait(&self) {
     let mut lock = self.count.lock();
-    if *lock == 0 {
+    if *lock <= 0 {
       return;
     }
     tokio::task::block_in_place(|| {
@@ -93,7 +93,7 @@ pub struct Token {
 }
 
 #[derive(Debug)]
-pub struct TokenInner {
+struct TokenInner {
   counter: Arc<Inner>,
 }
 

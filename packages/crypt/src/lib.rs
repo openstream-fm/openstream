@@ -1,3 +1,5 @@
+use sha2::{Digest, Sha256};
+
 pub const COST: u32 = 8;
 
 pub fn hash(plain: impl AsRef<[u8]>) -> String {
@@ -6,4 +8,11 @@ pub fn hash(plain: impl AsRef<[u8]>) -> String {
 
 pub fn compare(plain: impl AsRef<[u8]>, hashed: impl AsRef<str>) -> bool {
   bcrypt::verify(plain, hashed.as_ref()).expect("bcrypt verify")
+}
+
+pub fn sha256(src: impl AsRef<[u8]>) -> String {
+  let mut hasher = Sha256::new();
+  hasher.update(src.as_ref());
+  let hex = hasher.finalize();
+  base64::encode(hex)
 }

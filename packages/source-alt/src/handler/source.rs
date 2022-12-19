@@ -38,7 +38,7 @@ pub async fn source(
     Some(h) => h.as_bytes().eq_ignore_ascii_case(b"100-continue"),
   };
 
-  let channel = match crate::channels().transmit(id.clone()) {
+  let channel = match crate::channels().transmit(&id) {
     Some(channel) => channel,
     None => {
       let body = b"This mountpoint is already in use, try again later";

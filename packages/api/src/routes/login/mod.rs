@@ -16,9 +16,9 @@ pub mod post {
   use crate::json::JsonHandler;
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/login/POST/")]
+  #[ts(export, export_to = "../../defs/api/login/POST/")]
   #[serde(rename_all = "camelCase")]
+  #[serde(deny_unknown_fields)]
   pub struct Payload {
     email: String,
     password: String,
@@ -140,9 +140,12 @@ pub mod post {
 
       let user_id = user.id.clone();
 
+      let (key, sha256_key) = AccessToken::random_key();
+
       let token = AccessToken {
         id: AccessToken::uid(),
-        key: AccessToken::random_key(),
+        key,
+        sha256_key,
         scope: Scope::User { user_id },
         generated_by: GeneratedBy::Login { ip, user_agent },
         created_at: DateTime::now(),

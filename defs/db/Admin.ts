@@ -4,9 +4,10 @@ import type { Metadata } from "./Metadata";
 
 export interface Admin {
   _id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  password: string | null;
+  password: string;
   createdAt: DateTime;
   updatedAt: DateTime;
   systemMetadata: Metadata;

@@ -266,10 +266,15 @@ fn token(
   }: CreateToken,
 ) -> Result<(), anyhow::Error> {
   runtime().block_on(async move {
+    
     async fn create(title: String) -> Result<AccessToken, anyhow::Error> {
+      
+      let (key, sha256_key) = AccessToken::random_key();
+
       let token = AccessToken {
         id: AccessToken::uid(),
-        key: AccessToken::random_key(),
+        key,
+        sha256_key,
         scope: db::access_token::Scope::Global,
         generated_by: GeneratedBy::Cli { title },
         created_at: DateTime::now(),

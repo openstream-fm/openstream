@@ -1,6 +1,3 @@
-#![feature(never_type)]
-#![feature(exhaustive_patterns)]
-
 pub mod error;
 pub mod ip_limit;
 pub mod json;

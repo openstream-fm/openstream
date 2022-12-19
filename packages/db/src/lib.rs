@@ -15,19 +15,23 @@ use once_cell::sync::OnceCell;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use ts_rs::TS;
 
-pub mod access_token;
-pub mod account;
-pub mod admin;
-pub mod audio_chunk;
-pub mod audio_file;
-pub mod audio_upload_operation;
-pub mod config;
-pub mod connections;
 pub mod error;
-pub mod event;
+pub mod http;
 pub mod metadata;
-pub mod play_history_item;
-pub mod user;
+
+pub mod models;
+
+pub use models::access_token;
+pub use models::account;
+pub use models::admin;
+pub use models::audio_chunk;
+pub use models::audio_file;
+pub use models::audio_upload_operation;
+pub use models::config;
+pub use models::event;
+pub use models::play_history_item;
+pub use models::stream_connection;
+pub use models::user;
 
 static CLIENT: OnceCell<Client> = OnceCell::new();
 
@@ -249,6 +253,22 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
       .await
   }
 
+  async fn update_by_id(id: &str, update: Document) -> MongoResult<UpdateResult> {
+    Self::cl()
+      .update_one(doc! { "_id": id }, update, None)
+      .await
+  }
+
+  async fn update_by_id_with_session(
+    id: &str,
+    update: Document,
+    session: &mut ClientSession,
+  ) -> MongoResult<UpdateResult> {
+    Self::cl()
+      .update_one_with_session(doc! { "_id": id }, update, None, session)
+      .await
+  }
+
   async fn paged(
     filter: impl Into<Option<Document>> + Send,
     skip: u64,
@@ -395,7 +415,7 @@ macro_rules! fetch_and_patch {
     };
 
     // this seems like a clippy bug
-    // #[allow(clippy::unnecessary_operation)]
+    #[allow(clippy::unnecessary_operation)]
     $apply;
 
     $Model::replace_with_session($id, &$name, &mut $session).await?;
