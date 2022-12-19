@@ -5,12 +5,7 @@ use crate::request_ext::{self, GetAccessTokenScopeError};
 
 use crate::error::ApiError;
 use async_trait::async_trait;
-// use db::account::Account;
-// use db::account::PublicAccount;
-// use db::metadata::Metadata;
-// use db::run_transaction;
 use db::{Model, Paged};
-// use prex::request::ReadBodyJsonError;
 use mongodb::bson::doc;
 use prex::Request;
 use serde::{Deserialize, Serialize};
