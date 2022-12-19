@@ -6,11 +6,14 @@ use crate::json::JsonHandler;
 pub mod accounts;
 pub mod admins;
 pub mod login;
+pub mod me;
 pub mod register;
 pub mod users;
 
 pub fn router() -> Builder {
   let mut app = prex::prex();
+
+  app.at("/me").get(me::get::Endpoint {}.into_handler());
 
   app
     .at("/register")
@@ -19,6 +22,10 @@ pub fn router() -> Builder {
   app
     .at("/login")
     .post(login::post::Endpoint {}.into_handler());
+
+  app
+    .at("/login/admin")
+    .post(login::admin::post::Endpoint {}.into_handler());
 
   app.at("/users").get(users::get::Endpoint {}.into_handler());
 
@@ -49,17 +56,15 @@ pub fn router() -> Builder {
     .at("/accounts/:account/files/:file/stream")
     .get(accounts::files::id::stream::Handler {});
 
-  // app.at("/admin-login")
-  //   .post()
-
   app
     .at("/admins")
-    .get(admins::get::Endpoint {}.into_handler());
-  //.post(admins::post::Endpoint {}.into_handler());
+    .get(admins::get::Endpoint {}.into_handler())
+    .post(admins::post::Endpoint {}.into_handler());
 
   app
     .at("/admins/:admin")
-    .get(admins::id::get::Endpoint {}.into_handler());
+    .get(admins::id::get::Endpoint {}.into_handler())
+    .put(admins::id::patch::Endpoint {}.into_handler());
 
   // 404 catch all
   app.with(|_, _| async { ApiError::from(Kind::ResourceNotFound).into_json_response() });

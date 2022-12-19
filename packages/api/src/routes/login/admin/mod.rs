@@ -1,9 +1,7 @@
-pub mod admin;
-
 pub mod post {
   use async_trait::async_trait;
   use db::access_token::{AccessToken, GeneratedBy, Scope};
-  use db::user::{User, UserPublicUser};
+  use db::admin::{Admin, PublicAdmin};
   use db::Model;
   use mongodb::bson::doc;
   use prex::{request::ReadBodyJsonError, Request};
@@ -18,7 +16,7 @@ pub mod post {
   use crate::json::JsonHandler;
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/login/POST/")]
+  #[ts(export, export_to = "../../defs/api/login/admin/POST/")]
   #[serde(rename_all = "camelCase")]
   #[serde(deny_unknown_fields)]
   pub struct Payload {
@@ -35,10 +33,10 @@ pub mod post {
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export)]
-  #[ts(export_to = "../../defs/api/login/POST/")]
+  #[ts(export_to = "../../defs/api/login/admin/POST/")]
   #[serde(rename_all = "camelCase")]
   pub struct Output {
-    user: UserPublicUser,
+    admin: PublicAdmin,
     token: String,
   }
 
@@ -49,7 +47,6 @@ pub mod post {
   pub enum HandleError {
     TooManyRequests,
     NoMatchEmail,
-    NoPassword,
     NoMatchPassword,
     Db(mongodb::error::Error),
   }
@@ -65,7 +62,6 @@ pub mod post {
       match e {
         HandleError::TooManyRequests => ApiError::from(Kind::TooManyRequests),
         HandleError::NoMatchEmail => ApiError::from(Kind::AuthFailed),
-        HandleError::NoPassword => ApiError::from(Kind::AuthFailed),
         HandleError::NoMatchPassword => ApiError::from(Kind::AuthFailed),
         HandleError::Db(e) => ApiError::from(Kind::Db(e)),
       }
@@ -124,23 +120,18 @@ pub mod post {
 
       let email = email.trim().to_lowercase();
 
-      let user = match User::find_by_email(&email).await? {
+      let admin = match Admin::get(doc! {"email": email }).await? {
         None => return Err(HandleError::NoMatchEmail),
-        Some(user) => user,
+        Some(admin) => admin,
       };
 
-      let user_password = match user.password {
-        None => return Err(HandleError::NoPassword),
-        Some(ref v) => v.as_str(),
-      };
-
-      let is_match = crypt::compare(&password, user_password);
+      let is_match = crypt::compare(&password, &admin.password);
 
       if !is_match {
         return Err(HandleError::NoMatchPassword);
       }
 
-      let user_id = user.id.clone();
+      let admin_id = admin.id.clone();
 
       let (key, sha256_key) = AccessToken::random_key();
 
@@ -148,7 +139,7 @@ pub mod post {
         id: AccessToken::uid(),
         key,
         sha256_key,
-        scope: Scope::User { user_id },
+        scope: Scope::Admin { admin_id },
         generated_by: GeneratedBy::Login { ip, user_agent },
         created_at: DateTime::now(),
         last_used_at: None,
@@ -157,10 +148,10 @@ pub mod post {
 
       AccessToken::insert(&token).await?;
 
-      let user = UserPublicUser::from(user);
+      let admin = admin.into_public();
 
       let out = Output {
-        user,
+        admin,
         token: token.key,
       };
 
