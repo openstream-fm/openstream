@@ -76,6 +76,7 @@ dependencies = [
  "sha1",
  "shutdown",
  "static_init",
+ "thiserror",
  "tokio",
  "tokio-stream",
  "ts-rs",
@@ -580,6 +581,7 @@ dependencies = [
  "serde-util",
  "serde_json",
  "syn",
+ "thiserror",
  "time 0.3.17",
  "tokio",
  "ts-rs",
@@ -3527,6 +3529,7 @@ dependencies = [
  "mongodb",
  "serde-util",
  "stream-util",
+ "thiserror",
  "tokio",
  "tokio-stream",
 ]

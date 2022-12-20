@@ -78,8 +78,7 @@ pub mod patch {
   pub struct Endpoint {}
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/accounts/[account]/PATCH/")]
+  #[ts(export, export_to = "../../defs/api/accounts/[account]/PATCH/")]
   pub struct Payload(pub AccountPatch);
 
   #[derive(Debug, Clone)]
@@ -90,26 +89,15 @@ pub mod patch {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/accounts/[account]/PATCH/")]
+  #[ts(export, export_to = "../../defs/api/accounts/[account]/PATCH/")]
   pub struct Output(pub PublicAccount);
 
-  #[derive(Debug)]
+  #[derive(Debug, thiserror::Error)]
   pub enum ParseError {
-    Token(GetAccessTokenScopeError),
-    Payload(ReadBodyJsonError),
-  }
-
-  impl From<GetAccessTokenScopeError> for ParseError {
-    fn from(e: GetAccessTokenScopeError) -> Self {
-      Self::Token(e)
-    }
-  }
-
-  impl From<ReadBodyJsonError> for ParseError {
-    fn from(e: ReadBodyJsonError) -> Self {
-      Self::Payload(e)
-    }
+    #[error("token: {0}")]
+    Token(#[from] GetAccessTokenScopeError),
+    #[error("payload: {0}")]
+    Payload(#[from] ReadBodyJsonError),
   }
 
   impl From<ParseError> for ApiError {
@@ -121,23 +109,14 @@ pub mod patch {
     }
   }
 
-  #[derive(Debug)]
+  #[derive(Debug, thiserror::Error)]
   pub enum HandleError {
-    Db(mongodb::error::Error),
-    Patch(ApplyPatchError),
+    #[error("mongodb: {0}")]
+    Db(#[from] mongodb::error::Error),
+    #[error("apply patch: {0}")]
+    Patch(#[from] ApplyPatchError),
+    #[error("account not found: {0}")]
     AccountNotFound(String),
-  }
-
-  impl From<ApplyPatchError> for HandleError {
-    fn from(e: ApplyPatchError) -> Self {
-      Self::Patch(e)
-    }
-  }
-
-  impl From<mongodb::error::Error> for HandleError {
-    fn from(e: mongodb::error::Error) -> Self {
-      Self::Db(e)
-    }
   }
 
   impl From<HandleError> for ApiError {

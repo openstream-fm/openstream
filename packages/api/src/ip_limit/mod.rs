@@ -12,9 +12,6 @@ pub const LIMIT: usize = 60;
 #[cfg(not(test))]
 pub const LIMIT_RESET_MS: u64 = 60_000;
 
-#[cfg(test)]
-pub const LIMIT_RESET_MS: u64 = 10;
-
 pub fn get(ip: IpAddr) -> usize {
   let map = IP_LIMIT_MAP.read();
   *map.get(&ip).unwrap_or(&0)
@@ -63,6 +60,9 @@ fn decrement(ip: IpAddr) -> usize {
     0
   }
 }
+
+#[cfg(test)]
+pub const LIMIT_RESET_MS: u64 = 10;
 
 #[cfg(test)]
 #[tokio::test]

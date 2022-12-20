@@ -36,8 +36,7 @@ pub mod get {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/accounts/GET/")]
+  #[ts(export, export_to = "../../defs/api/accounts/GET/")]
   struct Query {
     #[serde(skip_serializing_if = "Option::is_none")]
     skip: Option<u64>,
@@ -53,14 +52,15 @@ pub mod get {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/accounts/GET/")]
+  #[ts(export, export_to = "../../defs/api/accounts/GET/")]
   pub struct Output(Paged<PublicAccount>);
 
-  #[derive(Debug)]
+  #[derive(Debug, thiserror::Error)]
   pub enum ParseError {
-    Access(GetAccessTokenScopeError),
-    QueryString(serde_querystring::Error),
+    #[error("access: {0}")]
+    Access(#[from] GetAccessTokenScopeError),
+    #[error("querystring: {0}")]
+    QueryString(#[from] serde_querystring::Error),
   }
 
   impl From<ParseError> for ApiError {
@@ -69,18 +69,6 @@ pub mod get {
         ParseError::Access(e) => e.into(),
         ParseError::QueryString(e) => e.into(),
       }
-    }
-  }
-
-  impl From<GetAccessTokenScopeError> for ParseError {
-    fn from(e: GetAccessTokenScopeError) -> Self {
-      Self::Access(e)
-    }
-  }
-
-  impl From<serde_querystring::Error> for ParseError {
-    fn from(e: serde_querystring::Error) -> Self {
-      Self::QueryString(e)
     }
   }
 
@@ -183,16 +171,17 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/accounts/POST/")]
+  #[ts(export, export_to = "../../defs/api/accounts/POST/")]
   pub struct Output {
     account: PublicAccount,
   }
 
-  #[derive(Debug)]
+  #[derive(Debug, thiserror::Error)]
   pub enum ParseError {
-    Token(GetAccessTokenScopeError),
-    Payload(ReadBodyJsonError),
+    #[error("token: {0}")]
+    Token(#[from] GetAccessTokenScopeError),
+    #[error("payload: {0}")]
+    Payload(#[from] ReadBodyJsonError),
   }
 
   impl From<ParseError> for ApiError {
@@ -204,31 +193,18 @@ pub mod post {
     }
   }
 
-  impl From<ReadBodyJsonError> for ParseError {
-    fn from(e: ReadBodyJsonError) -> Self {
-      ParseError::Payload(e)
-    }
-  }
-
-  impl From<GetAccessTokenScopeError> for ParseError {
-    fn from(e: GetAccessTokenScopeError) -> Self {
-      Self::Token(e)
-    }
-  }
-
-  #[derive(Debug)]
+  #[derive(Debug, thiserror::Error)]
   pub enum HandleError {
-    Db(mongodb::error::Error),
+    #[error("mongodb: {0}")]
+    Db(#[from] mongodb::error::Error),
+    #[error("name missing")]
     NameMissing,
+    #[error("owner id missing")]
     OwnerIdMissing,
+    #[error("owner id out of scope")]
     OwnerIdOutOfScope,
+    #[error("user not found ({0})")]
     UserNotFound(String),
-  }
-
-  impl From<mongodb::error::Error> for HandleError {
-    fn from(e: mongodb::error::Error) -> Self {
-      Self::Db(e)
-    }
   }
 
   impl From<HandleError> for ApiError {

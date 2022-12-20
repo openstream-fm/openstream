@@ -32,8 +32,7 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/login/admin/POST/")]
+  #[ts(export, export_to = "../../defs/api/login/admin/POST/")]
   #[serde(rename_all = "camelCase")]
   pub struct Output {
     admin: PublicAdmin,
@@ -43,18 +42,16 @@ pub mod post {
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug)]
+  #[derive(Debug, thiserror::Error)]
   pub enum HandleError {
+    #[error("mongodb: {0}")]
+    Db(#[from] mongodb::error::Error),
+    #[error("too many requests")]
     TooManyRequests,
+    #[error("no match email")]
     NoMatchEmail,
+    #[error("no match password")]
     NoMatchPassword,
-    Db(mongodb::error::Error),
-  }
-
-  impl From<mongodb::error::Error> for HandleError {
-    fn from(e: mongodb::error::Error) -> Self {
-      Self::Db(e)
-    }
   }
 
   impl From<HandleError> for ApiError {

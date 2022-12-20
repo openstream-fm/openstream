@@ -33,24 +33,16 @@ pub struct Request {
   pub(crate) body: Body,
 }
 
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum ReadBodyJsonError {
+  #[error("payload too large: (max: {0})")]
   TooLarge(usize),
-  Hyper(hyper::Error),
-  Json(serde_json::Error),
+  #[error("hyper error: {0}")]
+  Hyper(#[from] hyper::Error),
+  #[error("json deserialize: {0}")]
+  Json(#[from] serde_json::Error),
+  #[error("payload invalid: {0}")]
   PayloadInvalid(String),
-}
-
-impl From<hyper::Error> for ReadBodyJsonError {
-  fn from(e: hyper::Error) -> Self {
-    Self::Hyper(e)
-  }
-}
-
-impl From<serde_json::Error> for ReadBodyJsonError {
-  fn from(e: serde_json::Error) -> Self {
-    Self::Json(e)
-  }
 }
 
 impl Request {

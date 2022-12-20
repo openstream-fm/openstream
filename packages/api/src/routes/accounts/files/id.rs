@@ -38,16 +38,12 @@ pub mod get {
     item: AudioFile,
   }
 
-  #[derive(Debug)]
+  #[derive(Debug, thiserror::Error)]
   pub enum HandleError {
-    Db(mongodb::error::Error),
+    #[error("mongodb: {0}")]
+    Db(#[from] mongodb::error::Error),
+    #[error("file not found: {0}")]
     FileNotFound(String),
-  }
-
-  impl From<mongodb::error::Error> for HandleError {
-    fn from(e: mongodb::error::Error) -> Self {
-      Self::Db(e)
-    }
   }
 
   impl From<HandleError> for ApiError {

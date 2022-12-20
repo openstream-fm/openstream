@@ -26,24 +26,20 @@ pub mod get {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/users/[user]/GET/")]
+  #[ts(export, export_to = "../../defs/api/users/[user]/GET/")]
   #[serde(rename_all = "camelCase")]
   pub struct Output {
     user: PublicUser,
   }
 
-  #[derive(Debug)]
+  #[derive(Debug, thiserror::Error)]
   pub enum HandleError {
+    #[error("mongodb: {0}")]
+    Db(#[from] mongodb::error::Error),
+    #[error("token out of scope")]
     TokenOutOfScope,
+    #[error("user not found: {0}")]
     UserNotFound(String),
-    Db(mongodb::error::Error),
-  }
-
-  impl From<mongodb::error::Error> for HandleError {
-    fn from(e: mongodb::error::Error) -> Self {
-      Self::Db(e)
-    }
   }
 
   impl From<HandleError> for ApiError {

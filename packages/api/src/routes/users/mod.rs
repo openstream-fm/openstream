@@ -59,10 +59,12 @@ pub mod get {
     limit: Option<i64>,
   }
 
-  #[derive(Debug)]
+  #[derive(Debug, thiserror::Error)]
   pub enum ParseError {
-    Access(GetAccessTokenScopeError),
-    QueryString(serde_querystring::Error),
+    #[error("access: {0}")]
+    Access(#[from] GetAccessTokenScopeError),
+    #[error("querystring: {0}")]
+    QueryString(#[from] serde_querystring::Error),
   }
 
   impl From<ParseError> for ApiError {
@@ -71,18 +73,6 @@ pub mod get {
         ParseError::Access(e) => e.into(),
         ParseError::QueryString(e) => e.into(),
       }
-    }
-  }
-
-  impl From<GetAccessTokenScopeError> for ParseError {
-    fn from(e: GetAccessTokenScopeError) -> Self {
-      Self::Access(e)
-    }
-  }
-
-  impl From<serde_querystring::Error> for ParseError {
-    fn from(e: serde_querystring::Error) -> Self {
-      Self::QueryString(e)
     }
   }
 
@@ -166,28 +156,17 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/users/POST/")]
+  #[ts(export, export_to = "../../defs/api/users/POST/")]
   pub struct Output {
     user: PublicUser,
   }
 
-  #[derive(Debug)]
+  #[derive(Debug, thiserror::Error)]
   pub enum ParseError {
-    Access(GetAccessTokenScopeError),
-    Payload(ReadBodyJsonError),
-  }
-
-  impl From<GetAccessTokenScopeError> for ParseError {
-    fn from(e: GetAccessTokenScopeError) -> Self {
-      Self::Access(e)
-    }
-  }
-
-  impl From<ReadBodyJsonError> for ParseError {
-    fn from(e: ReadBodyJsonError) -> Self {
-      Self::Payload(e)
-    }
+    #[error("access: {0}")]
+    Access(#[from] GetAccessTokenScopeError),
+    #[error("payload: {0}")]
+    Payload(#[from] ReadBodyJsonError),
   }
 
   impl From<ParseError> for ApiError {
@@ -199,10 +178,13 @@ pub mod post {
     }
   }
 
-  #[derive(Debug)]
+  #[derive(Debug, thiserror::Error)]
   pub enum HandleError {
-    Db(mongodb::error::Error),
+    #[error("mongodb: {0}")]
+    Db(#[from] mongodb::error::Error),
+    #[error("user email exists")]
     UserEmailExists,
+    #[error("account not found: {0}")]
     AccountNotFound(String),
   }
 
@@ -213,12 +195,6 @@ pub mod post {
         HandleError::UserEmailExists => ApiError::from(Kind::UserEmailExists),
         HandleError::AccountNotFound(id) => ApiError::from(Kind::AccountNotFound(id)),
       }
-    }
-  }
-
-  impl From<mongodb::error::Error> for HandleError {
-    fn from(e: mongodb::error::Error) -> Self {
-      Self::Db(e)
     }
   }
 

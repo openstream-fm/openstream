@@ -1,7 +1,10 @@
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum ApplyPatchError {
+  #[error("patch empty")]
   PatchEmpty,
+  #[error("patch invalid: {0}")]
   PatchInvalid(String),
+  #[error("patch out of scope: {0}")]
   OutOfScope(String),
 }
 

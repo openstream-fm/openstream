@@ -50,10 +50,12 @@ pub mod get {
   #[ts(export, export_to = "../../defs/api/admins/GET/")]
   pub struct Output(Paged<PublicAdmin>);
 
-  #[derive(Debug)]
+  #[derive(Debug, thiserror::Error)]
   pub enum ParseError {
-    Access(GetAccessTokenScopeError),
-    QueryString(serde_querystring::Error),
+    #[error("access: {0}")]
+    Access(#[from] GetAccessTokenScopeError),
+    #[error("querystring: {0}")]
+    QueryString(#[from] serde_querystring::Error),
   }
 
   impl From<ParseError> for ApiError {
@@ -62,18 +64,6 @@ pub mod get {
         ParseError::Access(e) => e.into(),
         ParseError::QueryString(e) => e.into(),
       }
-    }
-  }
-
-  impl From<GetAccessTokenScopeError> for ParseError {
-    fn from(e: GetAccessTokenScopeError) -> Self {
-      Self::Access(e)
-    }
-  }
-
-  impl From<serde_querystring::Error> for ParseError {
-    fn from(e: serde_querystring::Error) -> Self {
-      Self::QueryString(e)
     }
   }
 
@@ -149,16 +139,17 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/accounts/POST/")]
+  #[ts(export, export_to = "../../defs/api/accounts/POST/")]
   pub struct Output {
     admin: PublicAdmin,
   }
 
-  #[derive(Debug)]
+  #[derive(Debug, thiserror::Error)]
   pub enum ParseError {
-    Token(GetAccessTokenScopeError),
-    Payload(ReadBodyJsonError),
+    #[error("token: {0}")]
+    Token(#[from] GetAccessTokenScopeError),
+    #[error("payload: {0}")]
+    Payload(#[from] ReadBodyJsonError),
   }
 
   impl From<ParseError> for ApiError {
@@ -170,33 +161,22 @@ pub mod post {
     }
   }
 
-  impl From<ReadBodyJsonError> for ParseError {
-    fn from(e: ReadBodyJsonError) -> Self {
-      ParseError::Payload(e)
-    }
-  }
-
-  impl From<GetAccessTokenScopeError> for ParseError {
-    fn from(e: GetAccessTokenScopeError) -> Self {
-      Self::Token(e)
-    }
-  }
-
-  #[derive(Debug)]
+  #[derive(Debug, thiserror::Error)]
   pub enum HandleError {
-    Db(mongodb::error::Error),
+    #[error("mongodb: {0}")]
+    Db(#[from] mongodb::error::Error),
+    #[error("first name is empty")]
     FirstNameEmpty,
+    #[error("last name is empty")]
     LastNameEmpty,
+    #[error("email is empty")]
     EmailEmpty,
+    #[error("email is invalid")]
     EmailInvalid,
+    #[error("password is too short")]
     PasswordTooShort,
+    #[error("email already exists")]
     EmailExists,
-  }
-
-  impl From<mongodb::error::Error> for HandleError {
-    fn from(e: mongodb::error::Error) -> Self {
-      Self::Db(e)
-    }
   }
 
   impl From<HandleError> for ApiError {

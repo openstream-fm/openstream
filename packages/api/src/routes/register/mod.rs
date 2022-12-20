@@ -19,22 +19,12 @@ pub mod post {
   use crate::json::JsonHandler;
   use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
 
-  #[derive(Debug)]
+  #[derive(Debug, thiserror::Error)]
   pub enum ParseError {
-    Token(GetAccessTokenScopeError),
-    Payload(ReadBodyJsonError),
-  }
-
-  impl From<GetAccessTokenScopeError> for ParseError {
-    fn from(e: GetAccessTokenScopeError) -> Self {
-      Self::Token(e)
-    }
-  }
-
-  impl From<ReadBodyJsonError> for ParseError {
-    fn from(e: ReadBodyJsonError) -> Self {
-      Self::Payload(e)
-    }
+    #[error("token: {0}")]
+    Token(#[from] GetAccessTokenScopeError),
+    #[error("payload: {0}")]
+    Payload(#[from] ReadBodyJsonError),
   }
 
   impl From<ParseError> for ApiError {
@@ -46,16 +36,25 @@ pub mod post {
     }
   }
 
-  #[derive(Debug)]
+  #[derive(Debug, thiserror::Error)]
   pub enum HandleError {
+    #[error("mongodb: {0}")]
     Db(mongodb::error::Error),
+    #[error("token out of scope")]
     TokenOutOfScope,
+    #[error("account name is empty")]
     AccountNameEmpty,
+    #[error("first name is empty")]
     FirstNameEmpty,
+    #[error("last name is empty")]
     LastNameEmpty,
+    #[error("email is empty")]
     EmailEmpty,
+    #[error("email is invalid")]
     EmailInvalid,
+    #[error("password is too short")]
     PasswordTooShort,
+    #[error("email already exists")]
     EmailExists,
   }
 
@@ -144,8 +143,7 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/register/POST/")]
+  #[ts(export, export_to = "../../defs/api/register/POST/")]
   #[serde(rename_all = "camelCase")]
   pub struct Output {
     pub account: PublicAccount,

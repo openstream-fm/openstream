@@ -1,4 +1,3 @@
-use std::fmt::Display;
 use std::process::ExitStatus;
 
 use bytes::Bytes;
@@ -14,34 +13,25 @@ use serde_util::DateTime;
 use std::error::Error;
 use tokio_stream::{Stream, StreamExt};
 
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum UploadError<E> {
+  #[error("stream: {0}")]
   Stream(E),
-  Mongo(mongodb::error::Error),
+  #[error("mongo: {0}")]
+  Mongo(#[from] mongodb::error::Error),
+  #[error("ffmpeg spawn io: {0}")]
   FfmpegSpawn(std::io::Error),
+  #[error("ffmpeg exit: status: {status}, stderr: {stderr:?}")]
   FfmpegExit {
     status: ExitStatus,
     stderr: Option<String>,
   },
+  #[error("ffmpeg io: {0}")]
   FfmpegIo(std::io::Error),
+  #[error("size exceeded")]
   SizeExceeded,
+  #[error("file empty")]
   Empty,
-}
-
-impl<E: Display> Display for UploadError<E> {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    match self {
-      Self::Stream(e) => write!(f, "stream: {e}"),
-      Self::Mongo(e) => write!(f, "mongo: {e}"),
-      Self::FfmpegSpawn(e) => write!(f, "ffmpeg spawn: {e}"),
-      Self::FfmpegIo(e) => write!(f, "ffmpeg io: {e}"),
-      Self::FfmpegExit { status, stderr } => {
-        write!(f, "ffmpeg exit: {status}, stderr: {:?}", stderr)
-      }
-      Self::SizeExceeded => write!(f, "size exceeded"),
-      Self::Empty => write!(f, "empty source"),
-    }
-  }
 }
 
 impl<E> From<TransformError> for UploadError<E> {
@@ -50,12 +40,6 @@ impl<E> From<TransformError> for UploadError<E> {
       TransformError::Io(e) => UploadError::FfmpegIo(e),
       TransformError::Exit { status, stderr } => UploadError::FfmpegExit { status, stderr },
     }
-  }
-}
-
-impl<E> From<mongodb::error::Error> for UploadError<E> {
-  fn from(e: mongodb::error::Error) -> Self {
-    Self::Mongo(e)
   }
 }
 

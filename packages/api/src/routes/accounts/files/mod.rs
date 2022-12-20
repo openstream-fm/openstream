@@ -32,13 +32,11 @@ pub mod get {
   }
 
   #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/accounts/[account]/files/GET/")]
+  #[ts(export, export_to = "../../defs/api/accounts/[account]/files/GET/")]
   pub struct Output(Paged<AudioFile>);
 
   #[derive(Debug, Serialize, Deserialize, Default, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/accounts/[account]/files/GET/")]
+  #[ts(export, export_to = "../../defs/api/accounts/[account]/files/GET/")]
   struct Query {
     #[serde(skip_serializing_if = "Option::is_none")]
     skip: Option<u64>,
@@ -56,10 +54,12 @@ pub mod get {
     limit: i64,
   }
 
-  #[derive(Debug)]
+  #[derive(Debug, thiserror::Error)]
   pub enum ParseError {
-    Access(GetAccessTokenScopeError),
-    QueryString(serde_querystring::Error),
+    #[error("access: {0}")]
+    Access(#[from] GetAccessTokenScopeError),
+    #[error("querystring: {0}")]
+    QueryString(#[from] serde_querystring::Error),
   }
 
   impl From<ParseError> for ApiError {
@@ -68,18 +68,6 @@ pub mod get {
         ParseError::Access(e) => e.into(),
         ParseError::QueryString(e) => e.into(),
       }
-    }
-  }
-
-  impl From<GetAccessTokenScopeError> for ParseError {
-    fn from(e: GetAccessTokenScopeError) -> Self {
-      Self::Access(e)
-    }
-  }
-
-  impl From<serde_querystring::Error> for ParseError {
-    fn from(e: serde_querystring::Error) -> Self {
-      Self::QueryString(e)
     }
   }
 
@@ -142,8 +130,7 @@ pub mod post {
   pub struct Endpoint {}
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/accounts/[account]/files/POST/")]
+  #[ts(export, export_to = "../../defs/api/accounts/[account]/files/POST/")]
   pub struct Query {
     pub filename: String,
   }
@@ -156,8 +143,7 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/accounts/[account]/files/POST/")]
+  #[ts(export, export_to = "../../defs/api/accounts/[account]/files/POST/")]
   #[serde(rename_all = "camelCase")]
   pub struct Output {
     file: AudioFile,
@@ -184,22 +170,12 @@ pub mod post {
     }
   }
 
-  #[derive(Debug)]
+  #[derive(Debug, thiserror::Error)]
   pub enum ParseError {
-    Token(GetAccessTokenScopeError),
-    Query(serde_querystring::Error),
-  }
-
-  impl From<GetAccessTokenScopeError> for ParseError {
-    fn from(e: GetAccessTokenScopeError) -> Self {
-      Self::Token(e)
-    }
-  }
-
-  impl From<serde_querystring::Error> for ParseError {
-    fn from(e: serde_querystring::Error) -> Self {
-      Self::Query(e)
-    }
+    #[error("token: {0}")]
+    Token(#[from] GetAccessTokenScopeError),
+    #[error("querystring: {0}")]
+    Query(#[from] serde_querystring::Error),
   }
 
   impl From<ParseError> for ApiError {

@@ -13,16 +13,33 @@ use prex::Request;
 
 pub static X_ACCESS_TOKEN: &str = "x-access-token";
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, thiserror::Error)]
 pub enum GetAccessTokenScopeError {
+  #[error("too many requests")]
   TooManyRequests,
-  Db(mongodb::error::Error),
+
+  #[error("mongo error: {0}")]
+  Db(#[from] mongodb::error::Error),
+
+  #[error("token missing")]
   Missing,
+
+  #[error("token not utf8")]
   NonUtf8,
+
+  #[error("token not found")]
   NotFound,
+
+  #[error("token user not found: {0}")]
   UserNotFound(String),
+
+  #[error("token account not found: {0}")]
   AccountNotFound(String),
+
+  #[error("token admin not found: {0}")]
   AdminNotFound(String),
+
+  #[error("token out of scope")]
   OutOfScope,
 }
 
@@ -146,12 +163,6 @@ pub async fn get_access_token_scope(
   Ok(scope)
 }
 
-impl From<mongodb::error::Error> for GetAccessTokenScopeError {
-  fn from(e: mongodb::error::Error) -> Self {
-    Self::Db(e)
-  }
-}
-
 impl From<GetAccessTokenScopeError> for ApiError {
   fn from(v: GetAccessTokenScopeError) -> ApiError {
     use GetAccessTokenScopeError::*;
@@ -169,7 +180,8 @@ impl From<GetAccessTokenScopeError> for ApiError {
   }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, thiserror::Error)]
+#[error("token out of scope")]
 pub struct GrantScopeError;
 
 impl From<GrantScopeError> for GetAccessTokenScopeError {

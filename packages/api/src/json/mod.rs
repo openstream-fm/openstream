@@ -14,8 +14,8 @@ use sha1::{Digest, Sha1};
 pub trait JsonHandler: Send + Sync + Sized + Clone + 'static {
   type Input: Send;
   type Output: Serialize;
-  type ParseError: Into<ApiError>;
-  type HandleError: Into<ApiError>;
+  type ParseError: Into<ApiError> + std::error::Error;
+  type HandleError: Into<ApiError> + std::error::Error;
 
   fn ignore_etag(&self) -> bool {
     false
