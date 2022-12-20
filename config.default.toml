@@ -4,7 +4,7 @@
 # string (required)
 # must have a defined database in the path and a replicaSet in the query params
 # internally openstream uses transactions so replicaSet is required
-url="mongodb://localhost:27017/openstream?replicaSet=rs1"
+url="mongodb://localhost:27017/openstream?replicaSet=rs"
 
 
 
