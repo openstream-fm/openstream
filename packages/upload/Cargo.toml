@@ -18,9 +18,10 @@ is_ci = "1.1.1"
 log = "0.4.17"
 logger = { version = "0.1.0", path = "../logger" }
 md-5 = "0.10.5"
-mongodb = "2.3.1"
+mongodb = "=2.3.1"
 serde-util = { version = "0.1.0", path = "../serde-util" }
 stream-util = { version = "0.1.0", path = "../stream-util" }
+test-util = { version = "0.1.0", path = "../test-util" }
 thiserror = "1.0.38"
 tokio = { version = "1.21.2", features = ["full"] }
 tokio-stream = "0.1.11"

@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 bytes = "1.2.1"
 pin-project = "1.0.12"
+test-util = { version = "0.1.0", path = "../test-util" }
 tokio = { version = "1", features = [ "full" ] }
 tokio-stream = "0.1.10"
 tokio-test = "0.4.2"

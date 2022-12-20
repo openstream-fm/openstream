@@ -12,5 +12,6 @@ pin-project = "1.0.12"
 prex = { version = "0.1.0", path = "../prex" }
 serde = "1.0.149"
 serde_json = "1.0.89"
+test-util = { version = "0.1.0", path = "../test-util" }
 tokio = { version = "1.23.0", features = ["full"] }
 tokio-stream = "0.1.11"

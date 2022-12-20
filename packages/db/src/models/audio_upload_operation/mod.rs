@@ -6,8 +6,7 @@ use serde_util::DateTime;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../defs/db/")]
 #[ts(rename = "AudioUploadOperationState")]
 #[serde(rename_all = "camelCase")]
 #[serde(tag = "state")]
@@ -18,7 +17,7 @@ pub enum State {
   },
   Error {
     cancelled_at: DateTime,
-    error: String,
+    error_display: String,
     error_debug: String,
   },
 }
@@ -87,7 +86,7 @@ mod test {
       created_at: DateTime::now(),
       state: State::Error {
         cancelled_at: DateTime::now(),
-        error: "error".into(),
+        error_display: "error".into(),
         error_debug: "Error {}".into(),
       },
     };

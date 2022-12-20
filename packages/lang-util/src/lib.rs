@@ -36,7 +36,7 @@ mod test {
     });
   }
 
-  #[tokio::test]
+  #[test_util::async_test]
   async fn compile_async() {
     let _r = retry!(5, {
       let b = async { true }.await;
@@ -48,7 +48,7 @@ mod test {
     });
   }
 
-  #[tokio::test]
+  #[test_util::async_test]
   async fn compile_early_return_async() {
     let _r = retry!(5, {
       async {
@@ -64,7 +64,7 @@ mod test {
     });
   }
 
-  #[tokio::test]
+  #[test_util::async_test]
   async fn compile_question_return_async() {
     let _r = retry!(5, {
       async {

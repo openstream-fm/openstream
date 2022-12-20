@@ -230,7 +230,7 @@ mod test {
 
   const N: usize = 100_000;
 
-  #[tokio::test]
+  #[test_util::async_test]
   async fn channel() {
     let (tx, rx) = super::channel::<usize>();
 
@@ -253,7 +253,7 @@ mod test {
     eprintln!("spsc: send and recv {N} items in {elapsed}ms")
   }
 
-  #[tokio::test]
+  #[test_util::async_test]
   async fn channel_as_stream() {
     let (tx, mut rx) = super::channel::<usize>();
 
@@ -276,7 +276,7 @@ mod test {
     eprintln!("spsc as stream: send and recv {N} items in {elapsed}ms")
   }
 
-  #[tokio::test]
+  #[test_util::async_test]
   async fn tokio_channel() {
     let (tx, mut rx) = tokio::sync::mpsc::channel::<usize>(1);
 
@@ -299,7 +299,7 @@ mod test {
     eprintln!("tokio mpsc: send and recv {N} items in {elapsed}ms")
   }
 
-  #[tokio::test]
+  #[test_util::async_test]
   async fn async_stream() {
     let start = Instant::now();
 

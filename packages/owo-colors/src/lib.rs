@@ -256,7 +256,6 @@ const _: () = (); // workaround for syntax highlighting bug
 /// **Do you want it to only display colors if it's a terminal?**
 ///
 /// 1. Enable the `supports-colors` feature
-/// 2. Colorize inside [`if_supports_color`](OwoColorize::if_supports_color)
 ///
 /// **Do you need to store a set of colors/effects to apply to multiple things?**
 ///

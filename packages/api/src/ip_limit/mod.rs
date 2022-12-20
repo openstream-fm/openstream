@@ -65,7 +65,7 @@ fn decrement(ip: IpAddr) -> usize {
 pub const LIMIT_RESET_MS: u64 = 10;
 
 #[cfg(test)]
-#[tokio::test]
+#[test_util::async_test]
 async fn hit_count_and_reset() {
   let ip = IpAddr::from([0, 0, 0, 0]);
 

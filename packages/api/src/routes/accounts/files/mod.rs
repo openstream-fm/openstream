@@ -150,7 +150,10 @@ pub mod post {
   }
 
   impl Endpoint {
-    pub async fn perform_stream<E: std::error::Error, S: Stream<Item = Result<Bytes, E>>>(
+    pub async fn perform_stream<
+      E: std::error::Error + Send + Sync + 'static,
+      S: Stream<Item = Result<Bytes, E>> + Send + 'static,
+    >(
       &self,
       input: Input<S>,
     ) -> Result<Output, upload::UploadError<E>> {

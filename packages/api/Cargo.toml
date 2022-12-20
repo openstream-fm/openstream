@@ -20,7 +20,7 @@ http = { version = "0.1.0", path = "../http" }
 http-range = "0.1.5"
 hyper = { version = "0.14.20", features = ["full"] }
 log = "0.4.17"
-mongodb = "2.3.1"
+mongodb = "=2.3.1"
 owo-colors = { version = "3.5.0", path = "../owo-colors" }
 parking_lot = "0.12.1"
 prex = { version = "0.1.0", path = "../prex" }
@@ -31,6 +31,7 @@ serde_json = "1.0.86"
 sha1 = "0.10.5"
 shutdown = { version = "0.1.0", path = "../shutdown" }
 static_init = "1.0.3"
+test-util = { version = "0.1.0", path = "../test-util" }
 thiserror = "1.0.38"
 tokio = { version = "1.21.2", features = ["full"] }
 tokio-stream = "0.1.11"

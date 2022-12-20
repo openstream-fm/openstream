@@ -120,12 +120,12 @@ pub mod test {
   }
 
   /*
-  #[tokio::test]
+  #[test_util::async_test]
   async fn incoming_call_with_vec_string() {
     incoming(vec!["localhost:7777"]).await.unwrap();
   }
 
-  #[tokio::test]
+  #[test_util::async_test]
   async fn can_create_hyper_server() {
     //let server = hyper::Server::builder(incoming(vec!["localhost:7777"]).await.unwrap());
     let server = hyper::Server::builder(super::AddrIncoming {});

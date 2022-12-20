@@ -39,6 +39,8 @@ members = [
     "packages/logger",
     "packages/env_logger",
     "packages/lang-util",
+    "packages/test-macros",
+    "packages/test-util",
 ]
 
 [patch.crates-io]

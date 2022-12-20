@@ -194,7 +194,7 @@ pub mod test {
   use super::*;
   use tokio_stream::StreamExt;
 
-  #[tokio::test]
+  #[test_util::async_test]
   async fn bytes_stream_rated() {
     let rate = 128 * 1000;
     let total: usize = 128 * 150;

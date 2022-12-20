@@ -113,7 +113,7 @@ mod test {
 
   use super::*;
 
-  #[tokio::test]
+  #[test_util::async_test]
   async fn into_bytes_stream() {
     // (chunks_size, full_chunks, remaining)
     let values = [

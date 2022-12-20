@@ -207,7 +207,10 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
   Ok(file)
 }
 
-pub async fn upload_audio_file<E: Error, S: Stream<Item = Result<Bytes, E>>>(
+async fn upload_audio_file_inner_spawn<
+  E: Error + Send + Sync + 'static,
+  S: Stream<Item = Result<Bytes, E>> + Send + 'static,
+>(
   account_id: String,
   audio_file_id: Option<String>,
   size_limit: usize,
@@ -243,11 +246,11 @@ pub async fn upload_audio_file<E: Error, S: Stream<Item = Result<Bytes, E>>>(
       }
     }
 
-    Err(e) => {
+    Err(upload_error) => {
       operation.state = State::Error {
         cancelled_at: DateTime::now(),
-        error: format!("{}", e),
-        error_debug: format!("{:?}", e),
+        error_display: format!("{}", upload_error),
+        error_debug: format!("{:?}", upload_error),
       };
 
       let r = AudioUploadOperation::replace(&operation.id, &operation).await;
@@ -261,4 +264,25 @@ pub async fn upload_audio_file<E: Error, S: Stream<Item = Result<Bytes, E>>>(
   }
 
   result
+}
+
+pub async fn upload_audio_file<
+  E: Error + Send + Sync + 'static,
+  S: Stream<Item = Result<Bytes, E>> + Send + 'static,
+>(
+  account_id: String,
+  audio_file_id: Option<String>,
+  size_limit: usize,
+  filename: String,
+  data: S,
+) -> Result<AudioFile, UploadError<E>> {
+  tokio::spawn(upload_audio_file_inner_spawn(
+    account_id,
+    audio_file_id,
+    size_limit,
+    filename,
+    data,
+  ))
+  .await
+  .unwrap()
 }

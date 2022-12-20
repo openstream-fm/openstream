@@ -1,7 +1,7 @@
 use bytes::Bytes;
 use std::convert::Infallible;
 
-#[tokio::test]
+#[test_util::async_test]
 async fn upload_file() {
   if is_ci::cached() {
     return;
@@ -25,7 +25,7 @@ async fn upload_file() {
   .expect("upload error");
 }
 
-#[tokio::test]
+#[test_util::async_test]
 async fn should_reject_size_exceeded() {
   if is_ci::cached() {
     return;
