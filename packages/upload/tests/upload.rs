@@ -3,6 +3,10 @@ use std::convert::Infallible;
 
 #[tokio::test]
 async fn upload_file() {
+  if is_ci::cached() {
+    return;
+  }
+
   db::test_setup().await;
 
   let file = Bytes::from_static(include_bytes!("../../../audio-5s.mp3"));
@@ -23,6 +27,10 @@ async fn upload_file() {
 
 #[tokio::test]
 async fn should_reject_size_exceeded() {
+  if is_ci::cached() {
+    return;
+  }
+
   db::test_setup().await;
 
   let file = Bytes::from_static(include_bytes!("../../../audio-5s.mp3"));

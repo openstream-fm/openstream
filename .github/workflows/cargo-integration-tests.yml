@@ -1,4 +1,4 @@
-name: Test
+name: Integration Tests
 
 on: [ push, pull_request ]
 
@@ -61,4 +61,4 @@ jobs:
         # default: "true"
         # save-if: ""
     - name: Cargo Unit Tests
-      run: cargo test --bins --lib -- --nocapture
+      run: cargo test --test "*"
