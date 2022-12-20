@@ -1,14 +1,10 @@
-#![allow(clippy::bool_comparison)]
-
-use std::fmt::Display;
-use std::path::Path;
-
-use std::net::SocketAddr;
-
 use serde::{Deserialize, Serialize};
+use std::net::SocketAddr;
+use std::path::Path;
 use url::Url;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Config {
   pub mongodb: Mongodb,
   pub stream: Option<Stream>,
@@ -19,40 +15,46 @@ pub struct Config {
 
 impl Config {
   pub fn has_interfaces(&self) -> bool {
-    matches!((&self.stream, &self.source, &self.api), (None, None, None)) == false
+    self.stream.is_some() || self.source.is_some() || self.api.is_some()
   }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Mongodb {
   pub url: Url,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Stream {
   pub addrs: Vec<SocketAddr>,
   pub public_base_url: Url,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Source {
   pub receiver: SourceReceiver,
   pub broadcaster: SourceBroadcaster,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Router {
   pub addrs: Vec<SocketAddr>,
   pub public_base_url: Url,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct SourceReceiver {
   pub addrs: Vec<SocketAddr>,
   pub public_base_url: Url,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct SourceBroadcaster {
   pub addrs: Vec<SocketAddr>,
   /// if not set, this will default to http://PUBLIC_IP:PORT
@@ -60,60 +62,38 @@ pub struct SourceBroadcaster {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Api {
   pub addrs: Vec<SocketAddr>,
   pub public_base_url: Option<Url>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum LoadConfigError {
-  Io(std::io::Error),
-  Toml(toml::de::Error),
+  #[error("io error: {0}")]
+  Io(#[from] std::io::Error),
+
+  #[error("invalid config: {0}")]
+  Toml(#[from] toml::de::Error),
+
+  #[error("invalid config: at least one of [stream], [source] or [api] must be defined")]
   NoInterfaces,
-}
-
-impl From<toml::de::Error> for LoadConfigError {
-  fn from(e: toml::de::Error) -> Self {
-    Self::Toml(e)
-  }
-}
-
-impl From<std::io::Error> for LoadConfigError {
-  fn from(e: std::io::Error) -> Self {
-    Self::Io(e)
-  }
-}
-
-impl Display for LoadConfigError {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    match self {
-      LoadConfigError::Io(e) => write!(f, "io error: {e}"),
-      LoadConfigError::Toml(e) => write!(f, "invalid config: {e}"),
-      LoadConfigError::NoInterfaces => write!(
-        f,
-        "invalid config: at least one of [stream], [source] or [api] must be defined"
-      ),
-    }
-  }
-}
-
-impl std::error::Error for LoadConfigError {
-  fn cause(&self) -> Option<&dyn std::error::Error> {
-    match self {
-      LoadConfigError::Io(e) => Some(e),
-      LoadConfigError::Toml(e) => Some(e),
-      _ => None,
-    }
-  }
 }
 
 pub fn load(path: impl AsRef<Path>) -> Result<Config, LoadConfigError> {
   let buf = std::fs::read_to_string(path)?;
-  let config: Config = toml::from_str(buf.as_str())?;
+  parse(buf)
+}
 
-  if config.has_interfaces() == false {
+pub fn parse(contents: impl AsRef<str>) -> Result<Config, LoadConfigError> {
+  let config: Config = toml::from_str(contents.as_ref())?;
+
+  if !config.has_interfaces() {
     return Err(LoadConfigError::NoInterfaces);
   }
 
   Ok(config)
 }
+
+#[cfg(test)]
+mod unit_tests;

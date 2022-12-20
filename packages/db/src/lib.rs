@@ -64,9 +64,11 @@ impl IntoExistFilter for &str {
 }
 
 pub fn init(client: Client) {
-  CLIENT
-    .set(client)
-    .expect("[internal] mongodb client initialized more than once");
+  try_init(client).expect("[internal] mongodb client initialized more than once, this is a bug, please file an issue at https://github.com/ramiroaisen/openstream-rs")
+}
+
+pub fn try_init(client: Client) -> Result<(), Client> {
+  CLIENT.set(client)
 }
 
 pub async fn ensure_collections() -> MongoResult<()> {
@@ -430,7 +432,7 @@ pub async fn test_setup() {
       .await
       .expect("failed to create mongodb client");
 
-  crate::init(client);
+  let _ = crate::try_init(client);
 
   crate::ensure_collections()
     .await
