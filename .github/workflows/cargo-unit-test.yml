@@ -60,5 +60,5 @@ jobs:
         # Useful for jobs where the matrix is additive e.g. additional Cargo features.
         # default: "true"
         # save-if: ""
-    - name: Cargo Test
-      run: cargo test -- --nocapture
+    - name: Cargo Unit Tests
+      run: cargo test --bins --lib -- --nocapture

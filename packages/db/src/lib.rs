@@ -423,3 +423,16 @@ macro_rules! fetch_and_patch {
     $name
   }};
 }
+
+pub async fn test_setup() {
+  let client =
+    mongodb::Client::with_uri_str("mongodb://127.0.0.1:27017/openstream-test?replicaSet=rs1")
+      .await
+      .expect("failed to create mongodb client");
+
+  crate::init(client);
+
+  crate::ensure_collections()
+    .await
+    .expect("error ensuring db collections");
+}
