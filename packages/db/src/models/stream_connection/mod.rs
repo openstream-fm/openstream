@@ -54,12 +54,11 @@ impl Model for StreamConnection {
 }
 
 impl StreamConnection {
-  pub async fn set_transfer_bytes(
+  pub fn set_transfer_bytes(
     id: &str,
     transfer_bytes: u64,
-  ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
+  ) -> tokio::task::JoinHandle<Result<mongodb::results::UpdateResult, mongodb::error::Error>> {
     let id = id.to_string();
-
     tokio::spawn(async move {
       let set = StreamConnectionMongoSet {
         last_transfer_at: DateTime::now(),
@@ -73,14 +72,12 @@ impl StreamConnection {
 
       Self::update_by_id(&id, update).await
     })
-    .await
-    .unwrap()
   }
 
-  pub async fn set_closed(
+  pub fn set_closed(
     id: &str,
     transfer_bytes: Option<u64>,
-  ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
+  ) -> tokio::task::JoinHandle<Result<mongodb::results::UpdateResult, mongodb::error::Error>> {
     let id = id.to_string();
     tokio::spawn(async move {
       let set = StreamConnectionMongoSet {
@@ -95,7 +92,5 @@ impl StreamConnection {
 
       Self::update_by_id(&id, update).await
     })
-    .await
-    .unwrap()
   }
 }

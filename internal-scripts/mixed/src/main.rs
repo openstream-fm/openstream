@@ -15,7 +15,7 @@ async fn main() {
 
   let server = Server::bind(&addr);
 
-  println!("server listening at {}", addr);
+  println!("server listening at {addr}");
 
   server.serve(app).await.unwrap();
 }

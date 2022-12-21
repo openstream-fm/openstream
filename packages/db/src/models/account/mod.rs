@@ -196,7 +196,13 @@ pub struct Limit {
   #[serde(with = "serde_util::as_f64")]
   pub used: u64,
   #[serde(with = "serde_util::as_f64")]
-  pub avail: u64,
+  pub total: u64,
+}
+
+impl Limit {
+  pub fn avail(&self) -> u64 {
+    self.total.saturating_sub(self.used)
+  }
 }
 
 impl Model for Account {
@@ -207,4 +213,14 @@ impl Model for Account {
     let owner_id = IndexModel::builder().keys(doc! { "ownerId": 1 }).build();
     vec![owner_id]
   }
+}
+
+#[macro_export]
+macro_rules! storage_quota {
+  ($account_id:expr) => {
+    match $crate::account::Account::get_by_id($account_id).await? {
+      None => None,
+      Some(account) => Some(account.limits.storage.avail()),
+    }
+  };
 }

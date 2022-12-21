@@ -7,6 +7,10 @@ use hyper::{Body, Method};
 use serde::de::DeserializeOwned;
 use std::net::{IpAddr, SocketAddr};
 
+fn is_trusted_ip(ip: IpAddr) -> bool {
+  ip_rfc::global(&ip)
+}
+
 #[derive(Debug)]
 pub struct Parts {
   pub local_addr: SocketAddr,
@@ -180,16 +184,31 @@ impl Request {
   }
 
   pub fn isomorphic_ip(&self) -> IpAddr {
-    match self.headers().get("x-client-ip") {
-      None => self.remote_addr().ip(),
-      Some(ip) => match ip.to_str() {
-        Err(_e) => self.remote_addr().ip(),
-        Ok(ip) => match ip.parse() {
-          Err(_e) => self.remote_addr().ip(),
-          Ok(ip) => ip,
-        },
-      },
+    let mut ip = self.remote_addr().ip();
+
+    if is_trusted_ip(ip) {
+      // nginx forwarded ip
+      if let Some(v) = self.headers().get("x-real-ip") {
+        if let Ok(v) = v.to_str() {
+          if let Ok(client_ip) = v.parse() {
+            ip = client_ip;
+          }
+        }
+      }
     }
+
+    if is_trusted_ip(ip) {
+      // client forwarded ip
+      if let Some(v) = self.headers.get("x-openstream-forwarded-ip") {
+        if let Ok(v) = v.to_str() {
+          if let Ok(forward_ip) = v.parse() {
+            ip = forward_ip;
+          }
+        }
+      }
+    }
+
+    ip
   }
 
   pub fn basic_auth(&self) -> Option<BasicAuth> {

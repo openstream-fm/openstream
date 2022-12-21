@@ -56,8 +56,7 @@ impl Display for DateTime {
     } else {
       write!(
         f,
-        "{:04}-{:02}-{:02}T{:02}:{:02}:{:02}.{:03}Z",
-        y, m, d, h, min, sec, milli
+        "{y:04}-{m:02}-{d:02}T{h:02}:{min:02}:{sec:02}.{milli:03}Z"
       )
     }
   }
@@ -107,7 +106,7 @@ impl Serialize for DateTime {
   fn serialize<S: Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
     if ser.is_human_readable() {
       trace!("serializing date as human readable");
-      format!("{}", self).serialize(ser)
+      format!("{self}").serialize(ser)
     } else {
       trace!("serializing date as NOT human readable");
       let target: bson::DateTime = self.into_bson();
@@ -176,7 +175,7 @@ pub mod test {
     for date in dates {
       let date = DateTime::new(date);
       let serialized = serde_json::to_string(&date).unwrap();
-      eprintln!("{}", serialized);
+      eprintln!("{serialized}");
       let deserialized: DateTime = serde_json::from_str(&serialized).unwrap();
       assert_eq!(date, deserialized)
     }

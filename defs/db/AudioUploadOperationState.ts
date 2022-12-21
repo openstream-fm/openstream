@@ -7,6 +7,6 @@ export type AudioUploadOperationState = { state: "pending" } | {
 } | {
   state: "error";
   cancelled_at: DateTime;
-  error: string;
+  error_display: string;
   error_debug: string;
 };

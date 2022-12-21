@@ -162,7 +162,7 @@ impl Matcher {
           pattern.push_str("[^/]+");
         }
 
-        compiled.push_str(format!("(?P<{}>{})", name, pattern).as_str())
+        compiled.push_str(format!("(?P<{name}>{pattern})").as_str())
       }
     }
 
@@ -198,7 +198,7 @@ impl Matcher {
     }
   }
 
-  pub fn r#match<'a>(&self, request_method: &Method, path: &'a str) -> Option<Params> {
+  pub fn r#match(&self, request_method: &Method, path: &str) -> Option<Params> {
     if !self.match_method(request_method) {
       return None;
     }

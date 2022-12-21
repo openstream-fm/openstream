@@ -163,14 +163,14 @@ pub mod stream {
       let range: Option<HttpRange> =
         match request.headers().get(RANGE).and_then(|v| v.to_str().ok()) {
           None => None,
-          Some(v) => match http_range::HttpRange::parse(v, file.len as u64) {
+          Some(v) => match http_range::HttpRange::parse(v, file.len) {
             Err(e) => return ApiError::from(e).into_json_response(),
             Ok(ranges) => ranges.get(0).copied(),
           },
         };
 
       let (start, length) = match range {
-        None => (0, file.len as u64),
+        None => (0, file.len),
         Some(range) => (range.start, range.length),
       };
 

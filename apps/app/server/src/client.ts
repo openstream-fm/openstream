@@ -1,11 +1,13 @@
 import StatusCode from "http-status-codes";
-import fetch, { Response, RequestInit } from "node-fetch";
+import fetch, { Response, RequestInit, Headers } from "node-fetch";
 import http from "http";
 import https from "https";
 import qs from "qs";
 import type { ErrorCode } from "./types";
 import type { Readable } from "stream";
 
+export const ACCESS_TOKEN_HEADER = "x-access-token";
+export const FORWARD_IP_HEADER = "x-openstream-forwarded-ip";
 
 const qss = (v: any) => {
   qs.stringify(v, { addQueryPrefix: true, skipNulls: true })
@@ -62,10 +64,20 @@ export class Client {
     return body as T;
   }
 
-  json_headers(token: string | null, with_payload: boolean): Record<string, string> {
-    const _token = token ? { "x-access-token": token } : {} as Record<string, string>;
-    const _content = with_payload ? { "content-type": "application/json" } : {} as Record<string, string>;
+  json_headers({
+    ip,
+    token,
+    wpayload
+  }: {
+    ip: string | null,
+    token: string | null
+    wpayload: boolean,
+  }): Record<string, string> {
+    const _ip = ip ? { [FORWARD_IP_HEADER]: ip } : {} as Record<string, string>; 
+    const _token = token ? { [ACCESS_TOKEN_HEADER]: token } : {} as Record<string, string>;
+    const _content = wpayload ? { "content-type": "application/json" } : {} as Record<string, string>;
     return {
+      ..._ip,
       ..._token,
       ..._content,
     }
@@ -77,50 +89,50 @@ export class Client {
     return body;
   }
 
-  async get<T>(token: string | null, url: string,): Promise<T> {
+  async get<T>(ip: string | null, token: string | null, url: string,): Promise<T> {
     return await this.json_request<T>(url, {
-      headers: this.json_headers(token, false),
+      headers: this.json_headers({ ip, token, wpayload: false }),
     });
   }
 
-  async delete<T>(token: string | null, url: string): Promise<T> {
+  async delete<T>(ip: string | null, token: string | null, url: string): Promise<T> {
     return await this.json_request<T>(url, {
       method: "DELETE",
-      headers: this.json_headers(token, false),
+      headers: this.json_headers({ ip, token, wpayload: false }),
     });
   }
 
-  async post<T>(token: string | null, url: string, payload: any): Promise<T> {
+  async post<T>(ip: string | null, token: string | null, url: string, payload: any): Promise<T> {
     return await this.json_request<T>(url, {
       method: "POST",
-      headers: this.json_headers(token, true),
+      headers: this.json_headers({ ip, token, wpayload: true }),
       body: JSON.stringify(payload)
     })
   }
 
-  async put<T>(token: string | null, url: string, payload: any): Promise<T> {
+  async put<T>(ip: string | null, token: string | null, url: string, payload: any): Promise<T> {
     return await this.json_request<T>(url, {
       method: "PUT",
-      headers: this.json_headers(token, true),
+      headers: this.json_headers({ ip, token, wpayload: true }),
       body: JSON.stringify(payload)
     })
   }
 
-  async patch<T>(token: string | null, url: string, payload: any): Promise<T> {
+  async patch<T>(ip: string | null, token: string | null, url: string, payload: any): Promise<T> {
     return await this.json_request<T>(url, {
       method: "PATCH",
-      headers: this.json_headers(token, true),
+      headers: this.json_headers({ ip, token, wpayload: true }),
       body: JSON.stringify(payload)
     })
   }
 
 
-  async login(payload: import("./defs/api/login/POST/Payload").Payload): Promise<import("./defs/api/login/POST/Output").Output> {
-    return await this.post(null, "/login", payload)
+  async login(ip: string | null, payload: import("./defs/api/login/POST/Payload").Payload): Promise<import("./defs/api/login/POST/Output").Output> {
+    return await this.post(ip, null, "/login", payload)
   }
 
-  async register(token: string, payload: import("./defs/api/register/POST/Payload").Payload): Promise<import("./defs/api/register/POST/Output").Output> {
-    return await this.post(token, "/register", payload)
+  async register(ip: string | null, token: string, payload: import("./defs/api/register/POST/Payload").Payload): Promise<import("./defs/api/register/POST/Output").Output> {
+    return await this.post(ip, token, "/register", payload)
   }
 }
 
@@ -136,16 +148,16 @@ export class Accounts {
     this.files = new AccountFiles(client);
   }
 
-  async list(token: string, query: import("./defs/api/accounts/GET/Query").Query): Promise<import("./defs/api/accounts/GET/Output").Output> {
-    return await this.client.get(token, `/accounts${qss(query)}}`);
+  async list(ip: string | null, token: string, query: import("./defs/api/accounts/GET/Query").Query): Promise<import("./defs/api/accounts/GET/Output").Output> {
+    return await this.client.get(ip, token, `/accounts${qss(query)}}`);
   }
 
-  async get(token: string, id: string): Promise<import("./defs/api/accounts/[account]/GET/Output").Output> {
-    return await this.client.get(token, `/accounts/${id}`);
+  async get(ip: string | null, token: string, id: string): Promise<import("./defs/api/accounts/[account]/GET/Output").Output> {
+    return await this.client.get(ip, token, `/accounts/${id}`);
   }
 
-  async post(token: string, payload: import("./defs/api/accounts/POST/Payload").Payload): Promise<import("./defs/api/accounts/POST/Output").Output> {
-    return await this.client.post(token, `/accounts`, payload);
+  async post(ip: string | null, token: string, payload: import("./defs/api/accounts/POST/Payload").Payload): Promise<import("./defs/api/accounts/POST/Output").Output> {
+    return await this.client.post(ip, token, `/accounts`, payload);
   }
 }
 
@@ -158,16 +170,16 @@ export class Users {
     this.accounts = new UserAccounts(client);
   }
 
-  async list(token: string, query: import("./defs/api/users/GET/Query").Query): Promise<import("./defs/api/accounts/GET/Output").Output> {
-    return await this.client.get(token, `/users${qss(query)}`);
+  async list(ip: string | null, token: string, query: import("./defs/api/users/GET/Query").Query): Promise<import("./defs/api/accounts/GET/Output").Output> {
+    return await this.client.get(ip, token, `/users${qss(query)}`);
   }
 
-  async get(token: string, userId: string): Promise<import("./defs/api/users/[user]/GET/Output").Output> {
-    return await this.client.get(token, `/users/${userId}`);
+  async get(ip: string | null, token: string, userId: string): Promise<import("./defs/api/users/[user]/GET/Output").Output> {
+    return await this.client.get(ip, token, `/users/${userId}`);
   }
 
-  async post(token: string, payload: import("./defs/api/users/POST/Payload").Payload): Promise<import("./defs/api/users/POST/Output").Output> {
-    return await this.client.post(token, `/users`, payload);
+  async post(ip: string | null, token: string, payload: import("./defs/api/users/POST/Payload").Payload): Promise<import("./defs/api/users/POST/Output").Output> {
+    return await this.client.post(ip, token, `/users`, payload);
   }
 }
 
@@ -193,19 +205,21 @@ export class AccountFiles {
   }
 
 
-  async list(token: string, accountId: string, query: import("./defs/api/accounts/[account]/files/GET/Query").Query): Promise<import("./defs/api/accounts/[account]/files/GET/Output").Output> {
-    return await this.client.get(token, `/accounts/${accountId}/files${qss(query)}`);
+  async list(ip: string | null, token: string, accountId: string, query: import("./defs/api/accounts/[account]/files/GET/Query").Query): Promise<import("./defs/api/accounts/[account]/files/GET/Output").Output> {
+    return await this.client.get(ip, token, `/accounts/${accountId}/files${qss(query)}`);
   }
 
-  async get(token: string, accountId: string, fileId: string): Promise<import("./defs/api/accounts/[account]/files/[file]/GET/Output").Output> {
-    return await this.client.get(token, `/accounts/${accountId}/files/${fileId}`);
+  async get(ip: string | null, token: string, accountId: string, fileId: string): Promise<import("./defs/api/accounts/[account]/files/[file]/GET/Output").Output> {
+    return await this.client.get(ip, token, `/accounts/${accountId}/files/${fileId}`);
   }
 
-  async post(token: string, accountId: string, contentType: string, query: import("./defs/api/accounts/[account]/files/POST/Query").Query, data: Readable): Promise<import("./defs/api/accounts/[account]/files/POST/Output").Output> {
+  async post(ip: string | null, token: string, accountId: string, contentType: string, contentLength: number, query: import("./defs/api/accounts/[account]/files/POST/Query").Query, data: Readable): Promise<import("./defs/api/accounts/[account]/files/POST/Output").Output> {
     let res = await this.client.fetch(`/accounts/${accountId}/files${qss(query)}`, {
       headers: {
+        ...(ip ? { [FORWARD_IP_HEADER]: ip } : {}),
         "content-type": contentType,
-        "x-access-token": token,
+        "content-length": String(contentLength),
+        [ACCESS_TOKEN_HEADER]: token,
       },
       body: data 
     })

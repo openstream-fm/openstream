@@ -56,7 +56,7 @@ pub enum Kind {
   },
   UploadFfmpegIo(std::io::Error),
   UploadSpawn(std::io::Error),
-  UploadSizeExceeded,
+  UploadQuotaExceeded,
 
   RangeInvalid,
   RangeNoOverlap,
@@ -64,6 +64,8 @@ pub enum Kind {
   PatchEmpty,
   PatchInvalid(String),
   PatchOutOfScope(String),
+
+  ContentLengthRequired,
 }
 
 #[derive(Debug)]
@@ -106,7 +108,7 @@ impl ApiError {
       Kind::AdminEmailExists => StatusCode::CONFLICT,
 
       Kind::UploadEmpty => StatusCode::BAD_REQUEST,
-      Kind::UploadSizeExceeded => StatusCode::BAD_REQUEST,
+      Kind::UploadQuotaExceeded => StatusCode::BAD_REQUEST,
       Kind::UploadSpawn(_) => StatusCode::INTERNAL_SERVER_ERROR,
       Kind::UploadFfmpegIo(_) => StatusCode::INTERNAL_SERVER_ERROR,
       Kind::UploadFfmpegExit { .. } => StatusCode::BAD_REQUEST,
@@ -117,6 +119,8 @@ impl ApiError {
       Kind::PatchEmpty => StatusCode::BAD_REQUEST,
       Kind::PatchInvalid(_) => StatusCode::BAD_REQUEST,
       Kind::PatchOutOfScope(_) => StatusCode::BAD_REQUEST,
+
+      Kind::ContentLengthRequired => StatusCode::LENGTH_REQUIRED,
     }
   }
 
@@ -147,7 +151,7 @@ impl ApiError {
       Kind::AdminEmailExists => format!("Admin email already exists"),
 
       Kind::UploadEmpty => format!("Payload is empty"),
-      Kind::UploadSizeExceeded => format!("Audio quota exceeded"),
+      Kind::UploadQuotaExceeded => format!("Audio quota exceeded"),
       Kind::UploadSpawn(_) => format!("Internal server error"),
       Kind::UploadFfmpegIo(_) => format!("Internal server error"),
       Kind::UploadFfmpegExit { .. } => {
@@ -160,6 +164,7 @@ impl ApiError {
       Kind::PatchEmpty => format!("Update operation is empty"),
       Kind::PatchInvalid(message) => format!("{message}"),
       Kind::PatchOutOfScope(message) => format!("{message}"),
+      Kind::ContentLengthRequired => format!("content length is required"),
     }
   }
 
@@ -190,7 +195,7 @@ impl ApiError {
       Kind::AdminEmailExists => PublicErrorCode::AdminEmailExists,
 
       Kind::UploadEmpty => PublicErrorCode::UploadEmpty,
-      Kind::UploadSizeExceeded => PublicErrorCode::UploadSizeExceeded,
+      Kind::UploadQuotaExceeded => PublicErrorCode::UploadQuotaExceeded,
       Kind::UploadSpawn(_) => PublicErrorCode::UploadInternalSpawn,
       Kind::UploadFfmpegIo(_) => PublicErrorCode::UploadIntenralIo,
       Kind::UploadFfmpegExit { .. } => PublicErrorCode::UploadExit,
@@ -201,6 +206,8 @@ impl ApiError {
       Kind::PatchEmpty => PublicErrorCode::PatchEmpty,
       Kind::PatchInvalid(_) => PublicErrorCode::PatchInvalid,
       Kind::PatchOutOfScope(_) => PublicErrorCode::PatchOutOfScope,
+
+      Kind::ContentLengthRequired => PublicErrorCode::ContentLengthRequired,
     }
   }
 
@@ -231,8 +238,8 @@ impl Display for ApiError {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     write!(f, "ApiError: {:?}", self.code())?;
     match &self.kind {
-      Kind::Db(e) => write!(f, " mongo => {}", e)?,
-      Kind::Hyper(e) => write!(f, " hyper => {}", e)?,
+      Kind::Db(e) => write!(f, " mongo => {e}")?,
+      Kind::Hyper(e) => write!(f, " hyper => {e}")?,
 
       Kind::TokenUserNotFound(id) => write!(f, " id => {id}")?,
       Kind::TokenAccountNotFound(id) => write!(f, " id: {id}")?,
@@ -262,11 +269,11 @@ impl Display for ApiError {
       Kind::AdminEmailExists => {}
 
       Kind::UploadEmpty => {}
-      Kind::UploadSizeExceeded => {}
+      Kind::UploadQuotaExceeded => {}
       Kind::UploadSpawn(e) => write!(f, " inner: {e}")?,
       Kind::UploadFfmpegIo(e) => write!(f, "inner: {e}")?,
       Kind::UploadFfmpegExit { status, stderr } => {
-        write!(f, " status: {status}, stderr: {:?}", stderr)?
+        write!(f, " status: {status}, stderr: {stderr:?}")?
       }
 
       Kind::RangeInvalid => {}
@@ -275,6 +282,8 @@ impl Display for ApiError {
       Kind::PatchEmpty => {}
       Kind::PatchInvalid(message) => write!(f, " message: {message}")?,
       Kind::PatchOutOfScope(message) => write!(f, " message: {message}")?,
+
+      Kind::ContentLengthRequired => {}
     };
 
     Ok(())
@@ -326,9 +335,10 @@ impl<E: Into<ApiError>> From<UploadError<E>> for ApiError {
       UploadError::FfmpegExit { status, stderr } => {
         ApiError::from(Kind::UploadFfmpegExit { status, stderr })
       }
+      UploadError::AccountNotFound(id) => ApiError::from(Kind::AccountNotFound(id)),
       UploadError::FfmpegIo(e) => ApiError::from(Kind::UploadFfmpegIo(e)),
       UploadError::FfmpegSpawn(e) => ApiError::from(Kind::UploadSpawn(e)),
-      UploadError::SizeExceeded => ApiError::from(Kind::UploadSizeExceeded),
+      UploadError::QuotaExceeded => ApiError::from(Kind::UploadQuotaExceeded),
       UploadError::Stream(s) => s.into(),
     }
   }

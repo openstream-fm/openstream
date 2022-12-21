@@ -79,8 +79,7 @@ pub fn deserialize<'de, D: Deserializer<'de>, T: SerdeBytes>(de: D) -> Result<T,
     match T::from_base64(helper) {
       Ok(v) => Ok(v),
       Err(e) => Err(D::Error::custom(format!(
-        "cannot decode binary as base64: ({})",
-        e
+        "cannot decode binary as base64: ({e})",
       ))),
     }
   } else {

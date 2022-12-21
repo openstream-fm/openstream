@@ -15,7 +15,7 @@ pub struct AudioFile {
   pub md5: String,
 
   #[serde(with = "as_f64")]
-  pub len: usize,
+  pub len: u64,
 
   pub duration_ms: f64,
 

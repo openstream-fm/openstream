@@ -33,7 +33,7 @@ impl Router {
       index: 0,
     };
 
-    return next.run(req).await;
+    next.run(req).await
   }
 }
 
@@ -331,7 +331,7 @@ impl Service<hyper::Request<Body>> for RouterService {
   type Future =
     Pin<Box<dyn Future<Output = Result<hyper::Response<Body>, Infallible>> + Send + 'static>>;
 
-  fn poll_ready<'a>(&mut self, _cx: &mut Context<'a>) -> Poll<Result<(), Self::Error>> {
+  fn poll_ready(&mut self, _cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
     Poll::Ready(Ok(()))
   }
 
@@ -386,7 +386,7 @@ impl Service<&AddrStream> for Router {
 
   type Future = Pin<Box<dyn Future<Output = Result<RouterService, Infallible>> + Send + 'static>>;
 
-  fn poll_ready<'a>(&mut self, _cx: &mut Context<'a>) -> Poll<Result<(), Self::Error>> {
+  fn poll_ready(&mut self, _cx: &mut Context) -> Poll<Result<(), Self::Error>> {
     Poll::Ready(Ok(()))
   }
 

@@ -171,8 +171,7 @@ impl StreamHandler {
                 Err(_) => break,
                 Ok(()) => {
                   conn_doc.transfer_bytes += len as u64;
-                  let _ =
-                    StreamConnection::set_transfer_bytes(&conn_doc.id, conn_doc.transfer_bytes);
+                  StreamConnection::set_transfer_bytes(&conn_doc.id, conn_doc.transfer_bytes);
                 }
               };
             }

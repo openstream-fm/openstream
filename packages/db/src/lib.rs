@@ -73,14 +73,16 @@ pub fn try_init(client: Client) -> Result<(), Client> {
 
 pub async fn ensure_collections() -> MongoResult<()> {
   config::Config::ensure_collection().await?;
+  user::User::ensure_collection().await?;
   account::Account::ensure_collection().await?;
+  admin::Admin::ensure_collection().await?;
   audio_chunk::AudioChunk::ensure_collection().await?;
   audio_file::AudioFile::ensure_collection().await?;
-  user::User::ensure_collection().await?;
-  admin::Admin::ensure_collection().await?;
   audio_upload_operation::AudioUploadOperation::ensure_collection().await?;
   access_token::AccessToken::ensure_collection().await?;
   event::Event::ensure_collection().await?;
+  stream_connection::StreamConnection::ensure_collection().await?;
+  play_history_item::PlayHistoryItem::ensure_collection().await?;
 
   Ok(())
 }
@@ -432,9 +434,9 @@ pub async fn test_setup() {
       .await
       .expect("failed to create mongodb client");
 
-  let _ = crate::try_init(client);
-
-  crate::ensure_collections()
-    .await
-    .expect("error ensuring db collections");
+  if crate::try_init(client).is_ok() {
+    crate::ensure_collections()
+      .await
+      .expect("error ensuring db collections");
+  }
 }

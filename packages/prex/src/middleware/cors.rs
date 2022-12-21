@@ -59,7 +59,7 @@ fn add_vary(res: &mut Response, value: &'static str) {
     return;
   }
 
-  if let Ok(v) = HeaderValue::from_str(&format!("{},{}", vary, value)) {
+  if let Ok(v) = HeaderValue::from_str(&format!("{vary},{value}")) {
     res.headers_mut().insert(VARY, v);
   }
 }

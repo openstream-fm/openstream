@@ -128,9 +128,9 @@ impl BufferWriter {
             let log = String::from_utf8_lossy(buf.bytes());
 
             match target {
-                WritableTarget::Stderr => eprint!("{}", log),
-                WritableTarget::Stdout => print!("{}", log),
-                WritableTarget::Pipe(pipe) => write!(pipe.lock().unwrap(), "{}", log)?,
+                WritableTarget::Stderr => eprint!("{log}"),
+                WritableTarget::Stdout => print!("{log}"),
+                WritableTarget::Pipe(pipe) => write!(pipe.lock().unwrap(), "{log}")?,
             }
 
             Ok(())

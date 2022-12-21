@@ -119,10 +119,11 @@ pub mod post {
 
   use bytes::Bytes;
   use futures::Stream;
+  use hyper::header::CONTENT_LENGTH;
   use serde::de::Error;
   use upload::UploadError;
 
-  use crate::request_ext::get_access_token_scope;
+  use crate::{error::Kind, request_ext::get_access_token_scope};
 
   use super::*;
 
@@ -140,6 +141,7 @@ pub mod post {
     pub account: Account,
     pub filename: String,
     pub stream: S,
+    pub size_hint: Option<u64>,
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -157,13 +159,13 @@ pub mod post {
       &self,
       input: Input<S>,
     ) -> Result<Output, upload::UploadError<E>> {
-      let size_limit = (input.account.limits.storage.avail as usize)
-        .saturating_sub(input.account.limits.storage.used as usize);
+      // let size_limit = (input.account.limits.storage.avail as usize)
+      //   .saturating_sub(input.account.limits.storage.used as usize);
 
       let file = upload::upload_audio_file(
         input.account.id,
         None,
-        size_limit,
+        input.size_hint,
         input.filename,
         input.stream,
       )
@@ -179,6 +181,8 @@ pub mod post {
     Token(#[from] GetAccessTokenScopeError),
     #[error("querystring: {0}")]
     Query(#[from] serde_querystring::Error),
+    #[error("content length is required")]
+    ContentLengthRequired,
   }
 
   impl From<ParseError> for ApiError {
@@ -186,6 +190,7 @@ pub mod post {
       match e {
         ParseError::Token(e) => e.into(),
         ParseError::Query(e) => e.into(),
+        ParseError::ContentLengthRequired => ApiError::from(Kind::ContentLengthRequired),
       }
     }
   }
@@ -206,6 +211,17 @@ pub mod post {
         return Err(serde_querystring::Error::custom("filename is required").into());
       }
 
+      let content_length: u64 = match request.headers().get(CONTENT_LENGTH) {
+        None => return Err(ParseError::ContentLengthRequired),
+        Some(v) => match v.to_str() {
+          Err(_e) => return Err(ParseError::ContentLengthRequired),
+          Ok(s) => match s.parse() {
+            Err(_e) => return Err(ParseError::ContentLengthRequired),
+            Ok(v) => v,
+          },
+        },
+      };
+
       let access_token_scope = get_access_token_scope(&request).await?;
       let account = access_token_scope.grant_account_scope(account_id).await?;
 
@@ -215,6 +231,7 @@ pub mod post {
         account,
         filename: filename.to_string(),
         stream,
+        size_hint: Some(content_length),
       };
 
       Ok(input)

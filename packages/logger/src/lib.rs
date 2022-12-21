@@ -67,7 +67,7 @@ pub fn init() {
   logger.format(|buf, record| {
     let date = now();
     let fmt_record = FormattedRecord { record, date };
-    writeln!(buf, "{}", fmt_record)?;
+    writeln!(buf, "{fmt_record}")?;
     Ok(())
   });
 
@@ -92,11 +92,7 @@ impl<'a, 'b> FormattedRecord<'a, 'b> {
       self.date.millisecond(),
     );
 
-    write!(
-      f,
-      "{:04}-{:02}-{:02} {:02}:{:02}:{:02}.{:03}",
-      y, m, d, hr, min, sec, ms,
-    )?;
+    write!(f, "{y:04}-{m:02}-{d:02} {hr:02}:{min:02}:{sec:02}.{ms:03}",)?;
 
     if self.date.offset().is_utc() {
       write!(f, " Z")?;

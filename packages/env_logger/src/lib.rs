@@ -1,27 +1,5 @@
-// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
-// https://www.apache.org/licenses/LICENSE-2.0> or the MIT license
-// <LICENSE-MIT or https://opensource.org/licenses/MIT>, at your
-// option. This file may not be copied, modified, or distributed
-// except according to those terms.
+#![allow(clippy::forget_ref)]
 
-//! A simple logger that can be configured via environment variables, for use
-//! with the logging facade exposed by the [`log` crate][log-crate-url].
-//!
-//! Despite having "env" in its name, **`env_logger`** can also be configured by
-//! other means besides environment variables. See [the examples][gh-repo-examples]
-//! in the source repository for more approaches.
-//!
-//! By default, `env_logger` writes logs to `stderr`, but can be configured to
-//! instead write them to `stdout`.
-//!
-//! ## Example
-//!
-//! ```
-//! use log::{debug, error, log_enabled, info, Level};
-//!
-//! env_logger::init();
-//!
-//! debug!("this is a debug {}", "message");
 //! error!("this is printed by default");
 //!
 //! if log_enabled!(Level::Info) {

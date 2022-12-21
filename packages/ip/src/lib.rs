@@ -17,10 +17,10 @@ impl Display for Error {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     match self {
       Self::ResponseNotOk => write!(f, "response status is not ok"),
-      Self::Reqwuest(e) => write!(f, "error trying to connect to ip server: {}", e),
+      Self::Reqwuest(e) => write!(f, "error trying to connect to ip server: {e}"),
       Self::NoIpHeader => write!(f, "no x-ip header in response"),
-      Self::ToStr(e) => write!(f, "x-ip header is not utf-8: {}", e),
-      Self::AddrParse(e) => write!(f, "x-ip header is not a valid ip: {}", e),
+      Self::ToStr(e) => write!(f, "x-ip header is not utf-8: {e}"),
+      Self::AddrParse(e) => write!(f, "x-ip header is not a valid ip: {e}"),
     }
   }
 }

@@ -5,11 +5,11 @@ pub fn join(left: &str, right: &str) -> String {
   let right = right.trim_matches(SLASH);
 
   if right.is_empty() {
-    format!("/{}", left)
+    format!("/{left}")
   } else if left.is_empty() {
-    format!("/{}", right)
+    format!("/{right}")
   } else {
-    format!("/{}/{}", left, right)
+    format!("/{left}/{right}")
   }
 }
 

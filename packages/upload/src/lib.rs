@@ -1,17 +1,38 @@
+#![allow(clippy::uninlined_format_args)]
+
 use std::process::ExitStatus;
 
 use bytes::Bytes;
 use constants::{AUDIO_FILE_BYTERATE, AUDIO_FILE_CHUNK_SIZE};
+use db::account::Account;
 use db::audio_chunk::AudioChunk;
 use db::audio_file::{AudioFile, Metadata};
 use db::audio_upload_operation::{AudioUploadOperation, State};
-use db::Model;
+use db::{run_transaction, storage_quota, Model};
 use ffmpeg::{transform, FfmpegConfig, TransformError};
 use log::*;
 use md5::{Digest, Md5};
 use serde_util::DateTime;
 use std::error::Error;
 use tokio_stream::{Stream, StreamExt};
+
+macro_rules! check_quota {
+  ($account_id:expr, $file_len:expr) => {
+    match storage_quota!($account_id) {
+      None => {
+        trace!("upload error account not found: {}", $account_id);
+        return Err(UploadError::AccountNotFound($account_id.to_string()));
+      }
+
+      Some(max) => {
+        if $file_len > max {
+          trace!("upload error quota exceeded (1)");
+          return Err(UploadError::QuotaExceeded);
+        }
+      }
+    }
+  };
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum UploadError<E> {
@@ -28,8 +49,10 @@ pub enum UploadError<E> {
   },
   #[error("ffmpeg io: {0}")]
   FfmpegIo(std::io::Error),
-  #[error("size exceeded")]
-  SizeExceeded,
+  #[error("account not found: {0}")]
+  AccountNotFound(String),
+  #[error("quota exceeded")]
+  QuotaExceeded,
   #[error("file empty")]
   Empty,
 }
@@ -46,10 +69,14 @@ impl<E> From<TransformError> for UploadError<E> {
 async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>>(
   account_id: String,
   audio_file_id: String,
-  size_limit: usize,
+  estimated_len: Option<u64>,
   filename: String,
   data: S,
 ) -> Result<AudioFile, UploadError<E>> {
+  if let Some(len) = estimated_len {
+    check_quota!(&account_id, len);
+  }
+
   tokio::pin!(data);
 
   let (meta_tx, meta_rx) = tokio::sync::mpsc::channel(1);
@@ -105,7 +132,7 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
     async move {
       let mut hasher = Md5::new();
 
-      let mut file_len = 0;
+      let mut file_len = 0u64;
       let mut file_duration_ms = 0.0;
       let mut chunk_count = 0;
 
@@ -131,12 +158,9 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
         chunk_count += 1;
 
         let len = bytes.len();
-        file_len += len;
+        file_len += len as u64;
 
-        if file_len > size_limit {
-          trace!("upload error size exceeded");
-          return Err(UploadError::SizeExceeded);
-        }
+        check_quota!(&account_id, file_len);
 
         let duration_ms = bytes.len() as f64 / AUDIO_FILE_BYTERATE as f64 * 1000.0;
 
@@ -201,8 +225,23 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
     metadata,
   };
 
-  AudioFile::insert(&file).await?;
-  trace!("upload audio file uploaded");
+  run_transaction!(session => {
+
+    let mut account = match Account::get_by_id_with_session(&file.account_id, &mut session).await? {
+      None => return Err(UploadError::AccountNotFound(file.account_id)),
+      Some(account) => account,
+    };
+
+    if account.limits.storage.avail() < file.len {
+      return Err(UploadError::QuotaExceeded);
+    }
+
+    account.limits.storage.used += file.len;
+
+    Account::replace_with_session(&account.id, &account, &mut session).await?;
+    AudioFile::insert_with_session(&file, &mut session).await?;
+    trace!("upload audio file uploaded");
+  });
 
   Ok(file)
 }
@@ -213,7 +252,7 @@ async fn upload_audio_file_inner_spawn<
 >(
   account_id: String,
   audio_file_id: Option<String>,
-  size_limit: usize,
+  estimated_len: Option<u64>,
   filename: String,
   data: S,
 ) -> Result<AudioFile, UploadError<E>> {
@@ -229,7 +268,7 @@ async fn upload_audio_file_inner_spawn<
   AudioUploadOperation::insert(&operation).await?;
 
   let result =
-    upload_audio_file_internal(account_id, audio_file_id, size_limit, filename, data).await;
+    upload_audio_file_internal(account_id, audio_file_id, estimated_len, filename, data).await;
 
   match result.as_ref() {
     Ok(_) => {
@@ -272,14 +311,14 @@ pub async fn upload_audio_file<
 >(
   account_id: String,
   audio_file_id: Option<String>,
-  size_limit: usize,
+  estimated_len: Option<u64>,
   filename: String,
   data: S,
 ) -> Result<AudioFile, UploadError<E>> {
   tokio::spawn(upload_audio_file_inner_spawn(
     account_id,
     audio_file_id,
-    size_limit,
+    estimated_len,
     filename,
     data,
   ))

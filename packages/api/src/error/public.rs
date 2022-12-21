@@ -75,7 +75,7 @@ pub enum PublicErrorCode {
   AdminEmailExists,
 
   UploadEmpty,
-  UploadSizeExceeded,
+  UploadQuotaExceeded,
   UploadInternalSpawn,
   UploadIntenralIo,
   UploadExit,
@@ -86,4 +86,6 @@ pub enum PublicErrorCode {
   PatchEmpty,
   PatchInvalid,
   PatchOutOfScope,
+
+  ContentLengthRequired,
 }

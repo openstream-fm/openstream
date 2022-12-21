@@ -2,5 +2,5 @@
 
 export interface AccountLimit {
   used: number;
-  avail: number;
+  total: number;
 }

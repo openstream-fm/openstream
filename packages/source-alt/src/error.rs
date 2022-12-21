@@ -12,9 +12,9 @@ pub enum HandlerError {
 impl Display for HandlerError {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     match self {
-      Self::Io(e) => write!(f, "{}", e),
-      Self::ReadHead(e) => write!(f, "{}", e),
-      Self::WriteHead(e) => write!(f, "{}", e),
+      Self::Io(e) => write!(f, "{e}"),
+      Self::ReadHead(e) => write!(f, "{e}"),
+      Self::WriteHead(e) => write!(f, "{e}"),
     }
   }
 }

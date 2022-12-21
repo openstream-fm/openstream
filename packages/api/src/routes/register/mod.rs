@@ -240,29 +240,29 @@ pub mod post {
         AccessTokenScope::Global | AccessTokenScope::Admin(_) => Limits {
           listeners: Limit {
             used: 0,
-            avail: payload_limits.listeners.unwrap_or(config.limits.listeners),
+            total: payload_limits.listeners.unwrap_or(config.limits.listeners),
           },
           transfer: Limit {
             used: 0,
-            avail: payload_limits.transfer.unwrap_or(config.limits.transfer),
+            total: payload_limits.transfer.unwrap_or(config.limits.transfer),
           },
           storage: Limit {
             used: 0,
-            avail: payload_limits.storage.unwrap_or(config.limits.storage),
+            total: payload_limits.storage.unwrap_or(config.limits.storage),
           },
         },
         AccessTokenScope::User(_) => Limits {
           listeners: Limit {
             used: 0,
-            avail: config.limits.listeners,
+            total: config.limits.listeners,
           },
           transfer: Limit {
             used: 0,
-            avail: config.limits.transfer,
+            total: config.limits.transfer,
           },
           storage: Limit {
             used: 0,
-            avail: config.limits.storage,
+            total: config.limits.storage,
           },
         },
       };

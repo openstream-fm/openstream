@@ -33,7 +33,7 @@ pub async fn start(
 
   loop {
     let (socket, addr) = listener.accept().await?;
-    let _ = tokio::spawn(handle_connection(socket, addr));
+    tokio::spawn(handle_connection(socket, addr));
   }
 }
 

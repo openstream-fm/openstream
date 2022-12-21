@@ -37,7 +37,7 @@ pub trait JsonHandler: Send + Sync + Sized + Clone + 'static {
         let err = e.into();
         warn!(
           "APIError (parse): {} {} => {:?}",
-          method.to_string(),
+          method.as_str(),
           path,
           err
         );
@@ -51,7 +51,7 @@ pub trait JsonHandler: Send + Sync + Sized + Clone + 'static {
         let err = e.into();
         warn!(
           "APIError (perform): {} {} => {:?}",
-          method.to_string(),
+          method.as_str(),
           path,
           err
         );
