@@ -1,4 +1,4 @@
-use crate::error::{ApiError, Kind};
+use crate::error::ApiError;
 use crate::ip_limit;
 
 use db::admin::Admin;
@@ -41,6 +41,18 @@ pub enum GetAccessTokenScopeError {
 
   #[error("token out of scope")]
   OutOfScope,
+
+  #[error("admin not found: {0}")]
+  ResolveAdminNotFound(String),
+
+  #[error("user not found: {0}")]
+  ResolveUserNotFound(String),
+
+  #[error("unresolvable admin 'me'")]
+  UnresolvableAdminMe,
+
+  #[error("unresolvable user 'me'")]
+  UnresolvableUserMe,
 }
 
 #[derive(Debug, Clone)]
@@ -98,6 +110,31 @@ impl AccessTokenScope {
     }
   }
 
+  pub async fn grant_user_scope(&self, user_id: &str) -> Result<User, GetAccessTokenScopeError> {
+    match self {
+      AccessTokenScope::User(user) => {
+        if user_id == "me" || user_id == user.id {
+          Ok(user.clone())
+        } else {
+          Err(GetAccessTokenScopeError::OutOfScope)
+        }
+      }
+
+      AccessTokenScope::Admin(_) | AccessTokenScope::Global => {
+        if user_id == "me" {
+          return Err(GetAccessTokenScopeError::UnresolvableUserMe);
+        }
+
+        match User::get_by_id(user_id).await? {
+          None => Err(GetAccessTokenScopeError::ResolveUserNotFound(
+            user_id.to_string(),
+          )),
+          Some(user) => Ok(user),
+        }
+      }
+    }
+  }
+
   pub async fn grant_admin_write_scope(
     &self,
     admin_id: &str,
@@ -105,17 +142,51 @@ impl AccessTokenScope {
     match self {
       AccessTokenScope::User(_) => Err(GetAccessTokenScopeError::OutOfScope),
       AccessTokenScope::Admin(admin) => {
-        if admin.id == admin_id {
+        if admin_id == "me" || admin_id == admin.id {
           Ok(admin.clone())
         } else {
           Err(GetAccessTokenScopeError::OutOfScope)
         }
       }
+
+      AccessTokenScope::Global => {
+        if admin_id == "me" {
+          return Err(GetAccessTokenScopeError::UnresolvableAdminMe);
+        }
+
+        match Admin::get_by_id(admin_id).await? {
+          None => Err(GetAccessTokenScopeError::ResolveAdminNotFound(
+            admin_id.to_string(),
+          )),
+          Some(admin) => Ok(admin),
+        }
+      }
+    }
+  }
+
+  pub async fn grant_admin_read_scope(
+    &self,
+    admin_id: &str,
+  ) -> Result<Admin, GetAccessTokenScopeError> {
+    match self {
+      AccessTokenScope::User(_) => Err(GetAccessTokenScopeError::OutOfScope),
+      AccessTokenScope::Admin(admin) => {
+        if admin_id == "me" || admin_id == admin.id {
+          Ok(admin.clone())
+        } else {
+          match Admin::get_by_id(admin_id).await? {
+            None => Err(GetAccessTokenScopeError::ResolveAdminNotFound(
+              admin_id.to_string(),
+            )),
+            Some(admin) => Ok(admin),
+          }
+        }
+      }
       AccessTokenScope::Global => match Admin::get_by_id(admin_id).await? {
-        Some(admin) => Ok(admin),
-        None => Err(GetAccessTokenScopeError::AdminNotFound(
+        None => Err(GetAccessTokenScopeError::ResolveAdminNotFound(
           admin_id.to_string(),
         )),
+        Some(admin) => Ok(admin),
       },
     }
   }
@@ -130,15 +201,15 @@ pub async fn get_access_token_scope(
     return Err(GetAccessTokenScopeError::TooManyRequests);
   }
 
-  let token_key = match req.headers().get(X_ACCESS_TOKEN) {
+  let key: String = match req.headers().get(X_ACCESS_TOKEN) {
     None => return Err(GetAccessTokenScopeError::Missing),
     Some(v) => match v.to_str() {
       Err(_) => return Err(GetAccessTokenScopeError::NonUtf8),
-      Ok(v) => v,
+      Ok(v) => v.to_string(),
     },
   };
 
-  let doc = match AccessToken::touch(token_key).await? {
+  let doc = match AccessToken::touch(&key).await? {
     None => {
       ip_limit::hit(ip);
       return Err(GetAccessTokenScopeError::NotFound);
@@ -168,24 +239,18 @@ impl From<GetAccessTokenScopeError> for ApiError {
     use GetAccessTokenScopeError::*;
     match v {
       Db(e) => ApiError::from(e),
-      TooManyRequests => ApiError::from(Kind::TooManyRequests),
-      Missing => ApiError::from(Kind::TokenMissing),
-      NonUtf8 => ApiError::from(Kind::TokenMalformed),
-      NotFound => ApiError::from(Kind::TokenNotFound),
-      OutOfScope => ApiError::from(Kind::TokenOutOfScope),
-      UserNotFound(id) => ApiError::from(Kind::TokenUserNotFound(id)),
-      AdminNotFound(id) => ApiError::from(Kind::TokenAdminNotFound(id)),
-      AccountNotFound(id) => ApiError::from(Kind::TokenAccountNotFound(id)),
+      TooManyRequests => ApiError::TooManyRequests,
+      Missing => ApiError::TokenMissing,
+      NonUtf8 => ApiError::TokenMalformed,
+      NotFound => ApiError::TokenNotFound,
+      OutOfScope => ApiError::TokenOutOfScope,
+      UserNotFound(id) => ApiError::TokenUserNotFound(id),
+      AdminNotFound(id) => ApiError::TokenAdminNotFound(id),
+      AccountNotFound(id) => ApiError::AccountNotFound(id),
+      ResolveAdminNotFound(id) => ApiError::AdminNotFound(id),
+      ResolveUserNotFound(id) => ApiError::UserNotFound(id),
+      UnresolvableAdminMe => ApiError::UnresolvableAdminMe,
+      UnresolvableUserMe => ApiError::UnresolvableUserMe,
     }
-  }
-}
-
-#[derive(Debug, Clone, Copy, thiserror::Error)]
-#[error("token out of scope")]
-pub struct GrantScopeError;
-
-impl From<GrantScopeError> for GetAccessTokenScopeError {
-  fn from(_: GrantScopeError) -> Self {
-    Self::OutOfScope
   }
 }

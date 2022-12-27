@@ -129,8 +129,6 @@ pub mod post {
   use serde_util::DateTime;
   use ts_rs::TS;
 
-  use crate::error::Kind;
-
   use super::*;
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -211,16 +209,14 @@ pub mod post {
     fn from(e: HandleError) -> Self {
       match e {
         HandleError::Db(e) => ApiError::from(e),
-        HandleError::NameMissing => {
-          ApiError::from(Kind::PayloadInvalid(String::from("Name is required")))
-        }
+        HandleError::NameMissing => ApiError::PayloadInvalid(String::from("Name is required")),
         HandleError::OwnerIdMissing => {
-          ApiError::from(Kind::PayloadInvalid(String::from("ownerId is required")))
+          ApiError::PayloadInvalid(String::from("ownerId is required"))
         }
-        HandleError::OwnerIdOutOfScope => ApiError::from(Kind::PayloadInvalid(String::from(
+        HandleError::OwnerIdOutOfScope => ApiError::PayloadInvalid(String::from(
           "Specifying ownerId field requires greater access scope",
-        ))),
-        HandleError::UserNotFound(id) => ApiError::from(Kind::UserNotFound(id)),
+        )),
+        HandleError::UserNotFound(id) => ApiError::UserNotFound(id),
       }
     }
   }

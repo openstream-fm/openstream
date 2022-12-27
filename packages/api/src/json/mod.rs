@@ -1,6 +1,6 @@
 use crate::error::ApiError;
 use async_trait::async_trait;
-use hyper::header::{CONTENT_LENGTH, CONTENT_TYPE, ETAG, IF_NONE_MATCH};
+use hyper::header::{CONTENT_LENGTH, CONTENT_TYPE, ETAG, IF_NONE_MATCH, SET_COOKIE};
 use hyper::http::HeaderValue;
 use hyper::{Body, Method, StatusCode};
 use log::warn;
@@ -21,6 +21,10 @@ pub trait JsonHandler: Send + Sync + Sized + Clone + 'static {
     false
   }
 
+  fn cookies<'a, 'b>(&'a self, _output: &'b Self::Output) -> Vec<cookie::Cookie> {
+    vec![]
+  }
+
   async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError>;
 
   async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError>;
@@ -34,11 +38,15 @@ pub trait JsonHandler: Send + Sync + Sized + Clone + 'static {
 
     let input = match self.parse(req).await {
       Err(e) => {
-        let err = e.into();
+        let err: ApiError = e.into();
+        let status = err.status().canonical_reason();
+        let code = err.code();
         warn!(
-          "APIError (parse): {} {} => {:?}",
+          "APIError (parse): {} {} => {:?} {:?} {:?}",
           method.as_str(),
           path,
+          status,
+          code,
           err
         );
         return err.into_json_response();
@@ -48,11 +56,15 @@ pub trait JsonHandler: Send + Sync + Sized + Clone + 'static {
 
     let output = match self.perform(input).await {
       Err(e) => {
-        let err = e.into();
+        let err: ApiError = e.into();
+        let status = err.status().canonical_reason();
+        let code = err.code();
         warn!(
-          "APIError (perform): {} {} => {:?}",
+          "APIError (perform): {} {} => {:?} {:?} {:?}",
           method.as_str(),
           path,
+          status,
+          code,
           err
         );
         return err.into_json_response();
@@ -100,6 +112,13 @@ pub trait JsonHandler: Send + Sync + Sized + Clone + 'static {
 
         *res.body_mut() = Body::from(body);
 
+        for cookie in self.cookies(&output) {
+          res.headers_mut().append(
+            SET_COOKIE,
+            HeaderValue::from_str(&cookie.to_string()).unwrap(),
+          );
+        }
+
         res
       }
     } else {
@@ -116,6 +135,13 @@ pub trait JsonHandler: Send + Sync + Sized + Clone + 'static {
       );
 
       *res.body_mut() = Body::from(body);
+
+      for cookie in self.cookies(&output) {
+        res.headers_mut().append(
+          SET_COOKIE,
+          HeaderValue::from_str(&cookie.to_string()).unwrap(),
+        );
+      }
 
       res
     }

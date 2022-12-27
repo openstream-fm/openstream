@@ -123,7 +123,7 @@ pub mod post {
   use serde::de::Error;
   use upload::UploadError;
 
-  use crate::{error::Kind, request_ext::get_access_token_scope};
+  use crate::request_ext::get_access_token_scope;
 
   use super::*;
 
@@ -190,7 +190,7 @@ pub mod post {
       match e {
         ParseError::Token(e) => e.into(),
         ParseError::Query(e) => e.into(),
-        ParseError::ContentLengthRequired => ApiError::from(Kind::ContentLengthRequired),
+        ParseError::ContentLengthRequired => ApiError::ContentLengthRequired,
       }
     }
   }

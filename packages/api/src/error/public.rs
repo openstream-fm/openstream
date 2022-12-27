@@ -88,4 +88,7 @@ pub enum PublicErrorCode {
   PatchOutOfScope,
 
   ContentLengthRequired,
+
+  UnresolvableAdminMe,
+  UnresolvableUserMe,
 }

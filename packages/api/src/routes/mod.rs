@@ -1,7 +1,10 @@
 use prex::router::builder::Builder;
+use prex::Request;
 
-use crate::error::{ApiError, Kind};
+use crate::error::ApiError;
 use crate::json::JsonHandler;
+
+use async_trait::async_trait;
 
 pub mod accounts;
 pub mod admins;
@@ -27,11 +30,14 @@ pub fn router() -> Builder {
     .at("/login/admin")
     .post(login::admin::post::Endpoint {}.into_handler());
 
-  app.at("/users").get(users::get::Endpoint {}.into_handler());
+  app
+    .at("/users")
+    .get(users::get::Endpoint {}.into_handler())
+    .post(users::post::Endpoint {}.into_handler());
 
   app
     .at("/users/:user")
-    .get(users::post::Endpoint {}.into_handler());
+    .get(users::id::get::Endpoint {}.into_handler());
 
   app
     .at("/accounts")
@@ -67,7 +73,26 @@ pub fn router() -> Builder {
     .put(admins::id::patch::Endpoint {}.into_handler());
 
   // 404 catch all
-  app.with(|_, _| async { ApiError::from(Kind::ResourceNotFound).into_json_response() });
+  app.with(ResourceNotFound.into_handler());
 
   app
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct ResourceNotFound;
+
+#[async_trait]
+impl JsonHandler for ResourceNotFound {
+  type Input = ();
+  type Output = ();
+  type HandleError = ApiError;
+  type ParseError = ApiError;
+
+  async fn parse(&self, _: Request) -> Result<(), ApiError> {
+    Err(ApiError::ResourceNotFound)
+  }
+
+  async fn perform(&self, _: ()) -> Result<(), ApiError> {
+    Err(ApiError::ResourceNotFound)
+  }
 }

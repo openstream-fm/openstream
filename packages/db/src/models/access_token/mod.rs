@@ -100,7 +100,6 @@ pub struct AccessToken {
   pub id: String,
 
   pub key: String,
-  pub sha256_key: String,
 
   #[serde(flatten)]
   #[ts(skip)]
@@ -139,10 +138,8 @@ impl AccessToken {
 }
 
 impl AccessToken {
-  pub fn random_key() -> (String, String) {
-    let key = uid::uid(48);
-    let sha = crypt::sha256(&key);
-    (key, sha)
+  pub fn random_key() -> String {
+    uid::uid(48)
   }
 
   pub fn is_generatyed_login(&self) -> bool {
@@ -205,12 +202,11 @@ mod test {
   fn serde_bson_vec() {
     let now = DateTime::now();
 
-    let (key, sha256_key) = AccessToken::random_key();
+    let key = AccessToken::random_key();
 
     let token = AccessToken {
       id: AccessToken::uid(),
       key,
-      sha256_key,
       created_at: now,
       last_used_at: Some(now),
       generated_by: GeneratedBy::Api {
@@ -231,12 +227,11 @@ mod test {
   fn serde_bson_doc() {
     let now = DateTime::now();
 
-    let (key, sha256_key) = AccessToken::random_key();
+    let key = AccessToken::random_key();
 
     let token = AccessToken {
       id: AccessToken::uid(),
       key,
-      sha256_key,
       created_at: now,
       last_used_at: Some(now),
       generated_by: GeneratedBy::Api {

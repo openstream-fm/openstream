@@ -11,7 +11,7 @@ pub mod post {
   use ts_rs::TS;
   use user_agent::{UserAgent, UserAgentExt};
 
-  use crate::error::{ApiError, Kind};
+  use crate::error::ApiError;
   use crate::ip_limit::{hit, should_reject};
   use crate::json::JsonHandler;
 
@@ -57,10 +57,10 @@ pub mod post {
   impl From<HandleError> for ApiError {
     fn from(e: HandleError) -> Self {
       match e {
-        HandleError::TooManyRequests => ApiError::from(Kind::TooManyRequests),
-        HandleError::NoMatchEmail => ApiError::from(Kind::AuthFailed),
-        HandleError::NoMatchPassword => ApiError::from(Kind::AuthFailed),
-        HandleError::Db(e) => ApiError::from(Kind::Db(e)),
+        HandleError::Db(e) => e.into(),
+        HandleError::TooManyRequests => ApiError::TooManyRequests,
+        HandleError::NoMatchEmail => ApiError::AuthFailed,
+        HandleError::NoMatchPassword => ApiError::AuthFailed,
       }
     }
   }
@@ -130,12 +130,11 @@ pub mod post {
 
       let admin_id = admin.id.clone();
 
-      let (key, sha256_key) = AccessToken::random_key();
+      let key = AccessToken::random_key();
 
       let token = AccessToken {
         id: AccessToken::uid(),
         key,
-        sha256_key,
         scope: Scope::Admin { admin_id },
         generated_by: GeneratedBy::Login { ip, user_agent },
         created_at: DateTime::now(),

@@ -2,7 +2,6 @@ use crate::json::JsonHandler;
 use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
 
 use crate::error::ApiError;
-use crate::error::Kind;
 use crate::request_ext::get_access_token_scope;
 use async_trait::async_trait;
 use db::account::Account;
@@ -191,9 +190,9 @@ pub mod post {
   impl From<HandleError> for ApiError {
     fn from(e: HandleError) -> Self {
       match e {
-        HandleError::Db(e) => ApiError::from(Kind::Db(e)),
-        HandleError::UserEmailExists => ApiError::from(Kind::UserEmailExists),
-        HandleError::AccountNotFound(id) => ApiError::from(Kind::AccountNotFound(id)),
+        HandleError::Db(e) => e.into(),
+        HandleError::UserEmailExists => ApiError::UserEmailExists,
+        HandleError::AccountNotFound(id) => ApiError::AccountNotFound(id),
       }
     }
   }

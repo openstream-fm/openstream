@@ -15,7 +15,7 @@ pub mod get {
 
   use ts_rs::TS;
 
-  use crate::error::{ApiError, Kind};
+  use crate::error::ApiError;
 
   use super::*;
 
@@ -50,7 +50,7 @@ pub mod get {
     fn from(e: HandleError) -> Self {
       match e {
         HandleError::Db(e) => e.into(),
-        HandleError::FileNotFound(id) => Self::from(Kind::AudioFileNotFound(id)),
+        HandleError::FileNotFound(id) => Self::AudioFileNotFound(id),
       }
     }
   }
@@ -106,10 +106,7 @@ pub mod stream {
     Body, StatusCode,
   };
 
-  use crate::{
-    error::{ApiError, Kind},
-    request_ext::get_access_token_scope,
-  };
+  use crate::{error::ApiError, request_ext::get_access_token_scope};
 
   use super::*;
 
@@ -133,7 +130,7 @@ pub mod stream {
 
       let file = match AudioFile::get(doc! { "_id": file_id, "accountId": account_id }).await {
         Ok(Some(file)) => file,
-        Ok(None) => return ApiError::from(Kind::ResourceNotFound).into_json_response(),
+        Ok(None) => return ApiError::ResourceNotFound.into_json_response(),
         Err(e) => return ApiError::from(e).into_json_response(),
       };
 

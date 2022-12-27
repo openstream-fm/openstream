@@ -8,12 +8,8 @@ use ts_rs::TS;
 
 pub mod get {
 
-  use db::{
-    admin::{Admin, PublicAdmin},
-    Model,
-  };
-
-  use crate::error::{ApiError, Kind};
+  use db::admin::{Admin, PublicAdmin};
+  use std::convert::Infallible;
 
   use super::*;
 
@@ -22,7 +18,7 @@ pub mod get {
 
   #[derive(Debug, Clone)]
   pub struct Input {
-    admin_id: String,
+    admin: Admin,
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -32,51 +28,25 @@ pub mod get {
     admin: PublicAdmin,
   }
 
-  #[derive(Debug, thiserror::Error)]
-  pub enum HandleError {
-    #[error("mongodb: {0}")]
-    Db(#[from] mongodb::error::Error),
-    #[error("admin not found: {0}")]
-    AdminNotFound(String),
-  }
-
-  impl From<HandleError> for ApiError {
-    fn from(e: HandleError) -> Self {
-      match e {
-        HandleError::Db(e) => e.into(),
-        HandleError::AdminNotFound(id) => ApiError::from(Kind::AdminNotFound(id)),
-      }
-    }
-  }
-
   #[async_trait]
   impl JsonHandler for Endpoint {
     type Input = Input;
     type Output = Output;
     type ParseError = GetAccessTokenScopeError;
-    type HandleError = HandleError;
+    type HandleError = Infallible;
 
     async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
       let admin_id = req.param("admin").unwrap();
 
       let access_token_scope = request_ext::get_access_token_scope(&req).await?;
 
-      if access_token_scope.has_full_access() {
-        return Err(GetAccessTokenScopeError::OutOfScope);
-      }
+      let admin = access_token_scope.grant_admin_read_scope(admin_id).await?;
 
-      Ok(Self::Input {
-        admin_id: admin_id.to_string(),
-      })
+      Ok(Self::Input { admin })
     }
 
     async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
-      let Self::Input { admin_id } = input;
-
-      let admin = match Admin::get_by_id(&admin_id).await? {
-        None => return Err(HandleError::AdminNotFound(admin_id)),
-        Some(admin) => admin,
-      };
+      let Self::Input { admin } = input;
 
       Ok(Output {
         admin: admin.into_public(),
@@ -87,7 +57,7 @@ pub mod get {
 
 pub mod patch {
 
-  use crate::error::{ApiError, Kind};
+  use crate::error::ApiError;
 
   use super::*;
   use db::{
@@ -146,7 +116,7 @@ pub mod patch {
       match e {
         HandleError::Db(e) => Self::from(e),
         HandleError::Patch(e) => Self::from(e),
-        HandleError::AdminNotFound(id) => Self::from(Kind::AccountNotFound(id)),
+        HandleError::AdminNotFound(id) => Self::AccountNotFound(id),
       }
     }
   }

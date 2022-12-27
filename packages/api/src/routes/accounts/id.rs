@@ -66,7 +66,7 @@ pub mod get {
 
 pub mod patch {
 
-  use crate::error::{ApiError, Kind};
+  use crate::error::ApiError;
 
   use super::*;
   use db::{
@@ -124,7 +124,7 @@ pub mod patch {
       match e {
         HandleError::Db(e) => Self::from(e),
         HandleError::Patch(e) => Self::from(e),
-        HandleError::AccountNotFound(id) => Self::from(Kind::AccountNotFound(id)),
+        HandleError::AccountNotFound(id) => Self::AccountNotFound(id),
       }
     }
   }

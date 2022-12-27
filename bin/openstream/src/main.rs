@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use clap::{Parser, Subcommand};
 use config::Config;
@@ -184,7 +185,7 @@ fn start(opts: Start) -> Result<(), anyhow::Error> {
 }
 
 async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
-  let config = shared_init(config).await?;
+  let config = Arc::new(shared_init(config).await?);
 
   let ffmpeg_path = which::which("ffmpeg")
     .context("error getting ffmpeg path (is ffmpeg installed and available in executable path?)")?;
@@ -200,11 +201,11 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
 
   let config::Config {
     mongodb: _,
-    stream,
-    source,
-    api,
-    router,
-  } = config;
+    ref stream,
+    ref source,
+    ref api,
+    ref router,
+  } = config.as_ref();
 
   let shutdown = Shutdown::new();
 
@@ -223,8 +224,8 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
 
   if let Some(source_config) = source {
     let source = SourceServer::new(
-      source_config.receiver.addrs,
-      source_config.broadcaster.addrs,
+      source_config.receiver.addrs.clone(),
+      source_config.broadcaster.addrs.clone(),
       shutdown.clone(),
     );
 
@@ -234,7 +235,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   }
 
   if let Some(stream_config) = stream {
-    let stream = StreamServer::new(stream_config.addrs, shutdown.clone());
+    let stream = StreamServer::new(stream_config.addrs.clone(), shutdown.clone());
 
     let fut = stream.start()?;
 
@@ -242,13 +243,13 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   }
 
   if let Some(api_config) = api {
-    let api = ApiServer::new(api_config.addrs, shutdown.clone());
+    let api = ApiServer::new(api_config.addrs.clone(), shutdown.clone());
     let fut = api.start()?;
     futs.push(fut.boxed());
   }
 
   if let Some(router_config) = router {
-    let router = RouterServer::new(router_config.addrs, shutdown.clone());
+    let router = RouterServer::new(router_config.addrs.clone(), shutdown.clone());
     let fut = router.start()?;
     futs.push(fut.boxed());
   }
@@ -269,12 +270,11 @@ fn token(
     
     async fn create(title: String) -> Result<AccessToken, anyhow::Error> {
       
-      let (key, sha256_key) = AccessToken::random_key();
+      let key = AccessToken::random_key();
 
       let token = AccessToken {
         id: AccessToken::uid(),
         key,
-        sha256_key,
         scope: db::access_token::Scope::Global,
         generated_by: GeneratedBy::Cli { title },
         created_at: DateTime::now(),

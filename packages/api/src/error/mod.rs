@@ -8,8 +8,6 @@ use prex::request::ReadBodyJsonError;
 use prex::*;
 use serde_json;
 use std::convert::Infallible;
-use std::error::Error;
-use std::fmt::Display;
 use std::process::ExitStatus;
 
 use self::public::{PublicErrorCode, PublicErrorPayload};
@@ -18,196 +16,260 @@ use upload::UploadError;
 
 pub mod public;
 
-#[derive(Debug)]
-pub enum Kind {
+#[derive(Debug, thiserror::Error)]
+pub enum ApiError {
+  #[error("too many requests")]
   TooManyRequests,
+
+  #[error("resource not found")]
   ResourceNotFound,
 
-  Db(mongodb::error::Error),
-  Hyper(hyper::Error),
-  QueryString(serde_querystring::Error),
+  #[error("mongodb: {0}")]
+  Db(#[from] mongodb::error::Error),
 
+  #[error("hyper: {0}")]
+  Hyper(#[from] hyper::Error),
+
+  #[error("querystring: {0}")]
+  QueryString(#[from] serde_querystring::Error),
+
+  #[error("token missing")]
   TokenMissing,
+
+  #[error("token not found")]
   TokenNotFound,
+
+  #[error("token malformed")]
   TokenMalformed,
+
+  #[error("token user not found: {0}")]
   TokenUserNotFound(String),
-  TokenAccountNotFound(String),
+
+  #[error("token admin not found: {0}")]
   TokenAdminNotFound(String),
+
+  #[error("token out of scope")]
   TokenOutOfScope,
 
+  #[error("account not found: {0}")]
   AccountNotFound(String),
+
+  #[error("admin not found: {0}")]
   AdminNotFound(String),
+
+  #[error("user not found: {0}")]
   UserNotFound(String),
+
+  #[error("audio file not found: {0}")]
   AudioFileNotFound(String),
 
+  #[error("payload io: {0}")]
   PayloadIo(hyper::Error),
-  PayloadJson(serde_json::Error),
+
+  #[error("payload json: {0}")]
+  PayloadJson(#[from] serde_json::Error),
+
+  #[error("payload too large: {0}")]
   PayloadTooLarge(usize),
+
+  #[error("payload invalid: {0}")]
   PayloadInvalid(String),
 
+  #[error("auth failed")]
   AuthFailed,
+
+  #[error("user email exists")]
   UserEmailExists,
+
+  #[error("admin email exists")]
   AdminEmailExists,
 
+  #[error("upload empty")]
   UploadEmpty,
+
+  #[error("upload ffmpeg exit: status: {}, stderr: {:?}", status, stderr)]
   UploadFfmpegExit {
     status: ExitStatus,
     stderr: Option<String>,
   },
+
+  #[error("upload ffmpeg io: {0}")]
   UploadFfmpegIo(std::io::Error),
+
+  #[error("upload ffmpeg spawn: {0}")]
   UploadSpawn(std::io::Error),
+
+  #[error("upload quota exceeded")]
   UploadQuotaExceeded,
 
+  #[error("range invalid")]
   RangeInvalid,
+
+  #[error("range no overlap")]
   RangeNoOverlap,
 
+  #[error("patch empty")]
   PatchEmpty,
+
+  #[error("patch invalid: {0}")]
   PatchInvalid(String),
+
+  #[error("patch out of scope: {0}")]
   PatchOutOfScope(String),
 
+  #[error("content length required")]
   ContentLengthRequired,
-}
 
-#[derive(Debug)]
-pub struct ApiError {
-  kind: Kind,
-}
+  #[error("unresolvable admin me")]
+  UnresolvableAdminMe,
 
-impl From<Kind> for ApiError {
-  fn from(kind: Kind) -> Self {
-    Self { kind }
-  }
+  #[error("unresolvable user me")]
+  UnresolvableUserMe,
 }
 
 impl ApiError {
-  fn status(&self) -> StatusCode {
-    match self.kind {
-      Kind::TooManyRequests => StatusCode::TOO_MANY_REQUESTS,
-      Kind::ResourceNotFound => StatusCode::NOT_FOUND,
-      Kind::Db(_) => StatusCode::INTERNAL_SERVER_ERROR,
+  pub fn status(&self) -> StatusCode {
+    use ApiError::*;
+
+    match self {
+      TooManyRequests => StatusCode::TOO_MANY_REQUESTS,
+      ResourceNotFound => StatusCode::NOT_FOUND,
+      Db(_) => StatusCode::INTERNAL_SERVER_ERROR,
       // for Kind::Hyper(e) we assume that is a network error responsability of the client so we respond BAD_REQUEST
-      Kind::Hyper(_) => StatusCode::BAD_REQUEST,
-      Kind::TokenMissing => StatusCode::UNAUTHORIZED,
-      Kind::TokenMalformed => StatusCode::UNAUTHORIZED,
-      Kind::TokenNotFound => StatusCode::UNAUTHORIZED,
-      Kind::TokenUserNotFound(_) => StatusCode::INTERNAL_SERVER_ERROR,
-      Kind::TokenAccountNotFound(_) => StatusCode::INTERNAL_SERVER_ERROR,
-      Kind::TokenAdminNotFound(_) => StatusCode::INTERNAL_SERVER_ERROR,
-      Kind::TokenOutOfScope => StatusCode::UNAUTHORIZED,
-      Kind::AccountNotFound(_) => StatusCode::NOT_FOUND,
-      Kind::AdminNotFound(_) => StatusCode::NOT_FOUND,
-      Kind::UserNotFound(_) => StatusCode::NOT_FOUND,
-      Kind::AudioFileNotFound(_) => StatusCode::NOT_FOUND,
-      Kind::QueryString(_) => StatusCode::BAD_REQUEST,
-      Kind::PayloadIo(_) => StatusCode::BAD_REQUEST,
-      Kind::PayloadJson(_) => StatusCode::BAD_REQUEST,
-      Kind::PayloadTooLarge(_) => StatusCode::BAD_REQUEST,
-      Kind::PayloadInvalid(_) => StatusCode::BAD_REQUEST,
-      Kind::AuthFailed => StatusCode::BAD_REQUEST,
-      Kind::UserEmailExists => StatusCode::CONFLICT,
-      Kind::AdminEmailExists => StatusCode::CONFLICT,
+      Hyper(_) => StatusCode::BAD_REQUEST,
+      TokenMissing => StatusCode::UNAUTHORIZED,
+      TokenMalformed => StatusCode::UNAUTHORIZED,
+      TokenNotFound => StatusCode::UNAUTHORIZED,
+      TokenUserNotFound(_) => StatusCode::INTERNAL_SERVER_ERROR,
+      TokenAdminNotFound(_) => StatusCode::INTERNAL_SERVER_ERROR,
+      TokenOutOfScope => StatusCode::UNAUTHORIZED,
+      AccountNotFound(_) => StatusCode::NOT_FOUND,
+      AdminNotFound(_) => StatusCode::NOT_FOUND,
+      UserNotFound(_) => StatusCode::NOT_FOUND,
+      AudioFileNotFound(_) => StatusCode::NOT_FOUND,
+      QueryString(_) => StatusCode::BAD_REQUEST,
+      PayloadIo(_) => StatusCode::BAD_REQUEST,
+      PayloadJson(_) => StatusCode::BAD_REQUEST,
+      PayloadTooLarge(_) => StatusCode::BAD_REQUEST,
+      PayloadInvalid(_) => StatusCode::BAD_REQUEST,
+      AuthFailed => StatusCode::BAD_REQUEST,
+      UserEmailExists => StatusCode::CONFLICT,
+      AdminEmailExists => StatusCode::CONFLICT,
 
-      Kind::UploadEmpty => StatusCode::BAD_REQUEST,
-      Kind::UploadQuotaExceeded => StatusCode::BAD_REQUEST,
-      Kind::UploadSpawn(_) => StatusCode::INTERNAL_SERVER_ERROR,
-      Kind::UploadFfmpegIo(_) => StatusCode::INTERNAL_SERVER_ERROR,
-      Kind::UploadFfmpegExit { .. } => StatusCode::BAD_REQUEST,
+      UploadEmpty => StatusCode::BAD_REQUEST,
+      UploadQuotaExceeded => StatusCode::BAD_REQUEST,
+      UploadSpawn(_) => StatusCode::INTERNAL_SERVER_ERROR,
+      UploadFfmpegIo(_) => StatusCode::INTERNAL_SERVER_ERROR,
+      UploadFfmpegExit { .. } => StatusCode::BAD_REQUEST,
 
-      Kind::RangeInvalid => StatusCode::RANGE_NOT_SATISFIABLE,
-      Kind::RangeNoOverlap => StatusCode::RANGE_NOT_SATISFIABLE,
+      RangeInvalid => StatusCode::RANGE_NOT_SATISFIABLE,
+      RangeNoOverlap => StatusCode::RANGE_NOT_SATISFIABLE,
 
-      Kind::PatchEmpty => StatusCode::BAD_REQUEST,
-      Kind::PatchInvalid(_) => StatusCode::BAD_REQUEST,
-      Kind::PatchOutOfScope(_) => StatusCode::BAD_REQUEST,
+      PatchEmpty => StatusCode::BAD_REQUEST,
+      PatchInvalid(_) => StatusCode::BAD_REQUEST,
+      PatchOutOfScope(_) => StatusCode::BAD_REQUEST,
 
-      Kind::ContentLengthRequired => StatusCode::LENGTH_REQUIRED,
+      ContentLengthRequired => StatusCode::LENGTH_REQUIRED,
+
+      UnresolvableAdminMe => StatusCode::BAD_REQUEST,
+      UnresolvableUserMe => StatusCode::BAD_REQUEST,
     }
   }
 
-  fn message(&self) -> String {
-    match &self.kind {
-      Kind::TooManyRequests => format!("Too many requests"),
-      Kind::ResourceNotFound => format!("Resource not found"),
-      Kind::Db(_) => format!("Internal server error"),
-      Kind::Hyper(_) => format!("I/O request error"),
-      Kind::TokenMissing => format!("Access token is required"),
-      Kind::TokenMalformed => format!("Access token is malformed"),
-      Kind::TokenNotFound => format!("Access token not found"),
-      Kind::TokenUserNotFound(id) => format!("User with id {id} has been deleted"),
-      Kind::TokenAccountNotFound(id) => format!("Account with id {id} has been deleted"),
-      Kind::TokenAdminNotFound(id) => format!("Admin with id {id} has been deleted"),
-      Kind::TokenOutOfScope => format!("Not enough permissions"),
-      Kind::AccountNotFound(id) => format!("Account with id {id} not found"),
-      Kind::AdminNotFound(id) => format!("Admin with id {id} not found"),
-      Kind::UserNotFound(id) => format!("User with id {id} not found"),
-      Kind::AudioFileNotFound(id) => format!("Audio file with id {id} not found"),
-      Kind::QueryString(e) => format!("Invalid query string: {e}"),
-      Kind::PayloadIo(e) => format!("Error reading payload: {e}"),
-      Kind::PayloadJson(e) => format!("Invalid JSON payload: {e}"),
-      Kind::PayloadTooLarge(_) => format!("Payload size exceeded"),
-      Kind::PayloadInvalid(e) => format!("{e}"),
-      Kind::AuthFailed => format!("There's no user with that email and password"),
-      Kind::UserEmailExists => format!("User email already exists"),
-      Kind::AdminEmailExists => format!("Admin email already exists"),
+  pub fn message(&self) -> String {
+    use ApiError::*;
+    match self {
+      TooManyRequests => format!("Too many requests"),
+      ResourceNotFound => format!("Resource not found"),
+      Db(_) => format!("Internal server error"),
+      Hyper(_) => format!("I/O request error"),
+      TokenMissing => format!("Access token is required"),
+      TokenMalformed => format!("Access token is malformed"),
+      TokenNotFound => format!("Access token not found"),
+      TokenUserNotFound(id) => format!("User with id {id} has been deleted"),
+      TokenAdminNotFound(id) => format!("Admin with id {id} has been deleted"),
+      TokenOutOfScope => format!("Not enough permissions"),
+      AccountNotFound(id) => format!("Account with id {id} not found"),
+      AdminNotFound(id) => format!("Admin with id {id} not found"),
+      UserNotFound(id) => format!("User with id {id} not found"),
+      AudioFileNotFound(id) => format!("Audio file with id {id} not found"),
+      QueryString(e) => format!("Invalid query string: {e}"),
+      PayloadIo(e) => format!("Error reading payload: {e}"),
+      PayloadJson(e) => format!("Invalid JSON payload: {e}"),
+      PayloadTooLarge(_) => format!("Payload size exceeded"),
+      PayloadInvalid(e) => format!("{e}"),
+      AuthFailed => format!("There's no user with that email and password"),
+      UserEmailExists => format!("User email already exists"),
+      AdminEmailExists => format!("Admin email already exists"),
 
-      Kind::UploadEmpty => format!("Payload is empty"),
-      Kind::UploadQuotaExceeded => format!("Audio quota exceeded"),
-      Kind::UploadSpawn(_) => format!("Internal server error"),
-      Kind::UploadFfmpegIo(_) => format!("Internal server error"),
-      Kind::UploadFfmpegExit { .. } => {
+      UploadEmpty => format!("Payload is empty"),
+      UploadQuotaExceeded => format!("Audio quota exceeded"),
+      UploadSpawn(_) => format!("Internal server error"),
+      UploadFfmpegIo(_) => format!("Internal server error"),
+      UploadFfmpegExit { .. } => {
         format!("Error procesing audio file, invalid, malformed or unsupported file or format")
       }
 
-      Kind::RangeInvalid => format!("Range invalid"),
-      Kind::RangeNoOverlap => format!("Range no satisfiable, no overlap"),
+      RangeInvalid => format!("Range invalid"),
+      RangeNoOverlap => format!("Range no satisfiable, no overlap"),
 
-      Kind::PatchEmpty => format!("Update operation is empty"),
-      Kind::PatchInvalid(message) => format!("{message}"),
-      Kind::PatchOutOfScope(message) => format!("{message}"),
-      Kind::ContentLengthRequired => format!("content length is required"),
+      PatchEmpty => format!("Update operation is empty"),
+      PatchInvalid(message) => format!("{message}"),
+      PatchOutOfScope(message) => format!("{message}"),
+      ContentLengthRequired => format!("content length is required"),
+
+      UnresolvableAdminMe => {
+        format!("cannot resolve 'me' admin with current access token scope")
+      }
+      UnresolvableUserMe => {
+        format!("cannot resolve 'me' user with current access token scope")
+      }
     }
   }
 
-  fn code(&self) -> PublicErrorCode {
-    match self.kind {
-      Kind::TooManyRequests => PublicErrorCode::TooManyRequests,
-      Kind::ResourceNotFound => PublicErrorCode::ResourceNotFound,
-      Kind::Db(_) => PublicErrorCode::InternalDb,
-      Kind::Hyper(_) => PublicErrorCode::IoRequest,
-      Kind::TokenMissing => PublicErrorCode::TokenMissing,
-      Kind::TokenMalformed => PublicErrorCode::TokenMalformed,
-      Kind::TokenNotFound => PublicErrorCode::TokenNotFound,
-      Kind::TokenUserNotFound(_) => PublicErrorCode::TokenUserNotFound,
-      Kind::TokenAccountNotFound(_) => PublicErrorCode::TokenAccountNotFound,
-      Kind::TokenAdminNotFound(_) => PublicErrorCode::TokenAdminNotFound,
-      Kind::TokenOutOfScope => PublicErrorCode::TokenOutOfScope,
-      Kind::AccountNotFound(_) => PublicErrorCode::AccountNotFound,
-      Kind::AdminNotFound(_) => PublicErrorCode::AdminNotFound,
-      Kind::UserNotFound(_) => PublicErrorCode::UserNotFound,
-      Kind::AudioFileNotFound(_) => PublicErrorCode::AudioFileNotFound,
-      Kind::QueryString(_) => PublicErrorCode::QueryStringInvalid,
-      Kind::PayloadIo(_) => PublicErrorCode::PayloadIo,
-      Kind::PayloadJson(_) => PublicErrorCode::PayloadJson,
-      Kind::PayloadTooLarge(_) => PublicErrorCode::PayloadTooLarge,
-      Kind::PayloadInvalid(_) => PublicErrorCode::PayloadInvalid,
-      Kind::AuthFailed => PublicErrorCode::AuthFailed,
-      Kind::UserEmailExists => PublicErrorCode::UserEmailExists,
-      Kind::AdminEmailExists => PublicErrorCode::AdminEmailExists,
+  pub fn code(&self) -> PublicErrorCode {
+    use ApiError::*;
+    match self {
+      TooManyRequests => PublicErrorCode::TooManyRequests,
+      ResourceNotFound => PublicErrorCode::ResourceNotFound,
+      Db(_) => PublicErrorCode::InternalDb,
+      Hyper(_) => PublicErrorCode::IoRequest,
+      TokenMissing => PublicErrorCode::TokenMissing,
+      TokenMalformed => PublicErrorCode::TokenMalformed,
+      TokenNotFound => PublicErrorCode::TokenNotFound,
+      TokenUserNotFound(_) => PublicErrorCode::TokenUserNotFound,
+      TokenAdminNotFound(_) => PublicErrorCode::TokenAdminNotFound,
+      TokenOutOfScope => PublicErrorCode::TokenOutOfScope,
+      AccountNotFound(_) => PublicErrorCode::AccountNotFound,
+      AdminNotFound(_) => PublicErrorCode::AdminNotFound,
+      UserNotFound(_) => PublicErrorCode::UserNotFound,
+      AudioFileNotFound(_) => PublicErrorCode::AudioFileNotFound,
+      QueryString(_) => PublicErrorCode::QueryStringInvalid,
+      PayloadIo(_) => PublicErrorCode::PayloadIo,
+      PayloadJson(_) => PublicErrorCode::PayloadJson,
+      PayloadTooLarge(_) => PublicErrorCode::PayloadTooLarge,
+      PayloadInvalid(_) => PublicErrorCode::PayloadInvalid,
+      AuthFailed => PublicErrorCode::AuthFailed,
+      UserEmailExists => PublicErrorCode::UserEmailExists,
+      AdminEmailExists => PublicErrorCode::AdminEmailExists,
 
-      Kind::UploadEmpty => PublicErrorCode::UploadEmpty,
-      Kind::UploadQuotaExceeded => PublicErrorCode::UploadQuotaExceeded,
-      Kind::UploadSpawn(_) => PublicErrorCode::UploadInternalSpawn,
-      Kind::UploadFfmpegIo(_) => PublicErrorCode::UploadIntenralIo,
-      Kind::UploadFfmpegExit { .. } => PublicErrorCode::UploadExit,
+      UploadEmpty => PublicErrorCode::UploadEmpty,
+      UploadQuotaExceeded => PublicErrorCode::UploadQuotaExceeded,
+      UploadSpawn(_) => PublicErrorCode::UploadInternalSpawn,
+      UploadFfmpegIo(_) => PublicErrorCode::UploadIntenralIo,
+      UploadFfmpegExit { .. } => PublicErrorCode::UploadExit,
 
-      Kind::RangeInvalid => PublicErrorCode::RangeInvalid,
-      Kind::RangeNoOverlap => PublicErrorCode::RangeNoOverlap,
+      RangeInvalid => PublicErrorCode::RangeInvalid,
+      RangeNoOverlap => PublicErrorCode::RangeNoOverlap,
 
-      Kind::PatchEmpty => PublicErrorCode::PatchEmpty,
-      Kind::PatchInvalid(_) => PublicErrorCode::PatchInvalid,
-      Kind::PatchOutOfScope(_) => PublicErrorCode::PatchOutOfScope,
+      PatchEmpty => PublicErrorCode::PatchEmpty,
+      PatchInvalid(_) => PublicErrorCode::PatchInvalid,
+      PatchOutOfScope(_) => PublicErrorCode::PatchOutOfScope,
 
-      Kind::ContentLengthRequired => PublicErrorCode::ContentLengthRequired,
+      ContentLengthRequired => PublicErrorCode::ContentLengthRequired,
+
+      UnresolvableAdminMe => PublicErrorCode::UnresolvableAdminMe,
+      UnresolvableUserMe => PublicErrorCode::UnresolvableUserMe,
     }
   }
 
@@ -234,95 +296,19 @@ impl ApiError {
   }
 }
 
-impl Display for ApiError {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    write!(f, "ApiError: {:?}", self.code())?;
-    match &self.kind {
-      Kind::Db(e) => write!(f, " mongo => {e}")?,
-      Kind::Hyper(e) => write!(f, " hyper => {e}")?,
-
-      Kind::TokenUserNotFound(id) => write!(f, " id => {id}")?,
-      Kind::TokenAccountNotFound(id) => write!(f, " id: {id}")?,
-      Kind::TokenAdminNotFound(id) => write!(f, " id: {id}")?,
-
-      Kind::UserNotFound(id) => write!(f, " id: {id}")?,
-      Kind::AccountNotFound(id) => write!(f, " id: {id}")?,
-      Kind::AdminNotFound(id) => write!(f, " id: {id}")?,
-      Kind::AudioFileNotFound(id) => write!(f, " id: {id}")?,
-
-      Kind::PayloadIo(e) => write!(f, " inner: {e}")?,
-      Kind::PayloadInvalid(e) => write!(f, " message: {e}")?,
-      Kind::PayloadJson(e) => write!(f, " inner: {e}")?,
-      Kind::PayloadTooLarge(n) => write!(f, " max: {n}")?,
-      Kind::QueryString(e) => write!(f, " inner: {e}")?,
-
-      Kind::AuthFailed => {}
-      Kind::ResourceNotFound => {}
-
-      Kind::TokenNotFound => {}
-      Kind::TokenMalformed => {}
-      Kind::TokenMissing => {}
-      Kind::TokenOutOfScope => {}
-      Kind::TooManyRequests => {}
-
-      Kind::UserEmailExists => {}
-      Kind::AdminEmailExists => {}
-
-      Kind::UploadEmpty => {}
-      Kind::UploadQuotaExceeded => {}
-      Kind::UploadSpawn(e) => write!(f, " inner: {e}")?,
-      Kind::UploadFfmpegIo(e) => write!(f, "inner: {e}")?,
-      Kind::UploadFfmpegExit { status, stderr } => {
-        write!(f, " status: {status}, stderr: {stderr:?}")?
-      }
-
-      Kind::RangeInvalid => {}
-      Kind::RangeNoOverlap => {}
-
-      Kind::PatchEmpty => {}
-      Kind::PatchInvalid(message) => write!(f, " message: {message}")?,
-      Kind::PatchOutOfScope(message) => write!(f, " message: {message}")?,
-
-      Kind::ContentLengthRequired => {}
-    };
-
-    Ok(())
-  }
-}
-
-impl Error for ApiError {}
-
-impl From<mongodb::error::Error> for ApiError {
-  fn from(e: mongodb::error::Error) -> Self {
-    Self::from(Kind::Db(e))
-  }
-}
-
-impl From<hyper::Error> for ApiError {
-  fn from(e: hyper::Error) -> Self {
-    Self::from(Kind::Hyper(e))
-  }
-}
-
 impl From<Infallible> for ApiError {
   fn from(value: Infallible) -> Self {
     match value {}
   }
 }
 
-impl From<serde_querystring::Error> for ApiError {
-  fn from(e: serde_querystring::Error) -> Self {
-    Self::from(Kind::QueryString(e))
-  }
-}
-
 impl From<ReadBodyJsonError> for ApiError {
   fn from(e: ReadBodyJsonError) -> Self {
     match e {
-      ReadBodyJsonError::Hyper(e) => Self::from(Kind::PayloadIo(e)),
-      ReadBodyJsonError::Json(e) => Self::from(Kind::PayloadJson(e)),
-      ReadBodyJsonError::TooLarge(maxlen) => Self::from(Kind::PayloadTooLarge(maxlen)),
-      ReadBodyJsonError::PayloadInvalid(s) => Self::from(Kind::PayloadInvalid(s)),
+      ReadBodyJsonError::Hyper(e) => Self::PayloadIo(e),
+      ReadBodyJsonError::Json(e) => Self::PayloadJson(e),
+      ReadBodyJsonError::TooLarge(maxlen) => Self::PayloadTooLarge(maxlen),
+      ReadBodyJsonError::PayloadInvalid(s) => Self::PayloadInvalid(s),
     }
   }
 }
@@ -331,14 +317,12 @@ impl<E: Into<ApiError>> From<UploadError<E>> for ApiError {
   fn from(e: UploadError<E>) -> Self {
     match e {
       UploadError::Mongo(e) => e.into(),
-      UploadError::Empty => ApiError::from(Kind::UploadEmpty),
-      UploadError::FfmpegExit { status, stderr } => {
-        ApiError::from(Kind::UploadFfmpegExit { status, stderr })
-      }
-      UploadError::AccountNotFound(id) => ApiError::from(Kind::AccountNotFound(id)),
-      UploadError::FfmpegIo(e) => ApiError::from(Kind::UploadFfmpegIo(e)),
-      UploadError::FfmpegSpawn(e) => ApiError::from(Kind::UploadSpawn(e)),
-      UploadError::QuotaExceeded => ApiError::from(Kind::UploadQuotaExceeded),
+      UploadError::Empty => ApiError::UploadEmpty,
+      UploadError::FfmpegExit { status, stderr } => ApiError::UploadFfmpegExit { status, stderr },
+      UploadError::AccountNotFound(id) => ApiError::AccountNotFound(id),
+      UploadError::FfmpegIo(e) => ApiError::UploadFfmpegIo(e),
+      UploadError::FfmpegSpawn(e) => ApiError::UploadSpawn(e),
+      UploadError::QuotaExceeded => ApiError::UploadQuotaExceeded,
       UploadError::Stream(s) => s.into(),
     }
   }
@@ -347,8 +331,8 @@ impl<E: Into<ApiError>> From<UploadError<E>> for ApiError {
 impl From<HttpRangeParseError> for ApiError {
   fn from(e: HttpRangeParseError) -> Self {
     match e {
-      HttpRangeParseError::InvalidRange => Self::from(Kind::RangeInvalid),
-      HttpRangeParseError::NoOverlap => Self::from(Kind::RangeNoOverlap),
+      HttpRangeParseError::InvalidRange => Self::RangeInvalid,
+      HttpRangeParseError::NoOverlap => Self::RangeNoOverlap,
     }
   }
 }
@@ -356,9 +340,9 @@ impl From<HttpRangeParseError> for ApiError {
 impl From<ApplyPatchError> for ApiError {
   fn from(e: ApplyPatchError) -> Self {
     match e {
-      ApplyPatchError::PatchEmpty => ApiError::from(Kind::PatchEmpty),
-      ApplyPatchError::PatchInvalid(message) => ApiError::from(Kind::PatchInvalid(message)),
-      ApplyPatchError::OutOfScope(message) => ApiError::from(Kind::PatchOutOfScope(message)),
+      ApplyPatchError::PatchEmpty => ApiError::PatchEmpty,
+      ApplyPatchError::PatchInvalid(message) => ApiError::PatchInvalid(message),
+      ApplyPatchError::OutOfScope(message) => ApiError::PatchOutOfScope(message),
     }
   }
 }

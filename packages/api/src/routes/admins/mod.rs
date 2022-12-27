@@ -116,8 +116,6 @@ pub mod post {
   use ts_rs::TS;
   use validate::email::is_valid_email;
 
-  use crate::error::Kind;
-
   use super::*;
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -183,22 +181,18 @@ pub mod post {
     fn from(e: HandleError) -> Self {
       match e {
         HandleError::Db(e) => e.into(),
-        HandleError::EmailEmpty => {
-          ApiError::from(Kind::PayloadInvalid(String::from("Email is required")))
-        }
+        HandleError::EmailEmpty => ApiError::PayloadInvalid(String::from("Email is required")),
         HandleError::FirstNameEmpty => {
-          ApiError::from(Kind::PayloadInvalid(String::from("First name is required")))
+          ApiError::PayloadInvalid(String::from("First name is required"))
         }
         HandleError::LastNameEmpty => {
-          ApiError::from(Kind::PayloadInvalid(String::from("Last name is required")))
+          ApiError::PayloadInvalid(String::from("Last name is required"))
         }
-        HandleError::EmailInvalid => {
-          ApiError::from(Kind::PayloadInvalid(String::from("Email is invalid")))
+        HandleError::EmailInvalid => ApiError::PayloadInvalid(String::from("Email is invalid")),
+        HandleError::PasswordTooShort => {
+          ApiError::PayloadInvalid(String::from("Password must have 8 characters or more"))
         }
-        HandleError::PasswordTooShort => ApiError::from(Kind::PayloadInvalid(String::from(
-          "Password must have 8 characters or more",
-        ))),
-        HandleError::EmailExists => ApiError::from(Kind::AdminEmailExists),
+        HandleError::EmailExists => ApiError::AdminEmailExists,
       }
     }
   }

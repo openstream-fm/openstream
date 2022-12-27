@@ -15,7 +15,7 @@ pub mod post {
   use user_agent::{UserAgent, UserAgentExt};
   use validate::email::is_valid_email;
 
-  use crate::error::{ApiError, Kind};
+  use crate::error::ApiError;
   use crate::json::JsonHandler;
   use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
 
@@ -68,26 +68,22 @@ pub mod post {
     fn from(e: HandleError) -> Self {
       match e {
         HandleError::Db(e) => e.into(),
-        HandleError::TokenOutOfScope => ApiError::from(Kind::TokenOutOfScope),
-        HandleError::AccountNameEmpty => ApiError::from(Kind::PayloadInvalid(String::from(
-          "Account name is required",
-        ))),
-        HandleError::EmailEmpty => {
-          ApiError::from(Kind::PayloadInvalid(String::from("Email is required")))
+        HandleError::TokenOutOfScope => ApiError::TokenOutOfScope,
+        HandleError::AccountNameEmpty => {
+          ApiError::PayloadInvalid(String::from("Account name is required"))
         }
+        HandleError::EmailEmpty => ApiError::PayloadInvalid(String::from("Email is required")),
         HandleError::FirstNameEmpty => {
-          ApiError::from(Kind::PayloadInvalid(String::from("First name is required")))
+          ApiError::PayloadInvalid(String::from("First name is required"))
         }
         HandleError::LastNameEmpty => {
-          ApiError::from(Kind::PayloadInvalid(String::from("Last name is required")))
+          ApiError::PayloadInvalid(String::from("Last name is required"))
         }
-        HandleError::EmailInvalid => {
-          ApiError::from(Kind::PayloadInvalid(String::from("Email is invalid")))
+        HandleError::EmailInvalid => ApiError::PayloadInvalid(String::from("Email is invalid")),
+        HandleError::PasswordTooShort => {
+          ApiError::PayloadInvalid(String::from("Password must have 8 characters or more"))
         }
-        HandleError::PasswordTooShort => ApiError::from(Kind::PayloadInvalid(String::from(
-          "Password must have 8 characters or more",
-        ))),
-        HandleError::EmailExists => ApiError::from(Kind::UserEmailExists),
+        HandleError::EmailExists => ApiError::UserEmailExists,
       }
     }
   }
@@ -298,12 +294,11 @@ pub mod post {
         updated_at: now,
       };
 
-      let (key, sha256_key) = AccessToken::random_key();
+      let key = AccessToken::random_key();
 
       let token = AccessToken {
         id: AccessToken::uid(),
         key,
-        sha256_key,
         scope: Scope::User { user_id },
         generated_by: GeneratedBy::Register { ip, user_agent },
         last_used_at: None,
