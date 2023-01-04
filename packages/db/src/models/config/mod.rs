@@ -42,9 +42,7 @@ impl Default for Config {
 // impl Singleton for Config {}
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/db/")]
-#[ts(rename = "ConfigLimits")]
+#[ts(export, export_to = "../../defs/db/", rename = "ConfigLimits")]
 #[serde(rename_all = "camelCase")]
 pub struct Limits {
   /// default max concurrent listeners for new accounts

@@ -15,6 +15,7 @@ use user_agent::UserAgent;
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
 #[ts(export, export_to = "../../defs/db/", rename = "AccessTokenScope")]
 #[serde(tag = "scope", rename_all = "camelCase")]
+#[macros::keys]
 pub enum Scope {
   Global,
   Admin { admin_id: String },
@@ -42,6 +43,7 @@ impl Scope {
   rename = "AccessTokenGeneratedBy"
 )]
 #[serde(tag = "generatedBy", rename_all = "camelCase")]
+#[macros::keys]
 pub enum GeneratedBy {
   Login {
     #[serde(with = "serde_util::ip")]
@@ -183,11 +185,17 @@ impl Model for AccessToken {
       .build();
 
     // TODO: implement enum macros::keys()
-    let user_id = IndexModel::builder().keys(doc! { "userId": 1 }).build();
-    let admin_id = IndexModel::builder().keys(doc! { "adminId": 1 }).build();
-    let scope = IndexModel::builder().keys(doc! { "scope": 1 }).build();
+    let user_id = IndexModel::builder()
+      .keys(doc! { Scope::KEY_USER_ID: 1 })
+      .build();
+    let admin_id = IndexModel::builder()
+      .keys(doc! { Scope::KEY_ADMIN_ID: 1 })
+      .build();
+    let scope = IndexModel::builder()
+      .keys(doc! { Scope::KEY_ENUM_TAG: 1 })
+      .build();
     let generated_by = IndexModel::builder()
-      .keys(doc! { "generatedBy": 1 })
+      .keys(doc! { GeneratedBy::KEY_ENUM_TAG: 1 })
       .build();
     vec![key, user_id, admin_id, scope, generated_by]
   }

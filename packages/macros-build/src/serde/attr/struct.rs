@@ -52,7 +52,7 @@ impl From<VariantAttr> for StructAttr {
   fn from(v: VariantAttr) -> Self {
     Self {
       rename: v.rename.clone(),
-      rename_all: v.rename_all.clone(),
+      rename_all: v.rename_all,
       // inline and skip are not supported on StructAttr
       ..Self::default()
     }

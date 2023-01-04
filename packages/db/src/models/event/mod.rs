@@ -26,7 +26,7 @@ pub struct Event {
   #[serde(rename = "_id")]
   id: String,
   created_at: DateTime,
-  // working in adding support for flattened enums in ts-rs
+  // TODO: working in adding support for flattened enums in ts-rs
   #[serde(flatten)]
   #[ts(skip)]
   variant: Variant,
@@ -35,6 +35,7 @@ pub struct Event {
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/", rename = "EventVariant")]
 #[serde(tag = "kind", content = "payload")]
+#[macros::keys]
 pub enum Variant {
   #[serde(rename = "listener.start")]
   AudioListenerStart(AudioListenerStart),
@@ -84,7 +85,7 @@ impl Event {
 
       let mut cursor = cl
         .find(
-          doc! { "createdAt": { "$gt": bson::DateTime::now() } },
+          doc! { Self::KEY_CREATED_AT: { "$gt": DateTime::now() } },
           options,
         )
         .await?;
@@ -154,7 +155,9 @@ impl Model for Event {
   }
 
   fn indexes() -> Vec<IndexModel> {
-    let kind = IndexModel::builder().keys(doc! { "kind": 1 }).build();
+    let kind = IndexModel::builder()
+      .keys(doc! { Variant::KEY_ENUM_TAG: 1 })
+      .build();
     let created_at = IndexModel::builder()
       .keys(doc! { Self::KEY_CREATED_AT: 1 })
       .build();
@@ -163,18 +166,18 @@ impl Model for Event {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/db/event-payload/")]
+#[ts(export, export_to = "../../defs/db/event-payload/")]
 #[serde(rename_all = "camelCase")]
+#[macros::keys]
 pub struct AudioListenerStart {
   account_id: String,
   connection_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/db/event-payload/")]
+#[ts(export, export_to = "../../defs/db/event-payload/")]
 #[serde(rename_all = "camelCase")]
+#[macros::keys]
 pub struct AudioListenerEnd {
   account_id: String,
   connection_id: String,

@@ -160,7 +160,9 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
   }
 
   async fn delete_by_id(id: &str) -> MongoResult<DeleteResult> {
-    Self::cl().delete_one(doc! { "_id": id }, None).await
+    Self::cl()
+      .delete_one(doc! { crate::KEY_ID: id }, None)
+      .await
   }
 
   async fn delete_by_id_with_session(
@@ -168,13 +170,13 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
     session: &mut ClientSession,
   ) -> MongoResult<DeleteResult> {
     Self::cl()
-      .delete_one_with_session(doc! { "_id": id }, None, session)
+      .delete_one_with_session(doc! { crate::KEY_ID: id }, None, session)
       .await
   }
 
   async fn exists<F: IntoExistFilter>(filter: F) -> MongoResult<bool> {
     let options = FindOneOptions::builder()
-      .projection(doc! { "_id": 1 })
+      .projection(doc! { crate::KEY_ID: 1 })
       .build();
     let doc = Self::cl_as::<ExistsDocument>()
       .find_one(filter.into_exists_filter(), options)
@@ -190,7 +192,7 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
     session: &mut ClientSession,
   ) -> Result<bool, mongodb::error::Error> {
     let options = FindOneOptions::builder()
-      .projection(doc! { "_id": 1 })
+      .projection(doc! { crate::KEY_ID: 1 })
       .build();
     let doc = Self::cl_as::<ExistsDocument>()
       .find_one_with_session(filter.into_exists_filter(), options, session)
@@ -215,14 +217,14 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
   }
 
   async fn get_by_id(id: &str) -> MongoResult<Option<Self>> {
-    Self::get(doc! { "_id": id }).await
+    Self::get(doc! { crate::KEY_ID: id }).await
   }
 
   async fn get_by_id_with_session(
     id: &str,
     session: &mut ClientSession,
   ) -> MongoResult<Option<Self>> {
-    Self::get_with_session(doc! { "_id": id }, session).await
+    Self::get_with_session(doc! { crate::KEY_ID: id }, session).await
   }
 
   async fn insert(
@@ -256,7 +258,7 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
     replacement: impl std::borrow::Borrow<Self> + Send + Sync,
   ) -> MongoResult<UpdateResult> {
     Self::cl()
-      .replace_one(doc! {"_id": id}, replacement, None)
+      .replace_one(doc! { crate::KEY_ID: id }, replacement, None)
       .await
   }
 
@@ -266,13 +268,13 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
     session: &mut ClientSession,
   ) -> MongoResult<UpdateResult> {
     Self::cl()
-      .replace_one_with_session(doc! {"_id": id}, replacement, None, session)
+      .replace_one_with_session(doc! { crate::KEY_ID: id }, replacement, None, session)
       .await
   }
 
   async fn update_by_id(id: &str, update: Document) -> MongoResult<UpdateResult> {
     Self::cl()
-      .update_one(doc! { "_id": id }, update, None)
+      .update_one(doc! { crate::KEY_ID: id }, update, None)
       .await
   }
 
@@ -282,7 +284,7 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
     session: &mut ClientSession,
   ) -> MongoResult<UpdateResult> {
     Self::cl()
-      .update_one_with_session(doc! { "_id": id }, update, None, session)
+      .update_one_with_session(doc! { crate::KEY_ID: id }, update, None, session)
       .await
   }
 
@@ -409,7 +411,7 @@ fn singleton_uid() -> String {
 pub trait Singleton: Model + Default + Clone {
   async fn ensure_instance() -> Result<Self, mongodb::error::Error> {
     run_transaction!(session => {
-      let instance = tx_try!(Self::cl().find_one_with_session(doc!{}, None, &mut session).await);
+      let instance = tx_try!(Self::cl().find_one_with_session(None, None, &mut session).await);
       match instance {
         Some(instance) => Ok(instance),
         None => {

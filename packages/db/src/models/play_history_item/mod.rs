@@ -31,6 +31,7 @@ pub struct PlayHistoryItem {
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/", rename = "PlayHistoryItemKind")]
 #[serde(rename_all = "camelCase", tag = "kind")]
+#[macros::keys]
 pub enum Kind {
   Live,
   File { file_id: String },
@@ -49,6 +50,10 @@ impl Model for PlayHistoryItem {
     let start_at = IndexModel::builder()
       .keys(doc! { Self::KEY_START_AT: 1 })
       .build();
-    vec![account_id, start_at]
+    let kind = IndexModel::builder()
+      .keys(doc! { Kind::KEY_ENUM_TAG: 1 })
+      .build();
+
+    vec![account_id, start_at, kind]
   }
 }
