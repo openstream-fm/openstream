@@ -10,6 +10,8 @@ members = [
 
     "config/constants",
 
+    "packages/macros",
+    "packages/macros-build",
     "packages/burst",
     "packages/media-sessions",
     "packages/ip",

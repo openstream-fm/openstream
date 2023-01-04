@@ -24,6 +24,9 @@ use tokio::runtime::Runtime;
 
 static VERSION: &str = env!("CARGO_PKG_VERSION");
 
+// #[global_allocator]
+// static ALLOCATOR: jemallocator::Jemalloc = jemallocator::Jemalloc;
+
 #[derive(Debug, Parser)]
 #[command(author, version, about = "openstream radio streaming server")]
 struct Cli {

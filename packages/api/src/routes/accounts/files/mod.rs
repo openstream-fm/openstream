@@ -106,8 +106,7 @@ pub mod get {
         limit,
       } = input;
 
-      let filter = mongodb::bson::doc! { "accountId": account.id };
-
+      let filter = mongodb::bson::doc! { AudioFile::KEY_ACCOUNT_ID: account.id };
       let page = AudioFile::paged(filter, skip, limit).await?;
 
       Ok(Output(page))

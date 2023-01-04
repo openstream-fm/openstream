@@ -9,3 +9,5 @@ pub const STREAM_CHANNEL_CAPACITY: usize = 8;
 pub const AUDIO_FILE_CHUNK_SIZE: usize = 256 * 1000;
 
 pub const AUDIO_FILE_BYTERATE: usize = 128_000 / 8; // 128 kbps
+
+pub const TRANSFER_SAVE_INTERVAL_MILLIS: u64 = 5_000;

@@ -9,6 +9,7 @@ use ts_rs::TS;
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/")]
 #[serde(rename_all = "camelCase")]
+#[macros::keys]
 pub struct Account {
   #[serde(rename = "_id")]
   pub id: String,
@@ -172,6 +173,49 @@ impl Account {
 
     Ok(())
   }
+
+  pub async fn increment_used_transfer(
+    id: &str,
+    size: usize,
+  ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
+    const KEY: &str = crate::key!(Account::KEY_LIMITS, Limits::KEY_TRANSFER, Limit::KEY_USED);
+
+    Self::cl()
+      .update_one(
+        doc! { Account::KEY_ID: id },
+        doc! { "$inc": { KEY: size as f64 } },
+        None,
+      )
+      .await
+  }
+
+  pub async fn increment_used_listeners(
+    id: &str,
+  ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
+    const KEY: &str = crate::key!(Account::KEY_LIMITS, Limits::KEY_LISTENERS, Limit::KEY_USED);
+
+    Self::cl()
+      .update_one(
+        doc! { Account::KEY_ID: id },
+        doc! { "$inc": { KEY: 1 } },
+        None,
+      )
+      .await
+  }
+
+  pub async fn decrement_used_listeners(
+    id: &str,
+  ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
+    const KEY: &str = crate::key!(Account::KEY_LIMITS, Limits::KEY_LISTENERS, Limit::KEY_USED);
+
+    Self::cl()
+      .update_one(
+        doc! { Account::KEY_ID: id },
+        doc! { "$inc": { KEY: -1 } },
+        None,
+      )
+      .await
+  }
 }
 
 impl From<Account> for UserPublicAccount {
@@ -211,10 +255,9 @@ impl Account {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/")]
-#[ts(rename = "AccountLimits")]
+#[ts(export, export_to = "../../defs/", rename = "AccountLimits")]
 #[serde(rename_all = "camelCase")]
+#[macros::keys]
 pub struct Limits {
   pub listeners: Limit,
   pub transfer: Limit,
@@ -222,10 +265,9 @@ pub struct Limits {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/")]
-#[ts(rename = "AccountLimit")]
+#[ts(export, export_to = "../../defs/", rename = "AccountLimit")]
 #[serde(rename_all = "camelCase")]
+#[macros::keys]
 pub struct Limit {
   #[serde(with = "serde_util::as_f64")]
   pub used: u64,
@@ -244,7 +286,9 @@ impl Model for Account {
   const CL_NAME: &'static str = "accounts";
 
   fn indexes() -> Vec<IndexModel> {
-    let owner_id = IndexModel::builder().keys(doc! { "ownerId": 1 }).build();
+    let owner_id = IndexModel::builder()
+      .keys(doc! { Account::KEY_OWNER_ID: 1 })
+      .build();
     vec![owner_id]
   }
 }

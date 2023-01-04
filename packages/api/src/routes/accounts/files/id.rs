@@ -31,8 +31,10 @@ pub mod get {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../defs/api/accounts/[account]/files/[file]/GET/")]
+  #[ts(
+    export,
+    export_to = "../../defs/api/accounts/[account]/files/[file]/GET/"
+  )]
   #[serde(rename_all = "camelCase")]
   pub struct Output {
     item: AudioFile,
@@ -84,7 +86,7 @@ pub mod get {
         file_id,
       } = input;
 
-      let filter = doc! { "_id": &file_id, "accountId": account.id };
+      let filter = doc! { AudioFile::KEY_ID: &file_id, AudioFile::KEY_ACCOUNT_ID: account.id };
 
       let item = match AudioFile::cl().find_one(filter, None).await? {
         None => return Err(HandleError::FileNotFound(file_id)),
@@ -128,7 +130,8 @@ pub mod stream {
         Err(e) => return ApiError::from(e).into_json_response(),
       };
 
-      let file = match AudioFile::get(doc! { "_id": file_id, "accountId": account_id }).await {
+      let filter = doc! { AudioFile::KEY_ID: file_id, AudioFile::KEY_ACCOUNT_ID: account_id };
+      let file = match AudioFile::get(filter).await {
         Ok(Some(file)) => file,
         Ok(None) => return ApiError::ResourceNotFound.into_json_response(),
         Err(e) => return ApiError::from(e).into_json_response(),
@@ -190,7 +193,8 @@ pub mod stream {
             break;
           }
 
-          let data = match AudioChunk::get(doc!{ "audioFileId": &file_id, "i": i as f64 }).await {
+          let filter = doc!{AudioChunk::KEY_AUDIO_FILE_ID: &file_id, AudioChunk::KEY_I: i as f64 };
+          let data = match AudioChunk::get(filter).await {
             Err(e) => {
               yield Err(e);
               break;

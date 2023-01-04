@@ -110,7 +110,7 @@ pub mod get {
           .map(|item| item.into_public(PublicScope::Admin)),
 
         AccessTokenScope::User(user) => {
-          let filter = mongodb::bson::doc! { "_id": { "$in": user.account_ids } };
+          let filter = mongodb::bson::doc! { Account::KEY_ID: { "$in": user.account_ids } };
           Account::paged(filter, skip, limit)
             .await?
             .map(|item| item.into_public(PublicScope::User))

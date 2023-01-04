@@ -11,9 +11,9 @@ use serde_util::DateTime;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../defs/db/")]
 #[serde(rename_all = "camelCase")]
+#[macros::keys]
 pub struct AudioChunk {
   #[serde(rename = "_id")]
   pub id: String,
@@ -46,7 +46,7 @@ impl AudioChunk {
     audio_file_id: &str,
     session: &mut ClientSession,
   ) -> Result<DeleteResult, mongodb::error::Error> {
-    let filter = doc! { "audioFileId": audio_file_id };
+    let filter = doc! { Self::KEY_AUDIO_FILE_ID: audio_file_id };
     let r = Self::cl()
       .delete_many_with_session(filter, None, session)
       .await?;
@@ -61,7 +61,7 @@ impl AudioChunk {
     try_stream! {
       let mut i = 0.0;
       loop {
-        let filter = doc!{ "audioFileId": &file_id, "i": i };
+        let filter = doc!{ Self::KEY_AUDIO_FILE_ID: &file_id, Self::KEY_I: i };
         let item = match Self::get(filter).await? {
           Some(item) => item,
           None => break,
@@ -79,14 +79,16 @@ impl Model for AudioChunk {
   const CL_NAME: &'static str = "audio_chunks";
 
   fn indexes() -> Vec<IndexModel> {
-    let account_id = IndexModel::builder().keys(doc! { "accountId": 1 }).build();
+    let account_id = IndexModel::builder()
+      .keys(doc! { Self::KEY_ACCOUNT_ID: 1 })
+      .build();
     let audio_file_id = IndexModel::builder()
-      .keys(doc! { "audioFileId": 1 })
+      .keys(doc! { Self::KEY_AUDIO_FILE_ID: 1 })
       .build();
 
     let unique = IndexOptions::builder().unique(true).build();
     let audio_file_id_with_index = IndexModel::builder()
-      .keys(doc! { "audioFileId": 1, "i": 1 })
+      .keys(doc! { Self::KEY_AUDIO_FILE_ID: 1, Self::KEY_I: 1 })
       .options(unique)
       .build();
 

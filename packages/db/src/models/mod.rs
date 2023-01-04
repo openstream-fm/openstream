@@ -5,7 +5,7 @@ pub mod audio_chunk;
 pub mod audio_file;
 pub mod audio_upload_operation;
 pub mod config;
-pub mod stream_connection;
 pub mod event;
 pub mod play_history_item;
+pub mod stream_connection;
 pub mod user;

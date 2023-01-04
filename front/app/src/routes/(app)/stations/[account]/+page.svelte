@@ -2,12 +2,34 @@
   import CircularMeter from "$lib/components/CircularMeter/CircularMeter.svelte";
   import Page from "$lib/components/Page.svelte";
 	import Icon from "$share/Icon.svelte";
+	import { _get } from "$share/net.client";
 	import { mdiMicrophoneOutline } from "@mdi/js";
   import preetyBytes from "pretty-bytes";
+	import { onMount } from "svelte";
 
   export let data: import("./$types").PageData;
 
   $: account = data.account;
+
+  const INTERVAL = 1_000;
+
+  onMount(() => {
+
+    const update_limits = async () => {
+      try {
+        const limits: import("$server/defs/api/accounts/[account]/GET/Output").Output["account"]["limits"] = await _get(`/api/accounts/${account._id}/limits`);
+        account.limits = limits;
+      } catch(e) {
+        console.warn(`error updating limits ${e}`)
+      } finally {
+        timer = setTimeout(update_limits, INTERVAL,);
+      }
+    }
+
+    let timer = setTimeout(update_limits, INTERVAL);
+    
+    return () => clearTimeout(timer);
+  })
 </script>
 
 <style>

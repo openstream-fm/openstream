@@ -19,10 +19,9 @@ struct Watcher {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/db/")]
-#[ts(rename = "BaseEvent")]
+#[ts(export, export_to = "../../defs/db/", rename = "BaseEvent")]
 #[serde(rename_all = "camelCase")]
+#[macros::keys]
 pub struct Event {
   #[serde(rename = "_id")]
   id: String,
@@ -34,9 +33,7 @@ pub struct Event {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/db/")]
-#[ts(rename = "EventVariant")]
+#[ts(export, export_to = "../../defs/db/", rename = "EventVariant")]
 #[serde(tag = "kind", content = "payload")]
 pub enum Variant {
   #[serde(rename = "listener.start")]
@@ -152,12 +149,15 @@ impl Model for Event {
     }
 
     Self::ensure_indexes().await?;
+
     Ok(())
   }
 
   fn indexes() -> Vec<IndexModel> {
     let kind = IndexModel::builder().keys(doc! { "kind": 1 }).build();
-    let created_at = IndexModel::builder().keys(doc! { "created_at": 1 }).build();
+    let created_at = IndexModel::builder()
+      .keys(doc! { Self::KEY_CREATED_AT: 1 })
+      .build();
     vec![kind, created_at]
   }
 }

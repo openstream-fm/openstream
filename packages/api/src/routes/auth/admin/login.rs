@@ -117,7 +117,7 @@ pub mod post {
 
       let email = email.trim().to_lowercase();
 
-      let admin = match Admin::get(doc! {"email": email }).await? {
+      let admin = match Admin::get(doc! { Admin::KEY_EMAIL: email }).await? {
         None => return Err(HandleError::NoMatchEmail),
         Some(admin) => admin,
       };

@@ -270,7 +270,7 @@ pub mod post {
       };
 
       run_transaction!(session => {
-        let admin_exists = tx_try!(Admin::exists_with_session(doc!{ "email": &admin.email }, &mut session).await);
+        let admin_exists = tx_try!(Admin::exists_with_session(doc!{ Admin::KEY_EMAIL: &admin.email }, &mut session).await);
         if admin_exists {
           return Err(HandleError::EmailExists);
         }

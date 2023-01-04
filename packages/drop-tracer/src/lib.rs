@@ -30,17 +30,32 @@ impl DropTracer {
 #[derive(Debug)]
 struct Inner {
   condvar: Condvar,
-  count: Mutex<isize>,
+  count: Mutex<i128>,
 }
 
 impl Inner {
+  // fn increment(&self) {
+  //   *self.count.lock() += 1;
+  // }
+
   fn increment(&self) {
-    *self.count.lock() += 1;
+    let mut lock = self.count.lock();
+    *lock += 1;
+    info!("drop tracer increment: {} handles", *lock);
   }
+
+  // fn decrement(&self) {
+  //   let mut lock = self.count.lock();
+  //   *lock -= 1;
+  //   if *lock <= 0 {
+  //     self.condvar.notify_all();
+  //   }
+  // }
 
   fn decrement(&self) {
     let mut lock = self.count.lock();
     *lock -= 1;
+    info!("drop tracer decrement: {} handles", *lock);
     if *lock <= 0 {
       self.condvar.notify_all();
     }
@@ -108,6 +123,7 @@ impl Token {
 
 impl Drop for TokenInner {
   fn drop(&mut self) {
+    info!("Token (Inner) dropped");
     self.counter.decrement();
   }
 }

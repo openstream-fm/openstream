@@ -1,12 +1,16 @@
 use crate::{http::Request, Model};
-use mongodb::bson::{self, doc, Bson};
+use mongodb::{
+  bson::{self, doc, Bson},
+  IndexModel,
+};
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "../../defs/db/")]
+#[serde(rename_all = "camelCase")]
+#[macros::keys]
 pub struct StreamConnection {
   #[serde(rename = "_id")]
   pub id: String,
@@ -51,46 +55,47 @@ impl From<State> for Bson {
 impl Model for StreamConnection {
   const CL_NAME: &'static str = "stream_connections";
   const UID_LEN: usize = 24;
+
+  fn indexes() -> Vec<IndexModel> {
+    let account_id = IndexModel::builder()
+      .keys(doc! { Self::KEY_ACCOUNT_ID: 1 })
+      .build();
+    vec![account_id]
+  }
 }
 
 impl StreamConnection {
-  pub fn set_transfer_bytes(
+  pub async fn set_transfer_bytes(
     id: &str,
     transfer_bytes: u64,
-  ) -> tokio::task::JoinHandle<Result<mongodb::results::UpdateResult, mongodb::error::Error>> {
-    let id = id.to_string();
-    tokio::spawn(async move {
-      let set = StreamConnectionMongoSet {
-        last_transfer_at: DateTime::now(),
-        transfer_bytes: Some(transfer_bytes),
-        state: None,
-      };
+  ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
+    let set = StreamConnectionMongoSet {
+      last_transfer_at: DateTime::now(),
+      transfer_bytes: Some(transfer_bytes),
+      state: None,
+    };
 
-      let update = doc! {
-        "$set": bson::to_document(&set).unwrap()
-      };
+    let update = doc! {
+      "$set": bson::to_document(&set).unwrap()
+    };
 
-      Self::update_by_id(&id, update).await
-    })
+    Self::update_by_id(id, update).await
   }
 
-  pub fn set_closed(
+  pub async fn set_closed(
     id: &str,
     transfer_bytes: Option<u64>,
-  ) -> tokio::task::JoinHandle<Result<mongodb::results::UpdateResult, mongodb::error::Error>> {
-    let id = id.to_string();
-    tokio::spawn(async move {
-      let set = StreamConnectionMongoSet {
-        transfer_bytes,
-        last_transfer_at: DateTime::now(),
-        state: Some(State::Closed),
-      };
+  ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
+    let set = StreamConnectionMongoSet {
+      transfer_bytes,
+      last_transfer_at: DateTime::now(),
+      state: Some(State::Closed),
+    };
 
-      let update = doc! {
-        "$set": bson::to_document(&set).unwrap(),
-      };
+    let update = doc! {
+      "$set": bson::to_document(&set).unwrap(),
+    };
 
-      Self::update_by_id(&id, update).await
-    })
+    Self::update_by_id(id, update).await
   }
 }

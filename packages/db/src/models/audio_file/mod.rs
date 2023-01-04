@@ -6,9 +6,9 @@ use serde_util::{as_f64, DateTime};
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../defs/db/")]
 #[serde(rename_all = "camelCase")]
+#[macros::keys]
 pub struct AudioFile {
   #[serde(rename = "_id")]
   pub id: String,
@@ -95,17 +95,20 @@ impl Model for AudioFile {
   const CL_NAME: &'static str = "audio_files";
 
   fn indexes() -> Vec<IndexModel> {
-    let account_id = IndexModel::builder().keys(doc! { "accountId": 1 }).build();
-    let md5 = IndexModel::builder().keys(doc! { "md5": 1 }).build();
+    let account_id = IndexModel::builder()
+      .keys(doc! { Self::KEY_ACCOUNT_ID: 1 })
+      .build();
+    let md5 = IndexModel::builder()
+      .keys(doc! { Self::KEY_MD5: 1 })
+      .build();
     vec![account_id, md5]
   }
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/db/")]
-#[ts(rename = "AudioMetadata")]
+#[ts(export, export_to = "../../defs/db/", rename = "AudioMetadata")]
 #[serde(rename_all = "camelCase")]
+#[macros::keys]
 pub struct Metadata {
   pub title: Option<String>,
   pub artist: Option<String>,

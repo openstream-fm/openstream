@@ -8,9 +8,9 @@ use serde_util::DateTime;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../defs/db/")]
 #[serde(rename_all = "camelCase")]
+#[macros::keys]
 pub struct User {
   #[serde(rename = "_id")]
   pub id: String,
@@ -26,8 +26,7 @@ pub struct User {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../defs/db/")]
 #[serde(rename_all = "camelCase")]
 pub struct UserPublicUser {
   #[serde(rename = "_id")]
@@ -41,8 +40,7 @@ pub struct UserPublicUser {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../defs/db/")]
 #[serde(rename_all = "camelCase")]
 pub struct AdminPublicUser {
   #[serde(rename = "_id")]
@@ -57,8 +55,7 @@ pub struct AdminPublicUser {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../defs/db/")]
 #[serde(untagged)]
 pub enum PublicUser {
   Admin(AdminPublicUser),
@@ -103,18 +100,20 @@ impl User {
   }
 
   pub async fn find_by_email(email: &str) -> MongoResult<Option<Self>> {
-    Self::cl().find_one(doc! { "email": email }, None).await
+    Self::cl()
+      .find_one(doc! { Self::KEY_EMAIL: email }, None)
+      .await
   }
 
   pub async fn email_exists(email: &str) -> MongoResult<bool> {
-    Self::exists(doc! { "email": email }).await
+    Self::exists(doc! { Self::KEY_EMAIL: email }).await
   }
 
   pub async fn email_exists_with_session(
     email: &str,
     session: &mut ClientSession,
   ) -> MongoResult<bool> {
-    Self::exists_with_session(doc! { "email": email }, session).await
+    Self::exists_with_session(doc! { Self::KEY_EMAIL: email }, session).await
   }
 
   pub async fn find_by_email_with_session(
@@ -122,7 +121,7 @@ impl User {
     session: &mut ClientSession,
   ) -> MongoResult<Option<Self>> {
     Self::cl()
-      .find_one_with_session(doc! { "email": email }, None, session)
+      .find_one_with_session(doc! { Self::KEY_EMAIL: email }, None, session)
       .await
   }
 }
@@ -132,10 +131,12 @@ impl Model for User {
   const CL_NAME: &'static str = "users";
 
   fn indexes() -> Vec<IndexModel> {
-    let account_ids = IndexModel::builder().keys(doc! { "accountIds": 1 }).build();
+    let account_ids = IndexModel::builder()
+      .keys(doc! { Self::KEY_ACCOUNT_IDS: 1 })
+      .build();
     let email_opts = IndexOptions::builder().unique(true).build();
     let email = IndexModel::builder()
-      .keys(doc! { "email": 1 })
+      .keys(doc! { Self::KEY_EMAIL: 1 })
       .options(email_opts)
       .build();
 

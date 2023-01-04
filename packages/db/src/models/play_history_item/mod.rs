@@ -9,6 +9,7 @@ use crate::Model;
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/", rename = "BasePlayHistoryItem")]
 #[serde(rename_all = "camelCase")]
+#[macros::keys]
 pub struct PlayHistoryItem {
   #[serde(rename = "_id")]
   pub id: String,
@@ -42,8 +43,12 @@ impl Model for PlayHistoryItem {
   fn indexes() -> Vec<IndexModel> {
     // TODO: should we use a compound index for this?
     // TODO: make some benchmarks with large number of items
-    let account_id = IndexModel::builder().keys(doc! { "accountId": 1 }).build();
-    let start_at = IndexModel::builder().keys(doc! { "startAt": 1 }).build();
+    let account_id = IndexModel::builder()
+      .keys(doc! { Self::KEY_ACCOUNT_ID: 1 })
+      .build();
+    let start_at = IndexModel::builder()
+      .keys(doc! { Self::KEY_START_AT: 1 })
+      .build();
     vec![account_id, start_at]
   }
 }

@@ -274,7 +274,7 @@ pub mod post {
 
       let user = run_transaction!(session => {
 
-        let email_exists = tx_try!(User::exists_with_session(doc! { "email": &email }, &mut session).await);
+        let email_exists = tx_try!(User::exists_with_session(doc! { User::KEY_EMAIL: &email }, &mut session).await);
         if email_exists {
           return Err(Self::HandleError::UserEmailExists);
         }

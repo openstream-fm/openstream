@@ -6,9 +6,9 @@ use serde_util::DateTime;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../defs/db/")]
 #[serde(rename_all = "camelCase")]
+#[macros::keys]
 pub struct Admin {
   #[serde(rename = "_id")]
   pub id: String,
@@ -103,7 +103,7 @@ impl Model for Admin {
   fn indexes() -> Vec<IndexModel> {
     let email_opts = IndexOptions::builder().unique(true).build();
     let email = IndexModel::builder()
-      .keys(doc! { "email": 1 })
+      .keys(doc! { Admin::KEY_EMAIL: 1 })
       .options(email_opts)
       .build();
 

@@ -13,9 +13,7 @@ use ts_rs::TS;
 use user_agent::UserAgent;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/db/")]
-#[ts(rename = "AccessTokenScope")]
+#[ts(export, export_to = "../../defs/db/", rename = "AccessTokenScope")]
 #[serde(tag = "scope", rename_all = "camelCase")]
 pub enum Scope {
   Global,
@@ -38,20 +36,20 @@ impl Scope {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/db/")]
-#[ts(rename = "AccessTokenGeneratedBy")]
+#[ts(
+  export,
+  export_to = "../../defs/db/",
+  rename = "AccessTokenGeneratedBy"
+)]
 #[serde(tag = "generatedBy", rename_all = "camelCase")]
 pub enum GeneratedBy {
   Login {
     #[serde(with = "serde_util::ip")]
-    #[ts(type = "string")]
     ip: IpAddr,
     user_agent: UserAgent,
   },
   Register {
     #[serde(with = "serde_util::ip")]
-    #[ts(type = "string")]
     ip: IpAddr,
     user_agent: UserAgent,
   },
@@ -91,10 +89,9 @@ impl GeneratedBy {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/db/")]
-#[ts(rename = "BaseAccessToken")]
+#[ts(export, export_to = "../../defs/db/", rename = "BaseAccessToken")]
 #[serde(rename_all = "camelCase")]
+#[macros::keys]
 pub struct AccessToken {
   #[serde(rename = "_id")]
   pub id: String,
@@ -118,13 +115,13 @@ pub struct AccessToken {
 
 impl AccessToken {
   pub async fn touch(key: &str) -> Result<Option<AccessToken>, mongodb::error::Error> {
-    let filter = doc! { "key": key };
+    let filter = doc! { Self::KEY_KEY: key };
 
     let now = serde_util::DateTime::now();
 
     let update = doc! {
-      "$set": { "lastUsedAt": now },
-      "$inc": { "hits": 1 }
+      "$set": { Self::KEY_LAST_USED_AT: now },
+      "$inc": { Self::KEY_HITS: 1 }
     };
 
     let options = FindOneAndUpdateOptions::builder()
@@ -181,9 +178,11 @@ impl Model for AccessToken {
 
   fn indexes() -> Vec<IndexModel> {
     let key = IndexModel::builder()
-      .keys(doc! { "key": 1 })
+      .keys(doc! { AccessToken::KEY_KEY: 1 })
       .options(IndexOptions::builder().unique(true).build())
       .build();
+
+    // TODO: implement enum macros::keys()
     let user_id = IndexModel::builder().keys(doc! { "userId": 1 }).build();
     let admin_id = IndexModel::builder().keys(doc! { "adminId": 1 }).build();
     let scope = IndexModel::builder().keys(doc! { "scope": 1 }).build();

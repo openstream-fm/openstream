@@ -1,5 +1,3 @@
-use std::borrow::Borrow;
-
 use async_trait::async_trait;
 use futures_util::TryStreamExt;
 use log::*;
@@ -14,6 +12,7 @@ use mongodb::{
 };
 use once_cell::sync::OnceCell;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use std::borrow::Borrow;
 use ts_rs::TS;
 
 pub mod error;
@@ -54,13 +53,13 @@ impl IntoExistFilter for Document {
 
 impl IntoExistFilter for String {
   fn into_exists_filter(self) -> Document {
-    doc! { "_id": self }
+    doc! { crate::KEY_ID: self }
   }
 }
 
 impl IntoExistFilter for &str {
   fn into_exists_filter(self) -> Document {
-    doc! { "_id": self }
+    doc! { crate::KEY_ID: self }
   }
 }
 
@@ -491,3 +490,15 @@ pub async fn test_setup() {
       .expect("error ensuring db collections");
   }
 }
+
+#[macro_export]
+macro_rules! key {
+  ($first:expr, $($rest:expr),*) => {
+    const_str::concat!(
+      $first,
+      $(".", $rest,)*
+    )
+  };
+}
+
+pub const KEY_ID: &str = "_id";

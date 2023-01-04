@@ -65,7 +65,12 @@ export const appApi = ({
   }))
 
   api.get("/accounts/:account", json(async req => {
-    return await client.accounts.get(ip(req), token(req), req.params.id);
+    return await client.accounts.get(ip(req), token(req), req.params.account);
+  }))
+
+  api.get("/accounts/:account/limits", json(async req => {
+    const { account: { limits } } = await client.accounts.get(ip(req), token(req), req.params.account);
+    return limits;
   }))
 
   api.route("/accounts/:account/files")

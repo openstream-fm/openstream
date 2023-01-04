@@ -24,10 +24,13 @@ pub enum State {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(export_to = "../../defs/db/")]
-#[ts(rename = "BaseAudioUploadOperation")]
+#[ts(
+  export,
+  export_to = "../../defs/db/",
+  rename = "BaseAudioUploadOperation"
+)]
 #[serde(rename_all = "camelCase")]
+#[macros::keys]
 pub struct AudioUploadOperation {
   #[serde(rename = "_id")]
   pub id: String,
@@ -44,7 +47,9 @@ impl Model for AudioUploadOperation {
   const CL_NAME: &'static str = "audio_upload_operations";
 
   fn indexes() -> Vec<IndexModel> {
-    let account_id = IndexModel::builder().keys(doc! { "accountId": 1 }).build();
+    let account_id = IndexModel::builder()
+      .keys(doc! { Self::KEY_ACCOUNT_ID: 1 })
+      .build();
     vec![account_id]
   }
 }
@@ -53,7 +58,7 @@ impl AudioUploadOperation {
   pub async fn clean_up_chunks_after_error(
     operation_id: &str,
   ) -> Result<mongodb::results::DeleteResult, mongodb::error::Error> {
-    let filter = doc! { "audioFileId": operation_id };
+    let filter = doc! { AudioChunk::KEY_AUDIO_FILE_ID: operation_id };
     AudioChunk::cl().delete_many(filter, None).await
   }
 
@@ -61,7 +66,7 @@ impl AudioUploadOperation {
     operation_id: &str,
     session: &mut ClientSession,
   ) -> Result<mongodb::results::DeleteResult, mongodb::error::Error> {
-    let filter = doc! { "audioFileId": operation_id };
+    let filter = doc! { AudioChunk::KEY_AUDIO_FILE_ID: operation_id };
     AudioChunk::cl()
       .delete_many_with_session(filter, None, session)
       .await

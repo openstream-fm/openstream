@@ -1,9 +1,10 @@
-use crate::{singleton_uid, Model, Singleton, SINGLETON_UID_LEN};
-use async_trait::async_trait;
+use crate::Model;
+use macros::Singleton;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, Singleton)]
+#[singleton(collection = "config")]
 #[ts(export)]
 #[ts(export_to = "../../defs/db/")]
 #[serde(rename_all = "camelCase")]
@@ -22,23 +23,23 @@ impl Default for Config {
   }
 }
 
-#[async_trait]
-impl Model for Config {
-  const CL_NAME: &'static str = "config";
-  const UID_LEN: usize = SINGLETON_UID_LEN;
+// #[async_trait]
+// impl Model for Config {
+//   const CL_NAME: &'static str = "config";
+//   const UID_LEN: usize = SINGLETON_UID_LEN;
 
-  fn uid() -> String {
-    singleton_uid()
-  }
+//   fn uid() -> String {
+//     singleton_uid()
+//   }
 
-  async fn ensure_collection() -> Result<(), mongodb::error::Error> {
-    Self::ensure_indexes().await?;
-    Self::ensure_instance().await?;
-    Ok(())
-  }
-}
+//   async fn ensure_collection() -> Result<(), mongodb::error::Error> {
+//     Self::ensure_indexes().await?;
+//     Self::ensure_instance().await?;
+//     Ok(())
+//   }
+// }
 
-impl Singleton for Config {}
+// impl Singleton for Config {}
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
