@@ -1,6 +1,6 @@
 <script lang="ts">
 	import TopUser from "$lib/components/Dashboard/TopUser.svelte";
-	import { ripple } from "$lib/ripple";
+	// import { ripple } from "$lib/ripple";
 	import { fly } from "svelte/transition";
   export let data: import("./$types").PageData;
 </script>
@@ -55,47 +55,6 @@
     flex-direction: column;
     align-items: stretch;
     min-width: 0;
-  }
-
-  .station-item {
-    padding: 1rem 2rem;
-    cursor: pointer;
-    user-select: none;
-    font-size: 1.1rem;
-    transition: background-color 150ms ease;
-  }
-
-  .station-item:hover {
-    background: #eee;
-  }
-
-  .station-item-name {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .no-stations {
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .no-stations-message {
-    font-size: 1.1rem;
-  }
-
-  .no-stations-create {
-    background: var(--blue);
-    color: #fff;
-    cursor: pointer;
-    user-select: none;
-    padding: 0.75rem 1rem;
-    border-radius: 0.25rem;
-    margin-top: 2rem;
-    box-shadow: 0 4px 8px 0 rgb(0 0 0 / 12%), 0 2px 4px 0 rgb(0 0 0 / 8%);
-    font-weight: 500;
   }
 </style>
 

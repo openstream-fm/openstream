@@ -120,7 +120,7 @@ pub mod post {
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../defs/api/admins/POST/")]
-  #[serde(rename_all = "camelCase")]
+  #[serde(rename_all = "snake_case")]
   #[serde(deny_unknown_fields)]
   pub struct Payload {
     pub first_name: String,

@@ -39,7 +39,7 @@ let intertab = <T>(key: string) => {
     }
   }
 
-  const listeners: ((newValue: T, oldValue: T | undefined) => void)[] = [];
+  const listeners: ((new_value: T, old_value: T | undefined) => void)[] = [];
 
   const set = (value: T) => {
     localStorage.setItem(key, JSON.stringify(value));

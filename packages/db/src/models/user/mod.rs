@@ -9,7 +9,7 @@ use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct User {
   #[serde(rename = "_id")]
@@ -27,7 +27,7 @@ pub struct User {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct UserPublicUser {
   #[serde(rename = "_id")]
   pub id: String,
@@ -41,7 +41,7 @@ pub struct UserPublicUser {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct AdminPublicUser {
   #[serde(rename = "_id")]
   pub id: String,

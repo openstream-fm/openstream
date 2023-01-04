@@ -3,7 +3,7 @@ import { Readable } from "stream";
 import { FORWARD_IP_HEADER } from "./contants";
 import { ip } from "./ip";
 
-export const sveltekitDevProxy = (port: number) => {
+export const sveltekit_dev_proxy = (port: number) => {
   
   const proxy = Router();
   

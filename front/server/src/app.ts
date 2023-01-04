@@ -1,11 +1,11 @@
 import express from "express";
 import type { Config } from "./config";
 import type { Logger } from "./logger";
-import { appApi } from "./api/appApi";
+import { app_api } from "./api/app-api";
 
 import path from "path";
 import { env } from "./env";
-import { sveltekitDevProxy } from "./sveltekit-dev-proxy";
+import { sveltekit_dev_proxy } from "./sveltekit-dev-proxy";
 import { color } from "./color";
 
 export const start = async ({ config, logger }: { config: Config, logger: Logger }) => {
@@ -16,14 +16,14 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
 
     let app = express();
 
-    app.use("/api", appApi({ config, logger }))
+    app.use("/api", app_api({ config, logger }))
 
     app.use(express.static(path.resolve(__dirname, "../../../static"), { etag: true }))
 
     if(env.SVELTEKIT_APP_DEV) {
-      app.use(sveltekitDevProxy(env.SVELTEKIT_APP_PORT))
+      app.use(sveltekit_dev_proxy(env.SVELTEKIT_APP_PORT))
     } else {
-      // nasty hack to stop typescript to transform the import into a require
+      // nasty hack for stopping typescript to transform the import into a require
       // @ts-ignore
       process.env.APP_API_PORT = String(config.app.port);
       const { handler } = await (new Function("", 'return import("../../app/build/handler.js")'))();

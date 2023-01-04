@@ -4,7 +4,7 @@ export interface AudioMetadata {
   title: string | null;
   artist: string | null;
   album: string | null;
-  albumArtist: string | null;
+  album_artist: string | null;
   genre: string | null;
   year: number | null;
   comment: string | null;

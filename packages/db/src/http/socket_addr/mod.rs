@@ -4,7 +4,7 @@ use ts_rs::TS;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/http/")]
-#[serde(rename_all = "camelCase")]
+// #[serde(rename_all = "camelCase")]
 pub struct SocketAddr {
   #[serde(with = "serde_util::ip")]
   pub ip: IpAddr,

@@ -10,7 +10,7 @@ const store = (config: Config) => new SessionStore({
   collection: "sessions",
 })
 
-const sessionConfig = (config: Config): Parameters<typeof _session>[0] => {
+const session_config = (config: Config): Parameters<typeof _session>[0] => {
   return {
     name: "openstream-front.sid",
     secret: config.session.secret,
@@ -25,9 +25,9 @@ const sessionConfig = (config: Config): Parameters<typeof _session>[0] => {
   }
 }
 
-export const session = (config: Config) => _session(sessionConfig(config));
+export const session = (config: Config) => _session(session_config(config));
 
-export const saveSession = async (req: Request) => {
+export const save_session = async (req: Request) => {
   return new Promise<void>((resolve, reject) => {
     req.session!.save(e => {
       if(e) reject(e);

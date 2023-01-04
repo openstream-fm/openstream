@@ -4,7 +4,7 @@ import type { DateTime } from "../DateTime";
 export interface BaseAccessToken {
   _id: string;
   key: string;
-  createdAt: DateTime;
-  lastUsedAt: DateTime | null;
+  created_at: DateTime;
+  last_used_at: DateTime | null;
   hits: number;
 }

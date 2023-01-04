@@ -53,7 +53,7 @@
   export let messages: Message[] = [];
   export let maxStack: number = 3;
   export let duration: number = 4_000;
-  export let durationError: number = 6_000;
+  export let duration_error: number = 6_000;
   //export let variant = "normal";
 
   // messages[]
@@ -117,9 +117,9 @@
   export const info = (text: Text, message: Partial<Message> = {}) =>
     add({ variant: "info", text, ...message });
   export const warn = (text: Text, message: Partial<Message> = {}) =>
-    add({ variant: "warning", text, duration: durationError, ...message });
+    add({ variant: "warning", text, duration: duration_error, ...message });
   export const error = (text: Text, message: Partial<Message> = {}) =>
-    add({ variant: "error", text, duration: durationError,  ...message });
+    add({ variant: "error", text, duration: duration_error,  ...message });
 </script>
 
 <style>

@@ -309,7 +309,7 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 #[ts(export_to = "../../defs/")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct Paged<T> {
   pub total: u64,
   pub skip: u64,

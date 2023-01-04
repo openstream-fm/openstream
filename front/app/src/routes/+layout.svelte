@@ -5,20 +5,20 @@
 
   export let data: import("./$types").LayoutData;
 
-  $: userId = data.maybeUser?._id ?? null;
+  $: user_id = data.maybe_user?._id ?? null;
   
-  const channel = intertab<string | null>("openstream.intertab.userId");
+  const channel = intertab<string | null>("openstream.intertab.user_id");
     
   $: if(browser) {
-    console.log("intertab set", { setValue: userId, oldValue: channel.get() });
-    channel.set(userId);  
+    console.log("intertab set", { set_value: user_id, old_value: channel.get() });
+    channel.set(user_id);  
   } 
 
   onMount(() => {
-    console.log("root layout mounted", { userId });
-    return channel.watch((newValue, oldValue) => {
-      console.log("intertab userId changed", { userId, newValue, oldValue })
-      if(newValue !== userId) {
+    console.log("root layout mounted", { user_id });
+    return channel.watch((new_value, old_value) => {
+      console.log("intertab user_id changed", { user_id, new_value, old_value })
+      if(new_value !== user_id) {
         location.assign("/");
       }
     })

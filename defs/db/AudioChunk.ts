@@ -3,14 +3,14 @@ import type { DateTime } from "../DateTime";
 
 export interface AudioChunk {
   _id: string;
-  audioFileId: string;
-  accountId: string;
-  startMs: number;
-  endMs: number;
+  audio_file_id: string;
+  account_id: string;
+  start_ms: number;
+  end_ms: number;
   i: number;
   len: number;
-  durationMs: number;
-  bytesSec: number;
+  duration_ms: number;
+  bytes_sec: number;
   data: string;
-  createdAt: DateTime;
+  created_at: DateTime;
 }

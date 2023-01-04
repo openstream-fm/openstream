@@ -15,13 +15,13 @@
   import Dialog from "$share/Dialog.svelte";
   import { sleep } from "$share/util";
 
-  $: accountId = data.account._id;
+  $: account_id = data.account._id;
 
-  $: playlistDuration = getPlaylistDuration(data.files.items);
+  $: playlist_duration = getPlaylistDuration(data.files.items);
   const getPlaylistDuration = (files: FileDocument[]): number => {
     let d = 0;
     for(const item of files) {
-      d += item.durationMs;
+      d += item.duration_ms;
     }
     return d;
   }
@@ -58,14 +58,14 @@
 
   type FileDocument = typeof data.files.items[number];
   type PlayingItem = { file: FileDocument, audio: HTMLAudioElement };
-  let playingItem: PlayingItem | null = null;
+  let playing_item: PlayingItem | null = null;
 
-  const togglePlay = (file: FileDocument) => {
-    if(playingItem == null) {
-      const audio = new Audio(`/api/accounts/${accountId}/files/${file._id}/stream`);
+  const toggle_play = (file: FileDocument) => {
+    if(playing_item == null) {
+      const audio = new Audio(`/api/accounts/${account_id}/files/${file._id}/stream`);
       const onend = () => {
-        if(playingItem?.file._id === file._id) {
-          playingItem = null;
+        if(playing_item?.file._id === file._id) {
+          playing_item = null;
         }
       }
       audio.onabort = onend;
@@ -73,19 +73,19 @@
       audio.onpause = onend;
       audio.onended = onend;
       audio.play();
-      playingItem = { file, audio };
-    } else if (playingItem.file._id === file._id) {
-      stopPlayback();
+      playing_item = { file, audio };
+    } else if (playing_item.file._id === file._id) {
+      stop_playback();
     } else {
-      stopPlayback();
-      togglePlay(file);
+      stop_playback();
+      toggle_play(file);
     }
   }
 
-  const stopPlayback = () => {
-    if(playingItem == null) return;
-    const { audio } = playingItem;
-    playingItem = null;
+  const stop_playback = () => {
+    if(playing_item == null) return;
+    const { audio } = playing_item;
+    playing_item = null;
     audio.pause();
   }
 
@@ -182,9 +182,9 @@
   onMount(() => { 
     if(window.AbortController) controller = new AbortController();
     return () => {
-      if(playingItem != null) {
-        const audio = playingItem.audio;
-        playingItem = null;
+      if(playing_item != null) {
+        const audio = playing_item.audio;
+        playing_item = null;
         audio.pause();
       }
 
@@ -214,7 +214,7 @@
     next();
 
     try {
-      const newFile: import("$server/defs/api/accounts/[account]/files/POST/Output").Output = await _request(`/api/accounts/${accountId}/files?filename=${encodeURIComponent(item.file.name)}`, {
+      const _new_file: import("$server/defs/api/accounts/[account]/files/POST/Output").Output = await _request(`/api/accounts/${account_id}/files?filename=${encodeURIComponent(item.file.name)}`, {
         method: "POST",
         headers: {
           "content-length": String(item.file.length),
@@ -251,8 +251,8 @@
     next();
   }
 
-  $: onFiles(files);
-  const onFiles = (...args: any[]) => {
+  $: on_files(files);
+  const on_files = (...args: any[]) => {
     if(!files) return;
     const _files = files;
     files = undefined;
@@ -265,19 +265,19 @@
     }
   }
 
-  const del = action(async (fileId: string) => {
-    await _delete(`/api/accounts/${accountId}/files/${fileId}`);
-    unselect(fileId);
+  const del = action(async (file_id: string) => {
+    await _delete(`/api/accounts/${account_id}/files/${file_id}`);
+    unselect(file_id);
     invalidate("account:limits");
     invalidate("account:files");
     _message("Track deleted");
-    if(playingItem?.file._id === fileId) stopPlayback(); 
+    if(playing_item?.file._id === file_id) stop_playback(); 
   })
 
   const del_selected = async () => {
-    if(audioItemToDelete == null) return;
-    if(await del(audioItemToDelete._id)) {
-      audioItemToDelete = null;
+    if(audio_item_to_delete == null) return;
+    if(await del(audio_item_to_delete._id)) {
+      audio_item_to_delete = null;
     } 
   }
 
@@ -286,17 +286,17 @@
     if(ids.length === 0) return;
     if(ids.length === 1) {
       const item = data.files.items.find(item => item._id = ids[0]);
-      if(item != null) audioItemToDelete = item;
-      else deleteSelectionOpen = true;
+      if(item != null) audio_item_to_delete = item;
+      else delete_selection_open = true;
     } else {
-      deleteSelectionOpen = true;
+      delete_selection_open = true;
     }
   }
 
   const del_selection_all = action(async () => {
     const ids = $selected_ids;
     if(ids.length === 0) return;
-    deleteSelectionOpen = false;
+    delete_selection_open = false;
     //const text = (i: number) => `Deleting ${ids.length} tracks... ${i} tracks deleted`;
     //const message = writable(text(0));
     const { resolve, reject } = _progress(`Deleting ${ids.length} tracks...`);
@@ -305,8 +305,8 @@
       for(const id of ids) {
         //await sleep(100);
         //message.set(text(i));
-        await _delete(`/api/accounts/${accountId}/files/${id}`);
-        if(playingItem && ids.includes(playingItem.file._id)) stopPlayback();
+        await _delete(`/api/accounts/${account_id}/files/${id}`);
+        if(playing_item && ids.includes(playing_item.file._id)) stop_playback();
         data.files.items = data.files.items.filter(item => item._id !== id);
         data.files.total = data.files.items.length;
         i++;
@@ -337,8 +337,8 @@
     }
   }
 
-  let audioItemToDelete: FileDocument | null = null;
-  let deleteSelectionOpen: boolean = false;
+  let audio_item_to_delete: FileDocument | null = null;
+  let delete_selection_open: boolean = false;
 
   const selected_ids = writable<string[]>([]);
 
@@ -788,7 +788,7 @@
       <div class="playlist-top">
         <div class="playlist-box-title">
           Tracks
-          <span class="count">{data.files.total} {data.files.total === 1 ? "track" : "tracks"} - {total_duration(playlistDuration)}</span>
+          <span class="count">{data.files.total} {data.files.total === 1 ? "track" : "tracks"} - {total_duration(playlist_duration)}</span>
         </div>
       </div>
 
@@ -880,8 +880,8 @@
                   </td>
                   <td class="btn-cell">
                     <div class="file-preview-cell">
-                      <button class="file-preview-btn" on:click={() => togglePlay(file)}>
-                        <Icon d={playingItem?.file._id === file._id ? mdiPause : mdiPlay} />
+                      <button class="file-preview-btn" on:click={() => toggle_play(file)}>
+                        <Icon d={playing_item?.file._id === file._id ? mdiPause : mdiPlay} />
                       </button>
                     </div>
                   </td>
@@ -902,7 +902,7 @@
                   </td>
                   <td>
                     <div class="file-data-item">
-                      {track_duration(file.durationMs)}
+                      {track_duration(file.duration_ms)}
                     </div>
                   </td>
                   <td class="btn-cell">
@@ -911,7 +911,7 @@
                     </button>
                   </td>
                   <td class="btn-cell">
-                    <button class="file-btn file-btn-del ripple-container" use:ripple use:tooltip={"Delete"} on:click={() => audioItemToDelete = file}>
+                    <button class="file-btn file-btn-del ripple-container" use:ripple use:tooltip={"Delete"} on:click={() => audio_item_to_delete = file}>
                       <Icon d={mdiTrashCanOutline} />
                     </button>
                   </td>
@@ -927,11 +927,11 @@
    <input id="media-upload-files" class="file-input" type="file" multiple accept="audio/*" bind:files={files} />
 </Page>
 
-{#if audioItemToDelete != null}
+{#if audio_item_to_delete != null}
   <Dialog
-    title="Delete track {audioItemToDelete.metadata.title || audioItemToDelete.filename}"
+    title="Delete track {audio_item_to_delete.metadata.title || audio_item_to_delete.filename}"
     width="400px"
-    onClose={() => audioItemToDelete = null}
+    onClose={() => audio_item_to_delete = null}
   >
     <div class="delete-dialog">
       <div class="delete-dialog-text">
@@ -939,7 +939,7 @@
       </div>
       <div class="delete-dialog-btns">
 
-        <button class="delete-dialog-btn-cancel ripple-container" use:ripple on:click={() => audioItemToDelete = null}>
+        <button class="delete-dialog-btn-cancel ripple-container" use:ripple on:click={() => audio_item_to_delete = null}>
           Cancel
         </button>
         
@@ -952,11 +952,11 @@
       </div>
     </div>
   </Dialog>
-{:else if $selected_ids.length && deleteSelectionOpen}
+{:else if $selected_ids.length && delete_selection_open}
   <Dialog
     title="Delete {$selected_ids.length} tracks"
     width="400px"
-    onClose={() => deleteSelectionOpen = false}
+    onClose={() => delete_selection_open = false}
   >
     <div class="delete-dialog">
       <div class="delete-dialog-text">
@@ -964,7 +964,7 @@
       </div>
       <div class="delete-dialog-btns">
 
-        <button class="delete-dialog-btn-cancel ripple-container" use:ripple on:click={() => deleteSelectionOpen = false}>
+        <button class="delete-dialog-btn-cancel ripple-container" use:ripple on:click={() => delete_selection_open = false}>
           Cancel
         </button>
         

@@ -90,7 +90,7 @@ pub mod post {
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../defs/api/auth/user/register/POST/")]
-  #[serde(rename_all = "camelCase")]
+  // #[serde(rename_all = "camelCase")]
   #[serde(deny_unknown_fields)]
   pub struct Payload {
     email: String,
@@ -117,7 +117,7 @@ pub mod post {
 
   #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../defs/api/auth/user/register/POST/")]
-  #[serde(rename_all = "camelCase")]
+  // #[serde(rename_all = "camelCase")]
   #[serde(deny_unknown_fields)]
   pub struct PayloadLimits {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -140,7 +140,7 @@ pub mod post {
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../defs/api/auth/user/register/POST/")]
-  #[serde(rename_all = "camelCase")]
+  // #[serde(rename_all = "camelCase")]
   pub struct Output {
     pub account: PublicAccount,
     pub user: PublicUser,

@@ -99,7 +99,7 @@ enum InlineComplexEnum {
 }
 
 #[derive(Serialize, TS)]
-#[serde(rename_all = "camelCase")]
+// #[serde(rename_all = "camelCase")]
 #[ts(export)]
 struct ComplexStruct {
     #[serde(default, skip_serializing_if = "Option::is_none")]

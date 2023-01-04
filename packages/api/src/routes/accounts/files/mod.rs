@@ -145,7 +145,7 @@ pub mod post {
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../defs/api/accounts/[account]/files/POST/")]
-  #[serde(rename_all = "camelCase")]
+  #[serde(rename_all = "snake_case")]
   pub struct Output {
     file: AudioFile,
   }

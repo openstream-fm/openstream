@@ -4,10 +4,10 @@ import type { Metadata } from "./Metadata";
 
 export interface UserPublicUser {
   _id: string;
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   email: string;
-  createdAt: DateTime;
-  updatedAt: DateTime;
-  userMetadata: Metadata;
+  created_at: DateTime;
+  updated_at: DateTime;
+  user_metadata: Metadata;
 }

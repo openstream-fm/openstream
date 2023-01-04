@@ -8,7 +8,7 @@ use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct Account {
   #[serde(rename = "_id")]
@@ -26,7 +26,7 @@ pub struct Account {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct UserPublicAccount {
   #[serde(rename = "_id")]
   pub id: String,
@@ -53,7 +53,7 @@ pub enum PublicAccount {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/ops/")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[serde(deny_unknown_fields)]
 pub struct AccountPatch {
   #[serde(skip_serializing_if = "Option::is_none")]
@@ -68,7 +68,7 @@ pub struct AccountPatch {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/ops/")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[serde(deny_unknown_fields)]
 pub struct AccountPatchLimits {
   #[serde(skip_serializing_if = "Option::is_none")]
@@ -256,7 +256,7 @@ impl Account {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/", rename = "AccountLimits")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct Limits {
   pub listeners: Limit,
@@ -266,7 +266,7 @@ pub struct Limits {
 
 #[derive(Debug, Clone, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "../../defs/", rename = "AccountLimit")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct Limit {
   #[serde(with = "serde_util::as_f64")]

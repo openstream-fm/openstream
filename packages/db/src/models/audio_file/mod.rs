@@ -7,7 +7,7 @@ use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct AudioFile {
   #[serde(rename = "_id")]
@@ -107,7 +107,7 @@ impl Model for AudioFile {
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone, TS)]
 #[ts(export, export_to = "../../defs/db/", rename = "AudioMetadata")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct Metadata {
   pub title: Option<String>,

@@ -133,7 +133,7 @@ pub mod post {
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../defs/api/accounts/POST/")]
-  #[serde(rename_all = "camelCase")]
+  #[serde(rename_all = "snake_case")]
   #[serde(deny_unknown_fields)]
   pub struct Payload {
     pub name: String,
@@ -149,7 +149,7 @@ pub mod post {
 
   #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../defs/api/accounts/POST/")]
-  #[serde(rename_all = "camelCase")]
+  #[serde(rename_all = "snake_case")]
   #[serde(deny_unknown_fields)]
   pub struct PayloadLimits {
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -7,7 +7,7 @@ use ts_rs::TS;
 #[singleton(collection = "config")]
 #[ts(export)]
 #[ts(export_to = "../../defs/db/")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct Config {
   #[serde(rename = "_id")]
   pub id: String,
@@ -43,7 +43,7 @@ impl Default for Config {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/", rename = "ConfigLimits")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct Limits {
   /// default max concurrent listeners for new accounts
   #[serde(with = "serde_util::as_f64")]

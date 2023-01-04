@@ -5,6 +5,6 @@ export const ssr = !dev;
 
 export const load = (async ({ request, getClientAddress, depends }) => {
   depends("user:me");
-  const maybeUser = await load_get_me({ request, getClientAddress });
-  return { maybeUser }
+  const maybe_user = await load_get_me({ request, getClientAddress });
+  return { maybe_user }
 }) satisfies import("./$types").LayoutServerLoad;

@@ -5,12 +5,12 @@ import type { PayloadLimits } from "./PayloadLimits";
 export interface Payload {
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
-  accountName: string;
+  first_name: string;
+  last_name: string;
+  account_name: string;
   limits?: PayloadLimits;
-  accountUserMetadata?: Metadata;
-  accountSystemMetadata?: Metadata;
-  userUserMetadata?: Metadata;
-  userSystemMetadata?: Metadata;
+  account_user_metadata?: Metadata;
+  account_system_metadata?: Metadata;
+  user_user_metadata?: Metadata;
+  user_system_metadata?: Metadata;
 }

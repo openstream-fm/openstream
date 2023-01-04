@@ -7,23 +7,23 @@
 	import { action, _post } from "$share/net.client";
 	import { form } from "../transitions";
 
-  let firstName = "";
-  let lastName = "";
-  let accountName = "";
+  let first_name = "";
+  let last_name = "";
+  let account_name = "";
   let email = "";
   let password = "";
-  let confirmPassword = "";
+  let confirm_password = "";
 
   const register = action(async () => {
     
-    if(password !== confirmPassword) {
+    if(password !== confirm_password) {
       throw new Error("Confirmation password does not match");
     }
 
     const payload: import("$server/defs/api/auth/user/register/POST/Payload").Payload = {
-      firstName,
-      lastName,
-      accountName,
+      first_name,
+      last_name,
+      account_name,
       email,
       password,
     };
@@ -127,13 +127,13 @@
   <div class="title">Sign up</div>
   <div class="fields">
     <div class="field">
-      <TextField label="Your first name" bind:value={firstName} />
+      <TextField label="Your first name" bind:value={first_name} />
     </div>
     <div class="field">
-      <TextField label="Your last name" bind:value={lastName} />
+      <TextField label="Your last name" bind:value={last_name} />
     </div>
     <div class="field">
-      <TextField label="Your station's name" bind:value={accountName} />
+      <TextField label="Your station's name" bind:value={account_name} />
     </div>
     <div class="field">
       <Email label="Your email" bind:value={email} />
@@ -142,7 +142,7 @@
       <Password label="Your password" bind:value={password} />
     </div>
     <div class="field">
-      <Password label="Confirm your password" bind:value={confirmPassword} />
+      <Password label="Confirm your password" bind:value={confirm_password} />
     </div>
 
     <button use:ripple class="ripple-container">

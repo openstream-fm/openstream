@@ -23,7 +23,7 @@ pub mod get {
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../defs/api/admins/[admin]/GET/")]
-  #[serde(rename_all = "camelCase")]
+  // #[serde(rename_all = "camelCase")]
   pub struct Output {
     admin: PublicAdmin,
   }

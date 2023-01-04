@@ -3,10 +3,10 @@
 export interface UserAgent {
   ua: string | null;
   category: string | null;
-  browserType: string | null;
+  browser_type: string | null;
   vendor: string | null;
   name: string | null;
   version: string | null;
   os: string | null;
-  osVersion: string | null;
+  os_version: string | null;
 }

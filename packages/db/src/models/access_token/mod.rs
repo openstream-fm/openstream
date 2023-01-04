@@ -14,7 +14,8 @@ use user_agent::UserAgent;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
 #[ts(export, export_to = "../../defs/db/", rename = "AccessTokenScope")]
-#[serde(tag = "scope", rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
+#[serde(tag = "scope")]
 #[macros::keys]
 pub enum Scope {
   Global,
@@ -42,7 +43,8 @@ impl Scope {
   export_to = "../../defs/db/",
   rename = "AccessTokenGeneratedBy"
 )]
-#[serde(tag = "generatedBy", rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
+#[serde(tag = "generated_by")]
 #[macros::keys]
 pub enum GeneratedBy {
   Login {
@@ -92,7 +94,7 @@ impl GeneratedBy {
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/", rename = "BaseAccessToken")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct AccessToken {
   #[serde(rename = "_id")]

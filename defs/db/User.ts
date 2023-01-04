@@ -4,13 +4,13 @@ import type { Metadata } from "./Metadata";
 
 export interface User {
   _id: string;
-  accountIds: Array<string>;
-  firstName: string;
-  lastName: string;
+  account_ids: Array<string>;
+  first_name: string;
+  last_name: string;
   email: string;
   password: string | null;
-  createdAt: DateTime;
-  updatedAt: DateTime;
-  userMetadata: Metadata;
-  systemMetadata: Metadata;
+  created_at: DateTime;
+  updated_at: DateTime;
+  user_metadata: Metadata;
+  system_metadata: Metadata;
 }

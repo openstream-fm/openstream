@@ -10,17 +10,17 @@
   import { mdiEye, mdiEyeOff } from "@mdi/js";
   import css from "./forms.module.css"; 
   
-  let clickToken = false;
+  let click_token = false;
 
   const pointerdown = () => {
-    clickToken = true;
+    click_token = true;
     visible = !visible;
   }
 
   // handle enter key
   const click = () => {
-    let t = clickToken;
-    clickToken = false;
+    let t = click_token;
+    click_token = false;
     if (!t) {
       visible = !visible;
     }

@@ -2,7 +2,7 @@
   import { crossfade, fade } from "svelte/transition";
   const [ send, receive ] = crossfade({ duration: 300, fallback: fade as any })
 
-  const isCurrent = (href: string, url: URL): boolean => {
+  const is_current = (href: string, url: URL): boolean => {
     const path = href.split("?")[0];
     if(/^\/stations\/([a-z0-9]+)$/i.test(path)) {
       return url.pathname === path
@@ -18,7 +18,7 @@
   export let icon: string | null = null;
   export let iconStroke: boolean = false;
   export let iconStrokeWidth: number | "" = "";
-  $: current = isCurrent(href, $page.url);
+  $: current = is_current(href, $page.url);
 
   import { page } from "$app/stores";
 	import { ripple } from "$lib/ripple";

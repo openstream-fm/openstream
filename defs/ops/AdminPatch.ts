@@ -2,7 +2,7 @@
 import type { Metadata } from "../db/Metadata";
 
 export interface AdminPatch {
-  firstName?: string;
-  lastName?: string;
-  systemMetadata?: Metadata;
+  first_name?: string;
+  last_name?: string;
+  system_metadata?: Metadata;
 }

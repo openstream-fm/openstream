@@ -3,8 +3,8 @@ import type { DateTime } from "../DateTime";
 
 export interface BasePlayHistoryItem {
   _id: string;
-  accountId: string;
+  account_id: string;
   name: string;
   artist: string;
-  startAt: DateTime;
+  start_at: DateTime;
 }

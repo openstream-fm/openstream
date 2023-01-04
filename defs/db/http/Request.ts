@@ -7,11 +7,11 @@ import type { UserAgent } from "../../UserAgent";
 import type { Version } from "./Version";
 
 export interface Request {
-  remoteIp: string;
-  localAddr: SocketAddr;
+  remote_ip: string;
+  local_addr: SocketAddr;
   version: Version;
   method: Method;
   uri: Uri;
   headers: Headers;
-  userAgent: UserAgent;
+  user_agent: UserAgent;
 }

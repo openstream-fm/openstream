@@ -9,7 +9,7 @@ use ts_rs::TS;
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/")]
 #[ts(rename = "AudioUploadOperationState")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[serde(tag = "state")]
 pub enum State {
   Pending,
@@ -29,7 +29,7 @@ pub enum State {
   export_to = "../../defs/db/",
   rename = "BaseAudioUploadOperation"
 )]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct AudioUploadOperation {
   #[serde(rename = "_id")]

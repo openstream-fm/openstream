@@ -17,7 +17,7 @@ pub mod post {
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../defs/api/auth/user/login/POST/")]
-  #[serde(rename_all = "camelCase")]
+  // #[serde(rename_all = "camelCase")]
   #[serde(deny_unknown_fields)]
   pub struct Payload {
     email: String,
@@ -33,7 +33,7 @@ pub mod post {
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../defs/api/auth/user/login/POST/")]
-  #[serde(rename_all = "camelCase")]
+  // #[serde(rename_all = "camelCase")]
   pub struct Output {
     user: UserPublicUser,
     token: String,

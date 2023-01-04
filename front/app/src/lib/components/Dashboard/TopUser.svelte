@@ -8,14 +8,14 @@
 	import { clickOut } from "$lib/actions";
 	import { action, _post } from "$share/net.client";
 	import Icon from "$share/Icon.svelte";
-	import { mdiAccountCircleOutline, mdiCastAudio, mdiCastAudioVariant, mdiLogout } from "@mdi/js";
+	import { mdiAccountCircleOutline, mdiCastAudioVariant, mdiLogout } from "@mdi/js";
 
-  const signOut = action(async () => {
+  const sign_out = action(async () => {
     await _post("/api/logout", {});
     location.assign("/");
   })
 
-  let menuOpen = false;
+  let menu_open = false;
 </script>
 
 <style>
@@ -157,19 +157,19 @@
 
 <div class="account">
   <div class="names">
-    <div class="user-name">{user.firstName} {user.lastName}</div>
+    <div class="user-name">{user.first_name} {user.last_name}</div>
     {#if account != null}
       <div class="account-name">{account.name}</div>
     {/if}
   </div>
-  <div class="menu-holder" use:clickOut={() => menuOpen = false}>
+  <div class="menu-holder" use:clickOut={() => menu_open = false}>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="pic ripple-container" use:ripple on:click={() => menuOpen = !menuOpen} use:ripple>
-      {user.firstName.charAt(0).toUpperCase()}
+    <div class="pic ripple-container" use:ripple on:click={() => menu_open = !menu_open} use:ripple>
+      {user.first_name.charAt(0).toUpperCase()}
     </div>
     <div class="menu-position-out">
       <div class="menu-position-in">
-        {#if menuOpen}
+        {#if menu_open}
           <div class="menu" transition:fly|local={{ y: -25, x: 10, duration: 200 }}>
             <div class="menu-section">
               <a href="/me" class="na menu-section-link ripple-container" use:ripple>
@@ -187,14 +187,14 @@
                 Stations
               </a>
               {#each accounts.items as item (item._id)}
-                <a href="/stations/{item._id}" class="na menu-account" class:current={item._id === account?._id} on:click={() => menuOpen = false}>
+                <a href="/stations/{item._id}" class="na menu-account" class:current={item._id === account?._id} on:click={() => menu_open = false}>
                   {item.name}
                 </a>
               {/each}
             </div>
             <div class="menu-section">
               <!-- svelte-ignore a11y-click-events-have-key-events -->
-              <div class="menu-section-link ripple-container" use:ripple on:click={signOut}>
+              <div class="menu-section-link ripple-container" use:ripple on:click={sign_out}>
                 <div class="menu-icon">
                   <Icon d={mdiLogout} />
                 </div>

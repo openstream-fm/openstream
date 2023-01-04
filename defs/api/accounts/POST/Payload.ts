@@ -4,8 +4,8 @@ import type { PayloadLimits } from "./PayloadLimits";
 
 export interface Payload {
   name: string;
-  ownerId: string | null;
+  owner_id: string | null;
   limits?: PayloadLimits;
-  userMetadata?: Metadata;
-  systemMetadata?: Metadata;
+  user_metadata?: Metadata;
+  system_metadata?: Metadata;
 }

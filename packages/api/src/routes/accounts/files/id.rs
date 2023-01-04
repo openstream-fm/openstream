@@ -35,7 +35,7 @@ pub mod get {
     export,
     export_to = "../../defs/api/accounts/[account]/files/[file]/GET/"
   )]
-  #[serde(rename_all = "camelCase")]
+  #[serde(rename_all = "snake_case")]
   pub struct Output {
     item: AudioFile,
   }

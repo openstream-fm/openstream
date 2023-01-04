@@ -7,7 +7,7 @@ use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct Admin {
   #[serde(rename = "_id")]
@@ -23,7 +23,7 @@ pub struct Admin {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct PublicAdmin {
   #[serde(rename = "_id")]
   pub id: String,
@@ -51,7 +51,7 @@ impl Admin {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/ops/")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[serde(deny_unknown_fields)]
 pub struct AdminPatch {
   #[serde(skip_serializing_if = "Option::is_none")]

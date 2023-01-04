@@ -3,5 +3,5 @@ import type { DateTime } from "../DateTime";
 
 export interface BaseEvent {
   _id: string;
-  createdAt: DateTime;
+  created_at: DateTime;
 }

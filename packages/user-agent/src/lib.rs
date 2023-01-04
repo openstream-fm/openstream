@@ -12,7 +12,7 @@ static PARSER: Parser = Parser::default();
 #[derive(Debug, Default, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
 #[ts(export)]
 #[ts(export_to = "../../defs/")]
-#[serde(rename_all = "camelCase")]
+// #[serde(rename_all = "camelCase")]
 pub struct UserAgent {
   pub ua: Option<String>,
   pub category: Option<String>,

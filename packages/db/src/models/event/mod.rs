@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use futures_util::StreamExt;
 use log::{trace, warn};
-use mongodb::bson::{self, doc};
+use mongodb::bson::doc;
 use mongodb::options::FindOptions;
 use mongodb::{options::CreateCollectionOptions, IndexModel};
 use serde::{Deserialize, Serialize};
@@ -20,7 +20,7 @@ struct Watcher {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/", rename = "BaseEvent")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct Event {
   #[serde(rename = "_id")]
@@ -34,6 +34,7 @@ pub struct Event {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/", rename = "EventVariant")]
+#[serde(rename_all = "snake_case")]
 #[serde(tag = "kind", content = "payload")]
 #[macros::keys]
 pub enum Variant {
@@ -167,7 +168,7 @@ impl Model for Event {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/event-payload/")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct AudioListenerStart {
   account_id: String,
@@ -176,7 +177,7 @@ pub struct AudioListenerStart {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/event-payload/")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct AudioListenerEnd {
   account_id: String,

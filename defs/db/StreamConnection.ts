@@ -5,10 +5,10 @@ import type { StreamConnectionState } from "./StreamConnectionState";
 
 export interface StreamConnection {
   _id: string;
-  accountId: string;
+  account_id: string;
   request: Request;
-  connectedAt: DateTime;
-  transferBytes: number;
-  lastTransferAt: DateTime;
+  connected_at: DateTime;
+  transfer_bytes: number;
+  last_transfer_at: DateTime;
   state: StreamConnectionState;
 }

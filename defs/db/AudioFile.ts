@@ -4,15 +4,15 @@ import type { DateTime } from "../DateTime";
 
 export interface AudioFile {
   _id: string;
-  accountId: string;
-  md5: string;
+  account_id: string;
+  md_5: string;
   len: number;
-  durationMs: number;
-  bytesSec: number;
-  chunkCount: number;
-  chunkLen: number;
-  chunkDurationMs: number;
-  createdAt: DateTime;
+  duration_ms: number;
+  bytes_sec: number;
+  chunk_count: number;
+  chunk_len: number;
+  chunk_duration_ms: number;
+  created_at: DateTime;
   filename: string;
   metadata: AudioMetadata;
 }

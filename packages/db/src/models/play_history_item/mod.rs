@@ -8,7 +8,7 @@ use crate::Model;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/", rename = "BasePlayHistoryItem")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct PlayHistoryItem {
   #[serde(rename = "_id")]
@@ -30,7 +30,8 @@ pub struct PlayHistoryItem {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/", rename = "PlayHistoryItemKind")]
-#[serde(rename_all = "camelCase", tag = "kind")]
+#[serde(rename_all = "snake_case")]
+#[serde(tag = "kind")]
 #[macros::keys]
 pub enum Kind {
   Live,

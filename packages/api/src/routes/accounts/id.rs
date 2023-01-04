@@ -26,7 +26,7 @@ pub mod get {
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export)]
   #[ts(export_to = "../../defs/api/accounts/[account]/GET/")]
-  #[serde(rename_all = "camelCase")]
+  // #[serde(rename_all = "camelCase")]
   pub struct Output {
     account: PublicAccount,
   }

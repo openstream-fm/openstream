@@ -5,6 +5,6 @@ import type { Metadata } from "../db/Metadata";
 export interface AccountPatch {
   name?: string;
   limits?: AccountPatchLimits;
-  userMetadata?: Metadata;
-  systemMetadata?: Metadata;
+  user_metadata?: Metadata;
+  system_metadata?: Metadata;
 }

@@ -4,10 +4,10 @@ import type { Metadata } from "./db/Metadata";
 
 export interface PublicAdmin {
   _id: string;
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   email: string;
-  createdAt: DateTime;
-  updatedAt: DateTime;
-  systemMetadata: Metadata;
+  created_at: DateTime;
+  updated_at: DateTime;
+  system_metadata: Metadata;
 }

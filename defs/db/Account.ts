@@ -6,11 +6,11 @@ import type { Metadata } from "./Metadata";
 export interface Account {
   _id: string;
   name: string;
-  ownerId: string;
+  owner_id: string;
   limits: AccountLimits;
-  createdAt: DateTime;
-  updatedAt: DateTime;
-  userMetadata: Metadata;
-  systemMetadata: Metadata;
-  sourcePassword: string;
+  created_at: DateTime;
+  updated_at: DateTime;
+  user_metadata: Metadata;
+  system_metadata: Metadata;
+  source_password: string;
 }

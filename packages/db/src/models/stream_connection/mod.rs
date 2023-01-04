@@ -9,7 +9,7 @@ use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct StreamConnection {
   #[serde(rename = "_id")]
@@ -26,7 +26,7 @@ pub struct StreamConnection {
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub struct StreamConnectionMongoSet {
   #[serde(with = "serde_util::as_f64::option")]
   #[serde(skip_serializing_if = "Option::is_none")]
@@ -40,7 +40,7 @@ pub struct StreamConnectionMongoSet {
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/", rename = "StreamConnectionState")]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "snake_case")]
 pub enum State {
   Open,
   Closed,

@@ -4,7 +4,7 @@
 	import Icon from "$share/Icon.svelte";
 	import { _get } from "$share/net.client";
 	import { mdiMicrophoneOutline } from "@mdi/js";
-  import preetyBytes from "pretty-bytes";
+  import preety_bytes from "pretty-bytes";
 	import { onMount } from "svelte";
 
   export let data: import("./$types").PageData;
@@ -189,7 +189,7 @@
         </div>
         <div class="info-item">
           <div class="info-label">Password</div>
-          <div class="info-value">{account.sourcePassword}</div>
+          <div class="info-value">{account.source_password}</div>
         </div>
         <div class="info-item">
           <div class="info-label">Encoding</div>
@@ -221,9 +221,9 @@
         <CircularMeter start={0} end={account.limits.transfer.used / account.limits.transfer.total} />
       </div>
       <div class="meter-text">
-        <span class="used">{preetyBytes(account.limits.transfer.used)}</span>
+        <span class="used">{preety_bytes(account.limits.transfer.used)}</span>
         <span class="of">of</span>
-        <span class="avail">{preetyBytes(account.limits.transfer.total)}</span>
+        <span class="avail">{preety_bytes(account.limits.transfer.total)}</span>
       </div>
     </div>
     <div class="meter">
@@ -234,9 +234,9 @@
         <CircularMeter start={0} end={account.limits.storage.used / account.limits.storage.total} />
       </div>
       <div class="meter-text">
-        <span class="used">{preetyBytes(account.limits.storage.used)}</span>
+        <span class="used">{preety_bytes(account.limits.storage.used)}</span>
         <span class="of">of</span>
-        <span class="avail">{preetyBytes(account.limits.storage.total)}</span>
+        <span class="avail">{preety_bytes(account.limits.storage.total)}</span>
       </div>
     </div>
   </div>

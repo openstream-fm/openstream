@@ -16,15 +16,15 @@ const qss = (v: any) => {
 
 export class Client {
 
-  private baseURL: string;
+  private base_url: string;
   logger: Logger;
 
   accounts: Accounts;
   users: Users;
   auth: Auth;
 
-  constructor(baseURL: string, { logger }: { logger: Logger }) {
-    this.baseURL = baseURL.trim().replace(/\/+$/g, "")
+  constructor(base_url: string, { logger }: { logger: Logger }) {
+    this.base_url = base_url.trim().replace(/\/+$/g, "")
     this.logger = logger.scoped("client");
     
     this.accounts = new Accounts(this);
@@ -33,7 +33,7 @@ export class Client {
   }
 
   async fetch(_url: string, init: RequestInit = {}): Promise<Response> {
-    const url = `${this.baseURL}${_url}`;
+    const url = `${this.base_url}${_url}`;
     const method = init.method ?? "GET";
     this.logger.info(`fetch: ${method} ${url}`);
     return await fetch(url, { 
@@ -210,8 +210,8 @@ export class Users {
     return await this.client.get(ip, token, `/users${qss(query)}`);
   }
 
-  async get(ip: string | null, token: string, userId: string): Promise<import("./defs/api/users/[user]/GET/Output").Output> {
-    return await this.client.get(ip, token, `/users/${userId}`);
+  async get(ip: string | null, token: string, user_id: string): Promise<import("./defs/api/users/[user]/GET/Output").Output> {
+    return await this.client.get(ip, token, `/users/${user_id}`);
   }
 
   async post(ip: string | null, token: string, payload: import("./defs/api/users/POST/Payload").Payload): Promise<import("./defs/api/users/POST/Output").Output> {
@@ -225,8 +225,8 @@ export class UserAccounts {
     this.client = client;
   }
   /*
-  async list(token: string, userId: string, query: import("./defs/api/users/[user]GET/Query").Query): Promise<import("./defs/api/accounts/GET/Output").Output> {
-    return await this.client.get(`/users/${userId}${qss(query)}`, token);
+  async list(token: string, user_id: string, query: import("./defs/api/users/[user]GET/Query").Query): Promise<import("./defs/api/accounts/GET/Output").Output> {
+    return await this.client.get(`/users/${user_id}${qss(query)}`, token);
   }
   */
 }
@@ -241,25 +241,25 @@ export class AccountFiles {
   }
 
 
-  async list(ip: string | null, token: string, accountId: string, query: import("./defs/api/accounts/[account]/files/GET/Query").Query): Promise<import("./defs/api/accounts/[account]/files/GET/Output").Output> {
-    return await this.client.get(ip, token, `/accounts/${accountId}/files${qss(query)}`);
+  async list(ip: string | null, token: string, account_id: string, query: import("./defs/api/accounts/[account]/files/GET/Query").Query): Promise<import("./defs/api/accounts/[account]/files/GET/Output").Output> {
+    return await this.client.get(ip, token, `/accounts/${account_id}/files${qss(query)}`);
   }
 
-  async get(ip: string | null, token: string, accountId: string, fileId: string): Promise<import("./defs/api/accounts/[account]/files/[file]/GET/Output").Output> {
-    return await this.client.get(ip, token, `/accounts/${accountId}/files/${fileId}`);
+  async get(ip: string | null, token: string, account_id: string, file_id: string): Promise<import("./defs/api/accounts/[account]/files/[file]/GET/Output").Output> {
+    return await this.client.get(ip, token, `/accounts/${account_id}/files/${file_id}`);
   }
 
-  async delete(ip: string | null, token: string, accountId: string, fileId: string): Promise<import("./defs/api/accounts/[account]/files/[file]/DELETE/Output").Output> {
-    return await this.client.delete(ip, token, `/accounts/${accountId}/files/${fileId}`);
+  async delete(ip: string | null, token: string, account_id: string, file_id: string): Promise<import("./defs/api/accounts/[account]/files/[file]/DELETE/Output").Output> {
+    return await this.client.delete(ip, token, `/accounts/${account_id}/files/${file_id}`);
   }
 
-  async post(ip: string | null, token: string, accountId: string, contentType: string, contentLength: number, query: import("./defs/api/accounts/[account]/files/POST/Query").Query, data: Readable): Promise<import("./defs/api/accounts/[account]/files/POST/Output").Output> {
-    let res = await this.client.fetch(`/accounts/${accountId}/files${qss(query)}`, {
+  async post(ip: string | null, token: string, account_id: string, content_type: string, content_length: number, query: import("./defs/api/accounts/[account]/files/POST/Query").Query, data: Readable): Promise<import("./defs/api/accounts/[account]/files/POST/Output").Output> {
+    let res = await this.client.fetch(`/accounts/${account_id}/files${qss(query)}`, {
       method: "POST",
       headers: {
         ...(ip ? { [FORWARD_IP_HEADER]: ip } : {}),
-        "content-type": contentType,
-        "content-length": String(contentLength),
+        "content-type": content_type,
+        "content-length": String(content_length),
         [ACCESS_TOKEN_HEADER]: token,
       },
       body: data 
