@@ -5,6 +5,7 @@ use futures_util::TryStreamExt;
 use log::*;
 use mongodb::error::Result as MongoResult;
 use mongodb::options::ReplaceOptions;
+use mongodb::results::DeleteResult;
 use mongodb::{
   bson::{doc, Document},
   options::FindOneOptions,
@@ -157,6 +158,19 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
     }
 
     Ok(())
+  }
+
+  async fn delete_by_id(id: &str) -> MongoResult<DeleteResult> {
+    Self::cl().delete_one(doc! { "_id": id }, None).await
+  }
+
+  async fn delete_by_id_with_session(
+    id: &str,
+    session: &mut ClientSession,
+  ) -> MongoResult<DeleteResult> {
+    Self::cl()
+      .delete_one_with_session(doc! { "_id": id }, None, session)
+      .await
   }
 
   async fn exists<F: IntoExistFilter>(filter: F) -> MongoResult<bool> {
@@ -338,14 +352,52 @@ impl PublicScope {
 #[macro_export]
 macro_rules! run_transaction {
   ($session:ident => $block:block) => {{
-    let mut $session = $crate::client().start_session(None).await?;
-    $session.start_transaction(None).await?;
 
-    let r = $block;
+    const MAX_TX_RETRIES: usize = 5;
+    let mut tx_retries = 0;
 
-    $session.commit_transaction().await?;
+    #[deny(unused_labels)]
+    let (r, mut $session) = 'tx: loop {
 
-    r
+      let mut $session = $crate::client().start_session(None).await?;
+      $session.start_transaction(None).await?;
+
+      #[deny(unused_macros)]
+      macro_rules! tx_try {
+        ($e:expr) => {
+          match $e {
+            Ok(r) => r,
+            Err(e) => {
+              if e.contains_label(::mongodb::error::TRANSIENT_TRANSACTION_ERROR) {
+                tx_retries += 1;
+                if tx_retries <= MAX_TX_RETRIES {
+                  continue 'tx;
+                } else {
+                  return Err(e.into());
+                }
+              } else {
+                return Err(e.into());
+              }
+            }
+          }
+        };
+      }
+
+      break ($block, $session);
+    };
+
+    loop {
+      match $session.commit_transaction().await {
+        Err(e) => {
+          if e.contains_label(::mongodb::error::UNKNOWN_TRANSACTION_COMMIT_RESULT) {
+            continue;
+          } else {
+            return Err(e.into());
+          }
+        }
+        Ok(_) => break r,
+      }
+    }
   }};
 }
 
@@ -358,13 +410,12 @@ fn singleton_uid() -> String {
 pub trait Singleton: Model + Default + Clone {
   async fn ensure_instance() -> Result<Self, mongodb::error::Error> {
     run_transaction!(session => {
-      let cl = Self::cl();
-      let instance = cl.find_one_with_session(doc!{}, None, &mut session).await?;
+      let instance = tx_try!(Self::cl().find_one_with_session(doc!{}, None, &mut session).await);
       match instance {
         Some(instance) => Ok(instance),
         None => {
           let instance = Self::default();
-          cl.insert_one_with_session(&instance, None, &mut session).await?;
+          tx_try!(Self::cl().insert_one_with_session(&instance, None, &mut session).await);
           Ok(instance)
         }
       }
@@ -413,7 +464,7 @@ pub trait Singleton: Model + Default + Clone {
 #[macro_export]
 macro_rules! fetch_and_patch {
   ($Model:ident, $name:ident, $id:expr, $err:expr, $session:ident, $apply:expr) => {{
-    let mut $name = match $Model::get_by_id_with_session($id, &mut $session).await? {
+    let mut $name = match tx_try!($Model::get_by_id_with_session($id, &mut $session).await) {
       Some(doc) => doc,
       None => return $err,
     };
@@ -422,7 +473,7 @@ macro_rules! fetch_and_patch {
     #[allow(clippy::unnecessary_operation)]
     $apply;
 
-    $Model::replace_with_session($id, &$name, &mut $session).await?;
+    tx_try!($Model::replace_with_session($id, &$name, &mut $session).await);
 
     $name
   }};

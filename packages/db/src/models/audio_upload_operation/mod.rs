@@ -1,5 +1,6 @@
-use crate::audio_file::AudioFile;
 use crate::Model;
+use crate::{audio_chunk::AudioChunk, audio_file::AudioFile};
+use mongodb::ClientSession;
 use mongodb::{bson::doc, IndexModel};
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
@@ -45,6 +46,25 @@ impl Model for AudioUploadOperation {
   fn indexes() -> Vec<IndexModel> {
     let account_id = IndexModel::builder().keys(doc! { "accountId": 1 }).build();
     vec![account_id]
+  }
+}
+
+impl AudioUploadOperation {
+  pub async fn clean_up_chunks_after_error(
+    operation_id: &str,
+  ) -> Result<mongodb::results::DeleteResult, mongodb::error::Error> {
+    let filter = doc! { "audioFileId": operation_id };
+    AudioChunk::cl().delete_many(filter, None).await
+  }
+
+  pub async fn clean_up_chunks_after_error_with_session(
+    operation_id: &str,
+    session: &mut ClientSession,
+  ) -> Result<mongodb::results::DeleteResult, mongodb::error::Error> {
+    let filter = doc! { "audioFileId": operation_id };
+    AudioChunk::cl()
+      .delete_many_with_session(filter, None, session)
+      .await
   }
 }
 

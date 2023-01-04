@@ -2,7 +2,7 @@ import type { Request } from "express";
 
 declare module "express-session" {
   export interface SessionData {
-    user?: { token: string, _id: string }
+    user?: { token: string, _id: string } | null
   }
 }
 

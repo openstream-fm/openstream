@@ -88,6 +88,11 @@
   }
 </style>
 
+<svelte:head>
+  <title>Recover your account</title>
+</svelte:head>
+
+
 <div class="box" in:form>
   <div class="title">Recover</div>
   <div class="fields">

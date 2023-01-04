@@ -21,6 +21,7 @@ export class Client {
 
   accounts: Accounts;
   users: Users;
+  auth: Auth;
 
   constructor(baseURL: string, { logger }: { logger: Logger }) {
     this.baseURL = baseURL.trim().replace(/\/+$/g, "")
@@ -28,6 +29,7 @@ export class Client {
     
     this.accounts = new Accounts(this);
     this.users = new Users(this);
+    this.auth = new Auth(this);
   }
 
   async fetch(_url: string, init: RequestInit = {}): Promise<Response> {
@@ -121,20 +123,55 @@ export class Client {
     })
   }
 
-
-  async login(ip: string | null, payload: import("./defs/api/login/POST/Payload").Payload): Promise<import("./defs/api/login/POST/Output").Output> {
-    return await this.post(ip, null, "/login", payload)
-  }
-
-  async register(ip: string | null, token: string, payload: import("./defs/api/register/POST/Payload").Payload): Promise<import("./defs/api/register/POST/Output").Output> {
-    return await this.post(ip, token, "/register", payload)
-  }
-
   async me(ip: string | null, token: string): Promise<import("./defs/api/me/Output").Output> {
     return await this.get(ip, token, "/me");
   }
 }
 
+export class Auth {
+  client: Client;
+  user: AuthUser;
+  admin: AuthAdmin;
+  constructor(client: Client) {
+    this.client = client;
+    this.user = new AuthUser(client);
+    this.admin = new AuthAdmin(client);
+  }
+}
+
+export class AuthAdmin {
+  client: Client;
+  constructor(client: Client) {
+    this.client = client
+  }
+
+  async login(ip: string | null, payload: import("./defs/api/auth/admin/login/POST/Payload").Payload): Promise<import("./defs/api/auth/admin/login/POST/Output").Output> {
+    return await this.client.post(ip, null, "/auth/admin/login", payload)
+  }
+
+  async logout(ip: string | null, token: string): Promise<import("./defs/api/auth/admin/logout/POST/Output").Output> {
+    return await this.client.post(ip, token, "/auth/admin/logout", void 0);
+  }
+}
+
+export class AuthUser {
+  client: Client;
+  constructor(client: Client) {
+    this.client = client;
+  }
+
+  async login(ip: string | null, payload: import("./defs/api/auth/user/login/POST/Payload").Payload): Promise<import("./defs/api/auth/user/login/POST/Output").Output> {
+    return await this.client.post(ip, null, "/auth/user/login", payload)
+  }
+
+  async logout(ip: string | null, token: string): Promise<import("./defs/api/auth/user/logout/POST/Output").Output> {
+    return await this.client.post(ip, token, "/auth/user/logout", void 0);
+  }
+
+  async register(ip: string | null, token: string, payload: import("./defs/api/auth/user/register/POST/Payload").Payload): Promise<import("./defs/api/auth/user/register/POST/Output").Output> {
+    return await this.client.post(ip, token, "/auth/user/register", payload)
+  }
+}
 
 export class Accounts {
 
@@ -210,6 +247,10 @@ export class AccountFiles {
 
   async get(ip: string | null, token: string, accountId: string, fileId: string): Promise<import("./defs/api/accounts/[account]/files/[file]/GET/Output").Output> {
     return await this.client.get(ip, token, `/accounts/${accountId}/files/${fileId}`);
+  }
+
+  async delete(ip: string | null, token: string, accountId: string, fileId: string): Promise<import("./defs/api/accounts/[account]/files/[file]/DELETE/Output").Output> {
+    return await this.client.delete(ip, token, `/accounts/${accountId}/files/${fileId}`);
   }
 
   async post(ip: string | null, token: string, accountId: string, contentType: string, contentLength: number, query: import("./defs/api/accounts/[account]/files/POST/Query").Query, data: Readable): Promise<import("./defs/api/accounts/[account]/files/POST/Output").Output> {

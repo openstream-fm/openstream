@@ -30,3 +30,4 @@ router = { version = "0.1.0", path = "../../packages/router" }
 defer-lite = "1.0.0"
 anyhow = "1.0.66"
 serde-util = { version = "0.1.0", path = "../../packages/serde-util" }
+media-sessions = { version = "0.1.0", path = "../../packages/media-sessions" }

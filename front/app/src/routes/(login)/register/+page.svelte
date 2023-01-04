@@ -20,7 +20,7 @@
       throw new Error("Confirmation password does not match");
     }
 
-    const payload: import("$server/defs/api/register/POST/Payload").Payload = {
+    const payload: import("$server/defs/api/auth/user/register/POST/Payload").Payload = {
       firstName,
       lastName,
       accountName,
@@ -118,6 +118,10 @@
     }
   }
 </style>
+
+<svelte:head>
+  <title>Sign up</title>
+</svelte:head>
 
 <form on:submit|preventDefault={register} class="box" in:form>
   <div class="title">Sign up</div>

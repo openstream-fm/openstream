@@ -163,7 +163,7 @@ pub mod patch {
 
       let account = run_transaction!(session => {
         fetch_and_patch!(Account, account, &id, Err(HandleError::AccountNotFound(id)), session, {
-          account.apply_patch(payload, access_token_scope.as_public_scope())?;
+          account.apply_patch(payload.clone(), access_token_scope.as_public_scope())?;
         })
       });
       /*

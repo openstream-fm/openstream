@@ -192,9 +192,7 @@ impl AccessTokenScope {
   }
 }
 
-pub async fn get_access_token_scope(
-  req: &Request,
-) -> Result<AccessTokenScope, GetAccessTokenScopeError> {
+pub async fn get_access_token(req: &Request) -> Result<AccessToken, GetAccessTokenScopeError> {
   let ip = req.isomorphic_ip();
 
   if ip_limit::should_reject(ip) {
@@ -216,6 +214,14 @@ pub async fn get_access_token_scope(
     }
     Some(doc) => doc,
   };
+
+  Ok(doc)
+}
+
+pub async fn get_access_token_scope(
+  req: &Request,
+) -> Result<AccessTokenScope, GetAccessTokenScopeError> {
+  let doc = get_access_token(req).await?;
 
   let scope = match doc.scope {
     Scope::Global => AccessTokenScope::Global,

@@ -1,4 +1,5 @@
-import Notify from "./Notify.svelte";
+import  Notify from "./Notify.svelte";
+import type { Text } from "./Notify.svelte";
 
 let instance: Notify | null = null;
 
@@ -12,18 +13,36 @@ export const getNotify = (): Notify => {
   return instance;
 }
 
-export const _error = (message: string) => {
-  getNotify().error(message)
+export const _error = (text: Text) => {
+  getNotify().error(text)
 }
 
-export const _message = (message: string) => {
-  getNotify().message(message);
+export const _message = (text: Text) => {
+  getNotify().message(text);
 }
 
-export const _warn = (message: string) => {
-  getNotify().warn(message);
+export const _warn = (text: Text) => {
+  getNotify().warn(text);
 }
 
-export const _success = (message: string) => {
-  getNotify().success(message);
+export const _success = (text: Text) => {
+  getNotify().success(text);
 }
+
+export const _progress = (text: Text) => {
+  const msg = getNotify().progress(text);
+  
+  const remove = () => getNotify().remove(msg);
+  
+  const resolve = (text: Text) => {
+    remove();
+    _message(text);
+  }
+
+  const reject = (text: Text) => {
+    remove();
+    _error(text);
+  }
+
+  return { remove, resolve, reject }
+} 

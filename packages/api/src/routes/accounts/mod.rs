@@ -333,12 +333,12 @@ pub mod post {
       };
 
       run_transaction!(session => {
-        let user_exists = User::exists_with_session(account.owner_id.as_ref(), &mut session).await?;
+        let user_exists = tx_try!(User::exists_with_session(account.owner_id.as_ref(), &mut session).await);
         if !user_exists {
           return Err(HandleError::UserNotFound(account.owner_id));
         }
 
-        Account::insert_with_session(&account, &mut session).await?;
+        tx_try!(Account::insert_with_session(&account, &mut session).await);
       });
 
       let out = Output {

@@ -117,18 +117,17 @@ export const tooltip = (node: HTMLElement, _params: null | string | {tip: string
 }
 
 
-export const clickOut = (node: Node) => {
+export const clickOut = (node: Node, handler: (event: MouseEvent) => void) => {
   return { 
-    destroy: add(node.ownerDocument || document, "click", (event) => {
+    destroy: add(node.ownerDocument || document, "click", (event: MouseEvent) => {
       let target: Element | null = (event.target as Element);
       while(target != null) {
         if(target === node) return;
         target = target.parentElement;
       }
+     
 
-      const e = new CustomEvent("click-out", { detail: event });
-      node.dispatchEvent(e)
-
+      handler(event);
     }, {capture: true})
   }
 }

@@ -10,9 +10,8 @@ import { token } from "../token";
 import "../auth";
 import { userId } from "../userId";
 import { ACCESS_TOKEN_HEADER, FORWARD_IP_HEADER } from "../contants";
-import { Readable } from "stream";
 import { StatusCodes } from "http-status-codes";
-import fetch from "node-fetch";
+import { pipeline } from "stream/promises";
 
 export const appApi = ({
   config,
@@ -32,15 +31,22 @@ export const appApi = ({
 
   api.post("/login", json(async req => {
     //const { email, password } = validate(() => assertType<import("../defs/api/login/POST/Payload").Payload>(req.body));
-    const { token, user } = await client.login(ip(req), req.body);
+    const { token, user } = await client.auth.user.login(ip(req), req.body);
     req.session.user = { token, _id: user._id };
     await saveSession(req);
     return { user }
   }))
 
+  api.post("/logout", json(async req => {
+    const r = await client.auth.user.logout(ip(req), token(req));
+    req.session.user = null;
+    await saveSession(req);
+    return r;
+  }))
+
   api.post("/register", json(async req => {
     //const payload = validate(() => assertType<import("../defs/api/register/POST/Payload").Payload>(req.body));
-    const { account, token, user } = await client.register(ip(req), config.openstream.token, req.body);
+    const { account, token, user } = await client.auth.user.register(ip(req), config.openstream.token, req.body);
     req.session.user = { token, _id: user._id };
     await saveSession(req);
     return { account, user }
@@ -62,12 +68,30 @@ export const appApi = ({
     return await client.accounts.get(ip(req), token(req), req.params.id);
   }))
 
-  api.get("/accounts/:account/files", json(async req => {
-    return await client.accounts.files.list(ip(req), token(req), req.params.account, req.query)
-  }))
+  api.route("/accounts/:account/files")
+    .get(json(async req => {
+      return await client.accounts.files.list(ip(req), token(req), req.params.account, req.query)
+    }))
+
+    .post(json(async req => {
+      const contentType = req.header("content-type") ?? "application/octet-stream";
+      const contentLength = Number(req.header("content-length"));
+      if(!contentLength) {
+        throw new BadRequest("Content length must be specified (front)", "CONTENT_LENGTH_REQUIRED");
+      }
+      return await client.accounts.files.post(ip(req), token(req), req.params.account, contentType, contentLength, req.query as any, req);
+    }))
+
+  api.route("/accounts/:account/files/:file")
+    .get(json(async req => {
+      return await client.accounts.files.get(ip(req), token(req), req.params.account, req.params.file);
+    }))
+    .delete(json(async req => {
+      return await client.accounts.files.delete(ip(req), token(req), req.params.account, req.params.file);
+    }))
 
   api.get("/accounts/:account/files/:file/stream", async (req, res, next) => {
-    
+  
     try {
     
       const { account, file } = req.params;
@@ -98,9 +122,7 @@ export const appApi = ({
       res.header("vary", "range");
 
       if(back.body) {
-        back.body.pipe(res).on("error", e => {
-          logger.warn(`file stream pipe error: ${e}`);
-        });
+        await pipeline(back.body, res);
       } else {
         res.end();
       }
@@ -108,40 +130,6 @@ export const appApi = ({
       next(e)
     }
   })
-
-  api.post("/accounts/:account/files", json(async req => {
-    const contentType = req.header("content-type") ?? "application/octet-stream";
-    const contentLength = Number(req.header("content-length"));
-    if(!contentLength) {
-      throw new BadRequest("Content length must be specified (front)", "CONTENT_LENGTH_REQUIRED");
-    }
-    return await client.accounts.files.post(ip(req), token(req), req.params.account, contentType, contentLength, req.query as any, req);
-  }))
-
-
-  api.get("/accounts/:account/files/:file", json(async req => {
-    return await client.accounts.files.get(ip(req), token(req), req.params.account, req.params.file);
-  }))
-
-
-  // const pages = Router();
-  // api.use("/pages", pages);
-
-  // pages.get("/session", json(async req => {
-  //   const token = req.session.user?.token ?? null;
-  //   const userId = req.session.user?._id ?? null;
-  //   if(userId && token) {
-  //     try {
-  //       const user = await client.users.get(ip(req), token, userId);
-  //       const accounts = await client.accounts.list(ip(req), token, { skip: 0, limit: 100 });
-  //       return { user, accounts }
-  //     } catch(e) {
-  //       logger.warn(`error getting session: ${e}`)
-  //     }
-  //   }
-
-  //   return { user: null }
-  // }));
 
   api.use(json(() => {
     throw new ApiError(StatusCodes.NOT_FOUND, "FRONT_RESOURCE_NOT_FOUND", "Resource not found");

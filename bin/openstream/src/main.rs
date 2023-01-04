@@ -11,6 +11,7 @@ use log::*;
 use anyhow::{bail, Context};
 use api::ApiServer;
 use defer_lite::defer;
+use media_sessions::MediaSessionMap;
 use mongodb::bson::doc;
 use mongodb::bson::Document;
 use owo_colors::*;
@@ -235,7 +236,8 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   }
 
   if let Some(stream_config) = stream {
-    let stream = StreamServer::new(stream_config.addrs.clone(), shutdown.clone());
+    let media_sessions = MediaSessionMap::new();
+    let stream = StreamServer::new(stream_config.addrs.clone(), shutdown.clone(), media_sessions);
 
     let fut = stream.start()?;
 

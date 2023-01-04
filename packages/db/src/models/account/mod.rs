@@ -35,6 +35,7 @@ pub struct UserPublicAccount {
   pub created_at: DateTime,
   pub updated_at: DateTime,
   pub user_metadata: Metadata,
+  pub source_password: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -57,9 +58,24 @@ pub struct AccountPatch {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub name: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
+  pub limits: Option<AccountPatchLimits>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   pub user_metadata: Option<Metadata>,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub system_metadata: Option<Metadata>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../../defs/ops/")]
+#[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
+pub struct AccountPatchLimits {
+  #[serde(skip_serializing_if = "Option::is_none")]
+  storage: Option<u64>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  transfer: Option<u64>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  listeners: Option<u64>,
 }
 
 impl Account {
@@ -70,9 +86,9 @@ impl Account {
   ) -> Result<(), ApplyPatchError> {
     match scope {
       PublicScope::User => {
-        if patch.system_metadata.is_some() {
+        if patch.system_metadata.is_some() || patch.limits.is_some() {
           return Err(ApplyPatchError::out_of_scope(
-            "systemMetadata field is out of scope",
+            "Some of the specified fields are out of scope",
           ));
         }
 
@@ -82,7 +98,10 @@ impl Account {
       }
 
       PublicScope::Admin => {
-        if patch.name.is_none() && patch.user_metadata.is_none() && patch.system_metadata.is_none()
+        if patch.name.is_none()
+          && patch.user_metadata.is_none()
+          && patch.system_metadata.is_none()
+          && patch.limits.is_none()
         {
           return Err(ApplyPatchError::PatchEmpty);
         }
@@ -105,6 +124,20 @@ impl Account {
     if scope.is_admin() {
       if let Some(metadata) = patch.system_metadata {
         self.system_metadata.merge(metadata);
+      }
+
+      if let Some(limits) = patch.limits {
+        if let Some(storage) = limits.storage {
+          self.limits.storage.total = storage;
+        }
+
+        if let Some(transfer) = limits.transfer {
+          self.limits.transfer.total = transfer;
+        }
+
+        if let Some(listeners) = limits.listeners {
+          self.limits.listeners.total = listeners;
+        }
       }
     }
 
@@ -151,6 +184,7 @@ impl From<Account> for UserPublicAccount {
       created_at: account.created_at,
       updated_at: account.updated_at,
       user_metadata: account.user_metadata,
+      source_password: account.source_password,
     }
   }
 }

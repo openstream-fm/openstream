@@ -1,11 +1,9 @@
+use burst::Burst;
 use bytes::Bytes;
 use drop_tracer::Token;
-use heapless::Deque;
 use log::*;
 use std::{sync::atomic::Ordering, time::Duration};
 use tokio::sync::broadcast::{self, error::RecvError};
-
-use constants::STREAM_BURST_LENGTH;
 
 use crate::ChannelMap;
 
@@ -15,7 +13,7 @@ pub struct Receiver {
   pub(crate) channel_id: String,
   pub(crate) receiver: broadcast::Receiver<Bytes>,
   // this is an owned copy of the burst at subscription time (Bytes instances are copied by reference)
-  pub(crate) burst: Deque<Bytes, STREAM_BURST_LENGTH>,
+  pub(crate) burst: Burst,
   pub(crate) channels: ChannelMap,
   pub(crate) token: Token,
 }

@@ -1,5 +1,10 @@
 <svelte:options accessors={true} />
 
+<script lang="ts" context="module">
+  import { get, Readable } from "svelte/store";
+  export type Text = string | Readable<string>;
+</script>
+
 <script lang="ts">
   import { fly } from "svelte/transition";
   import { flip } from "svelte/animate";
@@ -12,6 +17,7 @@
     mdiAlertOutline as warningIcon,
   } from "@mdi/js";
   import Icon from "$share/Icon.svelte";
+  import CircularProgress from "$share/CircularProgress.svelte";
 
   const icons = {
     success: successIcon,
@@ -20,9 +26,17 @@
     warning: warningIcon,
   };
 
-  type Variant = keyof typeof icons | "normal";
+  type Variant = keyof typeof icons | "normal" | "progress";
+
+  const text = (message: Message) => {
+    if(!message.text) return "";
+    if(typeof message.text === "string") return message.text;
+    else return get(message.text);
+  }
+  
 
   type Message = {
+    id: number,
     actions?: {
       text: string;
       fn: (event: Event) => void;
@@ -30,9 +44,10 @@
     icon?: string;
     persist?: boolean;
     html?: string;
-    text?: string;
+    text?: Text;
     variant: Variant;
     duration: number;
+    _unsub?: () => void,
   };
 
   export let messages: Message[] = [];
@@ -50,6 +65,7 @@
 
   export const add = (src: Partial<Message> & { duration?: number }) => {
     let message: Message = {
+      id: Math.random(),
       variant: src.variant || "normal",
       text: src.text,
       html: src.html,
@@ -60,6 +76,13 @@
       actions: src.actions || [],
     };
 
+    if(!message.html && message.text && typeof message.text !== "string") {
+      message._unsub = message.text.subscribe(() => {
+        messages = messages;
+      })
+      
+    }
+
     messages = [...messages, message];
 
     if (!message.persist) {
@@ -67,29 +90,35 @@
     }
 
     if (messages.length > maxStack) {
-      messages = messages.slice(1);
+      remove(messages[0]);
     }
 
     return message;
   };
 
-  export const remove = (key: any) => {
-    messages = messages.filter(message => message != key);
+  export const remove = (message: Message) => {
+    message._unsub?.();
+    messages = messages.filter(item =>  item.id !== message.id);
   };
 
   export const clear = () => {
+    for(const message of messages) {
+      message._unsub?.();
+    }
     messages = [];
   };
 
-  export const message = (text: string, message: Partial<Message> = {}) =>
+  export const message = (text: Text, message: Partial<Message> = {}) =>
     add({ variant: "normal", text, ...message });
-  export const success = (text: string, message: Partial<Message> = {}) =>
+  export const progress = (text: Text, message: Partial<Message> = {}) =>
+    add({ variant: "progress", text, persist: true, ...message });
+  export const success = (text: Text, message: Partial<Message> = {}) =>
     add({ variant: "success", text, ...message });
-  export const info = (text: string, message: Partial<Message> = {}) =>
+  export const info = (text: Text, message: Partial<Message> = {}) =>
     add({ variant: "info", text, ...message });
-  export const warn = (text: string, message: Partial<Message> = {}) =>
+  export const warn = (text: Text, message: Partial<Message> = {}) =>
     add({ variant: "warning", text, duration: durationError, ...message });
-  export const error = (text: string, message: Partial<Message> = {}) =>
+  export const error = (text: Text, message: Partial<Message> = {}) =>
     add({ variant: "error", text, duration: durationError,  ...message });
 </script>
 
@@ -189,24 +218,28 @@
 </style>
 
 <div class="messenger">
-  {#each messages as message (message)}
-    
+  {#each messages as message (message.id)}
+
     <div
       transition:fly={{ x: -200, duration: 250 }}
       animate:flip={{ duration: 200 }}
-      class="message {message.variant}"
+      class="message {message.variant} {message.variant === "progress" ? "normal" : ""}" 
     >
       <div class="message-top">  
         {#if message.icon}
           <div class="icon">
             <Icon d={message.icon} />
           </div>
+        {:else if message.variant === "progress"}
+          <div class="icon">
+            <CircularProgress />
+          </div>
         {/if}
         <div class="message-content" class:html={message.html !== null} class:text={message.html == null}>
           {#if message.html != null}
             {@html message.html}
           {:else}
-            {message.text}
+            {text(message)}
           {/if}
         </div>
       </div>

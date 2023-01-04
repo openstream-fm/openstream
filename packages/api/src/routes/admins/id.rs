@@ -150,7 +150,7 @@ pub mod patch {
 
       let admin = run_transaction!(session => {
         fetch_and_patch!(Admin, admin, &id, Err(HandleError::AdminNotFound(id)), session, {
-          admin.apply_patch(payload)?
+          admin.apply_patch(payload.clone())?
         })
       });
 

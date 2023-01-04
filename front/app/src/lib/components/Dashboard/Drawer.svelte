@@ -58,8 +58,8 @@
     </div>
 
     <div class="links">
-      <DrawerItem href="/accounts/{account._id}" label="Dashboard" icon={mdiViewDashboardOutline} />
-      <DrawerItem href="/accounts/{account._id}/media" label="Media" icon={mdiMultimedia} />
+      <DrawerItem href="/stations/{account._id}" label="Dashboard" icon={mdiViewDashboardOutline} />
+      <DrawerItem href="/stations/{account._id}/media" label="Media" icon={mdiMultimedia} />
       <!--
         <DrawerItem href="/accounts/{account._id}/profile" label="Profile" icon={mdiAccountOutline} />
         <DrawerItem href="/account" label="Account" icon={mdiShieldAccountOutline} />

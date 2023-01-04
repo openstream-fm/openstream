@@ -40,6 +40,7 @@ async fn spawn(_i: usize) {
 
     let config = FfmpegConfig {
       readrate: true,
+      kbitrate: 320_000,
       ..Default::default()
     };
 

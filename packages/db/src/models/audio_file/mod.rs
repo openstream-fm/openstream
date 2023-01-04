@@ -1,5 +1,6 @@
-use crate::Model;
-use mongodb::{bson::doc, IndexModel};
+use crate::{account::Account, audio_chunk::AudioChunk, run_transaction, Model};
+use log::warn;
+use mongodb::{bson::doc, ClientSession, IndexModel};
 use serde::{Deserialize, Serialize};
 use serde_util::{as_f64, DateTime};
 use ts_rs::TS;
@@ -37,14 +38,65 @@ pub struct AudioFile {
   pub metadata: Metadata,
 }
 
+impl AudioFile {
+  pub async fn delete_audio_file_with_session(
+    account_id: &str,
+    file_id: &str,
+    session: &mut ClientSession,
+  ) -> Result<Option<AudioFile>, mongodb::error::Error> {
+    let audio_file = match Self::get_by_id_with_session(file_id, session).await? {
+      None => return Ok(None),
+      Some(audio_file) => {
+        if audio_file.account_id == account_id {
+          audio_file
+        } else {
+          return Ok(None);
+        }
+      }
+    };
+
+    // delete chunks
+    AudioChunk::delete_by_audio_file_id_with_session(&audio_file.id, session).await?;
+
+    // delete file
+    AudioFile::delete_by_id_with_session(&audio_file.id, session).await?;
+
+    // get account
+    let account = Account::get_by_id_with_session(account_id, session).await?;
+
+    // this should always be Some
+    if let Some(mut account) = account {
+      // applying limits update
+      account.limits.storage.used = account.limits.storage.used.saturating_sub(audio_file.len);
+      Account::replace_with_session(&account.id, &account, session).await?;
+    } else {
+      warn!(
+        "deleting audio file {}: account not found, account_id = {}",
+        &audio_file.id, account_id
+      )
+    }
+
+    Ok(Some(audio_file))
+  }
+
+  pub async fn delete_audio_file(
+    account_id: &str,
+    file_id: &str,
+  ) -> Result<Option<AudioFile>, mongodb::error::Error> {
+    run_transaction!(session => {
+      let file = tx_try!(Self::delete_audio_file_with_session(account_id, file_id, &mut session).await);
+      Ok(file)
+    })
+  }
+}
+
 impl Model for AudioFile {
-  const UID_LEN: usize = 12;
+  const UID_LEN: usize = 16;
   const CL_NAME: &'static str = "audio_files";
 
   fn indexes() -> Vec<IndexModel> {
     let account_id = IndexModel::builder().keys(doc! { "accountId": 1 }).build();
     let md5 = IndexModel::builder().keys(doc! { "md5": 1 }).build();
-
     vec![account_id, md5]
   }
 }

@@ -4,14 +4,15 @@
 	import { ripple } from "$lib/ripple";
   import { form } from "../transitions";
   import { action, _post } from "$share/net.client";
-	import { goto } from "$app/navigation";
+	import { goto, invalidate } from "$app/navigation";
 
   let email = "";
   let password = "";
 
   const login = action(async () => {
-    const payload: import("$server/defs/api/login/POST/Payload").Payload = { email, password };
+    const payload: import("$server/defs/api/auth/user/login/POST/Payload").Payload = { email, password };
     await _post("/api/login", payload);
+    await invalidate("user:me");
     goto("/");
   })
 </script>
@@ -114,6 +115,9 @@
   }
 </style>
 
+<svelte:head>
+  <title>Sign in</title>
+</svelte:head>
 
 <form class="box" on:submit|preventDefault={login} in:form>
   <div class="title">Sign in</div>

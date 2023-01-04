@@ -64,7 +64,7 @@ impl Default for Limits {
     Self {
       listeners: 1000,             // 1000 concurrent listeners
       transfer: 5_000_000_000_000, // 5 TB / month
-      storage: 2_000_000_000_000,  // 2 TB
+      storage: 5_000_000_000,      // 5 GB
     }
   }
 }

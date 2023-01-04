@@ -267,3 +267,71 @@ pub mod stream {
     }
   }
 }
+
+pub mod delete {
+  use ts_rs::TS;
+
+  use crate::error::ApiError;
+
+  use super::*;
+  #[derive(Debug, Clone)]
+  pub struct Endpoint {}
+
+  #[derive(Debug, Clone)]
+  pub struct Input {
+    account: Account,
+    file_id: String,
+  }
+
+  #[derive(Debug, thiserror::Error)]
+  pub enum HandleError {
+    #[error("mongodb: {0}")]
+    Db(#[from] mongodb::error::Error),
+    #[error("audio file not found: {0}")]
+    FileNotFound(String),
+  }
+
+  impl From<HandleError> for ApiError {
+    fn from(e: HandleError) -> Self {
+      match e {
+        HandleError::Db(e) => e.into(),
+        HandleError::FileNotFound(id) => ApiError::AudioFileNotFound(id),
+      }
+    }
+  }
+
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(
+    export,
+    export_to = "../../defs/api/accounts/[account]/files/[file]/DELETE/"
+  )]
+  pub struct Output(AudioFile);
+
+  #[async_trait]
+  impl JsonHandler for Endpoint {
+    type Input = Input;
+    type Output = Output;
+    type ParseError = GetAccessTokenScopeError;
+    type HandleError = HandleError;
+
+    async fn parse(&self, request: Request) -> Result<Input, Self::ParseError> {
+      let account_id = request.param("account").unwrap();
+      let file_id = request.param("file").unwrap();
+      let access_token_scope = request_ext::get_access_token_scope(&request).await?;
+      let account = access_token_scope.grant_account_scope(account_id).await?;
+
+      Ok(Input {
+        account,
+        file_id: file_id.to_string(),
+      })
+    }
+
+    async fn perform(&self, input: Input) -> Result<Output, HandleError> {
+      let Input { account, file_id } = input;
+      match AudioFile::delete_audio_file(&account.id, &file_id).await? {
+        None => Err(HandleError::FileNotFound(file_id)),
+        Some(audio_file) => Ok(Output(audio_file)),
+      }
+    }
+  }
+}

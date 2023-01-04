@@ -274,13 +274,13 @@ pub mod post {
 
       let user = run_transaction!(session => {
 
-        let email_exists = User::exists_with_session(doc! { "email": &email }, &mut session).await?;
+        let email_exists = tx_try!(User::exists_with_session(doc! { "email": &email }, &mut session).await);
         if email_exists {
           return Err(Self::HandleError::UserEmailExists);
         }
 
         for id in &account_ids {
-          let exists = Account::exists_with_session(id.as_str(), &mut session).await?;
+          let exists = tx_try!(Account::exists_with_session(id.as_str(), &mut session).await);
           if !exists {
             return Err(Self::HandleError::AccountNotFound(id.clone()));
           }
@@ -290,18 +290,18 @@ pub mod post {
 
         let user = User {
           id: User::uid(),
-          email,
-          password: Some(password),
-          first_name,
-          last_name,
-          account_ids,
-          user_metadata,
-          system_metadata,
+          email: email.clone(),
+          password: Some(password.clone()),
+          first_name: first_name.clone(),
+          last_name: last_name.clone(),
+          account_ids: account_ids.clone(),
+          user_metadata: user_metadata.clone(),
+          system_metadata: system_metadata.clone(),
           created_at: now,
           updated_at: now,
         };
 
-        User::insert_with_session(&user, &mut session).await?;
+        tx_try!(User::insert_with_session(&user, &mut session).await);
 
         user
       });

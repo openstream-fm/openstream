@@ -227,7 +227,7 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
 
   run_transaction!(session => {
 
-    let mut account = match Account::get_by_id_with_session(&file.account_id, &mut session).await? {
+    let mut account = match tx_try!(Account::get_by_id_with_session(&file.account_id, &mut session).await) {
       None => return Err(UploadError::AccountNotFound(file.account_id)),
       Some(account) => account,
     };
@@ -238,9 +238,9 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
 
     account.limits.storage.used += file.len;
 
-    Account::replace_with_session(&account.id, &account, &mut session).await?;
-    AudioFile::insert_with_session(&file, &mut session).await?;
-    trace!("upload audio file uploaded");
+    tx_try!(Account::replace_with_session(&account.id, &account, &mut session).await);
+    tx_try!(AudioFile::insert_with_session(&file, &mut session).await);
+    trace!("audio file uploaded account_id={}, audio_file_id={}", account.id, file.id);
   });
 
   Ok(file)
@@ -296,6 +296,14 @@ async fn upload_audio_file_inner_spawn<
       if let Err(e) = r {
         warn!(
           "error updating audio upload operation after error: {} => {:?}",
+          &e, &e
+        )
+      }
+
+      let r = AudioUploadOperation::clean_up_chunks_after_error(&operation.id).await;
+      if let Err(e) = r {
+        warn!(
+          "error cleaning up chunks of upload operation after error: {} => {:?}",
           &e, &e
         )
       }

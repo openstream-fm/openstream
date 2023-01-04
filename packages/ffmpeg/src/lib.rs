@@ -155,6 +155,8 @@ impl Ffmpeg {
   pub fn spawn(self) -> Result<FfmpegSpawn, std::io::Error> {
     let mut cmd = Command::new(self.config.bin);
 
+    cmd.kill_on_drop(true);
+
     if self.config.readrate {
       cmd.arg("-re");
     }
@@ -209,8 +211,6 @@ impl Ffmpeg {
 
     // output
     cmd.arg("-");
-
-    cmd.kill_on_drop(true);
 
     cmd.stdin(Stdio::piped());
     cmd.stderr(Stdio::piped());

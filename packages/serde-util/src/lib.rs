@@ -2,6 +2,7 @@ pub mod number;
 pub use number::*;
 pub mod bytes;
 pub mod datetime;
+pub mod empty_struct;
 pub mod ip;
 pub mod password;
 pub mod status_code;

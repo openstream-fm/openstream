@@ -6,8 +6,26 @@ import { getEventIp } from "../ip.server";
 import StatusCode from "http-status-codes";
 import type { RequestEvent } from "@sveltejs/kit"
 
+export const load_get_me = async (
+  { request, getClientAddress }: Pick<RequestEvent, "getClientAddress" | "request">
+): Promise<import("$server/defs/api/users/[user]/GET/Output").Output["user"] | null> => {
+  try {
+    const { user }: import("$server/defs/api/users/[user]/GET/Output").Output = await load_get("/api/users/me", { request, getClientAddress }, { redirectToLoginOnAuthErrors: false });
+    return user;
+  } catch (e: any) {
+    if(e?.status === StatusCode.UNAUTHORIZED) {
+      return null;
+    } else {
+      throw e;
+    }
+  }
+}
 
-export const load_get = async <T>(url: string, { request, getClientAddress }: Pick<RequestEvent, "getClientAddress" | "request">): Promise<T> => {
+export const load_get = async <T>(
+  url: string,
+  { request, getClientAddress }: Pick<RequestEvent, "getClientAddress" | "request">,
+  { redirectToLoginOnAuthErrors = true } = {}
+): Promise<T> => {
   const headers = new Headers();
   for(const key of ["host", "cookie", "user-agent", "accept-language"]) {
     const value = request.headers.get(key);
@@ -27,7 +45,9 @@ export const load_get = async <T>(url: string, { request, getClientAddress }: Pi
   })
 
   if(res.status === StatusCode.UNAUTHORIZED) {
-    throw redirect(302, "/login");
+    if(redirectToLoginOnAuthErrors) {
+      throw redirect(302, "/login");
+    }
   }
 
   if(body.error) {

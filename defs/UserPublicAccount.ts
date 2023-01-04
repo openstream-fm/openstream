@@ -11,4 +11,5 @@ export interface UserPublicAccount {
   createdAt: DateTime;
   updatedAt: DateTime;
   userMetadata: Metadata;
+  sourcePassword: string;
 }

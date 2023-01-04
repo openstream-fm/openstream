@@ -170,6 +170,7 @@ where
   S: Stream<Item = Result<B, E>>,
   B: AsRef<[u8]>,
 {
+  /// rate: bytes per second
   fn rated(self, rate: usize) -> TryBytesStreamRated<S, B> {
     TryBytesStreamRated::from(self, rate)
   }

@@ -1,7 +1,7 @@
 use bytes::Bytes;
-use heapless::Deque;
+use constants::STREAM_CHANNEL_CAPACITY;
 use log::*;
-use parking_lot::{RwLock, RwLockUpgradableReadGuard};
+use parking_lot::RwLock;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -15,9 +15,7 @@ pub use transmitter::Transmitter;
 
 use drop_tracer::{DropTracer, Token};
 
-use constants::{STREAM_BURST_LENGTH, STREAM_CHANNNEL_CAPACITY};
-
-pub type Burst = Deque<Bytes, STREAM_BURST_LENGTH>;
+use burst::Burst;
 
 #[derive(Debug)]
 pub struct Channel {
@@ -63,13 +61,15 @@ pub struct Inner {
 }
 
 impl ChannelMap {
-  fn transmit_locked(&self, id: &str, map: &mut HashMap<String, Channel>) -> Option<Transmitter> {
+  pub fn transmit(&self, id: &str) -> Option<Transmitter> {
+    let mut map = self.inner.map.write();
+
     let (tx, count) = {
       match map.entry(id.to_string()) {
         Entry::Occupied(_) => return None,
 
         Entry::Vacant(entry) => {
-          let (sender, _) = channel(STREAM_CHANNNEL_CAPACITY);
+          let (sender, _) = channel(STREAM_CHANNEL_CAPACITY);
 
           let burst = Arc::new(RwLock::new(Burst::new()));
 
@@ -99,12 +99,8 @@ impl ChannelMap {
     Some(tx)
   }
 
-  pub fn transmit(&self, id: &str) -> Option<Transmitter> {
-    let mut map = self.inner.map.write();
-    self.transmit_locked(id, &mut map)
-  }
-
-  fn subscribe_locked(&self, id: &str, map: &HashMap<String, Channel>) -> Option<Receiver> {
+  pub fn subscribe(&self, id: &str) -> Option<Receiver> {
+    let map = self.inner.map.read();
     let rx = {
       //let map = self.inner.map.read();
       let channel = map.get(id)?;
@@ -131,62 +127,51 @@ impl ChannelMap {
     Some(rx)
   }
 
-  pub fn subscribe(&self, id: &str) -> Option<Receiver> {
-    let map = self.inner.map.read();
-    self.subscribe_locked(id, &map)
-  }
+  // pub fn subscribe_linked_or_transmit(&self, id: &str, other: &Self) -> RxTx {
+  //   let map = self.inner.map.upgradable_read();
+  //   match self.subscribe_locked(id, &map) {
+  //     Some(rx) => RxTx::Rx(rx),
 
-  pub fn subscribe_linked_or_transmit(&self, id: &str, other: &Self) -> RxTx {
-    let map = self.inner.map.upgradable_read();
-    match self.subscribe_locked(id, &map) {
-      Some(rx) => RxTx::Rx(rx),
+  //     None => {
+  //       let other_map = other.inner.map.read();
+  //       let mut map = RwLockUpgradableReadGuard::upgrade(map);
+  //       // unwrap: this should never fail because we have a lock and subscribe_locked just returned None
+  //       let tx = self.transmit_locked(id, &mut map).unwrap();
+  //       let rx = Receiver {
+  //         channel_id: id.to_string(),
+  //         burst: Burst::new(),
+  //         receiver: tx.sender.subscribe(),
+  //         channels: self.clone(),
+  //         token: self.inner.drop_tracer.token(),
+  //       };
 
-      None => {
-        let other_map = other.inner.map.read();
-        let mut map = RwLockUpgradableReadGuard::upgrade(map);
-        // unwrap: this should never fail because we have a lock and subscribe_locked just returned None
-        let tx = self.transmit_locked(id, &mut map).unwrap();
-        let rx = Receiver {
-          channel_id: id.to_string(),
-          burst: Burst::new(),
-          receiver: tx.sender.subscribe(),
-          channels: self.clone(),
-          token: self.inner.drop_tracer.token(),
-        };
+  //       match other.subscribe_locked(id, &other_map) {
+  //         None => RxTx::Tx(rx, tx),
 
-        match other.subscribe_locked(id, &other_map) {
-          None => RxTx::Tx(rx, tx),
+  //         Some(mut other_rx) => {
+  //           let rx = Receiver {
+  //             channel_id: id.to_string(),
+  //             burst: Burst::new(),
+  //             receiver: tx.sender.subscribe(),
+  //             channels: self.clone(),
+  //             token: self.inner.drop_tracer.token(),
+  //           };
 
-          Some(mut other_rx) => {
-            let rx = Receiver {
-              channel_id: id.to_string(),
-              burst: Burst::new(),
-              receiver: tx.sender.subscribe(),
-              channels: self.clone(),
-              token: self.inner.drop_tracer.token(),
-            };
+  //           tokio::spawn(async move {
+  //             loop {
+  //               match other_rx.recv().await {
+  //                 Err(_e) => break,
+  //                 Ok(bytes) => match tx.send(bytes) {
+  //                   Err(_e) => break,
+  //                   Ok(_) => continue,
+  //                 },
+  //               };
+  //             }
+  //           });
 
-            tokio::spawn(async move {
-              loop {
-                match other_rx.recv().await {
-                  Err(_e) => break,
-                  Ok(bytes) => match tx.send(bytes) {
-                    Err(_e) => break,
-                    Ok(_) => continue,
-                  },
-                };
-              }
-            });
-
-            RxTx::Rx(rx)
-          }
-        }
-      }
-    }
-  }
-}
-
-pub enum RxTx {
-  Rx(Receiver),
-  Tx(Receiver, Transmitter),
+  //           RxTx::Rx(rx)
+  //         }
+  //       }
+  //     }
+  //   }
 }

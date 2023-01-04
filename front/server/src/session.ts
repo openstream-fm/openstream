@@ -14,7 +14,10 @@ const sessionConfig = (config: Config): Parameters<typeof _session>[0] => {
   return {
     name: "openstream-front.sid",
     secret: config.session.secret,
-    cookie: { domain: config.session.domain, maxAge: config.session.maxAgeDays * 24 * 60 * 60 * 1000 },
+    cookie: {
+      // domain: config.session.domain,
+      maxAge: config.session.maxAgeDays * 24 * 60 * 60 * 1000
+    },
     store: store(config),
     rolling: true,
     resave: false,

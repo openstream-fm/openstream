@@ -1,5 +1,9 @@
 use crate::Model;
+use async_stream::try_stream;
 use bytes::Bytes;
+use futures_util::stream::Stream;
+use mongodb::results::DeleteResult;
+use mongodb::ClientSession;
 use mongodb::{bson::doc, options::IndexOptions, IndexModel};
 use serde::{Deserialize, Serialize};
 use serde_util::as_f64;
@@ -35,6 +39,39 @@ pub struct AudioChunk {
   pub data: Bytes,
 
   pub created_at: DateTime,
+}
+
+impl AudioChunk {
+  pub async fn delete_by_audio_file_id_with_session(
+    audio_file_id: &str,
+    session: &mut ClientSession,
+  ) -> Result<DeleteResult, mongodb::error::Error> {
+    let filter = doc! { "audioFileId": audio_file_id };
+    let r = Self::cl()
+      .delete_many_with_session(filter, None, session)
+      .await?;
+
+    Ok(r)
+  }
+
+  pub fn stream(
+    file_id: &str,
+  ) -> impl Stream<Item = Result<Bytes, mongodb::error::Error>> + Send + 'static {
+    let file_id = file_id.to_string();
+    try_stream! {
+      let mut i = 0.0;
+      loop {
+        let filter = doc!{ "audioFileId": &file_id, "i": i };
+        let item = match Self::get(filter).await? {
+          Some(item) => item,
+          None => break,
+        };
+
+        yield item.data;
+        i += 1.0;
+      };
+    }
+  }
 }
 
 impl Model for AudioChunk {

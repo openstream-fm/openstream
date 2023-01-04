@@ -8,9 +8,8 @@ use async_trait::async_trait;
 
 pub mod accounts;
 pub mod admins;
-pub mod login;
+pub mod auth;
 pub mod me;
-pub mod register;
 pub mod users;
 
 pub fn router() -> Builder {
@@ -19,16 +18,20 @@ pub fn router() -> Builder {
   app.at("/me").get(me::get::Endpoint {}.into_handler());
 
   app
-    .at("/register")
-    .post(register::post::Endpoint {}.into_handler());
+    .at("/auth/user/register")
+    .post(auth::user::register::post::Endpoint {}.into_handler());
 
   app
-    .at("/login")
-    .post(login::post::Endpoint {}.into_handler());
+    .at("/auth/user/login")
+    .post(auth::user::login::post::Endpoint {}.into_handler());
 
   app
-    .at("/login/admin")
-    .post(login::admin::post::Endpoint {}.into_handler());
+    .at("/auth/user/logout")
+    .post(auth::user::logout::post::Endpoint {}.into_handler());
+
+  app
+    .at("/auth/admin/login")
+    .post(auth::admin::login::post::Endpoint {}.into_handler());
 
   app
     .at("/users")
@@ -56,7 +59,8 @@ pub fn router() -> Builder {
 
   app
     .at("/accounts/:account/files/:file")
-    .get(accounts::files::id::get::Endpoint {}.into_handler());
+    .get(accounts::files::id::get::Endpoint {}.into_handler())
+    .delete(accounts::files::id::delete::Endpoint {}.into_handler());
 
   app
     .at("/accounts/:account/files/:file/stream")

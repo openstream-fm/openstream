@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use channels::ChannelMap;
 use db::account::Account;
+use db::audio_file::AudioFile;
 use db::stream_connection::StreamConnection;
 use db::Model;
 use drop_tracer::Token;
@@ -9,19 +9,25 @@ use futures::TryStreamExt;
 use hyper::header::{HeaderName, ACCEPT_RANGES, CACHE_CONTROL};
 use hyper::{header::CONTENT_TYPE, http::HeaderValue, Body, Server, StatusCode};
 use log::*;
-use owo_colors::*;
+use media_sessions::playlist::run_playlist_session;
+use media_sessions::MediaSessionMap;
+use media_sessions::RecvError;
+use mongodb::bson::doc;
 use prex::{handler::Handler, Next, Request, Response};
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use shutdown::Shutdown;
 use std::future::Future;
 use std::net::SocketAddr;
-use tokio::sync::broadcast::error::RecvError;
+
+#[allow(clippy::declare_interior_mutable_const)]
+const X_OPENSTREAM_REJECTION_CODE: HeaderName =
+  HeaderName::from_static("x-openstream-rejection-code");
 
 #[derive(Debug)]
 pub struct StreamServer {
   addrs: Vec<SocketAddr>,
-  channels: ChannelMap,
+  media_sessions: MediaSessionMap,
   shutdown: Shutdown,
 }
 
@@ -34,13 +40,11 @@ pub struct Status {
 struct StreamServerInner {}
 
 impl StreamServer {
-  pub fn new(addrs: Vec<SocketAddr>, shutdown: Shutdown) -> Self {
-    let channels = ChannelMap::new();
-
+  pub fn new(addrs: Vec<SocketAddr>, shutdown: Shutdown, media_sessions: MediaSessionMap) -> Self {
     Self {
       addrs,
       shutdown,
-      channels,
+      media_sessions,
     }
   }
 
@@ -54,7 +58,7 @@ impl StreamServer {
 
     app.get(
       "/stream/:id",
-      StreamHandler::new(self.channels.clone(), self.shutdown.clone()),
+      StreamHandler::new(self.media_sessions.clone(), self.shutdown.clone()),
     );
 
     let app = app.build().expect("prex app build stream");
@@ -68,7 +72,10 @@ impl StreamServer {
         .http1_preserve_header_case(false)
         .http1_keepalive(false);
 
-      info!("stream server bound to {}", addr.yellow());
+      {
+        use owo_colors::*;
+        info!("stream server bound to {}", addr.yellow());
+      }
 
       let fut = server
         .serve(app.clone())
@@ -93,31 +100,47 @@ impl Drop for StreamServer {
 
 #[derive(Debug, Clone)]
 struct StreamHandler {
-  channels: ChannelMap,
+  media_sessions: MediaSessionMap,
   shutdown: Shutdown,
 }
 
 impl StreamHandler {
-  pub fn new(channels: ChannelMap, shutdown: Shutdown) -> Self {
-    Self { channels, shutdown }
+  pub fn new(media_sessions: MediaSessionMap, shutdown: Shutdown) -> Self {
+    Self {
+      media_sessions,
+      shutdown,
+    }
   }
 
   async fn handle(&self, req: Request) -> Result<Response, StreamError> {
-    // unwrap: "id" is a required param in path definition
     let id = req.param("id").unwrap();
 
     let account = match Account::get_by_id(id).await? {
-      None => {
-        return Err(StreamError::AccountNotFound(id.to_string()));
-      }
       Some(account) => account,
+      None => return Err(StreamError::AccountNotFound(id.to_string())),
     };
 
-    let mut rx = match self.channels.subscribe(id) {
-      None => {
-        return Err(StreamError::NotStreaming(id.to_string()));
+    #[allow(clippy::collapsible_if)]
+    if self.media_sessions.read().get(id).is_none() {
+      if !AudioFile::exists(doc! { "accountId": &account.id }).await? {
+        return Err(StreamError::NotStreaming(account.id.clone()));
       }
-      Some(rx) => rx,
+    };
+
+    let mut rx = {
+      let lock = self.media_sessions.upgradable_read();
+
+      match lock.get(id) {
+        Some(session) => session.subscribe(),
+
+        None => {
+          let mut lock = lock.upgrade();
+          let tx = lock.transmit(id, media_sessions::MediaSessionKind::Playlist {});
+          let rx = tx.subscribe();
+          run_playlist_session(tx, self.shutdown.clone());
+          rx
+        }
+      }
     };
 
     let mut conn_doc = {
@@ -133,14 +156,11 @@ impl StreamHandler {
       }
     };
 
-    if let Err(_e) = StreamConnection::insert(&conn_doc).await {
-      let mut res = Response::new(StatusCode::INTERNAL_SERVER_ERROR);
-      *res.body_mut() = Body::from("internal server error (db)");
-    };
+    StreamConnection::insert(&conn_doc).await?;
 
     let connection_dropper = StreamConnectionDropper {
       id: conn_doc.id.clone(),
-      token: self.channels.drop_token(),
+      token: self.media_sessions.drop_token(),
     };
 
     let (mut body_sender, response_body) = Body::channel();
@@ -166,6 +186,10 @@ impl StreamHandler {
 
             // Receive bytes and pass it to response body
             Ok(bytes) => {
+              if shutdown.is_closed() {
+                break;
+              }
+
               let len = bytes.len();
               match body_sender.send_data(bytes).await {
                 Err(_) => break,
@@ -254,7 +278,7 @@ impl From<StreamError> for Response {
 
       StreamError::NotStreaming(id) => (
         StatusCode::MISDIRECTED_REQUEST,
-        "WRONG_SERVER",
+        "NOT_STREAMING",
         format!("station with id {id} is not streaming from this server"),
       ),
     };
@@ -265,10 +289,9 @@ impl From<StreamError> for Response {
       HeaderValue::from_static("text/plain;charset=utf-8"),
     );
 
-    res.headers_mut().append(
-      HeaderName::from_static("x-openstream-rejection-code"),
-      HeaderValue::from_static(code),
-    );
+    res
+      .headers_mut()
+      .append(X_OPENSTREAM_REJECTION_CODE, HeaderValue::from_static(code));
 
     *res.body_mut() = Body::from(message);
 
