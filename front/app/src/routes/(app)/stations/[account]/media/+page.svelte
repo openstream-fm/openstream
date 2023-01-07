@@ -217,7 +217,7 @@
       const _new_file: import("$server/defs/api/accounts/[account]/files/POST/Output").Output = await _request(`/api/accounts/${account_id}/files?filename=${encodeURIComponent(item.file.name)}`, {
         method: "POST",
         headers: {
-          "content-length": String(item.file.length),
+          "content-length": String(item.file.size),
           "content-type": item.file.type,
         },
         signal: controller?.signal,

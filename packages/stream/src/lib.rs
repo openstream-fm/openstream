@@ -20,9 +20,9 @@ use shutdown::Shutdown;
 use transfer_map::TransferTracer;
 use std::future::Future;
 use std::net::SocketAddr;
-
 use std::sync::atomic::{AtomicU64, Ordering, AtomicBool};
 use std::sync::Arc;
+use socket2::{Domain, Protocol, Socket, Type};
 
 pub mod transfer_map;
 
@@ -46,6 +46,14 @@ pub struct Status {
 #[derive(Debug)]
 struct StreamServerInner {}
 
+#[derive(Debug, thiserror::Error)]
+pub enum StreamServerError {
+  #[error("io error: {0}")]
+  Io(#[from] std::io::Error),
+  #[error("hyper error: {0}")]
+  Hyper(#[from] hyper::Error)
+}
+
 impl StreamServer {
   pub fn new(addrs: Vec<SocketAddr>, shutdown: Shutdown, media_sessions: MediaSessionMap) -> Self {
     Self {
@@ -58,7 +66,7 @@ impl StreamServer {
 
   pub fn start(
     self,
-  ) -> Result<impl Future<Output = Result<(), hyper::Error>> + 'static, hyper::Error> {
+  ) -> Result<impl Future<Output = Result<(), hyper::Error>> + 'static, StreamServerError> {
     let mut app = prex::prex();
 
     app.with(http::middleware::server);
@@ -73,8 +81,28 @@ impl StreamServer {
 
     let futs = FuturesUnordered::new();
 
-    for addr in &self.addrs {
-      let server = Server::try_bind(addr)?
+    for addr in self.addrs.iter().copied() {
+      let domain = match addr {
+        SocketAddr::V4(_) => Domain::IPV4,
+        SocketAddr::V6(_) => Domain::IPV6,
+      };
+
+      let socket = Socket::new(domain, Type::STREAM, Some(Protocol::TCP))?;
+
+      if addr.is_ipv6() {
+        socket.set_only_v6(true)?;
+      }
+
+      socket.set_reuse_address(true)?;
+      socket.set_reuse_port(true)?;
+
+      socket.bind(&addr.into())?;
+      socket.listen(128)?;
+
+      let tcp = socket.into();
+
+
+      let server = Server::from_tcp(tcp)?
         .http1_only(true)
         .http1_title_case_headers(false)
         .http1_preserve_header_case(false)
@@ -184,31 +212,31 @@ impl StreamHandler {
         token: self.media_sessions.drop_token(),
       };
 
-      {
-        let transfer_bytes = transfer_bytes.clone();
-        let closed = closed.clone();
-        let id = conn_doc.id;
-        tokio::spawn(async move {
-          use tokio::time::Duration;
-          let mut last = 0;
-          loop {
-            tokio::time::sleep(Duration::from_secs(5)).await;
+      // {
+      //   let transfer_bytes = transfer_bytes.clone();
+      //   let closed = closed.clone();
+      //   let id = conn_doc.id;
+      //   tokio::spawn(async move {
+      //     use tokio::time::Duration;
+      //     let mut last = 0;
+      //     loop {
+      //       tokio::time::sleep(Duration::from_secs(5)).await;
             
-            if closed.load(Ordering::SeqCst) {
-              break;
-            }
+      //       if closed.load(Ordering::SeqCst) {
+      //         break;
+      //       }
 
-            let v = transfer_bytes.load(Ordering::SeqCst);
-            if v != last {
-              last = v;
-              let r = StreamConnection::set_transfer_bytes(&id, v).await;
-              if let Err(e) = r {
-                warn!("error calling StreamConnection::set_transfer_bytes for connection {id}: {e}");
-              }
-            };
-          }
-        });
-      }
+      //       let v = transfer_bytes.load(Ordering::SeqCst);
+      //       if v != last {
+      //         last = v;
+      //         let r = StreamConnection::set_transfer_bytes(&id, v).await;
+      //         if let Err(e) = r {
+      //           warn!("error calling StreamConnection::set_transfer_bytes for connection {id}: {e}");
+      //         }
+      //       };
+      //     }
+      //   });
+      // }
 
       let (mut body_sender, response_body) = Body::channel();
 

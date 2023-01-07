@@ -1,10 +1,12 @@
 use std::path::PathBuf;
+use std::process::ExitStatus;
 use std::sync::Arc;
 
 use clap::{Parser, Subcommand};
 use config::Config;
 use db::access_token::{AccessToken, GeneratedBy};
 use db::Model;
+use futures::stream::FuturesUnordered;
 use futures::{FutureExt, TryStreamExt};
 use log::*;
 
@@ -37,6 +39,7 @@ struct Cli {
 #[derive(Debug, Subcommand)]
 enum Command {
   Start(Start),
+  Cluster(Cluster),
   CreateConfig(CreateConfig),
   CreateToken(CreateToken),
 }
@@ -44,6 +47,18 @@ enum Command {
 #[derive(Debug, Parser)]
 #[command(about = "Start openstream server(s) from a config file")]
 struct Start {
+  /// Path to the configuration file (relative to cwd)
+  #[clap(short, long, default_value_t = String::from("./config.toml"))]
+  config: String,
+}
+
+#[derive(Debug, Parser)]
+#[command(about = "Create a cluster of n --instances of `openstream start` processes")]
+struct Cluster {
+  /// Number of instances to spawn
+  #[clap(short, long)]
+  instances: u16,
+
   /// Path to the configuration file (relative to cwd)
   #[clap(short, long, default_value_t = String::from("./config.toml"))]
   config: String,
@@ -82,6 +97,7 @@ fn main() -> Result<(), anyhow::Error> {
 fn cmd() -> Result<(), anyhow::Error> {
   let cli = Cli::parse();
   match cli.command {
+    Command::Cluster(opts) => cluster(opts),
     Command::Start(opts) => start(opts),
     Command::CreateConfig(opts) => create_config(opts),
     Command::CreateToken(opts) => token(opts),
@@ -134,9 +150,9 @@ async fn shared_init(config: String) -> Result<Config, anyhow::Error> {
   info!("connecting to mongodb and testing transactions support...");
 
   {
-    let test_cl_name = "  __transactions_test";
+    let test_cl_name = format!("__transactions_test_{}", uid::uid(5));
     let db = client.default_database().unwrap();
-    let cl = db.collection::<Document>(test_cl_name);
+    let cl = db.collection::<Document>(&test_cl_name);
 
     {
       let mut session = client
@@ -264,6 +280,55 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   Ok(())
 }
 
+fn cluster(opts: Cluster) -> Result<(), anyhow::Error> {
+  runtime().block_on(cluster_async(opts))
+}
+
+async fn cluster_async(Cluster { instances, config }: Cluster) -> Result<(), anyhow::Error> {
+  
+  println!("======== cluster start ========");
+
+
+  let futs = FuturesUnordered::new();
+
+  if instances == 0 {
+    anyhow::bail!("instances must be greater than 0")
+  }
+
+  let exe = std::env::current_exe().context("failed to get curret exe")?;
+
+
+  for i in 0..instances {
+    let exe = exe.clone();
+    let config = config.clone();
+    //let config = config.clone();
+    futs.push(async move {
+      let mut cmd = tokio::process::Command::new(exe);
+      cmd.arg("start");
+      cmd.arg("--config");
+      cmd.arg(&config);
+      cmd.env("INSTANCE_ID", &format!("{}", i));
+      
+      cmd.stdin(std::process::Stdio::inherit());
+      cmd.stdout(std::process::Stdio::inherit());
+      cmd.stderr(std::process::Stdio::inherit());
+
+      let mut child = cmd.spawn()?;
+
+      let status = child.wait().await?;
+
+      Ok::<_, std::io::Error>(status)
+    })
+  }
+
+  let results: Vec<ExitStatus> = futs.try_collect().await.context("spawn processes")?;
+
+  println!("======== cluster end ========");
+  println!("{:#?}", results);
+
+  Ok(())
+}
+ 
 fn token(
   CreateToken {
     config,

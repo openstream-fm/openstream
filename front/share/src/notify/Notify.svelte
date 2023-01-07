@@ -1,7 +1,7 @@
 <svelte:options accessors={true} />
 
 <script lang="ts" context="module">
-  import { get, Readable } from "svelte/store";
+  import { get, type Readable } from "svelte/store";
   export type Text = string | Readable<string>;
 </script>
 

@@ -13,13 +13,21 @@ use hyper::header::{HeaderValue, ALLOW, CONTENT_TYPE, WWW_AUTHENTICATE};
 use hyper::HeaderMap;
 use hyper::{Body, Method, Server, StatusCode};
 use log::*;
-use owo_colors::*;
 use prex::{handler::Handler, Next, Request, Response};
 use shutdown::Shutdown;
+use socket2::{Domain, Protocol, Socket, Type};
 use std::future::Future;
 use std::net::SocketAddr;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::sync::broadcast::error::RecvError;
+
+#[derive(Debug, thiserror::Error)]
+pub enum SourceServerError {
+  #[error("io error: {0}")]
+  Io(#[from] std::io::Error),
+  #[error("hyper error: {0}")]
+  Hyper(#[from] hyper::Error),
+}
 
 #[derive(Debug)]
 pub struct SourceServer {
@@ -50,7 +58,7 @@ impl SourceServer {
 
   pub fn start(
     self,
-  ) -> Result<impl Future<Output = Result<(), hyper::Error>> + 'static, hyper::Error> {
+  ) -> Result<impl Future<Output = Result<(), hyper::Error>> + 'static, SourceServerError> {
     let mut app = prex::prex();
 
     if log::log_enabled!(Level::Debug) {
@@ -69,14 +77,36 @@ impl SourceServer {
 
     let futs = FuturesUnordered::new();
 
-    for addr in &self.source_addrs {
-      let source = Server::try_bind(addr)?
+    for addr in self.source_addrs.iter().cloned() {
+      let domain = match addr {
+        SocketAddr::V4(_) => Domain::IPV4,
+        SocketAddr::V6(_) => Domain::IPV6,
+      };
+
+      let socket = Socket::new(domain, Type::STREAM, Some(Protocol::TCP))?;
+
+      if addr.is_ipv6() {
+        socket.set_only_v6(true)?;
+      }
+
+      socket.set_reuse_address(true)?;
+      socket.set_reuse_port(true)?;
+
+      socket.bind(&addr.into())?;
+      socket.listen(128)?;
+
+      let tcp = socket.into();
+
+      let source = Server::from_tcp(tcp)?
         .http1_only(true)
         .http1_title_case_headers(false)
         .http1_preserve_header_case(false)
         .http1_keepalive(false);
 
-      info!("source receiver server bound to {}", addr.yellow());
+      {
+        use owo_colors::*;
+        info!("source receiver server bound to {}", addr.yellow());
+      }
 
       futs.push(
         source
@@ -100,7 +130,10 @@ impl SourceServer {
         .http1_title_case_headers(false)
         .http1_preserve_header_case(false);
 
-      info!("source broadcaster server bound to {}", addr.yellow());
+      {
+        use owo_colors::*;
+        info!("source broadcaster server bound to {}", addr.yellow());
+      }
 
       futs.push(
         broadcast

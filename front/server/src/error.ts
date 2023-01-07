@@ -1,9 +1,9 @@
 import StatusCode from "http-status-codes";
 import { ClientError } from "./client-error";
-import { Logger } from "./logger";
+import type { Logger } from "./logger";
 import type { Request, Response, NextFunction } from "express";
 import type { ErrorCode } from "./types";
-import { PublicErrorCode } from "./defs/error/PublicErrorCode";
+import type { PublicErrorCode } from "./defs/error/PublicErrorCode";
 
 export class ApiError extends Error {
   

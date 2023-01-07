@@ -3,7 +3,7 @@ use drop_tracer::Token;
 use log::*;
 use parking_lot::RwLock;
 use std::sync::Arc;
-use std::time::Duration;
+//use std::time::Duration;
 use tokio::sync::broadcast::{self, error::SendError};
 
 use crate::Burst;
@@ -53,12 +53,12 @@ impl Drop for Transmitter {
       }
     }
 
-    tokio::spawn({
-      let token = self.token.clone();
-      async move {
-        tokio::time::sleep(Duration::from_millis(1_500)).await;
-        drop(token);
-      }
-    });
+    // tokio::spawn({
+    //   let token = self.token.clone();
+    //   async move {
+    //     tokio::time::sleep(Duration::from_millis(1_500)).await;
+    //     drop(token);
+    //   }
+    // });
   }
 }

@@ -205,7 +205,7 @@
         Listeners
       </div>
       <div class="meter-graph">
-        <CircularMeter start={0} end={account.limits.listeners.used / account.limits.listeners.total} />
+        <CircularMeter start={0} end={Math.min(1, account.limits.listeners.used / account.limits.listeners.total)} />
       </div>
       <div class="meter-text">
         <span class="used">{account.limits.listeners.used}</span>
@@ -218,7 +218,7 @@
         Transfer
       </div>
       <div class="meter-graph">
-        <CircularMeter start={0} end={account.limits.transfer.used / account.limits.transfer.total} />
+        <CircularMeter start={0} end={Math.min(1, account.limits.transfer.used / account.limits.transfer.total)} />
       </div>
       <div class="meter-text">
         <span class="used">{preety_bytes(account.limits.transfer.used)}</span>
@@ -231,7 +231,7 @@
         Storage
       </div>
       <div class="meter-graph">
-        <CircularMeter start={0} end={account.limits.storage.used / account.limits.storage.total} />
+        <CircularMeter start={0} end={Math.min(1, account.limits.storage.used / account.limits.storage.total)} />
       </div>
       <div class="meter-text">
         <span class="used">{preety_bytes(account.limits.storage.used)}</span>

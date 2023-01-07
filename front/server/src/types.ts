@@ -1,4 +1,4 @@
-import { PublicErrorCode } from "./defs/error/PublicErrorCode";
+import type { PublicErrorCode } from "./defs/error/PublicErrorCode";
 
 export type ErrorCodeMore = 
   "FRONT_INTERNAL" |

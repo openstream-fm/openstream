@@ -35,15 +35,15 @@
   }
   </style>
   
-  <script>
+  <script lang="ts">
   
   let className = "";
   export {className as class};
   
-  export let style = "";
-  export let value = null;
-  export let variant = "indeterminate"; // "static", "determinate"
-  export let size = "1em";
+  export let style: string = "";
+  export let value: number | null = null;
+  export let variant: "indeterminate" | "static" | "determinate" = "indeterminate";
+  export let size: string = "1em";
   
   $: if(value != null && variant === "indeterminate") variant = "static";
   </script>

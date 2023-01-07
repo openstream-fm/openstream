@@ -17,4 +17,6 @@ owo-colors = { version = "3.5.0", path = "../owo-colors" }
 prex = { version = "0.1.0", path = "../prex" }
 serde = { version = "1.0.147", features = ["derive"] }
 shutdown = { version = "0.1.0", path = "../shutdown" }
+socket2 = "0.4.7"
+thiserror = "1.0.38"
 tokio = { version = "1.22.0", features = ["full"] }

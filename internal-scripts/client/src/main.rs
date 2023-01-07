@@ -41,7 +41,7 @@ async fn main() {
     Err(_) => 5,
   };
 
-  let mountpoint_id = std::env::var("S").unwrap_or_else(|_| String::from("tmeqv925"));
+  let mountpoint_id = std::env::var("S").unwrap_or_else(|_| String::from("jr8n73bs"));
 
   // let _: Uri = source_base.parse().expect("SOURCE_BASE_URL invalid URL");
 

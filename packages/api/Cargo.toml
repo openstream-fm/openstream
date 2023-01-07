@@ -32,6 +32,7 @@ serde-util = { version = "0.1.0", path = "../serde-util" }
 serde_json = "1.0.86"
 sha1 = "0.10.5"
 shutdown = { version = "0.1.0", path = "../shutdown" }
+socket2 = "0.4.7"
 static_init = "1.0.3"
 test-util = { version = "0.1.0", path = "../test-util" }
 thiserror = "1.0.38"

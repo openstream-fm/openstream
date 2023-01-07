@@ -1,4 +1,3 @@
-import type { PageServerLoad } from "./$types";
 import { redirect } from "@sveltejs/kit";
 
 export const load = (async ({ parent }) => {
@@ -12,4 +11,4 @@ export const load = (async ({ parent }) => {
 
   throw redirect(302, `/stations`);
   
-}) satisfies PageServerLoad;
+}) satisfies import("./$types").PageServerLoad;

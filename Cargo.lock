@@ -112,6 +112,7 @@ dependencies = [
  "serde_json",
  "sha1",
  "shutdown",
+ "socket2",
  "static_init",
  "test-util",
  "thiserror",
@@ -2065,6 +2066,41 @@ dependencies = [
  "source-alt",
  "stream",
  "tokio",
+ "uid",
+ "which",
+]
+
+[[package]]
+name = "openstream-stream"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "api",
+ "channels",
+ "chrono",
+ "clap",
+ "config",
+ "db",
+ "defer-lite",
+ "dialoguer",
+ "dotenv",
+ "drop-tracer",
+ "futures",
+ "ip",
+ "jemallocator",
+ "log",
+ "logger",
+ "media-sessions",
+ "mongodb",
+ "owo-colors",
+ "router",
+ "rust_ipify",
+ "serde-util",
+ "shutdown",
+ "source",
+ "source-alt",
+ "stream",
+ "tokio",
  "which",
 ]
 
@@ -2526,6 +2562,8 @@ dependencies = [
  "prex",
  "serde",
  "shutdown",
+ "socket2",
+ "thiserror",
  "tokio",
 ]
 
@@ -2938,7 +2976,9 @@ dependencies = [
  "owo-colors",
  "prex",
  "shutdown",
+ "socket2",
  "stream-util",
+ "thiserror",
  "tokio",
  "tokio-stream",
 ]
@@ -3056,6 +3096,8 @@ dependencies = [
  "serde-util",
  "serde_json",
  "shutdown",
+ "socket2",
+ "thiserror",
  "tokio",
 ]
 

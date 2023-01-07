@@ -1,7 +1,9 @@
 [package]
-name = "openstream"
+name = "openstream-stream"
 version = "0.1.0"
 edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 tokio = { version = "1.21.2", features = ["full"] }
@@ -32,4 +34,3 @@ anyhow = "1.0.66"
 serde-util = { version = "0.1.0", path = "../../packages/serde-util" }
 media-sessions = { version = "0.1.0", path = "../../packages/media-sessions" }
 jemallocator = "0.5.0"
-uid = { version = "0.1.0", path = "../../packages/uid" }

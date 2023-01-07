@@ -31,6 +31,11 @@ pub enum EnvStyle {
 }
 
 pub fn init() {
+  let instance_id: Option<u16> = match std::env::var("INSTANCE_ID") {
+    Err(_) => None,
+    Ok(v) => v.parse().ok(),
+  };
+
   let filters = match std::env::var("RUST_LOG") {
     Ok(v) => v,
     Err(_) => "info".into(),
@@ -64,9 +69,13 @@ pub fn init() {
 
   logger.parse_filters(filters.as_str());
 
-  logger.format(|buf, record| {
+  logger.format(move |buf, record| {
     let date = now();
-    let fmt_record = FormattedRecord { record, date };
+    let fmt_record = FormattedRecord {
+      instance_id,
+      record,
+      date,
+    };
     writeln!(buf, "{fmt_record}")?;
     Ok(())
   });
@@ -76,6 +85,7 @@ pub fn init() {
 
 #[derive(Debug)]
 struct FormattedRecord<'a, 'b> {
+  pub instance_id: Option<u16>,
   pub record: &'a log::Record<'b>,
   pub date: time::OffsetDateTime,
 }
@@ -132,6 +142,14 @@ impl<'a, 'b> FormattedRecord<'a, 'b> {
   pub fn format_args(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     write!(f, "{}", self.record.args())
   }
+
+  pub fn format_instance_id(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    if let Some(id) = self.instance_id {
+      write!(f, "{: >2} | ", id)?;
+    }
+
+    Ok(())
+  }
 }
 
 impl<'a, 'b> Display for FormattedRecord<'a, 'b> {
@@ -140,6 +158,7 @@ impl<'a, 'b> Display for FormattedRecord<'a, 'b> {
     f.write_char(' ')?;
     self.format_level(f)?;
     f.write_char(' ')?;
+    self.format_instance_id(f)?;
     self.format_module_path(f)?;
     f.write_str(" > ")?;
     self.format_args(f)?;
