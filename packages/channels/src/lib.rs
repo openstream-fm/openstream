@@ -86,7 +86,7 @@ impl ChannelMap {
             sender,
             channels: self.clone(),
             burst,
-            token: self.inner.drop_tracer.token(),
+            // token: self.inner.drop_tracer.token(),
           };
 
           (tx, map.len())

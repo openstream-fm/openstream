@@ -16,6 +16,12 @@ static BODY: &[u8] = include_bytes!("../../../audio.mp3");
 
 const DEFAULT_C: usize = 20_000;
 
+fn random_test_account_id() -> String {
+  let r: f64 = rand::random();
+  let n = 1 + (r * 1000.0).floor() as u16;
+  format!("test{n}")
+}
+
 #[tokio::main]
 async fn main() {
   let _ = dotenv::dotenv();
@@ -41,8 +47,7 @@ async fn main() {
     Err(_) => 5,
   };
 
-  let mountpoint_id = std::env::var("S").unwrap_or_else(|_| String::from("jr8n73bs"));
-
+  // let mountpoint_id = std::env::var("S").unwrap_or_else(|_| String::from("jr8n73bs"));
   // let _: Uri = source_base.parse().expect("SOURCE_BASE_URL invalid URL");
 
   let c: usize = match std::env::var("C") {
@@ -50,7 +55,7 @@ async fn main() {
     Err(_) => DEFAULT_C,
   };
 
-  println!("mounpoint id: {mountpoint_id}");
+  // println!("mounpoint id: {mountpoint_id}");
   // println!("source base: {source_base}");
   println!("stream base url: {stream_base_url}");
   println!("stream ports: {ports:?}");
@@ -59,7 +64,7 @@ async fn main() {
 
   let _ = tokio::try_join!(
     // tokio::spawn(producer(source_base, mountpoint_id.clone())),
-    tokio::spawn(clients(c, stream_base_url, ports, mountpoint_id, delay)),
+    tokio::spawn(clients(c, stream_base_url, ports, delay)),
     tokio::spawn(print_stats())
   )
   .unwrap();
@@ -113,7 +118,7 @@ async fn producer(base: String, id: String) {
   panic!("producer terminated");
 }
 
-async fn clients(n: usize, stream_base_url: String, ports: Vec<u16>, id: String, delay: u64) {
+async fn clients(n: usize, stream_base_url: String, ports: Vec<u16>, delay: u64) {
   tokio::time::sleep(Duration::from_millis(1_000)).await;
 
   let http_client = Client::builder()
@@ -126,11 +131,16 @@ async fn clients(n: usize, stream_base_url: String, ports: Vec<u16>, id: String,
       tokio::time::sleep(Duration::from_millis(delay)).await;
       let port = ports[i % ports.len()];
       let base_url = stream_base_url.clone();
-      let id = id.clone();
       let http_client = http_client.clone();
       tokio::spawn(async move {
         loop {
-          let r = client(&http_client, base_url.as_str(), port, id.as_str()).await;
+          let r = client(
+            &http_client,
+            base_url.as_str(),
+            port,
+            &random_test_account_id(),
+          )
+          .await;
           if let Err(e) = r {
             ERRORS.fetch_add(1, Ordering::Relaxed);
             println!("err: {}", e);

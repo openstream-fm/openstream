@@ -303,6 +303,11 @@ pub struct Transmitter {
 
 impl Transmitter {
   #[inline]
+  pub fn listener_count(&self) -> usize {
+    self.sender.receiver_count()
+  }
+
+  #[inline]
   pub fn subscribe(&self) -> Listener {
     Listener {
       info: self.info.clone(),

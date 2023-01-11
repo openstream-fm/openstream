@@ -57,9 +57,16 @@ impl AudioChunk {
   pub fn stream(
     file_id: &str,
   ) -> impl Stream<Item = Result<Bytes, mongodb::error::Error>> + Send + 'static {
+    Self::stream_from(file_id, 0.0)
+  }
+
+  pub fn stream_from(
+    file_id: &str,
+    skip: f64,
+  ) -> impl Stream<Item = Result<Bytes, mongodb::error::Error>> + Send + 'static {
     let file_id = file_id.to_string();
     try_stream! {
-      let mut i = 0.0;
+      let mut i = skip;
       loop {
         let filter = doc!{ Self::KEY_AUDIO_FILE_ID: &file_id, Self::KEY_I: i };
         let item = match Self::get(filter).await? {

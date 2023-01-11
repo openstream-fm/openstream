@@ -29,6 +29,7 @@ pub use models::audio_file;
 pub use models::audio_upload_operation;
 pub use models::config;
 pub use models::event;
+pub use models::media_session;
 pub use models::play_history_item;
 pub use models::stream_connection;
 pub use models::user;
@@ -83,6 +84,7 @@ pub async fn ensure_collections() -> MongoResult<()> {
   event::Event::ensure_collection().await?;
   stream_connection::StreamConnection::ensure_collection().await?;
   play_history_item::PlayHistoryItem::ensure_collection().await?;
+  media_session::MediaSession::ensure_collection().await?;
 
   Ok(())
 }
@@ -504,3 +506,13 @@ macro_rules! key {
 }
 
 pub const KEY_ID: &str = "_id";
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct IdDocument {
+  #[serde(rename = "_id")]
+  pub id: String,
+}
+
+pub fn id_document_projection() -> Document {
+  mongodb::bson::doc! { KEY_ID: 1 }
+}

@@ -3,7 +3,7 @@ use db::account::Account;
 use db::audio_file::AudioFile;
 use db::stream_connection::StreamConnection;
 use db::Model;
-use drop_tracer::Token;
+use drop_tracer::{Token, DropTracer};
 use futures::stream::FuturesUnordered;
 use futures::TryStreamExt;
 use hyper::header::{HeaderName, ACCEPT_RANGES, CACHE_CONTROL};
@@ -23,6 +23,7 @@ use std::net::SocketAddr;
 use std::sync::atomic::{AtomicU64, Ordering, AtomicBool};
 use std::sync::Arc;
 use socket2::{Domain, Protocol, Socket, Type};
+use ip_counter::IpCounter;
 
 pub mod transfer_map;
 
@@ -30,12 +31,26 @@ pub mod transfer_map;
 const X_OPENSTREAM_REJECTION_CODE: HeaderName =
   HeaderName::from_static("x-openstream-rejection-code");
 
+#[allow(clippy::declare_interior_mutable_const)]
+const CONTENT_TYPE_MPEG: HeaderValue = HeaderValue::from_static("audio/mpeg");
+
+#[allow(clippy::declare_interior_mutable_const)]
+const ACCEPT_RANGES_NONE: HeaderValue = HeaderValue::from_static("none");
+
+#[allow(clippy::declare_interior_mutable_const)]
+const CACHE_CONTROL_NO_CACHE: HeaderValue = HeaderValue::from_static("no-cache");
+
+#[allow(clippy::declare_interior_mutable_const)]
+const TEXT_PLAIN_UTF8: HeaderValue = HeaderValue::from_static("text/plain;charset=utf-8");
+
 #[derive(Debug)]
 pub struct StreamServer {
   addrs: Vec<SocketAddr>,
   media_sessions: MediaSessionMap,
   shutdown: Shutdown,
+  drop_tracer:  DropTracer,
   transfer_map: TransferTracer,
+  ip_counter: IpCounter,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
@@ -59,8 +74,10 @@ impl StreamServer {
     Self {
       addrs,
       shutdown,
+      drop_tracer: DropTracer::new(),
       media_sessions,
       transfer_map: TransferTracer::new(),
+      ip_counter: IpCounter::new(),
     }
   }
 
@@ -74,7 +91,13 @@ impl StreamServer {
 
     app.get(
       "/stream/:id",
-      StreamHandler::new(self.media_sessions.clone(), self.transfer_map.clone(), self.shutdown.clone()),
+      StreamHandler::new(
+        self.media_sessions.clone(),
+        self.transfer_map.clone(),
+        self.shutdown.clone(),
+        self.drop_tracer.clone(),
+        self.ip_counter.clone()
+      ),
     );
 
     let app = app.build().expect("prex app build stream");
@@ -140,19 +163,48 @@ struct StreamHandler {
   media_sessions: MediaSessionMap,
   transfer_map: TransferTracer,
   shutdown: Shutdown,
+  drop_tracer: DropTracer,
+  ip_counter: IpCounter,
 }
 
 impl StreamHandler {
-  pub fn new(media_sessions: MediaSessionMap, transfer_map: TransferTracer, shutdown: Shutdown) -> Self {
+  pub fn new(media_sessions: MediaSessionMap, transfer_map: TransferTracer, shutdown: Shutdown, drop_tracer: DropTracer, ip_counter: IpCounter) -> Self {
     Self {
       media_sessions,
       transfer_map,
       shutdown,
+      drop_tracer,
+      ip_counter,
     }
   }
 
   async fn handle(self, req: Request) -> Result<Response, StreamError> {
     let account_id = req.param("id").unwrap().to_string();
+
+    let ip = req.isomorphic_ip();
+
+    // we do not trace ip counts from internal net or loopback ips (not global)
+    
+    // TODO:
+    // provide a way to whitelist global ips (from openstream itself or for test purposes)
+    // maybe with a internal password for each stream in the provided
+    // by the client as a request header
+    let _ip_count = match ip_rfc::global(&ip) {
+      false => 0,
+      true => match self.ip_counter.increment_with_limit(ip, constants::STREAM_IP_CONNECTIONS_LIMIT) {
+        Some(n) => n,
+        None => {
+          return Err(StreamError::TooManyOpenConnections)
+        }
+      }
+    };
+
+    let ip_decrementer = {
+      let map = self.ip_counter.clone();
+      defer::defer(move || {
+        map.decrement(ip);
+      })
+    };
 
     tokio::spawn(async move {
       let account = match Account::get_by_id(&account_id).await? {
@@ -177,7 +229,7 @@ impl StreamHandler {
             let mut lock = lock.upgrade();
             let tx = lock.transmit(&account_id, media_sessions::MediaSessionKind::Playlist {});
             let rx = tx.subscribe();
-            run_playlist_session(tx, self.shutdown.clone());
+            run_playlist_session(tx, self.shutdown.clone(), self.drop_tracer.clone(), true);
             rx
           }
         }
@@ -197,10 +249,10 @@ impl StreamHandler {
       };
 
       let r = Account::increment_used_listeners(&account_id).await?;
-      info!("Account::increment_used_listeners called for account {account_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
+      debug!("Account::increment_used_listeners called for account {account_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
 
       StreamConnection::insert(&conn_doc).await?;
-      info!("StreamConnection::insert called for account {account_id}, connection_id: {}", conn_doc.id);
+      debug!("StreamConnection::insert called for account {account_id}, connection_id: {}", conn_doc.id);
       
       let transfer_bytes = Arc::new(AtomicU64::new(0));
       let closed = Arc::new(AtomicBool::new(false));
@@ -280,21 +332,22 @@ impl StreamHandler {
 
           closed.store(true, Ordering::SeqCst);
           drop(connection_dropper);
+          drop(ip_decrementer);
         }
       });
 
       let mut res = Response::new(StatusCode::OK);
       res
         .headers_mut()
-        .append(CONTENT_TYPE, HeaderValue::from_static("audio/mpeg"));
+        .append(CONTENT_TYPE,  CONTENT_TYPE_MPEG);
 
       res
         .headers_mut()
-        .append(ACCEPT_RANGES, HeaderValue::from_static("none"));
+        .append(ACCEPT_RANGES, ACCEPT_RANGES_NONE);
 
       res
         .headers_mut()
-        .append(CACHE_CONTROL, HeaderValue::from_static("no-cache"));
+        .append(CACHE_CONTROL, CACHE_CONTROL_NO_CACHE);
 
       *res.body_mut() = response_body;
 
@@ -331,13 +384,13 @@ impl Drop for StreamConnectionDropper {
         .await
         .expect("error at StreamConnection::set_closed");
 
-      info!("StreamConnection::set_closed called for account {account_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
+      debug!("StreamConnection::set_closed called for account {account_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
 
       let r = Account::decrement_used_listeners(&account_id)
         .await
         .expect("error at Account::decrement_used_listeners");
 
-      info!("Account::decrement_used_listeners called for account {account_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
+      debug!("Account::decrement_used_listeners called for account {account_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
 
       drop(token);
     });
@@ -348,6 +401,7 @@ pub enum StreamError {
   Db(mongodb::error::Error),
   AccountNotFound(String),
   NotStreaming(String),
+  TooManyOpenConnections,
 }
 
 impl From<mongodb::error::Error> for StreamError {
@@ -376,12 +430,19 @@ impl From<StreamError> for Response {
         "NOT_STREAMING",
         format!("station with id {id} is not streaming from this server"),
       ),
+
+      StreamError::TooManyOpenConnections => (
+        StatusCode::TOO_MANY_REQUESTS,
+        "TOO_MANY_CONNECTIONS",
+        "Too many open connections from your network, close some connections or try again later".into(),
+      )
     };
 
     let mut res = Response::new(status);
+
     res.headers_mut().append(
       CONTENT_TYPE,
-      HeaderValue::from_static("text/plain;charset=utf-8"),
+      TEXT_PLAIN_UTF8
     );
 
     res

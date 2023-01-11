@@ -1,14 +1,6 @@
 use serde::ser::{
-    self,
-    Error as SerdeError,
-    Serialize,
-    SerializeMap,
-    SerializeSeq,
-    SerializeStruct,
-    SerializeStructVariant,
-    SerializeTuple,
-    SerializeTupleStruct,
-    SerializeTupleVariant,
+    self, Error as SerdeError, Serialize, SerializeMap, SerializeSeq, SerializeStruct,
+    SerializeStructVariant, SerializeTuple, SerializeTupleStruct, SerializeTupleVariant,
 };
 use serde_bytes::Bytes;
 
@@ -20,8 +12,7 @@ use crate::{
     raw::{RawDbPointerRef, RawRegexRef, RAW_ARRAY_NEWTYPE, RAW_DOCUMENT_NEWTYPE},
     spec::BinarySubtype,
     uuid::UUID_NEWTYPE_NAME,
-    Binary,
-    Decimal128,
+    Binary, Decimal128,
 };
 
 use super::{to_bson_with_options, Error};
@@ -450,7 +441,7 @@ impl ser::Serializer for Serializer {
     fn is_human_readable(&self) -> bool {
         // PATCHED
         // self.options.human_readable.unwrap_or(true)
-        self.options.human_readable.unwrap_or(false)
+        false
     }
 }
 

@@ -1,22 +1,12 @@
 use std::{
     borrow::Cow,
     convert::{TryFrom, TryInto},
-    fmt,
-    vec,
+    fmt, vec,
 };
 
 use serde::de::{
-    self,
-    Deserialize,
-    DeserializeSeed,
-    Deserializer as _,
-    EnumAccess,
-    Error,
-    MapAccess,
-    SeqAccess,
-    Unexpected,
-    VariantAccess,
-    Visitor,
+    self, Deserialize, DeserializeSeed, Deserializer as _, EnumAccess, Error, MapAccess, SeqAccess,
+    Unexpected, VariantAccess, Visitor,
 };
 use serde_bytes::ByteBuf;
 
@@ -714,7 +704,7 @@ impl<'de> de::Deserializer<'de> for Deserializer {
     fn is_human_readable(&self) -> bool {
         // PATCHED
         // self.options.human_readable.unwrap_or(true)
-        self.options.human_readable.unwrap_or(false)
+        false
     }
 
     #[inline]

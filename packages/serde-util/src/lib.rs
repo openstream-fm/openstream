@@ -7,12 +7,12 @@ pub mod ip;
 pub mod password;
 pub mod status_code;
 pub mod voidable;
-
 pub use datetime::DateTime;
+pub use mongodb::bson;
 
 #[cfg(test)]
 mod test {
-  use bson::Bson;
+  use crate::bson::{self, Bson};
   use serde::Deserializer;
   use serde::Serializer;
 

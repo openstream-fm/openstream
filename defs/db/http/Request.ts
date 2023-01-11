@@ -7,8 +7,9 @@ import type { UserAgent } from "../../UserAgent";
 import type { Version } from "./Version";
 
 export interface Request {
-  remote_ip: string;
+  real_ip: string;
   local_addr: SocketAddr;
+  remote_addr: SocketAddr;
   version: Version;
   method: Method;
   uri: Uri;

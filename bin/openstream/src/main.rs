@@ -215,10 +215,15 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     ffmpeg_path.to_string_lossy().yellow()
   );
 
+  let local_ip = local_ip_address::local_ip().context("error obtaining local ip")?;
+  info!("local ip address: {}", local_ip.yellow());
+
+
   info!("retrieving public ip...");
   let ip = ip::get_ip_v4().await.context("error obtaining public ip")?;
-  info!("public ip obtained: {}", ip.yellow());
+  info!("public ip address: {}", ip.yellow());
 
+  
   let config::Config {
     mongodb: _,
     ref stream,

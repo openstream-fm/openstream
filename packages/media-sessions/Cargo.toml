@@ -15,6 +15,7 @@ futures-util = "0.3.25"
 log = "0.4.17"
 mongodb = "2.3.1"
 parking_lot = "0.12.1"
+serde-util = { version = "0.1.0", path = "../serde-util" }
 shutdown = { version = "0.1.0", path = "../shutdown" }
 stream-util = { version = "0.1.0", path = "../stream-util" }
 thiserror = "1.0.38"

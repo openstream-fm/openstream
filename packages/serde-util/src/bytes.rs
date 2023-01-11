@@ -1,5 +1,5 @@
+use crate::bson::Binary;
 use base64;
-use bson::Binary;
 use bytes::Bytes;
 use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
 use std::sync::Arc;

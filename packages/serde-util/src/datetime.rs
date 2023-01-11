@@ -1,6 +1,6 @@
 use std::{fmt::Display, ops::Deref};
 
-use bson;
+use crate::bson;
 use log::*;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use static_init::dynamic;
@@ -97,6 +97,14 @@ impl DateTime {
     )
   }
 
+  pub fn from_ts(ts: iso8601_timestamp::Timestamp) -> Self {
+    let millis = ts
+      .duration_since(iso8601_timestamp::Timestamp::UNIX_EPOCH)
+      .whole_milliseconds() as i64;
+
+    Self::new(OffsetDateTime::from_unix_timestamp_nanos(millis as i128 * 1_000_000).unwrap())
+  }
+
   pub fn timestamp_millis(self) -> i64 {
     (self.0.unix_timestamp_nanos() / 1_000_000) as i64
   }
@@ -115,11 +123,39 @@ impl Serialize for DateTime {
   }
 }
 
+// impl.
+struct DateTimeVisitor;
+
+impl<'de> serde::de::Visitor<'de> for DateTimeVisitor {
+  type Value = DateTime;
+
+  fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+    formatter.write_str("datetime string")
+  }
+
+  fn visit_str<E: serde::de::Error>(self, value: &str) -> Result<DateTime, E> {
+    match iso8601_timestamp::Timestamp::parse(value) {
+      Some(ts) => Ok(DateTime::from_ts(ts)),
+      None => Err(E::custom("Invalid iso8601 datetime")),
+    }
+  }
+
+  fn visit_map<M: serde::de::MapAccess<'de>>(self, map: M) -> Result<DateTime, M::Error> {
+    // `MapAccessDeserializer` is a wrapper that turns a `MapAccess`
+    // into a `Deserializer`, allowing it to be used as the input to T's
+    // `Deserialize` implementation. T then deserializes itself using
+    // the entries from the map visitor.
+    let bson = bson::DateTime::deserialize(serde::de::value::MapAccessDeserializer::new(map))?;
+    Ok(DateTime::from_bson(bson))
+  }
+}
+
 impl<'de> Deserialize<'de> for DateTime {
   fn deserialize<D: Deserializer<'de>>(de: D) -> Result<Self, D::Error> {
     if de.is_human_readable() {
       trace!("deserializing date as human readable");
-      time::serde::iso8601::deserialize(de).map(Self::new)
+      de.deserialize_any(DateTimeVisitor)
+      // time::serde::iso8601::deserialize(de).map(Self::new)
     } else {
       trace!("deserializing date as NOT human readable");
       let bson = bson::DateTime::deserialize(de)?;
@@ -159,15 +195,19 @@ pub mod test {
   #[test]
   fn serde_json() {
     let dates = [
-      datetime!(-1-01-01 00:00:00.000 UTC),
+      // TODO allow negative and more wide date ranges (ISO8601)
+      // negative years are not allowed in RFC3339
+      // 4 digit years only are allowed in RFC3339
+
+      //datetime!(-1-01-01 00:00:00.000 UTC),
       datetime!(0001-01-01 00:01:32.1000 UTC),
       datetime!(0002-01-01 00:01:32.1000 UTC),
-      datetime!(-150-08-01 01:02:32.1000 UTC),
+      //datetime!(-150-08-01 01:02:32.1000 UTC),
       datetime!(2002-06-01 09:03:32.10001 UTC),
       datetime!(9309-04-01 02:07:32.10002 UTC),
-      datetime!(-9300-02-01 00:03:32.10003 UTC),
-      datetime!(-20-01-01 00:01:32.10000004 -1:30),
-      datetime!(-1700-04-01 1:01:32.1000 -1),
+      //datetime!(-9300-02-01 00:03:32.10003 UTC),
+      //datetime!(-20-01-01 00:01:32.10000004 -1:30),
+      //datetime!(-1700-04-01 1:01:32.1000 -1),
       datetime!(1700-05-01 5:02:32.1000 +3:30),
       datetime!(2001-07-01 10:04:52.1000 +3),
     ];

@@ -1,5 +1,5 @@
 use bytes::Bytes;
-use drop_tracer::Token;
+// use drop_tracer::Token;
 use log::*;
 use parking_lot::RwLock;
 use std::sync::Arc;
@@ -14,7 +14,7 @@ pub struct Transmitter {
   pub(crate) sender: broadcast::Sender<Bytes>,
   pub(crate) channels: ChannelMap,
   pub(crate) burst: Arc<RwLock<Burst>>,
-  pub(crate) token: Token,
+  // pub(crate) token: Token,
 }
 
 impl Transmitter {
@@ -52,13 +52,5 @@ impl Drop for Transmitter {
         )
       }
     }
-
-    // tokio::spawn({
-    //   let token = self.token.clone();
-    //   async move {
-    //     tokio::time::sleep(Duration::from_millis(1_500)).await;
-    //     drop(token);
-    //   }
-    // });
   }
 }

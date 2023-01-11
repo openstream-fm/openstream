@@ -55,17 +55,17 @@ impl TransferTracer {
     }
 
     if now.is_empty() {
-      info!("saving transfer, 0 accounts to update");
+      debug!("saving transfer, 0 accounts to update");
     } else {
-      info!("saving transfer for {} accounts", now.len());
+      debug!("saving transfer for {} accounts", now.len());
     }
 
     for (id, value) in now.iter() {
-      info!("saving transfer for account {id} increment: {value}");
+      debug!("saving transfer for account {id} increment: {value}");
       let r = Account::increment_used_transfer(id, *value).await;
       match r {
         Err(e) => warn!("error saving transfer for account {id}: {e}"),
-        Ok(r) => info!(
+        Ok(r) => debug!(
           "transfer saved for account {id}, matched: {}, modified: {}",
           r.matched_count, r.modified_count
         ),
