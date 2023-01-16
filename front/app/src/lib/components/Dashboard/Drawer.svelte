@@ -2,8 +2,14 @@
   export let accounts: import("$server/defs/api/accounts/GET/Output").Output;
   export let account: import("$server/defs/api/accounts/[account]/GET/Output").Output["account"];
   export let user: import("$server/defs/api/users/[user]/GET/Output").Output["user"];
+  export let fixed_open: boolean;
 
-  import { page } from "$app/stores";
+  export let close_drawer_fixed: () => void;
+  export let open_drawer_fixed: () => void;
+
+  const HTML_OPEN_CLASSNAME = "account-drawer-fixed-open";
+
+  const toggle = () => fixed_open ? close_drawer_fixed() : open_drawer_fixed();
 
   import DrawerItem from "./DrawerItem.svelte";
   import { 
@@ -13,7 +19,31 @@
     mdiPoll,
     mdiAccountOutline,
     mdiShieldAccountOutline,
+  	mdiMenu,
   } from "@mdi/js";
+	import { onMount } from "svelte";
+	import Icon from "$share/Icon.svelte";
+	import { ripple } from "$share/ripple";
+	import { fade } from "svelte/transition";
+	import { browser } from "$app/environment";
+
+  $: if(browser) {
+    document.documentElement.classList[fixed_open ? "add" : "remove"](HTML_OPEN_CLASSNAME);
+  }
+
+  onMount(() => {
+    
+    let media = window.matchMedia("screen and (max-width: 900px)");
+    
+    media.onchange = () => {
+      if(!media.matches) close_drawer_fixed();
+    }
+
+    return () => {
+      media.onchange = null;
+      document.documentElement.classList.remove(HTML_OPEN_CLASSNAME);
+    }
+  })
 </script>
 
 <style>
@@ -24,6 +54,7 @@
     background: #fff;
     box-shadow: 0 0 15px 0 rgb(0 0 0 / 10%);
     z-index: var(--z-drawer-wide);
+    transition: margin 300ms ease;
   }
 
   .top {
@@ -33,7 +64,10 @@
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    padding: 0.5rem 0 0 2rem;
+  }
+
+  .logo {
+    margin-inline-start: 1.5rem;
   }
 
   .inner {
@@ -42,24 +76,75 @@
     height: 100vh;
   }
 
+  .toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    width: var(--top-height);
+    height: var(--top-height);
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 150ms ease;
+    margin-inline-end: -1.25rem;
+  }
+
+  .toggle:hover {
+    background: rgba(0,0,0,0.05);
+  }
+
+  .drawer-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: calc(var(--z-drawer-fixed) - 1);
+  }
+
   @media screen and (max-width: 900px) {
+
     .drawer {
+      position: fixed;
+      z-index: var(--z-drawer-fixed);
+    }
+
+    .drawer-overlay {
+      display: block;
+    }
+
+    .toggle {
+      display: flex;
+    }
+
+    .drawer:not(.fixed-open) {
       margin-inline-start: calc(var(--drawer-width) * -1);
       box-shadow: none;
     }
   }
-
 </style>
 
-<div class="drawer">
+{#if fixed_open}
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <div class="drawer-overlay" transition:fade|local={{ duration: 250 }} on:click={close_drawer_fixed} />
+{/if}
+
+<div class="drawer" class:fixed-open={fixed_open}>
   <div class="inner">
     <div class="top">
-      openstream
+      <button class="toggle ripple-container" use:ripple aria-label="Toggle drawer" on:click={toggle}>
+        <Icon d={mdiMenu} />
+      </button>
+      <div class="logo">
+        openstream
+      </div>
     </div>
 
     <div class="links">
-      <DrawerItem href="/stations/{account._id}" label="Dashboard" icon={mdiViewDashboardOutline} />
-      <DrawerItem href="/stations/{account._id}/media" label="Media" icon={mdiMultimedia} />
+      <DrawerItem href="/stations/{account._id}" label="Dashboard" icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
+      <DrawerItem href="/stations/{account._id}/media" label="Media" icon={mdiMultimedia} on_click={close_drawer_fixed} />
       <!--
         <DrawerItem href="/accounts/{account._id}/profile" label="Profile" icon={mdiAccountOutline} />
         <DrawerItem href="/account" label="Account" icon={mdiShieldAccountOutline} />

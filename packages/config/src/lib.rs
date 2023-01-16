@@ -23,6 +23,7 @@ impl Config {
 #[serde(deny_unknown_fields)]
 pub struct Mongodb {
   pub url: Url,
+  pub storage_db_name: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

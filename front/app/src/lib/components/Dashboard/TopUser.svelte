@@ -104,6 +104,7 @@
     flex-direction: column;
     align-items: stretch;
     min-width: 0;
+    z-index: var(--z-user-menu);
   }
 
   .menu-section {
@@ -138,7 +139,13 @@
     background-color: #f6f6f6;
   }
 
+  .station-list {
+    max-height: 15rem;
+    overflow-y: auto;
+  }
+
   .menu-account {
+    display: block;
     padding: 0.75rem 1.5rem;
     white-space: nowrap;
     overflow: hidden;
@@ -186,11 +193,13 @@
                 </div>
                 Stations
               </a>
-              {#each accounts.items as item (item._id)}
-                <a href="/stations/{item._id}" class="na menu-account" class:current={item._id === account?._id} on:click={() => menu_open = false}>
-                  {item.name}
-                </a>
-              {/each}
+              <div class="station-list thin-scroll">
+                {#each accounts.items as item (item._id)}
+                  <a href="/stations/{item._id}" class="na menu-account" class:current={item._id === account?._id} on:click={() => menu_open = false}>
+                    {item.name}
+                  </a>
+                {/each}
+              </div>
             </div>
             <div class="menu-section">
               <!-- svelte-ignore a11y-click-events-have-key-events -->

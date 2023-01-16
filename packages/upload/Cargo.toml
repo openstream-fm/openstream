@@ -20,6 +20,7 @@ logger = { version = "0.1.0", path = "../logger" }
 md-5 = "0.10.5"
 mongodb = "=2.3.1"
 serde-util = { version = "0.1.0", path = "../serde-util" }
+sha2 = "0.10.6"
 stream-util = { version = "0.1.0", path = "../stream-util" }
 test-util = { version = "0.1.0", path = "../test-util" }
 thiserror = "1.0.38"

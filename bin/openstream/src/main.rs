@@ -190,7 +190,7 @@ async fn shared_init(config: String) -> Result<Config, anyhow::Error> {
 
   info!("mongodb client connected with transactions support");
 
-  db::init(client);
+  db::init(client, config.mongodb.storage_db_name.clone());
 
   info!("ensuring mongodb collections...");
   db::ensure_collections()
@@ -279,6 +279,8 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     let fut = router.start()?;
     futs.push(fut.boxed());
   }
+
+  db::models::transfer_checkpoint::start_background_task();
 
   futs.try_collect().await?;
 

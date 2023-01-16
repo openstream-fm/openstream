@@ -1,4 +1,4 @@
-use crate::Model;
+use crate::{storage_db, Model};
 use async_stream::try_stream;
 use bytes::Bytes;
 use futures_util::stream::Stream;
@@ -84,6 +84,10 @@ impl AudioChunk {
 impl Model for AudioChunk {
   const UID_LEN: usize = 16;
   const CL_NAME: &'static str = "audio_chunks";
+
+  fn db() -> mongodb::Database {
+    storage_db()
+  }
 
   fn indexes() -> Vec<IndexModel> {
     let account_id = IndexModel::builder()

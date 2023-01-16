@@ -18,7 +18,7 @@
     top: 2rem;
     left: 2rem;
     font-size: 2rem;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--red);
     text-shadow: #fff 0 0 3px;
   }

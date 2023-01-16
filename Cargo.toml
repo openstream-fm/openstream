@@ -1,7 +1,6 @@
 [workspace]
 members = [
     "bin/openstream",
-    "bin/openstream-stream",
 
     "internal-scripts/create-test-accounts",
     "internal-scripts/producer",

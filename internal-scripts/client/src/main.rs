@@ -2,7 +2,7 @@ use bytes::Bytes;
 use ffmpeg::{Ffmpeg, FfmpegConfig, FfmpegSpawn};
 use hyper::Body;
 use reqwest::Client;
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
@@ -16,10 +16,25 @@ static BODY: &[u8] = include_bytes!("../../../audio.mp3");
 
 const DEFAULT_C: usize = 20_000;
 
-fn random_test_account_id() -> String {
-  let r: f64 = rand::random();
-  let n = 1 + (r * 1000.0).floor() as u16;
-  format!("test{n}")
+const DEFAULT_S: u64 = 10_000;
+
+lazy_static::lazy_static! {
+  static ref S: u64 = {
+    match std::env::var("S") {
+      Err(_) => DEFAULT_S,
+      Ok(s) => s.parse::<u64>().unwrap_or(DEFAULT_S),
+    }
+  };
+}
+
+fn rr_test_account_n() -> u64 {
+  static RR_ACCOUNT_N: AtomicU64 = AtomicU64::new(0);
+  let v = RR_ACCOUNT_N.fetch_add(1, Ordering::SeqCst);
+  1 + (v % *S)
+}
+
+fn rr_test_account_id() -> String {
+  format!("test{}", rr_test_account_n())
 }
 
 #[tokio::main]
@@ -138,7 +153,7 @@ async fn clients(n: usize, stream_base_url: String, ports: Vec<u16>, delay: u64)
             &http_client,
             base_url.as_str(),
             port,
-            &random_test_account_id(),
+            &&rr_test_account_id(),
           )
           .await;
           if let Err(e) = r {

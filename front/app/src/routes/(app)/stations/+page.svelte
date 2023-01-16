@@ -1,5 +1,6 @@
 <script lang="ts">
 	import TopUser from "$lib/components/Dashboard/TopUser.svelte";
+	import Player from "$lib/components/Player/Player.svelte";
 	import { ripple } from "$lib/ripple";
 	import { fly } from "svelte/transition";
   export let data: import("./$types").PageData;
@@ -27,6 +28,7 @@
 
   .layout {
     flex: 1;
+    flex-grow: 1;
     display: flex;
     flex-direction: column;
     background: var(--bg-gray);
@@ -34,8 +36,10 @@
 
   .page {
     display: flex;
+    flex-grow: 1;
     flex-direction: column;
     align-items: center;
+    padding-bottom: 3rem;
   }
 
   .page-title {
@@ -134,4 +138,6 @@
       {/each}
     </div>
   </div>
+  
+  <Player />
 </div>

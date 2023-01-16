@@ -1,11 +1,17 @@
 use anyhow::Context;
-use db::{account::Account, audio_chunk::AudioChunk, audio_file::AudioFile, Model};
-use futures::TryStreamExt;
+use db::{
+  account::Account,
+  audio_chunk::AudioChunk,
+  audio_file::AudioFile,
+  models::user_account_relation::{UserAccountRelation, UserAccountRelationKind},
+  run_transaction, Model,
+};
+use futures::{StreamExt, TryStreamExt};
 use log::*;
 use mongodb::bson::doc;
 
-const BASE_ACCOUNT_ID: &str = "2tu6aps9";
-const C: usize = 1000;
+const BASE_ACCOUNT_ID: &str = "erxppjmd";
+const C: usize = 10_000;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
@@ -37,7 +43,7 @@ async fn craete_test_accounts() -> Result<(), anyhow::Error> {
     anyhow::bail!("no database specified in config, under [mongodb] url");
   }
 
-  db::init(client);
+  db::init(client, Some("openstream_storage".into()));
 
   info!("ensuring mongodb collections...");
   db::ensure_collections()
@@ -49,8 +55,19 @@ async fn craete_test_accounts() -> Result<(), anyhow::Error> {
     Some(account) => account,
   };
 
+  let filter = doc! {
+    UserAccountRelation::KEY_ACCOUNT_ID: &account.id,
+    UserAccountRelation::KEY_KIND: UserAccountRelationKind::TAG_OWNER
+  };
+
+  let owner_relation = UserAccountRelation::get(filter)
+    .await?
+    .expect("cannot find owner relation for acccount");
+
+  let user_id = owner_relation.user_id;
+
   for i in 1..=C {
-    create_test_account(i, account.clone()).await?
+    create_test_account(i, &user_id, account.clone()).await?
   }
 
   println!("Done!");
@@ -58,7 +75,11 @@ async fn craete_test_accounts() -> Result<(), anyhow::Error> {
   Ok(())
 }
 
-async fn create_test_account(i: usize, base: Account) -> Result<(), anyhow::Error> {
+async fn create_test_account(
+  i: usize,
+  user_id: impl ToString,
+  base: Account,
+) -> Result<(), anyhow::Error> {
   info!("creating test account {i} of {C}");
   let account_id = format!("test{i}");
   let now = serde_util::DateTime::now();
@@ -69,18 +90,29 @@ async fn create_test_account(i: usize, base: Account) -> Result<(), anyhow::Erro
     updated_at: now,
     source_password: Account::random_source_password(),
     limits: base.limits.clone(),
-    owner_id: base.owner_id.clone(),
     system_metadata: base.system_metadata.clone(),
     user_metadata: base.user_metadata.clone(),
   };
 
-  Account::insert(account).await?;
+  let relation = UserAccountRelation {
+    id: UserAccountRelation::uid(),
+    user_id: user_id.to_string(),
+    account_id: account.id.clone(),
+    kind: UserAccountRelationKind::Owner,
+    created_at: now,
+  };
+
+  run_transaction!(session => {
+    tx_try!(Account::insert_with_session(&account, &mut session).await);
+    tx_try!(UserAccountRelation::insert_with_session(&relation, &mut session).await)
+  });
 
   let filter = doc! { AudioFile::KEY_ACCOUNT_ID: &base.id };
 
   let files: Vec<AudioFile> = AudioFile::cl()
     .find(filter, None)
     .await?
+    .take(1)
     .try_collect()
     .await?;
 
@@ -98,7 +130,7 @@ async fn create_test_account(i: usize, base: Account) -> Result<(), anyhow::Erro
       duration_ms: base.duration_ms,
       filename: base.filename.clone(),
       len: base.len,
-      md5: base.md5.clone(),
+      sha256: base.sha256.clone(),
       metadata: base.metadata.clone(),
     };
 

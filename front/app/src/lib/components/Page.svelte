@@ -7,6 +7,12 @@
   .page {
     padding: 2rem;
   }
+
+  @media screen and (max-width: 600px) {
+    .page {
+      padding: 2rem 1rem;
+    }
+  }
 </style>
 
 {#key key}

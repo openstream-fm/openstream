@@ -16,6 +16,7 @@ pub struct StreamConnection {
   pub id: String,
   pub account_id: String,
   pub request: Request,
+  // TODO: change to created_at
   pub connected_at: DateTime,
 
   #[serde(with = "serde_util::as_f64")]
@@ -54,13 +55,22 @@ impl From<State> for Bson {
 
 impl Model for StreamConnection {
   const CL_NAME: &'static str = "stream_connections";
-  const UID_LEN: usize = 24;
+  const UID_LEN: usize = 12;
 
   fn indexes() -> Vec<IndexModel> {
     let account_id = IndexModel::builder()
       .keys(doc! { Self::KEY_ACCOUNT_ID: 1 })
       .build();
-    vec![account_id]
+
+    let connected_at = IndexModel::builder()
+      .keys(doc! { Self::KEY_CONNECTED_AT: 1 })
+      .build();
+
+    let account_id_connected_at = IndexModel::builder()
+      .keys(doc! { Self::KEY_ACCOUNT_ID: 1, Self::KEY_CONNECTED_AT: 1 })
+      .build();
+
+    vec![account_id, connected_at, account_id_connected_at]
   }
 }
 
@@ -97,5 +107,19 @@ impl StreamConnection {
     };
 
     Self::update_by_id(id, update).await
+  }
+
+  pub async fn count_for_account_in_last(
+    account_id: &str,
+    in_last: time::Duration,
+  ) -> Result<u64, mongodb::error::Error> {
+    let since: DateTime = (time::OffsetDateTime::now_utc() - in_last).into();
+    let filter = doc! {
+      Self::KEY_ACCOUNT_ID: account_id,
+      Self::KEY_CONNECTED_AT: { "$gte": since },
+      Self::KEY_TRANSFER_BYTES: { "$ne": 0 },
+    };
+    let count = Self::cl().count_documents(filter, None).await?;
+    Ok(count)
   }
 }

@@ -36,6 +36,7 @@ socket2 = "0.4.7"
 static_init = "1.0.3"
 test-util = { version = "0.1.0", path = "../test-util" }
 thiserror = "1.0.38"
+time = "0.3.17"
 tokio = { version = "1.21.2", features = ["full"] }
 tokio-stream = "0.1.11"
 ts-rs = { version = "6.2.0", features = ["chrono", "chrono-impl", "format"] }

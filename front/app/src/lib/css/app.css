@@ -27,7 +27,10 @@
   --bg-gray: rgb(var(--bg-gray-rgb));
 
   --z-top: 1000;
-  --z-drawer-wide: 1100;
+  --z-player: 1100;
+  --z-drawer-wide: 1200;
+  --z-user-menu: 1300;
+  --z-drawer-fixed: 1400;
   --z-overlay: 3000;
 
   --some-shadow: 0 4px 20px 0 rgb(0 0 0 / 5%);
@@ -41,6 +44,12 @@ html {
   flex-direction: column;
   background: var(--bg-gray);
   -webkit-tap-highlight-color: transparent;
+}
+
+@media screen and (max-width: 900px) {
+  html.account-drawer-fixed-open {
+    overflow: hidden;
+  }
 }
 
 body, #app {

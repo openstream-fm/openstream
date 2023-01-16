@@ -1,7 +1,17 @@
 <script lang="ts">
+	import Icon from "$share/Icon.svelte";
+import { ripple } from "$share/ripple";
+	import { mdiMenu } from "@mdi/js";
+
   export let accounts: import("$server/defs/api/accounts/GET/Output").Output;
   export let account: import("$server/defs/api/accounts/[account]/GET/Output").Output["account"];
   export let user: import("$server/defs/api/users/[user]/GET/Output").Output["user"];
+
+  export let drawer_fixed_open: boolean;
+  export let close_drawer_fixed: () => void;
+  export let open_drawer_fixed: () => void;
+
+  const toggle_drawer = () => drawer_fixed_open ? close_drawer_fixed() : open_drawer_fixed();
 
   import TopUser from "./TopUser.svelte";
 </script>
@@ -27,10 +37,35 @@
     display: flex;
     flex-direction: row;
   }
+
+  .drawer-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    flex: none;
+    width: var(--top-height);
+    color: #333;
+    transition: background-color 150ms ease;
+    justify-self: flex-start;
+  }
+
+  .drawer-toggle:hover {
+    background-color: rgba(0,0,0,0.05);
+  }
+
+  @media screen and (max-width: 900px) {
+    .drawer-toggle {
+      display: flex;
+    }
+  } 
 </style>
 
 <div class="top">
   <div class="box">
+    <button class="drawer-toggle ripple-container" use:ripple aria-label="Toggle drawer" on:click={toggle_drawer}>
+      <Icon d={mdiMenu} />
+    </button>
     <TopUser {user} {account} {accounts} />
   </div>
 </div>

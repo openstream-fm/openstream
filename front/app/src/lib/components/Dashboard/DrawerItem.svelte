@@ -18,6 +18,7 @@
   export let icon: string | null = null;
   export let iconStroke: boolean = false;
   export let iconStrokeWidth: number | "" = "";
+  export let on_click: () => void;
   $: current = is_current(href, $page.url);
 
   import { page } from "$app/stores";
@@ -26,7 +27,6 @@
 </script>
 
 <style>
-
   .drawer-item {
     position: relative;
   }
@@ -67,7 +67,7 @@
 </style>
 
 <div class="na drawer-item">
-  <a {href} class="na ripple-container" class:current use:ripple>
+  <a {href} class="na ripple-container" class:current use:ripple on:click={() => { on_click() }}>
 
     <div class="icon">
       {#if icon}

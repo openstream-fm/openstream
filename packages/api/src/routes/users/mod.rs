@@ -4,7 +4,6 @@ use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
 use crate::error::ApiError;
 use crate::request_ext::get_access_token_scope;
 use async_trait::async_trait;
-use db::account::Account;
 use db::metadata::Metadata;
 use db::user::{PublicUser, User};
 use db::{Model, Paged, PublicScope};
@@ -105,9 +104,11 @@ pub mod get {
       } = input;
 
       let page = match access_token_scope {
-        AccessTokenScope::Global | AccessTokenScope::Admin(_) => User::paged(None, skip, limit)
-          .await?
-          .map(|item| item.into_public(PublicScope::Admin)),
+        AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
+          User::paged(None, None, skip, limit)
+            .await?
+            .map(|item| item.into_public(PublicScope::Admin))
+        }
 
         AccessTokenScope::User(user) => Paged::<PublicUser> {
           skip,
@@ -136,7 +137,6 @@ pub mod post {
   pub struct Payload {
     email: String,
     password: String,
-    account_ids: Vec<String>,
     first_name: String,
     last_name: String,
 
@@ -262,7 +262,6 @@ pub mod post {
         password,
         first_name,
         last_name,
-        account_ids,
         user_metadata,
         system_metadata,
       } = payload;
@@ -279,13 +278,6 @@ pub mod post {
           return Err(Self::HandleError::UserEmailExists);
         }
 
-        for id in &account_ids {
-          let exists = tx_try!(Account::exists_with_session(id.as_str(), &mut session).await);
-          if !exists {
-            return Err(Self::HandleError::AccountNotFound(id.clone()));
-          }
-        }
-
         let now = DateTime::now();
 
         let user = User {
@@ -294,7 +286,6 @@ pub mod post {
           password: Some(password.clone()),
           first_name: first_name.clone(),
           last_name: last_name.clone(),
-          account_ids: account_ids.clone(),
           user_metadata: user_metadata.clone(),
           system_metadata: system_metadata.clone(),
           created_at: now,

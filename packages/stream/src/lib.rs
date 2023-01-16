@@ -6,7 +6,7 @@ use db::Model;
 use drop_tracer::{Token, DropTracer};
 use futures::stream::FuturesUnordered;
 use futures::TryStreamExt;
-use hyper::header::{HeaderName, ACCEPT_RANGES, CACHE_CONTROL};
+use hyper::header::{HeaderName, ACCEPT_RANGES, CACHE_CONTROL, RETRY_AFTER};
 use hyper::{header::CONTENT_TYPE, http::HeaderValue, Body, Server, StatusCode};
 use log::*;
 use media_sessions::playlist::run_playlist_session;
@@ -194,7 +194,7 @@ impl StreamHandler {
       true => match self.ip_counter.increment_with_limit(ip, constants::STREAM_IP_CONNECTIONS_LIMIT) {
         Some(n) => n,
         None => {
-          return Err(StreamError::TooManyOpenConnections)
+          return Err(StreamError::TooManyOpenIpConnections)
         }
       }
     };
@@ -212,10 +212,23 @@ impl StreamHandler {
         None => return Err(StreamError::AccountNotFound(account_id.to_string())),
       };
 
+      if account.limits.transfer.avail() == 0 {
+        return Err(StreamError::TransferLimit);
+      }
+
+      if account.limits.listeners.avail() == 0 {
+        return Err(StreamError::ListenersLimit);
+      }
+
       #[allow(clippy::collapsible_if)]
       if self.media_sessions.read().get(&account_id).is_none() {
+        // TODO: use account limit or query for audio file?
+        // if account.limits.storage.used == 0 {
+        //   return Err(StreamError::NotStreaming(account.id.clone()));
+        // }
+
         if !AudioFile::exists(doc! { AudioFile::KEY_ACCOUNT_ID: &account.id }).await? {
-          return Err(StreamError::NotStreaming(account.id.clone()));
+          return Err(StreamError::NotStreaming(account.id));
         }
       };
 
@@ -263,32 +276,6 @@ impl StreamHandler {
         account_id: account_id.clone(),
         token: self.media_sessions.drop_token(),
       };
-
-      // {
-      //   let transfer_bytes = transfer_bytes.clone();
-      //   let closed = closed.clone();
-      //   let id = conn_doc.id;
-      //   tokio::spawn(async move {
-      //     use tokio::time::Duration;
-      //     let mut last = 0;
-      //     loop {
-      //       tokio::time::sleep(Duration::from_secs(5)).await;
-            
-      //       if closed.load(Ordering::SeqCst) {
-      //         break;
-      //       }
-
-      //       let v = transfer_bytes.load(Ordering::SeqCst);
-      //       if v != last {
-      //         last = v;
-      //         let r = StreamConnection::set_transfer_bytes(&id, v).await;
-      //         if let Err(e) = r {
-      //           warn!("error calling StreamConnection::set_transfer_bytes for connection {id}: {e}");
-      //         }
-      //       };
-      //     }
-      //   });
-      // }
 
       let (mut body_sender, response_body) = Body::channel();
 
@@ -397,11 +384,14 @@ impl Drop for StreamConnectionDropper {
   }
 }
 
+#[derive(Debug)]
 pub enum StreamError {
   Db(mongodb::error::Error),
   AccountNotFound(String),
   NotStreaming(String),
-  TooManyOpenConnections,
+  TooManyOpenIpConnections,
+  ListenersLimit,
+  TransferLimit,
 }
 
 impl From<mongodb::error::Error> for StreamError {
@@ -412,29 +402,47 @@ impl From<mongodb::error::Error> for StreamError {
 
 impl From<StreamError> for Response {
   fn from(e: StreamError) -> Self {
-    let (status, code, message) = match e {
+    let (status, code, message, retry_after_secs) = match e {
       StreamError::Db(_e) => (
         StatusCode::INTERNAL_SERVER_ERROR,
         "INTERNAL_DB",
         "internal server error".into(),
+        None,
       ),
 
       StreamError::AccountNotFound(id) => (
         StatusCode::NOT_FOUND,
         "NO_ACCOUNT",
         format!("station with id {id} not found"),
+        None,
       ),
 
       StreamError::NotStreaming(id) => (
         StatusCode::MISDIRECTED_REQUEST,
         "NOT_STREAMING",
         format!("station with id {id} is not streaming from this server"),
+        None,
       ),
 
-      StreamError::TooManyOpenConnections => (
+      StreamError::TooManyOpenIpConnections => (
         StatusCode::TOO_MANY_REQUESTS,
         "TOO_MANY_CONNECTIONS",
         "Too many open connections from your network, close some connections or try again later".into(),
+        Some(30u32),
+      ),
+
+      StreamError::ListenersLimit => (
+        StatusCode::SERVICE_UNAVAILABLE,
+        "STATION_LISTENERS_LIMIT",
+        "Station concurrent listeners limit reached".into(),
+        Some(30),
+      ),
+
+      StreamError::TransferLimit => (
+        StatusCode::SERVICE_UNAVAILABLE,
+        "STATION_TRANSFER_LIMIT",
+        "Station transfer limit reached".into(),
+        Some(60 * 60 * 24),
       )
     };
 
@@ -448,6 +456,11 @@ impl From<StreamError> for Response {
     res
       .headers_mut()
       .append(X_OPENSTREAM_REJECTION_CODE, HeaderValue::from_static(code));
+
+    if let Some(secs) = retry_after_secs {
+      res.headers_mut()
+        .append(RETRY_AFTER, HeaderValue::from_str(&secs.to_string()).unwrap());
+    }
 
     *res.body_mut() = Body::from(message);
 

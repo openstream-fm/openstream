@@ -4,8 +4,8 @@
   import { beforeNavigate, invalidate } from "$app/navigation";
 	import Page from "$lib/components/Page.svelte";
 	import { ripple } from "$lib/ripple";
-	import { action, ClientError, _delete, _post, _request } from "$share/net.client";
-  import { mdiPlay, mdiPause, mdiAlertDecagram, mdiCheck, mdiTimerPauseOutline, mdiCircleEditOutline, mdiTrashCanOutline, mdiAutorenew, mdiCheckboxIntermediate, mdiCheckboxMarked, mdiCheckboxBlankOutline, mdiCheckboxMarkedOutline } from "@mdi/js";
+	import { action, ClientError, _delete, _get, _post, _put, _request } from "$share/net.client";
+  import { mdiPlay, mdiPause, mdiAlertDecagram, mdiCheck, mdiTimerPauseOutline, mdiCircleEditOutline, mdiTrashCanOutline, mdiAutorenew, mdiCheckboxIntermediate, mdiCheckboxMarked, mdiCheckboxBlankOutline, mdiCheckboxMarkedOutline, mdiContentSaveOutline } from "@mdi/js";
 	import Icon from "$share/Icon.svelte";
 	import { onMount } from "svelte";
   import CircularProgress from "$share/CircularProgress.svelte";
@@ -13,7 +13,11 @@
 	import { fade, slide } from "svelte/transition";
 	import { _message, _progress } from "$share/notify";
   import Dialog from "$share/Dialog.svelte";
-  import { sleep } from "$share/util";
+  // import { sleep } from "$share/util";
+
+  import { close, player_playing_audio_file_id, player_audio_state, resume, pause, play_track } from "$lib/components/Player/player";
+
+  $: now_playing_file_id = data.now_playing?.kind === "playlist" ? data.now_playing.file._id : null; 
 
   $: account_id = data.account._id;
 
@@ -57,36 +61,14 @@
   }
 
   type FileDocument = typeof data.files.items[number];
-  type PlayingItem = { file: FileDocument, audio: HTMLAudioElement };
-  let playing_item: PlayingItem | null = null;
 
   const toggle_play = (file: FileDocument) => {
-    if(playing_item == null) {
-      const audio = new Audio(`/api/accounts/${account_id}/files/${file._id}/stream`);
-      const onend = () => {
-        if(playing_item?.file._id === file._id) {
-          playing_item = null;
-        }
-      }
-      audio.onabort = onend;
-      audio.onerror = onend;
-      audio.onpause = onend;
-      audio.onended = onend;
-      audio.play();
-      playing_item = { file, audio };
-    } else if (playing_item.file._id === file._id) {
-      stop_playback();
+    if($player_playing_audio_file_id === file._id) {
+      if($player_audio_state === "paused") resume();
+      else pause();
     } else {
-      stop_playback();
-      toggle_play(file);
+      play_track(file);
     }
-  }
-
-  const stop_playback = () => {
-    if(playing_item == null) return;
-    const { audio } = playing_item;
-    playing_item = null;
-    audio.pause();
   }
 
   const S = 1000;
@@ -125,43 +107,6 @@
   let set = new Set<File>();
   let uploading: Item[] = [];
   let files: FileList | undefined;
- 
-  // uploading.push({
-  //   id: Math.random(),
-  //   state: "done",
-  //   file: {
-  //     name: "audio.mp3",
-  //     size: Math.floor(Math.random() * 10000000),
-  //   } as any
-  // });
-
-  // uploading.push({
-  //   id: Math.random(),
-  //   state: "error",
-  //   file: {
-  //     name: "as ndalksdalksa da sd.mp3",
-  //     size: Math.floor(Math.random() * 10000000),
-  //   } as any,
-  //   error: { message: "error message", status: 500, code: "UPLOAD_INTENRAL_IO" } as any
-  // });
-
-  // uploading.push({
-  //   id: Math.random(),
-  //   state: "uploading",
-  //   file: {
-  //     name: "as ndalksdalksa da sd.mp3",
-  //     size: Math.floor(Math.random() * 10000000),
-  //   } as any,
-  // });
-
-  // uploading.push({
-  //   id: Math.random(),
-  //   state: "waiting",
-  //   file: {
-  //     name: "as ndalksdalksa da sd.mp3",
-  //     size: Math.floor(Math.random() * 10000000),
-  //   } as any,
-  // });
 
   beforeNavigate(({ willUnload, from, to, cancel }) => {
     if(from && to && from.route === to.route) return;
@@ -179,15 +124,19 @@
   let controller: AbortController | null = null;
   let unmounted = false;
 
+  const update_now_playing = async () => {
+    try {
+      data.now_playing = await _get(`/api/accounts/${account_id}/now-playing`);
+    } catch(e) {
+      console.warn(`[now-playing] error getting now playing: ${e}`);
+    }
+  }
+
   onMount(() => { 
     if(window.AbortController) controller = new AbortController();
+    let now_playing_interval = setInterval(update_now_playing, 3000);
     return () => {
-      if(playing_item != null) {
-        const audio = playing_item.audio;
-        playing_item = null;
-        audio.pause();
-      }
-
+      clearInterval(now_playing_interval);
       unmounted = true;
       if(controller != null) controller.abort();
     }
@@ -271,7 +220,7 @@
     invalidate("account:limits");
     invalidate("account:files");
     _message("Track deleted");
-    if(playing_item?.file._id === file_id) stop_playback(); 
+    if($player_playing_audio_file_id === file_id) close();
   })
 
   const del_selected = async () => {
@@ -306,7 +255,7 @@
         //await sleep(100);
         //message.set(text(i));
         await _delete(`/api/accounts/${account_id}/files/${id}`);
-        if(playing_item && ids.includes(playing_item.file._id)) stop_playback();
+        if($player_playing_audio_file_id && ids.includes($player_playing_audio_file_id)) close();
         data.files.items = data.files.items.filter(item => item._id !== id);
         data.files.total = data.files.items.length;
         i++;
@@ -327,6 +276,7 @@
 
   import { expoOut } from "svelte/easing";
 	import { writable } from "svelte/store";
+	import TextField from "$lib/components/Form/TextField.svelte";
   const file_item_out = (node: HTMLElement, { duration = 250 } = {}) => {
     return {
       css: (t: number, u: number) => {
@@ -363,6 +313,30 @@
       $selected_ids = data.files.items.map(item => item._id);
     }
   }
+
+  let audio_item_to_edit: FileDocument | null = null;
+  let edit_current_title: string = "";
+  let edit_current_artist: string = "";
+  let edit_current_album: string = "";
+
+  const open_edit_item = (item: FileDocument) => {
+    edit_current_title = (item.metadata.title || "").trim();
+    edit_current_artist = (item.metadata.artist || "").trim();
+    edit_current_album = (item.metadata.album || "").trim();
+    audio_item_to_edit = item;
+  }
+
+  const edit_save = action(async () => {
+    if(audio_item_to_edit == null) return;
+    const payload: import("$server/defs/api/accounts/[account]/files/[file]/metadata/PUT/Payload").Payload = {
+      title: edit_current_title.trim() || null,
+      artist: edit_current_artist.trim() || null,
+      album: edit_current_album.trim() || null,
+    }
+    await _put(`/api/accounts/${account_id}/files/${audio_item_to_edit._id}/metadata`, payload);
+    invalidate("account:files");
+    audio_item_to_edit = null;
+  })
 </script>
 
 <style>
@@ -609,7 +583,7 @@
     margin-inline-end: 1.5rem;
   }
 
-  .delete-dialog-btns {
+  .edit-dialog-btns, .delete-dialog-btns {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -618,7 +592,11 @@
     margin-top: 2rem;
   }
 
-  .delete-btn, .delete-dialog-btn-delete, .delete-dialog-btn-cancel {
+  .delete-btn,
+  .edit-dialog-btn-cancel,
+  .edit-dialog-btn-save,
+  .delete-dialog-btn-delete,
+  .delete-dialog-btn-cancel {
     padding: 0.5rem 0.75rem;
     display: flex;
     flex-direction: row;
@@ -627,7 +605,11 @@
     transition: background-color 150ms ease;
   }
 
-  .delete-btn:hover, .delete-dialog-btn-delete:hover, .delete-dialog-btn-cancel:hover {
+  .delete-btn:hover,
+  .edit-dialog-btn-save:hover,
+  .edit-dialog-btn-cancel:hover,
+  .delete-dialog-btn-delete:hover,
+  .delete-dialog-btn-cancel:hover {
     background: rgba(0,0,0,0.05);
   }
 
@@ -635,6 +617,13 @@
     font-weight: 500;
     color: var(--red);
     border: 2px solid var(--red);
+    box-shadow: 0 4px 8px #0000001f, 0 2px 4px #00000014;
+  }
+
+  .edit-dialog-btn-save {
+    font-weight: 500;
+    color: var(--green);
+    border: 2px solid var(--green);
     box-shadow: 0 4px 8px #0000001f, 0 2px 4px #00000014;
   }
 
@@ -646,7 +635,7 @@
     color: #555;
   }
 
-  .delete-btn-icon, .delete-dialog-btn-icon {
+  .edit-dialog-btn-icon, .delete-btn-icon, .delete-dialog-btn-icon {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -704,6 +693,26 @@
 
   .cell-space-start {
     width: 1rem;
+  }
+
+  .now-playing-circle {
+    width: 0.65rem;
+    height: 0.65rem;
+    margin-inline-end: 0.5rem;
+    border-radius: 50%;
+    background-color: var(--green);
+    opacity: 0;
+    transform: scale(0);
+    transition: transform 200ms ease, opacity 200ms ease;
+  }
+
+  .now-playing-circle.active {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .edit-dialog-field:not(:first-child) {
+    margin-top: 2rem;
   }
 </style>
 
@@ -821,20 +830,23 @@
          <table class="playlist-table">
             <thead>
               <tr>
-                <th class="cell-space-start"></th>
+                <th class="btn-cell">
+                  <div class="cell-space-start" />
+                </th>
                 <th class="btn-cell">
                   <div class="select-all-cell">
                     <button class="select-all-btn" class:check={$selected_ids.length !== 0 && $selected_ids.length === data.files.items.length} use:ripple on:click={toggle_selection_all}>
                       {#if $selected_ids.length === 0}
                         <Icon d={mdiCheckboxBlankOutline} />
                       {:else if $selected_ids.length === data.files.items.length}
-                        <Icon d={mdiCheckboxMarkedOutline} />
+                        <Icon d={mdiCheck} />
                       {:else}
                         <Icon d={mdiCheckboxIntermediate} />
                       {/if}
                     </button>
                   </div>
                 </th>
+                <th class="btn-cell"></th>
                 <th class="btn-cell"></th>
                 <th>
                   <div>
@@ -866,12 +878,14 @@
                 {@const selected = $selected_ids.includes(file._id)}
 
                 <tr class="file-item" class:selected in:fade|local={{ duration: 250 }} out:file_item_out|local>
-                  <td class="cell-space-start"></td>
+                  <th class="btn-cell">
+                    <div class="cell-space-start" />
+                  </th>
                   <td class="btn-cell">
                     <div class="select-cell">
                       <button class="select-btn" class:check={selected} use:ripple on:click={() => toggle_select(file._id)}>
                         {#if $selected_ids.includes(file._id)}
-                          <Icon d={mdiCheckboxMarkedOutline} />
+                          <Icon d={mdiCheck} />
                         {:else}
                           <Icon d={mdiCheckboxBlankOutline} />
                         {/if}
@@ -881,10 +895,28 @@
                   <td class="btn-cell">
                     <div class="file-preview-cell">
                       <button class="file-preview-btn" on:click={() => toggle_play(file)}>
-                        <Icon d={playing_item?.file._id === file._id ? mdiPause : mdiPlay} />
+                        {#if $player_playing_audio_file_id === file._id}
+                          {#if $player_audio_state === "paused"}
+                            <Icon d={mdiPlay} />
+                          {:else}
+                            <Icon d={mdiPause} />
+                          {/if}
+                        {:else}
+                          <Icon d={mdiPlay} />
+                        {/if}
                       </button>
                     </div>
                   </td>
+
+                  <td class="btn-cell">
+                    <div 
+                      class="now-playing-circle"
+                      role="presentation"
+                      aria-label={now_playing_file_id === file._id ? "Currently streaming" : void 0}
+                      class:active={now_playing_file_id === file._id}
+                    />
+                  </td>
+
                   <td>
                     <div class="file-data-item">
                       <div class="file-data-text">{file.metadata.title || file.filename}</div>
@@ -906,7 +938,7 @@
                     </div>
                   </td>
                   <td class="btn-cell">
-                    <button class="file-btn file-btn-edit ripple-container" use:ripple use:tooltip={"Edit"}>
+                    <button class="file-btn file-btn-edit ripple-container" use:ripple use:tooltip={"Edit"} on:click={() => open_edit_item(file)}>
                       <Icon d={mdiCircleEditOutline} />
                     </button>
                   </td>
@@ -973,6 +1005,40 @@
             <Icon d={mdiTrashCanOutline} />
           </div>
           Delete
+        </button>
+      </div>
+    </div>
+  </Dialog>
+{/if}
+
+{#if audio_item_to_edit}
+  <Dialog
+    title="Edit track {audio_item_to_edit.filename}"
+    width="400px"
+    onClose={() => audio_item_to_edit = null}  
+  >
+    <div class="edit-dialog">
+      <div class="edit-dialog-fields">
+        <div class="edit-dialog-field">
+          <TextField label="Title" bind:value={edit_current_title} />
+        </div>
+        <div class="edit-dialog-field">
+          <TextField label="Artist" bind:value={edit_current_artist} />
+        </div>
+        <div class="edit-dialog-field">
+          <TextField label="Album" bind:value={edit_current_album} />
+        </div>
+      </div>
+      <div class="edit-dialog-btns">
+        <button class="edit-dialog-btn-cancel ripple-container" use:ripple on:click={() => audio_item_to_edit = null}>
+          Cancel
+        </button>
+
+        <button class="edit-dialog-btn-save ripple-container" use:ripple on:click={edit_save}>
+          <div class="edit-dialog-btn-icon">
+            <Icon d={mdiContentSaveOutline} />
+          </div>
+          Save
         </button>
       </div>
     </div>

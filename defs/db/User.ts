@@ -4,7 +4,6 @@ import type { Metadata } from "./Metadata";
 
 export interface User {
   _id: string;
-  account_ids: Array<string>;
   first_name: string;
   last_name: string;
   email: string;

@@ -1,5 +1,7 @@
+pub mod dashboard_stats;
 pub mod files;
 pub mod id;
+pub mod now_playing;
 
 use crate::json::JsonHandler;
 use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
@@ -11,12 +13,14 @@ use db::account::PublicAccount;
 use db::metadata::Metadata;
 use db::run_transaction;
 use db::{Model, Paged, PublicScope, Singleton};
+use mongodb::bson::doc;
 use prex::request::ReadBodyJsonError;
 use prex::Request;
 use serde::{Deserialize, Serialize};
 
 pub mod get {
 
+  use db::models::user_account_relation::UserAccountRelation;
   use ts_rs::TS;
 
   use super::*;
@@ -105,13 +109,30 @@ pub mod get {
       let limit = limit.unwrap_or_else(default_limit);
 
       let page = match access_token_scope {
-        AccessTokenScope::Global | AccessTokenScope::Admin(_) => Account::paged(None, skip, limit)
-          .await?
-          .map(|item| item.into_public(PublicScope::Admin)),
+        AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
+          Account::paged(None, None, skip, limit)
+            .await?
+            .map(|item| item.into_public(PublicScope::Admin))
+        }
 
         AccessTokenScope::User(user) => {
-          let filter = mongodb::bson::doc! { Account::KEY_ID: { "$in": user.account_ids } };
-          Account::paged(filter, skip, limit)
+          let filter = doc! { UserAccountRelation::KEY_USER_ID: &user.id };
+          let account_ids = UserAccountRelation::cl()
+            .distinct(UserAccountRelation::KEY_ACCOUNT_ID, filter, None)
+            .await?;
+
+          if account_ids.is_empty() {
+            return Ok(Output(Paged {
+              items: vec![],
+              limit,
+              skip,
+              total: 0,
+            }));
+          }
+
+          let filter = mongodb::bson::doc! { Account::KEY_ID: { "$in": account_ids } };
+
+          Account::paged(filter, None, skip, limit)
             .await?
             .map(|item| item.into_public(PublicScope::User))
         }
@@ -125,6 +146,7 @@ pub mod get {
 pub mod post {
 
   use db::account::{Account, Limit, Limits};
+  use db::models::user_account_relation::{UserAccountRelation, UserAccountRelationKind};
   use db::{config::Config, user::User};
   use serde_util::DateTime;
   use ts_rs::TS;
@@ -322,7 +344,6 @@ pub mod post {
 
       let account = Account {
         id: Account::uid(),
-        owner_id,
         name,
         limits,
         source_password: Account::random_source_password(),
@@ -332,13 +353,22 @@ pub mod post {
         updated_at: now,
       };
 
+      let relation = UserAccountRelation {
+        id: UserAccountRelation::uid(),
+        account_id: account.id.clone(),
+        user_id: owner_id.clone(),
+        kind: UserAccountRelationKind::Owner,
+        created_at: now,
+      };
+
       run_transaction!(session => {
-        let user_exists = tx_try!(User::exists_with_session(account.owner_id.as_ref(), &mut session).await);
+        let user_exists = tx_try!(User::exists_with_session(owner_id.as_ref(), &mut session).await);
         if !user_exists {
-          return Err(HandleError::UserNotFound(account.owner_id));
+          return Err(HandleError::UserNotFound(owner_id));
         }
 
         tx_try!(Account::insert_with_session(&account, &mut session).await);
+        tx_try!(UserAccountRelation::insert_with_session(&relation, &mut session).await);
       });
 
       let out = Output {

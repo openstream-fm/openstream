@@ -14,7 +14,7 @@ use ts_rs::TS;
 pub struct User {
   #[serde(rename = "_id")]
   pub id: String,
-  pub account_ids: Vec<String>,
+  // pub account_ids: Vec<String>,
   pub first_name: String,
   pub last_name: String,
   pub email: String,
@@ -131,15 +131,12 @@ impl Model for User {
   const CL_NAME: &'static str = "users";
 
   fn indexes() -> Vec<IndexModel> {
-    let account_ids = IndexModel::builder()
-      .keys(doc! { Self::KEY_ACCOUNT_IDS: 1 })
-      .build();
     let email_opts = IndexOptions::builder().unique(true).build();
     let email = IndexModel::builder()
       .keys(doc! { Self::KEY_EMAIL: 1 })
       .options(email_opts)
       .build();
 
-    vec![account_ids, email]
+    vec![email]
   }
 }

@@ -67,6 +67,18 @@ pub fn router() -> Builder {
     .get(accounts::files::id::stream::Handler {});
 
   app
+    .at("/accounts/:account/files/:file/metadata")
+    .put(accounts::files::metadata::put::Endpoint {}.into_handler());
+
+  app
+    .at("/accounts/:account/now-playing")
+    .get(accounts::now_playing::get::Endpoint {}.into_handler());
+
+  app
+    .at("/accounts/:account/dashboard-stats")
+    .get(accounts::dashboard_stats::get::Endpoint {}.into_handler());
+
+  app
     .at("/admins")
     .get(admins::get::Endpoint {}.into_handler())
     .post(admins::post::Endpoint {}.into_handler());

@@ -13,7 +13,7 @@ pub struct AudioFile {
   #[serde(rename = "_id")]
   pub id: String,
   pub account_id: String,
-  pub md5: String,
+  pub sha256: String,
 
   #[serde(with = "as_f64")]
   pub len: u64,
@@ -98,10 +98,8 @@ impl Model for AudioFile {
     let account_id = IndexModel::builder()
       .keys(doc! { Self::KEY_ACCOUNT_ID: 1 })
       .build();
-    let md5 = IndexModel::builder()
-      .keys(doc! { Self::KEY_MD5: 1 })
-      .build();
-    vec![account_id, md5]
+
+    vec![account_id]
   }
 }
 

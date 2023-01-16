@@ -142,7 +142,7 @@ pub mod stream {
         .get(IF_NONE_MATCH)
         .and_then(|v| v.to_str().ok());
 
-      let res_etag = format!("\"{}\"", file.md5);
+      let res_etag = format!("\"{}\"", file.sha256);
 
       if let Some(req_etag) = req_etag {
         if req_etag == res_etag {

@@ -11,8 +11,10 @@ dotenv = "0.15.0"
 ffmpeg = { version = "0.1.0", path = "../../packages/ffmpeg" }
 futures = "0.3.24"
 hyper = { version = "0.14.20", features = ["full"] }
+lazy_static = "1.4.0"
 rand = "0.8.5"
 reqwest = { version = "0.11.12", features = ["rustls"] }
+static_init = "1.0.3"
 tokio = { version = "1.21.2", features = ["full"] }
 
 [features]

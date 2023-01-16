@@ -1,4 +1,5 @@
 pub mod id;
+pub mod metadata;
 
 use crate::json::JsonHandler;
 use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
@@ -107,7 +108,7 @@ pub mod get {
       } = input;
 
       let filter = mongodb::bson::doc! { AudioFile::KEY_ACCOUNT_ID: account.id };
-      let page = AudioFile::paged(filter, skip, limit).await?;
+      let page = AudioFile::paged(filter, None, skip, limit).await?;
 
       Ok(Output(page))
     }

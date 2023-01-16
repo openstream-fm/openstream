@@ -11,8 +11,8 @@ use db::audio_upload_operation::{AudioUploadOperation, State};
 use db::{run_transaction, storage_quota, Model};
 use ffmpeg::{transform, FfmpegConfig, TransformError};
 use log::*;
-use md5::{Digest, Md5};
 use serde_util::DateTime;
+use sha2::{Digest, Sha256};
 use std::error::Error;
 use tokio_stream::{Stream, StreamExt};
 
@@ -130,7 +130,7 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
     let account_id = account_id.clone();
 
     async move {
-      let mut hasher = Md5::new();
+      let mut hasher = Sha256::new();
 
       let mut file_len = 0u64;
       let mut file_duration_ms = 0.0;
@@ -187,16 +187,16 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
         trace!("upload audio chunk #{i} inserted");
       }
 
-      let md5_array = hasher.finalize();
-      let md5 = hex::encode(md5_array);
+      let sha256_array = hasher.finalize();
+      let sha256 = hex::encode(sha256_array);
 
-      Ok((file_len, file_duration_ms, chunk_count, md5))
+      Ok((file_len, file_duration_ms, chunk_count, sha256))
     }
   };
 
   let (meta_get, write, read) = tokio::join!(meta_get, writer_f, reader_f);
   write?;
-  let (file_len, file_duration_ms, chunk_count, md5) = read?;
+  let (file_len, file_duration_ms, chunk_count, sha256) = read?;
 
   if file_len == 0 {
     return Err(UploadError::Empty);
@@ -213,7 +213,7 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
   let file = AudioFile {
     id: audio_file_id,
     account_id,
-    md5,
+    sha256,
     len: file_len,
     duration_ms: file_duration_ms,
     chunk_count,

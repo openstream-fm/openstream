@@ -1,8 +1,9 @@
 use async_trait::async_trait;
 use futures_util::TryStreamExt;
 use log::*;
+use models::{transfer_checkpoint, user_account_relation};
 use mongodb::error::Result as MongoResult;
-use mongodb::options::ReplaceOptions;
+use mongodb::options::{FindOptions, ReplaceOptions};
 use mongodb::results::DeleteResult;
 use mongodb::{
   bson::{doc, Document},
@@ -34,7 +35,7 @@ pub use models::play_history_item;
 pub use models::stream_connection;
 pub use models::user;
 
-static CLIENT: OnceCell<Client> = OnceCell::new();
+static CLIENT_AND_STORAGE_DB_NAME: OnceCell<(Client, Option<String>)> = OnceCell::new();
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct ExistsDocument {
@@ -64,12 +65,15 @@ impl IntoExistFilter for &str {
   }
 }
 
-pub fn init(client: Client) {
-  try_init(client).expect("[internal] mongodb client initialized more than once, this is a bug, please file an issue at https://github.com/ramiroaisen/openstream-rs")
+pub fn init(client: Client, storage_db_name: Option<String>) {
+  try_init(client, storage_db_name).expect("[internal] mongodb client initialized more than once, this is a bug, please file an issue at https://github.com/ramiroaisen/openstream-rs")
 }
 
-pub fn try_init(client: Client) -> Result<(), Client> {
-  CLIENT.set(client)
+pub fn try_init(
+  client: Client,
+  storage_db_name: Option<String>,
+) -> Result<(), (Client, Option<String>)> {
+  CLIENT_AND_STORAGE_DB_NAME.set((client, storage_db_name))
 }
 
 pub async fn ensure_collections() -> MongoResult<()> {
@@ -85,14 +89,17 @@ pub async fn ensure_collections() -> MongoResult<()> {
   stream_connection::StreamConnection::ensure_collection().await?;
   play_history_item::PlayHistoryItem::ensure_collection().await?;
   media_session::MediaSession::ensure_collection().await?;
+  transfer_checkpoint::TransferCheckpoint::ensure_collection().await?;
+  user_account_relation::UserAccountRelation::ensure_collection().await?;
 
   Ok(())
 }
 
 pub fn client_ref() -> &'static Client {
-  CLIENT
+  let (client, _) = CLIENT_AND_STORAGE_DB_NAME
     .get()
-    .expect("[internal] mongodb client is not initialized, call db::init(Client) before using it")
+    .expect("[internal] mongodb client is not initialized, call db::init(Client) before using it");
+  client
 }
 
 pub fn client() -> Client {
@@ -105,6 +112,18 @@ pub fn db() -> Database {
     .expect("[internal] no database specified in mongodb connection string")
 }
 
+pub fn storage_db() -> Database {
+  let (client, storage_db_name) = CLIENT_AND_STORAGE_DB_NAME
+    .get()
+    .expect("[internal] mongodb client is not initialized, call db::init(Client) before using it");
+  match storage_db_name {
+    Some(name) => client.database(&name),
+    None => client
+      .default_database()
+      .expect("[internal] no database specified in mongodb connecton string"),
+  }
+}
+
 #[async_trait]
 pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
   const UID_LEN: usize;
@@ -114,8 +133,12 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
     uid::uid(Self::UID_LEN)
   }
 
+  fn db() -> Database {
+    db()
+  }
+
   fn cl_as<T: Serialize + DeserializeOwned>() -> Collection<T> {
-    db().collection(Self::CL_NAME)
+    Self::db().collection(Self::CL_NAME)
   }
 
   fn cl() -> Collection<Self> {
@@ -292,12 +315,19 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
 
   async fn paged(
     filter: impl Into<Option<Document>> + Send,
+    sort: impl Into<Option<Document>> + Send,
     skip: u64,
     limit: i64,
   ) -> MongoResult<Paged<Self>> {
+    let sort = sort.into().unwrap_or(doc! { "$natural": 1 });
     let filter = filter.into();
+    let options = FindOptions::builder().sort(sort).build();
     let total = Self::cl().count_documents(filter.clone(), None).await?;
-    let items = Self::cl().find(filter, None).await?.try_collect().await?;
+    let items = Self::cl()
+      .find(filter, options)
+      .await?
+      .try_collect()
+      .await?;
 
     Ok(Paged {
       total,
@@ -488,7 +518,7 @@ pub async fn test_setup() {
       .await
       .expect("failed to create mongodb client");
 
-  if crate::try_init(client).is_ok() {
+  if crate::try_init(client, None).is_ok() {
     crate::ensure_collections()
       .await
       .expect("error ensuring db collections");
@@ -506,6 +536,7 @@ macro_rules! key {
 }
 
 pub const KEY_ID: &str = "_id";
+pub const KEY_DELETED_AT: &str = "deleted_at";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IdDocument {
@@ -515,4 +546,28 @@ pub struct IdDocument {
 
 pub fn id_document_projection() -> Document {
   mongodb::bson::doc! { KEY_ID: 1 }
+}
+
+#[macro_export]
+macro_rules! current_filter_doc {
+  ($($tt:tt)*) => {
+    ::mongodb::bson::doc! {
+      "$and": [
+        { $crate::KEY_DELETED_AT: ::mongodb::bson::Bson::Null },
+        { $($tt)* },
+      ]
+    }
+  }
+}
+
+#[cfg(test)]
+#[test]
+fn current_filter_doc() {
+  current_filter_doc! {
+    "hello": "world",
+  };
+
+  current_filter_doc! {
+    "$and": [ { KEY_ID: "id" } ],
+  };
 }

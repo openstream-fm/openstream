@@ -195,6 +195,14 @@ export class Accounts {
   async post(ip: string | null, token: string, payload: import("./defs/api/accounts/POST/Payload").Payload): Promise<import("./defs/api/accounts/POST/Output").Output> {
     return await this.client.post(ip, token, `/accounts`, payload);
   }
+
+  async get_now_playing(ip: string | null, token: string, id: string): Promise<import("./defs/api/accounts/[account]/now-playing/GET/Output").Output> {
+    return await this.client.get(ip, token, `/accounts/${id}/now-playing`);
+  }
+
+  async get_dashboard_stats(ip: string | null, token: string, id: string): Promise<import("./defs/api/accounts/[account]/dashboard-stats/GET/Output").Output> {
+    return await this.client.get(ip, token, `/accounts/${id}/dashboard-stats`);
+  }
 }
 
 export class Users {
@@ -266,5 +274,9 @@ export class AccountFiles {
     })
 
     return await this.client.get_json_body(res)
+  }
+
+  async put_metadata(ip: string | null, token: string, account_id: string, file_id: string, payload: import("./defs/api/accounts/[account]/files/[file]/metadata/PUT/Payload").Payload): Promise<import("./defs/api/accounts/[account]/files/[file]/metadata/PUT/Output").Output> {
+    return await this.client.put(ip, token, `/accounts/${account_id}/files/${file_id}/metadata`, payload);
   }
 }

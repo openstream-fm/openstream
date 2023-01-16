@@ -9,4 +9,7 @@ pub mod event;
 pub mod media_session;
 pub mod play_history_item;
 pub mod stream_connection;
+pub mod transfer_checkpoint;
 pub mod user;
+
+pub mod user_account_relation;

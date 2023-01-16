@@ -6,7 +6,6 @@ import type { Metadata } from "./db/Metadata";
 export interface UserPublicAccount {
   _id: string;
   name: string;
-  owner_id: string;
   limits: AccountLimits;
   created_at: DateTime;
   updated_at: DateTime;

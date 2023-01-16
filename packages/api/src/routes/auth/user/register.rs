@@ -6,6 +6,7 @@ pub mod post {
   use db::account::{Account, Limit, Limits, PublicAccount};
   use db::config::Config;
   use db::metadata::Metadata;
+  use db::models::user_account_relation::{UserAccountRelation, UserAccountRelationKind};
   use db::user::{PublicUser, User};
   use db::{run_transaction, Model, Singleton};
   use prex::{request::ReadBodyJsonError, Request};
@@ -265,17 +266,14 @@ pub mod post {
 
       let password = crypt::hash(password);
 
-      let user_id = User::uid();
-      let account_id = Account::uid();
       let now = DateTime::now();
 
       let user = User {
-        id: user_id.clone(),
+        id: User::uid(),
         email,
         first_name,
         last_name,
         password: Some(password),
-        account_ids: vec![account_id.clone()],
         user_metadata: user_user_metadata,
         system_metadata: user_system_metadata,
         created_at: now,
@@ -283,8 +281,7 @@ pub mod post {
       };
 
       let account = Account {
-        id: account_id,
-        owner_id: user_id.clone(),
+        id: Account::uid(),
         name: account_name,
         limits,
         source_password: Account::random_source_password(),
@@ -294,12 +291,22 @@ pub mod post {
         updated_at: now,
       };
 
+      let relation = UserAccountRelation {
+        id: UserAccountRelation::uid(),
+        user_id: user.id.clone(),
+        account_id: account.id.clone(),
+        kind: UserAccountRelationKind::Owner,
+        created_at: now,
+      };
+
       let key = AccessToken::random_key();
 
       let token = AccessToken {
         id: AccessToken::uid(),
         key,
-        scope: Scope::User { user_id },
+        scope: Scope::User {
+          user_id: user.id.clone(),
+        },
         generated_by: GeneratedBy::Register { ip, user_agent },
         last_used_at: None,
         created_at: now,
@@ -314,6 +321,7 @@ pub mod post {
 
         tx_try!(User::insert_with_session(&user, &mut session).await);
         tx_try!(Account::insert_with_session(&account, &mut session).await);
+        tx_try!(UserAccountRelation::insert_with_session(&relation, &mut session).await);
         tx_try!(AccessToken::insert_with_session(&token, &mut session).await);
       });
 

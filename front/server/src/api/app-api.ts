@@ -95,46 +95,63 @@ export const app_api = ({
       return await client.accounts.files.delete(ip(req), token(req), req.params.account, req.params.file);
     }))
 
-  api.get("/accounts/:account/files/:file/stream", async (req, res, next) => {
+  api.route("/accounts/:account/files/:file/metadata")
+    .put(json(async req => {
+      return await client.accounts.files.put_metadata(ip(req), token(req), req.params.account, req.params.file, req.body);
+    }))
+
+  api.route("/accounts/:account/now-playing")
+    .get(json(async req => {
+      return await client.accounts.get_now_playing(ip(req), token(req), req.params.account);
+    }))
+
+  api.route("/accounts/:account/dashboard-stats")
+    .get(json(async req => {
+      return await client.accounts.get_dashboard_stats(ip(req), token(req), req.params.account);
+    }))
+
+  api
+    .route("/accounts/:account/files/:file/stream")
+    .get(async (req, res, next) => {
   
-    try {
-    
-      const { account, file } = req.params;
+      try {
+      
+        const { account, file } = req.params;
 
-      const headers: Record<string, string> = Object.create(null);
-      for(const key of [ "if-none-match", "accept", "accept-language", "range" ]) {
-        const value = req.header(key);
-        if(value) headers[key] = value;
-      }
-
-      headers[FORWARD_IP_HEADER] = ip(req);
-      headers[ACCESS_TOKEN_HEADER] = token(req);
-
-      const back = await client.fetch(`/accounts/${account}/files/${file}/stream`, {
-        method: "GET",
-        headers,
-      })
-
-      res.status(back.status);
-
-      for(const key of ["etag", "content-type", "content-length", "content-language", "accept-ranges", "content-range"]) {
-        const value = back.headers.get(key);
-        if(value != null) {
-          res.header(key, value);
+        const headers: Record<string, string> = Object.create(null);
+        for(const key of [ "if-none-match", "accept", "accept-language", "range" ]) {
+          const value = req.header(key);
+          if(value) headers[key] = value;
         }
-      }
 
-      res.header("vary", "range");
+        headers[FORWARD_IP_HEADER] = ip(req);
+        headers[ACCESS_TOKEN_HEADER] = token(req);
 
-      if(back.body) {
-        await pipeline(back.body, res);
-      } else {
-        res.end();
+        const back = await client.fetch(`/accounts/${account}/files/${file}/stream`, {
+          method: "GET",
+          headers,
+        })
+
+        res.status(back.status);
+
+        for(const key of ["etag", "content-type", "content-length", "content-language", "accept-ranges", "content-range"]) {
+          const value = back.headers.get(key);
+          if(value != null) {
+            res.header(key, value);
+          }
+        }
+
+        res.header("vary", "range");
+
+        if(back.body) {
+          await pipeline(back.body, res);
+        } else {
+          res.end();
+        }
+      } catch(e) {
+        next(e)
       }
-    } catch(e) {
-      next(e)
-    }
-  })
+    })
 
   api.use(json(() => {
     throw new ApiError(StatusCodes.NOT_FOUND, "FRONT_RESOURCE_NOT_FOUND", "Resource not found");

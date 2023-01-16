@@ -1,7 +1,7 @@
 use crate::error::ApplyPatchError;
 use crate::Model;
 use crate::{metadata::Metadata, PublicScope};
-use mongodb::{bson::doc, IndexModel};
+use mongodb::bson::doc;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
@@ -14,8 +14,6 @@ pub struct Account {
   #[serde(rename = "_id")]
   pub id: String,
   pub name: String,
-  /// uid of User
-  pub owner_id: String,
   pub limits: Limits,
   pub created_at: DateTime,
   pub updated_at: DateTime,
@@ -31,7 +29,6 @@ pub struct UserPublicAccount {
   #[serde(rename = "_id")]
   pub id: String,
   pub name: String,
-  pub owner_id: String, // user
   pub limits: Limits,
   pub created_at: DateTime,
   pub updated_at: DateTime,
@@ -223,7 +220,6 @@ impl From<Account> for UserPublicAccount {
     Self {
       id: account.id,
       name: account.name,
-      owner_id: account.owner_id,
       limits: account.limits,
       created_at: account.created_at,
       updated_at: account.updated_at,
@@ -284,13 +280,6 @@ impl Limit {
 impl Model for Account {
   const UID_LEN: usize = 8;
   const CL_NAME: &'static str = "accounts";
-
-  fn indexes() -> Vec<IndexModel> {
-    let owner_id = IndexModel::builder()
-      .keys(doc! { Account::KEY_OWNER_ID: 1 })
-      .build();
-    vec![owner_id]
-  }
 }
 
 #[macro_export]

@@ -1,5 +1,5 @@
 use crate::Model;
-use mongodb::{bson::doc, IndexModel};
+use mongodb::{bson::doc, options::FindOneOptions, results::UpdateResult, IndexModel};
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
@@ -65,6 +65,11 @@ pub enum MediaSessionState {
   },
 }
 
+impl MediaSessionState {
+  pub const TAG_OPEN: &str = "open";
+  pub const TAG_CLOSED: &str = "closed";
+}
+
 // #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 // #[ts(export, export_to = "../../defs/db/")]
 // #[serde(rename_all = "snake_case")]
@@ -89,6 +94,40 @@ impl MediaSession {
       MediaSessionKind::Live { .. } => None,
       MediaSessionKind::Playlist { resumed_from, .. } => resumed_from.as_ref().map(|s| s.as_str()),
     }
+  }
+
+  pub async fn get_current_for_account(
+    account_id: &str,
+  ) -> Result<Option<MediaSession>, mongodb::error::Error> {
+    let filter = doc! {
+      MediaSession::KEY_ACCOUNT_ID: account_id,
+      MediaSessionState::KEY_ENUM_TAG: MediaSessionState::TAG_OPEN
+    };
+
+    let sort = doc! {
+      MediaSession::KEY_CREATED_AT: -1
+    };
+
+    let options = FindOneOptions::builder().sort(sort).build();
+
+    Self::cl().find_one(filter, options).await
+  }
+
+  pub async fn set_file_chunk_part(
+    id: &str,
+    file_id: &str,
+    chunk: f64,
+    part: f64,
+  ) -> Result<UpdateResult, mongodb::error::Error> {
+    let update = doc! {
+      "$set": {
+        MediaSessionKind::KEY_LAST_AUDIO_FILE_ID: file_id,
+        MediaSessionKind::KEY_LAST_AUDIO_CHUNK_I: chunk,
+        MediaSessionKind::KEY_LAST_AUDIO_CHUNK_SKIP_PARTS: part
+      }
+    };
+
+    MediaSession::update_by_id(id, update).await
   }
 }
 

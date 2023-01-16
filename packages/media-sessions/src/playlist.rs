@@ -71,6 +71,8 @@ pub fn run_playlist_session(
         media_session_doc
       };
 
+      let media_session_doc_id = media_session_doc.id.clone();
+
       let dropper = MediaSessionDropper {
         doc: media_session_doc,
         out: out.clone(),
@@ -119,6 +121,11 @@ pub fn run_playlist_session(
           file.metadata.title.as_ref().unwrap_or(&file.filename),
           account_id,
         );
+
+        {
+          use db::media_session::MediaSession;
+          MediaSession::set_file_chunk_part(&media_session_doc_id, &file.id, i, part as f64).await?;
+        }
 
         out.set_file_id(file.id.clone());
         out.set_i(i);

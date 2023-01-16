@@ -1,7 +1,10 @@
 use crate::error::ApiError;
 use crate::ip_limit;
 
+use mongodb::bson::doc;
+
 use db::admin::Admin;
+use db::models::user_account_relation::UserAccountRelation;
 use db::PublicScope;
 use db::{
   access_token::{AccessToken, Scope},
@@ -93,7 +96,9 @@ impl AccessTokenScope {
     match self {
       AccessTokenScope::Global | AccessTokenScope::Admin(_) => {}
       AccessTokenScope::User(user) => {
-        if !user.account_ids.iter().any(|id| id == account_id) {
+        let filter = doc! { UserAccountRelation::KEY_USER_ID: &user.id, UserAccountRelation::KEY_ACCOUNT_ID: account_id };
+        let exists = UserAccountRelation::exists(filter).await?;
+        if !exists {
           return Err(GetAccessTokenScopeError::OutOfScope);
         }
       }

@@ -116,6 +116,7 @@ dependencies = [
  "static_init",
  "test-util",
  "thiserror",
+ "time 0.3.17",
  "tokio",
  "tokio-stream",
  "ts-rs",
@@ -402,8 +403,10 @@ dependencies = [
  "ffmpeg",
  "futures",
  "hyper",
+ "lazy_static",
  "rand",
  "reqwest",
+ "static_init",
  "tokio",
 ]
 
@@ -696,6 +699,7 @@ dependencies = [
  "once_cell",
  "prex",
  "quote",
+ "rand",
  "serde",
  "serde-util",
  "serde_json",
@@ -2125,40 +2129,6 @@ dependencies = [
  "stream",
  "tokio",
  "uid",
- "which",
-]
-
-[[package]]
-name = "openstream-stream"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "api",
- "channels",
- "chrono",
- "clap",
- "config",
- "db",
- "defer-lite",
- "dialoguer",
- "dotenv",
- "drop-tracer",
- "futures",
- "ip",
- "jemallocator",
- "log",
- "logger",
- "media-sessions",
- "mongodb",
- "owo-colors",
- "router",
- "rust_ipify",
- "serde-util",
- "shutdown",
- "source",
- "source-alt",
- "stream",
- "tokio",
  "which",
 ]
 
@@ -3931,6 +3901,7 @@ dependencies = [
  "md-5",
  "mongodb",
  "serde-util",
+ "sha2",
  "stream-util",
  "test-util",
  "thiserror",
