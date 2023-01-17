@@ -45,15 +45,15 @@ impl Default for Config {
 #[ts(export, export_to = "../../defs/db/", rename = "ConfigLimits")]
 #[serde(rename_all = "snake_case")]
 pub struct Limits {
-  /// default max concurrent listeners for new accounts
+  /// default max concurrent listeners for new stations
   #[serde(with = "serde_util::as_f64")]
   pub listeners: u64,
 
-  /// default max transfer / month in bytes for new accounts
+  /// default max transfer / month in bytes for new stations
   #[serde(with = "serde_util::as_f64")]
   pub transfer: u64,
 
-  /// default max storage in bytes for new accounts
+  /// default max storage in bytes for new stations
   #[serde(with = "serde_util::as_f64")]
   pub storage: u64,
 }

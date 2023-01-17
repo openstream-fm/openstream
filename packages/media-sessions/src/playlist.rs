@@ -28,20 +28,20 @@ pub fn run_playlist_session(
   resume: bool,
 ) -> tokio::task::JoinHandle<Result<(), mongodb::error::Error>> {
   tokio::spawn(async move {
-    let account_id = tx.info.station_id.as_str();
+    let station_id = tx.info.station_id.as_str();
 
     let result = async {
-      let account_id = tx.info.station_id.as_str();
-      let filter = doc! { AudioFile::KEY_ACCOUNT_ID: account_id };
+      let station_id = tx.info.station_id.as_str();
+      let filter = doc! { AudioFile::KEY_STATION_ID: station_id };
 
       let (resume_playlist_id, start_file_id, skip, i, part) = if resume {
-        resume_info_for_account(account_id).await?
+        resume_info_for_station(station_id).await?
       } else {
         (None, None, 0, 0.0, 0)
       };
 
       info!(
-        "media session (playlist) start for account {account_id} file_id=={start_file_id:?} skip={skip} i={i} part={part}"
+        "media session (playlist) start for station {station_id} file_id=={start_file_id:?} skip={skip} i={i} part={part}"
       );
 
       let out = PlaylistIndexInfoOut(Arc::new(Inner {
@@ -54,7 +54,7 @@ pub fn run_playlist_session(
         use db::media_session::*;
         let media_session_doc = MediaSession {
           id: MediaSession::uid(),
-          account_id: account_id.to_string(),
+          station_id: station_id.to_string(),
           created_at: DateTime::now(),
           updated_at: DateTime::now(),
           kind: MediaSessionKind::Playlist {
@@ -98,7 +98,7 @@ pub fn run_playlist_session(
           return Ok(());
         }
 
-        info!("seeking file for account {account_id}, skip = {skip}");
+        info!("seeking file for station {station_id}, skip = {skip}");
 
         let options = FindOneOptions::builder().skip(skip).build();
         let file = AudioFile::cl().find_one(filter.clone(), options).await?;
@@ -106,10 +106,10 @@ pub fn run_playlist_session(
           Some(file) => file,
           None => {
             if skip == 0 {
-              info!("no files found for account {account_id}");
+              info!("no files found for station {station_id}");
               return Ok(());
             } else {
-              info!("playlist restart for account {account_id}");
+              info!("playlist restart for station {station_id}");
               skip = 0;
               continue 'files;
             }
@@ -119,10 +119,10 @@ pub fn run_playlist_session(
         skip += 1;
 
         info!(
-          "start playback of audio file {}: '{}' for account {}",
+          "start playback of audio file {}: '{}' for station {}",
           file.id,
           file.metadata.title.as_ref().unwrap_or(&file.filename),
-          account_id,
+          station_id,
         );
 
         {
@@ -153,8 +153,8 @@ pub fn run_playlist_session(
           });
           //.rated(file.bytes_sec)
 
+        // fill the burst
         tokio::pin!(stream);
-
         if burst_len < STREAM_BURST_LENGTH {
 
           'chunks: loop {
@@ -163,20 +163,36 @@ pub fn run_playlist_session(
             }
 
             match stream.try_next().await? {
-              None => break 'chunks,
+              None => continue 'files,
 
               Some(bytes) => {
                 burst_len += 1;
-
+                
                 if shutdown.is_closed() || tx.is_terminated() {
                   return Ok(());
                 }
 
+                let burst_filled = burst_len >= STREAM_BURST_LENGTH;
+
                 match tx.send(bytes) {
                   // n is the number of listeners that received the chunk
-                  Ok(_n) => continue 'chunks,
+                  Ok(_n) => {
+                    if burst_filled {
+                      break 'chunks;
+                    } else {
+                      continue 'chunks;
+                    }
+                  }
+                  
                   // we ignore no listeners and continue streaming
-                  Err(SendError::NoListeners(_)) => continue 'chunks,
+                  Err(SendError::NoListeners(_)) => {
+                    if burst_filled {
+                      break 'chunks;
+                    } else {
+                      continue 'chunks;
+                    }
+                  }
+
                   // here the stream has been terminated (maybe replaced with a newer transmitter)
                   Err(SendError::Terminated(_)) => break 'files,
                 }
@@ -194,7 +210,7 @@ pub fn run_playlist_session(
           }
 
           match stream.try_next().await? {
-            None => break 'chunks,
+            None => continue 'files,
 
             Some(bytes) => {
               if shutdown.is_closed() || tx.is_terminated() {
@@ -221,19 +237,19 @@ pub fn run_playlist_session(
     .await;
 
     if let Err(ref e) = result {
-      warn!("media session for account {account_id} error: {e} => {e:?}");
+      warn!("media session for station {station_id} error: {e} => {e:?}");
     }
 
     result
   })
 }
 
-async fn resume_info_for_account(
-  account_id: &str,
+async fn resume_info_for_station(
+  station_id: &str,
 ) -> Result<(Option<String>, Option<String>, u64, f64, usize), mongodb::error::Error> {
   use db::media_session::{MediaSession, MediaSessionKind};
   let filter = doc! {
-    MediaSession::KEY_ACCOUNT_ID: account_id,
+    MediaSession::KEY_STATION_ID: station_id,
     MediaSessionKind::KEY_ENUM_TAG: MediaSessionKind::TAG_PLAYLIST,
   };
   let sort = doc! {
@@ -268,7 +284,7 @@ async fn resume_info_for_account(
     Some(id) => id,
   };
 
-  let filter = doc! { AudioFile::KEY_ACCOUNT_ID: account_id };
+  let filter = doc! { AudioFile::KEY_STATION_ID: station_id };
   let projection = db::id_document_projection();
   let options = FindOptions::builder().projection(projection).build();
   let mut cursor = AudioFile::cl_as::<db::IdDocument>()
@@ -361,7 +377,7 @@ impl Drop for MediaSessionDropper {
 
     let doc = MediaSession {
       id: self.doc.id.clone(),
-      account_id: self.doc.account_id.clone(),
+      station_id: self.doc.station_id.clone(),
       created_at: self.doc.created_at,
       updated_at: self.doc.updated_at,
       kind: MediaSessionKind::Playlist {
@@ -379,19 +395,19 @@ impl Drop for MediaSessionDropper {
 
     tokio::spawn(async move {
       info!(
-        "saving media session {} account_id={} file_id={:?} i={} part={}",
-        doc.id, doc.account_id, file_id, i, part,
+        "saving media session {} station_id={} file_id={:?} i={} part={}",
+        doc.id, doc.station_id, file_id, i, part,
       );
       match MediaSession::replace(&doc.id, &doc).await {
         Err(e) => warn!(
-          "error saving media session {} for account {}: {}",
-          doc.id, doc.account_id, e
+          "error saving media session {} for station {}: {}",
+          doc.id, doc.station_id, e
         ),
         Ok(r) => {
           if r.matched_count != 1 {
             warn!(
-              "media session save id={} account_id={} returned matched count != 1 ({})",
-              doc.id, doc.account_id, r.matched_count
+              "media session save id={} station_id={} returned matched count != 1 ({})",
+              doc.id, doc.station_id, r.matched_count
             )
           }
         }

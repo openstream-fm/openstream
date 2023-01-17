@@ -15,7 +15,7 @@ token="openstream global token"
 # string - MongoURL (required)
 # URL to mongodb deployment (doesn't need to be the same deployment as in openstream config)
 # must have a defined database (pathname)
-url = "mongodb://localhost:27017/openstream-front?family=4"
+url = "mongodb://localhost:27017/openstream_front?family=4"
 
 
 

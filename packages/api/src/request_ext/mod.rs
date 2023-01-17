@@ -4,11 +4,11 @@ use crate::ip_limit;
 use mongodb::bson::doc;
 
 use db::admin::Admin;
-use db::models::user_account_relation::UserAccountRelation;
+use db::models::user_station_relation::UserStationRelation;
 use db::PublicScope;
 use db::{
   access_token::{AccessToken, Scope},
-  account::Account,
+  station::Station,
   user::User,
   Model,
 };
@@ -36,8 +36,8 @@ pub enum GetAccessTokenScopeError {
   #[error("token user not found: {0}")]
   UserNotFound(String),
 
-  #[error("token account not found: {0}")]
-  AccountNotFound(String),
+  #[error("token station not found: {0}")]
+  StationNotFound(String),
 
   #[error("token admin not found: {0}")]
   AdminNotFound(String),
@@ -89,29 +89,29 @@ impl AccessTokenScope {
     matches!(self, Self::User(_))
   }
 
-  pub async fn grant_account_scope(
+  pub async fn grant_station_scope(
     &self,
-    account_id: &str,
-  ) -> Result<Account, GetAccessTokenScopeError> {
+    station_id: &str,
+  ) -> Result<Station, GetAccessTokenScopeError> {
     match self {
       AccessTokenScope::Global | AccessTokenScope::Admin(_) => {}
       AccessTokenScope::User(user) => {
-        let filter = doc! { UserAccountRelation::KEY_USER_ID: &user.id, UserAccountRelation::KEY_ACCOUNT_ID: account_id };
-        let exists = UserAccountRelation::exists(filter).await?;
+        let filter = doc! { UserStationRelation::KEY_USER_ID: &user.id, UserStationRelation::KEY_STATION_ID: station_id };
+        let exists = UserStationRelation::exists(filter).await?;
         if !exists {
           return Err(GetAccessTokenScopeError::OutOfScope);
         }
       }
     }
 
-    let account = Account::get_by_id(account_id).await?;
+    let station = Station::get_by_id(station_id).await?;
 
-    match account {
-      None => Err(GetAccessTokenScopeError::AccountNotFound(
-        account_id.to_string(),
+    match station {
+      None => Err(GetAccessTokenScopeError::StationNotFound(
+        station_id.to_string(),
       )),
 
-      Some(account) => Ok(account),
+      Some(station) => Ok(station),
     }
   }
 
@@ -257,7 +257,7 @@ impl From<GetAccessTokenScopeError> for ApiError {
       OutOfScope => ApiError::TokenOutOfScope,
       UserNotFound(id) => ApiError::TokenUserNotFound(id),
       AdminNotFound(id) => ApiError::TokenAdminNotFound(id),
-      AccountNotFound(id) => ApiError::AccountNotFound(id),
+      StationNotFound(id) => ApiError::StationNotFound(id),
       ResolveAdminNotFound(id) => ApiError::AdminNotFound(id),
       ResolveUserNotFound(id) => ApiError::UserNotFound(id),
       UnresolvableAdminMe => ApiError::UnresolvableAdminMe,

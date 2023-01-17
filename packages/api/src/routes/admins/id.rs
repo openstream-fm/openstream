@@ -116,7 +116,7 @@ pub mod patch {
       match e {
         HandleError::Db(e) => Self::from(e),
         HandleError::Patch(e) => Self::from(e),
-        HandleError::AdminNotFound(id) => Self::AccountNotFound(id),
+        HandleError::AdminNotFound(id) => Self::StationNotFound(id),
       }
     }
   }

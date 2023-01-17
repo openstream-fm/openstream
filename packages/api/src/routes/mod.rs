@@ -6,10 +6,10 @@ use crate::json::JsonHandler;
 
 use async_trait::async_trait;
 
-pub mod accounts;
 pub mod admins;
 pub mod auth;
 pub mod me;
+pub mod stations;
 pub mod users;
 
 pub fn router() -> Builder {
@@ -43,40 +43,40 @@ pub fn router() -> Builder {
     .get(users::id::get::Endpoint {}.into_handler());
 
   app
-    .at("/accounts")
-    .get(accounts::get::Endpoint {}.into_handler())
-    .post(accounts::post::Endpoint {}.into_handler());
+    .at("/stations")
+    .get(stations::get::Endpoint {}.into_handler())
+    .post(stations::post::Endpoint {}.into_handler());
 
   app
-    .at("/accounts/:account")
-    .get(accounts::id::get::Endpoint {}.into_handler())
-    .put(accounts::id::patch::Endpoint {}.into_handler());
+    .at("/stations/:station")
+    .get(stations::id::get::Endpoint {}.into_handler())
+    .put(stations::id::patch::Endpoint {}.into_handler());
 
   app
-    .at("/accounts/:account/files")
-    .get(accounts::files::get::Endpoint {}.into_handler())
-    .post(accounts::files::post::Endpoint {}.into_handler());
+    .at("/stations/:station/files")
+    .get(stations::files::get::Endpoint {}.into_handler())
+    .post(stations::files::post::Endpoint {}.into_handler());
 
   app
-    .at("/accounts/:account/files/:file")
-    .get(accounts::files::id::get::Endpoint {}.into_handler())
-    .delete(accounts::files::id::delete::Endpoint {}.into_handler());
+    .at("/stations/:station/files/:file")
+    .get(stations::files::id::get::Endpoint {}.into_handler())
+    .delete(stations::files::id::delete::Endpoint {}.into_handler());
 
   app
-    .at("/accounts/:account/files/:file/stream")
-    .get(accounts::files::id::stream::Handler {});
+    .at("/stations/:station/files/:file/stream")
+    .get(stations::files::id::stream::Handler {});
 
   app
-    .at("/accounts/:account/files/:file/metadata")
-    .put(accounts::files::metadata::put::Endpoint {}.into_handler());
+    .at("/stations/:station/files/:file/metadata")
+    .put(stations::files::metadata::put::Endpoint {}.into_handler());
 
   app
-    .at("/accounts/:account/now-playing")
-    .get(accounts::now_playing::get::Endpoint {}.into_handler());
+    .at("/stations/:station/now-playing")
+    .get(stations::now_playing::get::Endpoint {}.into_handler());
 
   app
-    .at("/accounts/:account/dashboard-stats")
-    .get(accounts::dashboard_stats::get::Endpoint {}.into_handler());
+    .at("/stations/:station/dashboard-stats")
+    .get(stations::dashboard_stats::get::Endpoint {}.into_handler());
 
   app
     .at("/admins")

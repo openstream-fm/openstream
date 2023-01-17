@@ -18,7 +18,7 @@ pub struct AudioChunk {
   #[serde(rename = "_id")]
   pub id: String,
   pub audio_file_id: String,
-  pub account_id: String,
+  pub station_id: String,
 
   pub start_ms: f64,
   pub end_ms: f64,
@@ -90,8 +90,8 @@ impl Model for AudioChunk {
   }
 
   fn indexes() -> Vec<IndexModel> {
-    let account_id = IndexModel::builder()
-      .keys(doc! { Self::KEY_ACCOUNT_ID: 1 })
+    let station_id = IndexModel::builder()
+      .keys(doc! { Self::KEY_STATION_ID: 1 })
       .build();
     let audio_file_id = IndexModel::builder()
       .keys(doc! { Self::KEY_AUDIO_FILE_ID: 1 })
@@ -103,6 +103,6 @@ impl Model for AudioChunk {
       .options(unique)
       .build();
 
-    vec![account_id, audio_file_id, audio_file_id_with_index]
+    vec![station_id, audio_file_id, audio_file_id_with_index]
   }
 }

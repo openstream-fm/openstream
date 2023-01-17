@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use db::account::Account;
+use db::station::Station;
 use db::Model;
 use futures::stream::FuturesUnordered;
 use futures::TryStreamExt;
@@ -223,11 +223,11 @@ impl From<mongodb::error::Error> for RouteError {
 }
 
 pub async fn route(id: &str) -> Result<String, RouteError> {
-  let account = Account::get_by_id(id).await?;
+  let station = Station::get_by_id(id).await?;
 
-  let _account = match account {
+  let _station = match station {
     None => return Err(RouteError::NotFound),
-    Some(account) => account,
+    Some(station) => station,
   };
 
   let url = format!("https://stream-0001.openstream.test/stream/{id}");

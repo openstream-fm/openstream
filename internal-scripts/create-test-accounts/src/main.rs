@@ -1,24 +1,25 @@
 use anyhow::Context;
 use db::{
-  account::Account,
   audio_chunk::AudioChunk,
   audio_file::AudioFile,
-  models::user_account_relation::{UserAccountRelation, UserAccountRelationKind},
-  run_transaction, Model,
+  models::user_station_relation::{UserStationRelation, UserStationRelationKind},
+  run_transaction,
+  station::Station,
+  Model,
 };
 use futures::{StreamExt, TryStreamExt};
 use log::*;
 use mongodb::bson::doc;
 
-const BASE_ACCOUNT_ID: &str = "erxppjmd";
+const BASE_STATION_ID: &str = "erxppjmd";
 const C: usize = 10_000;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-  craete_test_accounts().await
+  craete_test_stations().await
 }
 
-async fn craete_test_accounts() -> Result<(), anyhow::Error> {
+async fn craete_test_stations() -> Result<(), anyhow::Error> {
   use owo_colors::*;
   logger::init();
   //let _ = dotenv::dotenv();
@@ -50,24 +51,24 @@ async fn craete_test_accounts() -> Result<(), anyhow::Error> {
     .await
     .context("error ensuring mongodb collections and indexes")?;
 
-  let account = match Account::get_by_id(BASE_ACCOUNT_ID).await? {
-    None => anyhow::bail!("cannot find account with id {BASE_ACCOUNT_ID}"),
-    Some(account) => account,
+  let station = match Station::get_by_id(BASE_STATION_ID).await? {
+    None => anyhow::bail!("cannot find station with id {BASE_STATION_ID}"),
+    Some(station) => station,
   };
 
   let filter = doc! {
-    UserAccountRelation::KEY_ACCOUNT_ID: &account.id,
-    UserAccountRelation::KEY_KIND: UserAccountRelationKind::TAG_OWNER
+    UserStationRelation::KEY_STATION_ID: &station.id,
+    UserStationRelation::KEY_KIND: UserStationRelationKind::TAG_OWNER
   };
 
-  let owner_relation = UserAccountRelation::get(filter)
+  let owner_relation = UserStationRelation::get(filter)
     .await?
     .expect("cannot find owner relation for acccount");
 
   let user_id = owner_relation.user_id;
 
   for i in 1..=C {
-    create_test_account(i, &user_id, account.clone()).await?
+    create_test_station(i, &user_id, station.clone()).await?
   }
 
   println!("Done!");
@@ -75,39 +76,39 @@ async fn craete_test_accounts() -> Result<(), anyhow::Error> {
   Ok(())
 }
 
-async fn create_test_account(
+async fn create_test_station(
   i: usize,
   user_id: impl ToString,
-  base: Account,
+  base: Station,
 ) -> Result<(), anyhow::Error> {
-  info!("creating test account {i} of {C}");
-  let account_id = format!("test{i}");
+  info!("creating test station {i} of {C}");
+  let station_id = format!("test{i}");
   let now = serde_util::DateTime::now();
-  let account = Account {
-    id: account_id.clone(),
-    name: format!("Test Account {i}"),
+  let station = Station {
+    id: station_id.clone(),
+    name: format!("Test Station {i}"),
     created_at: now,
     updated_at: now,
-    source_password: Account::random_source_password(),
+    source_password: Station::random_source_password(),
     limits: base.limits.clone(),
     system_metadata: base.system_metadata.clone(),
     user_metadata: base.user_metadata.clone(),
   };
 
-  let relation = UserAccountRelation {
-    id: UserAccountRelation::uid(),
+  let relation = UserStationRelation {
+    id: UserStationRelation::uid(),
     user_id: user_id.to_string(),
-    account_id: account.id.clone(),
-    kind: UserAccountRelationKind::Owner,
+    station_id: station.id.clone(),
+    kind: UserStationRelationKind::Owner,
     created_at: now,
   };
 
   run_transaction!(session => {
-    tx_try!(Account::insert_with_session(&account, &mut session).await);
-    tx_try!(UserAccountRelation::insert_with_session(&relation, &mut session).await)
+    tx_try!(Station::insert_with_session(&station, &mut session).await);
+    tx_try!(UserStationRelation::insert_with_session(&relation, &mut session).await)
   });
 
-  let filter = doc! { AudioFile::KEY_ACCOUNT_ID: &base.id };
+  let filter = doc! { AudioFile::KEY_STATION_ID: &base.id };
 
   let files: Vec<AudioFile> = AudioFile::cl()
     .find(filter, None)
@@ -117,11 +118,11 @@ async fn create_test_account(
     .await?;
 
   for base in files {
-    info!("{} - duplicating file {}", account_id, base.filename);
+    info!("{} - duplicating file {}", station_id, base.filename);
     let file_id = AudioFile::uid();
     let file = AudioFile {
       id: file_id.clone(),
-      account_id: account_id.clone(),
+      station_id: station_id.clone(),
       created_at: now,
       bytes_sec: base.bytes_sec,
       chunk_count: base.chunk_count,
@@ -143,13 +144,13 @@ async fn create_test_account(
       .try_collect()
       .await?;
 
-    info!("{} - duplicating {} chunks", account_id, chunks.len());
+    info!("{} - duplicating {} chunks", station_id, chunks.len());
 
     for base in chunks {
       let chunk = AudioChunk {
         id: AudioChunk::uid(),
         audio_file_id: file_id.clone(),
-        account_id: account_id.clone(),
+        station_id: station_id.clone(),
         created_at: now,
         bytes_sec: base.bytes_sec,
         data: base.data,

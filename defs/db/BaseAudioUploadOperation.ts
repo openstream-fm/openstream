@@ -3,6 +3,6 @@ import type { DateTime } from "../DateTime";
 
 export interface BaseAudioUploadOperation {
   _id: string;
-  account_id: string;
+  station_id: string;
   created_at: DateTime;
 }

@@ -51,8 +51,8 @@ pub enum ApiError {
   #[error("token out of scope")]
   TokenOutOfScope,
 
-  #[error("account not found: {0}")]
-  AccountNotFound(String),
+  #[error("station not found: {0}")]
+  StationNotFound(String),
 
   #[error("admin not found: {0}")]
   AdminNotFound(String),
@@ -143,7 +143,7 @@ impl ApiError {
       TokenUserNotFound(_) => StatusCode::INTERNAL_SERVER_ERROR,
       TokenAdminNotFound(_) => StatusCode::INTERNAL_SERVER_ERROR,
       TokenOutOfScope => StatusCode::UNAUTHORIZED,
-      AccountNotFound(_) => StatusCode::NOT_FOUND,
+      StationNotFound(_) => StatusCode::NOT_FOUND,
       AdminNotFound(_) => StatusCode::NOT_FOUND,
       UserNotFound(_) => StatusCode::NOT_FOUND,
       AudioFileNotFound(_) => StatusCode::NOT_FOUND,
@@ -189,7 +189,7 @@ impl ApiError {
       TokenUserNotFound(id) => format!("User with id {id} has been deleted"),
       TokenAdminNotFound(id) => format!("Admin with id {id} has been deleted"),
       TokenOutOfScope => format!("Not enough permissions"),
-      AccountNotFound(id) => format!("Account with id {id} not found"),
+      StationNotFound(id) => format!("Station with id {id} not found"),
       AdminNotFound(id) => format!("Admin with id {id} not found"),
       UserNotFound(id) => format!("User with id {id} not found"),
       AudioFileNotFound(id) => format!("Audio file with id {id} not found"),
@@ -240,7 +240,7 @@ impl ApiError {
       TokenUserNotFound(_) => PublicErrorCode::TokenUserNotFound,
       TokenAdminNotFound(_) => PublicErrorCode::TokenAdminNotFound,
       TokenOutOfScope => PublicErrorCode::TokenOutOfScope,
-      AccountNotFound(_) => PublicErrorCode::AccountNotFound,
+      StationNotFound(_) => PublicErrorCode::StationNotFound,
       AdminNotFound(_) => PublicErrorCode::AdminNotFound,
       UserNotFound(_) => PublicErrorCode::UserNotFound,
       AudioFileNotFound(_) => PublicErrorCode::AudioFileNotFound,
@@ -319,7 +319,7 @@ impl<E: Into<ApiError>> From<UploadError<E>> for ApiError {
       UploadError::Mongo(e) => e.into(),
       UploadError::Empty => ApiError::UploadEmpty,
       UploadError::FfmpegExit { status, stderr } => ApiError::UploadFfmpegExit { status, stderr },
-      UploadError::AccountNotFound(id) => ApiError::AccountNotFound(id),
+      UploadError::StationNotFound(id) => ApiError::StationNotFound(id),
       UploadError::FfmpegIo(e) => ApiError::UploadFfmpegIo(e),
       UploadError::FfmpegSpawn(e) => ApiError::UploadSpawn(e),
       UploadError::QuotaExceeded => ApiError::UploadQuotaExceeded,

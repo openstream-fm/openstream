@@ -3,7 +3,7 @@ import type { DateTime } from "../DateTime";
 
 export interface MediaSession {
   _id: string;
-  account_id: string;
+  station_id: string;
   created_at: DateTime;
   updated_at: DateTime;
 }

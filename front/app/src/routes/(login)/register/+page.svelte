@@ -9,7 +9,7 @@
 
   let first_name = "";
   let last_name = "";
-  let account_name = "";
+  let station_name = "";
   let email = "";
   let password = "";
   let confirm_password = "";
@@ -23,7 +23,7 @@
     const payload: import("$server/defs/api/auth/user/register/POST/Payload").Payload = {
       first_name,
       last_name,
-      account_name,
+      station_name,
       email,
       password,
     };
@@ -133,7 +133,7 @@
       <TextField label="Your last name" bind:value={last_name} />
     </div>
     <div class="field">
-      <TextField label="Your station's name" bind:value={account_name} />
+      <TextField label="Your station's name" bind:value={station_name} />
     </div>
     <div class="field">
       <Email label="Your email" bind:value={email} />
@@ -150,7 +150,7 @@
     </button>
   </div>
   <div class="new-box">
-    <span class="comment">Already have an account?</span>
+    <span class="comment">Already have an station?</span>
     <a class="na link sign-in" href="/login">Sign in</a>
   </div>
 </form>

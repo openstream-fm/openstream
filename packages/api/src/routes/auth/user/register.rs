@@ -3,10 +3,10 @@ pub mod post {
 
   use async_trait::async_trait;
   use db::access_token::{AccessToken, GeneratedBy, Scope};
-  use db::account::{Account, Limit, Limits, PublicAccount};
   use db::config::Config;
   use db::metadata::Metadata;
-  use db::models::user_account_relation::{UserAccountRelation, UserAccountRelationKind};
+  use db::models::user_station_relation::{UserStationRelation, UserStationRelationKind};
+  use db::station::{Limit, Limits, PublicStation, Station};
   use db::user::{PublicUser, User};
   use db::{run_transaction, Model, Singleton};
   use prex::{request::ReadBodyJsonError, Request};
@@ -43,8 +43,8 @@ pub mod post {
     Db(mongodb::error::Error),
     #[error("token out of scope")]
     TokenOutOfScope,
-    #[error("account name is empty")]
-    AccountNameEmpty,
+    #[error("station name is empty")]
+    StationNameEmpty,
     #[error("first name is empty")]
     FirstNameEmpty,
     #[error("last name is empty")]
@@ -70,8 +70,8 @@ pub mod post {
       match e {
         HandleError::Db(e) => e.into(),
         HandleError::TokenOutOfScope => ApiError::TokenOutOfScope,
-        HandleError::AccountNameEmpty => {
-          ApiError::PayloadInvalid(String::from("Account name is required"))
+        HandleError::StationNameEmpty => {
+          ApiError::PayloadInvalid(String::from("Station name is required"))
         }
         HandleError::EmailEmpty => ApiError::PayloadInvalid(String::from("Email is required")),
         HandleError::FirstNameEmpty => {
@@ -98,16 +98,16 @@ pub mod post {
     password: String,
     first_name: String,
     last_name: String,
-    account_name: String,
+    station_name: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     limits: Option<PayloadLimits>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    account_user_metadata: Option<Metadata>,
+    station_user_metadata: Option<Metadata>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    account_system_metadata: Option<Metadata>,
+    station_system_metadata: Option<Metadata>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     user_user_metadata: Option<Metadata>,
@@ -143,7 +143,7 @@ pub mod post {
   #[ts(export, export_to = "../../defs/api/auth/user/register/POST/")]
   // #[serde(rename_all = "camelCase")]
   pub struct Output {
-    pub account: PublicAccount,
+    pub station: PublicStation,
     pub user: PublicUser,
     pub token: String,
   }
@@ -188,9 +188,9 @@ pub mod post {
         password,
         first_name,
         last_name,
-        account_name,
-        account_user_metadata,
-        account_system_metadata,
+        station_name,
+        station_user_metadata,
+        station_system_metadata,
         user_user_metadata,
         user_system_metadata,
         limits: payload_limits,
@@ -199,11 +199,11 @@ pub mod post {
       let email = email.trim().to_lowercase();
       let first_name = first_name.trim().to_string();
       let last_name = last_name.trim().to_string();
-      let account_name = account_name.trim().to_string();
+      let station_name = station_name.trim().to_string();
 
       let payload_limits = payload_limits.unwrap_or_default();
-      let account_user_metadata = account_user_metadata.unwrap_or_default();
-      let account_system_metadata = account_system_metadata.unwrap_or_default();
+      let station_user_metadata = station_user_metadata.unwrap_or_default();
+      let station_system_metadata = station_system_metadata.unwrap_or_default();
       let user_user_metadata = user_user_metadata.unwrap_or_default();
       let user_system_metadata = user_system_metadata.unwrap_or_default();
 
@@ -223,8 +223,8 @@ pub mod post {
         return Err(HandleError::LastNameEmpty);
       }
 
-      if account_name.is_empty() {
-        return Err(HandleError::AccountNameEmpty);
+      if station_name.is_empty() {
+        return Err(HandleError::StationNameEmpty);
       }
 
       if password.len() < 8 {
@@ -280,22 +280,22 @@ pub mod post {
         updated_at: now,
       };
 
-      let account = Account {
-        id: Account::uid(),
-        name: account_name,
+      let station = Station {
+        id: Station::uid(),
+        name: station_name,
         limits,
-        source_password: Account::random_source_password(),
-        user_metadata: account_user_metadata,
-        system_metadata: account_system_metadata,
+        source_password: Station::random_source_password(),
+        user_metadata: station_user_metadata,
+        system_metadata: station_system_metadata,
         created_at: now,
         updated_at: now,
       };
 
-      let relation = UserAccountRelation {
-        id: UserAccountRelation::uid(),
+      let relation = UserStationRelation {
+        id: UserStationRelation::uid(),
         user_id: user.id.clone(),
-        account_id: account.id.clone(),
-        kind: UserAccountRelationKind::Owner,
+        station_id: station.id.clone(),
+        kind: UserStationRelationKind::Owner,
         created_at: now,
       };
 
@@ -320,14 +320,14 @@ pub mod post {
         }
 
         tx_try!(User::insert_with_session(&user, &mut session).await);
-        tx_try!(Account::insert_with_session(&account, &mut session).await);
-        tx_try!(UserAccountRelation::insert_with_session(&relation, &mut session).await);
+        tx_try!(Station::insert_with_session(&station, &mut session).await);
+        tx_try!(UserStationRelation::insert_with_session(&relation, &mut session).await);
         tx_try!(AccessToken::insert_with_session(&token, &mut session).await);
       });
 
       let out = Output {
         user: user.into_public(access_token_scope.as_public_scope()),
-        account: account.into_public(access_token_scope.as_public_scope()),
+        station: station.into_public(access_token_scope.as_public_scope()),
         token: token.key,
       };
 

@@ -183,8 +183,8 @@ pub mod post {
     Db(#[from] mongodb::error::Error),
     #[error("user email exists")]
     UserEmailExists,
-    #[error("account not found: {0}")]
-    AccountNotFound(String),
+    #[error("station not found: {0}")]
+    StationNotFound(String),
   }
 
   impl From<HandleError> for ApiError {
@@ -192,7 +192,7 @@ pub mod post {
       match e {
         HandleError::Db(e) => e.into(),
         HandleError::UserEmailExists => ApiError::UserEmailExists,
-        HandleError::AccountNotFound(id) => ApiError::AccountNotFound(id),
+        HandleError::StationNotFound(id) => ApiError::StationNotFound(id),
       }
     }
   }

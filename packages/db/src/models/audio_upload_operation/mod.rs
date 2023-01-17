@@ -34,7 +34,7 @@ pub enum State {
 pub struct AudioUploadOperation {
   #[serde(rename = "_id")]
   pub id: String,
-  pub account_id: String,
+  pub station_id: String,
   pub created_at: DateTime,
   /// TODO: working in adding support for flattened enums in ts-rs
   #[serde(flatten)]
@@ -47,10 +47,10 @@ impl Model for AudioUploadOperation {
   const CL_NAME: &'static str = "audio_upload_operations";
 
   fn indexes() -> Vec<IndexModel> {
-    let account_id = IndexModel::builder()
-      .keys(doc! { Self::KEY_ACCOUNT_ID: 1 })
+    let station_id = IndexModel::builder()
+      .keys(doc! { Self::KEY_STATION_ID: 1 })
       .build();
-    vec![account_id]
+    vec![station_id]
   }
 }
 
@@ -81,7 +81,7 @@ mod test {
   fn serialize_json_pending() {
     let operation = AudioUploadOperation {
       id: "id".into(),
-      account_id: "account_id".into(),
+      station_id: "station_id".into(),
       created_at: DateTime::now(),
       state: State::Pending,
     };
@@ -93,7 +93,7 @@ mod test {
   fn serialize_json_success() {
     let operation = AudioUploadOperation {
       id: "id".into(),
-      account_id: "account_id".into(),
+      station_id: "station_id".into(),
       created_at: DateTime::now(),
       state: State::Success {
         commited_at: DateTime::now(),
@@ -107,7 +107,7 @@ mod test {
   fn serialize_json_error() {
     let operation = AudioUploadOperation {
       id: "id".into(),
-      account_id: "account_id".into(),
+      station_id: "station_id".into(),
       created_at: DateTime::now(),
       state: State::Error {
         cancelled_at: DateTime::now(),

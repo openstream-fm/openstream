@@ -14,7 +14,7 @@ use ts_rs::TS;
 pub struct StreamConnection {
   #[serde(rename = "_id")]
   pub id: String,
-  pub account_id: String,
+  pub station_id: String,
   pub request: Request,
   // TODO: change to created_at
   pub connected_at: DateTime,
@@ -58,19 +58,19 @@ impl Model for StreamConnection {
   const UID_LEN: usize = 12;
 
   fn indexes() -> Vec<IndexModel> {
-    let account_id = IndexModel::builder()
-      .keys(doc! { Self::KEY_ACCOUNT_ID: 1 })
+    let station_id = IndexModel::builder()
+      .keys(doc! { Self::KEY_STATION_ID: 1 })
       .build();
 
     let connected_at = IndexModel::builder()
       .keys(doc! { Self::KEY_CONNECTED_AT: 1 })
       .build();
 
-    let account_id_connected_at = IndexModel::builder()
-      .keys(doc! { Self::KEY_ACCOUNT_ID: 1, Self::KEY_CONNECTED_AT: 1 })
+    let station_id_connected_at = IndexModel::builder()
+      .keys(doc! { Self::KEY_STATION_ID: 1, Self::KEY_CONNECTED_AT: 1 })
       .build();
 
-    vec![account_id, connected_at, account_id_connected_at]
+    vec![station_id, connected_at, station_id_connected_at]
   }
 }
 
@@ -109,13 +109,13 @@ impl StreamConnection {
     Self::update_by_id(id, update).await
   }
 
-  pub async fn count_for_account_in_last(
-    account_id: &str,
+  pub async fn count_for_station_in_last(
+    station_id: &str,
     in_last: time::Duration,
   ) -> Result<u64, mongodb::error::Error> {
     let since: DateTime = (time::OffsetDateTime::now_utc() - in_last).into();
     let filter = doc! {
-      Self::KEY_ACCOUNT_ID: account_id,
+      Self::KEY_STATION_ID: station_id,
       Self::KEY_CONNECTED_AT: { "$gte": since },
       Self::KEY_TRANSFER_BYTES: { "$ne": 0 },
     };

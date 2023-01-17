@@ -1,13 +1,13 @@
 <script lang="ts">
-  export let accounts: import("$server/defs/api/accounts/GET/Output").Output;
-  export let account: import("$server/defs/api/accounts/[account]/GET/Output").Output["account"];
+  export let stations: import("$server/defs/api/stations/GET/Output").Output;
+  export let station: import("$server/defs/api/stations/[station]/GET/Output").Output["station"];
   export let user: import("$server/defs/api/users/[user]/GET/Output").Output["user"];
   export let fixed_open: boolean;
 
   export let close_drawer_fixed: () => void;
   export let open_drawer_fixed: () => void;
 
-  const HTML_OPEN_CLASSNAME = "account-drawer-fixed-open";
+  const HTML_OPEN_CLASSNAME = "station-drawer-fixed-open";
 
   const toggle = () => fixed_open ? close_drawer_fixed() : open_drawer_fixed();
 
@@ -143,11 +143,11 @@
     </div>
 
     <div class="links">
-      <DrawerItem href="/stations/{account._id}" label="Dashboard" icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
-      <DrawerItem href="/stations/{account._id}/media" label="Media" icon={mdiMultimedia} on_click={close_drawer_fixed} />
+      <DrawerItem href="/stations/{station._id}" label="Dashboard" icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
+      <DrawerItem href="/stations/{station._id}/media" label="Media" icon={mdiMultimedia} on_click={close_drawer_fixed} />
       <!--
-        <DrawerItem href="/accounts/{account._id}/profile" label="Profile" icon={mdiAccountOutline} />
-        <DrawerItem href="/account" label="Account" icon={mdiShieldAccountOutline} />
+        <DrawerItem href="/stations/{station._id}/profile" label="Profile" icon={mdiAccountOutline} />
+        <DrawerItem href="/station" label="Account" icon={mdiShieldAccountOutline} />
         <DrawerItem href="/stations" label="Stations" icon={mdiRadioTower} />
         <DrawerItem href="/analytics" label="Analytics" icon={mdiPoll} />
       -->

@@ -4,7 +4,7 @@ import type { DateTime } from "../DateTime";
 export interface AudioChunk {
   _id: string;
   audio_file_id: string;
-  account_id: string;
+  station_id: string;
   start_ms: number;
   end_ms: number;
   i: number;

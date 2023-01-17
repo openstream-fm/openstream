@@ -1,6 +1,6 @@
 <script lang="ts">
-  export let accounts: import("$server/defs/api/accounts/GET/Output").Output;
-  export let account: import("$server/defs/api/accounts/[account]/GET/Output").Output["account"] | null;
+  export let stations: import("$server/defs/api/stations/GET/Output").Output;
+  export let station: import("$server/defs/api/stations/[station]/GET/Output").Output["station"] | null;
   export let user: import("$server/defs/api/users/[user]/GET/Output").Output["user"];
 
   import { fly } from "svelte/transition";
@@ -19,7 +19,7 @@
 </script>
 
 <style>
-  .account {
+  .station {
     align-self: center;
     margin-inline-start: auto;
     display: flex;
@@ -46,7 +46,7 @@
     white-space: nowrap;
   }
 
-  .account-name {
+  .station-name {
     font-size: 0.9rem;
     color: #999;
     max-width: 12rem;
@@ -144,7 +144,7 @@
     overflow-y: auto;
   }
 
-  .menu-account {
+  .menu-station {
     display: block;
     padding: 0.75rem 1.5rem;
     white-space: nowrap;
@@ -153,20 +153,20 @@
     transition: background-color 150ms ease;
   }
   
-  .menu-account.current {
+  .menu-station.current {
     background: #f6f6f6;
   }
 
-  .menu-account:hover {
+  .menu-station:hover {
     background: #e8e8e8;
   }
 </style>
 
-<div class="account">
+<div class="station">
   <div class="names">
     <div class="user-name">{user.first_name} {user.last_name}</div>
-    {#if account != null}
-      <div class="account-name">{account.name}</div>
+    {#if station != null}
+      <div class="station-name">{station.name}</div>
     {/if}
   </div>
   <div class="menu-holder" use:clickOut={() => menu_open = false}>
@@ -194,8 +194,8 @@
                 Stations
               </a>
               <div class="station-list thin-scroll">
-                {#each accounts.items as item (item._id)}
-                  <a href="/stations/{item._id}" class="na menu-account" class:current={item._id === account?._id} on:click={() => menu_open = false}>
+                {#each stations.items as item (item._id)}
+                  <a href="/stations/{item._id}" class="na menu-station" class:current={item._id === station?._id} on:click={() => menu_open = false}>
                     {item.name}
                   </a>
                 {/each}

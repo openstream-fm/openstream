@@ -5,7 +5,7 @@ import type { StreamConnectionState } from "./StreamConnectionState";
 
 export interface StreamConnection {
   _id: string;
-  account_id: string;
+  station_id: string;
   request: Request;
   connected_at: DateTime;
   transfer_bytes: number;

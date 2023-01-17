@@ -5,7 +5,7 @@ import { Readable } from "stream";
 import { ACCESS_TOKEN_HEADER, FORWARD_IP_HEADER } from "./contants";
 import { ClientError } from "./client-error";
 import { Logger } from "./logger";
-import fetch, { Response, RequestInit } from "node-fetch";
+import fetch, { Response, RequestInit, Headers } from "node-fetch";
 
 import http from "http";
 import https from "https";
@@ -19,7 +19,7 @@ export class Client {
   private base_url: string;
   logger: Logger;
 
-  accounts: Accounts;
+  stations: Stations;
   users: Users;
   auth: Auth;
 
@@ -27,7 +27,7 @@ export class Client {
     this.base_url = base_url.trim().replace(/\/+$/g, "")
     this.logger = logger.scoped("client");
     
-    this.accounts = new Accounts(this);
+    this.stations = new Stations(this);
     this.users = new Users(this);
     this.auth = new Auth(this);
   }
@@ -69,15 +69,15 @@ export class Client {
     ip: string | null,
     token: string | null
     wpayload: boolean,
-  }): Record<string, string> {
-    const _ip = ip ? { [FORWARD_IP_HEADER]: ip } : {} as Record<string, string>; 
-    const _token = token ? { [ACCESS_TOKEN_HEADER]: token } : {} as Record<string, string>;
-    const _content = wpayload ? { "content-type": "application/json" } : {} as Record<string, string>;
-    return {
-      ..._ip,
-      ..._token,
-      ..._content,
-    }
+  }): Headers {
+    
+    const headers = new Headers();
+    
+    if(ip) headers.append(FORWARD_IP_HEADER, ip);
+    if(token) headers.append(ACCESS_TOKEN_HEADER, token);
+    if(wpayload) headers.append("content-type", "application/json");
+    
+    return headers
   }
 
   async json_request<T>(url: string, init: RequestInit): Promise<T> {
@@ -173,48 +173,48 @@ export class AuthUser {
   }
 }
 
-export class Accounts {
+export class Stations {
 
   client: Client;
   
-  files: AccountFiles;
+  files: StationFiles;
 
   constructor(client: Client) {
     this.client = client;
-    this.files = new AccountFiles(client);
+    this.files = new StationFiles(client);
   }
 
-  async list(ip: string | null, token: string, query: import("./defs/api/accounts/GET/Query").Query): Promise<import("./defs/api/accounts/GET/Output").Output> {
-    return await this.client.get(ip, token, `/accounts${qss(query)}`);
+  async list(ip: string | null, token: string, query: import("./defs/api/stations/GET/Query").Query): Promise<import("./defs/api/stations/GET/Output").Output> {
+    return await this.client.get(ip, token, `/stations${qss(query)}`);
   }
 
-  async get(ip: string | null, token: string, id: string): Promise<import("./defs/api/accounts/[account]/GET/Output").Output> {
-    return await this.client.get(ip, token, `/accounts/${id}`);
+  async get(ip: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/GET/Output").Output> {
+    return await this.client.get(ip, token, `/stations/${id}`);
   }
 
-  async post(ip: string | null, token: string, payload: import("./defs/api/accounts/POST/Payload").Payload): Promise<import("./defs/api/accounts/POST/Output").Output> {
-    return await this.client.post(ip, token, `/accounts`, payload);
+  async post(ip: string | null, token: string, payload: import("./defs/api/stations/POST/Payload").Payload): Promise<import("./defs/api/stations/POST/Output").Output> {
+    return await this.client.post(ip, token, `/stations`, payload);
   }
 
-  async get_now_playing(ip: string | null, token: string, id: string): Promise<import("./defs/api/accounts/[account]/now-playing/GET/Output").Output> {
-    return await this.client.get(ip, token, `/accounts/${id}/now-playing`);
+  async get_now_playing(ip: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/now-playing/GET/Output").Output> {
+    return await this.client.get(ip, token, `/stations/${id}/now-playing`);
   }
 
-  async get_dashboard_stats(ip: string | null, token: string, id: string): Promise<import("./defs/api/accounts/[account]/dashboard-stats/GET/Output").Output> {
-    return await this.client.get(ip, token, `/accounts/${id}/dashboard-stats`);
+  async get_dashboard_stats(ip: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/dashboard-stats/GET/Output").Output> {
+    return await this.client.get(ip, token, `/stations/${id}/dashboard-stats`);
   }
 }
 
 export class Users {
   client: Client;
-  accounts: UserAccounts;
+  stations: UserStations;
 
   constructor(client: Client) {
     this.client = client;
-    this.accounts = new UserAccounts(client);
+    this.stations = new UserStations(client);
   }
 
-  async list(ip: string | null, token: string, query: import("./defs/api/users/GET/Query").Query): Promise<import("./defs/api/accounts/GET/Output").Output> {
+  async list(ip: string | null, token: string, query: import("./defs/api/users/GET/Query").Query): Promise<import("./defs/api/stations/GET/Output").Output> {
     return await this.client.get(ip, token, `/users${qss(query)}`);
   }
 
@@ -227,20 +227,20 @@ export class Users {
   }
 }
 
-export class UserAccounts {
+export class UserStations {
   client: Client;
   constructor(client: Client) {
     this.client = client;
   }
   /*
-  async list(token: string, user_id: string, query: import("./defs/api/users/[user]GET/Query").Query): Promise<import("./defs/api/accounts/GET/Output").Output> {
+  async list(token: string, user_id: string, query: import("./defs/api/users/[user]GET/Query").Query): Promise<import("./defs/api/stations/GET/Output").Output> {
     return await this.client.get(`/users/${user_id}${qss(query)}`, token);
   }
   */
 }
 
 
-export class AccountFiles {
+export class StationFiles {
   
   client: Client;
 
@@ -249,34 +249,37 @@ export class AccountFiles {
   }
 
 
-  async list(ip: string | null, token: string, account_id: string, query: import("./defs/api/accounts/[account]/files/GET/Query").Query): Promise<import("./defs/api/accounts/[account]/files/GET/Output").Output> {
-    return await this.client.get(ip, token, `/accounts/${account_id}/files${qss(query)}`);
+  async list(ip: string | null, token: string, station_id: string, query: import("./defs/api/stations/[station]/files/GET/Query").Query): Promise<import("./defs/api/stations/[station]/files/GET/Output").Output> {
+    return await this.client.get(ip, token, `/stations/${station_id}/files${qss(query)}`);
   }
 
-  async get(ip: string | null, token: string, account_id: string, file_id: string): Promise<import("./defs/api/accounts/[account]/files/[file]/GET/Output").Output> {
-    return await this.client.get(ip, token, `/accounts/${account_id}/files/${file_id}`);
+  async get(ip: string | null, token: string, station_id: string, file_id: string): Promise<import("./defs/api/stations/[station]/files/[file]/GET/Output").Output> {
+    return await this.client.get(ip, token, `/stations/${station_id}/files/${file_id}`);
   }
 
-  async delete(ip: string | null, token: string, account_id: string, file_id: string): Promise<import("./defs/api/accounts/[account]/files/[file]/DELETE/Output").Output> {
-    return await this.client.delete(ip, token, `/accounts/${account_id}/files/${file_id}`);
+  async delete(ip: string | null, token: string, station_id: string, file_id: string): Promise<import("./defs/api/stations/[station]/files/[file]/DELETE/Output").Output> {
+    return await this.client.delete(ip, token, `/stations/${station_id}/files/${file_id}`);
   }
 
-  async post(ip: string | null, token: string, account_id: string, content_type: string, content_length: number, query: import("./defs/api/accounts/[account]/files/POST/Query").Query, data: Readable): Promise<import("./defs/api/accounts/[account]/files/POST/Output").Output> {
-    let res = await this.client.fetch(`/accounts/${account_id}/files${qss(query)}`, {
+  async post(ip: string | null, token: string, station_id: string, content_type: string, content_length: number, query: import("./defs/api/stations/[station]/files/POST/Query").Query, data: Readable): Promise<import("./defs/api/stations/[station]/files/POST/Output").Output> {
+    
+    const headers = new Headers();
+
+    if(ip) headers.append(FORWARD_IP_HEADER, ip);
+    headers.append(ACCESS_TOKEN_HEADER, token);
+    headers.append("content-type", content_type);
+    headers.append("content-length", String(content_length));
+
+    let res = await this.client.fetch(`/stations/${station_id}/files${qss(query)}`, {
       method: "POST",
-      headers: {
-        ...(ip ? { [FORWARD_IP_HEADER]: ip } : {}),
-        "content-type": content_type,
-        "content-length": String(content_length),
-        [ACCESS_TOKEN_HEADER]: token,
-      },
+      headers,
       body: data 
     })
 
     return await this.client.get_json_body(res)
   }
 
-  async put_metadata(ip: string | null, token: string, account_id: string, file_id: string, payload: import("./defs/api/accounts/[account]/files/[file]/metadata/PUT/Payload").Payload): Promise<import("./defs/api/accounts/[account]/files/[file]/metadata/PUT/Output").Output> {
-    return await this.client.put(ip, token, `/accounts/${account_id}/files/${file_id}/metadata`, payload);
+  async put_metadata(ip: string | null, token: string, station_id: string, file_id: string, payload: import("./defs/api/stations/[station]/files/[file]/metadata/PUT/Payload").Payload): Promise<import("./defs/api/stations/[station]/files/[file]/metadata/PUT/Output").Output> {
+    return await this.client.put(ip, token, `/stations/${station_id}/files/${file_id}/metadata`, payload);
   }
 }

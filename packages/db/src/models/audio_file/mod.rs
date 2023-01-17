@@ -1,4 +1,4 @@
-use crate::{account::Account, audio_chunk::AudioChunk, run_transaction, Model};
+use crate::{audio_chunk::AudioChunk, run_transaction, station::Station, Model};
 use log::warn;
 use mongodb::{bson::doc, ClientSession, IndexModel};
 use serde::{Deserialize, Serialize};
@@ -12,7 +12,7 @@ use ts_rs::TS;
 pub struct AudioFile {
   #[serde(rename = "_id")]
   pub id: String,
-  pub account_id: String,
+  pub station_id: String,
   pub sha256: String,
 
   #[serde(with = "as_f64")]
@@ -40,14 +40,14 @@ pub struct AudioFile {
 
 impl AudioFile {
   pub async fn delete_audio_file_with_session(
-    account_id: &str,
+    station_id: &str,
     file_id: &str,
     session: &mut ClientSession,
   ) -> Result<Option<AudioFile>, mongodb::error::Error> {
     let audio_file = match Self::get_by_id_with_session(file_id, session).await? {
       None => return Ok(None),
       Some(audio_file) => {
-        if audio_file.account_id == account_id {
+        if audio_file.station_id == station_id {
           audio_file
         } else {
           return Ok(None);
@@ -61,18 +61,18 @@ impl AudioFile {
     // delete file
     AudioFile::delete_by_id_with_session(&audio_file.id, session).await?;
 
-    // get account
-    let account = Account::get_by_id_with_session(account_id, session).await?;
+    // get station
+    let station = Station::get_by_id_with_session(station_id, session).await?;
 
     // this should always be Some
-    if let Some(mut account) = account {
+    if let Some(mut station) = station {
       // applying limits update
-      account.limits.storage.used = account.limits.storage.used.saturating_sub(audio_file.len);
-      Account::replace_with_session(&account.id, &account, session).await?;
+      station.limits.storage.used = station.limits.storage.used.saturating_sub(audio_file.len);
+      Station::replace_with_session(&station.id, &station, session).await?;
     } else {
       warn!(
-        "deleting audio file {}: account not found, account_id = {}",
-        &audio_file.id, account_id
+        "deleting audio file {}: station not found, station_id = {}",
+        &audio_file.id, station_id
       )
     }
 
@@ -80,11 +80,11 @@ impl AudioFile {
   }
 
   pub async fn delete_audio_file(
-    account_id: &str,
+    station_id: &str,
     file_id: &str,
   ) -> Result<Option<AudioFile>, mongodb::error::Error> {
     run_transaction!(session => {
-      let file = tx_try!(Self::delete_audio_file_with_session(account_id, file_id, &mut session).await);
+      let file = tx_try!(Self::delete_audio_file_with_session(station_id, file_id, &mut session).await);
       Ok(file)
     })
   }
@@ -95,11 +95,11 @@ impl Model for AudioFile {
   const CL_NAME: &'static str = "audio_files";
 
   fn indexes() -> Vec<IndexModel> {
-    let account_id = IndexModel::builder()
-      .keys(doc! { Self::KEY_ACCOUNT_ID: 1 })
+    let station_id = IndexModel::builder()
+      .keys(doc! { Self::KEY_STATION_ID: 1 })
       .build();
 
-    vec![account_id]
+    vec![station_id]
   }
 }
 

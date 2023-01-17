@@ -3,7 +3,7 @@
 use async_trait::async_trait;
 use channels::ChannelMap;
 use constants::STREAM_CHUNK_SIZE;
-use db::account::Account;
+use db::station::Station;
 use db::Model;
 use ffmpeg::{Ffmpeg, FfmpegConfig, FfmpegSpawn};
 use futures::stream::FuturesUnordered;
@@ -210,7 +210,7 @@ impl Handler for SourceHandler {
     // safety unwrap: param "id" is required in route defnition
     let id = req.param("id").unwrap().to_string();
 
-    let account = match Account::get_by_id(&id).await {
+    let station = match Station::get_by_id(&id).await {
       Err(_e) => {
         let mut res = Response::new(StatusCode::INTERNAL_SERVER_ERROR);
         *res.body_mut() = Body::from("internal server error (db)");
@@ -221,10 +221,10 @@ impl Handler for SourceHandler {
         *res.body_mut() = Body::from(format!("station with id {id} not found"));
         return res;
       }
-      Ok(Some(account)) => account,
+      Ok(Some(station)) => station,
     };
 
-    let password = account.source_password;
+    let password = station.source_password;
 
     // TODO: implement ip limit security
     match req.basic_auth() {

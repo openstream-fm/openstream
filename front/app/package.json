@@ -40,7 +40,6 @@
 		"@sveltejs/kit": "^1.0.1",
 		"http-status-codes": "^2.2.0",
 		"overlayscrollbars": "^2.0.0-beta.3",
-		"pretty-bytes": "^6.0.0",
 		"ts-patch": "^2.1.0"
 	}
 }

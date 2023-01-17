@@ -3,8 +3,8 @@
 import { ripple } from "$share/ripple";
 	import { mdiMenu } from "@mdi/js";
 
-  export let accounts: import("$server/defs/api/accounts/GET/Output").Output;
-  export let account: import("$server/defs/api/accounts/[account]/GET/Output").Output["account"];
+  export let stations: import("$server/defs/api/stations/GET/Output").Output;
+  export let station: import("$server/defs/api/stations/[station]/GET/Output").Output["station"];
   export let user: import("$server/defs/api/users/[user]/GET/Output").Output["user"];
 
   export let drawer_fixed_open: boolean;
@@ -66,6 +66,6 @@ import { ripple } from "$share/ripple";
     <button class="drawer-toggle ripple-container" use:ripple aria-label="Toggle drawer" on:click={toggle_drawer}>
       <Icon d={mdiMenu} />
     </button>
-    <TopUser {user} {account} {accounts} />
+    <TopUser {user} {station} {stations} />
   </div>
 </div>

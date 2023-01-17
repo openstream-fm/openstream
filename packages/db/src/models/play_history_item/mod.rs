@@ -13,7 +13,7 @@ use crate::Model;
 pub struct PlayHistoryItem {
   #[serde(rename = "_id")]
   pub id: String,
-  pub account_id: String,
+  pub station_id: String,
 
   // if we dont have name and artist in file metadata
   // we don't log the play history item
@@ -45,8 +45,8 @@ impl Model for PlayHistoryItem {
   fn indexes() -> Vec<IndexModel> {
     // TODO: should we use a compound index for this?
     // TODO: make some benchmarks with large number of items
-    let account_id = IndexModel::builder()
-      .keys(doc! { Self::KEY_ACCOUNT_ID: 1 })
+    let station_id = IndexModel::builder()
+      .keys(doc! { Self::KEY_STATION_ID: 1 })
       .build();
     let start_at = IndexModel::builder()
       .keys(doc! { Self::KEY_START_AT: 1 })
@@ -55,6 +55,6 @@ impl Model for PlayHistoryItem {
       .keys(doc! { Kind::KEY_ENUM_TAG: 1 })
       .build();
 
-    vec![account_id, start_at, kind]
+    vec![station_id, start_at, kind]
   }
 }

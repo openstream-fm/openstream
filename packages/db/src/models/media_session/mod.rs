@@ -11,7 +11,7 @@ use ts_rs::TS;
 pub struct MediaSession {
   #[serde(rename = "_id")]
   pub id: String,
-  pub account_id: String,
+  pub station_id: String,
   pub created_at: DateTime,
   pub updated_at: DateTime,
 
@@ -96,11 +96,11 @@ impl MediaSession {
     }
   }
 
-  pub async fn get_current_for_account(
-    account_id: &str,
+  pub async fn get_current_for_station(
+    station_id: &str,
   ) -> Result<Option<MediaSession>, mongodb::error::Error> {
     let filter = doc! {
-      MediaSession::KEY_ACCOUNT_ID: account_id,
+      MediaSession::KEY_STATION_ID: station_id,
       MediaSessionState::KEY_ENUM_TAG: MediaSessionState::TAG_OPEN
     };
 
@@ -136,8 +136,8 @@ impl Model for MediaSession {
   const UID_LEN: usize = 16;
 
   fn indexes() -> Vec<IndexModel> {
-    let account_id = IndexModel::builder()
-      .keys(doc! { MediaSession::KEY_ACCOUNT_ID: 1 })
+    let station_id = IndexModel::builder()
+      .keys(doc! { MediaSession::KEY_STATION_ID: 1 })
       .build();
     let state = IndexModel::builder()
       .keys(doc! { MediaSessionState::KEY_ENUM_TAG: 1 })
@@ -149,14 +149,14 @@ impl Model for MediaSession {
       .keys(doc! { MediaSessionState::KEY_CLOSED_AT: 1 })
       .build();
 
-    vec![account_id, state, kind, closed_at]
+    vec![station_id, state, kind, closed_at]
   }
 }
 
 #[cfg(test)]
 mod test {
   use super::*;
-  use crate::{account::Account, audio_file::AudioFile};
+  use crate::{audio_file::AudioFile, station::Station};
 
   #[test]
   fn serde() {
@@ -164,7 +164,7 @@ mod test {
 
     let doc = MediaSession {
       id: MediaSession::uid(),
-      account_id: Account::uid(),
+      station_id: Station::uid(),
       created_at: DateTime::now(),
       updated_at: DateTime::now(),
       kind: MediaSessionKind::Playlist {

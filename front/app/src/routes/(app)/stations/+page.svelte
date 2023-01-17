@@ -114,16 +114,16 @@
     </div>
 
     <div class="user-btn">
-      <TopUser account={null} user={data.user} accounts={data.accounts} />
+      <TopUser station={null} user={data.user} stations={data.stations} />
     </div>
   </div>
   <div class="page">
     <div class="page-title">Select a station</div>
     <div class="stations-box">
-      {#each data.accounts.items as account (account._id)}
-        <a href="/stations/{account._id}" class="station-item na ripple-container" use:ripple>
+      {#each data.stations.items as station (station._id)}
+        <a href="/stations/{station._id}" class="station-item na ripple-container" use:ripple>
           <span class="station-item-name">
-            {account.name}
+            {station.name}
           </span>
         </a>
       {:else}

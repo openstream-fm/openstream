@@ -4,8 +4,8 @@ import type { DateTime } from "../DateTime";
 
 export interface AudioFile {
   _id: string;
-  account_id: string;
-  md_5: string;
+  station_id: string;
+  sha_256: string;
   len: number;
   duration_ms: number;
   bytes_sec: number;

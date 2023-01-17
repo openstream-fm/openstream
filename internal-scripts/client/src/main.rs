@@ -27,14 +27,14 @@ lazy_static::lazy_static! {
   };
 }
 
-fn rr_test_account_n() -> u64 {
-  static RR_ACCOUNT_N: AtomicU64 = AtomicU64::new(0);
-  let v = RR_ACCOUNT_N.fetch_add(1, Ordering::SeqCst);
+fn rr_test_station_n() -> u64 {
+  static RR_STATION_N: AtomicU64 = AtomicU64::new(0);
+  let v = RR_STATION_N.fetch_add(1, Ordering::SeqCst);
   1 + (v % *S)
 }
 
-fn rr_test_account_id() -> String {
-  format!("test{}", rr_test_account_n())
+fn rr_test_station_id() -> String {
+  format!("test{}", rr_test_station_n())
 }
 
 #[tokio::main]
@@ -153,7 +153,7 @@ async fn clients(n: usize, stream_base_url: String, ports: Vec<u16>, delay: u64)
             &http_client,
             base_url.as_str(),
             port,
-            &&rr_test_account_id(),
+            &&rr_test_station_id(),
           )
           .await;
           if let Err(e) = r {

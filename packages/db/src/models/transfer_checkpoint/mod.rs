@@ -6,8 +6,9 @@ use serde_util::DateTime;
 use ts_rs::TS;
 
 use crate::{
-  account::{Account, Limit, Limits},
-  run_transaction, Model,
+  run_transaction,
+  station::{Limit, Limits, Station},
+  Model,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -55,7 +56,7 @@ pub async fn checkpoint_now() -> Result<Option<TransferCheckpoint>, mongodb::err
     }
 
     const KEY_LIMITS_TRANSFER_USED: &str = const_str::concat!(
-      Account::KEY_LIMITS,
+      Station::KEY_LIMITS,
       ".",
       Limits::KEY_TRANSFER,
       ".",
@@ -68,7 +69,7 @@ pub async fn checkpoint_now() -> Result<Option<TransferCheckpoint>, mongodb::err
       }
     };
 
-    let update_result = tx_try!(Account::cl().update_many_with_session(doc!{}, update, None, &mut session).await);
+    let update_result = tx_try!(Station::cl().update_many_with_session(doc!{}, update, None, &mut session).await);
 
     let doc = TransferCheckpoint {
       id: TransferCheckpoint::uid(),
@@ -86,7 +87,7 @@ pub async fn checkpoint_now() -> Result<Option<TransferCheckpoint>, mongodb::err
 }
 
 /// This job will run every hour and check that a TransferCheckpoint was created for the current month
-/// TransferCheckpoint will set used transfer to 0 for all accounts at the start of every month
+/// TransferCheckpoint will set used transfer to 0 for all stations at the start of every month
 pub fn start_background_task() -> tokio::task::JoinHandle<()> {
   tokio::spawn(async move {
     info!("transfer checkpoint background job started");

@@ -4,10 +4,10 @@ use std::process::ExitStatus;
 
 use bytes::Bytes;
 use constants::{AUDIO_FILE_BYTERATE, AUDIO_FILE_CHUNK_SIZE};
-use db::account::Account;
 use db::audio_chunk::AudioChunk;
 use db::audio_file::{AudioFile, Metadata};
 use db::audio_upload_operation::{AudioUploadOperation, State};
+use db::station::Station;
 use db::{run_transaction, storage_quota, Model};
 use ffmpeg::{transform, FfmpegConfig, TransformError};
 use log::*;
@@ -17,11 +17,11 @@ use std::error::Error;
 use tokio_stream::{Stream, StreamExt};
 
 macro_rules! check_quota {
-  ($account_id:expr, $file_len:expr) => {
-    match storage_quota!($account_id) {
+  ($station_id:expr, $file_len:expr) => {
+    match storage_quota!($station_id) {
       None => {
-        trace!("upload error account not found: {}", $account_id);
-        return Err(UploadError::AccountNotFound($account_id.to_string()));
+        trace!("upload error station not found: {}", $station_id);
+        return Err(UploadError::StationNotFound($station_id.to_string()));
       }
 
       Some(max) => {
@@ -49,8 +49,8 @@ pub enum UploadError<E> {
   },
   #[error("ffmpeg io: {0}")]
   FfmpegIo(std::io::Error),
-  #[error("account not found: {0}")]
-  AccountNotFound(String),
+  #[error("station not found: {0}")]
+  StationNotFound(String),
   #[error("quota exceeded")]
   QuotaExceeded,
   #[error("file empty")]
@@ -67,14 +67,14 @@ impl<E> From<TransformError> for UploadError<E> {
 }
 
 async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>>(
-  account_id: String,
+  station_id: String,
   audio_file_id: String,
   estimated_len: Option<u64>,
   filename: String,
   data: S,
 ) -> Result<AudioFile, UploadError<E>> {
   if let Some(len) = estimated_len {
-    check_quota!(&account_id, len);
+    check_quota!(&station_id, len);
   }
 
   tokio::pin!(data);
@@ -127,7 +127,7 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
 
   let reader_f = {
     let audio_file_id = audio_file_id.clone();
-    let account_id = account_id.clone();
+    let station_id = station_id.clone();
 
     async move {
       let mut hasher = Sha256::new();
@@ -160,7 +160,7 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
         let len = bytes.len();
         file_len += len as u64;
 
-        check_quota!(&account_id, file_len);
+        check_quota!(&station_id, file_len);
 
         let duration_ms = bytes.len() as f64 / AUDIO_FILE_BYTERATE as f64 * 1000.0;
 
@@ -171,7 +171,7 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
 
         let document = AudioChunk {
           id: AudioChunk::uid(),
-          account_id: account_id.clone(),
+          station_id: station_id.clone(),
           audio_file_id: audio_file_id.clone(),
           duration_ms,
           start_ms,
@@ -212,7 +212,7 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
 
   let file = AudioFile {
     id: audio_file_id,
-    account_id,
+    station_id,
     sha256,
     len: file_len,
     duration_ms: file_duration_ms,
@@ -227,20 +227,20 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
 
   run_transaction!(session => {
 
-    let mut account = match tx_try!(Account::get_by_id_with_session(&file.account_id, &mut session).await) {
-      None => return Err(UploadError::AccountNotFound(file.account_id)),
-      Some(account) => account,
+    let mut station = match tx_try!(Station::get_by_id_with_session(&file.station_id, &mut session).await) {
+      None => return Err(UploadError::StationNotFound(file.station_id)),
+      Some(station) => station,
     };
 
-    if account.limits.storage.avail() < file.len {
+    if station.limits.storage.avail() < file.len {
       return Err(UploadError::QuotaExceeded);
     }
 
-    account.limits.storage.used += file.len;
+    station.limits.storage.used += file.len;
 
-    tx_try!(Account::replace_with_session(&account.id, &account, &mut session).await);
+    tx_try!(Station::replace_with_session(&station.id, &station, &mut session).await);
     tx_try!(AudioFile::insert_with_session(&file, &mut session).await);
-    trace!("audio file uploaded account_id={}, audio_file_id={}", account.id, file.id);
+    trace!("audio file uploaded station_id={}, audio_file_id={}", station.id, file.id);
   });
 
   Ok(file)
@@ -250,7 +250,7 @@ async fn upload_audio_file_inner_spawn<
   E: Error + Send + Sync + 'static,
   S: Stream<Item = Result<Bytes, E>> + Send + 'static,
 >(
-  account_id: String,
+  station_id: String,
   audio_file_id: Option<String>,
   estimated_len: Option<u64>,
   filename: String,
@@ -260,7 +260,7 @@ async fn upload_audio_file_inner_spawn<
 
   let mut operation = AudioUploadOperation {
     id: audio_file_id.clone(),
-    account_id: account_id.clone(),
+    station_id: station_id.clone(),
     created_at: DateTime::now(),
     state: db::audio_upload_operation::State::Pending,
   };
@@ -268,7 +268,7 @@ async fn upload_audio_file_inner_spawn<
   AudioUploadOperation::insert(&operation).await?;
 
   let result =
-    upload_audio_file_internal(account_id, audio_file_id, estimated_len, filename, data).await;
+    upload_audio_file_internal(station_id, audio_file_id, estimated_len, filename, data).await;
 
   match result.as_ref() {
     Ok(_) => {
@@ -317,14 +317,14 @@ pub async fn upload_audio_file<
   E: Error + Send + Sync + 'static,
   S: Stream<Item = Result<Bytes, E>> + Send + 'static,
 >(
-  account_id: String,
+  station_id: String,
   audio_file_id: Option<String>,
   estimated_len: Option<u64>,
   filename: String,
   data: S,
 ) -> Result<AudioFile, UploadError<E>> {
   tokio::spawn(upload_audio_file_inner_spawn(
-    account_id,
+    station_id,
     audio_file_id,
     estimated_len,
     filename,

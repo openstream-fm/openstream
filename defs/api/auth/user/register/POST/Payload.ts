@@ -7,10 +7,10 @@ export interface Payload {
   password: string;
   first_name: string;
   last_name: string;
-  account_name: string;
+  station_name: string;
   limits?: PayloadLimits;
-  account_user_metadata?: Metadata;
-  account_system_metadata?: Metadata;
+  station_user_metadata?: Metadata;
+  station_system_metadata?: Metadata;
   user_user_metadata?: Metadata;
   user_system_metadata?: Metadata;
 }

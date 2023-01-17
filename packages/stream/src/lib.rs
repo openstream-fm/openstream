@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use db::account::Account;
+use db::station::Station;
 use db::audio_file::AudioFile;
 use db::stream_connection::StreamConnection;
 use db::Model;
@@ -179,7 +179,7 @@ impl StreamHandler {
   }
 
   async fn handle(self, req: Request) -> Result<Response, StreamError> {
-    let account_id = req.param("id").unwrap().to_string();
+    let station_id = req.param("id").unwrap().to_string();
 
     let ip = req.isomorphic_ip();
 
@@ -207,40 +207,40 @@ impl StreamHandler {
     };
 
     tokio::spawn(async move {
-      let account = match Account::get_by_id(&account_id).await? {
-        Some(account) => account,
-        None => return Err(StreamError::AccountNotFound(account_id.to_string())),
+      let station = match Station::get_by_id(&station_id).await? {
+        Some(station) => station,
+        None => return Err(StreamError::StationNotFound(station_id.to_string())),
       };
 
-      if account.limits.transfer.avail() == 0 {
+      if station.limits.transfer.avail() == 0 {
         return Err(StreamError::TransferLimit);
       }
 
-      if account.limits.listeners.avail() == 0 {
+      if station.limits.listeners.avail() == 0 {
         return Err(StreamError::ListenersLimit);
       }
 
       #[allow(clippy::collapsible_if)]
-      if self.media_sessions.read().get(&account_id).is_none() {
-        // TODO: use account limit or query for audio file?
-        // if account.limits.storage.used == 0 {
-        //   return Err(StreamError::NotStreaming(account.id.clone()));
+      if self.media_sessions.read().get(&station_id).is_none() {
+        // TODO: use station limit or query for audio file?
+        // if station.limits.storage.used == 0 {
+        //   return Err(StreamError::NotStreaming(station.id.clone()));
         // }
 
-        if !AudioFile::exists(doc! { AudioFile::KEY_ACCOUNT_ID: &account.id }).await? {
-          return Err(StreamError::NotStreaming(account.id));
+        if !AudioFile::exists(doc! { AudioFile::KEY_STATION_ID: &station.id }).await? {
+          return Err(StreamError::NotStreaming(station.id));
         }
       };
 
       let mut rx = {
         let lock = self.media_sessions.upgradable_read();
 
-        match lock.get(&account_id) {
+        match lock.get(&station_id) {
           Some(session) => session.subscribe(),
 
           None => {
             let mut lock = lock.upgrade();
-            let tx = lock.transmit(&account_id, media_sessions::MediaSessionKind::Playlist {});
+            let tx = lock.transmit(&station_id, media_sessions::MediaSessionKind::Playlist {});
             let rx = tx.subscribe();
             run_playlist_session(tx, self.shutdown.clone(), self.drop_tracer.clone(), true);
             rx
@@ -252,7 +252,7 @@ impl StreamHandler {
         let now = DateTime::now();
         StreamConnection {
           id: StreamConnection::uid(),
-          account_id: account.id,
+          station_id: station.id,
           connected_at: now,
           last_transfer_at: now,
           request: db::http::Request::from_http(&req),
@@ -261,11 +261,11 @@ impl StreamHandler {
         }
       };
 
-      let r = Account::increment_used_listeners(&account_id).await?;
-      debug!("Account::increment_used_listeners called for account {account_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
+      let r = Station::increment_used_listeners(&station_id).await?;
+      debug!("Station::increment_used_listeners called for station {station_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
 
       StreamConnection::insert(&conn_doc).await?;
-      debug!("StreamConnection::insert called for account {account_id}, connection_id: {}", conn_doc.id);
+      debug!("StreamConnection::insert called for station {station_id}, connection_id: {}", conn_doc.id);
       
       let transfer_bytes = Arc::new(AtomicU64::new(0));
       let closed = Arc::new(AtomicBool::new(false));
@@ -273,7 +273,7 @@ impl StreamHandler {
       let connection_dropper = StreamConnectionDropper {
         id: conn_doc.id.clone(),
         transfer_bytes: transfer_bytes.clone(),
-        account_id: account_id.clone(),
+        station_id: station_id.clone(),
         token: self.media_sessions.drop_token(),
       };
 
@@ -309,7 +309,7 @@ impl StreamHandler {
                 match body_sender.send_data(bytes).await {
                   Err(_) => break,
                   Ok(()) => {
-                    transfer_map.increment(&account_id, len);
+                    transfer_map.increment(&station_id, len);
                     transfer_bytes.fetch_add(len as u64, Ordering::SeqCst);
                   }
                 };
@@ -355,7 +355,7 @@ impl Handler for StreamHandler {
 #[derive(Debug)]
 struct StreamConnectionDropper {
   id: String,
-  account_id: String,
+  station_id: String,
   transfer_bytes: Arc<AtomicU64>,
   token: Token,
 }
@@ -364,20 +364,20 @@ impl Drop for StreamConnectionDropper {
   fn drop(&mut self) {
     let token = self.token.clone();
     let id = self.id.clone();
-    let account_id = self.account_id.clone();
+    let station_id = self.station_id.clone();
     let transfer_bytes = self.transfer_bytes.load(Ordering::SeqCst);
     tokio::spawn(async move {
       let r = StreamConnection::set_closed(&id, Some(transfer_bytes))
         .await
         .expect("error at StreamConnection::set_closed");
 
-      debug!("StreamConnection::set_closed called for account {account_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
+      debug!("StreamConnection::set_closed called for station {station_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
 
-      let r = Account::decrement_used_listeners(&account_id)
+      let r = Station::decrement_used_listeners(&station_id)
         .await
-        .expect("error at Account::decrement_used_listeners");
+        .expect("error at Station::decrement_used_listeners");
 
-      debug!("Account::decrement_used_listeners called for account {account_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
+      debug!("Station::decrement_used_listeners called for station {station_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
 
       drop(token);
     });
@@ -387,7 +387,7 @@ impl Drop for StreamConnectionDropper {
 #[derive(Debug)]
 pub enum StreamError {
   Db(mongodb::error::Error),
-  AccountNotFound(String),
+  StationNotFound(String),
   NotStreaming(String),
   TooManyOpenIpConnections,
   ListenersLimit,
@@ -410,9 +410,9 @@ impl From<StreamError> for Response {
         None,
       ),
 
-      StreamError::AccountNotFound(id) => (
+      StreamError::StationNotFound(id) => (
         StatusCode::NOT_FOUND,
-        "NO_ACCOUNT",
+        "NO_STATION",
         format!("station with id {id} not found"),
         None,
       ),

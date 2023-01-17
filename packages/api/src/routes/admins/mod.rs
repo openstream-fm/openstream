@@ -137,7 +137,7 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/accounts/POST/")]
+  #[ts(export, export_to = "../../defs/api/stations/POST/")]
   pub struct Output {
     admin: PublicAdmin,
   }

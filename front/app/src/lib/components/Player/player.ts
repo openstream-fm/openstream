@@ -22,7 +22,7 @@ export namespace PlayerState {
       _id: string,
       name: string
     }
-    now_playing: import("$server/defs/api/accounts/[account]/now-playing/GET/Output").Output | null;
+    now_playing: import("$server/defs/api/stations/[station]/now-playing/GET/Output").Output | null;
   }
 
   export interface AudioFile extends Base {
@@ -136,7 +136,7 @@ export const play_track = (file: import("$server/defs/db/AudioFile").AudioFile) 
     file,
     audio_state: "loading",
   })
-  const audio = get_audio_tag(`/api/accounts/${file.account_id}/files/${file._id}/stream`);
+  const audio = get_audio_tag(`/api/stations/${file.station_id}/files/${file._id}/stream`);
   audio.play().catch(e => {
     console.warn(`[player] error playing audio track ${file._id}`, e);
   })
@@ -167,7 +167,7 @@ const start_now_playing_updater = () => {
     try {
       const $station_id = get(player_playing_station_id);
       if($station_id == null) return;
-      const now_playing: import("$server/defs/api/accounts/[account]/now-playing/GET/Output").Output = await _get(`/api/accounts/${$station_id}/now-playing`);
+      const now_playing: import("$server/defs/api/stations/[station]/now-playing/GET/Output").Output = await _get(`/api/stations/${$station_id}/now-playing`);
       const $state = get(player_state);
       if($state.type !== "station") return;
       if($state.station._id !== $station_id) return;

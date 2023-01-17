@@ -1,6 +1,6 @@
 <script lang="ts">
-  export let accounts: import("$server/defs/api/accounts/GET/Output").Output;
-  export let account: import("$server/defs/api/accounts/[account]/GET/Output").Output["account"];
+  export let stations: import("$server/defs/api/stations/GET/Output").Output;
+  export let station: import("$server/defs/api/stations/[station]/GET/Output").Output["station"];
   export let user: import("$server/defs/api/users/[user]/GET/Output").Output["user"];
 
   let drawer_fixed_open = false;
@@ -33,9 +33,9 @@
 </style>
 
 <div class="dashboard">
-  <Drawer {account} {accounts} {user} fixed_open={drawer_fixed_open} {close_drawer_fixed} {open_drawer_fixed} />
+  <Drawer {station} {stations} {user} fixed_open={drawer_fixed_open} {close_drawer_fixed} {open_drawer_fixed} />
   <div class="content">
-    <Top {account} {accounts} {user} drawer_fixed_open={drawer_fixed_open} {close_drawer_fixed} {open_drawer_fixed} />
+    <Top {station} {stations} {user} drawer_fixed_open={drawer_fixed_open} {close_drawer_fixed} {open_drawer_fixed} />
     <div class="page">
       <slot />
     </div>

@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use futures_util::TryStreamExt;
 use log::*;
-use models::{transfer_checkpoint, user_account_relation};
+use models::{transfer_checkpoint, user_station_relation};
 use mongodb::error::Result as MongoResult;
 use mongodb::options::{FindOptions, ReplaceOptions};
 use mongodb::results::DeleteResult;
@@ -23,7 +23,6 @@ pub mod metadata;
 pub mod models;
 
 pub use models::access_token;
-pub use models::account;
 pub use models::admin;
 pub use models::audio_chunk;
 pub use models::audio_file;
@@ -32,6 +31,7 @@ pub use models::config;
 pub use models::event;
 pub use models::media_session;
 pub use models::play_history_item;
+pub use models::station;
 pub use models::stream_connection;
 pub use models::user;
 
@@ -79,7 +79,7 @@ pub fn try_init(
 pub async fn ensure_collections() -> MongoResult<()> {
   config::Config::ensure_collection().await?;
   user::User::ensure_collection().await?;
-  account::Account::ensure_collection().await?;
+  station::Station::ensure_collection().await?;
   admin::Admin::ensure_collection().await?;
   audio_chunk::AudioChunk::ensure_collection().await?;
   audio_file::AudioFile::ensure_collection().await?;
@@ -90,7 +90,7 @@ pub async fn ensure_collections() -> MongoResult<()> {
   play_history_item::PlayHistoryItem::ensure_collection().await?;
   media_session::MediaSession::ensure_collection().await?;
   transfer_checkpoint::TransferCheckpoint::ensure_collection().await?;
-  user_account_relation::UserAccountRelation::ensure_collection().await?;
+  user_station_relation::UserStationRelation::ensure_collection().await?;
 
   Ok(())
 }

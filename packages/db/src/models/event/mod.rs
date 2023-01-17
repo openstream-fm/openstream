@@ -171,7 +171,7 @@ impl Model for Event {
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct AudioListenerStart {
-  account_id: String,
+  station_id: String,
   connection_id: String,
 }
 
@@ -180,6 +180,6 @@ pub struct AudioListenerStart {
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct AudioListenerEnd {
-  account_id: String,
+  station_id: String,
   connection_id: String,
 }

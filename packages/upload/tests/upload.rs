@@ -15,7 +15,7 @@
 //   let data = tokio_stream::iter(vec![item; 4]);
 
 //   upload::upload_audio_file(
-//     "test-account-id".into(),
+//     "test-station-id".into(),
 //     None,
 //     None,
 //     "test-filename.mp3".into(),
@@ -41,7 +41,7 @@
 //   let data = tokio_stream::iter(vec![item; repeat]);
 
 //   let err = upload::upload_audio_file(
-//     "test-account-id".into(),
+//     "test-station-id".into(),
 //     None,
 //     None,
 //     "test-filename.mp3".into(),

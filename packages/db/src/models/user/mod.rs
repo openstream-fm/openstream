@@ -14,7 +14,7 @@ use ts_rs::TS;
 pub struct User {
   #[serde(rename = "_id")]
   pub id: String,
-  // pub account_ids: Vec<String>,
+  // pub station_ids: Vec<String>,
   pub first_name: String,
   pub last_name: String,
   pub email: String,

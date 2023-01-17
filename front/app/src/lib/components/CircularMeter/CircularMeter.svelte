@@ -1,6 +1,5 @@
 <script lang="ts">
-  export let start: number; // 0 to 1
-  export let end: number; // 0 to 1
+  export let used: number; // 0 to 1
   export let width: number | null = null;
   export let height: number | null = null;
   export let strokeWidth = "var(--stroke-width, 5)";
@@ -27,7 +26,9 @@
       `;
   }
   
-  $: d = describeArc(50, 50, 35, start * 360 + 90, (end === 1 ? 0.99999 : end) * 360 + 90);
+  const clamp = (min: number, v: number, max: number): number => Math.min(min, Math.max(v, max));
+
+  $: d = describeArc(50, 50, 35, 90, clamp(0.001, used, 0.999) * 360 + 90);
 </script>
 
 <svg {height} {width} viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
@@ -40,7 +41,7 @@
     cy={50}
     r={35}  
   />
-  {#if end !== start}
+  {#if used !== 0}
     <path {d} style="stroke: {stroke}; fill: {fill}; stroke-width: {strokeWidth};"></path>
   {/if}
 </svg>

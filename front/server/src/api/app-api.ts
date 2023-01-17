@@ -46,10 +46,10 @@ export const app_api = ({
 
   api.post("/register", json(async req => {
     //const payload = validate(() => assertType<import("../defs/api/register/POST/Payload").Payload>(req.body));
-    const { account, token, user } = await client.auth.user.register(ip(req), config.openstream.token, req.body);
+    const { station, token, user } = await client.auth.user.register(ip(req), config.openstream.token, req.body);
     req.session.user = { token, _id: user._id };
     await save_session(req);
-    return { account, user }
+    return { station, user }
   }))
 
   api.get("/users/me", json(async req => {
@@ -60,22 +60,22 @@ export const app_api = ({
     return await client.users.get(ip(req), token(req), req.params.user);
   }))
 
-  api.get("/accounts", json(async req => {
-    return await client.accounts.list(ip(req), token(req), req.query);
+  api.get("/stations", json(async req => {
+    return await client.stations.list(ip(req), token(req), req.query);
   }))
 
-  api.get("/accounts/:account", json(async req => {
-    return await client.accounts.get(ip(req), token(req), req.params.account);
+  api.get("/stations/:station", json(async req => {
+    return await client.stations.get(ip(req), token(req), req.params.station);
   }))
 
-  api.get("/accounts/:account/limits", json(async req => {
-    const { account: { limits } } = await client.accounts.get(ip(req), token(req), req.params.account);
+  api.get("/stations/:station/limits", json(async req => {
+    const { station: { limits } } = await client.stations.get(ip(req), token(req), req.params.station);
     return limits;
   }))
 
-  api.route("/accounts/:account/files")
+  api.route("/stations/:station/files")
     .get(json(async req => {
-      return await client.accounts.files.list(ip(req), token(req), req.params.account, req.query)
+      return await client.stations.files.list(ip(req), token(req), req.params.station, req.query)
     }))
 
     .post(json(async req => {
@@ -84,39 +84,39 @@ export const app_api = ({
       if(!content_length) {
         throw new BadRequest("Content length must be specified (front)", "CONTENT_LENGTH_REQUIRED");
       }
-      return await client.accounts.files.post(ip(req), token(req), req.params.account, content_type, content_length, req.query as any, req);
+      return await client.stations.files.post(ip(req), token(req), req.params.station, content_type, content_length, req.query as any, req);
     }))
 
-  api.route("/accounts/:account/files/:file")
+  api.route("/stations/:station/files/:file")
     .get(json(async req => {
-      return await client.accounts.files.get(ip(req), token(req), req.params.account, req.params.file);
+      return await client.stations.files.get(ip(req), token(req), req.params.station, req.params.file);
     }))
     .delete(json(async req => {
-      return await client.accounts.files.delete(ip(req), token(req), req.params.account, req.params.file);
+      return await client.stations.files.delete(ip(req), token(req), req.params.station, req.params.file);
     }))
 
-  api.route("/accounts/:account/files/:file/metadata")
+  api.route("/stations/:station/files/:file/metadata")
     .put(json(async req => {
-      return await client.accounts.files.put_metadata(ip(req), token(req), req.params.account, req.params.file, req.body);
+      return await client.stations.files.put_metadata(ip(req), token(req), req.params.station, req.params.file, req.body);
     }))
 
-  api.route("/accounts/:account/now-playing")
+  api.route("/stations/:station/now-playing")
     .get(json(async req => {
-      return await client.accounts.get_now_playing(ip(req), token(req), req.params.account);
+      return await client.stations.get_now_playing(ip(req), token(req), req.params.station);
     }))
 
-  api.route("/accounts/:account/dashboard-stats")
+  api.route("/stations/:station/dashboard-stats")
     .get(json(async req => {
-      return await client.accounts.get_dashboard_stats(ip(req), token(req), req.params.account);
+      return await client.stations.get_dashboard_stats(ip(req), token(req), req.params.station);
     }))
 
   api
-    .route("/accounts/:account/files/:file/stream")
+    .route("/stations/:station/files/:file/stream")
     .get(async (req, res, next) => {
   
       try {
       
-        const { account, file } = req.params;
+        const { station, file } = req.params;
 
         const headers: Record<string, string> = Object.create(null);
         for(const key of [ "if-none-match", "accept", "accept-language", "range" ]) {
@@ -127,7 +127,7 @@ export const app_api = ({
         headers[FORWARD_IP_HEADER] = ip(req);
         headers[ACCESS_TOKEN_HEADER] = token(req);
 
-        const back = await client.fetch(`/accounts/${account}/files/${file}/stream`, {
+        const back = await client.fetch(`/stations/${station}/files/${file}/stream`, {
           method: "GET",
           headers,
         })

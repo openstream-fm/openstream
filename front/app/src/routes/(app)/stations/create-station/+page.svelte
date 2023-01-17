@@ -69,7 +69,7 @@
     </div>
 
     <div class="user-btn">
-      <TopUser account={null} user={data.user} accounts={data.accounts} />
+      <TopUser station={null} user={data.user} stations={data.stations} />
     </div>
   </div>
   <div class="page">
