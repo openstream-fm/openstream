@@ -3,7 +3,7 @@ use std::{
   time::Instant,
 };
 
-use constants::STREAM_CHUNK_SIZE;
+use constants::{STREAM_CHUNK_SIZE, STREAM_BURST_LENGTH};
 use db::{audio_chunk::AudioChunk, audio_file::AudioFile, Model};
 use drop_tracer::{DropTracer, Token};
 use log::*;
@@ -82,6 +82,9 @@ pub fn run_playlist_session(
 
       let mut skip = skip;
       let mut first = true;
+      
+      // we fill the burst on start
+      let mut burst_len: usize = 0;
 
       'files: loop {
         let (i, part) = if first {
@@ -145,11 +148,44 @@ pub fn run_playlist_session(
         let stream = stream
           .chunked(STREAM_CHUNK_SIZE)
           .skip(part)
-          .rated(file.bytes_sec)
           .inspect(|_| {
             out.increment_part();
           });
+          //.rated(file.bytes_sec)
 
+        tokio::pin!(stream);
+
+        if burst_len < STREAM_BURST_LENGTH {
+
+          'chunks: loop {
+            if shutdown.is_closed() || tx.is_terminated() {
+              return Ok(());
+            }
+
+            match stream.try_next().await? {
+              None => break 'chunks,
+
+              Some(bytes) => {
+                burst_len += 1;
+
+                if shutdown.is_closed() || tx.is_terminated() {
+                  return Ok(());
+                }
+
+                match tx.send(bytes) {
+                  // n is the number of listeners that received the chunk
+                  Ok(_n) => continue 'chunks,
+                  // we ignore no listeners and continue streaming
+                  Err(SendError::NoListeners(_)) => continue 'chunks,
+                  // here the stream has been terminated (maybe replaced with a newer transmitter)
+                  Err(SendError::Terminated(_)) => break 'files,
+                }
+              }
+            }
+          }
+        }
+
+        let stream = stream.rated(file.bytes_sec);
         tokio::pin!(stream);
 
         'chunks: loop {

@@ -139,8 +139,14 @@ async fn shared_init(config: String) -> Result<Config, anyhow::Error> {
 
   debug!("config loaded: resolved config: {:#?}", config);
 
-  let client = mongodb::Client::with_uri_str(config.mongodb.url.as_str())
+  let client_options = mongodb::options::ClientOptions::parse(config.mongodb.url.as_str())
     .await
+    .context("failed to parse mongodb connection string")?;
+
+  info!("mongodb config hosts: {:?}", client_options.hosts);
+  info!("mongodb client compressors: {:?}", client_options.compressors);
+
+  let client = mongodb::Client::with_options(client_options.clone())
     .context("failed to create mongodb client")?;
 
   if client.default_database().is_none() {

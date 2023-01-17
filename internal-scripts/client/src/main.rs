@@ -216,6 +216,19 @@ async fn client(
     .send()
     .await?;
 
+  if !res.status().is_success() {
+    let status = res.status();
+    let text = res.text().await?;
+    println!(
+      "req err with status {} {:?} => {}",
+      status.as_u16(),
+      status.canonical_reason(),
+      text,
+    );
+
+    return Ok(());
+  }
+
   let start = Instant::now();
 
   while let Some(data) = res.chunk().await? {
