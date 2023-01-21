@@ -606,8 +606,7 @@ pub trait Incrementer: Model {
 
   async fn next(id: &str) -> Result<f64, mongodb::error::Error> {
     let filter = doc! { KEY_ID: id };
-    let update =
-      doc! { "$inc": { KEY_ID: 1f64 }, "$setOnInsert": { KEY_ID: id, KEY_INCREMENT_NEXT: 0f64 } };
+    let update = doc! { "$setOnInsert": { KEY_ID: id }, "$inc": { KEY_INCREMENT_NEXT: 1f64 } };
     let options = FindOneAndUpdateOptions::builder()
       .upsert(true)
       .return_document(ReturnDocument::Before)

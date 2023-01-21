@@ -5,16 +5,102 @@
 	import Page from "$lib/components/Page.svelte";
 	import { ripple } from "$lib/ripple";
 	import { action, ClientError, _delete, _get, _post, _put, _request } from "$share/net.client";
-  import { mdiPlay, mdiPause, mdiAlertDecagram, mdiCheck, mdiTimerPauseOutline, mdiCircleEditOutline, mdiTrashCanOutline, mdiAutorenew, mdiCheckboxIntermediate, mdiCheckboxMarked, mdiCheckboxBlankOutline, mdiCheckboxMarkedOutline, mdiContentSaveOutline, mdiChevronUp, mdiChevronDown, mdiChevronDoubleDown, mdiChevronDoubleUp } from "@mdi/js";
+  import { mdiPlay, mdiPause, mdiAlertDecagram, mdiCheck, mdiTimerPauseOutline, mdiCircleEditOutline, mdiTrashCanOutline, mdiAutorenew, mdiCheckboxIntermediate, mdiCheckboxMarked, mdiCheckboxBlankOutline, mdiCheckboxMarkedOutline, mdiContentSaveOutline, mdiChevronUp, mdiChevronDown, mdiChevronDoubleDown, mdiChevronDoubleUp, mdiDrag, mdiFileKey, mdiMusic } from "@mdi/js";
 	import Icon from "$share/Icon.svelte";
-	import { onMount } from "svelte";
+	import { onMount, tick } from "svelte";
   import CircularProgress from "$share/CircularProgress.svelte";
-	import { tooltip } from "$lib/actions";
-	import { fade, slide } from "svelte/transition";
+	import { add } from "$lib/actions";
+	import { tooltip } from "$share/tooltip";
+  import { fade, scale, slide } from "svelte/transition";
 	import { _message, _progress } from "$share/notify";
   import Dialog from "$share/Dialog.svelte";
 
   import { close, player_playing_audio_file_id, player_audio_state, resume, pause, play_track } from "$lib/components/Player/player";
+
+  let dragging_i: number | null = null;
+  let drag_target_i: number | null = null;
+  let dragging_tag_x = 0;
+  let dragging_tag_y = 0;
+  let dropping = false;
+
+  let pointer_x = 0;
+  let pointer_y = 0;
+
+  $: dragging_tag_x = pointer_x + 16; 
+  $: dragging_tag_y = pointer_y + 16;
+
+  let drag_autoscroll_timer: any;
+
+  $: dragging_item = dragging_i == null ? null : data.files.items[dragging_i] ?? null;
+  
+  const drag_autoscroll = () => {
+    if(pointer_y < 120) {
+      document.scrollingElement!.scrollTop -= 3;
+    } else if(pointer_y > window.innerHeight - 70) {
+      document.scrollingElement!.scrollTop += 3;
+    }
+  }
+
+  const nth_even = (dragging_i: number | null, drag_target_i: number | null, i: number): boolean => {
+    if(dragging_i == null || drag_target_i == null || dragging_i === drag_target_i) return i % 2 === 0;
+    if(i === dragging_i) return drag_target_i % 2 === 0;
+    if(dragging_i < drag_target_i) {
+      if(i > dragging_i && i <= drag_target_i) return i % 2 !== 0;
+    } else {
+      if(i < dragging_i && i >= drag_target_i) return i % 2 !== 0;
+    }
+
+    return i % 2 === 0;
+  }
+
+  const is_drag_moved_up = (dragging_i: number | null, drag_target_i: number | null, i: number) => {
+    if(dragging_i == null || drag_target_i == null) return false;
+    return dragging_i < i && i <= drag_target_i;
+  }
+
+  const is_drag_moved_down = (dragging_i: number | null, drag_target_i: number | null, i: number) => {
+    if(dragging_i == null || drag_target_i == null) return false;
+    return dragging_i > i && i >= drag_target_i 
+  }
+
+  const on_drag_start = (i: number) => {
+    document.documentElement.classList.add("dragging");
+    dragging_i = i;
+    drag_autoscroll_timer = setInterval(drag_autoscroll, 2);
+
+    add(window, "pointerup", on_drag_end, { capture: true, once: true })
+  }
+
+  const on_drag_end = async () => {
+    
+    document.documentElement.classList.remove("dragging");
+    clearInterval(drag_autoscroll_timer);
+    
+    const from_i = dragging_i;
+    const to_i = drag_target_i;
+
+    if(from_i == null || to_i == null) {
+      dragging_i = null;
+      drag_target_i = null;
+      return;
+    }
+
+    const from = data.files.items[from_i];
+    const element = from && document.querySelector(`.file-item[data-file-id='${from._id}']`)
+    
+    dragging_i = null;
+    drag_target_i = null;
+    dropping = true;
+    drag_reorder(from_i, to_i);
+    element?.animate?.({
+      opacity: [0, 1],
+    }, {
+      duration: 300,
+      easing: "ease",
+    });
+    await sleep(300);
+    dropping = false;
+  }
 
   $: now_playing_file_id = $now_playing?.info.kind === "playlist" ? $now_playing.info.file._id : null; 
 
@@ -128,6 +214,7 @@
 
   onMount(() => { 
     if(window.AbortController) controller = new AbortController();
+     
     return () => {
       unmounted = true;
       if(controller != null) controller.abort();
@@ -270,7 +357,7 @@
 	import { writable } from "svelte/store";
 	import TextField from "$lib/components/Form/TextField.svelte";
 	import { get_now_playing_store } from "$lib/now-playing";
-	import { flip } from "svelte/animate";
+	import { sleep } from "$share/util";
 
   const file_item_out = (node: HTMLElement, { duration = 250 } = {}) => {
     return {
@@ -333,66 +420,107 @@
     audio_item_to_edit = null;
   })
 
-  const move_up = action(async (index: number) => {
-    await swap(index, index - 1);
-  })
+  // const move_up = async (index: number) => {
+  //   await swap(index, index - 1);
+  // }
 
-  const move_down = action(async (index: number) => {
-    await swap(index, index + 1);
-  });
+  // const move_down = async (index: number) => {
+  //   await swap(index, index + 1);
+  // };
 
-  const move_to_first = action(async (index: number) => {
-    const item = data.files.items[index];
-    if(item == null) return;
-    data.files.items.splice(index, 1);
-    data.files.items = [item, ...data.files.items];
-    try {
-      await _post(`/api/stations/${station_id}/files/${item._id}/order/move-to-first`, undefined)
-    } catch(e) {
-      invalidate("station:files")
-      throw e;
+  // const move_to_first = action(async (index: number) => {
+  //   const item = data.files.items[index];
+  //   if(item == null) return;
+  //   data.files.items.splice(index, 1);
+  //   data.files.items = [item, ...data.files.items];
+  //   try {
+  //     await _post(`/api/stations/${station_id}/files/${item._id}/order/move-to-first`, undefined)
+  //   } catch(e) {
+  //     invalidate("station:files")
+  //     throw e;
+  //   }
+
+  //   invalidate("station:files");
+  // })
+
+  // const move_to_last = action(async (index: number) => {
+  //   const item = data.files.items[index];
+  //   if(item == null) return;
+  //   data.files.items.splice(index, 1);
+  //   data.files.items = [...data.files.items, item];
+  //   try {
+  //     await _post(`/api/stations/${station_id}/files/${item._id}/order/move-to-last`, undefined)
+  //   } catch(e) {
+  //     invalidate("station:files")
+  //     throw e;
+  //   }
+
+  //   invalidate("station:files");
+  // })
+
+  const drag_reorder = action(async (from_i: number, to_i: number) => {
+    if(from_i === to_i) return;
+    const file = data.files.items[from_i];
+    const anchor = data.files.items[to_i];
+    if(file == null || anchor == null || file._id === anchor._id) return;
+   
+    let sorted: FileDocument[] = [];
+    for(const item of data.files.items) {
+      if(item === file) continue;
+      if(item === anchor) {
+        if(from_i < to_i) {
+          sorted.push(anchor, file);
+        } else {
+          sorted.push(file, anchor);
+        }
+      } else {
+        sorted.push(item);
+      }
     }
 
-    invalidate("station:files");
-  })
-
-  const move_to_last = action(async (index: number) => {
-    const item = data.files.items[index];
-    if(item == null) return;
-    data.files.items.splice(index, 1);
-    data.files.items = [...data.files.items, item];
-    try {
-      await _post(`/api/stations/${station_id}/files/${item._id}/order/move-to-last`, undefined)
-    } catch(e) {
-      invalidate("station:files")
-      throw e;
-    }
-
-    invalidate("station:files");
-  })
-
-
-  const swap = async (from_i: number, to_i: number) => {
-    const from = data.files.items[from_i];
-    const to = data.files.items[to_i];
-    if(from == null || to == null) return;
-    if(from._id === to._id) return;
-
-    const payload: import("$server/defs/api/stations/[station]/files/[file]/order/swap/POST/Payload").Payload = {
-      other_file_id: to._id
-    };
-
-    [data.files.items[from_i], data.files.items[to_i]] = [ to, from ];
+    data.files.items = sorted;
 
     try {
-      await _post(`/api/stations/${station_id}/files/${from._id}/order/swap`, payload);
+      if(from_i < to_i) {
+        const payload: import("$server/defs/api/stations/[station]/files/[file]/order/move-after/POST/Payload").Payload = {
+         anchor_file_id: anchor._id
+        };
+        await _post(`/api/stations/${station_id}/files/${file._id}/order/move-after`, payload);
+      } else {
+        const payload: import("$server/defs/api/stations/[station]/files/[file]/order/move-before/POST/Payload").Payload = {
+           anchor_file_id: anchor._id
+        }
+        await _post(`/api/stations/${station_id}/files/${file._id}/order/move-before`, payload);
+      }
     } catch(e) {
       invalidate("station:files");
       throw e;
     }
 
     invalidate("station:files");
-  }
+  })
+
+  // const swap = action(async (from_i: number, to_i: number) => {
+  //   const from = data.files.items[from_i];
+  //   const to = data.files.items[to_i];
+  //   if(from == null || to == null) return;
+  //   if(from._id === to._id) return;
+
+  //   const payload: import("$server/defs/api/stations/[station]/files/[file]/order/swap/POST/Payload").Payload = {
+  //     other_file_id: to._id
+  //   };
+
+  //   [data.files.items[from_i], data.files.items[to_i]] = [ to, from ];
+
+  //   try {
+  //     await _post(`/api/stations/${station_id}/files/${from._id}/order/swap`, payload);
+  //   } catch(e) {
+  //     invalidate("station:files");
+  //     throw e;
+  //   }
+
+  //   invalidate("station:files");
+  // })
 </script>
 
 <style>
@@ -472,11 +600,15 @@
     border: 1px solid #f3f3f3;
     border-collapse: collapse;
   }
-
-  tbody > tr:nth-child(odd) {
+  
+  tbody > tr.even {
+    background: #fff;
+  }
+  
+  tbody > tr.odd {
     background: #f6f6f6;
   }
-
+  
   .file-data-item {
     padding: 1rem 1rem;
     font-weight: 400;
@@ -526,8 +658,40 @@
   }
 
   .file-item {
+    position: relative;
     border-top: transparent 1px solid;
-    transition: background-color 150ms ease;
+    transition: background-color 200ms ease, opacity 300ms ease, transform 200ms ease;
+  }
+
+  .dropping .file-item {
+    transition: none;
+  }
+
+  .file-item.dragging {
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    /* transform: translateY(var(--dragging-offset-y)); */
+    /*transition: background-color 150ms ease, opacity 200ms ease; */
+  }
+
+  .file-item.drag-moved-up {
+    transform: translateY(-100%);
+  }
+
+  .file-item.drag-moved-down {
+    transform: translateY(100%);
+  }
+
+  :global(html.dragging *) {
+    user-select: none !important;
+    cursor: move !important;
+    cursor: -moz-grab !important;
+    cursor: -webkit-grab !important;
+    cursor: grab !important;
+    cursor: -moz-grabbing !important;
+    cursor: -webkit-grabbing !important;
+    cursor: grabbing !important;
   }
 
   .file-item.selected {
@@ -643,6 +807,37 @@
     padding: 0;
   }
   
+  .drag-cell {
+    margin: 0;
+    width: 2.5rem;
+    font-size: 1.5rem;
+    cursor: move; /* fallback if grab cursor is unsupported */
+    cursor: -moz-grab;
+    cursor: -webkit-grab;
+    cursor: grab;
+    transition: background-color 200ms ease;
+    touch-action: none;
+  }
+
+  .not-dragging .drag-cell:hover {
+    background-color: rgba(0,0,0,0.05);
+  }
+
+ /* (Optional) Apply a "closed-hand" cursor during drag operation. */
+  .drag-cell:active {
+    cursor: -moz-grabbing;
+    cursor: -webkit-grabbing;
+    cursor: grabbing;
+  }
+
+  .drag-handle {
+    padding: 0 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+  }
+
   .file-btn-del {
     color: var(--red);
     border: var(--red) 2px solid;
@@ -650,17 +845,19 @@
     margin-inline-end: 1.5rem;
   }
 
-  .file-btn-edit, .file-btn-move {
+  .file-btn-edit/*, .file-btn-move*/ {
     transition: background-color 150ms ease;
   }
 
-  .file-btn-edit:hover, .file-btn-move:hover {
+  .not-dragging .file-btn-edit:hover/*, .file-btn-move:hover*/ {
     background-color: rgba(0,0,0,0.05);
   }
 
+  /*
   .file-btn-hidden {
     visibility: hidden;
   }
+  */
 
   .edit-dialog-btns, .delete-dialog-btns {
     display: flex;
@@ -747,7 +944,7 @@
     border-radius: 50%;
   }
 
-  .select-all-btn:hover, .select-btn:hover {
+  .not-dragging .select-all-btn:hover, .not-dragging .select-btn:hover {
     background: rgba(0,0,0,0.05);    
   }
 
@@ -769,6 +966,7 @@
     font-size: 1.25rem;
     margin-inline-start: 0.5rem;
   }
+
 
   .cell-space-start {
     width: 1rem;
@@ -801,11 +999,46 @@
   .cell-title {
     min-width: 15rem;
   }
+
+  .dragging-tag {
+    position: fixed;
+    z-index: 1000000;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background: var(--blue);
+    color: #fff;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,.12),0 2px 4px 0 rgba(0,0,0,.08);
+    pointer-events: none;
+    transform-origin: top left;
+  }
+
+  .dragging-tag-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-inline-end: 0.5rem;
+    font-size: 1rem;
+  }
+
+  .dragging-tag-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 15rem;
+  }
 </style>
 
 <svelte:head>
   <title>Media</title>
 </svelte:head>
+
+<svelte:window on:pointermove={event => {
+  pointer_x = event.x;
+  pointer_y = event.y;
+}} />
 
 <Page>
   <h1>Media</h1>
@@ -922,13 +1155,20 @@
       {/if}
 
       <div class="playlist-scroll">
-        <div class="playlist-scroll-inner">
-         <table class="playlist-table">
+        <div class="playlist-scroll-inner"
+          on:pointerleave={event => {
+            if(event.target === event.currentTarget) {
+              drag_target_i = null;
+            }
+          }}
+         >
+         <table class="playlist-table" class:dropping class:not-dragging={dragging_item == null}>
             <thead>
               <tr>
                 <th class="btn-cell">
                   <div class="cell-space-start" />
                 </th>
+                <th class="grab-head-cell"></th>
                 <th class="btn-cell">
                   <div class="select-all-cell">
                     <button
@@ -970,10 +1210,12 @@
                     Duration
                   </div>
                 </th>
-                <th class="btn-cell"></th>
-                <th class="btn-cell"></th>
-                <th class="btn-cell"></th>
-                <th class="btn-cell"></th>
+                <!--
+                  <th class="btn-cell"></th>
+                  <th class="btn-cell"></th>
+                  <th class="btn-cell"></th>
+                  <th class="btn-cell"></th>
+                -->
                 <th class="btn-cell"></th>
                 <th class="btn-cell"></th>
               </tr>
@@ -983,13 +1225,56 @@
                 {@const selected = $selected_ids.includes(file._id)}
                 {@const player_playing = $player_playing_audio_file_id === file._id && $player_audio_state !== "paused"}
                 {@const playlist_current = now_playing_file_id === file._id}
+                <!--
                 {@const can_move_up = i !== 0}
                 {@const can_move_down = (i + 1) < data.files.items.length}  
+                -->
+                {@const drag_target = drag_target_i != null && drag_target_i === i}
+                {@const dragging = dragging_i === i}
+                {@const drag_moved_up = is_drag_moved_up(dragging_i, drag_target_i, i)}
+                {@const drag_moved_down = is_drag_moved_down(dragging_i, drag_target_i, i)}
+                {@const even = nth_even(dragging_i, drag_target_i, i)}
 
-                <tr class="file-item" animate:flip={{ duration: 200 }} aria-selected={selected} class:selected in:fade|local={{ duration: 250 }} out:file_item_out|local>
+                <tr class="file-item"
+                  data-file-id={file._id}  
+                  class:dragging
+                  class:drag-target={drag_target}
+                  class:drag-moved-up={drag_moved_up}
+                  class:drag-moved-down={drag_moved_down}
+                  class:even
+                  class:odd={!even}
+                  on:pointerenter={() => {
+                    if(dragging_i == null) return;
+                    if(drag_target_i === i) {
+                      if(dragging_i < i) drag_target_i = i - 1;
+                      else drag_target_i = i + 1;
+                    } else {
+                      drag_target_i = i;
+                    }
+                  }}
+                  aria-selected={selected} class:selected
+                  in:fade|local={{ duration: 250 }}
+                  out:file_item_out|local
+                >
                   <th class="btn-cell">
                     <div class="cell-space-start" />
                   </th>
+
+                  <th
+                    class="drag-cell"
+                    aria-label="Drag to rearrange"
+                    use:tooltip={dragging_item == null ? "Drag to rearrange" : null}
+                    on:pointerdown={event => {
+                      // @ts-ignore
+                      event.target?.releasePointerCapture?.(event.pointerId);
+                      on_drag_start(i)
+                    }}
+                  >
+                    <div class="drag-handle">
+                      <Icon d={mdiDrag} />
+                    </div>
+                  </th>
+                  
                   <td class="btn-cell">
                     <div class="select-cell">
                       <button
@@ -1053,6 +1338,7 @@
                       {track_duration(file.duration_ms)}
                     </div>
                   </td>
+                  <!--
                   <td class="btn-cell">
                     <button
                       class="file-btn file-btn-move ripple-container"
@@ -1105,11 +1391,12 @@
                       <Icon d={mdiChevronDoubleDown} />
                     </button>
                   </td>
+                  -->
                   <td class="btn-cell">
                     <button
                       class="file-btn file-btn-edit ripple-container"
                       use:ripple
-                      use:tooltip={"Edit"}
+                      use:tooltip={dragging_item == null ? "Edit" : null}
                       on:click={() => open_edit_item(file)}
                     >
                       <Icon d={mdiCircleEditOutline} />
@@ -1119,7 +1406,7 @@
                     <button
                       class="file-btn file-btn-del ripple-container"
                       use:ripple
-                      use:tooltip={"Delete"}
+                      use:tooltip={dragging_item == null ? "Delete" : null}
                       on:click={() => audio_item_to_delete = file}
                     >
                       <Icon d={mdiTrashCanOutline} />
@@ -1221,4 +1508,15 @@
       </div>
     </div>
   </Dialog>
+{/if}
+
+{#if dragging_item != null}
+  <div class="dragging-tag" transition:scale|local={{ duration: 300, }} style="top: {dragging_tag_y}px; left: {dragging_tag_x}px">
+    <div class="dragging-tag-icon">
+      <Icon d={mdiMusic} />
+    </div>
+    <div class="dragging-tag-title">
+      {dragging_item.metadata.title || dragging_item.filename}
+    </div>
+  </div>
 {/if}

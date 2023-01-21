@@ -288,10 +288,18 @@ export class StationFiles {
   }
 
   async move_to_first(ip: string | null, token: string, station_id: string, file_id: string): Promise<import("./defs/api/stations/[station]/files/[file]/order/move-to-first/POST/Output").Output> {
-    return await this.client.post(ip, token, `/stations/${station_id}/files/${file_id}/order/move-to-front`, undefined);
+    return await this.client.post(ip, token, `/stations/${station_id}/files/${file_id}/order/move-to-first`, undefined);
   }
 
   async move_to_last(ip: string | null, token: string, station_id: string, file_id: string): Promise<import("./defs/api/stations/[station]/files/[file]/order/move-to-last/POST/Output").Output> {
-    return await this.client.post(ip, token, `/stations/${station_id}/files/${file_id}/order/move-to-back`, undefined);
+    return await this.client.post(ip, token, `/stations/${station_id}/files/${file_id}/order/move-to-last`, undefined);
+  }
+
+  async move_before(ip: string | null, token: string, station_id: string, file_id: string, payload: import("./defs/api/stations/[station]/files/[file]/order/move-before/POST/Payload").Payload): Promise<import("./defs/api/stations/[station]/files/[file]/order/move-before/POST/Output").Output> {
+    return await this.client.post(ip, token, `/stations/${station_id}/files/${file_id}/order/move-before`, payload)
+  }
+
+  async move_after(ip: string | null, token: string, station_id: string, file_id: string, payload: import("./defs/api/stations/[station]/files/[file]/order/move-after/POST/Payload").Payload): Promise<import("./defs/api/stations/[station]/files/[file]/order/move-after/POST/Output").Output> {
+    return await this.client.post(ip, token, `/stations/${station_id}/files/${file_id}/order/move-after`, payload)
   }
 }

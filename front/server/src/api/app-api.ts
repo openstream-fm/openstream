@@ -108,6 +108,16 @@ export const app_api = ({
       return await client.stations.files.swap_order(ip(req), token(req), req.params.station, req.params.file, req.body);
     }))
 
+  api.route("/stations/:station/files/:file/order/move-before")
+    .post(json(async req => {
+      return await client.stations.files.move_before(ip(req), token(req), req.params.station, req.params.file, req.body);
+    }))
+  
+  api.route("/stations/:station/files/:file/order/move-after")
+    .post(json(async req => {
+      return await client.stations.files.move_after(ip(req), token(req), req.params.station, req.params.file, req.body);
+    }))
+
   api.route("/stations/:station/files/:file/order/move-to-first")
     .post(json(async req => {
       return await client.stations.files.move_to_first(ip(req), token(req), req.params.station, req.params.file);
@@ -117,7 +127,9 @@ export const app_api = ({
     .post(json(async req => {
       return await client.stations.files.move_to_last(ip(req), token(req), req.params.station, req.params.file);
     }))
-  
+
+
+    
   api.route("/stations/:station/files/:file/metadata")
     .put(json(async req => {
       return await client.stations.files.put_metadata(ip(req), token(req), req.params.station, req.params.file, req.body);

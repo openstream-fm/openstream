@@ -36,6 +36,7 @@
 	"type": "module",
 	"dependencies": {
 		"@mdi/js": "^7.0.96",
+		"@neodrag/svelte": "^2.0.3",
 		"@sveltejs/adapter-node": "^1.0.0",
 		"@sveltejs/kit": "^1.0.1",
 		"http-status-codes": "^2.2.0",

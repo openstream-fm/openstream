@@ -75,6 +75,14 @@ pub fn router() -> Builder {
     .post(stations::files::order::swap::post::Endpoint {}.into_handler());
 
   app
+    .at("/stations/:station/files/:file/order/move-before")
+    .post(stations::files::order::move_before::post::Endpoint {}.into_handler());
+
+  app
+    .at("/stations/:station/files/:file/order/move-after")
+    .post(stations::files::order::move_after::post::Endpoint {}.into_handler());
+
+  app
     .at("/stations/:station/files/:file/order/move-to-first")
     .post(stations::files::order::move_to_first::post::Endpoint {}.into_handler());
 
