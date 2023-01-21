@@ -1396,7 +1396,7 @@
                     <button
                       class="file-btn file-btn-edit ripple-container"
                       use:ripple
-                      use:tooltip={dragging_item == null ? "Edit" : null}
+                      use:tooltip={dragging_item == null && audio_item_to_edit == null ? "Edit" : null}
                       on:click={() => open_edit_item(file)}
                     >
                       <Icon d={mdiCircleEditOutline} />
@@ -1406,7 +1406,7 @@
                     <button
                       class="file-btn file-btn-del ripple-container"
                       use:ripple
-                      use:tooltip={dragging_item == null ? "Delete" : null}
+                      use:tooltip={dragging_item == null && audio_item_to_delete == null ? "Delete" : null}
                       on:click={() => audio_item_to_delete = file}
                     >
                       <Icon d={mdiTrashCanOutline} />
