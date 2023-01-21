@@ -1,10 +1,14 @@
 import { browser } from "$app/environment";
+import { default_logger } from "$lib/logger";
+import { get_now_playing_store, type NowPlaying, type StoreValue } from "$lib/now-playing";
 import { _get } from "$share/net.client";
-import { derived, get, writable } from "svelte/store";
+import { derived, get, readable, writable } from "svelte/store";
 
 export type PlayerState = PlayerState.Closed | PlayerState.Station | PlayerState.AudioFile;
 
 export type AudioState = "playing" | "loading" | "paused";
+
+const logger = default_logger.scoped("player");
 
 export namespace PlayerState {
   export interface Base {
@@ -22,7 +26,6 @@ export namespace PlayerState {
       _id: string,
       name: string
     }
-    now_playing: import("$server/defs/api/stations/[station]/now-playing/GET/Output").Output | null;
   }
 
   export interface AudioFile extends Base {
@@ -33,18 +36,38 @@ export namespace PlayerState {
 }
 
 let audio: HTMLAudioElement | null = null;
-let now_playing_timer: any = null;
+
+const now_playing = writable<NowPlaying | null>(null);
+const readonly = { subscribe: now_playing.subscribe };
+export { readonly as player_now_playing }
+
+let current_now_playing_unsub: (() => void) | null = null;
+const now_playing_start = (station_id: string) => {
+  now_playing_stop();
+  logger.info("now playing subscriber start");
+  const store = get_now_playing_store(station_id);
+  current_now_playing_unsub = store.subscribe(v => now_playing.set(v?.info ?? null));
+}
+
+const now_playing_stop = () => {
+  now_playing.set(null);  
+  if(current_now_playing_unsub) {
+    logger.info("now playing subscriber stop")
+    current_now_playing_unsub();
+    current_now_playing_unsub = null;
+  }
+}
 
 export const pause = () => {
   // TODO: why onpause not called with station audio type
-  console.log("[player] pause()");
+  logger.info("pause()");
   audio?.pause();
   set_audio_state("paused");
   const $state = get(player_state);
   if($state.type === "closed") {}
   else if($state.type === "track") {}
   else if($state.type === "station") {
-    console.log("[player] destroy tag");
+    logger.info("destroy tag");
     destroy_audio_tag(); 
   }
   else assert_never($state);
@@ -52,10 +75,13 @@ export const pause = () => {
 
 export const resume = () => {
   const $state = get(player_state);
-  if($state.type === "closed") console.warn("[player] resume called with player_state.type === 'closed'");
+  if($state.type === "closed") logger.warn("resume called with player_state.type === 'closed'");
   else if($state.type === "track") audio?.play();
   else if($state.type === "station") {
-    if($state.audio_state === "paused") play_station($state.station);
+    if($state.audio_state === "paused") {
+      const audio = get_audio_tag(`https://stream.local.openstream.fm/stream/${$state.station._id}`)
+      audio.play();
+    }
   } else assert_never($state);
 }
 
@@ -70,36 +96,34 @@ export const player_title = derived(player_state, (state): string => {
   else return assert_never(state);
 })
 
-export const player_subtitle = derived(player_state, (state): string | null => {
+export const player_subtitle = derived([player_state, now_playing], ([state, now_playing]): string | null => {
   if(state.type === "closed") return null;
   else if(state.type === "track") return state.file.metadata.artist;
   else if(state.type === "station") {
-    if(state.now_playing == null) return null;
-    else if(state.now_playing.kind === "none") return null;
-    else if(state.now_playing.kind === "live") return "Live streaming";
-    else if(state.now_playing.kind === "playlist") {
-      const artist = state.now_playing.file.metadata.artist;
-      const title = state.now_playing.file.metadata.title || state.now_playing.file.filename;
+    if(now_playing == null) return null;
+    else if(now_playing.kind === "none") return null;
+    else if(now_playing.kind === "live") return "Live streaming";
+    else if(now_playing.kind === "playlist") {
+      const artist = now_playing.file.metadata.artist;
+      const title = now_playing.file.metadata.title || now_playing.file.filename;
       if(artist) {
         return `${title} - ${artist}`
       } else {
         return title;
       }
     }
-    else return assert_never(state.now_playing)
+    else return assert_never(now_playing)
   }
   else return assert_never(state)
 })
 
 export const player_playing_audio_file_id = derived(player_state, (state): string | null => {
-  const $state = get(player_state);
-  if($state.type === "track") return $state.file._id;
-  else return null;
+    if(state.type === "track") return state.file._id;
+    else return null;
 })
 
 export const player_playing_station_id = derived(player_state, (state): string | null => {
-  const $state = get(player_state);
-  if($state.type === "station") return $state.station._id;
+  if(state.type === "station") return state.station._id;
   else return null;
 })
 
@@ -112,25 +136,30 @@ export const player_audio_state = derived(player_state, (state): AudioState => {
 
 export const play_station = (station: { _id: string, name: string }) => {
   if(!browser) throw new Error("player.play_station called in ssr context");
-  destroy_audio_tag();
-  player_state.set({
-    type: "station",
-    now_playing: null,
-    audio_state: "loading",
-    station,
-  })
-  // TODO: stream url
-  const audio = get_audio_tag(`https://stream.local.openstream.fm/stream/${station._id}`)
-  audio.play().catch(e => {
-    console.warn(`[player] error playing station ${station._id}`, e)
-  })
-  start_now_playing_updater();
+  const $state = get(player_state);
+  if($state.type === "station" && $state.station._id === station._id) {
+    resume();
+  } else {
+    destroy_audio_tag();
+    player_state.set({
+      type: "station",
+      audio_state: "loading",
+      station,
+    })
+    // TODO: stream url
+    const audio = get_audio_tag(`https://stream.local.openstream.fm/stream/${station._id}`)
+    audio.play().catch(e => {
+      logger.warn(`error playing station ${station._id} => ${e}`)
+    })
+
+    now_playing_start(station._id);
+  }
 }
 
 export const play_track = (file: import("$server/defs/db/AudioFile").AudioFile) => {
   if(!browser) throw new Error("player.play_track called in ssr context");
   destroy_audio_tag();
-  stop_now_playing_updater();
+  now_playing_stop();
   player_state.set({
     type: "track",
     file,
@@ -138,13 +167,13 @@ export const play_track = (file: import("$server/defs/db/AudioFile").AudioFile) 
   })
   const audio = get_audio_tag(`/api/stations/${file.station_id}/files/${file._id}/stream`);
   audio.play().catch(e => {
-    console.warn(`[player] error playing audio track ${file._id}`, e);
+    logger.warn(`error playing audio track ${file._id} => ${e}`);
   })
 }
 
 export const close = () => {
   destroy_audio_tag()
-  stop_now_playing_updater();
+  now_playing_stop();
   player_state.set({ type: "closed" });
 }
 
@@ -155,39 +184,8 @@ const destroy_audio_tag = () => {
   }
 }
 
-const stop_now_playing_updater = () => {
-  if(now_playing_timer) clearTimeout(now_playing_timer);
-  now_playing_timer = null;
-}
-
-const NOW_PLAYING_INTERVAL = 3_000;
-
-const start_now_playing_updater = () => {
-  const fn = async () => {
-    try {
-      const $station_id = get(player_playing_station_id);
-      if($station_id == null) return;
-      const now_playing: import("$server/defs/api/stations/[station]/now-playing/GET/Output").Output = await _get(`/api/stations/${$station_id}/now-playing`);
-      const $state = get(player_state);
-      if($state.type !== "station") return;
-      if($state.station._id !== $station_id) return;
-      player_state.set({
-        ...$state,
-        now_playing,
-      })
-    } catch(e) {
-      console.warn("[player]: error getting now playing info", e)
-    }
-
-    setTimeout(fn, NOW_PLAYING_INTERVAL);
-  }
-
-  fn();
-  now_playing_timer = setTimeout(fn, NOW_PLAYING_INTERVAL);
-}
-
 const set_audio_state = (audio_state: AudioState) => {
-  console.log("[player] set audio state", audio_state);
+  logger.info("set audio state", audio_state);
   const $state = get(player_state);
   if($state.type === "closed") return;
   else if($state.type === "station") player_state.set({ ...$state, audio_state });
@@ -202,27 +200,27 @@ const get_audio_tag = (src: string): HTMLAudioElement => {
     set_audio_state("loading");
 
     audio.onpause = () => {
-      console.log("[player] onpause");
+      logger.info("onpause");
       set_audio_state("paused");
     }
 
     audio.onerror = () => {
-      console.log("[player] onerror")
+      logger.info("onerror")
       set_audio_state("paused");
     }
 
     audio.onseeking = () => {
-      console.log("[player] onsseking")
+      logger.info("onseeking")
       set_audio_state("loading");
     }
 
     audio.onplay = () => {
-      console.log("[player] onplay")
+      logger.info("onplay")
       set_audio_state("loading");
     }
 
     audio.onplaying = () => {
-      console.log("[player] onplaying")
+      logger.info("onplaying")
       set_audio_state("playing");
     }
     

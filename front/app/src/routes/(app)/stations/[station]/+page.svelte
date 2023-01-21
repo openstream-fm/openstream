@@ -4,5 +4,5 @@
 </script>
 
 {#key data.station._id}
-  <KeyedPage {data} />
+  <KeyedPage bind:data />
 {/key}

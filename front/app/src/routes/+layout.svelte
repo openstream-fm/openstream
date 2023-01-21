@@ -2,22 +2,25 @@
 	import { onMount } from "svelte";
   import { intertab } from "$share/intertab";
 	import { browser } from "$app/environment";
+	import { default_logger } from "$lib/logger";
 
   export let data: import("./$types").LayoutData;
 
   $: user_id = data.maybe_user?._id ?? null;
   
+  const logger = default_logger.scoped("app")
+
   const channel = intertab<string | null>("openstream.intertab.user_id");
     
   $: if(browser) {
-    console.log("intertab set", { set_value: user_id, old_value: channel.get() });
+    logger.info("intertab set", { set_value: user_id, old_value: channel.get() });
     channel.set(user_id);  
   } 
 
   onMount(() => {
-    console.log("root layout mounted", { user_id });
+    logger.info("app layout mounted", { user_id });
     return channel.watch((new_value, old_value) => {
-      console.log("intertab user_id changed", { user_id, new_value, old_value })
+      logger.info("intertab user_id changed", { user_id, new_value, old_value })
       if(new_value !== user_id) {
         location.assign("/");
       }

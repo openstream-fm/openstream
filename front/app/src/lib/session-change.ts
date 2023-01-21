@@ -1,11 +1,14 @@
 import { browser } from "$app/environment";
+import { default_logger } from "$server/logger";
 
 type Listener = () => void;
 const KEY = "openstream.sessionChange";
 const fns = new Map<number, Listener>();
 let i = 0;
 
-export const onTabSessionChange = (fn: Listener) => {
+const logger = default_logger.scoped("intertab");
+
+export const on_tab_session_change = (fn: Listener) => {
   if(browser) {
     const idx = i++;  
     fns.set(idx, fn);
@@ -13,18 +16,18 @@ export const onTabSessionChange = (fn: Listener) => {
       fns.delete(idx);
     }
   } else {
-    console.warn("onTabSessionChange called in server side");
+    logger.warn("on_tab_session_change called in server side");
     // eslint-disable-next-line
     return () => {};
   }
 }
 
-export const dispatchTabSessionChange = () => {
+export const dispatch_tab_session_change = () => {
   if(browser) {
     const id = Number(localStorage.getItem(KEY)) || 0;
     localStorage.setItem(KEY, `${id + 1}`);
   } else {
-    console.warn("dispatchTabSessionChange called in server side");
+    logger.warn("dispatch_tab_session_change called in server side");
   }
 }
 

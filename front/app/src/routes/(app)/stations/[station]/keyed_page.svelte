@@ -1,22 +1,31 @@
 <script lang="ts">
+  import { invalidate } from "$app/navigation";
   import CircularMeter from "$lib/components/CircularMeter/CircularMeter.svelte";
   import Page from "$lib/components/Page.svelte";
 	import { pause, player_state, play_station } from "$lib/components/Player/player";
+	import { default_logger } from "$lib/logger";
+	import { get_now_playing_store } from "$lib/now-playing";
+	import type { StationLimits } from "$server/defs/StationLimits";
 	import CircularProgress from "$share/CircularProgress.svelte";
 	import Icon from "$share/Icon.svelte";
 	import { _get } from "$share/net.client";
 	import { ripple } from "$share/ripple";
 	import { mdiMicrophoneOutline, mdiPause, mdiPlay } from "@mdi/js";
-  //import preety_bytes from "pretty-bytes";
 	import { onMount } from "svelte";
 	import { derived } from "svelte/store";
 
   export let data: import("./$types").PageData;
-  $: station = data.station;
+
+  const logger = default_logger.scoped("dashboard");
+
+  const now_playing = get_now_playing_store(data.station._id, data.now_playing);
+  $: if($now_playing) data.now_playing = $now_playing.info;
+
+  $: on_air = $now_playing!.info.kind !== "none" || data.station.limits.storage.used !== 0;
 
   const station_preview_state = derived(player_state, (state): "loading" | "paused" | "playing" => {
     if(state.type === "station") {
-      if(station?._id && station._id === state.station._id) return state.audio_state;
+      if(data.station?._id && data.station._id === state.station._id) return state.audio_state;
       else return "paused";
     } else {
       return "paused";
@@ -25,7 +34,7 @@
 
   const toggle_play = () => {
     if($station_preview_state === "playing" || $station_preview_state === "loading") pause();
-    else play_station({ _id: station._id, name: station.name })
+    else play_station({ _id: data.station._id, name: data.station.name })
   }
 
   const stats_num = (v: number): string => {
@@ -53,22 +62,34 @@
     return `${to_fixed_2(v)} PB`;
   }
 
-  const LIMITS_INTERVAL = 5_000;
-  
+  const UPDATE_INTERVAL = 5_000;
+
   onMount(() => {
 
-    const update_limits = async () => {
-      try {
-        const limits: import("$server/defs/api/stations/[station]/GET/Output").Output["station"]["limits"] = await _get(`/api/stations/${station._id}/limits`);
-        station.limits = limits;
-      } catch(e) {
-        console.warn(`error updating limits ${e}`)
-      } finally {
-        timer = setTimeout(update_limits, LIMITS_INTERVAL,);
+    const update = async () => {
+      
+      const token = timer;
+
+      const skip = document.hidden === true;
+
+      if(skip) {
+        logger.info("skipping update tick because of document.hidden");
+      } else {
+        try {
+          const limits: StationLimits = await _get(`/api/stations/${data.station._id}/limits`);
+          logger.info(`station limits updated`);
+          data.station.limits = limits;
+        } catch(e) {
+          logger.warn(`error updating station limits: ${e}`);
+        }
+      }
+
+      if(token === timer) {
+        timer = setTimeout(update, skip ? 1000 : UPDATE_INTERVAL);
       }
     }
 
-    let timer = setTimeout(update_limits, LIMITS_INTERVAL);
+    let timer = setTimeout(update, UPDATE_INTERVAL);
     
     return () => clearTimeout(timer);
   })
@@ -145,10 +166,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     flex: 1;
   }
 
-  .top-box-icon {
+  .air-icon {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -159,24 +181,33 @@
     font-size: 3rem;
   }
 
-  .top-box-title {
+  .air-title {
     font-weight: 700;
     font-size: 2rem;
     margin-top: 1rem;
     white-space: nowrap;
   }
 
-  .top-box-subtitle {
+  .air-subtitle {
     color: #444;
     margin-top: 1rem;
   }
 
-  .top-box[data-on] .top-box-icon {
+  .top-box-air.on .air-icon {
     color: var(--green);
   }
-
-  .top-box[data-on] .top-box-title {
+  .top-box-air.on .air-title {
     color: var(--green);
+  }
+  
+
+  .top-box-air.off .air-icon {
+    color: var(--red);
+  }
+
+  .top-box-air.off .air-title {
+    margin-top: 1.25rem;
+    color: var(--red);
   }
 
   .preview-btn {
@@ -242,10 +273,19 @@
     font-weight: 600;
   }
 
+  .top-boxes[data-air="off"] > .top-box-preview {
+    visibility: hidden;
+    order: 3;
+  }
+
   @media screen and (max-width: 700px) {
     .top-boxes {
       flex-direction: column;
       gap: 1rem; 
+    }
+
+    .top-boxes[data-air="off"] > .top-box-preview {
+      display: none;
     }
 
     .meters {
@@ -264,21 +304,36 @@
 
 <Page>
 
-  <div class="top-boxes">
-    <div class="top-box" data-on>
-      <div class="top-box-icon">
+  <div class="top-boxes" data-air={on_air ? "on" : "off"}>
+    <div class="top-box top-box-air" class:on={on_air} class:off={!on_air}>
+      <div class="air-icon">
         <Icon d={mdiMicrophoneOutline} />
       </div>
-      <div class="top-box-title">
-        ON AIR
+      <div class="air-title">
+        {#if on_air}
+          <span class="on-air">ON AIR</span>
+        {:else}
+          <span class="off-air">OFF AIR</span>
+        {/if}
       </div>
-      <div class="top-box-subtitle">
-        Auto DJ
-      </div>
+      {#if on_air}
+        <div class="air-subtitle">
+          {#if data.now_playing.kind === "playlist" || data.now_playing.kind === "none"}
+            Audio DJ
+          {:else if data.now_playing.kind === "live"}
+            Live Streaming
+          {/if}
+        </div>
+      {/if}
     </div>
 
     <div class="top-box top-box-preview">
-      <button use:ripple class="preview-btn ripple-container" data-state={$station_preview_state} on:click={toggle_play}>
+      <button
+        use:ripple class="preview-btn ripple-container"
+        data-state={$station_preview_state}
+        on:click={toggle_play}
+        aria-label={$station_preview_state === "playing" ? "Pause" : "Play"}
+      >
         {#if $station_preview_state === "playing"}
           <Icon d={mdiPause} />
         {:else if $station_preview_state === "paused"}
@@ -321,12 +376,12 @@
         Listeners
       </div>
       <div class="meter-graph">
-        <CircularMeter used={station.limits.listeners.used / station.limits.listeners.total} />
+        <CircularMeter used={data.station.limits.listeners.used / data.station.limits.listeners.total} />
       </div>
       <div class="meter-text">
-        <span class="used">{station.limits.listeners.used}</span>
+        <span class="used">{data.station.limits.listeners.used}</span>
         <span class="of">of</span>
-        <span class="avail">{station.limits.listeners.total}</span>
+        <span class="avail">{data.station.limits.listeners.total}</span>
       </div>
     </div>
     <div class="meter">
@@ -334,12 +389,12 @@
         Transfer
       </div>
       <div class="meter-graph">
-        <CircularMeter used={station.limits.transfer.used / station.limits.transfer.total} />
+        <CircularMeter used={data.station.limits.transfer.used / data.station.limits.transfer.total} />
       </div>
       <div class="meter-text">
-        <span class="used">{preety_bytes(station.limits.transfer.used)}</span>
+        <span class="used">{preety_bytes(data.station.limits.transfer.used)}</span>
         <span class="of">of</span>
-        <span class="avail">{preety_bytes(station.limits.transfer.total)}</span>
+        <span class="avail">{preety_bytes(data.station.limits.transfer.total)}</span>
       </div>
     </div>
     <div class="meter">
@@ -347,12 +402,12 @@
         Storage
       </div>
       <div class="meter-graph">
-        <CircularMeter used={station.limits.storage.used / station.limits.storage.total} />
+        <CircularMeter used={data.station.limits.storage.used / data.station.limits.storage.total} />
       </div>
       <div class="meter-text">
-        <span class="used">{preety_bytes(station.limits.storage.used)}</span>
+        <span class="used">{preety_bytes(data.station.limits.storage.used)}</span>
         <span class="of">of</span>
-        <span class="avail">{preety_bytes(station.limits.storage.total)}</span>
+        <span class="avail">{preety_bytes(data.station.limits.storage.total)}</span>
       </div>
     </div>
   </div>

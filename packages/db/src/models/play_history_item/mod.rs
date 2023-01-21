@@ -58,3 +58,13 @@ impl Model for PlayHistoryItem {
     vec![station_id, start_at, kind]
   }
 }
+
+#[cfg(test)]
+mod test {
+  use super::*;
+
+  #[test]
+  fn keys_match() {
+    assert_eq!(crate::KEY_ID, PlayHistoryItem::KEY_ID);
+  }
+}

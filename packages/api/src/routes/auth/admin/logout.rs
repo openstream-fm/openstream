@@ -66,7 +66,7 @@ pub mod post {
           }
 
           GeneratedBy::Login { .. } | GeneratedBy::Register { .. } => {
-            AccessToken::delete_by_id(&access_token.id).await?;
+            AccessToken::set_deleted_by_id(&access_token.id).await?;
             Ok(Output(EmptyStruct(())))
           }
         },

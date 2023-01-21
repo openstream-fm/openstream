@@ -72,11 +72,18 @@
     justify-content: center;
     font-size: 2rem;
     color: #333;
+    border-radius: 0.25rem;
+    transition: background-color 150ms ease;
   }
 
   .toggle[data-audio-state="loading"] {
     font-size: 1.5rem;
   }
+
+  .toggle:hover {
+    background-color: rgba(0,0,0,0.05);
+  }
+
 
   .btns {
     flex: none;
@@ -95,6 +102,12 @@
     justify-content: center;
     color: #333;
     font-size: 1.5rem;
+    border-radius: 0.25rem;
+    transition: background-color 150ms ease;
+  }
+
+  .btn:hover {
+    background-color: rgba(0,0,0,0.05);
   }
 
 </style>

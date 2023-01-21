@@ -212,7 +212,7 @@ pub async fn get_access_token(req: &Request) -> Result<AccessToken, GetAccessTok
     },
   };
 
-  let doc = match AccessToken::touch(&key).await? {
+  let doc = match AccessToken::touch_cached(&key).await? {
     None => {
       ip_limit::hit(ip);
       return Err(GetAccessTokenScopeError::NotFound);

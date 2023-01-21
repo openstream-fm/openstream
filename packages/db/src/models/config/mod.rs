@@ -5,9 +5,9 @@ use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS, Singleton)]
 #[singleton(collection = "config")]
-#[ts(export)]
-#[ts(export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../defs/db/")]
 #[serde(rename_all = "snake_case")]
+#[macros::keys]
 pub struct Config {
   #[serde(rename = "_id")]
   pub id: String,
@@ -65,5 +65,15 @@ impl Default for Limits {
       transfer: 5_000_000_000_000, // 5 TB / month
       storage: 5_000_000_000,      // 5 GB
     }
+  }
+}
+
+#[cfg(test)]
+mod test {
+  use super::*;
+
+  #[test]
+  fn keys_match() {
+    assert_eq!(crate::KEY_ID, Config::KEY_ID);
   }
 }

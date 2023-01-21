@@ -1,0 +1,25 @@
+[package]
+name = "migrations"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "migration-add-audio-file-order"
+path = "./src/migration_add_audio_file_order.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.68"
+config = { version = "0.1.0", path = "../../packages/config" }
+db = { version = "0.1.0", path = "../../packages/db" }
+dotenv = "0.15.0"
+futures-util = "0.3.25"
+log = "0.4.17"
+logger = { version = "0.1.0", path = "../../packages/logger" }
+macros = { version = "0.1.0", path = "../../packages/macros" }
+mongodb = "2.3.1"
+owo-colors = { version = "3.5.0", path = "../../packages/owo-colors" }
+serde = { version = "1.0.152", features = ["derive"] }
+serde-util = { version = "0.1.0", path = "../../packages/serde-util" }
+tokio = { version = "1.24.2", features = ["full"] }

@@ -1,37 +1,95 @@
-import _session from "express-session";
-import MongoDBSession from "connect-mongodb-session";
+import cookieParser from "cookie-parser";
+import { NextFunction, Request, Response, Router } from "express";
+import { is } from "typia";
 import { Config } from "./config";
-import type { Request } from "express"
+import crypto from "crypto";
+import { Logger } from "./logger";
 
-const SessionStore = MongoDBSession(_session);
+const COOKIE_NAME = "openstream-front.sid";
 
-const store = (config: Config) => new SessionStore({
-  uri: config.mongodb.url,
-  collection: "sessions",
-})
+export type SessionData = {
+  user: { _id: string, token: string } | null;
+}
 
-const session_config = (config: Config): Parameters<typeof _session>[0] => {
-  return {
-    name: "openstream-front.sid",
-    secret: config.session.secret,
-    cookie: {
-      // domain: config.session.domain,
-      maxAge: config.session.maxAgeDays * 24 * 60 * 60 * 1000
-    },
-    store: store(config),
-    rolling: true,
-    resave: false,
-    saveUninitialized: false,
+const ALGO = "aes-256-ctr"
+
+export function encrypt(value: string, iv: Buffer, key: Buffer, logger: Logger): string {
+  try {
+    const cipher = crypto.createCipheriv(ALGO, key, iv)
+    const start = cipher.update(value, "utf8", "base64")
+    return start + cipher.final("base64")
+  } catch(e) {
+    logger.scoped("cookie-session").warn(`encrypt error: ${e}`)
+    throw e;
   }
 }
 
-export const session = (config: Config) => _session(session_config(config));
+export function decrypt(base64: string, iv: Buffer, key: Buffer, logger: Logger): string {
+  try {
+    const decipher = crypto.createDecipheriv(ALGO, key, iv);
+    const start = decipher.update(base64, "base64", "utf8");
+    return start + decipher.final("utf8")
+  } catch(e) {
+    logger.scoped("cookie-session").warn(`decrypt error: ${e}`)
+    throw e;
+  }
+}
 
-export const save_session = async (req: Request) => {
-  return new Promise<void>((resolve, reject) => {
-    req.session!.save(e => {
-      if(e) reject(e);
-      else resolve();
-    })
+const get_cookie_session = (req: Request, iv: Buffer, key: Buffer, logger: Logger): SessionData => {
+  try {
+    const v = req.cookies[COOKIE_NAME];
+    if(typeof v !== "string") return { user: null };
+    const json_string = decrypt(v, iv, key, logger);
+    let data: any;
+    try {
+      data = JSON.parse(json_string);
+    } catch (e) {
+      logger.scoped("cookie-session").warn(`json parse error: JSON.parse('${json_string}'): ${e}`)
+    }
+    if(is<SessionData>(data)) {
+      return data;
+    } else {
+      return { user: null };
+    }
+  } catch(e) {
+    return { user: null }
+  }
+}
+
+declare global {
+  namespace Express {
+    interface Request {
+      cookie_session: SessionData;
+    }
+
+    interface Response {
+      set_session: (data: SessionData) => void;
+      clear_session: () => void;
+    }
+  }
+}
+
+export const session = (config: Config, logger: Logger) => {
+  const iv = crypto.createHash("md5").update(config.session.secret).digest();
+  const key = crypto.createHash("sha256").update(config.session.secret).digest();
+  
+
+  const router = Router();
+  router.use(cookieParser());
+  router.use((req: Request, res: Response, next: NextFunction) => {
+    req.cookie_session = get_cookie_session(req, iv, key, logger);
+    res.set_session = (data: SessionData) => {
+      res.cookie(
+        COOKIE_NAME,
+        encrypt(JSON.stringify(data), iv, key, logger), { 
+          maxAge: config.session.maxAgeDays + 1000 * 60 * 60 * 24,
+          httpOnly: true,
+          sameSite: "strict",
+        })
+    }
+    res.clear_session = () => res.clearCookie(COOKIE_NAME, { httpOnly: true, signed: true });
+    next();
   })
+
+  return router;
 }

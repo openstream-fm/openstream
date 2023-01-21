@@ -282,4 +282,16 @@ export class StationFiles {
   async put_metadata(ip: string | null, token: string, station_id: string, file_id: string, payload: import("./defs/api/stations/[station]/files/[file]/metadata/PUT/Payload").Payload): Promise<import("./defs/api/stations/[station]/files/[file]/metadata/PUT/Output").Output> {
     return await this.client.put(ip, token, `/stations/${station_id}/files/${file_id}/metadata`, payload);
   }
+
+  async swap_order(ip: string | null, token: string, station_id: string, file_id: string, payload: import("./defs/api/stations/[station]/files/[file]/order/swap/POST/Payload").Payload): Promise<import("./defs/api/stations/[station]/files/[file]/order/swap/POST/Output").Output> {
+    return await this.client.post(ip, token, `/stations/${station_id}/files/${file_id}/order/swap`, payload);
+  }
+
+  async move_to_first(ip: string | null, token: string, station_id: string, file_id: string): Promise<import("./defs/api/stations/[station]/files/[file]/order/move-to-first/POST/Output").Output> {
+    return await this.client.post(ip, token, `/stations/${station_id}/files/${file_id}/order/move-to-front`, undefined);
+  }
+
+  async move_to_last(ip: string | null, token: string, station_id: string, file_id: string): Promise<import("./defs/api/stations/[station]/files/[file]/order/move-to-last/POST/Output").Output> {
+    return await this.client.post(ip, token, `/stations/${station_id}/files/${file_id}/order/move-to-back`, undefined);
+  }
 }

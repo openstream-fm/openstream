@@ -1,16 +1,29 @@
+use std::collections::hash_map::Entry;
 use std::net::IpAddr;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering;
+use std::time::Instant;
 
 use crate::Model;
 // compiler bug (this is indeed used)
 #[allow(unused)]
 use mongodb::bson::{self, doc};
-use mongodb::options::{FindOneAndUpdateOptions, IndexOptions, ReturnDocument};
+use mongodb::options::IndexOptions;
 use mongodb::IndexModel;
 use serde::{Deserialize, Serialize};
 use serde_util::as_f64;
 use serde_util::DateTime;
 use ts_rs::TS;
 use user_agent::UserAgent;
+
+use log::*;
+
+use tokio::time::Duration;
+
+use parking_lot::Mutex;
+use std::collections::HashMap;
+use std::sync::Arc;
+use tokio::sync::OnceCell;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
 #[ts(export, export_to = "../../defs/db/", rename = "AccessTokenScope")]
@@ -110,31 +123,190 @@ pub struct AccessToken {
   #[ts(skip)]
   pub generated_by: GeneratedBy,
 
-  pub created_at: DateTime,
   pub last_used_at: Option<DateTime>,
 
   #[serde(with = "as_f64")]
   pub hits: u64,
+
+  pub created_at: DateTime,
+  pub deleted_at: Option<DateTime>,
+}
+
+struct HitsEntry {
+  hits: usize,
+  last_used_at: DateTime,
+}
+
+static HITS_MAP: Mutex<Option<HashMap<String, HitsEntry>>> = Mutex::new(None);
+static HIT_JOB_STARTED: AtomicBool = AtomicBool::new(false);
+
+const HIT_SAVE_INTERVAL: Duration = Duration::from_secs(5);
+
+fn start_access_token_hit_saver_job() {
+  info!("access token hit saver background job started");
+  tokio::spawn(async move {
+    loop {
+      tokio::time::sleep(HIT_SAVE_INTERVAL).await;
+      let map = {
+        let mut lock = HITS_MAP.lock();
+        if lock.is_none() {
+          trace!("hits saver loop: no changes");
+          continue;
+        }
+        lock.take().unwrap()
+      };
+
+      for (id, entry) in map {
+        let update = doc! {
+          "$inc": { AccessToken::KEY_HITS: entry.hits as f64 },
+          "$set": { AccessToken::KEY_LAST_USED_AT: entry.last_used_at }
+        };
+
+        match AccessToken::update_by_id(&id, update).await {
+          Err(e) => {
+            warn!("hits and last date save error for token {id}: {e}");
+          }
+          Ok(_) => {
+            trace!("hits and last date saved for token {id}");
+          }
+        }
+      }
+    }
+  });
+}
+
+const CACHE_CLEAR_INTERVAL: Duration = Duration::from_secs(5);
+static CACHE_JOB_STARTED: AtomicBool = AtomicBool::new(false);
+
+#[allow(clippy::type_complexity)]
+static ACCESS_TOKEN_CACHE: tokio::sync::Mutex<
+  Option<HashMap<String, (Instant, Arc<OnceCell<AccessToken>>)>>,
+> = tokio::sync::Mutex::const_new(None);
+
+const ACCESS_TOKEN_CACHE_VALIDITY: Duration = Duration::from_secs(30);
+
+fn start_access_token_cache_job() {
+  info!("access token cache clear job started");
+  tokio::spawn(async move {
+    loop {
+      tokio::time::sleep(CACHE_CLEAR_INTERVAL).await;
+
+      let mut lock = ACCESS_TOKEN_CACHE.lock().await;
+
+      match lock.as_mut() {
+        None => continue,
+        Some(map) => map.retain(|_, (got_at, _)| got_at.elapsed() < CACHE_CLEAR_INTERVAL),
+      }
+    }
+  });
 }
 
 impl AccessToken {
-  pub async fn touch(key: &str) -> Result<Option<AccessToken>, mongodb::error::Error> {
-    let filter = doc! { Self::KEY_KEY: key };
+  pub async fn touch_cached(key: &str) -> Result<Option<AccessToken>, mongodb::error::Error> {
+    let v = CACHE_JOB_STARTED.swap(true, Ordering::SeqCst);
+    if !v {
+      start_access_token_cache_job();
+    }
 
-    let now = serde_util::DateTime::now();
+    let cell = {
+      let mut lock = ACCESS_TOKEN_CACHE.lock().await;
 
-    let update = doc! {
-      "$set": { Self::KEY_LAST_USED_AT: now },
-      "$inc": { Self::KEY_HITS: 1 }
+      let entry = lock.get_or_insert_with(HashMap::new).entry(key.to_string());
+
+      match entry {
+        Entry::Occupied(mut entry) => {
+          let (instant, cell) = entry.get();
+          if instant.elapsed() > ACCESS_TOKEN_CACHE_VALIDITY {
+            let cell = Arc::new(OnceCell::new());
+            entry.insert((Instant::now(), cell.clone()));
+            cell
+          } else {
+            cell.clone()
+          }
+        }
+
+        Entry::Vacant(entry) => {
+          let cell = Arc::new(OnceCell::new());
+          entry.insert((Instant::now(), cell.clone()));
+          cell
+        }
+      }
     };
 
-    let options = FindOneAndUpdateOptions::builder()
-      .return_document(ReturnDocument::After)
-      .build();
+    #[derive(Debug, thiserror::Error)]
+    enum AccessTokenInitError {
+      #[error("mongo: {0}")]
+      Mongo(#[from] mongodb::error::Error),
+      #[error("access token none")]
+      None,
+    }
 
-    Self::cl()
-      .find_one_and_update(filter, update, options)
-      .await
+    let result = cell
+      .get_or_try_init(|| async {
+        let token = AccessToken::internal_touch(key, false).await?;
+        match token {
+          Some(token) => Ok(token),
+          None => Err(AccessTokenInitError::None),
+        }
+      })
+      .await;
+
+    match result {
+      Ok(token) => {
+        Self::hit(token.id.clone());
+        Ok(Some(token.clone()))
+      }
+
+      Err(AccessTokenInitError::Mongo(e)) => Err(e),
+      Err(AccessTokenInitError::None) => Ok(None),
+    }
+  }
+
+  fn hit(id: String) {
+    let v = HIT_JOB_STARTED.swap(true, Ordering::SeqCst);
+
+    if !v {
+      start_access_token_hit_saver_job();
+    }
+
+    let mut lock = HITS_MAP.lock();
+
+    match lock.get_or_insert_with(HashMap::new).entry(id) {
+      Entry::Vacant(entry) => {
+        entry.insert(HitsEntry {
+          hits: 1,
+          last_used_at: DateTime::now(),
+        });
+      }
+
+      Entry::Occupied(mut entry) => {
+        let v = entry.get_mut();
+        v.hits += 1;
+        v.last_used_at = DateTime::now();
+      }
+    }
+  }
+
+  async fn internal_touch(
+    key: &str,
+    hit: bool,
+  ) -> Result<Option<AccessToken>, mongodb::error::Error> {
+    let filter = crate::current_filter_doc! { Self::KEY_KEY: key };
+
+    let doc = match Self::get(filter).await? {
+      None => return Ok(None),
+      Some(doc) => doc,
+    };
+
+    if hit {
+      Self::hit(doc.id.clone());
+    }
+
+    Ok(Some(doc))
+  }
+
+  pub async fn touch(key: &str) -> Result<Option<AccessToken>, mongodb::error::Error> {
+    Self::internal_touch(key, true).await
   }
 }
 
@@ -174,6 +346,10 @@ impl AccessToken {
   pub fn is_global(&self) -> bool {
     self.scope.is_global()
   }
+
+  pub fn is_deleted(&self) -> bool {
+    self.deleted_at.is_some()
+  }
 }
 
 impl Model for AccessToken {
@@ -186,26 +362,39 @@ impl Model for AccessToken {
       .options(IndexOptions::builder().unique(true).build())
       .build();
 
-    // TODO: implement enum macros::keys()
     let user_id = IndexModel::builder()
       .keys(doc! { Scope::KEY_USER_ID: 1 })
       .build();
+
     let admin_id = IndexModel::builder()
       .keys(doc! { Scope::KEY_ADMIN_ID: 1 })
       .build();
+
     let scope = IndexModel::builder()
       .keys(doc! { Scope::KEY_ENUM_TAG: 1 })
       .build();
+
     let generated_by = IndexModel::builder()
       .keys(doc! { GeneratedBy::KEY_ENUM_TAG: 1 })
       .build();
-    vec![key, user_id, admin_id, scope, generated_by]
+
+    let deleted_at = IndexModel::builder()
+      .keys(doc! { Self::KEY_DELETED_AT: 1 })
+      .build();
+
+    vec![key, user_id, admin_id, scope, generated_by, deleted_at]
   }
 }
 
 #[cfg(test)]
 mod test {
   use super::*;
+
+  #[test]
+  fn keys_match() {
+    assert_eq!(crate::KEY_DELETED_AT, AccessToken::KEY_DELETED_AT);
+    assert_eq!(crate::KEY_ID, AccessToken::KEY_ID);
+  }
 
   #[test]
   fn serde_bson_vec() {
@@ -216,13 +405,14 @@ mod test {
     let token = AccessToken {
       id: AccessToken::uid(),
       key,
-      created_at: now,
       last_used_at: Some(now),
       generated_by: GeneratedBy::Api {
         title: String::from("Title"),
       },
       scope: Scope::Global,
       hits: 0,
+      created_at: now,
+      deleted_at: Some(now),
     };
 
     let vec = bson::to_vec(&token).expect("bson serialize");
@@ -248,6 +438,7 @@ mod test {
       },
       scope: Scope::Global,
       hits: 0,
+      deleted_at: Some(now),
     };
 
     let doc = bson::to_document(&token).expect("bson serialize");

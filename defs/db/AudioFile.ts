@@ -12,7 +12,8 @@ export interface AudioFile {
   chunk_count: number;
   chunk_len: number;
   chunk_duration_ms: number;
-  created_at: DateTime;
   filename: string;
   metadata: AudioMetadata;
+  order: number;
+  created_at: DateTime;
 }

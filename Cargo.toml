@@ -2,6 +2,7 @@
 members = [
     "bin/openstream",
 
+    "internal-scripts/migrations",
     "internal-scripts/create-test-accounts",
     "internal-scripts/producer",
     "internal-scripts/client",

@@ -309,8 +309,9 @@ pub mod post {
         },
         generated_by: GeneratedBy::Register { ip, user_agent },
         last_used_at: None,
-        created_at: now,
         hits: 0,
+        created_at: now,
+        deleted_at: None,
       };
 
       run_transaction!(session => {

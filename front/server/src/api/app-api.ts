@@ -4,7 +4,7 @@ import { ApiError, BadRequest, json_catch_handler } from "../error";
 import { Logger } from "../logger";
 import { json } from "../handler";
 import { Client } from "../client";
-import { save_session, session } from "../session";
+import { session } from "../session";
 import { ip } from "../ip";
 import { token } from "../token";
 import { user_id } from "../user-id";
@@ -27,28 +27,36 @@ export const app_api = ({
 
   let api = Router();
   api.use(json_body_parser())
-  api.use(session(config));
+  api.use(session(config, logger));
 
-  api.post("/login", json(async req => {
+  api.get("/online", (req, res) => {
+    res.json({ ok: true })
+  })
+
+  api.post("/login", json(async (req, res) => {
     //const { email, password } = validate(() => assertType<import("../defs/api/login/POST/Payload").Payload>(req.body));
+    //req.cookie_session.user = { token, _id: user._id };
+    //await save_session(req);
     const { token, user } = await client.auth.user.login(ip(req), req.body);
-    req.session.user = { token, _id: user._id };
-    await save_session(req);
+    const data = req.cookie_session;
+    res.set_session({ ...data, user: { token, _id: user._id } });
     return { user }
   }))
 
-  api.post("/logout", json(async req => {
+  api.post("/logout", json(async (req, res) => {
     const r = await client.auth.user.logout(ip(req), token(req));
-    req.session.user = null;
-    await save_session(req);
+    const data = req.cookie_session;
+    res.set_session({ ...data, user: null });
     return r;
   }))
 
-  api.post("/register", json(async req => {
+  api.post("/register", json(async (req, res) => {
     //const payload = validate(() => assertType<import("../defs/api/register/POST/Payload").Payload>(req.body));
+    //req.session.user = { token, _id: user._id };
+    //await save_session(req);
     const { station, token, user } = await client.auth.user.register(ip(req), config.openstream.token, req.body);
-    req.session.user = { token, _id: user._id };
-    await save_session(req);
+    const data = req.cookie_session;
+    res.set_session({ ...data, user: { token, _id: user._id }});
     return { station, user }
   }))
 
@@ -95,6 +103,21 @@ export const app_api = ({
       return await client.stations.files.delete(ip(req), token(req), req.params.station, req.params.file);
     }))
 
+  api.route("/stations/:station/files/:file/order/swap")
+    .post(json(async req => {
+      return await client.stations.files.swap_order(ip(req), token(req), req.params.station, req.params.file, req.body);
+    }))
+
+  api.route("/stations/:station/files/:file/order/move-to-first")
+    .post(json(async req => {
+      return await client.stations.files.move_to_first(ip(req), token(req), req.params.station, req.params.file);
+    }))
+
+  api.route("/stations/:station/files/:file/order/move-to-last")
+    .post(json(async req => {
+      return await client.stations.files.move_to_last(ip(req), token(req), req.params.station, req.params.file);
+    }))
+  
   api.route("/stations/:station/files/:file/metadata")
     .put(json(async req => {
       return await client.stations.files.put_metadata(ip(req), token(req), req.params.station, req.params.file, req.body);

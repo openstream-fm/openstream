@@ -123,3 +123,13 @@ impl StreamConnection {
     Ok(count)
   }
 }
+
+#[cfg(test)]
+mod test {
+  use super::*;
+
+  #[test]
+  fn keys_match() {
+    assert_eq!(crate::KEY_ID, StreamConnection::KEY_ID);
+  }
+}

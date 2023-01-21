@@ -34,7 +34,8 @@ pub enum MediaSessionKind {
   #[serde(rename = "playlist")]
   Playlist {
     resumed_from: Option<String>,
-    last_audio_file_id: Option<String>,
+    last_audio_file_id: String,
+    last_audio_file_order: f64,
     last_audio_chunk_i: f64,
     #[serde(with = "serde_util::as_f64")]
     last_audio_chunk_skip_parts: usize,
@@ -169,7 +170,8 @@ mod test {
       updated_at: DateTime::now(),
       kind: MediaSessionKind::Playlist {
         resumed_from: None,
-        last_audio_file_id: Some(AudioFile::uid()),
+        last_audio_file_id: AudioFile::uid(),
+        last_audio_file_order: 0.0,
         last_audio_chunk_i: 0.0,
         last_audio_chunk_skip_parts: 1,
         last_audio_chunk_date: DateTime::now(),
@@ -185,5 +187,10 @@ mod test {
     let target: MediaSession = mongodb::bson::from_slice(&buf).unwrap();
 
     assert_eq!(doc, target);
+  }
+
+  #[test]
+  fn keys_match() {
+    assert_eq!(crate::KEY_ID, MediaSession::KEY_ID);
   }
 }

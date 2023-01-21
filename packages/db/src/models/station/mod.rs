@@ -291,3 +291,13 @@ macro_rules! storage_quota {
     }
   };
 }
+
+#[cfg(test)]
+mod test {
+  use super::*;
+
+  #[test]
+  fn keys_match() {
+    assert_eq!(crate::KEY_ID, Station::KEY_ID);
+  }
+}

@@ -1,6 +1,6 @@
 use crate::{audio_chunk::AudioChunk, run_transaction, station::Station, Model};
 use log::warn;
-use mongodb::{bson::doc, ClientSession, IndexModel};
+use mongodb::{bson::doc, options::FindOneOptions, ClientSession, IndexModel};
 use serde::{Deserialize, Serialize};
 use serde_util::{as_f64, DateTime};
 use ts_rs::TS;
@@ -31,11 +31,20 @@ pub struct AudioFile {
 
   pub chunk_duration_ms: f64,
 
-  pub created_at: DateTime,
-
   pub filename: String,
 
   pub metadata: Metadata,
+
+  pub order: f64,
+
+  pub created_at: DateTime,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[macros::keys]
+#[serde(rename_all = "snake_case")]
+pub struct OrderDocument {
+  pub order: f64,
 }
 
 impl AudioFile {
@@ -88,6 +97,51 @@ impl AudioFile {
       Ok(file)
     })
   }
+
+  pub async fn playlist_first(
+    station_id: &str,
+  ) -> Result<Option<AudioFile>, mongodb::error::Error> {
+    let filter = doc! { Self::KEY_STATION_ID: station_id };
+    let sort = doc! { Self::KEY_ORDER: 1 };
+    let options = FindOneOptions::builder().sort(sort).build();
+    Self::cl().find_one(filter, options).await
+  }
+
+  pub async fn playlist_next(
+    station_id: &str,
+    current_id: &str,
+    current_order: f64,
+  ) -> Result<Option<AudioFile>, mongodb::error::Error> {
+    let filter = doc! { Self::KEY_ID: current_id, Self::KEY_STATION_ID: station_id };
+    let order_projection = doc! { Self::KEY_ID: -1, Self::KEY_ORDER: 1 };
+    let options = FindOneOptions::builder()
+      .projection(order_projection)
+      .build();
+    let current_order_document = Self::cl_as::<OrderDocument>()
+      .find_one(filter, options)
+      .await?;
+
+    // if cant update the current order we use the last one (when the file was present)
+    let current_order = match current_order_document {
+      None => current_order,
+      Some(document) => document.order,
+    };
+
+    let filter =
+      doc! { Self::KEY_STATION_ID: station_id, Self::KEY_ORDER: { "$gt": current_order } };
+    let sort = doc! { Self::KEY_ORDER: 1 };
+
+    let options = FindOneOptions::builder().sort(sort).build();
+
+    let next = Self::cl().find_one(filter, options).await?;
+
+    let next = match next {
+      None => return Self::playlist_first(station_id).await,
+      Some(next) => next,
+    };
+
+    Ok(Some(next))
+  }
 }
 
 impl Model for AudioFile {
@@ -99,7 +153,11 @@ impl Model for AudioFile {
       .keys(doc! { Self::KEY_STATION_ID: 1 })
       .build();
 
-    vec![station_id]
+    let station_id_order = IndexModel::builder()
+      .keys(doc! { Self::KEY_STATION_ID: 1, Self::KEY_ORDER: 1 })
+      .build();
+
+    vec![station_id, station_id_order]
   }
 }
 
@@ -154,5 +212,16 @@ impl Metadata {
 impl<I: Iterator<Item = (String, String)>> From<I> for Metadata {
   fn from(iter: I) -> Self {
     Metadata::from_pairs(iter)
+  }
+}
+
+#[cfg(test)]
+mod test {
+  use super::*;
+
+  #[test]
+  fn keys_match() {
+    assert_eq!(crate::KEY_ID, AudioFile::KEY_ID);
+    assert_eq!(AudioFile::KEY_ORDER, OrderDocument::KEY_ORDER);
   }
 }

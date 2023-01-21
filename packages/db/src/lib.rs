@@ -3,7 +3,10 @@ use futures_util::TryStreamExt;
 use log::*;
 use models::{transfer_checkpoint, user_station_relation};
 use mongodb::error::Result as MongoResult;
-use mongodb::options::{FindOptions, ReplaceOptions};
+use mongodb::options::{
+  FindOneAndUpdateOptions, FindOptions, ReplaceOptions, ReturnDocument, SelectionCriteria,
+  SessionOptions, TransactionOptions,
+};
 use mongodb::results::DeleteResult;
 use mongodb::{
   bson::{doc, Document},
@@ -13,6 +16,7 @@ use mongodb::{
 };
 use once_cell::sync::OnceCell;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde_util::DateTime;
 use std::borrow::Borrow;
 use ts_rs::TS;
 
@@ -117,7 +121,7 @@ pub fn storage_db() -> Database {
     .get()
     .expect("[internal] mongodb client is not initialized, call db::init(Client) before using it");
   match storage_db_name {
-    Some(name) => client.database(&name),
+    Some(name) => client.database(name),
     None => client
       .default_database()
       .expect("[internal] no database specified in mongodb connecton string"),
@@ -182,6 +186,19 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
     }
 
     Ok(())
+  }
+
+  async fn set_deleted_by_id(id: &str) -> MongoResult<UpdateResult> {
+    let update = doc! { "$set": { crate::KEY_DELETED_AT: DateTime::now() } };
+    Self::update_by_id(id, update).await
+  }
+
+  async fn set_deleted_by_id_with_session(
+    id: &str,
+    session: &mut ClientSession,
+  ) -> MongoResult<UpdateResult> {
+    let update = doc! { "$set": { crate::KEY_DELETED_AT: DateTime::now() } };
+    Self::update_by_id_with_session(id, update, session).await
   }
 
   async fn delete_by_id(id: &str) -> MongoResult<DeleteResult> {
@@ -382,9 +399,30 @@ impl PublicScope {
   }
 }
 
+pub fn transaction_session_options() -> SessionOptions {
+  let selection_criteria =
+    SelectionCriteria::ReadPreference(mongodb::options::ReadPreference::Primary);
+
+  let transaction_options = TransactionOptions::builder()
+    .selection_criteria(selection_criteria)
+    .build();
+
+  #[allow(clippy::let_and_return)]
+  let session_options = SessionOptions::builder()
+    .default_transaction_options(transaction_options)
+    .build();
+
+  session_options
+}
+
 #[macro_export]
 macro_rules! run_transaction {
+
   ($session:ident => $block:block) => {{
+    $crate::run_transaction!($session, @options=$crate::transaction_session_options() => $block)
+  }};
+
+  ($session:ident, @options=$options:expr => $block:block) => {{
 
     const MAX_TX_RETRIES: usize = 5;
     let mut tx_retries = 0;
@@ -392,7 +430,7 @@ macro_rules! run_transaction {
     #[deny(unused_labels)]
     let (r, mut $session) = 'tx: loop {
 
-      let mut $session = $crate::client().start_session(None).await?;
+      let mut $session = $crate::client().start_session($options).await?;
       $session.start_transaction(None).await?;
 
       #[deny(unused_macros)]
@@ -556,6 +594,51 @@ macro_rules! current_filter_doc {
         { $crate::KEY_DELETED_AT: ::mongodb::bson::Bson::Null },
         { $($tt)* },
       ]
+    }
+  }
+}
+
+const KEY_INCREMENT_NEXT: &str = "next";
+
+#[async_trait]
+pub trait Incrementer: Model {
+  fn item_next(&self) -> f64;
+
+  async fn next(id: &str) -> Result<f64, mongodb::error::Error> {
+    let filter = doc! { KEY_ID: id };
+    let update =
+      doc! { "$inc": { KEY_ID: 1f64 }, "$setOnInsert": { KEY_ID: id, KEY_INCREMENT_NEXT: 0f64 } };
+    let options = FindOneAndUpdateOptions::builder()
+      .upsert(true)
+      .return_document(ReturnDocument::Before)
+      .build();
+
+    match Self::cl()
+      .find_one_and_update(filter, update, options)
+      .await?
+    {
+      Some(doc) => Ok(doc.item_next()),
+      None => Ok(0.0),
+    }
+  }
+
+  async fn next_with_session(
+    id: &str,
+    session: &mut ClientSession,
+  ) -> Result<f64, mongodb::error::Error> {
+    let filter = doc! { KEY_ID: id };
+    let update = doc! { "$setOnInsert": { KEY_ID: id }, "$inc": { KEY_INCREMENT_NEXT: 1f64 } };
+    let options = FindOneAndUpdateOptions::builder()
+      .upsert(true)
+      .return_document(ReturnDocument::Before)
+      .build();
+
+    match Self::cl()
+      .find_one_and_update_with_session(filter, update, options, session)
+      .await?
+    {
+      Some(doc) => Ok(doc.item_next()),
+      None => Ok(0.0),
     }
   }
 }

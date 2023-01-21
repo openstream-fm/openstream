@@ -5,7 +5,8 @@ import type { Request } from "./http/Request";
 export type MediaSessionKind = {
   kind: "playlist";
   resumed_from: string | null;
-  last_audio_file_id: string | null;
+  last_audio_file_id: string;
+  last_audio_file_order: number;
   last_audio_chunk_i: number;
   last_audio_chunk_skip_parts: number;
   last_audio_chunk_date: DateTime;

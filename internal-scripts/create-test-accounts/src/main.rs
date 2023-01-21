@@ -2,16 +2,19 @@ use anyhow::Context;
 use db::{
   audio_chunk::AudioChunk,
   audio_file::AudioFile,
-  models::user_station_relation::{UserStationRelation, UserStationRelationKind},
+  models::{
+    increment_station_audio_file_order::IncrementStationAudioFileOrder,
+    user_station_relation::{UserStationRelation, UserStationRelationKind},
+  },
   run_transaction,
   station::Station,
-  Model,
+  Incrementer, Model,
 };
 use futures::{StreamExt, TryStreamExt};
 use log::*;
 use mongodb::bson::doc;
 
-const BASE_STATION_ID: &str = "erxppjmd";
+const BASE_STATION_ID: &str = "zrmgqj2f";
 const C: usize = 10_000;
 
 #[tokio::main]
@@ -119,11 +122,11 @@ async fn create_test_station(
 
   for base in files {
     info!("{} - duplicating file {}", station_id, base.filename);
+    let order = IncrementStationAudioFileOrder::next(&station_id).await?;
     let file_id = AudioFile::uid();
     let file = AudioFile {
       id: file_id.clone(),
       station_id: station_id.clone(),
-      created_at: now,
       bytes_sec: base.bytes_sec,
       chunk_count: base.chunk_count,
       chunk_duration_ms: base.chunk_duration_ms,
@@ -133,6 +136,8 @@ async fn create_test_station(
       len: base.len,
       sha256: base.sha256.clone(),
       metadata: base.metadata.clone(),
+      order,
+      created_at: now,
     };
 
     AudioFile::insert(file).await?;

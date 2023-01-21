@@ -1,8 +1,10 @@
 pub mod id;
 pub mod metadata;
+pub mod order;
 
 use crate::json::JsonHandler;
 use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
+use mongodb::bson::doc;
 
 use crate::error::ApiError;
 use async_trait::async_trait;
@@ -107,8 +109,9 @@ pub mod get {
         limit,
       } = input;
 
-      let filter = mongodb::bson::doc! { AudioFile::KEY_STATION_ID: station.id };
-      let page = AudioFile::paged(filter, None, skip, limit).await?;
+      let filter = doc! { AudioFile::KEY_STATION_ID: station.id };
+      let sort = doc! { AudioFile::KEY_ORDER: 1 };
+      let page = AudioFile::paged(filter, sort, skip, limit).await?;
 
       Ok(Output(page))
     }

@@ -246,7 +246,7 @@
       {#if message.actions?.length}
         <div class="message-actions">
           {#each message.actions as action}
-            <button class="btn-light action-btn" use:ripple on:click={(event) => action?.fn(event)}>
+            <button class="btn-light action-btn ripple-container" use:ripple on:click={(event) => action?.fn(event)}>
               {action.text}
             </button>
           {/each}

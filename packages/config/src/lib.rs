@@ -22,7 +22,7 @@ impl Config {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Mongodb {
-  pub url: Url,
+  pub url: String,
   pub storage_db_name: Option<String>,
 }
 

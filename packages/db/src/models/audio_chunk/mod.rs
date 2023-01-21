@@ -106,3 +106,13 @@ impl Model for AudioChunk {
     vec![station_id, audio_file_id, audio_file_id_with_index]
   }
 }
+
+#[cfg(test)]
+mod test {
+  use super::*;
+
+  #[test]
+  fn keys_match() {
+    assert_eq!(crate::KEY_ID, AudioChunk::KEY_ID);
+  }
+}

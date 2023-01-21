@@ -25,6 +25,7 @@ pub mod get {
     station: Station,
   }
 
+  #[allow(clippy::large_enum_variant)]
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export)]
   #[ts(export_to = "../../defs/api/stations/[station]/now-playing/GET/")]
@@ -61,12 +62,9 @@ pub mod get {
           MediaSessionKind::Live { .. } => Output::Live,
           MediaSessionKind::Playlist {
             last_audio_file_id, ..
-          } => match last_audio_file_id {
+          } => match AudioFile::get_by_id(&last_audio_file_id).await? {
             None => Output::None,
-            Some(file_id) => match AudioFile::get_by_id(&file_id).await? {
-              None => Output::None,
-              Some(file) => Output::Playilist { file },
-            },
+            Some(file) => Output::Playilist { file },
           },
         },
       };

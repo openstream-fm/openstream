@@ -181,6 +181,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "atomic_float"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "62af46d040ba9df09edc6528dae9d8e49f5f3e82f55b7d2ec31a733c38dbc49d"
+
+[[package]]
 name = "atty"
 version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -700,12 +706,14 @@ dependencies = [
  "macros",
  "mongodb",
  "once_cell",
+ "parking_lot 0.12.1",
  "prex",
  "quote",
  "rand",
  "serde",
  "serde-util",
  "serde_json",
+ "static_init",
  "syn",
  "thiserror",
  "time 0.3.17",
@@ -1857,6 +1865,7 @@ dependencies = [
 name = "media-sessions"
 version = "0.1.0"
 dependencies = [
+ "atomic_float",
  "burst",
  "bytes",
  "constants",
@@ -1887,6 +1896,25 @@ checksum = "4f84f6452969abd246e7ac1fe4fe75906c76e8ec88d898df9aef37e0f3b6a7c2"
 dependencies = [
  "futures-core",
  "pin-project",
+]
+
+[[package]]
+name = "migrations"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "config",
+ "db",
+ "dotenv",
+ "futures-util",
+ "log",
+ "logger",
+ "macros",
+ "mongodb",
+ "owo-colors",
+ "serde",
+ "serde-util",
+ "tokio",
 ]
 
 [[package]]
@@ -2803,9 +2831,9 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.151"
+version = "1.0.152"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "97fed41fc1a24994d044e6db6935e69511a1153b52c15eb42493b26fa87feba0"
+checksum = "bb7d1f0d3021d347a83e556fc4683dea2ea09d87bccdf88ff5c12545d89d5efb"
 dependencies = [
  "serde_derive",
 ]
@@ -2849,9 +2877,9 @@ dependencies = [
 
 [[package]]
 name = "serde_derive"
-version = "1.0.151"
+version = "1.0.152"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "255abe9a125a985c05190d687b320c12f9b1f0b99445e608c21ba0782c719ad8"
+checksum = "af487d118eecd09402d70a5d72551860e788df87b464af30e5ea6a38c75c541e"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3549,9 +3577,9 @@ checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
 
 [[package]]
 name = "tokio"
-version = "1.24.1"
+version = "1.24.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d9f76183f91ecfb55e1d7d5602bd1d979e38a3a522fe900241cf195624d67ae"
+checksum = "597a12a59981d9e3c38d216785b0c37399f6e415e8d0712047620f189371b0bb"
 dependencies = [
  "autocfg",
  "bytes",

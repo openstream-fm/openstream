@@ -162,7 +162,7 @@ async fn shared_init(config: String) -> Result<Config, anyhow::Error> {
 
     {
       let mut session = client
-        .start_session(None)
+        .start_session(db::transaction_session_options())
         .await
         .context("mongodb error when creating new client session")?;
       session
@@ -360,9 +360,10 @@ fn token(
         key,
         scope: db::access_token::Scope::Global,
         generated_by: GeneratedBy::Cli { title },
+        hits: 0,
         created_at: DateTime::now(),
         last_used_at: None,
-        hits: 0,
+        deleted_at: None,
       };
 
       AccessToken::insert(&token).await.context("mongodb error ocurred when inserting new access token")?;

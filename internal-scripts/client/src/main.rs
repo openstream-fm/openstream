@@ -149,13 +149,7 @@ async fn clients(n: usize, stream_base_url: String, ports: Vec<u16>, delay: u64)
       let http_client = http_client.clone();
       tokio::spawn(async move {
         loop {
-          let r = client(
-            &http_client,
-            base_url.as_str(),
-            port,
-            &&rr_test_station_id(),
-          )
-          .await;
+          let r = client(&http_client, base_url.as_str(), port, &rr_test_station_id()).await;
           if let Err(e) = r {
             ERRORS.fetch_add(1, Ordering::Relaxed);
             println!("err: {}", e);

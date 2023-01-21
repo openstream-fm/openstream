@@ -129,3 +129,13 @@ pub fn start_background_task() -> tokio::task::JoinHandle<()> {
     }
   })
 }
+
+#[cfg(test)]
+mod test {
+  use super::*;
+
+  #[test]
+  fn keys_match() {
+    assert_eq!(crate::KEY_ID, TransferCheckpoint::KEY_ID);
+  }
+}

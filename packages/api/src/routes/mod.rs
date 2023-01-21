@@ -71,6 +71,18 @@ pub fn router() -> Builder {
     .put(stations::files::metadata::put::Endpoint {}.into_handler());
 
   app
+    .at("/stations/:station/files/:file/order/swap")
+    .post(stations::files::order::swap::post::Endpoint {}.into_handler());
+
+  app
+    .at("/stations/:station/files/:file/order/move-to-first")
+    .post(stations::files::order::move_to_first::post::Endpoint {}.into_handler());
+
+  app
+    .at("/stations/:station/files/:file/order/move-to-last")
+    .post(stations::files::order::move_to_last::post::Endpoint {}.into_handler());
+
+  app
     .at("/stations/:station/now-playing")
     .get(stations::now_playing::get::Endpoint {}.into_handler());
 

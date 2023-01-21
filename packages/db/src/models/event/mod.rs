@@ -183,3 +183,13 @@ pub struct AudioListenerEnd {
   station_id: String,
   connection_id: String,
 }
+
+#[cfg(test)]
+mod test {
+  use super::*;
+
+  #[test]
+  fn keys_match() {
+    assert_eq!(crate::KEY_ID, Event::KEY_ID);
+  }
+}

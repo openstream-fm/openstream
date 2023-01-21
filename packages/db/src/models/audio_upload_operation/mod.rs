@@ -118,4 +118,9 @@ mod test {
 
     eprintln!("{}", serde_json::to_string_pretty(&operation).unwrap());
   }
+
+  #[test]
+  fn keys_match() {
+    assert_eq!(crate::KEY_ID, AudioUploadOperation::KEY_ID);
+  }
 }

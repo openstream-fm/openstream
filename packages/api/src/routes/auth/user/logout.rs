@@ -3,6 +3,7 @@ pub mod post {
   use async_trait::async_trait;
   use db::access_token::{AccessToken, GeneratedBy, Scope};
   use db::Model;
+  use log::warn;
   use mongodb::bson::doc;
   use prex::Request;
   use serde::{Deserialize, Serialize};
@@ -66,7 +67,13 @@ pub mod post {
           }
 
           GeneratedBy::Login { .. } | GeneratedBy::Register { .. } => {
-            AccessToken::delete_by_id(&access_token.id).await?;
+            let r = AccessToken::set_deleted_by_id(&access_token.id).await?;
+            if r.matched_count != 1 {
+              warn!(
+                "AccessToken::set_deleted_by_id {} matched_count={} modified_count={}",
+                access_token.id, r.matched_count, r.modified_count
+              )
+            }
             Ok(Output(EmptyStruct(())))
           }
         },

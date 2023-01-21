@@ -58,3 +58,13 @@ impl Model for UserStationRelation {
     vec![user_id, station_id, user_station]
   }
 }
+
+#[cfg(test)]
+mod test {
+  use super::*;
+
+  #[test]
+  fn keys_match() {
+    assert_eq!(crate::KEY_ID, UserStationRelation::KEY_ID);
+  }
+}

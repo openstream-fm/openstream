@@ -148,6 +148,7 @@ pub mod post {
         created_at: DateTime::now(),
         last_used_at: None,
         hits: 0,
+        deleted_at: None,
       };
 
       AccessToken::insert(&token).await?;

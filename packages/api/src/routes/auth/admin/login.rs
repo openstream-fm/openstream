@@ -137,9 +137,10 @@ pub mod post {
         key,
         scope: Scope::Admin { admin_id },
         generated_by: GeneratedBy::Login { ip, user_agent },
-        created_at: DateTime::now(),
         last_used_at: None,
         hits: 0,
+        created_at: DateTime::now(),
+        deleted_at: None,
       };
 
       AccessToken::insert(&token).await?;

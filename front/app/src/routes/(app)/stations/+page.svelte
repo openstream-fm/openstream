@@ -129,7 +129,7 @@
       {:else}
         <div class="no-stations">
           <div class="no-stations-message">
-            m... aparently you don't have a station yet
+            You don't have any station yet
           </div>
           <a href="/stations/create-station" class="na no-stations-create ripple-container" use:ripple>
             Create a station
