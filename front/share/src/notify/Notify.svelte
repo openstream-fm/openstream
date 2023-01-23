@@ -135,7 +135,7 @@
 
   .message {
     --icon-size: 1.25em;
-    min-width: 250px;
+    /*min-width: 250px;*/
     max-width: 400px;
     display: flex;
     flex-direction: column;

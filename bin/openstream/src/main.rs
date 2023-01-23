@@ -2,10 +2,12 @@ use std::path::PathBuf;
 use std::process::ExitStatus;
 use std::sync::Arc;
 
+use api::storage::StorageServer;
 use clap::{Parser, Subcommand};
 use config::Config;
 use db::access_token::{AccessToken, GeneratedBy};
 use db::Model;
+use drop_tracer::DropTracer;
 use futures::stream::FuturesUnordered;
 use futures::{FutureExt, TryStreamExt};
 use log::*;
@@ -236,9 +238,12 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     ref source,
     ref api,
     ref router,
+    ref storage,
   } = config.as_ref();
 
   let shutdown = Shutdown::new();
+  let drop_tracer = DropTracer::new("main");
+  let media_sessions = MediaSessionMap::new(drop_tracer.clone());
 
   tokio::spawn({
     let shutdown = shutdown.clone();
@@ -258,6 +263,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
       source_config.receiver.addrs.clone(),
       source_config.broadcaster.addrs.clone(),
       shutdown.clone(),
+      drop_tracer.clone(),
     );
 
     let fut = source.start()?;
@@ -266,17 +272,20 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   }
 
   if let Some(stream_config) = stream {
-    let media_sessions = MediaSessionMap::new();
-    let stream = StreamServer::new(stream_config.addrs.clone(), shutdown.clone(), media_sessions);
-
+    let stream = StreamServer::new(stream_config.addrs.clone(), shutdown.clone(), drop_tracer.clone(), media_sessions.clone());
     let fut = stream.start()?;
-
     futs.push(fut.boxed());
   }
 
   if let Some(api_config) = api {
-    let api = ApiServer::new(api_config.addrs.clone(), shutdown.clone());
+    let api = ApiServer::new(api_config.addrs.clone(), shutdown.clone(), drop_tracer.clone(), media_sessions.clone());
     let fut = api.start()?;
+    futs.push(fut.boxed());
+  }
+
+  if let Some(storage_config) = storage {
+    let storage = StorageServer::new(storage_config.addrs.clone(), shutdown.clone());
+    let fut = storage.start()?;
     futs.push(fut.boxed());
   }
 
@@ -289,6 +298,8 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   db::models::transfer_checkpoint::start_background_task();
 
   futs.try_collect().await?;
+
+  drop(drop_tracer);
 
   Ok(())
 }

@@ -7,6 +7,7 @@ export interface UserPublicStation {
   _id: string;
   name: string;
   limits: StationLimits;
+  playlist_is_randomly_shuffled: boolean;
   created_at: DateTime;
   updated_at: DateTime;
   user_metadata: Metadata;

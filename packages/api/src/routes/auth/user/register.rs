@@ -288,6 +288,7 @@ pub mod post {
         source_password: Station::random_source_password(),
         user_metadata: station_user_metadata,
         system_metadata: station_system_metadata,
+        playlist_is_randomly_shuffled: false,
         created_at: now,
         updated_at: now,
       };

@@ -42,6 +42,17 @@ const now_playing = writable<NowPlaying | null>(null);
 const readonly = { subscribe: now_playing.subscribe };
 export { readonly as player_now_playing }
 
+export const storage_audio_url = (station_id: string, file_id: string) => {
+  // TODO: fix this ts ignore rule
+  // @ts-ignore
+  const base: string = get(page).config.publicStorageURL;
+  return `${base}/stations/${station_id}/files/${file_id}/stream?token=${media_token()}`
+}
+
+export const media_token = () => {
+  return get(page).data.user?.media_key ?? "";
+}
+
 let current_now_playing_unsub: (() => void) | null = null;
 const now_playing_start = (station_id: string) => {
   now_playing_stop();
@@ -80,7 +91,10 @@ export const resume = () => {
   else if($state.type === "track") audio?.play();
   else if($state.type === "station") {
     if($state.audio_state === "paused") {
-      const audio = get_audio_tag(`https://stream.local.openstream.fm/stream/${$state.station._id}`)
+      // TODO: fix this ts-ignore rule
+      // @ts-ignore
+      const base = get(page).config.publicStreamURL; 
+      const audio = get_audio_tag(`${base}/stream/${$state.station._id}`)
       audio.play();
     }
   } else assert_never($state);
@@ -147,8 +161,10 @@ export const play_station = (station: { _id: string, name: string }) => {
       audio_state: "loading",
       station,
     })
-    // TODO: stream url
-    const audio = get_audio_tag(`https://stream.local.openstream.fm/stream/${station._id}`)
+    // TODO: fix ts rule and deduplicate stream url getter
+    // @ts-ignore
+    const base = get(page).config.publicStreamURL; 
+    const audio = get_audio_tag(`${base}/stream/${station._id}`)
     audio.play().catch(e => {
       logger.warn(`error playing station ${station._id} => ${e}`)
     })
@@ -156,6 +172,19 @@ export const play_station = (station: { _id: string, name: string }) => {
     now_playing_start(station._id);
   }
 }
+
+// we use derived to subscribe to two store at once
+// we need to subscribe to the store, derived only runs if it has subscribers
+derived([player_state, now_playing], ([$player_state, $now_playing]) => {
+  if(
+      $player_state.type === "station" &&
+      //$player_state.audio_state === "paused" &&
+      $now_playing?.kind === "none" &&
+      $now_playing.start_on_connect === false
+    ) {
+    close();
+  }
+}).subscribe(() => {})
 
 export const play_track = (file: import("$server/defs/db/AudioFile").AudioFile) => {
   if(!browser) throw new Error("player.play_track called in ssr context");
@@ -166,8 +195,9 @@ export const play_track = (file: import("$server/defs/db/AudioFile").AudioFile) 
     file,
     audio_state: "loading",
   })
-  //const audio = get_audio_tag(`/api/stations/${file.station_id}/files/${file._id}/stream`);
-  const audio = get_audio_tag(`https://api.local.openstream.fm/stations/${file.station_id}/files/${file._id}/stream?token=${get(page).data.user?.media_key}`)
+
+  const audio = get_audio_tag(storage_audio_url(file.station_id, file._id));
+  
   audio.play().catch(e => {
     logger.warn(`error playing audio track ${file._id} => ${e}`);
   })

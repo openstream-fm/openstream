@@ -5,6 +5,6 @@ export interface BasePlayHistoryItem {
   _id: string;
   station_id: string;
   name: string;
-  artist: string;
-  start_at: DateTime;
+  artist: string | null;
+  created_at: DateTime;
 }

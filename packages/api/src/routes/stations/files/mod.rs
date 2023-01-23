@@ -1,6 +1,8 @@
 pub mod id;
 pub mod metadata;
 pub mod order;
+pub mod shuffle;
+pub mod unshuffle;
 
 use crate::json::JsonHandler;
 use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
@@ -36,7 +38,10 @@ pub mod get {
 
   #[derive(Debug, Serialize, Deserialize, Clone, TS)]
   #[ts(export, export_to = "../../defs/api/stations/[station]/files/GET/")]
-  pub struct Output(Paged<AudioFile>);
+  pub struct Output {
+    files: Paged<AudioFile>,
+    playlist_is_randomly_shuffled: bool,
+  }
 
   #[derive(Debug, Serialize, Deserialize, Default, TS)]
   #[ts(export, export_to = "../../defs/api/stations/[station]/files/GET/")]
@@ -113,7 +118,10 @@ pub mod get {
       let sort = doc! { AudioFile::KEY_ORDER: 1 };
       let page = AudioFile::paged(filter, sort, skip, limit).await?;
 
-      Ok(Output(page))
+      Ok(Output {
+        files: page,
+        playlist_is_randomly_shuffled: station.playlist_is_randomly_shuffled,
+      })
     }
   }
 }

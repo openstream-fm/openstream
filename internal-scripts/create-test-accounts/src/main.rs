@@ -2,13 +2,10 @@ use anyhow::Context;
 use db::{
   audio_chunk::AudioChunk,
   audio_file::AudioFile,
-  models::{
-    increment_station_audio_file_order::IncrementStationAudioFileOrder,
-    user_station_relation::{UserStationRelation, UserStationRelationKind},
-  },
+  models::user_station_relation::{UserStationRelation, UserStationRelationKind},
   run_transaction,
   station::Station,
-  Incrementer, Model,
+  Model,
 };
 use futures::{StreamExt, TryStreamExt};
 use log::*;
@@ -92,6 +89,7 @@ async fn create_test_station(
     name: format!("Test Station {i}"),
     created_at: now,
     updated_at: now,
+    playlist_is_randomly_shuffled: false,
     source_password: Station::random_source_password(),
     limits: base.limits.clone(),
     system_metadata: base.system_metadata.clone(),
@@ -122,7 +120,7 @@ async fn create_test_station(
 
   for base in files {
     info!("{} - duplicating file {}", station_id, base.filename);
-    let order = IncrementStationAudioFileOrder::next(&station_id).await?;
+    let order = AudioFile::next_max_order(&station_id, None).await?;
     let file_id = AudioFile::uid();
     let file = AudioFile {
       id: file_id.clone(),

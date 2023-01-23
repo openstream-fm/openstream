@@ -15,14 +15,16 @@ export class ClientError extends Error {
   }
 } 
 
-export const action = <A extends any[], T>(fn: (...args: A) => T | Promise<T>) => {
+export type ActionResult<T> = { ok: true, value: T } | { ok: false, error: unknown };
+
+export const action = <A extends any[], T>(fn: (...args: A) => T | Promise<T>): (...args: A) => Promise<ActionResult<T>> => {
   return async (...args: A) => {
     try {
-      await fn(...args)
-      return true;
-    } catch(e: any) {
-      _error(e?.message ?? "error");
-      return false;
+      const value = await fn(...args);
+      return { ok: true, value } 
+    } catch(error: any) {
+      _error(error?.message ?? "error");
+      return { ok: false, error };
     }
   }
 }

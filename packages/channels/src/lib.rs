@@ -31,24 +31,18 @@ pub struct ChannelMap {
 }
 
 impl ChannelMap {
-  pub fn new() -> Self {
+  pub fn new(drop_tracer: DropTracer) -> Self {
     Self {
       inner: Arc::new(Inner {
         map: RwLock::new(HashMap::new()),
         rx_count: AtomicUsize::new(0),
-        drop_tracer: DropTracer::new(),
+        drop_tracer,
       }),
     }
   }
 
   pub fn drop_token(&self) -> Token {
     self.inner.drop_tracer.token()
-  }
-}
-
-impl Default for ChannelMap {
-  fn default() -> Self {
-    Self::new()
   }
 }
 

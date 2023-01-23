@@ -1,51 +1,69 @@
 use log::*;
-use parking_lot::{Condvar, Mutex};
-use std::sync::Arc;
+// use parking_lot::{Condvar, Mutex};
+use std::{
+  sync::{
+    atomic::{AtomicU64, Ordering},
+    Arc,
+  },
+  thread,
+  time::Duration,
+};
 
 #[derive(Debug, Clone)]
 pub struct DropTracer {
   inner: Arc<TracerInner>,
 }
 
-#[derive(Debug)]
-struct TracerInner(Arc<Inner>);
-
 impl DropTracer {
   #[allow(unused)]
-  fn increment(&self) -> i128 {
+  fn increment(&self) -> u64 {
     self.inner.0.increment()
   }
 
   #[allow(unused)]
-  fn decrement(&self) -> i128 {
+  fn decrement(&self) -> u64 {
     self.inner.0.decrement()
   }
 
-  pub fn wait(&self) {
-    self.inner.0.wait()
-  }
+  // fn wait(&self) {
+  //   self.inner.0.wait()
+  // }
 
   pub fn token(&self) -> Token {
     Token::new(self.inner.0.clone())
   }
 }
 
+// #[derive(Debug)]
+// struct Inner {
+//   condvar: Condvar,
+//   count: Mutex<i128>,
+// }
+
 #[derive(Debug)]
 struct Inner {
-  condvar: Condvar,
-  count: Mutex<i128>,
+  title: &'static str,
+  counter: AtomicU64,
 }
 
 impl Inner {
+  fn new(title: &'static str) -> Self {
+    Self {
+      title,
+      counter: AtomicU64::new(0),
+    }
+  }
+
   // fn increment(&self) {
   //   *self.count.lock() += 1;
   // }
 
-  fn increment(&self) -> i128 {
-    let mut lock = self.count.lock();
-    *lock += 1;
-    trace!("drop tracer increment: {} handles", *lock);
-    *lock
+  fn increment(&self) -> u64 {
+    self.counter.fetch_add(1, Ordering::SeqCst) + 1
+    // let mut lock = self.count.lock();
+    // *lock += 1;
+    // trace!("drop tracer increment: {} handles", *lock);
+    // *lock
   }
 
   // fn decrement(&self) {
@@ -56,55 +74,68 @@ impl Inner {
   //   }
   // }
 
-  fn decrement(&self) -> i128 {
-    let mut lock = self.count.lock();
-    *lock -= 1;
-    info!("drop tracer decrement: {} handles", *lock);
-    if *lock <= 0 {
-      self.condvar.notify_all();
-    }
-    *lock
+  fn decrement(&self) -> u64 {
+    self.counter.fetch_sub(1, Ordering::SeqCst) - 1
+    // let mut lock = self.count.lock();
+    // *lock -= 1;
+    // info!("drop tracer decrement: {} handles", *lock);
+    // if *lock <= 0 {
+    //   self.condvar.notify_all();
+    // }
+    // *lock
   }
 
   fn wait(&self) {
-    let mut lock = self.count.lock();
-    loop {
-      if *lock <= 0 {
-        return;
+    tokio::task::block_in_place(|| {
+      let mut i = 0usize;
+      loop {
+        let value = self.counter.load(Ordering::SeqCst);
+        if value == 0 {
+          info!(
+            "drop tracer '{}' wait ({}): 0 handles left, end",
+            self.title, i
+          );
+          return;
+        // log every 1 sec
+        } else if i % 10 == 0 {
+          info!(
+            "drop tracer '{}' wait ({}): {} handles",
+            self.title, i, value
+          )
+        }
+
+        thread::sleep(Duration::from_millis(100));
+        i += 1;
       }
-      tokio::task::block_in_place(|| {
-        self.condvar.wait(&mut lock);
-      })
-    }
+    });
+
+    // let mut lock = self.count.lock();
+    // loop {
+    //   if *lock <= 0 {
+    //     return;
+    //   }
+    //   tokio::task::block_in_place(|| {
+    //     self.condvar.wait(&mut lock);
+    //   })
+    // }
   }
 }
 
+#[derive(Debug)]
+struct TracerInner(Arc<Inner>);
+
 impl Drop for TracerInner {
   fn drop(&mut self) {
-    if log::log_enabled!(Level::Info) {
-      info!(
-        "drop tracer dropped, waiting for resources cleanup: {} handles",
-        *self.0.count.lock()
-      );
-    }
     self.0.wait();
+    info!("drop tracer '{}' dropped", self.0.title);
   }
 }
 
 impl DropTracer {
-  pub fn new() -> Self {
+  pub fn new(title: &'static str) -> Self {
     Self {
-      inner: Arc::new(TracerInner(Arc::new(Inner {
-        condvar: Condvar::new(),
-        count: Mutex::new(0),
-      }))),
+      inner: Arc::new(TracerInner(Arc::new(Inner::new(title)))),
     }
-  }
-}
-
-impl Default for DropTracer {
-  fn default() -> Self {
-    Self::new()
   }
 }
 
@@ -142,19 +173,15 @@ mod test {
 
   #[derive(Debug)]
   struct TestDrop {
-    i: usize,
     token: Token,
   }
 
   impl Drop for TestDrop {
     fn drop(&mut self) {
-      let i = self.i;
       let token = self.token.clone();
       tokio::spawn(async move {
-        info!("dropper {i} dropped");
         tokio::time::sleep(Duration::from_secs(1)).await;
         drop(token);
-        info!("token {i} dropped");
       });
     }
   }
@@ -163,11 +190,10 @@ mod test {
   async fn wait_for_tokens() {
     logger::init();
 
-    let tracer = DropTracer::new();
+    let tracer = DropTracer::new("test");
     let mut droppers = Vec::new();
-    for i in 0usize..100 {
+    for _ in 0usize..100 {
       let dropper = TestDrop {
-        i,
         token: tracer.token(),
       };
 
@@ -175,9 +201,11 @@ mod test {
     }
 
     tokio::spawn(async move {
+      tokio::time::sleep(Duration::from_millis(50)).await;
       drop(droppers);
     });
 
+    drop(tracer.clone());
     drop(tracer);
   }
 }

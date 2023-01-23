@@ -4,11 +4,14 @@ pub mod json;
 pub mod me;
 pub mod request_ext;
 pub mod routes;
+pub mod storage;
 
+use drop_tracer::DropTracer;
 use futures::stream::FuturesUnordered;
 use futures::TryStreamExt;
 use hyper::Server;
 use log::*;
+use media_sessions::MediaSessionMap;
 use serde::{Deserialize, Serialize};
 use shutdown::Shutdown;
 use socket2::{Domain, Protocol, Socket, Type};
@@ -19,6 +22,8 @@ use std::net::SocketAddr;
 pub struct ApiServer {
   addrs: Vec<SocketAddr>,
   shutdown: Shutdown,
+  drop_tracer: DropTracer,
+  media_sessions: MediaSessionMap,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -35,8 +40,18 @@ pub struct Status {
 }
 
 impl ApiServer {
-  pub fn new(addrs: Vec<SocketAddr>, shutdown: Shutdown) -> Self {
-    Self { addrs, shutdown }
+  pub fn new(
+    addrs: Vec<SocketAddr>,
+    shutdown: Shutdown,
+    drop_tracer: DropTracer,
+    media_sessions: MediaSessionMap,
+  ) -> Self {
+    Self {
+      addrs,
+      shutdown,
+      drop_tracer,
+      media_sessions,
+    }
   }
 
   pub fn start(
@@ -47,7 +62,11 @@ impl ApiServer {
     app.with(http::middleware::server);
     app.get("/status", http::middleware::status);
 
-    app.at("/").nest(routes::router());
+    app.at("/").nest(routes::router(
+      self.media_sessions.clone(),
+      self.shutdown.clone(),
+      self.drop_tracer.clone(),
+    ));
 
     let app = app.build().expect("prex app build api");
 

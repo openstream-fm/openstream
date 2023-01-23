@@ -5,6 +5,7 @@ use channels::ChannelMap;
 use constants::STREAM_CHUNK_SIZE;
 use db::station::Station;
 use db::Model;
+use drop_tracer::DropTracer;
 use ffmpeg::{Ffmpeg, FfmpegConfig, FfmpegSpawn};
 use futures::stream::FuturesUnordered;
 use futures::{StreamExt, TryStreamExt};
@@ -45,8 +46,9 @@ impl SourceServer {
     source_addrs: Vec<SocketAddr>,
     broadcast_addrs: Vec<SocketAddr>,
     shutdown: Shutdown,
+    drop_tracer: DropTracer,
   ) -> Self {
-    let channels = ChannelMap::new();
+    let channels = ChannelMap::new(drop_tracer);
 
     Self {
       source_addrs,

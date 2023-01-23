@@ -1,6 +1,14 @@
-use crate::{audio_chunk::AudioChunk, run_transaction, station::Station, Model};
-use log::warn;
-use mongodb::{bson::doc, options::FindOneOptions, ClientSession, IndexModel};
+use crate::{
+  audio_chunk::AudioChunk,
+  run_transaction,
+  station::{Limit, Limits, Station},
+  Model,
+};
+use mongodb::{
+  bson::{doc, Document},
+  options::FindOneOptions,
+  ClientSession, IndexModel,
+};
 use serde::{Deserialize, Serialize};
 use serde_util::{as_f64, DateTime};
 use ts_rs::TS;
@@ -47,7 +55,77 @@ pub struct OrderDocument {
   pub order: f64,
 }
 
+impl OrderDocument {
+  pub fn projection() -> Document {
+    doc! { crate::KEY_ID: 0, OrderDocument::KEY_ORDER: 1 }
+  }
+}
+
 impl AudioFile {
+  pub async fn next_max_order(
+    station_id: &str,
+    session: Option<&mut ClientSession>,
+  ) -> Result<f64, mongodb::error::Error> {
+    let sort = doc! { AudioFile::KEY_ORDER: -1 };
+    let options = FindOneOptions::builder()
+      .sort(sort)
+      .projection(OrderDocument::projection())
+      .build();
+    let filter = doc! { AudioFile::KEY_STATION_ID: station_id };
+
+    let document = match session {
+      None => {
+        Self::cl_as::<OrderDocument>()
+          .find_one(filter, options)
+          .await?
+      }
+      Some(session) => {
+        Self::cl_as::<OrderDocument>()
+          .find_one_with_session(filter, options, session)
+          .await?
+      }
+    };
+
+    let n = match document {
+      None => 1.0 + rand::random::<f64>(),
+      Some(doc) => doc.order + 1.0 + rand::random::<f64>(),
+    };
+
+    Ok(n)
+  }
+
+  pub async fn next_min_order(
+    station_id: &str,
+    session: Option<&mut ClientSession>,
+  ) -> Result<f64, mongodb::error::Error> {
+    let sort = doc! { AudioFile::KEY_ORDER: 1 };
+    let options = FindOneOptions::builder()
+      .sort(sort)
+      .projection(OrderDocument::projection())
+      .build();
+    let filter = doc! { AudioFile::KEY_STATION_ID: station_id };
+
+    let document = match session {
+      None => {
+        Self::cl_as::<OrderDocument>()
+          .find_one(filter, options)
+          .await?
+      }
+      Some(session) => {
+        Self::cl_as::<OrderDocument>()
+          .find_one_with_session(filter, options, session)
+          .await?
+      }
+    };
+
+    let n = match document {
+      None => -1.0 - rand::random::<f64>(),
+      Some(doc) => doc.order - 1.0 - rand::random::<f64>(),
+    };
+
+    Ok(n)
+  }
+
   pub async fn delete_audio_file_with_session(
     station_id: &str,
     file_id: &str,
@@ -70,20 +148,16 @@ impl AudioFile {
     // delete file
     AudioFile::delete_by_id_with_session(&audio_file.id, session).await?;
 
-    // get station
-    let station = Station::get_by_id_with_session(station_id, session).await?;
-
-    // this should always be Some
-    if let Some(mut station) = station {
-      // applying limits update
-      station.limits.storage.used = station.limits.storage.used.saturating_sub(audio_file.len);
-      Station::replace_with_session(&station.id, &station, session).await?;
-    } else {
-      warn!(
-        "deleting audio file {}: station not found, station_id = {}",
-        &audio_file.id, station_id
-      )
-    }
+    // update station
+    const KEY: &str = const_str::concat!(
+      Station::KEY_LIMITS,
+      ".",
+      Limits::KEY_STORAGE,
+      ".",
+      Limit::KEY_USED
+    );
+    let update = doc! { "$inc": { KEY: (audio_file.len as f64) * -1.0 } };
+    Station::update_by_id_with_session(&audio_file.station_id, update, session).await?;
 
     Ok(Some(audio_file))
   }

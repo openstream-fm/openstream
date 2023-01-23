@@ -18,7 +18,7 @@ is_ci = "1.1.1"
 log = "0.4.17"
 logger = { version = "0.1.0", path = "../logger" }
 md-5 = "0.10.5"
-mongodb = "=2.3.1"
+mongodb = "=2.4.0-beta"
 serde-util = { version = "0.1.0", path = "../serde-util" }
 sha2 = "0.10.6"
 stream-util = { version = "0.1.0", path = "../stream-util" }

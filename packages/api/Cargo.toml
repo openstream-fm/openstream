@@ -15,6 +15,7 @@ constants = { version = "0.1.0", path = "../../config/constants" }
 cookie = { version = "0.16.2", features = ["sha2", "secure", "signed", "base64"] }
 crypt = { version = "0.1.0", path = "../crypt" }
 db = { version = "0.1.0", path = "../db" }
+drop-tracer = { version = "0.1.0", path = "../drop-tracer" }
 futures = "0.3.25"
 futures-util = "0.3.25"
 hex = "0.4.3"
@@ -22,10 +23,12 @@ http = { version = "0.1.0", path = "../http" }
 http-range = "0.1.5"
 hyper = { version = "0.14.20", features = ["full"] }
 log = "0.4.17"
-mongodb = "=2.3.1"
+media-sessions = { version = "0.1.0", path = "../media-sessions" }
+mongodb = "=2.4.0-beta"
 owo-colors = { version = "3.5.0", path = "../owo-colors" }
 parking_lot = "0.12.1"
 prex = { version = "0.1.0", path = "../prex" }
+rand = "0.8.5"
 serde = "1.0.145"
 serde-querystring = "0.1.0"
 serde-util = { version = "0.1.0", path = "../serde-util" }

@@ -70,11 +70,11 @@ pub enum StreamServerError {
 }
 
 impl StreamServer {
-  pub fn new(addrs: Vec<SocketAddr>, shutdown: Shutdown, media_sessions: MediaSessionMap) -> Self {
+  pub fn new(addrs: Vec<SocketAddr>, shutdown: Shutdown, drop_tracer: DropTracer, media_sessions: MediaSessionMap) -> Self {
     Self {
       addrs,
       shutdown,
-      drop_tracer: DropTracer::new(),
+      drop_tracer,
       media_sessions,
       transfer_map: TransferTracer::new(),
       ip_counter: IpCounter::new(),
@@ -253,7 +253,7 @@ impl StreamHandler {
         StreamConnection {
           id: StreamConnection::uid(),
           station_id: station.id,
-          connected_at: now,
+          created_at: now,
           last_transfer_at: now,
           request: db::http::Request::from_http(&req),
           state: db::stream_connection::State::Open,

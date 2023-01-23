@@ -7,9 +7,8 @@ use constants::{AUDIO_FILE_BYTERATE, AUDIO_FILE_CHUNK_SIZE};
 use db::audio_chunk::AudioChunk;
 use db::audio_file::{AudioFile, Metadata};
 use db::audio_upload_operation::{AudioUploadOperation, State};
-use db::models::increment_station_audio_file_order::IncrementStationAudioFileOrder;
 use db::station::Station;
-use db::{run_transaction, storage_quota, Incrementer, Model};
+use db::{run_transaction, storage_quota, Model};
 use ffmpeg::{transform, FfmpegConfig, TransformError};
 use log::*;
 use serde_util::DateTime;
@@ -211,7 +210,7 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
     Ok(map) => Metadata::from(map.into_iter()),
   };
 
-  let order = IncrementStationAudioFileOrder::next(&station_id).await?;
+  let order = AudioFile::next_max_order(&station_id, None).await?;
 
   let file = AudioFile {
     id: audio_file_id,

@@ -51,7 +51,10 @@ impl From<ApiError> for PublicError {
 pub enum PublicErrorCode {
   ResourceNotFound,
   TooManyRequests,
+
   InternalDb,
+  InternalSerialize,
+
   IoRequest,
   TokenMissing,
   TokenMalformed,
@@ -91,4 +94,7 @@ pub enum PublicErrorCode {
 
   UnresolvableAdminMe,
   UnresolvableUserMe,
+
+  PlaylistStartIsLive,
+  PlaylistStartNoFiles,
 }

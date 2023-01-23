@@ -16,8 +16,8 @@ pub struct StreamConnection {
   pub id: String,
   pub station_id: String,
   pub request: Request,
-  // TODO: change to created_at
-  pub connected_at: DateTime,
+
+  pub created_at: DateTime,
 
   #[serde(with = "serde_util::as_f64")]
   pub transfer_bytes: u64,
@@ -62,15 +62,15 @@ impl Model for StreamConnection {
       .keys(doc! { Self::KEY_STATION_ID: 1 })
       .build();
 
-    let connected_at = IndexModel::builder()
-      .keys(doc! { Self::KEY_CONNECTED_AT: 1 })
+    let created_at = IndexModel::builder()
+      .keys(doc! { Self::KEY_CREATED_AT: 1 })
       .build();
 
-    let station_id_connected_at = IndexModel::builder()
-      .keys(doc! { Self::KEY_STATION_ID: 1, Self::KEY_CONNECTED_AT: 1 })
+    let station_id_created_at = IndexModel::builder()
+      .keys(doc! { Self::KEY_STATION_ID: 1, Self::KEY_CREATED_AT: 1 })
       .build();
 
-    vec![station_id, connected_at, station_id_connected_at]
+    vec![station_id, created_at, station_id_created_at]
   }
 }
 
@@ -116,7 +116,7 @@ impl StreamConnection {
     let since: DateTime = (time::OffsetDateTime::now_utc() - in_last).into();
     let filter = doc! {
       Self::KEY_STATION_ID: station_id,
-      Self::KEY_CONNECTED_AT: { "$gte": since },
+      Self::KEY_CREATED_AT: { "$gte": since },
       Self::KEY_TRANSFER_BYTES: { "$ne": 0 },
     };
     let count = Self::cl().count_documents(filter, None).await?;

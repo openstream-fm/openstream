@@ -11,11 +11,12 @@ pub struct Config {
   pub source: Option<Source>,
   pub router: Option<Router>,
   pub api: Option<Api>,
+  pub storage: Option<Storage>,
 }
 
 impl Config {
   pub fn has_interfaces(&self) -> bool {
-    self.stream.is_some() || self.source.is_some() || self.api.is_some()
+    self.stream.is_some() || self.source.is_some() || self.api.is_some() || self.storage.is_some()
   }
 }
 
@@ -69,6 +70,13 @@ pub struct Api {
   pub public_base_url: Option<Url>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Storage {
+  pub addrs: Vec<SocketAddr>,
+  pub public_base_url: Option<Url>,
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum LoadConfigError {
   #[error("io error: {0}")]
@@ -77,7 +85,9 @@ pub enum LoadConfigError {
   #[error("invalid config: {0}")]
   Toml(#[from] toml::de::Error),
 
-  #[error("invalid config: at least one of [stream], [source] or [api] must be defined")]
+  #[error(
+    "invalid config: at least one of [stream], [source], [api] or [storage] must be defined"
+  )]
   NoInterfaces,
 }
 

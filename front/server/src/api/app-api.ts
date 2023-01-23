@@ -34,6 +34,10 @@ export const app_api = ({
     res.json({ ok: true })
   })
 
+  api.get("/config", json(async () => {
+    return config.public;
+  }))
+
   api.post("/login", json(async (req, res) => {
     if(req.cookie_session.user != null) {
       await client.auth.user.logout(ip(req), token(req)).catch(() => {});
@@ -85,6 +89,10 @@ export const app_api = ({
     return await client.stations.get(ip(req), token(req), req.params.station);
   }))
 
+  api.post("/stations/:station/restart-playlist", json(async req => {
+    return await client.stations.restart_playlist(ip(req), token(req), req.params.station);
+  }))
+
   api.get("/stations/:station/limits", json(async req => {
     const { station: { limits } } = await client.stations.get(ip(req), token(req), req.params.station);
     return limits;
@@ -103,6 +111,16 @@ export const app_api = ({
       }
       return await client.stations.files.post(ip(req), token(req), req.params.station, content_type, content_length, req.query as any, req);
     }))
+
+  api.route("/stations/:station/files/shuffle")
+    .post(json(async req => {
+      return await client.stations.files.shuffle(ip(req), token(req), req.params.station);
+    }));
+
+  api.route("/stations/:station/files/unshuffle")
+    .post(json(async req => {
+      return await client.stations.files.unshuffle(ip(req), token(req), req.params.station);
+    }));
 
   api.route("/stations/:station/files/:file")
     .get(json(async req => {

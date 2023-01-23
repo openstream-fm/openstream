@@ -17,3 +17,7 @@ pub const TRANSFER_SAVE_INTERVAL_MILLIS: u64 = 5_000;
 pub const STREAM_IP_CONNECTIONS_LIMIT: u64 = 8;
 
 pub const PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY: Duration = Duration::from_secs(10);
+
+pub const API_IP_LIMIT: usize = 60;
+
+pub const API_IP_LIMIT_DURATION: Duration = Duration::from_secs(60);

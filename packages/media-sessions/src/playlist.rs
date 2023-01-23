@@ -98,7 +98,7 @@ pub fn run_playlist_session(
       // we fill the burst on start
       let mut burst_len: usize = 0;
 
-      let mut last_success_transfer = Instant::now();
+      let mut no_listeners_since: Option<Instant> = None;
 
       let mut current_file = start_file;
 
@@ -175,7 +175,7 @@ pub fn run_playlist_session(
         });
         //.rated(file.bytes_sec)
 
-        // fill the burst
+        // fill the burst without delay between chunk parts
         tokio::pin!(stream);
         if burst_len < STREAM_BURST_LENGTH {
           'chunks: loop {
@@ -196,17 +196,7 @@ pub fn run_playlist_session(
                 let burst_filled = burst_len >= STREAM_BURST_LENGTH;
 
                 match tx.send(bytes) {
-                  // n is the number of listeners that received the chunk
-                  Ok(_n) => {
-                    if burst_filled {
-                      break 'chunks;
-                    } else {
-                      continue 'chunks;
-                    }
-                  }
-
-                  // we ignore no listeners and continue streaming
-                  Err(SendError::NoListeners(_)) => {
+                  Ok(_) | Err(SendError::NoListeners(_)) => {
                     if burst_filled {
                       break 'chunks;
                     } else {
@@ -222,6 +212,7 @@ pub fn run_playlist_session(
           }
         }
 
+        // add byte rate to the stream
         let stream = stream.rated(current_file.bytes_sec);
         tokio::pin!(stream);
 
@@ -240,22 +231,30 @@ pub fn run_playlist_session(
 
               match tx.send(bytes) {
                 // n is the number of listeners that received the chunk
-                Ok(_n) => {
-                  last_success_transfer = Instant::now();
+                Ok(_) => {
+                  no_listeners_since = None;
                   continue 'chunks;
                 }
-                // we ignore no listeners and continue streaming
-                Err(SendError::NoListeners(_)) => {
-                  if last_success_transfer.elapsed() > PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY {
-                    info!(
-                      "shutting down playlist for station {} (no listeners shutdown delay elapsed)",
-                      station_id
-                    );
-                    break 'files;
-                  } else {
+                
+                // check if shutdown delay is elapsed
+                Err(SendError::NoListeners(_)) => match no_listeners_since {
+                  Some(instant) => {
+                    if instant.elapsed() > PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY {
+                      info!(
+                        "shutting down playlist for station {} (no listeners shutdown delay elapsed)",
+                          station_id
+                      );
+                      break 'files;
+                    } else {
+                      continue 'chunks;
+                    }
+                  }
+                
+                  None => {
+                    no_listeners_since = Some(Instant::now());
                     continue 'chunks;
                   }
-                }
+                } 
                 // here the stream has been terminated (maybe replaced with a newer transmitter)
                 Err(SendError::Terminated(_)) => break 'files,
               }
@@ -328,9 +327,7 @@ async fn resume_info_for_station(
   };
 
   let filter = doc! { AudioFile::KEY_ID: &audio_file_id, AudioFile::KEY_STATION_ID: station_id };
-  let file = AudioFile::cl().find_one(filter, None).await?;
-
-  let file = match file {
+  let file = match AudioFile::cl().find_one(filter, None).await? {
     None => {
       match AudioFile::playlist_next(station_id, &audio_file_id, audio_file_order).await? {
         None => return Ok((Some(session.id), None, 0.0, 0)),
@@ -447,7 +444,7 @@ impl Drop for MediaSessionDropper {
 
     tokio::spawn(async move {
       info!(
-        "saving media session {} station_id={} file_id={:?} i={} part={}",
+        "saving media session {} station_id={} file_id={} i={} part={}",
         doc.id, doc.station_id, file_id, i, part,
       );
       match MediaSession::replace(&doc.id, &doc).await {

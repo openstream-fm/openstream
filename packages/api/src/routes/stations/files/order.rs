@@ -4,7 +4,6 @@ use crate::request_ext::{self, GetAccessTokenScopeError};
 use crate::error::ApiError;
 use async_trait::async_trait;
 use db::audio_file::AudioFile;
-use db::audio_file::OrderDocument;
 use db::run_transaction;
 use db::station::Station;
 use db::Model;
@@ -14,9 +13,6 @@ use prex::request::ReadBodyJsonError;
 use prex::Request;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
-
-use db::models::increment_station_audio_file_order::IncrementStationAudioFileOrder;
-use db::Incrementer;
 
 #[derive(Debug, thiserror::Error)]
 pub enum HandleError {
@@ -165,7 +161,6 @@ pub mod swap {
 }
 
 pub mod move_to_first {
-
   use super::*;
 
   pub mod post {
@@ -200,41 +195,24 @@ pub mod move_to_first {
 
       async fn parse(&self, request: Request) -> Result<Self::Input, Self::ParseError> {
         let station_id = request.param("station").unwrap().to_string();
-
         let file_id = request.param("file").unwrap().to_string();
-
         let access_token_scope = request_ext::get_access_token_scope(&request).await?;
-
         let station = access_token_scope.grant_station_scope(&station_id).await?;
-
         Ok(Self::Input { station, file_id })
       }
 
       async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
         let Self::Input { station, file_id } = input;
 
-        let order = run_transaction!(session => {
-          let filter = doc!{ AudioFile::KEY_STATION_ID: &station.id };
-          let sort = doc!{ AudioFile::KEY_ORDER: 1 };
-          let options = FindOneOptions::builder().sort(sort).build();
-          let new_order = match tx_try!(AudioFile::cl_as::<OrderDocument>().find_one_with_session(filter, options, &mut session).await) {
-            Some(doc) => doc.order - 1.0,
-            None => -1.0
-          };
+        let new_order = AudioFile::next_min_order(&station.id, None).await?;
+        let filter = doc! { AudioFile::KEY_STATION_ID: &station.id, AudioFile::KEY_ID: &file_id };
+        let update = doc! { "$set": { AudioFile::KEY_ORDER: new_order } };
+        let r = AudioFile::cl().update_one(filter, update, None).await?;
+        if r.matched_count == 0 {
+          return Err(HandleError::FileNotFound(file_id));
+        }
 
-          let filter = doc!{ AudioFile::KEY_ID: &file_id, AudioFile::KEY_STATION_ID: &station.id };
-          let update = doc!{ "$set": { AudioFile::KEY_ORDER: new_order } };
-          let r = tx_try!(AudioFile::cl().update_one_with_session(filter, update, None, &mut session).await);
-
-          if r.matched_count == 0 {
-            return Err(HandleError::FileNotFound(file_id));
-          }
-
-          new_order
-        });
-
-        let out = Output { order };
-
+        let out = Output { order: new_order };
         Ok(out)
       }
     }
@@ -277,31 +255,24 @@ pub mod move_to_last {
 
       async fn parse(&self, request: Request) -> Result<Self::Input, Self::ParseError> {
         let station_id = request.param("station").unwrap().to_string();
-
         let file_id = request.param("file").unwrap().to_string();
-
         let access_token_scope = request_ext::get_access_token_scope(&request).await?;
-
         let station = access_token_scope.grant_station_scope(&station_id).await?;
-
         Ok(Self::Input { station, file_id })
       }
 
       async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
         let Self::Input { station, file_id } = input;
 
-        let order = run_transaction!(session => {
-          let new_order = tx_try!(IncrementStationAudioFileOrder::next_with_session(&station.id, &mut session).await);
-          let filter = doc!{ AudioFile::KEY_STATION_ID: &station.id, AudioFile::KEY_ID: &file_id };
-          let update = doc!{ "$set": { AudioFile::KEY_ORDER: new_order } };
-          let r = tx_try!(AudioFile::cl().update_one_with_session(filter, update, None, &mut session).await);
-          if r.matched_count == 0 {
-            return Err(HandleError::FileNotFound(file_id));
-          }
-          new_order
-        });
+        let new_order = AudioFile::next_max_order(&station.id, None).await?;
+        let filter = doc! { AudioFile::KEY_STATION_ID: &station.id, AudioFile::KEY_ID: &file_id };
+        let update = doc! { "$set": { AudioFile::KEY_ORDER: new_order } };
+        let r = AudioFile::cl().update_one(filter, update, None).await?;
+        if r.matched_count == 0 {
+          return Err(HandleError::FileNotFound(file_id));
+        }
 
-        let out = Output { order };
+        let out = Output { order: new_order };
 
         Ok(out)
       }
@@ -313,6 +284,8 @@ pub mod move_before {
   use super::*;
 
   pub mod post {
+    use db::audio_file::OrderDocument;
+
     use super::*;
     #[derive(Debug, Clone)]
     pub struct Endpoint {}
@@ -378,28 +351,20 @@ pub mod move_before {
 
         let order = run_transaction!(session => {
           let filter = doc!{ AudioFile::KEY_STATION_ID: &station.id, AudioFile::KEY_ID: &anchor_file_id };
-          let anchor = match tx_try!(AudioFile::get_with_session(filter, &mut session).await) {
+          let options = FindOneOptions::builder().projection(OrderDocument::projection()).build();
+          let anchor = match tx_try!(AudioFile::cl_as::<OrderDocument>().find_one_with_session(filter, options, &mut session).await) {
             None => return Err(HandleError::FileNotFound(anchor_file_id)),
             Some(anchor) => anchor,
           };
 
           let filter = doc!{ AudioFile::KEY_STATION_ID: &station.id, AudioFile::KEY_ORDER: { "$lt": anchor.order } };
           let sort = doc!{ AudioFile::KEY_ORDER: -1 };
-          let options = FindOneOptions::builder().sort(sort).build();
-          let prev = tx_try!(AudioFile::cl().find_one_with_session(filter, options, &mut session).await);
+          let options = FindOneOptions::builder().sort(sort).projection(OrderDocument::projection()).build();
+          let prev = tx_try!(AudioFile::cl_as::<OrderDocument>().find_one_with_session(filter, options, &mut session).await);
 
           let new_order = match prev {
             Some(prev) => (prev.order + anchor.order) / 2.0,
-            None => {
-              let filter = doc!{ AudioFile::KEY_STATION_ID: &station.id };
-              let sort = doc!{ AudioFile::KEY_ORDER: 1 };
-              let options = FindOneOptions::builder().sort(sort).build();
-              let first = tx_try!(AudioFile::cl().find_one_with_session(filter, options, &mut session).await);
-              match first {
-                None => -1.0,
-                Some(first) => first.order - 1.0
-              }
-            }
+            None => tx_try!(AudioFile::next_min_order(&station.id, Some(&mut session)).await)
           };
 
 
@@ -501,10 +466,7 @@ pub mod move_after {
 
           let new_order = match next {
             Some(next) => (next.order + anchor.order) / 2.0,
-            None => {
-              let order = tx_try!(IncrementStationAudioFileOrder::next_with_session(&station.id, &mut session).await);
-              order
-            }
+            None => tx_try!(AudioFile::next_max_order(&station.id, Some(&mut session)).await),
           };
 
 

@@ -9,6 +9,7 @@ export interface Station {
   limits: StationLimits;
   created_at: DateTime;
   updated_at: DateTime;
+  playlist_is_randomly_shuffled: boolean;
   user_metadata: Metadata;
   system_metadata: Metadata;
   source_password: string;

@@ -1,5 +1,8 @@
+use drop_tracer::DropTracer;
+use media_sessions::MediaSessionMap;
 use prex::router::builder::Builder;
 use prex::Request;
+use shutdown::Shutdown;
 
 use crate::error::ApiError;
 use crate::json::JsonHandler;
@@ -12,7 +15,11 @@ pub mod me;
 pub mod stations;
 pub mod users;
 
-pub fn router() -> Builder {
+pub fn router(
+  media_sessions: MediaSessionMap,
+  shutdown: Shutdown,
+  drop_tracer: DropTracer,
+) -> Builder {
   let mut app = prex::prex();
 
   app.at("/me").get(me::get::Endpoint {}.into_handler());
@@ -52,10 +59,27 @@ pub fn router() -> Builder {
     .get(stations::id::get::Endpoint {}.into_handler())
     .put(stations::id::patch::Endpoint {}.into_handler());
 
+  app.at("/stations/:station/restart-playlist").post(
+    stations::restart_playlist::post::Endpoint {
+      media_sessions,
+      shutdown,
+      drop_tracer,
+    }
+    .into_handler(),
+  );
+
   app
     .at("/stations/:station/files")
     .get(stations::files::get::Endpoint {}.into_handler())
     .post(stations::files::post::Endpoint {}.into_handler());
+
+  app
+    .at("/stations/:station/files/shuffle")
+    .post(stations::files::shuffle::post::Endpoint {}.into_handler());
+
+  app
+    .at("/stations/:station/files/unshuffle")
+    .post(stations::files::unshuffle::post::Endpoint {}.into_handler());
 
   app
     .at("/stations/:station/files/:file")

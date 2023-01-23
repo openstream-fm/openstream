@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 lazy_static = "1.4.0"
-mongodb = "=2.3.1"
+mongodb = "=2.4.0-beta"
 serde = "1.0.145"
 tokio = { version = "1.21.2", features = [ "full" ] }
 chrono = { version = "0.4.22", features = [ "serde" ] }

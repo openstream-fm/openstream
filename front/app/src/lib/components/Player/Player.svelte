@@ -3,7 +3,7 @@
   import Icon from "$share/Icon.svelte";
 	import { ripple } from "$share/ripple";
 	import { mdiClose, mdiPause, mdiPlay } from "@mdi/js";
-	import { fly } from "svelte/transition";
+	import { fly, slide } from "svelte/transition";
 	import { player_state, player_title, player_subtitle, player_audio_state, pause, resume, close } from "./player";
 
   $: state = $player_state;
@@ -21,16 +21,26 @@
 </script>
 
 <style>
-  .player {
+  .player-holder {
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    height: 5rem;
-    box-shadow: rgba(0,0,0,0.25) 0 0 6px;
-    background: #fff;
     position: sticky;
     bottom: 0;
     z-index: var(--z-player);
+    padding-top: 1rem;
+    margin-top: -1rem;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .player {
+    display: flex;
+    flex: 1;
+    pointer-events: all;
+    flex-direction: row;
+    align-items: center;
+    box-shadow: rgba(0,0,0,0.25) 0 0 6px;
+    background: #fff;
+    height: 5rem;
   }
 
   .titles {
@@ -113,38 +123,40 @@
 </style>
 
 {#if state.type !== "closed"}
-  <div class="player" aria-label="Player" transition:fly|local={{ y: 50, duration: 350 }}>
+  <div class="player-holder">
+    <div class="player" aria-label="Player" transition:fly|local={{ y: 50, duration: 350 }}>
 
-    <div class="toggle-out">
-      <button use:ripple class="toggle ripple-container" aria-label={toggle_aria_label} data-audio-state={audio_state} on:click={toggle}>
-        {#if audio_state === "paused"}
-          <Icon d={mdiPlay} />
-        {:else if audio_state === "playing"}
-          <Icon d={mdiPause} />
-        {:else}
-          <!-- audio_state: loading -->
-          <CircularProgress />
-        {/if}
-      </button>
-    </div>
-
-    <div class="titles" class:with-subtitle={!!subtitle}>
-      <div class="title">
-        <span>
-          {title}
-        </span>
+      <div class="toggle-out">
+        <button use:ripple class="toggle ripple-container" aria-label={toggle_aria_label} data-audio-state={audio_state} on:click={toggle}>
+          {#if audio_state === "paused"}
+            <Icon d={mdiPlay} />
+          {:else if audio_state === "playing"}
+            <Icon d={mdiPause} />
+          {:else}
+            <!-- audio_state: loading -->
+            <CircularProgress />
+          {/if}
+        </button>
       </div>
-      {#if subtitle}
-        <div class="subtitle">
-          <span>{subtitle}</span>
-        </div>
-      {/if}
-    </div>
 
-    <div class="btns">
-      <button use:ripple class="btn close ripple-container" aria-label="Close player" on:click={close}>
-        <Icon d={mdiClose} />
-      </button>
+      <div class="titles">
+        <div class="title">
+          <span>
+            {title}
+          </span>
+        </div>
+        {#if subtitle}
+          <div class="subtitle" transition:slide|local={{ duration: 200 }}>
+            <span>{subtitle}</span>
+          </div>
+        {/if}
+      </div>
+
+      <div class="btns">
+        <button use:ripple class="btn close ripple-container" aria-label="Close player" on:click={close}>
+          <Icon d={mdiClose} />
+        </button>
+      </div>
     </div>
   </div>
 {/if}

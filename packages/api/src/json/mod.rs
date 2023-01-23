@@ -74,8 +74,10 @@ pub trait JsonHandler: Send + Sync + Sized + Clone + 'static {
 
     let is_cacheable_method = method == Method::GET || method == Method::HEAD;
 
-    // TODO: remove this expect
-    let body = serde_json::to_vec(&output).expect("JsonHandler JSON serialize");
+    let body = match serde_json::to_vec(&output) {
+      Ok(vec) => vec,
+      Err(e) => return ApiError::SerializeJSON(e).into_json_response(),
+    };
 
     if is_cacheable_method && !self.ignore_etag() {
       let req_etag = req_etag.and_then(|etag| etag.to_str().map(String::from).ok());

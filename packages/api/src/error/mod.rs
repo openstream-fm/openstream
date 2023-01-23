@@ -125,6 +125,15 @@ pub enum ApiError {
 
   #[error("unresolvable user me")]
   UnresolvableUserMe,
+
+  #[error("serialize json: {0}")]
+  SerializeJSON(serde_json::Error),
+
+  #[error("cannot start playlist (currently live streaming)")]
+  PlaylistStartIsLive,
+
+  #[error("cannot start playlist (no files for account")]
+  PlaylistStartNoFiles,
 }
 
 impl ApiError {
@@ -173,6 +182,11 @@ impl ApiError {
 
       UnresolvableAdminMe => StatusCode::BAD_REQUEST,
       UnresolvableUserMe => StatusCode::BAD_REQUEST,
+
+      SerializeJSON(_) => StatusCode::INTERNAL_SERVER_ERROR,
+
+      PlaylistStartIsLive => StatusCode::BAD_REQUEST,
+      PlaylistStartNoFiles => StatusCode::BAD_REQUEST,
     }
   }
 
@@ -216,14 +230,15 @@ impl ApiError {
       PatchEmpty => format!("Update operation is empty"),
       PatchInvalid(message) => format!("{message}"),
       PatchOutOfScope(message) => format!("{message}"),
-      ContentLengthRequired => format!("content length is required"),
+      ContentLengthRequired => format!("Content length is required"),
 
-      UnresolvableAdminMe => {
-        format!("cannot resolve 'me' admin with current access token scope")
-      }
-      UnresolvableUserMe => {
-        format!("cannot resolve 'me' user with current access token scope")
-      }
+      UnresolvableAdminMe => format!("Cannot resolve 'me' admin with current access token scope"),
+      UnresolvableUserMe => format!("Cannot resolve 'me' user with current access token scope"),
+
+      SerializeJSON(_) => format!("Internal server error"),
+
+      PlaylistStartIsLive => format!("Station is currenly live streaming"),
+      PlaylistStartNoFiles => format!("Station playlist is empty"),
     }
   }
 
@@ -270,6 +285,10 @@ impl ApiError {
 
       UnresolvableAdminMe => PublicErrorCode::UnresolvableAdminMe,
       UnresolvableUserMe => PublicErrorCode::UnresolvableUserMe,
+      SerializeJSON(_) => PublicErrorCode::InternalSerialize,
+
+      PlaylistStartIsLive => PublicErrorCode::PlaylistStartIsLive,
+      PlaylistStartNoFiles => PublicErrorCode::PlaylistStartNoFiles,
     }
   }
 

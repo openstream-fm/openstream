@@ -8,4 +8,8 @@ declare namespace App {
     code: import("$lib/net.client").ClientErrorCode,
     message: string
   }
+
+  interface Data {
+    config: import("$server/config").Config["public"]
+  }
 }

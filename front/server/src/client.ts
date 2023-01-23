@@ -204,6 +204,10 @@ export class Stations {
   async get_dashboard_stats(ip: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/dashboard-stats/GET/Output").Output> {
     return await this.client.get(ip, token, `/stations/${id}/dashboard-stats`);
   }
+
+  async restart_playlist(ip: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/restart-playlist/POST/Output").Output> {
+    return await this.client.post(ip, token, `/stations/${id}/restart-playlist`, undefined);
+  }
 }
 
 export class Users {
@@ -282,6 +286,14 @@ export class StationFiles {
 
   async put_metadata(ip: string | null, token: string, station_id: string, file_id: string, payload: import("./defs/api/stations/[station]/files/[file]/metadata/PUT/Payload").Payload): Promise<import("./defs/api/stations/[station]/files/[file]/metadata/PUT/Output").Output> {
     return await this.client.put(ip, token, `/stations/${station_id}/files/${file_id}/metadata`, payload);
+  }
+
+  async shuffle(ip: string | null, token: string, station_id: string): Promise<import("./defs/api/stations/[station]/files/suffle/POST/Output").Output> {
+    return await this.client.post(ip, token, `/stations/${station_id}/files/shuffle`, undefined);
+  }
+
+  async unshuffle(ip: string | null, token: string, station_id: string): Promise<import("./defs/api/stations/[station]/files/unsuffle/POST/Output").Output> {
+    return await this.client.post(ip, token, `/stations/${station_id}/files/unshuffle`, undefined);
   }
 
   async swap_order(ip: string | null, token: string, station_id: string, file_id: string, payload: import("./defs/api/stations/[station]/files/[file]/order/swap/POST/Payload").Payload): Promise<import("./defs/api/stations/[station]/files/[file]/order/swap/POST/Output").Output> {

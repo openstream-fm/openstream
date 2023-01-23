@@ -15,13 +15,13 @@ pub struct PlayHistoryItem {
   pub id: String,
   pub station_id: String,
 
-  // if we dont have name and artist in file metadata
+  // if we dont have at least name in file metadata
   // we don't log the play history item
-  // and we reject live log requests if they doesn't include both of them
+  // and we reject live log requests if they doesn't include name at least
   pub name: String,
-  pub artist: String,
+  pub artist: Option<String>,
 
-  pub start_at: DateTime,
+  pub created_at: DateTime,
 
   #[ts(skip)]
   #[serde(flatten)]
@@ -35,7 +35,10 @@ pub struct PlayHistoryItem {
 #[macros::keys]
 pub enum Kind {
   Live,
-  File { file_id: String },
+  Playlist {
+    playlist_id: String,
+    file_id: String,
+  },
 }
 
 impl Model for PlayHistoryItem {
@@ -43,19 +46,16 @@ impl Model for PlayHistoryItem {
   const UID_LEN: usize = 20;
 
   fn indexes() -> Vec<IndexModel> {
-    // TODO: should we use a compound index for this?
-    // TODO: make some benchmarks with large number of items
-    let station_id = IndexModel::builder()
-      .keys(doc! { Self::KEY_STATION_ID: 1 })
+    // TODO: should we add more indexes ?
+    let station_id_created = IndexModel::builder()
+      .keys(doc! { Self::KEY_STATION_ID: 1, Self::KEY_CREATED_AT: 1 })
       .build();
-    let start_at = IndexModel::builder()
-      .keys(doc! { Self::KEY_START_AT: 1 })
-      .build();
+
     let kind = IndexModel::builder()
       .keys(doc! { Kind::KEY_ENUM_TAG: 1 })
       .build();
 
-    vec![station_id, start_at, kind]
+    vec![station_id_created, kind]
   }
 }
 

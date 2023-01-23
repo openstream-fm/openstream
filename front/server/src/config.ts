@@ -10,6 +10,11 @@ export type Config = {
     token: string
   }
 
+  public: {
+    streamPublicURL: string
+    storagePublicURL: string
+  }
+
   mongodb: {
     url: string
   }

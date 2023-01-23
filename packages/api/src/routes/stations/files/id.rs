@@ -11,6 +11,15 @@ use mongodb::bson::doc;
 use prex::{Request, Response};
 use serde::{Deserialize, Serialize};
 
+#[allow(clippy::declare_interior_mutable_const)]
+const VARY_RANGE_X_ACCESS_TOKEN: HeaderValue = HeaderValue::from_static("range,x-access-token");
+
+#[allow(clippy::declare_interior_mutable_const)]
+const ACCEPT_RANGES_BYTES: HeaderValue = HeaderValue::from_static("bytes");
+
+#[allow(clippy::declare_interior_mutable_const)]
+const CONTENT_TYPE_AUDIO_MPEG: HeaderValue = HeaderValue::from_static("audio/mpeg");
+
 pub mod get {
 
   use ts_rs::TS;
@@ -147,17 +156,9 @@ pub mod stream {
 
       if let Some(req_etag) = req_etag {
         if req_etag == res_etag {
-          let mut response = Response::new(StatusCode::NOT_MODIFIED);
-          response
-            .headers_mut()
-            .append(VARY, HeaderValue::from_static("range"));
-
-          return response;
+          return Response::new(StatusCode::NOT_MODIFIED);
         }
       }
-
-      // let chunk_count = file.chunk_count;
-      let file_id = file.id.to_string();
 
       let is_range_request = request.headers().contains_key(RANGE);
 
@@ -189,12 +190,13 @@ pub mod stream {
       let stream = async_stream::stream! {
 
         let mut i = start_i;
+
         loop {
           if i > end_i {
             break;
           }
 
-          let filter = doc!{AudioChunk::KEY_AUDIO_FILE_ID: &file_id, AudioChunk::KEY_I: i as f64 };
+          let filter = doc!{AudioChunk::KEY_AUDIO_FILE_ID: &file.id, AudioChunk::KEY_I: i as f64 };
           let data = match AudioChunk::get(filter).await {
             Err(e) => {
               yield Err(e);
@@ -207,7 +209,7 @@ pub mod stream {
               } else if i == start_i {
                 chunk.data.slice(skip_first_item_bytes..)
               } else if i == end_i {
-                chunk.data.slice(0..end_item_len)
+                chunk.data.slice(..end_item_len)
               } else {
                 chunk.data
               }
@@ -220,28 +222,26 @@ pub mod stream {
         }
       };
 
-      let mut response = match is_range_request {
-        false => {
+      let mut response = {
+        if is_range_request {
           let mut response = Response::new(StatusCode::OK);
 
           response.headers_mut().append(
             CONTENT_LENGTH,
-            HeaderValue::from_str(format!("{file_len}").as_str()).unwrap(),
+            HeaderValue::from_str(&file_len.to_string()).unwrap(),
           );
 
           response
-        }
-
-        true => {
+        } else {
           let mut response = Response::new(StatusCode::PARTIAL_CONTENT);
           response.headers_mut().append(
             CONTENT_LENGTH,
-            HeaderValue::from_str(format!("{length}").as_str()).unwrap(),
+            HeaderValue::from_str(&length.to_string()).unwrap(),
           );
 
           response.headers_mut().append(
             CONTENT_RANGE,
-            HeaderValue::from_str(format!("bytes {start}-{end}/{file_len}").as_str()).unwrap(),
+            HeaderValue::from_str(&format!("bytes {start}-{end}/{file_len}")).unwrap(),
           );
 
           response
@@ -254,15 +254,15 @@ pub mod stream {
 
       response
         .headers_mut()
-        .append(CONTENT_TYPE, HeaderValue::from_static("audio/mpeg"));
+        .append(CONTENT_TYPE, CONTENT_TYPE_AUDIO_MPEG);
 
       response
         .headers_mut()
-        .append(ACCEPT_RANGES, HeaderValue::from_static("bytes"));
+        .append(ACCEPT_RANGES, ACCEPT_RANGES_BYTES);
 
       response
         .headers_mut()
-        .append(VARY, HeaderValue::from_static("range,x-access-token"));
+        .append(VARY, VARY_RANGE_X_ACCESS_TOKEN);
 
       let body = Body::wrap_stream(stream);
 

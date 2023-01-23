@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { invalidate } from "$app/navigation";
   import CircularMeter from "$lib/components/CircularMeter/CircularMeter.svelte";
   import Page from "$lib/components/Page.svelte";
 	import { pause, player_state, play_station } from "$lib/components/Player/player";
@@ -21,8 +20,8 @@
   const now_playing = get_now_playing_store(data.station._id, data.now_playing);
   $: if($now_playing) data.now_playing = $now_playing.info;
 
-  $: on_air = $now_playing!.info.kind !== "none" || data.station.limits.storage.used !== 0;
-
+  $: on_air = $now_playing!.info.kind === "none" ? $now_playing!.info.start_on_connect : true;
+  
   const station_preview_state = derived(player_state, (state): "loading" | "paused" | "playing" => {
     if(state.type === "station") {
       if(data.station?._id && data.station._id === state.station._id) return state.audio_state;

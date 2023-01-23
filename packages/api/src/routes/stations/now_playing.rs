@@ -32,7 +32,7 @@ pub mod get {
   #[serde(tag = "kind")]
   pub enum Output {
     #[serde(rename = "none")]
-    None,
+    None { start_on_connect: bool },
     #[serde(rename = "live")]
     Live,
     #[serde(rename = "playlist")]
@@ -57,13 +57,18 @@ pub mod get {
       let Self::Input { station } = input;
 
       let out = match MediaSession::get_current_for_station(&station.id).await? {
-        None => Output::None,
+        None => Output::None {
+          start_on_connect: station.limits.storage.used != 0,
+        },
         Some(media_session) => match media_session.kind {
           MediaSessionKind::Live { .. } => Output::Live,
           MediaSessionKind::Playlist {
             last_audio_file_id, ..
           } => match AudioFile::get_by_id(&last_audio_file_id).await? {
-            None => Output::None,
+            // this would never happen
+            None => Output::None {
+              start_on_connect: station.limits.storage.used != 0,
+            },
             Some(file) => Output::Playilist { file },
           },
         },

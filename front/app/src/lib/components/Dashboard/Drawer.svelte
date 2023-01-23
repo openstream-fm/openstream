@@ -144,7 +144,7 @@
 
     <div class="links">
       <DrawerItem href="/stations/{station._id}" label="Dashboard" icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
-      <DrawerItem href="/stations/{station._id}/media" label="Media" icon={mdiMultimedia} on_click={close_drawer_fixed} />
+      <DrawerItem href="/stations/{station._id}/playlist" label="Playlist" icon={mdiMultimedia} on_click={close_drawer_fixed} />
       <!--
         <DrawerItem href="/stations/{station._id}/profile" label="Profile" icon={mdiAccountOutline} />
         <DrawerItem href="/station" label="Account" icon={mdiShieldAccountOutline} />

@@ -4,8 +4,7 @@ use log::*;
 use models::{transfer_checkpoint, user_station_relation};
 use mongodb::error::Result as MongoResult;
 use mongodb::options::{
-  FindOneAndUpdateOptions, FindOptions, ReplaceOptions, ReturnDocument, SelectionCriteria,
-  SessionOptions, TransactionOptions,
+  FindOptions, ReplaceOptions, SelectionCriteria, SessionOptions, TransactionOptions,
 };
 use mongodb::results::DeleteResult;
 use mongodb::{
@@ -582,12 +581,27 @@ pub struct IdDocument {
   pub id: String,
 }
 
-pub fn id_document_projection() -> Document {
-  mongodb::bson::doc! { KEY_ID: 1 }
+impl IdDocument {
+  pub fn projection() -> Document {
+    doc! { KEY_ID: 1 }
+  }
 }
 
 #[macro_export]
 macro_rules! current_filter_doc {
+  () => {
+    ::mongodb::bson::doc!{ $crate::KEY_DELETED_AT: ::mongodb::bson::Bson::Null }
+  };
+
+  ($filter:ident) => {
+    ::mongodb::bson::doc!{
+      "$and": [
+        { $crate::KEY_DELETED_AT: ::mongodb::bson::Bson::Null },
+        filter,
+      ]
+    }
+  };
+
   ($($tt:tt)*) => {
     ::mongodb::bson::doc! {
       "$and": [
@@ -598,49 +612,111 @@ macro_rules! current_filter_doc {
   }
 }
 
-const KEY_INCREMENT_NEXT: &str = "next";
+// const KEY_ORDER_BOUNDS_NEXT: &str = "next";
+// const KEY_ORDER_BOUNDS_PREV: &str = "prev";
 
-#[async_trait]
-pub trait Incrementer: Model {
-  fn item_next(&self) -> f64;
+// #[derive(Serialize, Deserialize)]
+// pub struct OrderBoundsNext {
+//   next: f64,
+// }
 
-  async fn next(id: &str) -> Result<f64, mongodb::error::Error> {
-    let filter = doc! { KEY_ID: id };
-    let update = doc! { "$setOnInsert": { KEY_ID: id }, "$inc": { KEY_INCREMENT_NEXT: 1f64 } };
-    let options = FindOneAndUpdateOptions::builder()
-      .upsert(true)
-      .return_document(ReturnDocument::Before)
-      .build();
+// impl OrderBoundsNext {
+//   pub fn projection() -> Document {
+//     doc! { KEY_ID: 0, KEY_ORDER_BOUNDS_NEXT: 1 }
+//   }
+// }
 
-    match Self::cl()
-      .find_one_and_update(filter, update, options)
-      .await?
-    {
-      Some(doc) => Ok(doc.item_next()),
-      None => Ok(0.0),
-    }
-  }
+// #[derive(Serialize, Deserialize)]
+// struct OrderBoundsPrev {
+//   next: f64,
+// }
 
-  async fn next_with_session(
-    id: &str,
-    session: &mut ClientSession,
-  ) -> Result<f64, mongodb::error::Error> {
-    let filter = doc! { KEY_ID: id };
-    let update = doc! { "$setOnInsert": { KEY_ID: id }, "$inc": { KEY_INCREMENT_NEXT: 1f64 } };
-    let options = FindOneAndUpdateOptions::builder()
-      .upsert(true)
-      .return_document(ReturnDocument::Before)
-      .build();
+// impl OrderBoundsPrev {
+//   pub fn projection() -> Document {
+//     doc! { KEY_ID: 0, KEY_ORDER_BOUNDS_PREV: 1 }
+//   }
+// }
 
-    match Self::cl()
-      .find_one_and_update_with_session(filter, update, options, session)
-      .await?
-    {
-      Some(doc) => Ok(doc.item_next()),
-      None => Ok(0.0),
-    }
-  }
-}
+// #[async_trait]
+// pub trait OrderBounds: Model {
+//   async fn next(id: &str) -> Result<f64, mongodb::error::Error> {
+//     let filter = doc! { KEY_ID: id };
+//     let update = doc! { "$setOnInsert": { KEY_ID: id, KEY_ORDER_BOUNDS_PREV: -1.0 }, "$inc": { KEY_ORDER_BOUNDS_NEXT: 1f64 } };
+//     let options = FindOneAndUpdateOptions::builder()
+//       .upsert(true)
+//       .projection(OrderBoundsNext::projection())
+//       .return_document(ReturnDocument::Before)
+//       .build();
+
+//     match Self::cl_as::<OrderBoundsNext>()
+//       .find_one_and_update(filter, update, options)
+//       .await?
+//     {
+//       Some(doc) => Ok(doc.next),
+//       None => Ok(0.0),
+//     }
+//   }
+
+//   async fn next_with_session(
+//     id: &str,
+//     session: &mut ClientSession,
+//   ) -> Result<f64, mongodb::error::Error> {
+//     let filter = doc! { KEY_ID: id };
+//     let update = doc! { "$setOnInsert": { KEY_ID: id, KEY_ORDER_BOUNDS_PREV: -1.0 }, "$inc": { KEY_ORDER_BOUNDS_NEXT: 1f64 } };
+//     let options = FindOneAndUpdateOptions::builder()
+//       .upsert(true)
+//       .projection(OrderBoundsNext::projection())
+//       .return_document(ReturnDocument::Before)
+//       .build();
+
+//     match Self::cl_as::<OrderBoundsNext>()
+//       .find_one_and_update_with_session(filter, update, options, session)
+//       .await?
+//     {
+//       Some(doc) => Ok(doc.next),
+//       None => Ok(0.0),
+//     }
+//   }
+
+//   async fn prev(id: &str) -> Result<f64, mongodb::error::Error> {
+//     let filter = doc! { KEY_ID: id };
+//     let update = doc! { "$setOnInsert": { KEY_ID: id, KEY_ORDER_BOUNDS_NEXT: 0.0 }, "$inc": { KEY_ORDER_BOUNDS_PREV: -1f64 } };
+//     let options = FindOneAndUpdateOptions::builder()
+//       .upsert(true)
+//       .projection(OrderBoundsPrev::projection())
+//       .return_document(ReturnDocument::Before)
+//       .build();
+
+//     match Self::cl_as::<OrderBoundsPrev>()
+//       .find_one_and_update(filter, update, options)
+//       .await?
+//     {
+//       Some(doc) => Ok(doc.next),
+//       None => Ok(0.0),
+//     }
+//   }
+
+//   async fn prev_with_session(
+//     id: &str,
+//     session: &mut ClientSession,
+//   ) -> Result<f64, mongodb::error::Error> {
+//     let filter = doc! { KEY_ID: id };
+//     let update = doc! { "$setOnInsert": { KEY_ID: id, KEY_ORDER_BOUNDS_NEXT: 0.0 }, "$inc": { KEY_ORDER_BOUNDS_PREV: -1f64 } };
+//     let options = FindOneAndUpdateOptions::builder()
+//       .upsert(true)
+//       .projection(OrderBoundsPrev::projection())
+//       .return_document(ReturnDocument::Before)
+//       .build();
+
+//     match Self::cl_as::<OrderBoundsPrev>()
+//       .find_one_and_update_with_session(filter, update, options, session)
+//       .await?
+//     {
+//       Some(doc) => Ok(doc.next),
+//       None => Ok(-1.0),
+//     }
+//   }
+// }
 
 #[cfg(test)]
 #[test]

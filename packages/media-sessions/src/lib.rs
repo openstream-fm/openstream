@@ -1,5 +1,7 @@
 use constants::STREAM_CHANNEL_CAPACITY;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockUpgradableReadGuard, RwLockWriteGuard};
+use playlist::run_playlist_session;
+use shutdown::Shutdown;
 use std::collections::btree_map::Entry;
 use std::collections::BTreeMap;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -62,6 +64,12 @@ impl Map {
   }
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum RestartError {
+  #[error("cannot restart, station is live streaming")]
+  LiveStreaming,
+}
+
 impl<'a> WriteLock<'a> {
   #[inline]
   pub fn get(&self, station_id: &str) -> Option<&MediaSession> {
@@ -71,6 +79,25 @@ impl<'a> WriteLock<'a> {
   #[inline]
   pub fn entry(&mut self, station_id: &str) -> Entry<'_, String, MediaSession> {
     self.lock.inner.entry(station_id.to_string())
+  }
+
+  pub fn restart(
+    &mut self,
+    station_id: &str,
+    shutdown: Shutdown,
+    drop_tracer: DropTracer,
+  ) -> Result<(), RestartError> {
+    if let Some(session) = self.get(station_id) {
+      if session.is_live() {
+        return Err(RestartError::LiveStreaming);
+      }
+    }
+
+    let tx = self.transmit(station_id, MediaSessionKind::Playlist {});
+
+    run_playlist_session(tx, shutdown, drop_tracer, false);
+
+    Ok(())
   }
 
   pub fn transmit(&mut self, station_id: &str, kind: MediaSessionKind) -> Transmitter {
@@ -133,7 +160,7 @@ impl<'a> UpgradableReadLock<'a> {
   }
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 pub struct MediaSessionMap {
   pub(crate) map: Arc<RwLock<Map>>,
   pub(crate) drop_tracer: DropTracer,
@@ -141,8 +168,11 @@ pub struct MediaSessionMap {
 
 impl MediaSessionMap {
   #[inline]
-  pub fn new() -> Self {
-    Self::default()
+  pub fn new(drop_tracer: DropTracer) -> Self {
+    Self {
+      map: Default::default(),
+      drop_tracer,
+    }
   }
 
   #[inline]
