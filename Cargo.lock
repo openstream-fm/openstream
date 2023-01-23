@@ -1904,6 +1904,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "config",
+ "crypt",
  "db",
  "dotenv",
  "futures-util",
@@ -2147,6 +2148,7 @@ dependencies = [
  "chrono",
  "clap",
  "config",
+ "crypt",
  "db",
  "defer-lite",
  "dialoguer",
@@ -2840,10 +2842,11 @@ dependencies = [
 
 [[package]]
 name = "serde-querystring"
-version = "0.0.8"
+version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f0ed49cae867c85beb7831162b9b94124d2e167bcbec36c73ed5f4d1381111b"
+checksum = "a9e4eec4c3d3ff56ddc6279c894bf0d1ce7eb584e1d8a9a75c61d953a78ed4b7"
 dependencies = [
+ "lexical",
  "serde",
 ]
 

@@ -355,9 +355,12 @@ fn token(
       
       let key = AccessToken::random_key();
 
+      let media_key = AccessToken::random_media_key();
+
       let token = AccessToken {
         id: AccessToken::uid(),
         key,
+        media_key,
         scope: db::access_token::Scope::Global,
         generated_by: GeneratedBy::Cli { title },
         hits: 0,

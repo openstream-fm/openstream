@@ -3,7 +3,8 @@ import type { PublicStation } from "../../../../../PublicStation";
 import type { PublicUser } from "../../../../../db/PublicUser";
 
 export interface Output {
-  station: PublicStation;
   user: PublicUser;
+  station: PublicStation;
   token: string;
+  media_key: string;
 }

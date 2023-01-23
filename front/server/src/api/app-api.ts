@@ -11,7 +11,8 @@ import { user_id } from "../user-id";
 import { ACCESS_TOKEN_HEADER, FORWARD_IP_HEADER } from "../contants";
 import { StatusCodes } from "http-status-codes";
 import { pipeline } from "stream/promises";
-import "../auth";
+import crypto from "crypto";
+import { mediakey } from "../media_key";
 
 export const app_api = ({
   config,
@@ -34,34 +35,42 @@ export const app_api = ({
   })
 
   api.post("/login", json(async (req, res) => {
-    //const { email, password } = validate(() => assertType<import("../defs/api/login/POST/Payload").Payload>(req.body));
-    //req.cookie_session.user = { token, _id: user._id };
-    //await save_session(req);
-    const { token, user } = await client.auth.user.login(ip(req), req.body);
-    const data = req.cookie_session;
-    res.set_session({ ...data, user: { token, _id: user._id } });
-    return { user }
+    if(req.cookie_session.user != null) {
+      await client.auth.user.logout(ip(req), token(req)).catch(() => {});
+    }
+
+    {
+      const { user, token, media_key } = await client.auth.user.login(ip(req), req.body);
+      const data = req.cookie_session;
+      res.set_session({ ...data, user: { _id: user._id, token, media_key  } });
+      return { user, media_key }
+    }
   }))
 
   api.post("/logout", json(async (req, res) => {
-    const r = await client.auth.user.logout(ip(req), token(req));
+    const r = await client.auth.user.logout(ip(req), token(req)).catch(() => {});
     const data = req.cookie_session;
     res.set_session({ ...data, user: null });
     return r;
   }))
 
   api.post("/register", json(async (req, res) => {
-    //const payload = validate(() => assertType<import("../defs/api/register/POST/Payload").Payload>(req.body));
-    //req.session.user = { token, _id: user._id };
-    //await save_session(req);
-    const { station, token, user } = await client.auth.user.register(ip(req), config.openstream.token, req.body);
-    const data = req.cookie_session;
-    res.set_session({ ...data, user: { token, _id: user._id }});
-    return { station, user }
+    // invalidate previous token
+    if(req.cookie_session.user != null) {
+      await client.auth.user.logout(ip(req), token(req)).catch(() => {});
+    }
+
+    {
+      const { station, token, user, media_key } = await client.auth.user.register(ip(req), config.openstream.token, req.body);
+      const data = req.cookie_session;
+      res.set_session({ ...data, user: { _id: user._id, token, media_key }});
+      return { user, station, media_key }
+    }
   }))
 
   api.get("/users/me", json(async req => {
-    return await client.users.get(ip(req), token(req), user_id(req))
+    const { user } = await client.users.get(ip(req), token(req), user_id(req))
+    return { user,  media_key: mediakey(req) };
   }))
 
   api.get("/users/:user", json(async req => {

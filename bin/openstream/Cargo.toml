@@ -34,3 +34,4 @@ media-sessions = { version = "0.1.0", path = "../../packages/media-sessions" }
 jemallocator = "0.5.0"
 uid = { version = "0.1.0", path = "../../packages/uid" }
 local-ip-address = "0.5.0"
+crypt = { version = "0.1.0", path = "../../packages/crypt" }

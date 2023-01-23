@@ -2,7 +2,8 @@ import { browser } from "$app/environment";
 import { default_logger } from "$lib/logger";
 import { get_now_playing_store, type NowPlaying, type StoreValue } from "$lib/now-playing";
 import { _get } from "$share/net.client";
-import { derived, get, readable, writable } from "svelte/store";
+import { derived, get, writable } from "svelte/store";
+import { page } from "$app/stores";
 
 export type PlayerState = PlayerState.Closed | PlayerState.Station | PlayerState.AudioFile;
 
@@ -165,7 +166,8 @@ export const play_track = (file: import("$server/defs/db/AudioFile").AudioFile) 
     file,
     audio_state: "loading",
   })
-  const audio = get_audio_tag(`/api/stations/${file.station_id}/files/${file._id}/stream`);
+  //const audio = get_audio_tag(`/api/stations/${file.station_id}/files/${file._id}/stream`);
+  const audio = get_audio_tag(`https://api.local.openstream.fm/stations/${file.station_id}/files/${file._id}/stream?token=${get(page).data.user?.media_key}`)
   audio.play().catch(e => {
     logger.warn(`error playing audio track ${file._id} => ${e}`);
   })

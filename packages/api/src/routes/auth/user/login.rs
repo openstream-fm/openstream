@@ -37,6 +37,7 @@ pub mod post {
   pub struct Output {
     user: UserPublicUser,
     token: String,
+    media_key: String,
   }
 
   #[derive(Debug, Clone)]
@@ -140,9 +141,12 @@ pub mod post {
 
       let key = AccessToken::random_key();
 
+      let media_key = AccessToken::random_media_key();
+
       let token = AccessToken {
         id: AccessToken::uid(),
         key,
+        media_key,
         scope: Scope::User { user_id },
         generated_by: GeneratedBy::Login { ip, user_agent },
         created_at: DateTime::now(),
@@ -158,6 +162,7 @@ pub mod post {
       let out = Output {
         user,
         token: token.key,
+        media_key: token.media_key,
       };
 
       Ok(out)

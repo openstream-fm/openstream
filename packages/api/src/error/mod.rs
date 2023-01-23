@@ -31,7 +31,7 @@ pub enum ApiError {
   Hyper(#[from] hyper::Error),
 
   #[error("querystring: {0}")]
-  QueryString(#[from] serde_querystring::Error),
+  QueryString(#[from] serde_querystring::de::Error),
 
   #[error("token missing")]
   TokenMissing,

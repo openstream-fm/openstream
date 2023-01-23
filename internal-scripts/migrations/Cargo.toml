@@ -7,11 +7,16 @@ edition = "2021"
 name = "migration-add-audio-file-order"
 path = "./src/migration_add_audio_file_order.rs"
 
+[[bin]]
+name = "migration-add-access-token-media-key"
+path = "./src/migration_add_access_token_media_key.rs"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 anyhow = "1.0.68"
 config = { version = "0.1.0", path = "../../packages/config" }
+crypt = { version = "0.1.0", path = "../../packages/crypt" }
 db = { version = "0.1.0", path = "../../packages/db" }
 dotenv = "0.15.0"
 futures-util = "0.3.25"

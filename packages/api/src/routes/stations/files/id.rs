@@ -108,7 +108,7 @@ pub mod stream {
     Body, StatusCode,
   };
 
-  use crate::{error::ApiError, request_ext::get_access_token_scope};
+  use crate::error::ApiError;
 
   use super::*;
 
@@ -120,7 +120,8 @@ pub mod stream {
     async fn call(&self, request: Request, _: prex::Next) -> prex::Response {
       let station_id = request.param("station").unwrap();
       let file_id = request.param("file").unwrap();
-      let scope = match get_access_token_scope(&request).await {
+
+      let scope = match request_ext::get_media_access_token_scope(&request).await {
         Ok(scope) => scope,
         Err(e) => return ApiError::from(e).into_json_response(),
       };

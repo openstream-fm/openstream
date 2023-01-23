@@ -6,12 +6,14 @@ import { getEventIp } from "../ip.server";
 import StatusCode from "http-status-codes";
 import type { RequestEvent } from "@sveltejs/kit"
 
+export type User = import("$server/defs/db/PublicUser").PublicUser & { media_key: string };
+
 export const load_get_me = async (
   { request, getClientAddress }: Pick<RequestEvent, "getClientAddress" | "request">
-): Promise<import("$server/defs/api/users/[user]/GET/Output").Output["user"] | null> => {
+): Promise<User | null> => {
   try {
-    const { user }: import("$server/defs/api/users/[user]/GET/Output").Output = await load_get("/api/users/me", { request, getClientAddress }, { redirectToLoginOnAuthErrors: false });
-    return user;
+    const { user, media_key }: { user: import("$server/defs/db/PublicUser").PublicUser, media_key: string } = await load_get("/api/users/me", { request, getClientAddress }, { redirectToLoginOnAuthErrors: false });
+    return { ...user, media_key }
   } catch (e: any) {
     if(e?.status === StatusCode.UNAUTHORIZED) {
       return null;

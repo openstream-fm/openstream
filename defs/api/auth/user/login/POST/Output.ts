@@ -4,4 +4,5 @@ import type { UserPublicUser } from "../../../../../db/UserPublicUser";
 export interface Output {
   user: UserPublicUser;
   token: string;
+  media_key: string;
 }

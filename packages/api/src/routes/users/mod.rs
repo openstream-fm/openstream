@@ -62,7 +62,7 @@ pub mod get {
     #[error("access: {0}")]
     Access(#[from] GetAccessTokenScopeError),
     #[error("querystring: {0}")]
-    QueryString(#[from] serde_querystring::Error),
+    QueryString(#[from] serde_querystring::de::Error),
   }
 
   impl From<ParseError> for ApiError {
@@ -86,7 +86,7 @@ pub mod get {
 
       let Query { skip, limit } = match req.uri().query() {
         None => Default::default(),
-        Some(qs) => serde_querystring::from_str(qs)?,
+        Some(qs) => serde_querystring::from_str(qs, serde_querystring::de::ParseMode::UrlEncoded)?,
       };
 
       Ok(Self::Input {

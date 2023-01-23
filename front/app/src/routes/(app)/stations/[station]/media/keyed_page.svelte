@@ -7,14 +7,14 @@
 	import { action, ClientError, _delete, _get, _post, _put, _request } from "$share/net.client";
   import { mdiPlay, mdiPause, mdiAlertDecagram, mdiCheck, mdiTimerPauseOutline, mdiCircleEditOutline, mdiTrashCanOutline, mdiAutorenew, mdiCheckboxIntermediate, mdiCheckboxMarked, mdiCheckboxBlankOutline, mdiCheckboxMarkedOutline, mdiContentSaveOutline, mdiChevronUp, mdiChevronDown, mdiChevronDoubleDown, mdiChevronDoubleUp, mdiDrag, mdiFileKey, mdiMusic } from "@mdi/js";
 	import Icon from "$share/Icon.svelte";
-	import { onMount, tick } from "svelte";
+	import { onMount } from "svelte";
   import CircularProgress from "$share/CircularProgress.svelte";
 	import { add } from "$lib/actions";
 	import { tooltip } from "$share/tooltip";
   import { fade, scale, slide } from "svelte/transition";
 	import { _message, _progress } from "$share/notify";
+  import { flip } from "$share/animate";
   import Dialog from "$share/Dialog.svelte";
-
   import { close, player_playing_audio_file_id, player_audio_state, resume, pause, play_track } from "$lib/components/Player/player";
 
   let dragging_i: number | null = null;
@@ -25,6 +25,8 @@
 
   let pointer_x = 0;
   let pointer_y = 0;
+
+  let dragging_height = "100%";
 
   $: dragging_tag_x = pointer_x + 16; 
   $: dragging_tag_y = pointer_y + 16;
@@ -42,15 +44,15 @@
   }
 
   const nth_even = (dragging_i: number | null, drag_target_i: number | null, i: number): boolean => {
-    if(dragging_i == null || drag_target_i == null || dragging_i === drag_target_i) return i % 2 === 0;
-    if(i === dragging_i) return drag_target_i % 2 === 0;
+    if(dragging_i == null || drag_target_i == null || dragging_i === drag_target_i) return i % 2 !== 0;
+    if(i === dragging_i) return drag_target_i % 2 !== 0;
     if(dragging_i < drag_target_i) {
-      if(i > dragging_i && i <= drag_target_i) return i % 2 !== 0;
+      if(i > dragging_i && i <= drag_target_i) return i % 2 === 0;
     } else {
-      if(i < dragging_i && i >= drag_target_i) return i % 2 !== 0;
+      if(i < dragging_i && i >= drag_target_i) return i % 2 === 0;
     }
 
-    return i % 2 === 0;
+    return i % 2 !== 0;
   }
 
   const is_drag_moved_up = (dragging_i: number | null, drag_target_i: number | null, i: number) => {
@@ -64,6 +66,15 @@
   }
 
   const on_drag_start = (i: number) => {
+    const file = data.files.items[i];
+    if(file != null) {
+      const element = document.querySelector(`.file-item[data-file-id="${file._id}"]`);
+      if(element != null) dragging_height = `${element.clientHeight}px`;
+      else dragging_height = "100%"
+    } else {
+      dragging_height = "100%";
+    }
+
     document.documentElement.classList.add("dragging");
     dragging_i = i;
     drag_autoscroll_timer = setInterval(drag_autoscroll, 2);
@@ -72,7 +83,6 @@
   }
 
   const on_drag_end = async () => {
-    
     document.documentElement.classList.remove("dragging");
     clearInterval(drag_autoscroll_timer);
     
@@ -618,14 +628,14 @@
 
   .file-data-text {
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 8rem;
   }
 
   .file-preview-cell {
-    padding: 0 1rem;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -676,11 +686,11 @@
   }
 
   .file-item.drag-moved-up {
-    transform: translateY(-100%);
+    transform: translateY(calc(var(--dragging-height) * -1));
   }
 
   .file-item.drag-moved-down {
-    transform: translateY(100%);
+    transform: translateY(var(--dragging-height));
   }
 
   :global(html.dragging *) {
@@ -940,8 +950,9 @@
     justify-content: center;
     color: #444;
     font-size: 1.5rem;
-    transition: background-color 150ms ease, color 200ms ease;
+    transition: background-color 150ms ease;
     border-radius: 50%;
+    margin-inline: 0.25rem;
   }
 
   .not-dragging .select-all-btn:hover, .not-dragging .select-btn:hover {
@@ -968,14 +979,16 @@
   }
 
 
+  /*
   .cell-space-start {
     width: 1rem;
   }
+  */
 
   .now-playing-circle {
     width: 0.65rem;
     height: 0.65rem;
-    margin-inline-end: 0.5rem;
+    margin-inline: 0.5rem;
     border-radius: 50%;
     background-color: var(--green);
     opacity: 0;
@@ -1162,12 +1175,19 @@
             }
           }}
          >
-         <table class="playlist-table" class:dropping class:not-dragging={dragging_item == null}>
+         <table
+          class="playlist-table"
+          class:dropping
+          class:not-dragging={dragging_item == null}
+          style:--dragging-height={dragging_height}
+        >
             <thead>
               <tr>
-                <th class="btn-cell">
-                  <div class="cell-space-start" />
-                </th>
+                <!--
+                  <th class="btn-cell">
+                    <div class="cell-space-start" />
+                  </th>
+                -->
                 <th class="grab-head-cell"></th>
                 <th class="btn-cell">
                   <div class="select-all-cell">
@@ -1243,6 +1263,7 @@
                   class:drag-moved-down={drag_moved_down}
                   class:even
                   class:odd={!even}
+                  animate:flip={{ duration: 300, disabled: dropping }}
                   on:pointerenter={() => {
                     if(dragging_i == null) return;
                     if(drag_target_i === i) {
@@ -1256,11 +1277,14 @@
                   in:fade|local={{ duration: 250 }}
                   out:file_item_out|local
                 >
-                  <th class="btn-cell">
-                    <div class="cell-space-start" />
-                  </th>
 
-                  <th
+                  <!--
+                  <td class="btn-cell">
+                    <div class="cell-space-start" />
+                  </td>
+                  -->
+
+                  <td
                     class="drag-cell"
                     aria-label="Drag to rearrange"
                     use:tooltip={dragging_item == null ? "Drag to rearrange" : null}
@@ -1273,7 +1297,7 @@
                     <div class="drag-handle">
                       <Icon d={mdiDrag} />
                     </div>
-                  </th>
+                  </td>
                   
                   <td class="btn-cell">
                     <div class="select-cell">

@@ -4,4 +4,5 @@ import type { PublicAdmin } from "../../../../../PublicAdmin";
 export interface Output {
   admin: PublicAdmin;
   token: string;
+  media_key: string;
 }

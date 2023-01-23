@@ -143,9 +143,10 @@ pub mod post {
   #[ts(export, export_to = "../../defs/api/auth/user/register/POST/")]
   // #[serde(rename_all = "camelCase")]
   pub struct Output {
-    pub station: PublicStation,
     pub user: PublicUser,
+    pub station: PublicStation,
     pub token: String,
+    pub media_key: String,
   }
 
   #[derive(Debug, Clone)]
@@ -300,10 +301,12 @@ pub mod post {
       };
 
       let key = AccessToken::random_key();
+      let media_key = AccessToken::random_media_key();
 
       let token = AccessToken {
         id: AccessToken::uid(),
         key,
+        media_key,
         scope: Scope::User {
           user_id: user.id.clone(),
         },
@@ -330,6 +333,7 @@ pub mod post {
         user: user.into_public(access_token_scope.as_public_scope()),
         station: station.into_public(access_token_scope.as_public_scope()),
         token: token.key,
+        media_key: token.media_key,
       };
 
       Ok(out)

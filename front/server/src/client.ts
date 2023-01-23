@@ -6,6 +6,7 @@ import { ACCESS_TOKEN_HEADER, FORWARD_IP_HEADER } from "./contants";
 import { ClientError } from "./client-error";
 import { Logger } from "./logger";
 import fetch, { Response, RequestInit, Headers } from "node-fetch";
+import crypto from "crypto";
 
 import http from "http";
 import https from "https";

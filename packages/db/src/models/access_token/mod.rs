@@ -4,7 +4,9 @@ use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
 use std::time::Instant;
 
+use crate::current_filter_doc;
 use crate::Model;
+use mongodb::bson::Document;
 // compiler bug (this is indeed used)
 #[allow(unused)]
 use mongodb::bson::{self, doc};
@@ -114,6 +116,10 @@ pub struct AccessToken {
   pub id: String,
 
   pub key: String,
+
+  /// the media_key is used to access streams and files with access token scope directly
+  /// from the client without exposing a full access token
+  pub media_key: String,
 
   #[serde(flatten)]
   #[ts(skip)]
@@ -243,7 +249,8 @@ impl AccessToken {
 
     let result = cell
       .get_or_try_init(|| async {
-        let token = AccessToken::internal_touch(key, false).await?;
+        let filter = current_filter_doc! { AccessToken::KEY_KEY: key };
+        let token = AccessToken::internal_touch(filter, false).await?;
         match token {
           Some(token) => Ok(token),
           None => Err(AccessTokenInitError::None),
@@ -288,11 +295,9 @@ impl AccessToken {
   }
 
   async fn internal_touch(
-    key: &str,
+    filter: Document,
     hit: bool,
   ) -> Result<Option<AccessToken>, mongodb::error::Error> {
-    let filter = crate::current_filter_doc! { Self::KEY_KEY: key };
-
     let doc = match Self::get(filter).await? {
       None => return Ok(None),
       Some(doc) => doc,
@@ -306,13 +311,27 @@ impl AccessToken {
   }
 
   pub async fn touch(key: &str) -> Result<Option<AccessToken>, mongodb::error::Error> {
-    Self::internal_touch(key, true).await
+    Self::internal_touch(current_filter_doc! { AccessToken::KEY_KEY: key }, true).await
+  }
+
+  pub async fn touch_by_media_key(
+    media_key: &str,
+  ) -> Result<Option<AccessToken>, mongodb::error::Error> {
+    Self::internal_touch(
+      current_filter_doc! { AccessToken::KEY_MEDIA_KEY: media_key },
+      true,
+    )
+    .await
   }
 }
 
 impl AccessToken {
   pub fn random_key() -> String {
     uid::uid(48)
+  }
+
+  pub fn random_media_key() -> String {
+    uid::uid(24)
   }
 
   pub fn is_generatyed_login(&self) -> bool {
@@ -382,12 +401,26 @@ impl Model for AccessToken {
       .keys(doc! { Self::KEY_DELETED_AT: 1 })
       .build();
 
-    vec![key, user_id, admin_id, scope, generated_by, deleted_at]
+    let media_key = IndexModel::builder()
+      .keys(doc! { Self::KEY_MEDIA_KEY: 1 })
+      .options(IndexOptions::builder().unique(true).build())
+      .build();
+
+    vec![
+      key,
+      user_id,
+      admin_id,
+      scope,
+      generated_by,
+      deleted_at,
+      media_key,
+    ]
   }
 }
 
 #[cfg(test)]
 mod test {
+
   use super::*;
 
   #[test]
@@ -402,8 +435,11 @@ mod test {
 
     let key = AccessToken::random_key();
 
+    let media_key = AccessToken::random_media_key();
+
     let token = AccessToken {
       id: AccessToken::uid(),
+      media_key,
       key,
       last_used_at: Some(now),
       generated_by: GeneratedBy::Api {
@@ -427,10 +463,12 @@ mod test {
     let now = DateTime::now();
 
     let key = AccessToken::random_key();
+    let media_key = AccessToken::random_media_key();
 
     let token = AccessToken {
       id: AccessToken::uid(),
       key,
+      media_key,
       created_at: now,
       last_used_at: Some(now),
       generated_by: GeneratedBy::Api {

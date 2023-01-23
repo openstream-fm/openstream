@@ -1,3 +1,4 @@
+use hex::ToHex;
 use sha2::{Digest, Sha256};
 
 pub const COST: u32 = 8;
@@ -14,5 +15,6 @@ pub fn sha256(src: impl AsRef<[u8]>) -> String {
   let mut hasher = Sha256::new();
   hasher.update(src.as_ref());
   let hex = hasher.finalize();
-  base64::encode(hex)
+  let hex_string: String = ToHex::encode_hex(&hex);
+  hex_string
 }

@@ -8,7 +8,7 @@ import { Logger } from "./logger";
 const COOKIE_NAME = "openstream-front.sid";
 
 export type SessionData = {
-  user: { _id: string, token: string } | null;
+  user: { _id: string, token: string, media_key: string } | null;
 }
 
 const ALGO = "aes-256-ctr"

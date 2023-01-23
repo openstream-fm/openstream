@@ -13,6 +13,8 @@ use db::{
   Model,
 };
 use prex::Request;
+use serde::Deserialize;
+use serde_querystring::de::ParseMode;
 
 pub static X_ACCESS_TOKEN: &str = "x-access-token";
 
@@ -198,35 +200,81 @@ impl AccessTokenScope {
 }
 
 pub async fn get_access_token(req: &Request) -> Result<AccessToken, GetAccessTokenScopeError> {
+  internal_get_access_token(req, false).await
+}
+
+pub async fn get_media_access_token(
+  req: &Request,
+) -> Result<AccessToken, GetAccessTokenScopeError> {
+  internal_get_access_token(req, true).await
+}
+
+async fn internal_get_access_token(
+  req: &Request,
+  media: bool,
+) -> Result<AccessToken, GetAccessTokenScopeError> {
   let ip = req.isomorphic_ip();
 
   if ip_limit::should_reject(ip) {
     return Err(GetAccessTokenScopeError::TooManyRequests);
   }
 
-  let key: String = match req.headers().get(X_ACCESS_TOKEN) {
-    None => return Err(GetAccessTokenScopeError::Missing),
-    Some(v) => match v.to_str() {
-      Err(_) => return Err(GetAccessTokenScopeError::NonUtf8),
-      Ok(v) => v.to_string(),
-    },
-  };
+  let doc = match req.headers().get(X_ACCESS_TOKEN) {
+    Some(v) => {
+      let key = match v.to_str() {
+        Err(_) => return Err(GetAccessTokenScopeError::NonUtf8),
+        Ok(v) => v,
+      };
 
-  let doc = match AccessToken::touch_cached(&key).await? {
-    None => {
-      ip_limit::hit(ip);
-      return Err(GetAccessTokenScopeError::NotFound);
+      match AccessToken::touch_cached(key).await? {
+        None => {
+          ip_limit::hit(ip);
+          return Err(GetAccessTokenScopeError::NotFound);
+        }
+
+        Some(doc) => doc,
+      }
     }
-    Some(doc) => doc,
+
+    None => {
+      if !media {
+        return Err(GetAccessTokenScopeError::Missing);
+      } else {
+        #[derive(Deserialize)]
+        struct TokenQuery {
+          token: String,
+        }
+
+        let media_key = match serde_querystring::from_str::<TokenQuery>(
+          req.uri().query().unwrap_or(""),
+          ParseMode::UrlEncoded,
+        ) {
+          Ok(qs) => qs.token,
+          Err(_) => {
+            return Err(GetAccessTokenScopeError::Missing);
+          }
+        };
+
+        match AccessToken::touch_by_media_key(&media_key).await? {
+          None => {
+            ip_limit::hit(ip);
+            return Err(GetAccessTokenScopeError::NotFound);
+          }
+
+          Some(doc) => doc,
+        }
+      }
+    }
   };
 
   Ok(doc)
 }
 
-pub async fn get_access_token_scope(
+pub async fn internal_get_access_token_scope(
   req: &Request,
+  media: bool,
 ) -> Result<AccessTokenScope, GetAccessTokenScopeError> {
-  let doc = get_access_token(req).await?;
+  let doc = internal_get_access_token(req, media).await?;
 
   let scope = match doc.scope {
     Scope::Global => AccessTokenScope::Global,
@@ -243,6 +291,18 @@ pub async fn get_access_token_scope(
   };
 
   Ok(scope)
+}
+
+pub async fn get_access_token_scope(
+  req: &Request,
+) -> Result<AccessTokenScope, GetAccessTokenScopeError> {
+  internal_get_access_token_scope(req, false).await
+}
+
+pub async fn get_media_access_token_scope(
+  req: &Request,
+) -> Result<AccessTokenScope, GetAccessTokenScopeError> {
+  internal_get_access_token_scope(req, true).await
 }
 
 impl From<GetAccessTokenScopeError> for ApiError {
