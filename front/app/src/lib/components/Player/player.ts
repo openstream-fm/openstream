@@ -45,7 +45,7 @@ export { readonly as player_now_playing }
 export const storage_audio_url = (station_id: string, file_id: string) => {
   // TODO: fix this ts ignore rule
   // @ts-ignore
-  const base: string = get(page).config.publicStorageURL;
+  const base: string = get(page).config.storagePublicURL;
   return `${base}/stations/${station_id}/files/${file_id}/stream?token=${media_token()}`
 }
 
@@ -93,7 +93,7 @@ export const resume = () => {
     if($state.audio_state === "paused") {
       // TODO: fix this ts-ignore rule
       // @ts-ignore
-      const base = get(page).config.publicStreamURL; 
+      const base = get(page).config.streamPublicURL; 
       const audio = get_audio_tag(`${base}/stream/${$state.station._id}`)
       audio.play();
     }
@@ -163,7 +163,7 @@ export const play_station = (station: { _id: string, name: string }) => {
     })
     // TODO: fix ts rule and deduplicate stream url getter
     // @ts-ignore
-    const base = get(page).config.publicStreamURL; 
+    const base = get(page).config.streamPublicURL; 
     const audio = get_audio_tag(`${base}/stream/${station._id}`)
     audio.play().catch(e => {
       logger.warn(`error playing station ${station._id} => ${e}`)
