@@ -1,6 +1,6 @@
 import { browser } from "$app/environment";
 import { default_logger } from "$lib/logger";
-import { get_now_playing_store, type NowPlaying, type StoreValue } from "$lib/now-playing";
+import { get_now_playing_store, type NowPlaying } from "$lib/now-playing";
 import { _get } from "$share/net.client";
 import { derived, get, writable } from "svelte/store";
 import { page } from "$app/stores";
@@ -43,11 +43,15 @@ const readonly = { subscribe: now_playing.subscribe };
 export { readonly as player_now_playing }
 
 export const storage_audio_url = (station_id: string, file_id: string) => {
-  // TODO: fix this ts ignore rule
-  // @ts-ignore
   const base: string = get(page).data.config.storagePublicURL;
   return `${base}/stations/${station_id}/files/${file_id}/stream?token=${media_token()}`
 }
+
+export const station_stream_url = (station_id: string) => {
+  const base = get(page).data.config.streamPublicURL;
+  return `${base}/stream/${station_id}` 
+}
+
 
 export const media_token = () => {
   return get(page).data.user?.media_key ?? "";
@@ -91,10 +95,7 @@ export const resume = () => {
   else if($state.type === "track") audio?.play();
   else if($state.type === "station") {
     if($state.audio_state === "paused") {
-      // TODO: fix this ts-ignore rule
-      // @ts-ignore
-      const base = get(page).config.streamPublicURL; 
-      const audio = get_audio_tag(`${base}/stream/${$state.station._id}`)
+      const audio = get_audio_tag(station_stream_url($state.station._id));
       audio.play();
     }
   } else assert_never($state);
@@ -163,8 +164,7 @@ export const play_station = (station: { _id: string, name: string }) => {
     })
     // TODO: fix ts rule and deduplicate stream url getter
     // @ts-ignore
-    const base = get(page).data.config.streamPublicURL; 
-    const audio = get_audio_tag(`${base}/stream/${station._id}`)
+    const audio = get_audio_tag(station_stream_url(station._id))
     audio.play().catch(e => {
       logger.warn(`error playing station ${station._id} => ${e}`)
     })

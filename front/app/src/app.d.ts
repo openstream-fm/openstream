@@ -9,7 +9,7 @@ declare namespace App {
     message: string
   }
 
-  interface Data {
-    config: import("$server/config").Config["public"]
+  interface PageData {
+    config: import("$server/config").Config["public"],
   }
 }
