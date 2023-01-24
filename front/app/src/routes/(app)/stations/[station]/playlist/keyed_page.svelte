@@ -618,19 +618,15 @@
     ($selected_ids.length !== 0 && delete_selection_open)
   );
 
-  let shuffle_token = 0;
 
   let unshuffle_open = false;
-  let shuffling = false;
   const unshuffle = action(async () => {
     unshuffle_open = false;
-    shuffling = true;
     try {
       await _post(`/api/stations/${station_id}/files/unshuffle`, undefined);
       _message("Playlist unshuffled");
     } catch(e) {
       invalidate("station:files").then(() => {
-        shuffle_token++;
         play_shuffle_animation();
       });;
       throw e;
@@ -638,7 +634,6 @@
 
 
     invalidate("station:files").then(() => {
-      shuffle_token++;
       play_shuffle_animation();
     });
   })
@@ -646,20 +641,17 @@
   let shuffle_open = false;
   const shuffle = action(async () => {
     shuffle_open = false;
-    shuffling = true;
     try {
       await _post(`/api/stations/${station_id}/files/shuffle`, undefined);
       _message("Playlist shuffled");
     } catch(e) {
       invalidate("station:files").then(() => {
-        shuffle_token++;
         play_shuffle_animation();
       });;
       throw e;
     }
 
     invalidate("station:files").then(() => {
-      shuffle_token++;
       play_shuffle_animation();
     });;
   })
@@ -1492,7 +1484,7 @@
               <button
                 class="shuffle-btn ripple-container"
                 aria-label="Restart playlist"
-                use:tooltip={"Restart playlist"}
+                use:tooltip={hide_tooltips ? null : "Restart playlist"}
                 use:ripple
                 on:click={() => restart_open = true}
                 transition:shuffle_btn_transition|local
@@ -1508,7 +1500,7 @@
                 <button
                   class="shuffle-btn ripple-container"
                   aria-label="Unshuffle playlist"
-                  use:tooltip={"Unshuffle playlist"}
+                  use:tooltip={hide_tooltips ? null : "Unshuffle playlist"}
                   use:ripple
                   on:click={() => unshuffle_open = true}
                   transition:shuffle_btn_transition|local
@@ -1522,7 +1514,7 @@
               <button
                 class="shuffle-btn ripple-container"
                 aria-label="Shuffle playlist"
-                use:tooltip={"Shuffle playlist"}
+                use:tooltip={hide_tooltips ? null : "Shuffle playlist"}
                 use:ripple
                 on:click={() => shuffle_open = true}
                 transition:shuffle_btn_transition|local
