@@ -24,7 +24,7 @@ pub const TRANSFER_SAVE_INTERVAL_MILLIS: u64 = 5_000;
 /// limit of concurrent stream connections from the same ip
 pub const STREAM_IP_CONNECTIONS_LIMIT: u64 = 8;
 
-/// shutdown delay to shutdown a playlist media session when it run out of listeners
+/// delay to shutdown a playlist media session when it run out of listeners
 pub const PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY: Duration = Duration::from_secs(10);
 
 /// limit of authotization intents from the same ip
