@@ -4,7 +4,7 @@ pub const STREAM_KBITRATE: usize = 128;
 
 pub const STREAM_CHUNK_SIZE: usize = STREAM_KBITRATE * 1000 / 8;
 
-pub const STREAM_BURST_LENGTH: usize = 10;
+pub const STREAM_BURST_LENGTH: usize = 8;
 
 pub const STREAM_CHANNEL_CAPACITY: usize = 8;
 
