@@ -8,7 +8,7 @@ import { session } from "../session";
 import { ip } from "../ip";
 import { token } from "../token";
 import { user_id } from "../user-id";
-import { ACCESS_TOKEN_HEADER, FORWARD_IP_HEADER } from "../contants";
+import { ACCESS_TOKEN_HEADER, FORWARD_IP_HEADER } from "../constants";
 import { StatusCodes } from "http-status-codes";
 import { pipeline } from "stream/promises";
 import crypto from "crypto";

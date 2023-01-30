@@ -1,4 +1,4 @@
-import express from "express";
+import express, { request } from "express";
 import type { Config } from "./config";
 import type { Logger } from "./logger";
 import { app_api } from "./api/app-api";
@@ -7,6 +7,7 @@ import path from "path";
 import { env } from "./env";
 import { sveltekit_dev_proxy } from "./sveltekit-dev-proxy";
 import { color } from "./color";
+import { kit } from "./kit";
 
 export const start = async ({ config, logger }: { config: Config, logger: Logger }) => {
 
@@ -16,6 +17,7 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
 
     let app = express();
 
+    app.use(express.static(path.resolve(__dirname, "../../static/studio"), { etag: true }))
     app.use("/api", app_api({ config, logger }))
 
     app.use(express.static(path.resolve(__dirname, "../../../static"), { etag: true }))
@@ -27,7 +29,7 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
       // @ts-ignore
       process.env.APP_API_PORT = String(config.app.port);
       const { handler } = await (new Function("", 'return import("../../app/build/handler.js")'))();
-      app.use(handler);
+      app.use(kit(handler));
     }
 
     app.listen(config.app.port, () => {

@@ -3,6 +3,8 @@
   import { intertab } from "$share/intertab";
 	import { browser } from "$app/environment";
 	import { default_logger } from "$lib/logger";
+	import { goto } from "$app/navigation";
+  import Loading from "$share/Loading.svelte";
 
   export let data: import("./$types").LayoutData;
 
@@ -22,7 +24,7 @@
     return channel.watch((new_value, old_value) => {
       logger.info("intertab user_id changed", { user_id, new_value, old_value })
       if(new_value !== user_id) {
-        location.assign("/");
+        goto("/", { invalidateAll: true })
       }
     })
   })
@@ -32,5 +34,7 @@
 <style>
   @import "$lib/css/app.css";
 </style>
+
+<Loading />
 
 <slot />

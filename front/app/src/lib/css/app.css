@@ -18,6 +18,8 @@
   --blue-rgb: 0, 116, 217;
   --blue: rgb(var(--blue-rgb));
   
+  --loading-color: var(--red);
+
   --green: #75A633;
 
   --orange: #FF851B;

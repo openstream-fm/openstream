@@ -3,6 +3,12 @@
 
 // and what to do when importing types
 declare namespace App {
+
+  interface Locals {
+    ip: string,
+    protocol: "http" | "https",
+  }
+
   interface Error {
     status: number
     code: import("$lib/net.client").ClientErrorCode,

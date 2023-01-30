@@ -9,10 +9,11 @@
 	import { action, _post } from "$share/net.client";
 	import Icon from "$share/Icon.svelte";
 	import { mdiAccountCircleOutline, mdiCastAudioVariant, mdiLogout } from "@mdi/js";
+	import { goto } from "$app/navigation";
 
   const sign_out = action(async () => {
     await _post("/api/logout", {});
-    location.assign("/");
+    goto("/", { invalidateAll: true })
   })
 
   let menu_open = false;

@@ -845,22 +845,18 @@
     background: #fff;
   }
 
-  .empty-message {
-    font-size: 1.25rem;
-    margin: 2rem 0;
-  }
-
   .file-input {
     display: none;
   }
 
   .upload-empty-out {
+    margin-top: 1.5rem;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .playlist-box, .upload-box, .upload-message-box {
+  .playlist-box, .upload-box {
     background: #fff;
     box-shadow: 0 4px 20px 0 rgb(0 0 0 / 5%);
     border-radius: 0.5rem;
@@ -871,7 +867,7 @@
   }
 
   .upload-message-box {
-    padding: 1rem;
+    margin-top: 1.5rem;
   }
 
   .upload-message > b {
@@ -1392,26 +1388,22 @@
   
   <h1>Playlist</h1>
 
+  <div class="upload-message-box">
+    <p class="upload-message">
+      Create a playlist of music or old episodes to keep your station up 24x7.<br />
+      When connection is lost or you are not broadcasting, <b>Playlist</b> will automatically take over.
+    <p>
+  </div>
+
   {#if data.files.total === 0 && uploading.length === 0}
-    <div class="empty">
-      <div class="empty-message">
-        Your media collection is empty
-      </div>
-      
-      <div class="upload-empty-out">
-        <button class="browse-btn ripple-container" use:ripple on:click={open_file_input}>
-          Upload files
-        </button>
-      </div>
+   
+    <div class="upload-empty-out">
+      <button class="browse-btn ripple-container" use:ripple on:click={open_file_input}>
+        Upload files
+      </button>
     </div>
-  {:else}
   
-    <div class="upload-message-box">
-      <p class="upload-message">
-        Create a playlist of music or old episodes to keep your station up 24x7.<br />
-        When connection is lost or you are not broadcasting, <b>Playlist</b> will automatically take over.
-      <p>
-    </div>
+  {:else}
 
     <div class="upload-box">
       <div class="upload-top">
@@ -1654,6 +1646,8 @@
                     aria-label="Drag to rearrange"
                     use:tooltip={hide_tooltips ? null : "Drag to rearrange"}
                     on:pointerdown={event => {
+                      pointer_x = event.x;
+                      pointer_y = event.y;
                       // @ts-ignore
                       event.target?.releasePointerCapture?.(event.pointerId);
                       on_drag_start(i)

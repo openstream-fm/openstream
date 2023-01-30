@@ -1,13 +1,6 @@
 import { color } from "./color.js";
 import { env } from "./env.js";
-
-export const enum LogLevel {
-  SILENT = 0,
-  ERROR = 1,
-  WARN = 2,
-  INFO = 3,
-  DEBUG = 4,
-}
+import { LogLevel } from "./log-level.js";
 
 export interface Logger {
   error: (error: string | Error) => void,

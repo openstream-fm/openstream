@@ -11,47 +11,61 @@ export type SessionData = {
   user: { _id: string, token: string, media_key: string } | null;
 }
 
-const ALGO = "aes-256-ctr"
+const ALGO = "aes-192-cbc"
 
-export function encrypt(value: string, iv: Buffer, key: Buffer, logger: Logger): string {
+export function encrypt(value: string, key: Buffer, logger: Logger): string {
   try {
-    const cipher = crypto.createCipheriv(ALGO, key, iv)
-    const start = cipher.update(value, "utf8", "base64")
-    return start + cipher.final("base64")
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv(ALGO, key, iv);
+    const hash = cipher.update(value, "utf8", "base64") + cipher.final("base64");
+    const encrypted = `${iv.toString("hex")}.${hash}`;
+    // logger.info(`ecrypted: ${encrypted}`)
+    return encrypted;
   } catch(e) {
-    logger.scoped("cookie-session").warn(`encrypt error: ${e}`)
+    logger.warn(`encrypt error: ${e}`)
     throw e;
   }
 }
 
-export function decrypt(base64: string, iv: Buffer, key: Buffer, logger: Logger): string {
+export function decrypt(hash: string, key: Buffer, logger: Logger): string {
   try {
+    const [ivhex, base64] = hash.split(".");
+    if(!ivhex || !base64) throw new Error("malformed hash: iv or hash missing");
+    const iv = Buffer.from(ivhex, "hex");
     const decipher = crypto.createDecipheriv(ALGO, key, iv);
-    const start = decipher.update(base64, "base64", "utf8");
-    return start + decipher.final("utf8")
+    const value = decipher.update(base64, "base64", "utf8") + decipher.final("utf8");
+    // logger.info(`decrypted: ${value}`);
+    return value;
   } catch(e) {
-    logger.scoped("cookie-session").warn(`decrypt error: ${e}`)
+    logger.warn(`decrypt error: ${e}`)
     throw e;
   }
 }
 
-const get_cookie_session = (req: Request, iv: Buffer, key: Buffer, logger: Logger): SessionData => {
+const get_cookie_session = (req: Request, key: Buffer, logger: Logger): SessionData => {
   try {
     const v = req.cookies[COOKIE_NAME];
-    if(typeof v !== "string") return { user: null };
-    const json_string = decrypt(v, iv, key, logger);
+    // logger.info(`v: ${v}`)
+    if(typeof v !== "string") {
+      // logger.info(`not string, ${typeof v}`)
+      return { user: null };
+    }
+    const json_string = decrypt(v, key, logger);
     let data: any;
     try {
       data = JSON.parse(json_string);
     } catch (e) {
-      logger.scoped("cookie-session").warn(`json parse error: JSON.parse('${json_string}'): ${e}`)
+      logger.warn(`json parse error: JSON.parse('${json_string}'): ${e}`)
     }
+
     if(is<SessionData>(data)) {
       return data;
     } else {
+      // logger.warn(`not is<SessionData>, ${JSON.stringify(data)}`)
       return { user: null };
     }
   } catch(e) {
+    logger.warn(`error: ${e}`)
     return { user: null }
   }
 }
@@ -69,25 +83,24 @@ declare global {
   }
 }
 
-export const session = (config: Config, logger: Logger) => {
-  const iv = crypto.createHash("md5").update(config.session.secret).digest();
-  const key = crypto.createHash("sha256").update(config.session.secret).digest();
-  
+export const session = (config: Config, _logger: Logger) => {
+  const logger = _logger.scoped("cookie-session");
+  const key = crypto.scryptSync(config.session.secret, "salt", 24);
+
+  const name = config.session.cookieName || COOKIE_NAME;
+  const maxAge = config.session.maxAgeDays * 1000 * 60 * 60 * 24;
+  const options = { maxAge, httpOnly: true, sameSite: "strict" as const };
+  const clear_options = { httpOnly: options.httpOnly, sameSite: options.sameSite };
 
   const router = Router();
   router.use(cookieParser());
   router.use((req: Request, res: Response, next: NextFunction) => {
-    req.cookie_session = get_cookie_session(req, iv, key, logger);
+    req.cookie_session = get_cookie_session(req, key, logger);
     res.set_session = (data: SessionData) => {
-      res.cookie(
-        COOKIE_NAME,
-        encrypt(JSON.stringify(data), iv, key, logger), { 
-          maxAge: config.session.maxAgeDays + 1000 * 60 * 60 * 24,
-          httpOnly: true,
-          sameSite: "strict",
-        })
+      const encoded = encrypt(JSON.stringify(data), key, logger);
+      res.cookie(name, encoded, options);
     }
-    res.clear_session = () => res.clearCookie(COOKIE_NAME, { httpOnly: true, signed: true });
+    res.clear_session = () => res.clearCookie(name, clear_options);
     next();
   })
 

@@ -1,6 +1,6 @@
 import { Router } from "express"
 import { Readable } from "stream";
-import { FORWARD_IP_HEADER } from "./contants";
+import { PROTOCOL_HEADER, X_REAL_IP } from "./constants";
 import { ip } from "./ip";
 
 export const sveltekit_dev_proxy = (port: number) => {
@@ -13,15 +13,26 @@ export const sveltekit_dev_proxy = (port: number) => {
 
       const reqHeaders = new Headers();
   
-      for(const key of ["accept", "accept-language", "content-type", "content-length", "user-agent", "cookie", "if-none-match"]) {
+      for(const key of [
+        "accept",
+        "accept-language",
+        "content-type",
+        "content-length",
+        "user-agent",
+        "cookie",
+        "if-none-match",
+        "host",
+        PROTOCOL_HEADER,
+      ]) {
         const value = req.header(key);
         if(value != null) {
           reqHeaders.append(key, value);
         }
       }
 
-      reqHeaders.set(FORWARD_IP_HEADER, ip(req));
-
+      const proto = req.header(PROTOCOL_HEADER);
+      if(proto) reqHeaders.set(X_REAL_IP, ip(req));
+      
       let back: Response;
       const url = `http://127.0.0.1:${port}${req.url}`;
 

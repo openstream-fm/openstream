@@ -6,7 +6,8 @@ import path from "path";
 
 import * as config from "./config";
 import * as app from "./app"
-import { ConsoleLogger, LogLevel } from "./logger";
+import { ConsoleLogger } from "./logger";
+import { LogLevel } from "./log-level";
 
 //import { fileURLToPath } from  "url";
 import { env } from "./env";

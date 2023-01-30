@@ -2,7 +2,7 @@ import StatusCode from "http-status-codes";
 import qs from "qs";
 import type { ErrorCode } from "./types";
 import { Readable } from "stream";
-import { ACCESS_TOKEN_HEADER, FORWARD_IP_HEADER } from "./contants";
+import { ACCESS_TOKEN_HEADER, FORWARD_IP_HEADER } from "./constants";
 import { ClientError } from "./client-error";
 import { Logger } from "./logger";
 import fetch, { Response, RequestInit, Headers } from "node-fetch";

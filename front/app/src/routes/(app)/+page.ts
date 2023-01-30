@@ -11,4 +11,4 @@ export const load = (async ({ parent }) => {
 
   throw redirect(302, `/stations`);
   
-}) satisfies import("./$types").PageServerLoad;
+}) satisfies import("./$types").PageLoad;
