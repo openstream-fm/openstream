@@ -1,13 +1,15 @@
 use constants::STREAM_CHANNEL_CAPACITY;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockUpgradableReadGuard, RwLockWriteGuard};
-use playlist::run_playlist_session;
 use shutdown::Shutdown;
 use std::collections::btree_map::Entry;
 use std::collections::BTreeMap;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
 
+pub mod live;
 pub mod playlist;
+
+use playlist::run_playlist_session;
 
 static UID: AtomicU64 = AtomicU64::new(1);
 fn uid() -> u64 {

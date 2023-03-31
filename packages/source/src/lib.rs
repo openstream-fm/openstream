@@ -1,26 +1,26 @@
 #![allow(clippy::useless_format)]
 
 use async_trait::async_trait;
-use channels::ChannelMap;
-use constants::STREAM_CHUNK_SIZE;
 use db::station::Station;
 use db::Model;
 use drop_tracer::DropTracer;
-use ffmpeg::{Ffmpeg, FfmpegConfig, FfmpegSpawn};
 use futures::stream::FuturesUnordered;
-use futures::{StreamExt, TryStreamExt};
-use hyper::body::HttpBody;
+use futures::TryStreamExt;
 use hyper::header::{HeaderValue, ALLOW, CONTENT_TYPE, WWW_AUTHENTICATE};
 use hyper::HeaderMap;
 use hyper::{Body, Method, Server, StatusCode};
 use log::*;
+use media_sessions::live::LiveError;
+use media_sessions::{MediaSessionKind, MediaSessionMap};
 use prex::{handler::Handler, Next, Request, Response};
 use shutdown::Shutdown;
 use socket2::{Domain, Protocol, Socket, Type};
+use std::collections::btree_map::Entry;
 use std::future::Future;
 use std::net::SocketAddr;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio::sync::broadcast::error::RecvError;
+
+#[allow(clippy::declare_interior_mutable_const)]
+const TEXT_PLAIN_UTF8: HeaderValue = HeaderValue::from_static("text/plain;charset=utf8");
 
 #[derive(Debug, thiserror::Error)]
 pub enum SourceServerError {
@@ -32,9 +32,9 @@ pub enum SourceServerError {
 
 #[derive(Debug)]
 pub struct SourceServer {
-  source_addrs: Vec<SocketAddr>,
-  broadcast_addrs: Vec<SocketAddr>,
-  channels: ChannelMap,
+  addrs: Vec<SocketAddr>,
+  media_sessions: MediaSessionMap,
+  drop_tracer: DropTracer,
   shutdown: Shutdown,
 }
 
@@ -43,17 +43,15 @@ struct SourceServerInner {}
 
 impl SourceServer {
   pub fn new(
-    source_addrs: Vec<SocketAddr>,
-    broadcast_addrs: Vec<SocketAddr>,
-    shutdown: Shutdown,
+    addrs: Vec<SocketAddr>,
+    media_sessions: MediaSessionMap,
     drop_tracer: DropTracer,
+    shutdown: Shutdown,
   ) -> Self {
-    let channels = ChannelMap::new(drop_tracer);
-
     Self {
-      source_addrs,
-      broadcast_addrs,
-      channels,
+      addrs,
+      media_sessions,
+      drop_tracer,
       shutdown,
     }
   }
@@ -63,23 +61,23 @@ impl SourceServer {
   ) -> Result<impl Future<Output = Result<(), hyper::Error>> + 'static, SourceServerError> {
     let mut app = prex::prex();
 
-    if log::log_enabled!(Level::Debug) {
-      app.with(logger);
-    }
-
     app.with(http::middleware::server);
     app.get("/status", http::middleware::status);
 
     app.any(
       "/:id/source",
-      SourceHandler::new(self.channels.clone(), self.shutdown.clone()),
+      SourceHandler::new(
+        self.media_sessions.clone(),
+        self.drop_tracer.clone(),
+        self.shutdown.clone(),
+      ),
     );
 
     let app = app.build().expect("prex app build source");
 
     let futs = FuturesUnordered::new();
 
-    for addr in self.source_addrs.iter().cloned() {
+    for addr in self.addrs.iter().cloned() {
       let domain = match addr {
         SocketAddr::V4(_) => Domain::IPV4,
         SocketAddr::V6(_) => Domain::IPV6,
@@ -107,7 +105,7 @@ impl SourceServer {
 
       {
         use owo_colors::*;
-        info!("source receiver server bound to {}", addr.yellow());
+        info!("source server bound to {}", addr.yellow());
       }
 
       futs.push(
@@ -117,32 +115,32 @@ impl SourceServer {
       )
     }
 
-    let mut app = prex::prex();
+    // let mut app = prex::prex();
 
-    app.get(
-      "/broadcast/:id",
-      BroadcastHandler::new(self.channels.clone(), self.shutdown.clone()),
-    );
+    // app.get(
+    //   "/broadcast/:id",
+    //   BroadcastHandler::new(self.channels.clone(), self.shutdown.clone()),
+    // );
 
-    let app = app.build().expect("prex app build source");
+    // let app = app.build().expect("prex app build source");
 
-    for addr in &self.broadcast_addrs {
-      let broadcast = Server::try_bind(addr)?
-        .http1_only(true)
-        .http1_title_case_headers(false)
-        .http1_preserve_header_case(false);
+    // for addr in &self.broadcast_addrs {
+    //   let broadcast = Server::try_bind(addr)?
+    //     .http1_only(true)
+    //     .http1_title_case_headers(false)
+    //     .http1_preserve_header_case(false);
 
-      {
-        use owo_colors::*;
-        info!("source broadcaster server bound to {}", addr.yellow());
-      }
+    //   {
+    //     use owo_colors::*;
+    //     info!("source broadcaster server bound to {}", addr.yellow());
+    //   }
 
-      futs.push(
-        broadcast
-          .serve(app.clone())
-          .with_graceful_shutdown(self.shutdown.signal()),
-      );
-    }
+    //   futs.push(
+    //     broadcast
+    //       .serve(app.clone())
+    //       .with_graceful_shutdown(self.shutdown.signal()),
+    //   );
+    // }
 
     Ok(async move {
       futs.try_collect().await?;
@@ -158,36 +156,26 @@ impl Drop for SourceServer {
   }
 }
 
-async fn logger(req: Request, next: Next) -> prex::Response {
-  let start = tokio::time::Instant::now();
-
-  let method = req.method().clone();
-  let path = req.uri().path().to_string();
-
-  let res = next.run(req).await;
-  let elapsed = start.elapsed().as_millis();
-  let status = res.status();
-
-  debug!("[request] {method} {path} => {status} in {}ms", elapsed);
-
-  res
-}
-
 #[derive(Debug, Clone)]
 struct SourceHandler {
-  channels: ChannelMap,
+  media_sessions: MediaSessionMap,
+  drop_tracer: DropTracer,
   shutdown: Shutdown,
 }
 
 impl SourceHandler {
-  fn new(channels: ChannelMap, shutdown: Shutdown) -> Self {
-    Self { channels, shutdown }
+  fn new(media_sessions: MediaSessionMap, drop_tracer: DropTracer, shutdown: Shutdown) -> Self {
+    Self {
+      media_sessions,
+      drop_tracer,
+      shutdown,
+    }
   }
 }
 
 #[async_trait]
 impl Handler for SourceHandler {
-  async fn call(&self, mut req: Request, _next: Next) -> prex::Response {
+  async fn call(&self, req: Request, _: Next) -> prex::Response {
     enum SourceMethod {
       Put,
       Source,
@@ -198,10 +186,11 @@ impl Handler for SourceHandler {
     } else if req.method().as_str().eq_ignore_ascii_case("SOURCE") {
       SourceMethod::Source
     } else {
-      let mut headers = HeaderMap::with_capacity(2);
-      headers.append(ALLOW, HeaderValue::from_static("PUT,SOURCE"));
       let mut res = Response::new(StatusCode::METHOD_NOT_ALLOWED);
-      *res.headers_mut() = headers;
+      res.headers_mut().insert(CONTENT_TYPE, TEXT_PLAIN_UTF8);
+      res
+        .headers_mut()
+        .insert(ALLOW, HeaderValue::from_static("PUT,SOURCE"));
       *res.body_mut() = Body::from(format!(
         "method {} is not allowed, allowed methods are PUT or SOURCE",
         req.method().as_str()
@@ -215,11 +204,13 @@ impl Handler for SourceHandler {
     let station = match Station::get_by_id(&id).await {
       Err(_e) => {
         let mut res = Response::new(StatusCode::INTERNAL_SERVER_ERROR);
+        res.headers_mut().insert(CONTENT_TYPE, TEXT_PLAIN_UTF8);
         *res.body_mut() = Body::from("internal server error (db)");
         return res;
       }
       Ok(None) => {
         let mut res = Response::new(StatusCode::NOT_FOUND);
+        res.headers_mut().insert(CONTENT_TYPE, TEXT_PLAIN_UTF8);
         *res.body_mut() = Body::from(format!("station with id {id} not found"));
         return res;
       }
@@ -232,7 +223,8 @@ impl Handler for SourceHandler {
     match req.basic_auth() {
       None => {
         let mut res = Response::new(StatusCode::UNAUTHORIZED);
-        res.headers_mut().append(
+        res.headers_mut().insert(CONTENT_TYPE, TEXT_PLAIN_UTF8);
+        res.headers_mut().insert(
           WWW_AUTHENTICATE,
           HeaderValue::from_static(r#"Basic realm="authentication", charset="UTF-8"#),
         );
@@ -243,7 +235,8 @@ impl Handler for SourceHandler {
       Some(auth) => {
         if auth.user != "source" || auth.password != password {
           let mut res = Response::new(StatusCode::UNAUTHORIZED);
-          res.headers_mut().append(
+          res.headers_mut().insert(CONTENT_TYPE, TEXT_PLAIN_UTF8);
+          res.headers_mut().insert(
             WWW_AUTHENTICATE,
             HeaderValue::from_static(r#"Basic realm="authentication", charset="UTF-8"#),
           );
@@ -253,238 +246,160 @@ impl Handler for SourceHandler {
       }
     }
 
-    let channel = match self.channels.transmit(&id) {
-      None => {
-        let mut res = Response::new(StatusCode::FORBIDDEN);
-        *res.body_mut() = Body::from("this source is already in use, try again later");
-        return res;
-      }
-
-      Some(tx) => tx,
-    };
-
-    let ffmpeg_config = FfmpegConfig {
-      readrate: true,
-      ..FfmpegConfig::default()
-    };
-
-    let ff_spawn = match Ffmpeg::new(ffmpeg_config).spawn() {
-      Err(_) => {
-        // FORBIDEN (403) is used to communicate all sorts of errors
-        let mut res = Response::new(StatusCode::INTERNAL_SERVER_ERROR);
-        *res.body_mut() = Body::from("error allocating internal stream converter, try again later or report it to the administrators");
-        return res;
-      }
-      Ok(spawn) => spawn,
-    };
-
-    let FfmpegSpawn {
-      mut stderr,
-      mut stdin,
-      stdout,
-      mut child,
-      config: _,
-    } = ff_spawn;
-
-    let stderr_handle = async move {
-      let mut data = Vec::new();
-      stderr.read_to_end(&mut data).await?;
-      Result::<Vec<u8>, std::io::Error>::Ok(data)
-    };
-
-    let stdout_handle = {
-      let id = id.clone();
-
-      async move {
-        use stream_util::*;
-
-        let chunks = stdout.into_bytes_stream(STREAM_CHUNK_SIZE);
-
-        tokio::pin!(chunks);
-
-        loop {
-          match chunks.next().await {
-            None => {
-              trace!("channel {id}: ffmpeg stdout end");
-              break;
+    let tx = {
+      let mut map = self.media_sessions.write();
+      match map.entry(&station.id) {
+        Entry::Vacant(_) => map.transmit(&station.id, MediaSessionKind::Live {}),
+        Entry::Occupied(entry) => {
+          let session = entry.get();
+          match session.kind() {
+            MediaSessionKind::Live { .. } => {
+              let mut res = Response::new(StatusCode::FORBIDDEN);
+              *res.body_mut() = Body::from("this source is already in use, try again later");
+              return res;
             }
-            Some(Err(e)) => {
-              trace!("channel {id}: ffmpeg stdout error: {e}");
-              break;
-            }
-            Some(Ok(bytes)) => {
-              trace!("channel {id}: ffmpeg stdout data: {} bytes", bytes.len());
-              // only fails if there are no receivers but we continue either way
-              let _ = channel.send(bytes);
+
+            MediaSessionKind::Playlist { .. } => {
+              map.transmit(&station.id, MediaSessionKind::Live {})
             }
           }
         }
       }
     };
 
-    let write_handle = {
-      let id = id.clone();
+    let result = tokio::spawn({
+      let shutdown = self.shutdown.clone();
+      let drop_tracer = self.drop_tracer.clone();
+      let request_document = db::http::Request::from_http(&req);
+      media_sessions::live::run_live_session(
+        tx,
+        req.into_body(),
+        request_document,
+        shutdown,
+        drop_tracer,
+      )
+    })
+    .await
+    .unwrap();
 
-      // move stdin to drop on close
-      async move {
-        loop {
-          let data = req.body_mut().data().await;
+    match result {
+      Ok(()) => {
+        let mut res = Response::new(StatusCode::OK);
+        *res.body_mut() = Body::from("data streamed successfully");
 
-          if self.shutdown.is_closed() {
-            break;
-          }
+        let mut headers = HeaderMap::new();
+        headers.insert(CONTENT_TYPE, TEXT_PLAIN_UTF8);
 
-          match data {
-            None => {
-              trace!("channel {id}: recv body end");
-              break;
-            }
-
-            Some(Err(e)) => {
-              trace!("channel {id}: recv body error: {e}");
-              break;
-            }
-
-            Some(Ok(data)) => {
-              trace!("channel {id}: recv body data: {} bytes", data.len());
-
-              match stdin.write_all(data.as_ref()).await {
-                Err(e) => {
-                  trace!("channel {id} stdin error: {e}");
-                  break;
-                }
-
-                Ok(()) => {
-                  trace!("channel {id} stdin write: {} bytes", data.len());
-                }
-              }
-            }
-          }
-        }
+        res
       }
-    };
 
-    let status_handle = async move { child.wait().await };
-
-    let (status, _write, _stdout, stderr) =
-      tokio::join!(status_handle, write_handle, stdout_handle, stderr_handle);
-
-    let exit = match status {
       Err(e) => {
-        warn!("channel {id}: ffmpeg child error: {} => {:?}", e, e);
-        let mut headers = HeaderMap::with_capacity(1);
-        headers.append(CONTENT_TYPE, HeaderValue::from_static("text/plain"));
+        // let (status, body) = match e {
+        //   LiveError::Db(_) => (StatusCode::INTERNAL_SERVER_ERROR, String::from("internal error creating live media session, try again later or report it to the administrators")),
+        //   LiveError::Spawn(_) | LiveError::ExitIo(_) | LiveError::StderrError(_) => (StatusCode::INTERNAL_SERVER_ERROR, String::from("error allocating internal stream converter, try again later or report it to the administrators")),
+        //   LiveError::ExitNotOk { stderr } => (StatusCode::FORBIDDEN, format!("error converting the audio stream (exit), possibly the audio is corrupted or is using a not supported format: {stderr}")),
+        // };
 
-        let body = Body::from("unexpected error allocating the stream converter (exit 1), please report this to the administrators");
+        // let (status, message) = match e {
+        //   LiveError::Db(_) => (StatusCode::INTERNAL_SERVER_ERROR, String::from("internal error creating live media session, try again later or report it to the administrators")),
+        //   LiveError::Probe(e) => {
+        //     let status = StatusCode::FORBIDDEN;
+        //     let message = match e {
+        //       mp3::ProbeError::NoDefaultTrack => String::from("unsupported stream: incomming audio stream does not have a default track"),
+        //       mp3::ProbeError::NotMP3 => String::from("unsopported stream: incoming audio stream is not MP3"),
+        //       mp3::ProbeError::NotSupported(e) => format!("unsupported stream: {e}")
+        //     };
+        //     (status, message)
+        //   }
+        //   LiveError::Play(e) => {
+        //     let status = StatusCode::FORBIDDEN;
+        //     let message = match e {
+        //       mp3::PlayError::Packet(e) => format!("play packet error: {e}"),
+        //       mp3::PlayError::Reset(e) => format!("play reset error: {e}"),
+        //       mp3::PlayError::ResetNoDefaultTrack => String::from("play reset error: no default track after reset"),
+        //       mp3::PlayError::ResetTrackNotMP3 => String::from("play reset error: new default track is not MP3"),
+        //       mp3::PlayError::MissingTimeBase => String::from("internal error: missing track time base"),
+        //     };
+        //     (status, message)
+        //   }
+        // };
 
-        let mut res = Response::new(StatusCode::INTERNAL_SERVER_ERROR);
-        *res.headers_mut() = headers;
-        *res.body_mut() = body;
+        let (status, message) = match e {
+           LiveError::Db(_) => (StatusCode::INTERNAL_SERVER_ERROR, String::from("internal error creating live media session, try again later or report it to the administrators")),
+           LiveError::Mp3(_) => (StatusCode::FORBIDDEN, String::from("invalid or unsupported stream format")),
+        };
 
-        return res;
+        let mut res = Response::new(status);
+        res.headers_mut().insert(CONTENT_TYPE, TEXT_PLAIN_UTF8);
+        *res.body_mut() = Body::from(message);
+        res
       }
-
-      Ok(exit) => exit,
-    };
-
-    trace!("channel {id}: ffmpeg child end: {exit}");
-
-    if exit.success() {
-      let mut res = Response::new(StatusCode::OK);
-      *res.body_mut() = Body::from("data streamed successfully");
-
-      let mut headers = HeaderMap::with_capacity(1);
-      headers.append(CONTENT_TYPE, HeaderValue::from_static("text/plain"));
-
-      res
-    } else {
-      let body = match stderr {
-        Err(e) => {
-          warn!("channel {id}: ffmpeg exit non-zero: exit={exit} stderr_error={e}");
-          format!("internal error allocating stream converter (stderr 1)")
-        }
-
-        Ok(v) => {
-          let out = String::from_utf8_lossy(v.as_ref());
-          warn!("channel {id}: ffmpeg exit non-zero: exit={exit} stderr={out}");
-          format!("error converting the audio stream (exit), possibly the audio is corrupted or is using a not supported format: {out}")
-        }
-      };
-
-      let body = Body::from(body);
-      let mut headers = HeaderMap::with_capacity(1);
-      headers.append(CONTENT_TYPE, HeaderValue::from_static("text/plain"));
-      let mut res = Response::new(StatusCode::OK);
-      *res.headers_mut() = headers;
-      *res.body_mut() = body;
-
-      res
     }
   }
 }
 
-#[derive(Debug)]
-struct BroadcastHandler {
-  channels: ChannelMap,
-  shutdown: Shutdown,
-}
+// #[derive(Debug)]
+// struct BroadcastHandler {
+//   channels: ChannelMap,
+//   shutdown: Shutdown,
+// }
 
-impl BroadcastHandler {
-  fn new(channels: ChannelMap, shutdown: Shutdown) -> Self {
-    Self { channels, shutdown }
-  }
-}
+// impl BroadcastHandler {
+//   fn new(channels: ChannelMap, shutdown: Shutdown) -> Self {
+//     Self { channels, shutdown }
+//   }
+// }
 
-#[async_trait]
-impl Handler for BroadcastHandler {
-  async fn call(&self, request: Request, _: Next) -> Response {
-    // unwrap: id is a required param in path defintion
-    let id = request.param("id").unwrap();
+// #[async_trait]
+// impl Handler for BroadcastHandler {
+//   async fn call(&self, request: Request, _: Next) -> Response {
+//     // unwrap: id is a required param in path defintion
+//     let id = request.param("id").unwrap();
 
-    let mut rx = match self.channels.subscribe(id) {
-      None => {
-        let mut res = Response::new(StatusCode::NOT_FOUND);
-        *res.body_mut() = Body::from(format!(
-          "stream with id {id} not actively streaming from this server"
-        ));
+//     let mut rx = match self.channels.subscribe(id) {
+//       None => {
+//         let mut res = Response::new(StatusCode::NOT_FOUND);
+//         *res.body_mut() = Body::from(format!(
+//           "stream with id {id} not actively streaming from this server"
+//         ));
 
-        return res;
-      }
-      Some(rx) => rx,
-    };
+//         return res;
+//       }
+//       Some(rx) => rx,
+//     };
 
-    let (mut sender, body) = Body::channel();
+//     let (mut sender, body) = Body::channel();
 
-    tokio::spawn({
-      let shutdown = self.shutdown.clone();
+//     tokio::spawn({
+//       let shutdown = self.shutdown.clone();
 
-      async move {
-        loop {
-          let item = rx.recv().await;
-          if shutdown.is_closed() {
-            break;
-          };
+//       async move {
+//         loop {
+//           let item = rx.recv().await;
+//           if shutdown.is_closed() {
+//             break;
+//           };
 
-          match item {
-            Err(e) => match e {
-              RecvError::Closed => break,
-              RecvError::Lagged(_) => continue,
-            },
-            Ok(bytes) => match sender.send_data(bytes).await {
-              Err(_) => break,
-              Ok(()) => continue,
-            },
-          }
-        }
-      }
-    });
+//           match item {
+//             Err(e) => match e {
+//               RecvError::Closed => break,
+//               RecvError::Lagged(_) => continue,
+//             },
+//             Ok(bytes) => match sender.send_data(bytes).await {
+//               Err(_) => break,
+//               Ok(()) => continue,
+//             },
+//           }
+//         }
+//       }
+//     });
 
-    let mut res = Response::new(StatusCode::OK);
-    res
-      .headers_mut()
-      .append(CONTENT_TYPE, HeaderValue::from_static("audio/mpeg"));
-    *res.body_mut() = body;
+//     let mut res = Response::new(StatusCode::OK);
+//     res
+//       .headers_mut()
+//       .append(CONTENT_TYPE, HeaderValue::from_static("audio/mpeg"));
+//     *res.body_mut() = body;
 
-    res
-  }
-}
+//     res
+//   }
+// }

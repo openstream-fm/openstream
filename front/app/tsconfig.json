@@ -13,8 +13,8 @@
 		"paths": {
 			"$share/*": ["../share/src/*"],
 			"$server/*": ["../server/src/*"],
-			"$lib":["src/lib"],
-			"$lib/*":["src/lib/*"]
+			"$lib":["./src/lib"],
+			"$lib/*":["./src/lib/*"]
 		}
 
 	}

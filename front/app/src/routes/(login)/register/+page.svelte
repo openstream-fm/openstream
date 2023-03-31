@@ -10,6 +10,7 @@
   let first_name = "";
   let last_name = "";
   let station_name = "";
+  let phone = "";
   let email = "";
   let password = "";
   let confirm_password = "";
@@ -134,6 +135,9 @@
     </div>
     <div class="field">
       <TextField label="Your station's name" bind:value={station_name} />
+    </div>
+    <div class="field">
+      <TextField type="tel" label="Your phone number" bind:value={phone} />
     </div>
     <div class="field">
       <Email label="Your email" bind:value={email} />

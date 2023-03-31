@@ -26,6 +26,12 @@ use source::SourceServer;
 use stream::StreamServer;
 use tokio::runtime::Runtime;
 
+
+use jemallocator::Jemalloc;
+
+#[global_allocator]
+static ALLOCATOR: Jemalloc = Jemalloc;
+
 static VERSION: &str = env!("CARGO_PKG_VERSION");
 
 // #[global_allocator]
@@ -227,9 +233,9 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   info!("local ip address: {}", local_ip.yellow());
 
 
-  info!("retrieving public ip...");
-  let ip = ip::get_ip_v4().await.context("error obtaining public ip")?;
-  info!("public ip address: {}", ip.yellow());
+  // info!("retrieving public ip...");
+  // let ip = ip::get_ip_v4().await.context("error obtaining public ip")?;
+  // info!("public ip address: {}", ip.yellow());
 
   
   let config::Config {
@@ -260,10 +266,10 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
 
   if let Some(source_config) = source {
     let source = SourceServer::new(
-      source_config.receiver.addrs.clone(),
-      source_config.broadcaster.addrs.clone(),
-      shutdown.clone(),
+      source_config.addrs.clone(),
+      media_sessions.clone(),
       drop_tracer.clone(),
+      shutdown.clone(),
     );
 
     let fut = source.start()?;

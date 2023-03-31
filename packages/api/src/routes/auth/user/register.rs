@@ -57,6 +57,18 @@ pub mod post {
     PasswordTooShort,
     #[error("email already exists")]
     EmailExists,
+    #[error("email is too long")]
+    EmailTooLong,
+    #[error("first name is too long")]
+    FirstNameTooLong,
+    #[error("last name is too long")]
+    LastNameTooLong,
+    #[error("phone is too long")]
+    PhoneTooLong,
+    #[error("station name is too long")]
+    StationNameTooLong,
+    #[error("password too long")]
+    PasswordTooLong,
   }
 
   impl From<mongodb::error::Error> for HandleError {
@@ -85,6 +97,24 @@ pub mod post {
           ApiError::PayloadInvalid(String::from("Password must have 8 characters or more"))
         }
         HandleError::EmailExists => ApiError::UserEmailExists,
+        HandleError::FirstNameTooLong => {
+          ApiError::PayloadInvalid(String::from("First name must be of 50 characters or less"))
+        }
+        HandleError::LastNameTooLong => {
+          ApiError::PayloadInvalid(String::from("Last name must be of 50 characters or less"))
+        }
+        HandleError::StationNameTooLong => ApiError::PayloadInvalid(String::from(
+          "Station name must be of 30 characters or less",
+        )),
+        HandleError::PhoneTooLong => {
+          ApiError::PayloadInvalid(String::from("Phone must be of 20 characters or less"))
+        }
+        HandleError::EmailTooLong => {
+          ApiError::PayloadInvalid(String::from("Email must be of 40 characters or less"))
+        }
+        HandleError::PasswordTooLong => {
+          ApiError::PayloadInvalid(String::from("Password must be of 80 characters or less"))
+        }
       }
     }
   }
@@ -96,6 +126,7 @@ pub mod post {
   pub struct Payload {
     email: String,
     password: String,
+    phone: Option<String>,
     first_name: String,
     last_name: String,
     station_name: String,
@@ -187,6 +218,7 @@ pub mod post {
       let Payload {
         email,
         password,
+        phone,
         first_name,
         last_name,
         station_name,
@@ -201,6 +233,14 @@ pub mod post {
       let first_name = first_name.trim().to_string();
       let last_name = last_name.trim().to_string();
       let station_name = station_name.trim().to_string();
+
+      let phone = match phone {
+        None => None,
+        Some(phone) => match phone.trim() {
+          "" => None,
+          phone => Some(phone.to_string()),
+        },
+      };
 
       let payload_limits = payload_limits.unwrap_or_default();
       let station_user_metadata = station_user_metadata.unwrap_or_default();
@@ -230,6 +270,32 @@ pub mod post {
 
       if password.len() < 8 {
         return Err(HandleError::PasswordTooShort);
+      }
+
+      if password.len() > 80 {
+        return Err(HandleError::PasswordTooLong);
+      }
+
+      if first_name.len() > 50 {
+        return Err(HandleError::FirstNameTooLong);
+      }
+
+      if last_name.len() > 50 {
+        return Err(HandleError::FirstNameTooLong);
+      }
+
+      if email.len() > 40 {
+        return Err(HandleError::EmailTooLong);
+      }
+
+      if station_name.len() > 40 {
+        return Err(HandleError::StationNameTooLong);
+      }
+
+      if let Some(ref phone) = phone {
+        if phone.len() > 20 {
+          return Err(HandleError::PhoneTooLong);
+        }
       }
 
       let config = <Config as Singleton>::get().await?;
@@ -272,6 +338,7 @@ pub mod post {
       let user = User {
         id: User::uid(),
         email,
+        phone,
         first_name,
         last_name,
         password: Some(password),

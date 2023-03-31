@@ -6,6 +6,11 @@ use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
+use jemallocator::Jemalloc;
+
+#[global_allocator]
+static ALLOCATOR: Jemalloc = Jemalloc;
+
 static CONNECTING_CLIENTS: AtomicUsize = AtomicUsize::new(0);
 static CURRENT_CLIENTS: AtomicUsize = AtomicUsize::new(0);
 static HISTORIC_CLIENTS: AtomicUsize = AtomicUsize::new(0);

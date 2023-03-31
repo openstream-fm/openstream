@@ -136,6 +136,7 @@ pub mod post {
   #[serde(deny_unknown_fields)]
   pub struct Payload {
     email: String,
+    phone: Option<String>,
     password: String,
     first_name: String,
     last_name: String,
@@ -183,8 +184,28 @@ pub mod post {
     Db(#[from] mongodb::error::Error),
     #[error("user email exists")]
     UserEmailExists,
-    #[error("station not found: {0}")]
-    StationNotFound(String),
+    #[error("first name is empty")]
+    FirstNameEmpty,
+    #[error("last name is empty")]
+    LastNameEmpty,
+    #[error("email is empty")]
+    EmailEmpty,
+    #[error("email is invalid")]
+    EmailInvalid,
+    #[error("password is too short")]
+    PasswordTooShort,
+    #[error("email already exists")]
+    EmailExists,
+    #[error("email is too long")]
+    EmailTooLong,
+    #[error("first name is too long")]
+    FirstNameTooLong,
+    #[error("last name is too long")]
+    LastNameTooLong,
+    #[error("phone is too long")]
+    PhoneTooLong,
+    #[error("password too long")]
+    PasswordTooLong,
   }
 
   impl From<HandleError> for ApiError {
@@ -192,7 +213,33 @@ pub mod post {
       match e {
         HandleError::Db(e) => e.into(),
         HandleError::UserEmailExists => ApiError::UserEmailExists,
-        HandleError::StationNotFound(id) => ApiError::StationNotFound(id),
+        HandleError::EmailEmpty => ApiError::PayloadInvalid(String::from("Email is required")),
+        HandleError::FirstNameEmpty => {
+          ApiError::PayloadInvalid(String::from("First name is required"))
+        }
+        HandleError::LastNameEmpty => {
+          ApiError::PayloadInvalid(String::from("Last name is required"))
+        }
+        HandleError::EmailInvalid => ApiError::PayloadInvalid(String::from("Email is invalid")),
+        HandleError::PasswordTooShort => {
+          ApiError::PayloadInvalid(String::from("Password must have 8 characters or more"))
+        }
+        HandleError::EmailExists => ApiError::UserEmailExists,
+        HandleError::FirstNameTooLong => {
+          ApiError::PayloadInvalid(String::from("First name must be of 50 characters or less"))
+        }
+        HandleError::LastNameTooLong => {
+          ApiError::PayloadInvalid(String::from("Last name must be of 50 characters or less"))
+        }
+        HandleError::PhoneTooLong => {
+          ApiError::PayloadInvalid(String::from("Phone must be of 20 characters or less"))
+        }
+        HandleError::EmailTooLong => {
+          ApiError::PayloadInvalid(String::from("Email must be of 40 characters or less"))
+        }
+        HandleError::PasswordTooLong => {
+          ApiError::PayloadInvalid(String::from("Password must be of 80 characters or less"))
+        }
       }
     }
   }
@@ -215,50 +262,18 @@ pub mod post {
 
       let mut payload: Payload = req.read_body_json(1000 * 40).await?;
 
-      payload.first_name = payload.first_name.trim().to_string();
-      payload.last_name = payload.last_name.trim().to_string();
-      payload.email = payload.email.trim().to_lowercase();
-
-      if payload.first_name.is_empty() {
-        return Err(
-          ReadBodyJsonError::PayloadInvalid(String::from("First name is required")).into(),
-        );
-      }
-
-      if payload.last_name.is_empty() {
-        return Err(
-          ReadBodyJsonError::PayloadInvalid(String::from("Last name is required")).into(),
-        );
-      }
-
-      if payload.email.is_empty() {
-        return Err(ReadBodyJsonError::PayloadInvalid(String::from("Email is required")).into());
-      }
-
-      if !is_valid_email(&payload.email) {
-        return Err(ReadBodyJsonError::PayloadInvalid(String::from("Email is invalid")).into());
-      }
-
-      if payload.password.len() < 8 {
-        return Err(
-          ReadBodyJsonError::PayloadInvalid(String::from(
-            "Password must have 8 characters or more",
-          ))
-          .into(),
-        );
-      }
-
       Ok(Self::Input {
         access_token_scope,
         payload,
       })
     }
 
-    async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
+    async fn perform(&self, input: Input) -> Result<Output, HandleError> {
       let payload = input.payload;
 
       let Payload {
         email,
+        phone,
         password,
         first_name,
         last_name,
@@ -266,8 +281,62 @@ pub mod post {
         system_metadata,
       } = payload;
 
+      let email = email.trim().to_lowercase();
+      let first_name = first_name.trim().to_string();
+      let last_name = last_name.trim().to_string();
+
       let user_metadata = user_metadata.unwrap_or_default();
       let system_metadata = system_metadata.unwrap_or_default();
+
+      let phone = match phone {
+        None => None,
+        Some(phone) => match phone.trim() {
+          "" => None,
+          phone => Some(phone.to_string()),
+        },
+      };
+
+      if email.is_empty() {
+        return Err(HandleError::EmailEmpty);
+      }
+
+      if !is_valid_email(&email) {
+        return Err(HandleError::EmailInvalid);
+      }
+
+      if first_name.is_empty() {
+        return Err(HandleError::FirstNameEmpty);
+      }
+
+      if last_name.is_empty() {
+        return Err(HandleError::LastNameEmpty);
+      }
+
+      if password.len() < 8 {
+        return Err(HandleError::PasswordTooShort);
+      }
+
+      if password.len() > 80 {
+        return Err(HandleError::PasswordTooLong);
+      }
+
+      if first_name.len() > 50 {
+        return Err(HandleError::FirstNameTooLong);
+      }
+
+      if last_name.len() > 50 {
+        return Err(HandleError::FirstNameTooLong);
+      }
+
+      if email.len() > 40 {
+        return Err(HandleError::EmailTooLong);
+      }
+
+      if let Some(ref phone) = phone {
+        if phone.len() > 20 {
+          return Err(HandleError::PhoneTooLong);
+        }
+      }
 
       let password = crypt::hash(&password);
 
@@ -275,7 +344,7 @@ pub mod post {
 
         let email_exists = tx_try!(User::exists_with_session(doc! { User::KEY_EMAIL: &email }, &mut session).await);
         if email_exists {
-          return Err(Self::HandleError::UserEmailExists);
+          return Err(HandleError::UserEmailExists);
         }
 
         let now = DateTime::now();
@@ -283,6 +352,7 @@ pub mod post {
         let user = User {
           id: User::uid(),
           email: email.clone(),
+          phone: phone.clone(),
           password: Some(password.clone()),
           first_name: first_name.clone(),
           last_name: last_name.clone(),

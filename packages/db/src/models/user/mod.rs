@@ -18,6 +18,7 @@ pub struct User {
   pub first_name: String,
   pub last_name: String,
   pub email: String,
+  pub phone: Option<String>,
   pub password: Option<String>,
   pub created_at: DateTime,
   pub updated_at: DateTime,

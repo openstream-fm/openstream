@@ -56,7 +56,7 @@ publicBaseURL = "http://localhost:23200"
 # removing this config group is the same as setting enabled=false
 [admin]
 
-# boolea (required)
+# boolean (required)
 # enable admin web interface or not
 enabled=true
 

@@ -37,20 +37,13 @@ pub struct Stream {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Source {
-  pub receiver: SourceReceiver,
-  pub broadcaster: SourceBroadcaster,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct Router {
   pub addrs: Vec<SocketAddr>,
   pub public_base_url: Url,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct SourceReceiver {
+pub struct Router {
   pub addrs: Vec<SocketAddr>,
   pub public_base_url: Url,
 }

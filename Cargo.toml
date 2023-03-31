@@ -26,6 +26,8 @@ members = [
     "packages/upload",
     "packages/api",
 
+    "packages/mp3",
+
     "packages/http",
 
     "packages/channels",

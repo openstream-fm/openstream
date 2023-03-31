@@ -9,8 +9,6 @@ export const handle: Handle = async ({ event, resolve }) => {
   const ip = event.request.headers.get(X_REAL_IP);
   if(ip == null) server_logger.warn(`handle: received request without ${X_REAL_IP} header: ${event.request.url}`);
   event.locals.ip = ip || "0.0.0.0";
-  
-
 
   const proto = event.request.headers.get(PROTOCOL_HEADER);
   if(proto == null) server_logger.warn(`handle: received request without ${PROTOCOL_HEADER} header: ${event.request.url}`);
@@ -25,7 +23,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   const ms = Date.now() - start;
 
-  server_logger[res.ok ? "info" : "warn"](`handle: ${event.request.url} => ${res.status} ${res.statusText} - ${ms}ms`)
+  server_logger[res.ok ? "debug" : "warn"](`handle: ${event.request.url} => ${res.status} ${res.statusText} - ${ms}ms`)
 
   return res;
 }
@@ -36,7 +34,7 @@ export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
   url.port = String(env.APP_API_PORT);
   url.protocol = `http:`;
   
-  server_logger.info(`handle-fetch: ${event.request.url} => ${request.url} ip=${event.locals.ip} proto=${event.locals.protocol}`)
+  server_logger.debug(`handle-fetch: ${event.request.url} => ${request.url} ip=${event.locals.ip} proto=${event.locals.protocol}`)
 
   request.headers.set(FORWARD_IP_HEADER, event.locals.ip);
   request.headers.set(PROTOCOL_HEADER, event.locals.protocol);

@@ -1,7 +1,4 @@
 import { load_get, load_get_me } from "$lib/load";
-import { dev } from "$app/environment";
-
-export const ssr = !dev;
 
 export const load = (async ({ depends, fetch, url }) => {
   depends("user:me");

@@ -1,4 +1,4 @@
-import express, { request } from "express";
+import express, { RequestHandler } from "express";
 import type { Config } from "./config";
 import type { Logger } from "./logger";
 import { app_api } from "./api/app-api";
@@ -8,6 +8,9 @@ import { env } from "./env";
 import { sveltekit_dev_proxy } from "./sveltekit-dev-proxy";
 import { color } from "./color";
 import { kit } from "./kit";
+
+import { fileURLToPath } from "url";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const start = async ({ config, logger }: { config: Config, logger: Logger }) => {
 
@@ -25,15 +28,13 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
     if(env.SVELTEKIT_APP_DEV) {
       app.use(sveltekit_dev_proxy(env.SVELTEKIT_APP_PORT))
     } else {
-      // nasty hack for stopping typescript to transform the import into a require
-      // @ts-ignore
       process.env.APP_API_PORT = String(config.app.port);
-      const { handler } = await (new Function("", 'return import("../../app/build/handler.js")'))();
+      const { handler }: { handler: RequestHandler } = await import("" + "../../app/build/handler.js")
       app.use(kit(handler));
     }
 
     app.listen(config.app.port, () => {
-      logger.info(`api server bound to port ${color.yellow(config.app!.port)}`);
+      logger.scoped("start").info(`api server bound to port ${color.yellow(config.app!.port)}`);
     });
   }
 }

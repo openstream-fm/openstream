@@ -1,6 +1,6 @@
 const num = (KEY: string): number => {
   const v = Number(process.env[KEY]);
-  if(!v) throw new Error(`env variable '${KEY}' must be a number`)
+  if(typeof v !== "number") throw new Error(`env variable '${KEY}' must be a number`)
   return v
 }
 

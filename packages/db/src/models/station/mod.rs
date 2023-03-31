@@ -40,7 +40,7 @@ pub struct UserPublicStation {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/")]
-pub struct AdminPublicStation(Station);
+pub struct AdminPublicStation(pub Station);
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/")]

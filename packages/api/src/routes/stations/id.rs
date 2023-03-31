@@ -28,7 +28,7 @@ pub mod get {
   #[ts(export_to = "../../defs/api/stations/[station]/GET/")]
   // #[serde(rename_all = "camelCase")]
   pub struct Output {
-    station: PublicStation,
+    pub station: PublicStation,
   }
 
   #[async_trait]

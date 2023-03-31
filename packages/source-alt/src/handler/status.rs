@@ -9,8 +9,6 @@ use tokio::io::AsyncWriteExt;
 use tokio::net::TcpStream;
 
 pub async fn status(mut socket: TcpStream, req: RequestHead) -> Result<(), HandlerError> {
-  trace!("`[request] status: {} {}", req.method, req.uri);
-
   let status = StatusCode::OK;
   let body = b"200 OK";
   let mut headers = headers!(2);

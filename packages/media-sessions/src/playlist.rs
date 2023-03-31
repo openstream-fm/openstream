@@ -1,4 +1,4 @@
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicUsize, Ordering, AtomicU64};
 use std::time::Instant;
 
 use constants::{PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY, STREAM_BURST_LENGTH, STREAM_CHUNK_SIZE};
@@ -60,6 +60,7 @@ pub fn run_playlist_session(
         file_order: AtomicF64::new(start_file.order),
         i: AtomicF64::new(i),
         part: AtomicUsize::new(part),
+        transfer: AtomicU64::new(0),
       }));
 
       let media_session_doc = {
@@ -69,6 +70,7 @@ pub fn run_playlist_session(
           station_id: station_id.to_string(),
           created_at: DateTime::now(),
           updated_at: DateTime::now(),
+          transfer_bytes: 0,
           kind: MediaSessionKind::Playlist {
             resumed_from: resume_playlist_id,
             last_audio_chunk_date: DateTime::now(),
@@ -175,12 +177,14 @@ pub fn run_playlist_session(
         });
         //.rated(file.bytes_sec)
 
+        let mut transfer = 0u64;
+
         // fill the burst without delay between chunk parts
         tokio::pin!(stream);
         if burst_len < STREAM_BURST_LENGTH {
           'chunks: loop {
             if shutdown.is_closed() || tx.is_terminated() {
-              return Ok(());
+              break 'files;
             }
 
             match stream.try_next().await? {
@@ -189,7 +193,10 @@ pub fn run_playlist_session(
               Some(bytes) => {
                 burst_len += 1;
 
-                if shutdown.is_closed() || tx.is_terminated() {
+                transfer += bytes.len() as u64;
+                out.set_transfer(transfer);
+
+                if shutdown.is_closed() {
                   return Ok(());
                 }
 
@@ -217,14 +224,16 @@ pub fn run_playlist_session(
         tokio::pin!(stream);
 
         'chunks: loop {
-          if shutdown.is_closed() || tx.is_terminated() {
-            return Ok(());
+          if shutdown.is_closed() {
+            break 'files;
           }
 
           match stream.try_next().await? {
             None => continue 'files,
 
             Some(bytes) => {
+              transfer += bytes.len() as u64;
+              out.set_transfer(transfer);
               if shutdown.is_closed() || tx.is_terminated() {
                 return Ok(());
               }
@@ -349,6 +358,7 @@ struct Inner {
   file_order: AtomicF64,
   i: AtomicF64,
   part: AtomicUsize,
+  transfer: AtomicU64,
 }
 
 impl PlaylistIndexInfoOut {
@@ -366,6 +376,10 @@ impl PlaylistIndexInfoOut {
 
   pub fn file_order(&self) -> f64 {
     self.0.file_order.load(Ordering::SeqCst)
+  }
+
+  pub fn transfer(&self) -> u64 {
+    self.0.transfer.load(Ordering::Relaxed)
   }
 
   pub fn set_i(&self, v: f64) {
@@ -397,6 +411,10 @@ impl PlaylistIndexInfoOut {
     // info!("set file_id {id:?}");
     *self.0.file_id.lock() = id;
   }
+
+  pub fn set_transfer(&self, n: u64) {
+    self.0.transfer.store(n, Ordering::Relaxed)
+  }
 }
 
 #[derive(Debug)]
@@ -422,12 +440,14 @@ impl Drop for MediaSessionDropper {
     let file_order = self.out.file_order();
     let i = self.out.i();
     let part = self.out.part();
+    let transfer_bytes = self.out.transfer();
 
     let doc = MediaSession {
       id: self.doc.id.clone(),
       station_id: self.doc.station_id.clone(),
       created_at: self.doc.created_at,
       updated_at: self.doc.updated_at,
+      transfer_bytes,
       kind: MediaSessionKind::Playlist {
         resumed_from: self.doc.resumed_from().map(ToString::to_string),
         last_audio_file_id: file_id.clone(),

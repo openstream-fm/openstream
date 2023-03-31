@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "start": "node openstream-front start",
     "prepare": "ts-patch install -s",
-    "dev": "SVELTEKIT_APP_DEV=1 SVELTEKIT_APP_PORT=3100 ts-node-dev src/cli.ts start",
+    "start": "node --no-warnings --experimental-specifier-resolution=node openstream-front start",
+    "dev": "SVELTEKIT_APP_DEV=1 SVELTEKIT_APP_PORT=3100 nodemon --exec node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm src/cli.ts start",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -23,6 +24,7 @@
     "http-status-codes": "^2.2.0",
     "kleur": "^4.1.5",
     "node-fetch": "^2.6.7",
+    "nodemon": "^2.0.22",
     "qs": "^6.11.0",
     "toml": "^3.0.0",
     "ts-patch": "^2.1.0",

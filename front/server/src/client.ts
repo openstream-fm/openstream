@@ -36,7 +36,7 @@ export class Client {
   async fetch(_url: string, init: RequestInit = {}): Promise<Response> {
     const url = `${this.base_url}${_url}`;
     const method = init.method ?? "GET";
-    this.logger.info(`fetch: ${method} ${url}`);
+    this.logger.debug(`fetch: ${method} ${url}`);
     return await fetch(url, { 
       agent: (url) => url.protocol === "http:" ? http.globalAgent : https.globalAgent,
       ...init

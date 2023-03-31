@@ -22,6 +22,9 @@ pub struct MediaSession {
   #[ts(skip)]
   #[serde(flatten)]
   pub state: MediaSessionState,
+
+  #[serde(with = "serde_util::as_f64")]
+  pub transfer_bytes: u64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
@@ -62,7 +65,6 @@ pub enum MediaSessionState {
     closed_at: DateTime,
     #[serde(with = "serde_util::as_f64")]
     duration_ms: u64,
-    // error: Option<MediaSessionError>,
   },
 }
 
@@ -168,6 +170,7 @@ mod test {
       station_id: Station::uid(),
       created_at: DateTime::now(),
       updated_at: DateTime::now(),
+      transfer_bytes: 0,
       kind: MediaSessionKind::Playlist {
         resumed_from: None,
         last_audio_file_id: AudioFile::uid(),
