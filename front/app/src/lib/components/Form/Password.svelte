@@ -2,6 +2,7 @@
 	export let value: string;
   export let label: string;
   export let visible: boolean = false;
+  export let autocomplete = "password";
 
 	import Icon from "$share/Icon.svelte";
   import FieldContainer from "./FieldContainer.svelte";
@@ -62,7 +63,7 @@
 
 <FieldContainer>
   <div class="wrap">
-    <input type={visible ? "text" : "password"} class={css["forms-input"]} value={value} on:input={event => value = event.currentTarget.value} />
+    <input type={visible ? "text" : "password"} {autocomplete} class={css["forms-input"]} value={value} on:input={event => value = event.currentTarget.value} />
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="btn" on:pointerdown|capture|preventDefault={pointerdown} on:click={click}>
       <Icon d={visible ? mdiEyeOff : mdiEye} />

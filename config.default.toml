@@ -32,8 +32,8 @@ addrs = [ "0.0.0.0:20800" ]
 public_base_url = "http://stream.openstream.fm"
 
 
-# the [source.receiver] is the icecast compatible server where streamers will connect to start live broadcasting
-[source.receiver]
+# the [source] server is where openstream receives the audio data from streamers, it is Icecast compatible
+[source]
 
 # string(SocketAddr)[] (required)
 # socket addrs to bind the source receiver server to
@@ -43,18 +43,29 @@ addrs = [ "0.0.0.0:20600" ]
 # public url to access the source receiver server
 public_base_url = "http://source.openstream.fm"
 
+# the [source.receiver] is the icecast compatible server where streamers will connect to start live broadcasting
+# [source.receiver]
+
+# string(SocketAddr)[] (required)
+# socket addrs to bind the source receiver server to
+# addrs = [ "0.0.0.0:20600" ]
+
+# string (required)
+# public url to access the source receiver server
+# public_base_url = "http://source.openstream.fm"
+
 
 
 # the [source.broadcaster] server is where stream servers connect with source servers
-[source.broadcaster]
+# [source.broadcaster]
 
 # string(SocketAddr)[] (required)
 # socket addrs to bind the source broadcaster server to
-addrs = [ "0.0.0.0:20300", "0.0.0.0:20301", "0.0.0.0:20302", "0.0.0.0:20303", "0.0.0.0:20304" ]
+# addrs = [ "0.0.0.0:20300", "0.0.0.0:20301", "0.0.0.0:20302", "0.0.0.0:20303", "0.0.0.0:20304" ]
 
 # string (required)
 # public url to access the source broadcaster server
-public_base_url = "http://broad.openstream.fm"
+# public_base_url = "http://broad.openstream.fm"
 
 
 

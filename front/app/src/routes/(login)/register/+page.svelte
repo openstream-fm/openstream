@@ -128,25 +128,25 @@
   <div class="title">Sign up</div>
   <div class="fields">
     <div class="field">
-      <TextField label="Your first name" bind:value={first_name} />
+      <TextField autocomplete="given-name" label="Your first name" bind:value={first_name} />
     </div>
     <div class="field">
-      <TextField label="Your last name" bind:value={last_name} />
+      <TextField autocomplete="family-name" label="Your last name" bind:value={last_name} />
     </div>
     <div class="field">
-      <TextField label="Your station's name" bind:value={station_name} />
+      <TextField autocomplete="off" label="Your station's name" bind:value={station_name} />
     </div>
     <div class="field">
-      <TextField type="tel" label="Your phone number" bind:value={phone} />
+      <TextField type="tel" autocomplete="tel" label="Your phone number" bind:value={phone} />
     </div>
     <div class="field">
       <Email label="Your email" bind:value={email} />
     </div>
     <div class="field">
-      <Password label="Your password" bind:value={password} />
+      <Password autocomplete="new-password" label="Your password" bind:value={password} />
     </div>
     <div class="field">
-      <Password label="Confirm your password" bind:value={confirm_password} />
+      <Password autocomplete="new-password" label="Confirm your password" bind:value={confirm_password} />
     </div>
 
     <button use:ripple class="ripple-container">

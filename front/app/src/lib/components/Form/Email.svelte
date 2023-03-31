@@ -1,6 +1,7 @@
 <script lang="ts">
 	export let value: string;
   export let label: string;
+  export let autocomplete = "email";
 
   import FieldContainer from "./FieldContainer.svelte";
   import Label from "./Label.svelte";
@@ -9,6 +10,6 @@
 
 
 <FieldContainer>
-  <input type="email" class={css["forms-input"]} bind:value={value} />
+  <input type="email" {autocomplete} class={css["forms-input"]} bind:value={value} />
   <Label {label} full={value !== ""} />
 </FieldContainer>
