@@ -1,19 +1,15 @@
-pub mod dashboard_stats;
-pub mod files;
 pub mod id;
-pub mod now_playing;
-pub mod restart_playlist;
 
 use crate::json::JsonHandler;
 use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
 
 use crate::error::ApiError;
 use async_trait::async_trait;
+use db::account::Account;
+use db::account::PublicAccount;
 use db::metadata::Metadata;
 use db::models::user_account_relation::UserAccountRelation;
-use db::station::PublicStation;
-use db::station::Station;
-use db::{Model, Paged, PublicScope, Singleton};
+use db::{Model, Paged, PublicScope};
 use mongodb::bson::doc;
 use prex::request::ReadBodyJsonError;
 use prex::Request;
@@ -39,7 +35,7 @@ pub mod get {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
-  #[ts(export, export_to = "../../defs/api/stations/GET/")]
+  #[ts(export, export_to = "../../defs/api/accounts/GET/")]
   struct Query {
     #[serde(skip_serializing_if = "Option::is_none")]
     skip: Option<u64>,
@@ -48,7 +44,7 @@ pub mod get {
     limit: Option<i64>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    account_id: Option<String>,
+    user_id: Option<String>,
   }
 
   #[derive(Debug, Clone)]
@@ -58,8 +54,8 @@ pub mod get {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/stations/GET/")]
-  pub struct Output(Paged<PublicStation>);
+  #[ts(export, export_to = "../../defs/api/accounts/GET/")]
+  pub struct Output(Paged<PublicAccount>);
 
   #[derive(Debug, thiserror::Error)]
   pub enum ParseError {
@@ -108,20 +104,27 @@ pub mod get {
       let Query {
         skip,
         limit,
-        account_id,
+        user_id,
       } = query;
 
       let skip = skip.unwrap_or_else(default_skip);
       let limit = limit.unwrap_or_else(default_limit);
 
-      let query_account_filter = match account_id {
+      let query_user_filter = match user_id {
         None => doc! {},
-        Some(account_id) => doc! { Station::KEY_ACCOUNT_ID: account_id },
+        Some(user_id) => {
+          let filter = doc! { UserAccountRelation::KEY_USER_ID: user_id };
+          let account_ids = UserAccountRelation::cl()
+            .distinct(UserAccountRelation::KEY_ACCOUNT_ID, filter, None)
+            .await?;
+
+          doc! { Account::KEY_ID: { "$in": account_ids } }
+        }
       };
 
       let page = match access_token_scope {
         AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
-          Station::paged(Some(query_account_filter), None, skip, limit)
+          Account::paged(Some(query_user_filter), None, skip, limit)
             .await?
             .map(|item| item.into_public(PublicScope::Admin))
         }
@@ -141,9 +144,10 @@ pub mod get {
             }));
           }
 
-          let filter = doc! { "$and": [ query_account_filter, { Station::KEY_ACCOUNT_ID: { "$in": account_ids } } ] };
+          let filter =
+            doc! { "$and": [ query_user_filter, { Account::KEY_ID: { "$in": account_ids } } ] };
 
-          Station::paged(filter, None, skip, limit)
+          Account::paged(filter, None, skip, limit)
             .await?
             .map(|item| item.into_public(PublicScope::User))
         }
@@ -156,41 +160,26 @@ pub mod get {
 
 pub mod post {
 
-  use db::config::Config;
-  use db::station::{Limit, Limits, Station};
+  use db::models::user_account_relation::UserAccountRelationKind;
+  use db::run_transaction;
+  use db::user::User;
   use serde_util::DateTime;
   use ts_rs::TS;
 
   use super::*;
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/stations/POST/")]
+  #[ts(export, export_to = "../../defs/api/accounts/POST/")]
   #[serde(rename_all = "snake_case")]
   #[serde(deny_unknown_fields)]
   pub struct Payload {
     pub name: String,
-    pub account_id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub limits: Option<PayloadLimits>,
+    pub user_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user_metadata: Option<Metadata>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub system_metadata: Option<Metadata>,
-  }
-
-  #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/stations/POST/")]
-  #[serde(rename_all = "snake_case")]
-  #[serde(deny_unknown_fields)]
-  pub struct PayloadLimits {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    listeners: Option<u64>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    transfer: Option<u64>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    storage: Option<u64>,
   }
 
   #[derive(Debug, Clone)]
@@ -200,9 +189,9 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/stations/POST/")]
+  #[ts(export, export_to = "../../defs/api/accounts/POST/")]
   pub struct Output {
-    station: PublicStation,
+    account: PublicAccount,
   }
 
   #[derive(Debug, thiserror::Error)]
@@ -230,8 +219,10 @@ pub mod post {
     Token(#[from] GetAccessTokenScopeError),
     #[error("name missing")]
     NameMissing,
+    #[error("user id missing")]
+    UserIdMissing,
     #[error("account not found ({0})")]
-    AccountNotFound(String),
+    UserNotFound(String),
   }
 
   impl From<HandleError> for ApiError {
@@ -240,7 +231,8 @@ pub mod post {
         HandleError::Db(e) => ApiError::from(e),
         HandleError::Token(e) => ApiError::from(e),
         HandleError::NameMissing => ApiError::PayloadInvalid(String::from("Name is required")),
-        HandleError::AccountNotFound(id) => ApiError::AccountNotFound(id),
+        HandleError::UserIdMissing => ApiError::PayloadInvalid(String::from("user_id is required")),
+        HandleError::UserNotFound(id) => ApiError::UserNotFound(id),
       }
     }
   }
@@ -272,13 +264,10 @@ pub mod post {
 
       let Payload {
         name,
-        account_id,
-        limits: payload_limits,
+        user_id,
         user_metadata,
         system_metadata,
       } = payload;
-
-      access_token_scope.grant_account_scope(&account_id).await?;
 
       let name = name.trim().to_string();
 
@@ -286,7 +275,7 @@ pub mod post {
         return Err(HandleError::NameMissing);
       }
 
-      let config = <Config as Singleton>::get().await?;
+      // TODO: validate name length
 
       let system_metadata = match &access_token_scope {
         AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
@@ -296,61 +285,48 @@ pub mod post {
         AccessTokenScope::User(_) => Default::default(),
       };
 
-      let limits = match &access_token_scope {
-        AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
-          let payload_limits = payload_limits.unwrap_or_default();
-          Limits {
-            listeners: Limit {
-              used: 0,
-              total: payload_limits.listeners.unwrap_or(config.limits.listeners),
-            },
-            transfer: Limit {
-              used: 0,
-              total: payload_limits.transfer.unwrap_or(config.limits.transfer),
-            },
-            storage: Limit {
-              used: 0,
-              total: payload_limits.storage.unwrap_or(config.limits.storage),
-            },
-          }
-        }
-        AccessTokenScope::User(_) => Limits {
-          listeners: Limit {
-            used: 0,
-            total: config.limits.listeners,
-          },
-          transfer: Limit {
-            used: 0,
-            total: config.limits.transfer,
-          },
-          storage: Limit {
-            used: 0,
-            total: config.limits.storage,
-          },
-        },
-      };
-
       let user_metadata = user_metadata.unwrap_or_default();
+
+      let user_id = match &access_token_scope {
+        AccessTokenScope::Global | AccessTokenScope::Admin(_) => match user_id {
+          None => return Err(HandleError::UserIdMissing),
+          Some(user_id) => user_id,
+        },
+
+        AccessTokenScope::User(user) => user.id.clone(),
+      };
 
       let now = DateTime::now();
 
-      let station = Station {
-        id: Station::uid(),
-        account_id,
+      let account = Account {
+        id: Account::uid(),
         name,
-        limits,
-        source_password: Station::random_source_password(),
-        playlist_is_randomly_shuffled: false,
         system_metadata,
         user_metadata,
         created_at: now,
         updated_at: now,
       };
 
-      Station::insert(&station).await?;
+      let relation = UserAccountRelation {
+        id: UserAccountRelation::uid(),
+        user_id: user_id.clone(),
+        account_id: account.id.clone(),
+        kind: UserAccountRelationKind::Owner,
+        created_at: now,
+      };
+
+      run_transaction!(session => {
+        let filter = doc! { User::KEY_ID: &user_id };
+        if !tx_try!(User::exists_with_session(filter, &mut session).await) {
+          return Err(HandleError::UserNotFound(user_id.clone()));
+        }
+
+        tx_try!(Account::insert_with_session(&account, &mut session).await);
+        tx_try!(UserAccountRelation::insert_with_session(&relation, &mut session).await);
+      });
 
       let out = Output {
-        station: station.into_public(access_token_scope.as_public_scope()),
+        account: account.into_public(access_token_scope.as_public_scope()),
       };
 
       Ok(out)

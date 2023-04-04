@@ -13,6 +13,7 @@ use ts_rs::TS;
 pub struct Station {
   #[serde(rename = "_id")]
   pub id: String,
+  pub account_id: String,
   pub name: String,
   pub limits: Limits,
   pub created_at: DateTime,
@@ -29,6 +30,7 @@ pub struct Station {
 pub struct UserPublicStation {
   #[serde(rename = "_id")]
   pub id: String,
+  pub account_id: String,
   pub name: String,
   pub limits: Limits,
   pub playlist_is_randomly_shuffled: bool,
@@ -221,6 +223,7 @@ impl From<Station> for UserPublicStation {
   fn from(station: Station) -> Self {
     Self {
       id: station.id,
+      account_id: station.account_id,
       name: station.name,
       limits: station.limits,
       playlist_is_randomly_shuffled: station.playlist_is_randomly_shuffled,

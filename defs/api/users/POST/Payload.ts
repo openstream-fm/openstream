@@ -3,6 +3,7 @@ import type { Metadata } from "../../../db/Metadata";
 
 export interface Payload {
   email: string;
+  phone: string | null;
   password: string;
   first_name: string;
   last_name: string;

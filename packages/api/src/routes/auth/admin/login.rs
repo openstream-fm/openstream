@@ -132,13 +132,12 @@ pub mod post {
       let admin_id = admin.id.clone();
 
       let key = AccessToken::random_key();
-
       let media_key = AccessToken::random_media_key();
 
       let token = AccessToken {
         id: AccessToken::uid(),
-        key,
-        media_key,
+        hash: crypt::sha256(&key),
+        media_hash: crypt::sha256(&media_key),
         scope: Scope::Admin { admin_id },
         generated_by: GeneratedBy::Login { ip, user_agent },
         last_used_at: None,
@@ -153,8 +152,8 @@ pub mod post {
 
       let out = Output {
         admin,
-        token: token.key,
-        media_key: token.media_key,
+        token: format!("{}-{}", token.id, key),
+        media_key: format!("{}-{}", token.id, media_key),
       };
 
       Ok(out)

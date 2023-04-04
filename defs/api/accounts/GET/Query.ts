@@ -3,5 +3,5 @@
 export interface Query {
   skip?: number;
   limit?: number;
-  account_id?: string;
+  user_id?: string;
 }

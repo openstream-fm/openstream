@@ -6,4 +6,5 @@ export interface MediaSession {
   station_id: string;
   created_at: DateTime;
   updated_at: DateTime;
+  transfer_bytes: number;
 }

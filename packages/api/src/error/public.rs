@@ -66,6 +66,7 @@ pub enum PublicErrorCode {
   StationNotFound,
   AdminNotFound,
   UserNotFound,
+  AccountNotFound,
   AudioFileNotFound,
   QueryStringInvalid,
   PayloadIo,

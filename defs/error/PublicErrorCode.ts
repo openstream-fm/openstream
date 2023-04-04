@@ -16,6 +16,7 @@ export type PublicErrorCode =
   | "STATION_NOT_FOUND"
   | "ADMIN_NOT_FOUND"
   | "USER_NOT_FOUND"
+  | "ACCOUNT_NOT_FOUND"
   | "AUDIO_FILE_NOT_FOUND"
   | "QUERY_STRING_INVALID"
   | "PAYLOAD_IO"

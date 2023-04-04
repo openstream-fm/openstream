@@ -5,6 +5,7 @@ import type { StationLimits } from "../StationLimits";
 
 export interface Station {
   _id: string;
+  account_id: string;
   name: string;
   limits: StationLimits;
   created_at: DateTime;

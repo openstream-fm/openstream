@@ -60,6 +60,9 @@ pub enum ApiError {
   #[error("user not found: {0}")]
   UserNotFound(String),
 
+  #[error("account not found: {0}")]
+  AccountNotFound(String),
+
   #[error("audio file not found: {0}")]
   AudioFileNotFound(String),
 
@@ -154,6 +157,7 @@ impl ApiError {
       TokenOutOfScope => StatusCode::UNAUTHORIZED,
       StationNotFound(_) => StatusCode::NOT_FOUND,
       AdminNotFound(_) => StatusCode::NOT_FOUND,
+      AccountNotFound(_) => StatusCode::NOT_FOUND,
       UserNotFound(_) => StatusCode::NOT_FOUND,
       AudioFileNotFound(_) => StatusCode::NOT_FOUND,
       QueryString(_) => StatusCode::BAD_REQUEST,
@@ -206,6 +210,7 @@ impl ApiError {
       StationNotFound(id) => format!("Station with id {id} not found"),
       AdminNotFound(id) => format!("Admin with id {id} not found"),
       UserNotFound(id) => format!("User with id {id} not found"),
+      AccountNotFound(id) => format!("Account with id {id} not found"),
       AudioFileNotFound(id) => format!("Audio file with id {id} not found"),
       QueryString(e) => format!("Invalid query string: {e}"),
       PayloadIo(e) => format!("Error reading payload: {e}"),
@@ -258,6 +263,7 @@ impl ApiError {
       StationNotFound(_) => PublicErrorCode::StationNotFound,
       AdminNotFound(_) => PublicErrorCode::AdminNotFound,
       UserNotFound(_) => PublicErrorCode::UserNotFound,
+      AccountNotFound(_) => PublicErrorCode::AccountNotFound,
       AudioFileNotFound(_) => PublicErrorCode::AudioFileNotFound,
       QueryString(_) => PublicErrorCode::QueryStringInvalid,
       PayloadIo(_) => PublicErrorCode::PayloadIo,

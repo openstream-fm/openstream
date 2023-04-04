@@ -9,6 +9,7 @@ use crate::json::JsonHandler;
 
 use async_trait::async_trait;
 
+pub mod accounts;
 pub mod admins;
 pub mod auth;
 pub mod me;

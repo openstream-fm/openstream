@@ -9,53 +9,53 @@ use crate::Model;
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/")]
 #[macros::keys]
-pub struct UserStationRelation {
+pub struct UserAccountRelation {
   #[serde(rename = "_id")]
   pub id: String,
   pub user_id: String,
-  pub station_id: String,
-  pub kind: UserStationRelationKind,
+  pub account_id: String,
+  pub kind: UserAccountRelationKind,
   pub created_at: DateTime,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../defs/db/")]
-pub enum UserStationRelationKind {
+pub enum UserAccountRelationKind {
   #[serde(rename = "owner")]
   Owner,
 }
 
-impl UserStationRelationKind {
+impl UserAccountRelationKind {
   pub const TAG_OWNER: &str = "owner";
 }
 
-impl Model for UserStationRelation {
-  const CL_NAME: &'static str = "user_station_relations";
+impl Model for UserAccountRelation {
+  const CL_NAME: &'static str = "relation_user_account";
   const UID_LEN: usize = 8;
 
   fn indexes() -> Vec<IndexModel> {
     let user_id = IndexModel::builder()
       .keys(doc! {
-        UserStationRelation::KEY_USER_ID: 1,
+        UserAccountRelation::KEY_USER_ID: 1,
       })
       .build();
 
-    let station_id = IndexModel::builder()
+    let account_id = IndexModel::builder()
       .keys(doc! {
-        UserStationRelation::KEY_STATION_ID: 1,
+        UserAccountRelation::KEY_ACCOUNT_ID: 1,
       })
       .build();
 
     let opts = IndexOptions::builder().unique(true).build();
-    let user_station = IndexModel::builder()
+    let user_account = IndexModel::builder()
       .keys(doc! {
-        UserStationRelation::KEY_USER_ID: 1,
-        UserStationRelation::KEY_STATION_ID: 1,
+        UserAccountRelation::KEY_USER_ID: 1,
+        UserAccountRelation::KEY_ACCOUNT_ID: 1,
       })
       .options(opts)
       .build();
 
-    vec![user_id, station_id, user_station]
+    vec![user_id, account_id, user_account]
   }
 }
 
@@ -65,6 +65,6 @@ mod test {
 
   #[test]
   fn keys_match() {
-    assert_eq!(crate::KEY_ID, UserStationRelation::KEY_ID);
+    assert_eq!(crate::KEY_ID, UserAccountRelation::KEY_ID);
   }
 }

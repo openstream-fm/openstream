@@ -145,8 +145,8 @@ pub mod post {
 
       let token = AccessToken {
         id: AccessToken::uid(),
-        key,
-        media_key,
+        hash: crypt::sha256(&key),
+        media_hash: crypt::sha256(&media_key),
         scope: Scope::User { user_id },
         generated_by: GeneratedBy::Login { ip, user_agent },
         created_at: DateTime::now(),
@@ -161,8 +161,8 @@ pub mod post {
 
       let out = Output {
         user,
-        token: token.key,
-        media_key: token.media_key,
+        token: format!("{}-{}", token.id, key),
+        media_key: format!("{}-{}", token.id, media_key),
       };
 
       Ok(out)

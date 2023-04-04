@@ -3,12 +3,11 @@ pub mod post {
 
   use async_trait::async_trait;
   use db::access_token::{AccessToken, GeneratedBy, Scope};
-  use db::config::Config;
+  use db::account::{Account, PublicAccount};
   use db::metadata::Metadata;
-  use db::models::user_station_relation::{UserStationRelation, UserStationRelationKind};
-  use db::station::{Limit, Limits, PublicStation, Station};
+  use db::models::user_account_relation::{UserAccountRelation, UserAccountRelationKind};
   use db::user::{PublicUser, User};
-  use db::{run_transaction, Model, Singleton};
+  use db::{run_transaction, Model};
   use prex::{request::ReadBodyJsonError, Request};
   use serde::{Deserialize, Serialize};
   use serde_util::DateTime;
@@ -43,8 +42,8 @@ pub mod post {
     Db(mongodb::error::Error),
     #[error("token out of scope")]
     TokenOutOfScope,
-    #[error("station name is empty")]
-    StationNameEmpty,
+    #[error("account name is empty")]
+    AccountNameEmpty,
     #[error("first name is empty")]
     FirstNameEmpty,
     #[error("last name is empty")]
@@ -65,8 +64,8 @@ pub mod post {
     LastNameTooLong,
     #[error("phone is too long")]
     PhoneTooLong,
-    #[error("station name is too long")]
-    StationNameTooLong,
+    #[error("account name is too long")]
+    AccountNameTooLong,
     #[error("password too long")]
     PasswordTooLong,
   }
@@ -82,8 +81,8 @@ pub mod post {
       match e {
         HandleError::Db(e) => e.into(),
         HandleError::TokenOutOfScope => ApiError::TokenOutOfScope,
-        HandleError::StationNameEmpty => {
-          ApiError::PayloadInvalid(String::from("Station name is required"))
+        HandleError::AccountNameEmpty => {
+          ApiError::PayloadInvalid(String::from("Account name is required"))
         }
         HandleError::EmailEmpty => ApiError::PayloadInvalid(String::from("Email is required")),
         HandleError::FirstNameEmpty => {
@@ -103,8 +102,8 @@ pub mod post {
         HandleError::LastNameTooLong => {
           ApiError::PayloadInvalid(String::from("Last name must be of 50 characters or less"))
         }
-        HandleError::StationNameTooLong => ApiError::PayloadInvalid(String::from(
-          "Station name must be of 30 characters or less",
+        HandleError::AccountNameTooLong => ApiError::PayloadInvalid(String::from(
+          "Account name must be of 30 characters or less",
         )),
         HandleError::PhoneTooLong => {
           ApiError::PayloadInvalid(String::from("Phone must be of 20 characters or less"))
@@ -129,38 +128,35 @@ pub mod post {
     phone: Option<String>,
     first_name: String,
     last_name: String,
-    station_name: String,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    limits: Option<PayloadLimits>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    station_user_metadata: Option<Metadata>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    station_system_metadata: Option<Metadata>,
+    account_name: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     user_user_metadata: Option<Metadata>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     user_system_metadata: Option<Metadata>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    account_user_metadata: Option<Metadata>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    account_system_metadata: Option<Metadata>,
   }
 
-  #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/auth/user/register/POST/")]
-  // #[serde(rename_all = "camelCase")]
-  #[serde(deny_unknown_fields)]
-  pub struct PayloadLimits {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    listeners: Option<u64>,
+  // #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+  // #[ts(export, export_to = "../../defs/api/auth/user/register/POST/")]
+  // // #[serde(rename_all = "camelCase")]
+  // #[serde(deny_unknown_fields)]
+  // pub struct PayloadLimits {
+  //   #[serde(skip_serializing_if = "Option::is_none")]
+  //   listeners: Option<u64>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    transfer: Option<u64>,
+  //   #[serde(skip_serializing_if = "Option::is_none")]
+  //   transfer: Option<u64>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    storage: Option<u64>,
-  }
+  //   #[serde(skip_serializing_if = "Option::is_none")]
+  //   storage: Option<u64>,
+  // }
 
   #[derive(Debug, Clone)]
   pub struct Input {
@@ -175,7 +171,7 @@ pub mod post {
   // #[serde(rename_all = "camelCase")]
   pub struct Output {
     pub user: PublicUser,
-    pub station: PublicStation,
+    pub account: PublicAccount,
     pub token: String,
     pub media_key: String,
   }
@@ -221,18 +217,17 @@ pub mod post {
         phone,
         first_name,
         last_name,
-        station_name,
-        station_user_metadata,
-        station_system_metadata,
+        account_name,
+        account_user_metadata,
+        account_system_metadata,
         user_user_metadata,
         user_system_metadata,
-        limits: payload_limits,
       } = payload;
 
       let email = email.trim().to_lowercase();
       let first_name = first_name.trim().to_string();
       let last_name = last_name.trim().to_string();
-      let station_name = station_name.trim().to_string();
+      let account_name = account_name.trim().to_string();
 
       let phone = match phone {
         None => None,
@@ -242,9 +237,8 @@ pub mod post {
         },
       };
 
-      let payload_limits = payload_limits.unwrap_or_default();
-      let station_user_metadata = station_user_metadata.unwrap_or_default();
-      let station_system_metadata = station_system_metadata.unwrap_or_default();
+      let account_user_metadata = account_user_metadata.unwrap_or_default();
+      let account_system_metadata = account_system_metadata.unwrap_or_default();
       let user_user_metadata = user_user_metadata.unwrap_or_default();
       let user_system_metadata = user_system_metadata.unwrap_or_default();
 
@@ -264,8 +258,8 @@ pub mod post {
         return Err(HandleError::LastNameEmpty);
       }
 
-      if station_name.is_empty() {
-        return Err(HandleError::StationNameEmpty);
+      if account_name.is_empty() {
+        return Err(HandleError::AccountNameEmpty);
       }
 
       if password.len() < 8 {
@@ -288,8 +282,8 @@ pub mod post {
         return Err(HandleError::EmailTooLong);
       }
 
-      if station_name.len() > 40 {
-        return Err(HandleError::StationNameTooLong);
+      if account_name.len() > 40 {
+        return Err(HandleError::AccountNameTooLong);
       }
 
       if let Some(ref phone) = phone {
@@ -297,39 +291,6 @@ pub mod post {
           return Err(HandleError::PhoneTooLong);
         }
       }
-
-      let config = <Config as Singleton>::get().await?;
-
-      let limits = match &access_token_scope {
-        AccessTokenScope::Global | AccessTokenScope::Admin(_) => Limits {
-          listeners: Limit {
-            used: 0,
-            total: payload_limits.listeners.unwrap_or(config.limits.listeners),
-          },
-          transfer: Limit {
-            used: 0,
-            total: payload_limits.transfer.unwrap_or(config.limits.transfer),
-          },
-          storage: Limit {
-            used: 0,
-            total: payload_limits.storage.unwrap_or(config.limits.storage),
-          },
-        },
-        AccessTokenScope::User(_) => Limits {
-          listeners: Limit {
-            used: 0,
-            total: config.limits.listeners,
-          },
-          transfer: Limit {
-            used: 0,
-            total: config.limits.transfer,
-          },
-          storage: Limit {
-            used: 0,
-            total: config.limits.storage,
-          },
-        },
-      };
 
       let password = crypt::hash(password);
 
@@ -348,33 +309,31 @@ pub mod post {
         updated_at: now,
       };
 
-      let station = Station {
-        id: Station::uid(),
-        name: station_name,
-        limits,
-        source_password: Station::random_source_password(),
-        user_metadata: station_user_metadata,
-        system_metadata: station_system_metadata,
-        playlist_is_randomly_shuffled: false,
+      let account = Account {
+        id: Account::uid(),
+        name: account_name,
+        user_metadata: account_user_metadata,
+        system_metadata: account_system_metadata,
         created_at: now,
         updated_at: now,
       };
 
-      let relation = UserStationRelation {
-        id: UserStationRelation::uid(),
+      let relation = UserAccountRelation {
+        id: UserAccountRelation::uid(),
         user_id: user.id.clone(),
-        station_id: station.id.clone(),
-        kind: UserStationRelationKind::Owner,
+        account_id: account.id.clone(),
+        kind: UserAccountRelationKind::Owner,
         created_at: now,
       };
 
       let key = AccessToken::random_key();
       let media_key = AccessToken::random_media_key();
+      let media_hash = crypt::sha256(&media_key);
 
       let token = AccessToken {
         id: AccessToken::uid(),
-        key,
-        media_key,
+        hash: crypt::sha256(&key),
+        media_hash,
         scope: Scope::User {
           user_id: user.id.clone(),
         },
@@ -392,16 +351,16 @@ pub mod post {
         }
 
         tx_try!(User::insert_with_session(&user, &mut session).await);
-        tx_try!(Station::insert_with_session(&station, &mut session).await);
-        tx_try!(UserStationRelation::insert_with_session(&relation, &mut session).await);
+        tx_try!(Account::insert_with_session(&account, &mut session).await);
+        tx_try!(UserAccountRelation::insert_with_session(&relation, &mut session).await);
         tx_try!(AccessToken::insert_with_session(&token, &mut session).await);
       });
 
       let out = Output {
         user: user.into_public(access_token_scope.as_public_scope()),
-        station: station.into_public(access_token_scope.as_public_scope()),
-        token: token.key,
-        media_key: token.media_key,
+        account: account.into_public(access_token_scope.as_public_scope()),
+        token: format!("{}-{}", token.id, key),
+        media_key: format!("{}-{}", token.id, media_key),
       };
 
       Ok(out)

@@ -115,11 +115,11 @@ pub struct AccessToken {
   #[serde(rename = "_id")]
   pub id: String,
 
-  pub key: String,
+  pub hash: String,
 
-  /// the media_key is used to access streams and files with access token scope directly
-  /// from the client without exposing a full access token
-  pub media_key: String,
+  /// the media_hash is used to access streams and files with access token scope
+  /// directly from the client without exposing a full access token
+  pub media_hash: String,
 
   #[serde(flatten)]
   #[ts(skip)]
@@ -189,7 +189,7 @@ static ACCESS_TOKEN_CACHE: tokio::sync::Mutex<
   Option<HashMap<String, (Instant, Arc<OnceCell<AccessToken>>)>>,
 > = tokio::sync::Mutex::const_new(None);
 
-const ACCESS_TOKEN_CACHE_VALIDITY: Duration = Duration::from_secs(30);
+const ACCESS_TOKEN_CACHE_VALIDITY: Duration = Duration::from_secs(300);
 
 fn start_access_token_cache_job() {
   info!("access token cache clear job started");
@@ -208,7 +208,7 @@ fn start_access_token_cache_job() {
 }
 
 impl AccessToken {
-  pub async fn touch_cached(key: &str) -> Result<Option<AccessToken>, mongodb::error::Error> {
+  pub async fn touch_cached(id_key: &str) -> Result<Option<AccessToken>, mongodb::error::Error> {
     let v = CACHE_JOB_STARTED.swap(true, Ordering::SeqCst);
     if !v {
       start_access_token_cache_job();
@@ -217,7 +217,9 @@ impl AccessToken {
     let cell = {
       let mut lock = ACCESS_TOKEN_CACHE.lock().await;
 
-      let entry = lock.get_or_insert_with(HashMap::new).entry(key.to_string());
+      let entry = lock
+        .get_or_insert_with(HashMap::new)
+        .entry(id_key.to_string());
 
       match entry {
         Entry::Occupied(mut entry) => {
@@ -249,7 +251,12 @@ impl AccessToken {
 
     let result = cell
       .get_or_try_init(|| async {
-        let filter = current_filter_doc! { AccessToken::KEY_KEY: key };
+        let (id, key) = match id_key.split_once('-') {
+          None => return Err(AccessTokenInitError::None),
+          Some(r) => r,
+        };
+        let hash = crypt::sha256(key);
+        let filter = current_filter_doc! { AccessToken::KEY_ID: id, AccessToken::KEY_HASH: hash };
         let token = AccessToken::internal_touch(filter, false).await?;
         match token {
           Some(token) => Ok(token),
@@ -310,15 +317,33 @@ impl AccessToken {
     Ok(Some(doc))
   }
 
-  pub async fn touch(key: &str) -> Result<Option<AccessToken>, mongodb::error::Error> {
-    Self::internal_touch(current_filter_doc! { AccessToken::KEY_KEY: key }, true).await
+  pub async fn touch(id_key: &str) -> Result<Option<AccessToken>, mongodb::error::Error> {
+    let (id, key) = match id_key.split_once('-') {
+      None => return Ok(None),
+      Some(r) => r,
+    };
+
+    let hash = crypt::sha256(key);
+
+    Self::internal_touch(
+      current_filter_doc! { AccessToken::KEY_ID: id, AccessToken::KEY_HASH: hash },
+      true,
+    )
+    .await
   }
 
   pub async fn touch_by_media_key(
-    media_key: &str,
+    id_media_key: &str,
   ) -> Result<Option<AccessToken>, mongodb::error::Error> {
+    let (id, media_key) = match id_media_key.split_once('-') {
+      None => return Ok(None),
+      Some(r) => r,
+    };
+
+    let media_hash = crypt::sha256(media_key);
+
     Self::internal_touch(
-      current_filter_doc! { AccessToken::KEY_MEDIA_KEY: media_key },
+      current_filter_doc! { AccessToken::KEY_ID: id,  AccessToken::KEY_MEDIA_HASH: media_hash },
       true,
     )
     .await
@@ -376,8 +401,13 @@ impl Model for AccessToken {
   const CL_NAME: &'static str = "access_tokens";
 
   fn indexes() -> Vec<IndexModel> {
-    let key = IndexModel::builder()
-      .keys(doc! { AccessToken::KEY_KEY: 1 })
+    let hash = IndexModel::builder()
+      .keys(doc! { AccessToken::KEY_ID: 1, AccessToken::KEY_HASH: 1 })
+      .options(IndexOptions::builder().unique(true).build())
+      .build();
+
+    let media_hash = IndexModel::builder()
+      .keys(doc! { Self::KEY_ID: 1, Self::KEY_MEDIA_HASH: 1 })
       .options(IndexOptions::builder().unique(true).build())
       .build();
 
@@ -401,19 +431,14 @@ impl Model for AccessToken {
       .keys(doc! { Self::KEY_DELETED_AT: 1 })
       .build();
 
-    let media_key = IndexModel::builder()
-      .keys(doc! { Self::KEY_MEDIA_KEY: 1 })
-      .options(IndexOptions::builder().unique(true).build())
-      .build();
-
     vec![
-      key,
+      hash,
+      media_hash,
       user_id,
       admin_id,
       scope,
       generated_by,
       deleted_at,
-      media_key,
     ]
   }
 }
@@ -434,13 +459,15 @@ mod test {
     let now = DateTime::now();
 
     let key = AccessToken::random_key();
+    let hash = crypt::sha256(key);
 
     let media_key = AccessToken::random_media_key();
+    let media_hash = crypt::sha256(media_key);
 
     let token = AccessToken {
       id: AccessToken::uid(),
-      media_key,
-      key,
+      hash,
+      media_hash,
       last_used_at: Some(now),
       generated_by: GeneratedBy::Api {
         title: String::from("Title"),
@@ -467,8 +494,8 @@ mod test {
 
     let token = AccessToken {
       id: AccessToken::uid(),
-      key,
-      media_key,
+      hash: crypt::sha256(key),
+      media_hash: crypt::sha256(media_key),
       created_at: now,
       last_used_at: Some(now),
       generated_by: GeneratedBy::Api {

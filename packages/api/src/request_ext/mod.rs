@@ -1,14 +1,15 @@
 use crate::error::ApiError;
 use crate::ip_limit;
 
+use db::station::Station;
 use mongodb::bson::doc;
 
 use db::admin::Admin;
-use db::models::user_station_relation::UserStationRelation;
+use db::models::user_account_relation::UserAccountRelation;
 use db::PublicScope;
 use db::{
   access_token::{AccessToken, Scope},
-  station::Station,
+  account::Account,
   user::User,
   Model,
 };
@@ -37,6 +38,9 @@ pub enum GetAccessTokenScopeError {
 
   #[error("token user not found: {0}")]
   UserNotFound(String),
+
+  #[error("token account not found: {0}")]
+  AccountNotFound(String),
 
   #[error("token station not found: {0}")]
   StationNotFound(String),
@@ -91,30 +95,48 @@ impl AccessTokenScope {
     matches!(self, Self::User(_))
   }
 
-  pub async fn grant_station_scope(
+  pub async fn grant_account_scope(
     &self,
-    station_id: &str,
-  ) -> Result<Station, GetAccessTokenScopeError> {
+    account_id: &str,
+  ) -> Result<Account, GetAccessTokenScopeError> {
     match self {
       AccessTokenScope::Global | AccessTokenScope::Admin(_) => {}
       AccessTokenScope::User(user) => {
-        let filter = doc! { UserStationRelation::KEY_USER_ID: &user.id, UserStationRelation::KEY_STATION_ID: station_id };
-        let exists = UserStationRelation::exists(filter).await?;
+        let filter = doc! { UserAccountRelation::KEY_USER_ID: &user.id, UserAccountRelation::KEY_ACCOUNT_ID: account_id };
+        let exists = UserAccountRelation::exists(filter).await?;
         if !exists {
           return Err(GetAccessTokenScopeError::OutOfScope);
         }
       }
     }
 
-    let station = Station::get_by_id(station_id).await?;
+    let account = Account::get_by_id(account_id).await?;
 
-    match station {
-      None => Err(GetAccessTokenScopeError::StationNotFound(
-        station_id.to_string(),
+    match account {
+      None => Err(GetAccessTokenScopeError::AccountNotFound(
+        account_id.to_string(),
       )),
 
-      Some(station) => Ok(station),
+      Some(account) => Ok(account),
     }
+  }
+
+  pub async fn grant_station_scope(
+    &self,
+    station_id: &str,
+  ) -> Result<Station, GetAccessTokenScopeError> {
+    let station = match Station::get_by_id(station_id).await? {
+      None => {
+        return Err(GetAccessTokenScopeError::StationNotFound(
+          station_id.to_string(),
+        ))
+      }
+      Some(station) => station,
+    };
+
+    self.grant_account_scope(&station.account_id).await?;
+
+    Ok(station)
   }
 
   pub async fn grant_user_scope(&self, user_id: &str) -> Result<User, GetAccessTokenScopeError> {
@@ -221,12 +243,12 @@ async fn internal_get_access_token(
 
   let doc = match req.headers().get(X_ACCESS_TOKEN) {
     Some(v) => {
-      let key = match v.to_str() {
+      let id_key = match v.to_str() {
         Err(_) => return Err(GetAccessTokenScopeError::NonUtf8),
         Ok(v) => v,
       };
 
-      match AccessToken::touch_cached(key).await? {
+      match AccessToken::touch_cached(id_key).await? {
         None => {
           ip_limit::hit(ip);
           return Err(GetAccessTokenScopeError::NotFound);
@@ -245,7 +267,7 @@ async fn internal_get_access_token(
           token: String,
         }
 
-        let media_key = match serde_querystring::from_str::<TokenQuery>(
+        let id_media_key = match serde_querystring::from_str::<TokenQuery>(
           req.uri().query().unwrap_or(""),
           ParseMode::UrlEncoded,
         ) {
@@ -255,7 +277,7 @@ async fn internal_get_access_token(
           }
         };
 
-        match AccessToken::touch_by_media_key(&media_key).await? {
+        match AccessToken::touch_by_media_key(&id_media_key).await? {
           None => {
             ip_limit::hit(ip);
             return Err(GetAccessTokenScopeError::NotFound);
@@ -317,6 +339,7 @@ impl From<GetAccessTokenScopeError> for ApiError {
       OutOfScope => ApiError::TokenOutOfScope,
       UserNotFound(id) => ApiError::TokenUserNotFound(id),
       AdminNotFound(id) => ApiError::TokenAdminNotFound(id),
+      AccountNotFound(id) => ApiError::AccountNotFound(id),
       StationNotFound(id) => ApiError::StationNotFound(id),
       ResolveAdminNotFound(id) => ApiError::AdminNotFound(id),
       ResolveUserNotFound(id) => ApiError::UserNotFound(id),

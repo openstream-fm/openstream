@@ -105,10 +105,11 @@ async fn migrate() -> Result<(), mongodb::error::Error> {
     while let Some(document) = cursor.next(&mut session).await {
       let src = tx_try!(document);
       let media_key = AccessToken::random_media_key();
+      let media_hash = crypt::sha256(media_key);
       let target = AccessToken {
         id: src.id,
-        key: src.key,
-        media_key,
+        hash: crypt::sha256(src.key),
+        media_hash,
         created_at: src.created_at,
         deleted_at: src.deleted_at,
         last_used_at: src.last_used_at,

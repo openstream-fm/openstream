@@ -1,11 +1,6 @@
 use anyhow::Context;
 use db::{
-  audio_chunk::AudioChunk,
-  audio_file::AudioFile,
-  models::user_station_relation::{UserStationRelation, UserStationRelationKind},
-  run_transaction,
-  station::Station,
-  Model,
+  audio_chunk::AudioChunk, audio_file::AudioFile, run_transaction, station::Station, Model,
 };
 use futures::{StreamExt, TryStreamExt};
 use log::*;
@@ -56,19 +51,8 @@ async fn craete_test_stations() -> Result<(), anyhow::Error> {
     Some(station) => station,
   };
 
-  let filter = doc! {
-    UserStationRelation::KEY_STATION_ID: &station.id,
-    UserStationRelation::KEY_KIND: UserStationRelationKind::TAG_OWNER
-  };
-
-  let owner_relation = UserStationRelation::get(filter)
-    .await?
-    .expect("cannot find owner relation for acccount");
-
-  let user_id = owner_relation.user_id;
-
   for i in 1..=C {
-    create_test_station(i, &user_id, station.clone()).await?
+    create_test_station(i, station.clone()).await?
   }
 
   println!("Done!");
@@ -76,16 +60,13 @@ async fn craete_test_stations() -> Result<(), anyhow::Error> {
   Ok(())
 }
 
-async fn create_test_station(
-  i: usize,
-  user_id: impl ToString,
-  base: Station,
-) -> Result<(), anyhow::Error> {
+async fn create_test_station(i: usize, base: Station) -> Result<(), anyhow::Error> {
   info!("creating test station {i} of {C}");
   let station_id = format!("test{i}");
   let now = serde_util::DateTime::now();
   let station = Station {
     id: station_id.clone(),
+    account_id: base.account_id,
     name: format!("Test Station {i}"),
     created_at: now,
     updated_at: now,
@@ -96,17 +77,8 @@ async fn create_test_station(
     user_metadata: base.user_metadata.clone(),
   };
 
-  let relation = UserStationRelation {
-    id: UserStationRelation::uid(),
-    user_id: user_id.to_string(),
-    station_id: station.id.clone(),
-    kind: UserStationRelationKind::Owner,
-    created_at: now,
-  };
-
   run_transaction!(session => {
     tx_try!(Station::insert_with_session(&station, &mut session).await);
-    tx_try!(UserStationRelation::insert_with_session(&relation, &mut session).await)
   });
 
   let filter = doc! { AudioFile::KEY_STATION_ID: &base.id };

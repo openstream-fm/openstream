@@ -65,10 +65,10 @@ export const app_api = ({
     }
 
     {
-      const { station, token, user, media_key } = await client.auth.user.register(ip(req), config.openstream.token, req.body);
+      const { account, token, user, media_key } = await client.auth.user.register(ip(req), config.openstream.token, req.body);
       const data = req.cookie_session;
       res.set_session({ ...data, user: { _id: user._id, token, media_key }});
-      return { user, station, media_key }
+      return { user, account, media_key }
     }
   }))
 

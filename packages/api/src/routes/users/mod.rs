@@ -260,7 +260,7 @@ pub mod post {
         return Err(GetAccessTokenScopeError::OutOfScope.into());
       }
 
-      let mut payload: Payload = req.read_body_json(1000 * 40).await?;
+      let payload: Payload = req.read_body_json(1000 * 40).await?;
 
       Ok(Self::Input {
         access_token_scope,

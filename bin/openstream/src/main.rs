@@ -368,7 +368,7 @@ fn token(
 ) -> Result<(), anyhow::Error> {
   runtime().block_on(async move {
     
-    async fn create(title: String) -> Result<AccessToken, anyhow::Error> {
+    async fn create(title: String) -> Result<(AccessToken, String, String), anyhow::Error> {
       
       let key = AccessToken::random_key();
 
@@ -376,8 +376,8 @@ fn token(
 
       let token = AccessToken {
         id: AccessToken::uid(),
-        key,
-        media_key,
+        hash: crypt::sha256(&key),
+        media_hash: crypt::sha256(&media_key),
         scope: db::access_token::Scope::Global,
         generated_by: GeneratedBy::Cli { title },
         hits: 0,
@@ -387,7 +387,7 @@ fn token(
       };
 
       AccessToken::insert(&token).await.context("mongodb error ocurred when inserting new access token")?;
-      Ok(token)
+      Ok((token, key, media_key))
     }
 
     shared_init(config).await?;
@@ -413,8 +413,8 @@ fn token(
     };
 
     if assume_yes {
-      let token = create(title).await?;
-      println!("New global access token generated => {}", token.key);
+      let (token, key, media_key) = create(title).await?;
+      println!("New global access token generated => {}-{} \ntoken media_key => {}-{}", token.id, key, token.id, media_key)
     } else {
       let confirm = dialoguer::Confirm::new()
         .with_prompt("This will generate a global access token to use in all openstream instances that share this mongodb deployment?")
@@ -424,8 +424,8 @@ fn token(
         .interact()?;
 
       if confirm {
-        let token = create(title).await?;
-        println!("New global access token generated => {}", token.key)
+        let (token, key, media_key) = create(title).await?;
+        println!("New global access token generated => {}-{} \nToken media_key => {}-{}", token.id, key, token.id, media_key)
       } else {
         eprintln!("Operation aborted")
       }

@@ -2,13 +2,9 @@
 import type { DateTime } from "../DateTime";
 import type { Metadata } from "./Metadata";
 
-export interface User {
+export interface Account {
   _id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string | null;
-  password: string | null;
+  name: string;
   created_at: DateTime;
   updated_at: DateTime;
   user_metadata: Metadata;
