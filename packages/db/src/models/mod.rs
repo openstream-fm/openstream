@@ -10,6 +10,8 @@ pub mod media_session;
 pub mod play_history_item;
 pub mod station;
 pub mod station_files_pre_shuffle_checkpoint;
+pub mod station_picture;
+pub mod station_picture_variant;
 pub mod stream_connection;
 pub mod transfer_checkpoint;
 pub mod user;

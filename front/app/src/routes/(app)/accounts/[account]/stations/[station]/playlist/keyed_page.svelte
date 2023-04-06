@@ -492,7 +492,7 @@
 
   const edit_save = action(async () => {
     if(audio_item_to_edit == null) return;
-    const payload: import("$server/defs/api/stations/[station]/files/[file]/metadata/PUT/Payload").Payload = {
+    const payload: import("$server/defs/api/stations/[station]/files/[file]/metadata/PATCH/Payload").Payload = {
       title: edit_current_title.trim() || null,
       artist: edit_current_artist.trim() || null,
       album: edit_current_album.trim() || null,

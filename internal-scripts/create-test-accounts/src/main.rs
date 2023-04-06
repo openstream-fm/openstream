@@ -67,14 +67,21 @@ async fn create_test_station(i: usize, base: Station) -> Result<(), anyhow::Erro
   let station = Station {
     id: station_id.clone(),
     account_id: base.account_id,
+
     name: format!("Test Station {i}"),
-    created_at: now,
-    updated_at: now,
+
     playlist_is_randomly_shuffled: false,
     source_password: Station::random_source_password(),
+
     limits: base.limits.clone(),
     system_metadata: base.system_metadata.clone(),
     user_metadata: base.user_metadata.clone(),
+
+    created_at: now,
+    updated_at: now,
+    deleted_at: None,
+
+    ..base
   };
 
   run_transaction!(session => {

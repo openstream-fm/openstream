@@ -1,3 +1,4 @@
+use db::station_picture::StationPicture;
 use drop_tracer::DropTracer;
 use media_sessions::MediaSessionMap;
 use prex::router::builder::Builder;
@@ -15,6 +16,8 @@ pub mod auth;
 pub mod me;
 pub mod stations;
 pub mod users;
+
+pub mod station_pics;
 
 pub fn router(
   media_sessions: MediaSessionMap,
@@ -51,6 +54,16 @@ pub fn router(
     .get(users::id::get::Endpoint {}.into_handler());
 
   app
+    .at("/accounts")
+    .get(accounts::get::Endpoint {}.into_handler())
+    .post(accounts::post::Endpoint {}.into_handler());
+
+  app
+    .at("/accounts/:account")
+    .get(accounts::id::get::Endpoint {}.into_handler())
+    .patch(accounts::id::patch::Endpoint {}.into_handler());
+
+  app
     .at("/stations")
     .get(stations::get::Endpoint {}.into_handler())
     .post(stations::post::Endpoint {}.into_handler());
@@ -58,7 +71,7 @@ pub fn router(
   app
     .at("/stations/:station")
     .get(stations::id::get::Endpoint {}.into_handler())
-    .put(stations::id::patch::Endpoint {}.into_handler());
+    .patch(stations::id::patch::Endpoint {}.into_handler());
 
   app.at("/stations/:station/restart-playlist").post(
     stations::restart_playlist::post::Endpoint {
@@ -123,6 +136,23 @@ pub fn router(
     .at("/stations/:station/dashboard-stats")
     .get(stations::dashboard_stats::get::Endpoint {}.into_handler());
 
+  for size in StationPicture::WEBP_SIZES {
+    let handler = station_pics::StationPicHandler::Webp(size);
+    let path = format!("/station-pictures/webp/{}/:picture", size as u64);
+    app.get(path, handler);
+  }
+
+  for size in StationPicture::PNG_SIZES {
+    let handler = station_pics::StationPicHandler::Webp(size);
+    let path = format!("/station-pictures/png/{}/:picture", size as u64);
+    app.get(path, handler);
+  }
+
+  app.get(
+    "/station-pictures/src/:picture",
+    station_pics::StationPicHandler::Source,
+  );
+
   app
     .at("/admins")
     .get(admins::get::Endpoint {}.into_handler())
@@ -131,7 +161,7 @@ pub fn router(
   app
     .at("/admins/:admin")
     .get(admins::id::get::Endpoint {}.into_handler())
-    .put(admins::id::patch::Endpoint {}.into_handler());
+    .patch(admins::id::patch::Endpoint {}.into_handler());
 
   // 404 catch all
   app.with(ResourceNotFound.into_handler());

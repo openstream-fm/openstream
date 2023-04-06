@@ -1,14 +1,16 @@
 <script lang="ts">
-  export let stations: import("$server/defs/api/stations/GET/Output").Output;
-  export let station: import("$server/defs/api/stations/[station]/GET/Output").Output["station"] | null;
   export let user: import("$server/defs/api/users/[user]/GET/Output").Output["user"];
-
+  export let accounts: import("$server/defs/api/accounts/GET/Output").Output; 
+  export let account: import("$server/defs/api/accounts/[account]/GET/Output").Output["account"] | null; 
+  export let stations: import("$server/defs/api/stations/GET/Output").Output | null;
+  export let station: import("$server/defs/api/stations/[station]/GET/Output").Output["station"] | null;
+  
   import { fly } from "svelte/transition";
 	import { ripple } from "$lib/ripple";
 	import { clickOut } from "$lib/actions";
 	import { action, _post } from "$share/net.client";
 	import Icon from "$share/Icon.svelte";
-	import { mdiAccountCircleOutline, mdiCastAudioVariant, mdiLogout } from "@mdi/js";
+	import { mdiAccountCircleOutline, mdiAccountMultipleOutline, mdiCastAudioVariant, mdiLogout } from "@mdi/js";
 	import { goto } from "$app/navigation";
 
   const sign_out = action(async () => {
@@ -47,7 +49,7 @@
     white-space: nowrap;
   }
 
-  .station-name {
+  .account-name {
     font-size: 0.9rem;
     color: #999;
     max-width: 12rem;
@@ -166,8 +168,8 @@
 <div class="station">
   <div class="names">
     <div class="user-name">{user.first_name} {user.last_name}</div>
-    {#if station != null}
-      <div class="station-name">{station.name}</div>
+    {#if account != null}
+      <div class="account-name">{account.name}</div>
     {/if}
   </div>
   <div class="menu-holder" use:clickOut={() => menu_open = false}>
@@ -188,20 +190,37 @@
               </a>
             </div>
             <div class="menu-section">
-              <a href="/stations" class="na menu-section-link ripple-container" use:ripple>
+              <a href="/accounts" class="na menu-section-link ripple-container" use:ripple>
                 <div class="menu-icon">
-                  <Icon d={mdiCastAudioVariant} />
+                  <Icon d={mdiAccountMultipleOutline} />
                 </div>
-                Stations
+                Accounts
               </a>
               <div class="station-list thin-scroll">
-                {#each stations.items as item (item._id)}
-                  <a href="/stations/{item._id}" class="na menu-station" class:current={item._id === station?._id} on:click={() => menu_open = false}>
+                {#each accounts.items as item (item._id)}
+                  <a href="/accounts/{item._id}" class="na menu-station" class:current={item._id === account?._id} on:click={() => menu_open = false}>
                     {item.name}
                   </a>
                 {/each}
               </div>
             </div>
+            {#if account != null && stations != null}
+              <div class="menu-section">
+                <a href="/accounts/{account._id}/stations" class="na menu-section-link ripple-container" use:ripple on:click={() => menu_open = false}>
+                  <div class="menu-icon">
+                    <Icon d={mdiCastAudioVariant} />
+                  </div>
+                  Stations
+                </a>
+                <div class="station-list thin-scroll">
+                  {#each stations.items as item (item._id)}
+                    <a href="/account/{account._id}/stations/{item._id}" class="na menu-station" class:current={item._id === station?._id} on:click={() => menu_open = false}>
+                      {item.name}
+                    </a>
+                  {/each}
+                </div>
+              </div>
+            {/if}
             <div class="menu-section">
               <!-- svelte-ignore a11y-click-events-have-key-events -->
               <div class="menu-section-link ripple-container" use:ripple on:click={sign_out}>

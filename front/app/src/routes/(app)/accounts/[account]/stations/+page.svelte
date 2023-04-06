@@ -1,5 +1,6 @@
 <script lang="ts">
 	import TopUser from "$lib/components/Dashboard/TopUser.svelte";
+	import Page from "$lib/components/Page.svelte";
 	import Player from "$lib/components/Player/Player.svelte";
 	import { ripple } from "$lib/ripple";
 	import { fly } from "svelte/transition";
@@ -7,33 +8,6 @@
 </script>
 
 <style>
-
-  .top {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.5rem;
-  }
-
-  .title {
-    color: var(--red);
-    font-size: min(6vw, 2rem);
-    font-weight: 600;
-  }
-
-  .user-btn {
-    margin-inline-end: -1rem;
-  }
-
-  .layout {
-    flex: 1;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    background: var(--bg-gray);
-  }
-
   .page {
     display: flex;
     flex-grow: 1;
@@ -48,7 +22,7 @@
     font-weight: 600;
   }
 
-  .stations-box {
+  .list-box {
     margin-top: 3.5rem;
     width: min(80%, 500px);
     background: #fff;
@@ -61,7 +35,7 @@
     min-width: 0;
   }
 
-  .station-item {
+  .list-item {
     padding: 1rem 2rem;
     cursor: pointer;
     user-select: none;
@@ -69,28 +43,28 @@
     transition: background-color 150ms ease;
   }
 
-  .station-item:hover {
+  .list-item:hover {
     background: #eee;
   }
 
-  .station-item-name {
+  .list-item-name {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  .no-stations {
+  .no-items {
     padding: 2rem;
     display: flex;
     flex-direction: column;
     align-items: center;
   }
 
-  .no-stations-message {
+  .no-items-message {
     font-size: 1.1rem;
   }
 
-  .no-stations-create {
+  .no-items-create {
     background: var(--blue);
     color: #fff;
     cursor: pointer;
@@ -107,37 +81,26 @@
   <title>Select station</title>
 </svelte:head>
 
-<div class="layout" in:fly|local={{ x: -25, duration: 200 }}>
-  <div class="top">
-    <div class="title">
-      openstream
-    </div>
-
-    <div class="user-btn">
-      <TopUser station={null} user={data.user} stations={data.stations} />
-    </div>
-  </div>
+<Page>
   <div class="page">
     <div class="page-title">Select a station</div>
-    <div class="stations-box">
+    <div class="list-box">
       {#each data.stations.items as station (station._id)}
-        <a href="/stations/{station._id}" class="station-item na ripple-container" use:ripple>
-          <span class="station-item-name">
+        <a href="/accounts/{data.account._id}/stations/{station._id}" class="list-item na ripple-container" use:ripple>
+          <span class="list-item-name">
             {station.name}
           </span>
         </a>
       {:else}
-        <div class="no-stations">
-          <div class="no-stations-message">
-            You don't have any station yet
+        <div class="no-items">
+          <div class="no-items-message">
+            This account doesn't have stations yet
           </div>
-          <a href="/stations/create-station" class="na no-stations-create ripple-container" use:ripple>
+          <a href="/accounts/{data.account._id}/stations/create-station" class="na no-items-create ripple-container" use:ripple>
             Create a station
           </a>
         </div>
       {/each}
     </div>
   </div>
-  
-  <Player />
-</div>
+</Page>

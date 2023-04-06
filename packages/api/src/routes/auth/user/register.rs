@@ -328,12 +328,11 @@ pub mod post {
 
       let key = AccessToken::random_key();
       let media_key = AccessToken::random_media_key();
-      let media_hash = crypt::sha256(&media_key);
 
       let token = AccessToken {
         id: AccessToken::uid(),
         hash: crypt::sha256(&key),
-        media_hash,
+        media_hash: crypt::sha256(&media_key),
         scope: Scope::User {
           user_id: user.id.clone(),
         },

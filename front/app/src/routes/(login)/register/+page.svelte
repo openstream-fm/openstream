@@ -9,7 +9,7 @@
 
   let first_name = "";
   let last_name = "";
-  let station_name = "";
+  let account_name = "";
   let phone = "";
   let email = "";
   let password = "";
@@ -24,13 +24,14 @@
     const payload: import("$server/defs/api/auth/user/register/POST/Payload").Payload = {
       first_name,
       last_name,
-      station_name,
+      account_name,
+      phone,
       email,
       password,
     };
     
     await _post("/api/register", payload);
-    await goto("/");
+    await goto("/", { invalidateAll: true });
   })
 </script>
 
@@ -134,7 +135,7 @@
       <TextField autocomplete="family-name" label="Your last name" bind:value={last_name} />
     </div>
     <div class="field">
-      <TextField autocomplete="off" label="Your station's name" bind:value={station_name} />
+      <TextField autocomplete="off" label="Your organization's name" bind:value={account_name} />
     </div>
     <div class="field">
       <TextField type="tel" autocomplete="tel" label="Your phone number" bind:value={phone} />

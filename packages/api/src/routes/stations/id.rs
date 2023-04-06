@@ -73,6 +73,7 @@ pub mod patch {
     error::ApplyPatchError, fetch_and_patch, run_transaction, station::StationPatch, Model,
   };
   use prex::request::ReadBodyJsonError;
+  use validify::{ValidationErrors, Validify};
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
@@ -117,6 +118,8 @@ pub mod patch {
     Patch(#[from] ApplyPatchError),
     #[error("station not found: {0}")]
     StationNotFound(String),
+    #[error("validation: {0}")]
+    Validation(#[from] ValidationErrors),
   }
 
   impl From<HandleError> for ApiError {
@@ -125,6 +128,7 @@ pub mod patch {
         HandleError::Db(e) => Self::from(e),
         HandleError::Patch(e) => Self::from(e),
         HandleError::StationNotFound(id) => Self::StationNotFound(id),
+        HandleError::Validation(e) => Self::PayloadInvalid(format!("{e}")),
       }
     }
   }
@@ -154,41 +158,20 @@ pub mod patch {
 
     async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
       let Self::Input {
-        payload: Payload(payload),
+        payload: Payload(patch),
         access_token_scope,
         station,
       } = input;
 
       let id = station.id;
 
+      let patch: StationPatch = Validify::validify(patch.into())?;
+
       let station = run_transaction!(session => {
         fetch_and_patch!(Station, station, &id, Err(HandleError::StationNotFound(id)), session, {
-          station.apply_patch(payload.clone(), access_token_scope.as_public_scope())?;
+          station.apply_patch(patch.clone(), access_token_scope.as_public_scope())?;
         })
       });
-      /*
-      let station = run_transaction!(session => {
-
-        let mut station = match Station::get_by_id_with_session(&station.id, &mut session).await? {
-          Some(station) => station,
-          None => return Err(HandleError::StationNotFound(station.id)),
-        };
-
-        match access_token_scope {
-          AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
-            station.apply_admin_patch(payload)?;
-          }
-
-          AccessTokenScope::User(_) => {
-            station.apply_user_patch(payload)?;
-          }
-        }
-
-        Station::replace_with_session(&station.id, &station, &mut session).await?;
-
-        station
-      });
-      */
 
       let out = station.into_public(access_token_scope.as_public_scope());
 

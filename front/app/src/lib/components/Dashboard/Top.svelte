@@ -1,15 +1,18 @@
 <script lang="ts">
-	import Icon from "$share/Icon.svelte";
-import { ripple } from "$share/ripple";
-	import { mdiMenu } from "@mdi/js";
 
-  export let stations: import("$server/defs/api/stations/GET/Output").Output;
-  export let station: import("$server/defs/api/stations/[station]/GET/Output").Output["station"];
   export let user: import("$server/defs/api/users/[user]/GET/Output").Output["user"];
+  export let accounts: import("$server/defs/api/accounts/GET/Output").Output;
+  export let account: import("$server/defs/api/accounts/[account]/GET/Output").Output["account"] | null;
+  export let stations: import("$server/defs/api/stations/GET/Output").Output;
+  export let station: import("$server/defs/api/stations/[station]/GET/Output").Output["station"] | null;
 
   export let drawer_fixed_open: boolean;
   export let close_drawer_fixed: () => void;
   export let open_drawer_fixed: () => void;
+
+  import Icon from "$share/Icon.svelte";
+  import { ripple } from "$share/ripple";
+	import { mdiMenu } from "@mdi/js";
 
   const toggle_drawer = () => drawer_fixed_open ? close_drawer_fixed() : open_drawer_fixed();
 
@@ -66,6 +69,6 @@ import { ripple } from "$share/ripple";
     <button class="drawer-toggle ripple-container" use:ripple aria-label="Toggle drawer" on:click={toggle_drawer}>
       <Icon d={mdiMenu} />
     </button>
-    <TopUser {user} {station} {stations} />
+    <TopUser {user} {accounts} {account} {stations} {station} />
   </div>
 </div>

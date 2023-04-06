@@ -12,3 +12,9 @@ pub fn singleton(tokens: TokenStream) -> TokenStream {
 pub fn keys(args: TokenStream, tokens: TokenStream) -> TokenStream {
   impls::keys::keys(args, tokens)
 }
+
+// #[proc_macro_attribute]
+// pub fn validate(args: TokenStream, tokens: TokenStream) -> TokenStream {
+//   todo!();
+//   //impls::validate::validate(args, tokens);
+// }

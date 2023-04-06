@@ -12,7 +12,7 @@ use async_trait::async_trait;
 use db::metadata::Metadata;
 use db::models::user_account_relation::UserAccountRelation;
 use db::station::PublicStation;
-use db::station::Station;
+use db::station::{validation::*, Station};
 use db::{Model, Paged, PublicScope, Singleton};
 use mongodb::bson::doc;
 use prex::request::ReadBodyJsonError;
@@ -157,9 +157,11 @@ pub mod get {
 pub mod post {
 
   use db::config::Config;
-  use db::station::{Limit, Limits, Station};
+  use db::station::{Limit, Limits, Station, StationFrequency};
   use serde_util::DateTime;
   use ts_rs::TS;
+  use validate::url::patterns::*;
+  use validify::{validify, ValidationErrors, Validify};
 
   use super::*;
 
@@ -167,13 +169,119 @@ pub mod post {
   #[ts(export, export_to = "../../defs/api/stations/POST/")]
   #[serde(rename_all = "snake_case")]
   #[serde(deny_unknown_fields)]
+  #[validify]
   pub struct Payload {
-    pub name: String,
     pub account_id: String,
+
+    #[modify(trim)]
+    #[validate(length(min = "NAME_MIN", max = "NAME_MAX"), non_control_character)]
+    pub name: String,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[modify(trim)]
+    #[validate(length(min = "SLOGAN_MIN", max = "SLOGAN_MAX"), non_control_character)]
+    pub slogan: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[modify(trim)]
+    #[validate(length(min = "DESC_MIN", max = "DESC_MAX"), non_control_character)]
+    pub description: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[modify(trim, lowercase)]
+    #[validate(email, length(max = "EMAIL_MAX"), non_control_character)]
+    pub email: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[modify(trim)]
+    #[validate(phone, length(max = "PHONE_MAX"), non_control_character)]
+    pub whatsapp: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[modify(trim)]
+    #[validate(
+      url,
+      regex = "WEBSITE",
+      length(max = "URLS_MAX"),
+      non_control_character
+    )]
+    pub website_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[modify(trim)]
+    #[validate(
+      url,
+      regex = "TWITTER",
+      length(max = "URLS_MAX"),
+      non_control_character
+    )]
+    pub twitter_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[modify(trim)]
+    #[validate(
+      url,
+      regex = "FACEBOOK",
+      length(max = "URLS_MAX"),
+      non_control_character
+    )]
+    pub facebook_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[modify(trim)]
+    #[validate(
+      url,
+      regex = "INSTAGRAM",
+      length(max = "URLS_MAX"),
+      non_control_character
+    )]
+    pub instagram_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[modify(trim)]
+    #[validate(
+      url,
+      regex = "YOUTUBE",
+      length(max = "URLS_MAX"),
+      non_control_character
+    )]
+    pub youtube_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[modify(trim)]
+    #[validate(url, regex = "TWITCH", length(max = "URLS_MAX"), non_control_character)]
+    pub twitch_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[modify(trim)]
+    #[validate(
+      url,
+      regex = "GOOGLE_PLAY",
+      length(max = "URLS_MAX"),
+      non_control_character
+    )]
+    pub google_play_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[modify(trim)]
+    #[validate(
+      url,
+      regex = "APP_STORE",
+      length(max = "URLS_MAX"),
+      non_control_character
+    )]
+    pub app_store_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[validate]
+    pub frequencies: Option<Vec<StationFrequency>>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limits: Option<PayloadLimits>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user_metadata: Option<Metadata>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub system_metadata: Option<Metadata>,
   }
@@ -228,10 +336,12 @@ pub mod post {
     Db(#[from] mongodb::error::Error),
     #[error("token: {0}")]
     Token(#[from] GetAccessTokenScopeError),
-    #[error("name missing")]
-    NameMissing,
     #[error("account not found ({0})")]
     AccountNotFound(String),
+    #[error("validation error: {0}")]
+    ValidationError(#[from] ValidationErrors),
+    #[error("invalid name (slug)")]
+    InvalidNameSlug,
   }
 
   impl From<HandleError> for ApiError {
@@ -239,8 +349,11 @@ pub mod post {
       match e {
         HandleError::Db(e) => ApiError::from(e),
         HandleError::Token(e) => ApiError::from(e),
-        HandleError::NameMissing => ApiError::PayloadInvalid(String::from("Name is required")),
         HandleError::AccountNotFound(id) => ApiError::AccountNotFound(id),
+        HandleError::ValidationError(e) => ApiError::PayloadInvalid(format!("{e}")),
+        HandleError::InvalidNameSlug => {
+          ApiError::PayloadInvalid(String::from("Station name is invalid"))
+        }
       }
     }
   }
@@ -270,21 +383,36 @@ pub mod post {
         payload,
       } = input;
 
+      //use validify::Validify;
+      //let payload = Validify::validify(payload.into())?;
+
       let Payload {
-        name,
         account_id,
+        name,
+        slogan,
+        description,
+
+        email,
+        whatsapp,
+
+        website_url,
+        twitter_url,
+        facebook_url,
+        instagram_url,
+        youtube_url,
+        twitch_url,
+
+        google_play_url,
+        app_store_url,
+
+        frequencies,
+
         limits: payload_limits,
         user_metadata,
         system_metadata,
       } = payload;
 
       access_token_scope.grant_account_scope(&account_id).await?;
-
-      let name = name.trim().to_string();
-
-      if name.is_empty() {
-        return Err(HandleError::NameMissing);
-      }
 
       let config = <Config as Singleton>::get().await?;
 
@@ -332,20 +460,51 @@ pub mod post {
 
       let user_metadata = user_metadata.unwrap_or_default();
 
+      let slug = slugify::slugify(&name, "", "-", None);
+      if slug.is_empty() {
+        return Err(HandleError::InvalidNameSlug);
+      }
+
       let now = DateTime::now();
 
       let station = Station {
         id: Station::uid(),
         account_id,
+
         name,
+        slug,
+        slogan,
+        description,
+
+        email,
+        whatsapp,
+        website_url,
+
+        twitter_url,
+        facebook_url,
+        instagram_url,
+        youtube_url,
+        twitch_url,
+
+        app_store_url,
+        google_play_url,
+
+        frequencies: frequencies.unwrap_or_default(),
+
         limits,
         source_password: Station::random_source_password(),
         playlist_is_randomly_shuffled: false,
+
         system_metadata,
         user_metadata,
+
         created_at: now,
         updated_at: now,
+        deleted_at: None,
       };
+
+      // we validate directly the station and not the payload
+      let station = Validify::validify(station.into())?;
 
       Station::insert(&station).await?;
 

@@ -4,7 +4,7 @@
 
   const is_current = (href: string, url: URL): boolean => {
     const path = href.split("?")[0];
-    if(/^\/stations\/([a-z0-9]+)$/i.test(path)) {
+    if(/^\/accounts\/([a-z0-9]+)\/?$/i.test(path)) {
       return url.pathname === path
     } else {
       return url.pathname === path || url.pathname.startsWith(path + "/");

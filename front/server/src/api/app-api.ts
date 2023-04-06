@@ -44,10 +44,10 @@ export const app_api = ({
     }
 
     {
-      const { user, token, media_key } = await client.auth.user.login(ip(req), req.body);
+      const r = await client.auth.user.login(ip(req), req.body);
       const data = req.cookie_session;
-      res.set_session({ ...data, user: { _id: user._id, token, media_key  } });
-      return { user, media_key }
+      res.set_session({ ...data, user: { _id: r.user._id, token: r.token, media_key: r.media_key  } });
+      return { user: r.user, media_key: r.media_key }
     }
   }))
 
@@ -65,10 +65,10 @@ export const app_api = ({
     }
 
     {
-      const { account, token, user, media_key } = await client.auth.user.register(ip(req), config.openstream.token, req.body);
+      const { account, user, token, media_key } = await client.auth.user.register(ip(req), config.openstream.token, req.body);
       const data = req.cookie_session;
       res.set_session({ ...data, user: { _id: user._id, token, media_key }});
-      return { user, account, media_key }
+      return { user, account }
     }
   }))
 
@@ -79,6 +79,26 @@ export const app_api = ({
 
   api.get("/users/:user", json(async req => {
     return await client.users.get(ip(req), token(req), req.params.user);
+  }))
+
+  api.route("/accounts")
+    .get(json(async req => {
+      return await client.accounts.list(ip(req), token(req), req.query);
+    }))
+    .post(json(async req => {
+      return await client.accounts.post(ip(req), token(req), req.body);
+    }))
+
+  api.route("/accounts/:account")
+    .get(json(async req => {
+      return await client.accounts.get(ip(req), token(req), req.params.id)
+    }))
+    .patch(json(async req => {
+      return await client.accounts.patch(ip(req), token(req), req.params.id, req.body);
+    }))
+
+  api.get("/stations/:station", json(async req => {
+    return await client.stations.get(ip(req), token(req), req.params.station);
   }))
 
   api.get("/stations", json(async req => {

@@ -36,6 +36,8 @@ pub use models::event;
 pub use models::media_session;
 pub use models::play_history_item;
 pub use models::station;
+pub use models::station_picture;
+pub use models::station_picture_variant;
 pub use models::stream_connection;
 pub use models::user;
 

@@ -6,7 +6,6 @@ import { ACCESS_TOKEN_HEADER, FORWARD_IP_HEADER } from "./constants";
 import { ClientError } from "./client-error";
 import { Logger } from "./logger";
 import fetch, { Response, RequestInit, Headers } from "node-fetch";
-import crypto from "crypto";
 
 import http from "http";
 import https from "https";
@@ -20,17 +19,19 @@ export class Client {
   private base_url: string;
   logger: Logger;
 
-  stations: Stations;
-  users: Users;
   auth: Auth;
+  users: Users;
+  accounts: Accounts;
+  stations: Stations;
 
   constructor(base_url: string, { logger }: { logger: Logger }) {
     this.base_url = base_url.trim().replace(/\/+$/g, "")
     this.logger = logger.scoped("client");
     
-    this.stations = new Stations(this);
-    this.users = new Users(this);
     this.auth = new Auth(this);
+    this.users = new Users(this);
+    this.accounts = new Accounts(this);
+    this.stations = new Stations(this);
   }
 
   async fetch(_url: string, init: RequestInit = {}): Promise<Response> {
@@ -174,6 +175,30 @@ export class AuthUser {
   }
 }
 
+export class Accounts {
+  client: Client;
+
+  constructor(client: Client) {
+    this.client = client;
+  }
+
+  async list(ip: string | null, token: string, query: import("./defs/api/accounts/GET/Query").Query): Promise<import("./defs/api/accounts/GET/Output").Output> {
+    return await this.client.get(ip, token, `/accounts${qss(query)}`);
+  }
+
+  async get(ip: string | null, token: string, id: string): Promise<import("./defs/api/accounts/[account]/GET/Output").Output> {
+    return await this.client.get(ip, token, `/accounts/${id}`);
+  }
+
+  async post(ip: string | null, token: string, payload: import("./defs/api/accounts/POST/Payload").Payload): Promise<import("./defs/api/accounts/POST/Output").Output> {
+    return await this.client.post(ip, token, `/accounts`, payload);
+  }
+
+  async patch(ip: string | null, token: string, id: string, payload: import("./defs/api/accounts/[account]/PATCH/Payload").Payload): Promise<import("./defs/api/accounts/[account]/PATCH/Output").Output> {
+    return await this.client.patch(ip, token, `/accounts/${id}`, payload);
+  }
+}
+
 export class Stations {
 
   client: Client;
@@ -195,6 +220,10 @@ export class Stations {
 
   async post(ip: string | null, token: string, payload: import("./defs/api/stations/POST/Payload").Payload): Promise<import("./defs/api/stations/POST/Output").Output> {
     return await this.client.post(ip, token, `/stations`, payload);
+  }
+
+  async patch(ip: string | null, token: string, id: string, payload: import("./defs/api/stations/[station]/PATCH/Payload").Payload): Promise<import("./defs/api/stations/[station]/PATCH/Output").Output> {
+    return await this.client.patch(ip, token, `/stations/${id}`, payload);
   }
 
   async get_now_playing(ip: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/now-playing/GET/Output").Output> {
@@ -285,7 +314,7 @@ export class StationFiles {
   }
 
   async put_metadata(ip: string | null, token: string, station_id: string, file_id: string, payload: import("./defs/api/stations/[station]/files/[file]/metadata/PUT/Payload").Payload): Promise<import("./defs/api/stations/[station]/files/[file]/metadata/PUT/Output").Output> {
-    return await this.client.put(ip, token, `/stations/${station_id}/files/${file_id}/metadata`, payload);
+    return await this.client.patch(ip, token, `/stations/${station_id}/files/${file_id}/metadata`, payload);
   }
 
   async shuffle(ip: string | null, token: string, station_id: string): Promise<import("./defs/api/stations/[station]/files/suffle/POST/Output").Output> {

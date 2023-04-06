@@ -16,16 +16,9 @@ pub mod put {
   use ts_rs::TS;
 
   use crate::error::ApiError;
-  use serde::Deserializer;
+  use serde_util::map_some;
 
   use super::*;
-
-  fn map_some<'de, T: Deserialize<'de>, D: Deserializer<'de>>(
-    de: D,
-  ) -> Result<Option<T>, D::Error> {
-    let v = T::deserialize(de)?;
-    Ok(Some(v))
-  }
 
   #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone, TS)]
   #[ts(

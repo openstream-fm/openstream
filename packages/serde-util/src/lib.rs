@@ -9,6 +9,14 @@ pub mod status_code;
 pub mod voidable;
 pub use datetime::DateTime;
 pub use mongodb::bson;
+use serde::{Deserialize, Deserializer};
+
+pub fn map_some<'de, T: Deserialize<'de>, D: Deserializer<'de>>(
+  de: D,
+) -> Result<Option<T>, D::Error> {
+  let v = T::deserialize(de)?;
+  Ok(Some(v))
+}
 
 #[cfg(test)]
 mod test {
