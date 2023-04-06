@@ -13,6 +13,7 @@ export interface UserPublicStation {
   description: string | null;
   frequencies: Array<StationFrequency>;
   email: string | null;
+  phone: string | null;
   whatsapp: string | null;
   website_url: string | null;
   twitter_url: string | null;

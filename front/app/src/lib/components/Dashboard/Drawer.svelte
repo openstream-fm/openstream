@@ -1,9 +1,16 @@
 <script lang="ts">
-  // export let accounts: import("$server/defs/api/accounts/GET/Output").Output;
+  
+  // svelte-ignore unused-export-let
+  export let accounts: import("$server/defs/api/accounts/GET/Output").Output;
+
   export let account: import("$server/defs/api/accounts/[account]/GET/Output").Output["account"];
   export let stations: import("$server/defs/api/stations/GET/Output").Output;
-  // export let station: import("$server/defs/api/stations/[station]/GET/Output").Output["station"] | null;
-  // export let user: import("$server/defs/api/users/[user]/GET/Output").Output["user"];
+ 
+  // svelte-ignore unused-export-let
+  export let station: import("$server/defs/api/stations/[station]/GET/Output").Output["station"] | null;
+  // svelte-ignore unused-export-let
+  export let user: import("$server/defs/api/users/[user]/GET/Output").Output["user"];
+  
   export let fixed_open: boolean;
 
   export let close_drawer_fixed: () => void;
@@ -145,11 +152,11 @@
     </div>
 
     <div class="links">
-      <DrawerItem href="/accounts/{account._id}" label="Dashboard" icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
+      <DrawerItem href="/accounts/{account._id}" label="Account" icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
       <DrawerItem href="/accounts/{account._id}/stations" label="Stations" icon={mdiRadioTower} on_click={close_drawer_fixed} />
-      {#each stations.items as station (station._id)}
+      <!-- {#each stations.items as station (station._id)}
         <DrawerItem href="/accounts/{account._id}/stations/{station._id}" label=" - {station.name}" on_click={close_drawer_fixed} />
-      {/each}
+      {/each} -->
       <!--
         <DrawerItem href="/accounts/{account._id}/stations/{station._id}/playlist" label="Playlist" icon={mdiMultimedia} on_click={close_drawer_fixed} />
       

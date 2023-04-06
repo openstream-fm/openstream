@@ -6,9 +6,13 @@ const config: UserConfig = {
 		dedupe: ["@sveltejs/kit", "svelte", "@mdi/js"],
 	},
 	server: {
-		hmr: {
-			clientPort: 3100,
-		}
+		https: false,
+		host: "0.0.0.0",
+		port: 3001,
+		strictPort: true,
+		proxy: {
+			"/api": "https://studio.local.openstream.fm",
+		} 
 	},
 	plugins: [sveltekit()]
 };

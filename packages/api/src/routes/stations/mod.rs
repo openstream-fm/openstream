@@ -177,27 +177,32 @@ pub mod post {
     #[validate(length(min = "NAME_MIN", max = "NAME_MAX"), non_control_character)]
     pub name: String,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(length(min = "SLOGAN_MIN", max = "SLOGAN_MAX"), non_control_character)]
     pub slogan: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
-    #[validate(length(min = "DESC_MIN", max = "DESC_MAX"), non_control_character)]
+    #[validate(length(min = "DESC_MIN", max = "DESC_MAX"))]
     pub description: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim, lowercase)]
     #[validate(email, length(max = "EMAIL_MAX"), non_control_character)]
     pub email: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    //#[serde(skip_serializing_if = "Option::is_none")]
+    #[modify(trim)]
+    #[validate(phone, length(max = "PHONE_MAX"), non_control_character)]
+    pub phone: Option<String>,
+
+    ///#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(phone, length(max = "PHONE_MAX"), non_control_character)]
     pub whatsapp: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(
       url,
@@ -207,7 +212,7 @@ pub mod post {
     )]
     pub website_url: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(
       url,
@@ -217,7 +222,7 @@ pub mod post {
     )]
     pub twitter_url: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(
       url,
@@ -227,7 +232,7 @@ pub mod post {
     )]
     pub facebook_url: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(
       url,
@@ -237,7 +242,7 @@ pub mod post {
     )]
     pub instagram_url: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(
       url,
@@ -247,12 +252,12 @@ pub mod post {
     )]
     pub youtube_url: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(url, regex = "TWITCH", length(max = "URLS_MAX"), non_control_character)]
     pub twitch_url: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(
       url,
@@ -262,7 +267,7 @@ pub mod post {
     )]
     pub google_play_url: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(
       url,
@@ -272,17 +277,20 @@ pub mod post {
     )]
     pub app_store_url: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    //#[serde(skip_serializing_if = "Option::is_none")]
     #[validate]
     pub frequencies: Option<Vec<StationFrequency>>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    //#[serde(skip_serializing_if = "Option::is_none")]
     pub limits: Option<PayloadLimits>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    //#[serde(skip_serializing_if = "Option::is_none")]
     pub user_metadata: Option<Metadata>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    //#[serde(skip_serializing_if = "Option::is_none")]
     pub system_metadata: Option<Metadata>,
   }
 
@@ -393,6 +401,7 @@ pub mod post {
         description,
 
         email,
+        phone,
         whatsapp,
 
         website_url,
@@ -477,6 +486,7 @@ pub mod post {
         description,
 
         email,
+        phone,
         whatsapp,
         website_url,
 

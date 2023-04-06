@@ -7,4 +7,5 @@
   padding: var(--spacing);
   min-width: 0;
   background: transparent;
+  resize: none;
 }

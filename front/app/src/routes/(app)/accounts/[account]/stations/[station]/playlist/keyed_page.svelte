@@ -441,7 +441,6 @@
 	import { sleep } from "$share/util";
 
   const file_item_out = (node: HTMLElement, { duration = 250 } = {}) => {
-    console.log("file item out called");
     return {
       css: (t: number, u: number) => {
         return `opacity: ${t}; transform: translateY(-${20 * u}px)`;

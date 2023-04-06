@@ -4,35 +4,33 @@
   import NullEmail from "$lib/components/Form/Nullable/NullEmail.svelte";
 	import NullTextField from "$lib/components/Form/Nullable/NullTextField.svelte";
 	import Page from "$lib/components/Page.svelte";
-	import { _post, action } from "$share/net.client";
+	import { _patch, _post, action } from "$share/net.client";
 	import { _message } from "$share/notify";
-
-  import { goto } from "$app/navigation";
+  import { invalidateAll } from "$app/navigation";
 
 	import { ripple } from "$lib/ripple";
 	
-  let name: string = "";
-  let slogan: string | null = null;
-  let description: string | null = null;
-  let email: string | null = null;
-  let phone: string | null = null;
-  let whatsapp: string | null = null;
+  let name: string = data.station.name
+  let slogan: string | null = data.station.slogan;
+  let description: string | null = data.station.description;
+  let email: string | null = data.station.email;
+  let phone: string | null = data.station.phone;
+  let whatsapp: string | null = data.station.whatsapp;
 
-  let website_url: string | null = null;
-  let twitter_url: string | null = null;
-  let facebook_url: string | null = null;
-  let instagram_url: string | null = null;
-  let youtube_url: string | null = null;
-  let twitch_url: string | null = null;
+  let website_url: string | null = data.station.website_url;
+  let twitter_url: string | null = data.station.twitter_url;
+  let facebook_url: string | null = data.station.facebook_url;
+  let instagram_url: string | null = data.station.instagram_url;
+  let youtube_url: string | null = data.station.youtube_url;
+  let twitch_url: string | null = data.station.twitch_url;
 
-  let google_play_url: string | null = null;
-  let app_store_url: string | null = null;
+  let google_play_url: string | null = data.station.google_play_url;
+  let app_store_url: string | null = data.station.app_store_url;
+
+  // TODO: send only a diff
 
   const send = action(async () => {
-    const payload: import("$server/defs/api/stations/POST/Payload").Payload = {
-      
-      account_id: data.account._id,
-
+    const payload: import("$server/defs/api/stations/[station]/PATCH/Payload").Payload = {
       name,
       slogan,
       description,
@@ -48,16 +46,14 @@
       google_play_url,
       app_store_url,
       
-      frequencies: null,
+      frequencies: void 0,
     }
 
-    const {
-      station
-    } = await _post<import("$server/defs/api/stations/POST/Output").Output>(`/api/stations`, payload);
+    await _patch<import("$server/defs/api/stations/[station]/PATCH/Output").Output>(`/api/stations/${data.station._id}`, payload);
+    
+    _message("Station updated");
 
-    _message("New station created");
-
-    goto(`/accounts/${data.account._id}/stations/${station._id}`, { invalidateAll: true });
+    invalidateAll();
   });
   
 </script>
@@ -70,7 +66,8 @@
   }
 
   .page-title {
-    margin-top: 2rem;
+    margin-top: 4rem;
+    margin-bottom: 2rem;
     font-size: 2rem;
     font-weight: 600;
   }
@@ -132,7 +129,7 @@
 
 <Page>
   <div class="page">
-    <div class="page-title">Create a station</div>
+    <div class="page-title">Station Profile</div>
     <form novalidate class="create-box" on:submit|preventDefault={send}>
       <div class="section">
         <div class="section-title">
@@ -277,7 +274,7 @@
 
       <div class="submit-wrap">
         <button class="submit ripple-container" use:ripple type="submit">
-          Create station
+          Save
         </button>
       </div>
     </form>

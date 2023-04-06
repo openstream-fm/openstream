@@ -98,17 +98,22 @@ export const app_api = ({
       return await client.accounts.patch(ip(req), ua(req), token(req), req.params.id, req.body);
     }))
 
-  api.get("/stations/:station", json(async req => {
-    return await client.stations.get(ip(req), ua(req), token(req), req.params.station);
-  }))
 
-  api.get("/stations", json(async req => {
-    return await client.stations.list(ip(req), ua(req), token(req), req.query);
-  }))
+  api.route("/stations")
+    .get(json(async req => {
+      return await client.stations.list(ip(req), ua(req), token(req), req.query);
+    }))
+    .post(json(async req => {
+      return await client.stations.post(ip(req), ua(req), token(req), req.body);
+    }))
 
-  api.get("/stations/:station", json(async req => {
-    return await client.stations.get(ip(req), ua(req), token(req), req.params.station);
-  }))
+  api.route("/stations/:station")
+    .get(json(async req => {
+      return await client.stations.get(ip(req), ua(req), token(req), req.params.station);
+    }))
+    .patch(json(async req => {
+      return await client.stations.patch(ip(req), ua(req), token(req), req.params.station, req.body);
+    }))
 
   api.post("/stations/:station/restart-playlist", json(async req => {
     return await client.stations.restart_playlist(ip(req), ua(req), token(req), req.params.station);

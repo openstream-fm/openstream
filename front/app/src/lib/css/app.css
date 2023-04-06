@@ -84,6 +84,14 @@ button, input[type="submit"] {
   cursor: pointer;
 }
 
+form {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+}
+
 .na {
   color: inherit;
   text-decoration: none;

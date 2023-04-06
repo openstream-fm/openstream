@@ -75,6 +75,22 @@
     box-shadow: 0 4px 8px 0 rgb(0 0 0 / 12%), 0 2px 4px 0 rgb(0 0 0 / 8%);
     font-weight: 500;
   }
+
+  .or {
+    margin-top: 1.5rem;
+    color: #666;
+  }
+
+  .create {
+    margin-top: 0.25rem;
+    padding: 0.75rem;
+    display: flex;
+    text-align: center;
+    text-decoration: none;
+    color: var(--blue);
+    font-size: 1.1rem;
+    border-radius: 0.5rem;
+  }
 </style>
 
 <svelte:head>
@@ -84,14 +100,26 @@
 <Page>
   <div class="page">
     <div class="page-title">Select a station</div>
-    <div class="list-box">
-      {#each data.stations.items as station (station._id)}
-        <a href="/accounts/{data.account._id}/stations/{station._id}" class="list-item na ripple-container" use:ripple>
-          <span class="list-item-name">
-            {station.name}
-          </span>
-        </a>
-      {:else}
+    {#if data.stations.items.length}
+      <div class="list-box">
+        {#each data.stations.items as station (station._id)}
+          <a href="/accounts/{data.account._id}/stations/{station._id}" class="list-item na ripple-container" use:ripple>
+            <span class="list-item-name">
+              {station.name}
+            </span>
+          </a>
+        {/each}
+      </div>
+
+
+      <div class="or">or</div>
+
+      <a class="create ripple-container" href="/accounts/{data.account._id}/stations/create-station" use:ripple>
+        create a new station
+      </a> 
+      
+    {:else}
+      <div class="list-box">
         <div class="no-items">
           <div class="no-items-message">
             This account doesn't have stations yet
@@ -100,7 +128,7 @@
             Create a station
           </a>
         </div>
-      {/each}
-    </div>
+      </div>
+    {/if}
   </div>
 </Page>

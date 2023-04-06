@@ -33,7 +33,7 @@ pub struct Station {
   pub slogan: Option<String>,
 
   #[modify(trim)]
-  #[validate(length(min = "DESC_MIN", max = "DESC_MAX"), non_control_character)]
+  #[validate(length(min = "DESC_MIN", max = "DESC_MAX"))]
   pub description: Option<String>,
 
   // location and language
@@ -50,6 +50,10 @@ pub struct Station {
   #[modify(trim, lowercase)]
   #[validate(email, length(max = "EMAIL_MAX"), non_control_character)]
   pub email: Option<String>,
+
+  #[modify(trim)]
+  #[validate(phone, length(max = "PHONE_MAX"), non_control_character)]
+  pub phone: Option<String>,
 
   #[modify(trim)]
   #[validate(phone, length(max = "PHONE_MAX"), non_control_character)]
@@ -184,6 +188,7 @@ pub struct UserPublicStation {
 
   // contact
   pub email: Option<String>,
+  pub phone: Option<String>,
   pub whatsapp: Option<String>,
 
   // links
@@ -255,32 +260,27 @@ pub struct StationPatch {
   #[validate(length(min = "NAME_MIN", max = "NAME_MAX"), non_control_character)]
   pub name: Option<String>,
 
-  pub slug: String,
-
-  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
-    skip_serializing_if = "Option::is_none"
+    //skip_serializing_if = "Option::is_none"
   )]
   #[modify(trim)]
   #[validate(length(min = "SLOGAN_MIN", max = "SLOGAN_MAX"), non_control_character)]
   pub slogan: Option<Option<String>>,
 
-  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
     skip_serializing_if = "Option::is_none"
   )]
   #[modify(trim)]
-  #[validate(length(min = "DESC_MIN", max = "DESC_MAX"), non_control_character)]
+  #[validate(length(min = "DESC_MIN", max = "DESC_MAX"))]
   pub description: Option<Option<String>>,
 
   // location and language
   // pub language_id: Option<String>,
   // pub region_id: Option<String>,
-  #[ts(optional)]
   #[serde(skip_serializing_if = "Option::is_none")]
   #[validate]
   pub frequencies: Option<Vec<StationFrequency>>,
@@ -290,7 +290,6 @@ pub struct StationPatch {
   // pub hero_picture_id: Option<String>,
 
   // contact
-  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -300,7 +299,15 @@ pub struct StationPatch {
   #[validate(email, length(max = "EMAIL_MAX"), non_control_character)]
   pub email: Option<Option<String>>,
 
-  #[ts(optional)]
+  #[serde(
+    default,
+    deserialize_with = "map_some",
+    skip_serializing_if = "Option::is_none"
+  )]
+  #[modify(trim)]
+  #[validate(phone, length(max = "PHONE_MAX"), non_control_character)]
+  pub phone: Option<Option<String>>,
+
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -311,7 +318,6 @@ pub struct StationPatch {
   pub whatsapp: Option<Option<String>>,
 
   // links
-  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -326,7 +332,6 @@ pub struct StationPatch {
   )]
   pub website_url: Option<Option<String>>,
 
-  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -341,7 +346,6 @@ pub struct StationPatch {
   )]
   pub twitter_url: Option<Option<String>>,
 
-  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -356,7 +360,6 @@ pub struct StationPatch {
   )]
   pub facebook_url: Option<Option<String>>,
 
-  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -371,7 +374,6 @@ pub struct StationPatch {
   )]
   pub instagram_url: Option<Option<String>>,
 
-  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -386,7 +388,6 @@ pub struct StationPatch {
   )]
   pub youtube_url: Option<Option<String>>,
 
-  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -397,7 +398,6 @@ pub struct StationPatch {
   pub twitch_url: Option<Option<String>>,
 
   // app links
-  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -412,7 +412,6 @@ pub struct StationPatch {
   )]
   pub google_play_url: Option<Option<String>>,
 
-  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -614,6 +613,7 @@ impl From<Station> for UserPublicStation {
       description: station.description,
 
       email: station.email,
+      phone: station.phone,
       whatsapp: station.whatsapp,
 
       website_url: station.website_url,

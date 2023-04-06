@@ -214,7 +214,7 @@
                 </a>
                 <div class="station-list thin-scroll">
                   {#each stations.items as item (item._id)}
-                    <a href="/account/{account._id}/stations/{item._id}" class="na menu-station" class:current={item._id === station?._id} on:click={() => menu_open = false}>
+                    <a href="/accounts/{account._id}/stations/{item._id}" class="na menu-station" class:current={item._id === station?._id} on:click={() => menu_open = false}>
                       {item.name}
                     </a>
                   {/each}

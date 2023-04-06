@@ -4,12 +4,14 @@
   export let visible: boolean = false;
   export let autocomplete = "password";
 
+  let empty = value === "";
+
 	import Icon from "$share/Icon.svelte";
   import FieldContainer from "./FieldContainer.svelte";
   import Label from "./Label.svelte";
 
   import { mdiEye, mdiEyeOff } from "@mdi/js";
-  import css from "./forms.module.css"; 
+	import Input from "./Input.svelte";
   
   let click_token = false;
 
@@ -63,11 +65,11 @@
 
 <FieldContainer>
   <div class="wrap">
-    <input type={visible ? "text" : "password"} {autocomplete} class={css["forms-input"]} value={value} on:input={event => value = event.currentTarget.value} />
+    <Input type={visible ? "text" : "password"} {autocomplete} bind:value bind:empty on:input />
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="btn" on:pointerdown|capture|preventDefault={pointerdown} on:click={click}>
       <Icon d={visible ? mdiEyeOff : mdiEye} />
     </div>
   </div>
-  <Label {label} full={value !== ""} />
+  <Label {label} full={!empty} />
 </FieldContainer>

@@ -101,6 +101,22 @@
     box-shadow: 0 4px 8px 0 rgb(0 0 0 / 12%), 0 2px 4px 0 rgb(0 0 0 / 8%);
     font-weight: 500;
   }
+
+  .or {
+    margin-top: 1.5rem;
+    color: #666;
+  }
+
+  .create {
+    margin-top: 0.25rem;
+    padding: 0.75rem;
+    display: flex;
+    text-align: center;
+    text-decoration: none;
+    color: var(--blue);
+    font-size: 1.1rem;
+    border-radius: 0.5rem;
+  }
 </style>
 
 <svelte:head>
@@ -118,15 +134,25 @@
     </div>
   </div>
   <div class="page">
-    <div class="page-title">Select an account</div>
-    <div class="list-box">
-      {#each data.accounts.items as account (account._id)}
+    <div class="page-title">Select a station</div>
+    {#if data.accounts.items.length}
+      <div class="list-box">
+        {#each data.accounts.items as account (account._id)}
         <a href="/accounts/{account._id}" class="list-item na ripple-container" use:ripple>
           <span class="list-item-name">
             {account.name}
           </span>
         </a>
-      {:else}
+        {/each}
+      </div>
+
+      <div class="or">or</div>
+
+      <a class="create ripple-container" href="/accounts/create-account" use:ripple>
+        create a new account
+      </a> 
+    {:else}
+      <div class="list-box">
         <div class="no-stations">
           <div class="no-stations-message">
             You don't have an account yet
@@ -135,8 +161,8 @@
             Create an account
           </a>
         </div>
-      {/each}
-    </div>
+      </div>
+    {/if}
   </div>
   
   <Player />

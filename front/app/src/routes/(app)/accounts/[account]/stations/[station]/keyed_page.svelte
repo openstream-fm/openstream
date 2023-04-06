@@ -298,7 +298,7 @@
 </style>
 
 <svelte:head>
-  <title>Dashboard</title>
+  <title>Station {data.station.name}</title>
 </svelte:head>
 
 <Page>

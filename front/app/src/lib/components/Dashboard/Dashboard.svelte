@@ -5,7 +5,13 @@
   export let accounts: import("$server/defs/api/accounts/GET/Output").Output;
   export let account: import("$server/defs/api/accounts/[account]/GET/Output").Output["account"];
   export let stations: import("$server/defs/api/stations/GET/Output").Output;
-  export let station: import("$server/defs/api/stations/[station]/GET/Output").Output["station"] | null;
+  //export let station: import("$server/defs/api/stations/[station]/GET/Output").Output["station"] | null;
+
+  type Station = import("$server/defs/api/stations/[station]/GET/Output").Output["station"];
+
+  import { page } from "$app/stores";
+  // @ts-ignore
+  $: station = ($page.data.station as Station) || null;
 
   let drawer_fixed_open = false;
   const open_drawer_fixed = () => drawer_fixed_open = true;
