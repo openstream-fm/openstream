@@ -1,10 +1,9 @@
 <script lang="ts">
-	import TopUser from "$lib/components/Dashboard/TopUser.svelte";
 	import Page from "$lib/components/Page.svelte";
-	import Player from "$lib/components/Player/Player.svelte";
 	import { ripple } from "$lib/ripple";
-	import { fly } from "svelte/transition";
   export let data: import("./$types").PageData;
+
+  $: current_account_stations = data.stations.items.filter(item => item.account_id === data.account._id);
 </script>
 
 <style>
@@ -102,8 +101,8 @@
     <div class="page-title">Select a station</div>
     {#if data.stations.items.length}
       <div class="list-box">
-        {#each data.stations.items as station (station._id)}
-          <a href="/accounts/{data.account._id}/stations/{station._id}" class="list-item na ripple-container" use:ripple>
+        {#each current_account_stations as station (station._id)}
+          <a href="/accounts/{station.account_id}/stations/{station._id}" class="list-item na ripple-container" use:ripple>
             <span class="list-item-name">
               {station.name}
             </span>

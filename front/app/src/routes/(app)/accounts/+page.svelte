@@ -120,7 +120,7 @@
 </style>
 
 <svelte:head>
-  <title>Select station</title>
+  <title>Accounts</title>
 </svelte:head>
 
 <div class="layout" in:fly|local={{ x: -25, duration: 200 }}>
@@ -130,11 +130,11 @@
     </div>
 
     <div class="user-btn">
-      <TopUser user={data.user} accounts={data.accounts} account={null} stations={null} station={null} />
+      <TopUser />
     </div>
   </div>
   <div class="page">
-    <div class="page-title">Select a station</div>
+    <div class="page-title">Select an account</div>
     {#if data.accounts.items.length}
       <div class="list-box">
         {#each data.accounts.items as account (account._id)}

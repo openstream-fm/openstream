@@ -3,7 +3,6 @@ import { load_get } from "$lib/load";
 export const load = (async ({ fetch, url, parent, depends, params }) => {
 
   depends("accounts:item");
-  depends("account:stations:list");
 
   const { accounts } = await parent();
   
@@ -18,11 +17,8 @@ export const load = (async ({ fetch, url, parent, depends, params }) => {
     account = res.account;
   }
 
-  const stations: import("$server/defs/api/stations/GET/Output").Output = await load_get(`/api/stations?limit=10000&account_id=${account._id}`, { fetch, url });
-
   return {
     account,
-    stations,
     station: null,
   }
 

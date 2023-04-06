@@ -1,20 +1,9 @@
 <script lang="ts">
-  
-  // svelte-ignore unused-export-let
-  export let accounts: import("$server/defs/api/accounts/GET/Output").Output;
-
-  export let account: import("$server/defs/api/accounts/[account]/GET/Output").Output["account"];
-  export let stations: import("$server/defs/api/stations/GET/Output").Output;
- 
-  // svelte-ignore unused-export-let
-  export let station: import("$server/defs/api/stations/[station]/GET/Output").Output["station"] | null;
-  // svelte-ignore unused-export-let
-  export let user: import("$server/defs/api/users/[user]/GET/Output").Output["user"];
-  
   export let fixed_open: boolean;
-
   export let close_drawer_fixed: () => void;
   export let open_drawer_fixed: () => void;
+
+  import { page } from "$app/stores";
 
   const HTML_OPEN_CLASSNAME = "station-drawer-fixed-open";
 
@@ -23,11 +12,7 @@
   import DrawerItem from "./DrawerItem.svelte";
   import { 
     mdiViewDashboardOutline,
-    mdiMultimedia,
     mdiRadioTower,
-    mdiPoll,
-    mdiAccountOutline,
-    mdiShieldAccountOutline,
   	mdiMenu,
   } from "@mdi/js";
 	import { onMount } from "svelte";
@@ -152,19 +137,8 @@
     </div>
 
     <div class="links">
-      <DrawerItem href="/accounts/{account._id}" label="Account" icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
-      <DrawerItem href="/accounts/{account._id}/stations" label="Stations" icon={mdiRadioTower} on_click={close_drawer_fixed} />
-      <!-- {#each stations.items as station (station._id)}
-        <DrawerItem href="/accounts/{account._id}/stations/{station._id}" label=" - {station.name}" on_click={close_drawer_fixed} />
-      {/each} -->
-      <!--
-        <DrawerItem href="/accounts/{account._id}/stations/{station._id}/playlist" label="Playlist" icon={mdiMultimedia} on_click={close_drawer_fixed} />
-      
-        <DrawerItem href="/stations/{station._id}/profile" label="Profile" icon={mdiAccountOutline} />
-        <DrawerItem href="/station" label="Account" icon={mdiShieldAccountOutline} />
-        <DrawerItem href="/stations" label="Stations" icon={mdiRadioTower} />
-        <DrawerItem href="/analytics" label="Analytics" icon={mdiPoll} />
-      -->
+      <DrawerItem href="/accounts/{$page.data.account?._id}" label="Account" icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
+      <DrawerItem href="/accounts/{$page.data.account?._id}/stations" label="Stations" icon={mdiRadioTower} on_click={close_drawer_fixed} />
     </div>
   </div>
 </div>

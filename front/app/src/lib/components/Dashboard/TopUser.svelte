@@ -1,10 +1,19 @@
 <script lang="ts">
-  export let user: import("$server/defs/api/users/[user]/GET/Output").Output["user"];
-  export let accounts: import("$server/defs/api/accounts/GET/Output").Output; 
-  export let account: import("$server/defs/api/accounts/[account]/GET/Output").Output["account"] | null; 
-  export let stations: import("$server/defs/api/stations/GET/Output").Output | null;
-  export let station: import("$server/defs/api/stations/[station]/GET/Output").Output["station"] | null;
+  let user: import("$server/defs/api/users/[user]/GET/Output").Output["user"];
+  let accounts: import("$server/defs/api/accounts/GET/Output").Output; 
+  let account: import("$server/defs/api/accounts/[account]/GET/Output").Output["account"] | null; 
+  let stations: import("$server/defs/api/stations/GET/Output").Output | null;
+  let station: import("$server/defs/api/stations/[station]/GET/Output").Output["station"] | null;
   
+  import { page } from "$app/stores";
+
+  $: user = $page.data.user || null;
+  $: accounts = $page.data.accounts || null;
+  $: account = $page.data.account || null;
+  $: stations = $page.data.stations || null;
+  $: station = $page.data.station || null;
+
+
   import { fly } from "svelte/transition";
 	import { ripple } from "$lib/ripple";
 	import { clickOut } from "$lib/actions";
@@ -204,17 +213,18 @@
                 {/each}
               </div>
             </div>
-            {#if account != null && stations != null}
+            {#if stations != null}
               <div class="menu-section">
-                <a href="/accounts/{account._id}/stations" class="na menu-section-link ripple-container" use:ripple on:click={() => menu_open = false}>
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <div class="menu-section-link ripple-container" use:ripple>
                   <div class="menu-icon">
                     <Icon d={mdiCastAudioVariant} />
                   </div>
                   Stations
-                </a>
+                </div>
                 <div class="station-list thin-scroll">
                   {#each stations.items as item (item._id)}
-                    <a href="/accounts/{account._id}/stations/{item._id}" class="na menu-station" class:current={item._id === station?._id} on:click={() => menu_open = false}>
+                    <a href="/accounts/{item.account_id}/stations/{item._id}" class="na menu-station" class:current={item._id === station?._id} on:click={() => menu_open = false}>
                       {item.name}
                     </a>
                   {/each}

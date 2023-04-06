@@ -1,8 +1,8 @@
 <script lang="ts">
 	import TopUser from "$lib/components/Dashboard/TopUser.svelte";
+	import Player from "$lib/components/Player/Player.svelte";
 	// import { ripple } from "$lib/ripple";
 	import { fly } from "svelte/transition";
-  export let data: import("./$types").PageData;
 </script>
 
 <style>
@@ -34,6 +34,7 @@
 
   .page {
     display: flex;
+    flex-grow: 1;
     flex-direction: column;
     align-items: center;
   }
@@ -43,23 +44,10 @@
     font-size: 2rem;
     font-weight: 600;
   }
-
-  .stations-box {
-    margin-top: 3.5rem;
-    width: min(80%, 500px);
-    background: #fff;
-    box-shadow: 0 0 15px 0 rgb(0 0 0 / 10%);
-    border-radius: 0.5rem;
-    padding: 1rem 0;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    min-width: 0;
-  }
 </style>
 
 <svelte:head>
-  <title>Select station</title>
+  <title>Create account</title>
 </svelte:head>
 
 <div class="layout" in:fly|local={{ x: -25, duration: 200 }}>
@@ -69,13 +57,15 @@
     </div>
 
     <div class="user-btn">
-      <TopUser station={null} user={data.user} stations={data.stations} />
+      <TopUser />
     </div>
   </div>
   <div class="page">
-    <div class="page-title">Create a station</div>
-    <div class="stations-box">
+    <div class="page-title">Create account</div>
+    <div class="box">
 
     </div>
   </div>
+
+  <Player />
 </div>
