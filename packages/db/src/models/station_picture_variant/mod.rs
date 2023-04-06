@@ -20,7 +20,7 @@ pub struct StationPictureVariant {
   pub weight_bytes: f64,
   pub content_type: String,
   #[serde(with = "serde_util::bytes")]
-  #[ts(type = "UInt8Array")]
+  #[ts(type = "Uint8Array")]
   pub data: Bytes,
   pub created_at: DateTime,
   pub updated_at: DateTime,
