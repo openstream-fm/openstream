@@ -2,7 +2,7 @@ use crate::account::Account;
 use crate::station_picture_variant::{StationPictureVariant, StationPictureVariantFormat};
 use crate::{run_transaction, Model};
 use bytes::Bytes;
-use image::Rgb;
+// use image::Rgb;
 use mongodb::bson::doc;
 use mongodb::{ClientSession, IndexModel};
 use ril::{Paste, Rgba};
@@ -142,14 +142,14 @@ impl StationPicture {
           let mut img = img.clone();
           img.resize(size as u32, size as u32, ril::ResizeAlgorithm::Lanczos3);
 
-          let paste = Paste {
+          let cmd = Paste {
             position: (0, 0),
             image: &img,
             mask: None,
             overlay: Some(ril::OverlayMode::Merge),
           };
 
-          bg.draw(&paste);
+          bg.draw(&cmd);
           // let img = img.resize(
           //   size as u32,
           //   size as u32,
