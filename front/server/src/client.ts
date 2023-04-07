@@ -213,9 +213,12 @@ export class Stations {
   
   files: StationFiles;
 
+  pictures: StationPictures;
+
   constructor(client: Client) {
     this.client = client;
     this.files = new StationFiles(client);
+    this.pictures = new StationPictures(client);
   }
 
   async list(ip: string | null, ua: string | null, token: string, query: import("./defs/api/stations/GET/Query").Query): Promise<import("./defs/api/stations/GET/Output").Output> {
@@ -244,6 +247,30 @@ export class Stations {
 
   async restart_playlist(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/restart-playlist/POST/Output").Output> {
     return await this.client.post(ip, ua, token, `/stations/${id}/restart-playlist`, undefined);
+  }
+}
+
+export class StationPictures {
+  client: Client;
+  constructor(client: Client) {
+    this.client = client;
+  }
+
+  async post(ip: string | null, ua: string | null, token: string, query: import("./defs/api/station-pictures/POST/Query").Query, data: Readable | Buffer): Promise<import("./defs/api/station-pictures/POST/Output").Output> {
+    const headers = new Headers();
+
+    if(ip) headers.append(FORWARD_IP_HEADER, ip);
+    if(ua) headers.append("user-agent", ua)
+    headers.append(ACCESS_TOKEN_HEADER, token);
+    headers.append("content-type", "application/octet-stream");
+
+    let res = await this.client.fetch(`/station-pictures${qss(query)}`, {
+      method: "POST",
+      headers,
+      body: data
+    })
+
+    return await this.client.get_json_body(res)
   }
 }
 
@@ -308,6 +335,7 @@ export class StationFiles {
     const headers = new Headers();
 
     if(ip) headers.append(FORWARD_IP_HEADER, ip);
+    if(ua) headers.append("user-agent", ua);
     headers.append(ACCESS_TOKEN_HEADER, token);
     headers.append("content-type", content_type);
     headers.append("content-length", String(content_length));

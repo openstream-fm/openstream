@@ -1,4 +1,5 @@
 use crate::params::Params;
+use bytes::Bytes;
 use hyper::body::HttpBody;
 use hyper::header::AUTHORIZATION;
 use hyper::http::Extensions;
@@ -47,6 +48,14 @@ pub enum ReadBodyJsonError {
   Json(#[from] serde_json::Error),
   #[error("payload invalid: {0}")]
   PayloadInvalid(String),
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum ReadBodyBytesError {
+  #[error("payload too large: (max: {0})")]
+  TooLarge(usize),
+  #[error("hyper error: {0}")]
+  Hyper(#[from] hyper::Error),
 }
 
 impl Request {
@@ -242,6 +251,25 @@ impl Request {
     let value: T = serde_json::from_slice(&buf)?;
 
     Ok(value)
+  }
+
+  pub async fn read_body_bytes(&mut self, maxlen: usize) -> Result<Bytes, ReadBodyBytesError> {
+    let mut buf = vec![];
+    loop {
+      let data = self.body_mut().data().await;
+      match data {
+        None => break,
+        Some(r) => {
+          let bytes = r?;
+          if (bytes.len() + buf.len()) > maxlen {
+            return Err(ReadBodyBytesError::TooLarge(maxlen));
+          }
+          buf.extend_from_slice(bytes.as_ref());
+        }
+      }
+    }
+
+    Ok(Bytes::from(buf))
   }
 }
 

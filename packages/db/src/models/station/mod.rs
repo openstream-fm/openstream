@@ -21,6 +21,8 @@ pub struct Station {
   pub id: String,
   pub account_id: String,
 
+  pub picture_id: String,
+
   // profile data
   #[modify(trim)]
   #[validate(length(min = "NAME_MIN", max = "NAME_MAX"), non_control_character)]
@@ -170,6 +172,7 @@ pub struct UserPublicStation {
   #[serde(rename = "_id")]
   pub id: String,
   pub account_id: String,
+  pub picture_id: String,
 
   // profile data
   pub name: String,
@@ -259,6 +262,9 @@ pub struct StationPatch {
   #[modify(trim)]
   #[validate(length(min = "NAME_MIN", max = "NAME_MAX"), non_control_character)]
   pub name: Option<String>,
+
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub picture_id: Option<String>,
 
   #[serde(
     default,
@@ -473,6 +479,8 @@ impl Station {
       };
     }
 
+    apply!(picture_id);
+
     apply!(name);
     apply!(slogan);
     apply!(description);
@@ -600,6 +608,7 @@ impl From<Station> for UserPublicStation {
     Self {
       id: station.id,
       account_id: station.account_id,
+      picture_id: station.picture_id,
 
       //language_id: station.language_id,
       //region_id: station.region_id,

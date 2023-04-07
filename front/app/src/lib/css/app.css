@@ -11,7 +11,7 @@
   font-size: 16px;
 
   --drawer-width: 250px;
-  --top-height: 4.5rem;
+  --top-h: 4.5rem;
 
   --red-rgb: 255, 65, 54;
   --red: rgb(var(--red-rgb));

@@ -5,6 +5,7 @@ import type { StationFrequency } from "../../../StationFrequency";
 
 export interface Payload {
   account_id: string;
+  picture_id: string;
   name: string;
   slogan: string | null;
   description: string | null;

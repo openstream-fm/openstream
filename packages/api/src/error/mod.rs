@@ -1,10 +1,11 @@
 #![allow(clippy::useless_format)]
 
+use db::station_picture::CreateStationPictureError;
 use http_range::HttpRangeParseError;
 use hyper::header::{CONTENT_LENGTH, CONTENT_TYPE};
 use hyper::http::HeaderValue;
 use hyper::{Body, StatusCode};
-use prex::request::ReadBodyJsonError;
+use prex::request::{ReadBodyBytesError, ReadBodyJsonError};
 use prex::*;
 use serde_json;
 use std::convert::Infallible;
@@ -32,6 +33,9 @@ pub enum ApiError {
 
   #[error("querystring: {0}")]
   QueryString(#[from] serde_querystring::de::Error),
+
+  #[error("querystring2: {0}")]
+  QueryString2(String),
 
   #[error("token missing")]
   TokenMissing,
@@ -161,6 +165,7 @@ impl ApiError {
       UserNotFound(_) => StatusCode::NOT_FOUND,
       AudioFileNotFound(_) => StatusCode::NOT_FOUND,
       QueryString(_) => StatusCode::BAD_REQUEST,
+      QueryString2(_) => StatusCode::BAD_REQUEST,
       PayloadIo(_) => StatusCode::BAD_REQUEST,
       PayloadJson(_) => StatusCode::BAD_REQUEST,
       PayloadTooLarge(_) => StatusCode::BAD_REQUEST,
@@ -213,6 +218,7 @@ impl ApiError {
       AccountNotFound(id) => format!("Account with id {id} not found"),
       AudioFileNotFound(id) => format!("Audio file with id {id} not found"),
       QueryString(e) => format!("Invalid query string: {e}"),
+      QueryString2(message) => format!("Invalid query string: {message}"),
       PayloadIo(e) => format!("Error reading payload: {e}"),
       PayloadJson(e) => format!("Invalid JSON payload: {e}"),
       PayloadTooLarge(_) => format!("Payload size exceeded"),
@@ -266,6 +272,7 @@ impl ApiError {
       AccountNotFound(_) => PublicErrorCode::AccountNotFound,
       AudioFileNotFound(_) => PublicErrorCode::AudioFileNotFound,
       QueryString(_) => PublicErrorCode::QueryStringInvalid,
+      QueryString2(_) => PublicErrorCode::QueryStringInvalid,
       PayloadIo(_) => PublicErrorCode::PayloadIo,
       PayloadJson(_) => PublicErrorCode::PayloadJson,
       PayloadTooLarge(_) => PublicErrorCode::PayloadTooLarge,
@@ -338,6 +345,15 @@ impl From<ReadBodyJsonError> for ApiError {
   }
 }
 
+impl From<ReadBodyBytesError> for ApiError {
+  fn from(e: ReadBodyBytesError) -> Self {
+    match e {
+      ReadBodyBytesError::Hyper(e) => Self::PayloadIo(e),
+      ReadBodyBytesError::TooLarge(maxlen) => Self::PayloadTooLarge(maxlen),
+    }
+  }
+}
+
 impl<E: Into<ApiError>> From<UploadError<E>> for ApiError {
   fn from(e: UploadError<E>) -> Self {
     match e {
@@ -368,6 +384,19 @@ impl From<ApplyPatchError> for ApiError {
       ApplyPatchError::PatchEmpty => ApiError::PatchEmpty,
       ApplyPatchError::PatchInvalid(message) => ApiError::PatchInvalid(message),
       ApplyPatchError::OutOfScope(message) => ApiError::PatchOutOfScope(message),
+    }
+  }
+}
+
+impl From<CreateStationPictureError> for ApiError {
+  fn from(e: CreateStationPictureError) -> Self {
+    use CreateStationPictureError::*;
+    match e {
+      Db(e) => e.into(),
+      ImageTooLargeBytes | ImageNotSquare | ImageTooSmallSize | Ril(_) => {
+        ApiError::PayloadInvalid(format!("{e}"))
+      }
+      AccountNotFound(_) => ApiError::QueryString2(format!("{e}")),
     }
   }
 }

@@ -9,6 +9,7 @@
   import { invalidateAll } from "$app/navigation";
 
 	import { ripple } from "$lib/ripple";
+	import StationPictureField from "$lib/components/Form/StationPictureField.svelte";
 	
   let name: string = data.station.name
   let slogan: string | null = data.station.slogan;
@@ -27,10 +28,16 @@
   let google_play_url: string | null = data.station.google_play_url;
   let app_store_url: string | null = data.station.app_store_url;
 
+  let picture_id: string | null = data.station.picture_id;
+
   // TODO: send only a diff
 
   const send = action(async () => {
+    
+    if(picture_id == null) throw new Error("Logo is required");
+
     const payload: import("$server/defs/api/stations/[station]/PATCH/Payload").Payload = {
+      picture_id: picture_id || void 0,
       name,
       slogan,
       description,
@@ -131,6 +138,18 @@
   <div class="page">
     <div class="page-title">Station Profile</div>
     <form novalidate class="create-box" on:submit|preventDefault={send}>
+      
+      <div class="section">
+        <div class="section-title">
+          Logo
+        </div>
+        <div class="fields">
+          <div class="field">
+            <StationPictureField account={data.account} bind:picture_id />
+          </div>
+        </div>
+      </div>
+
       <div class="section">
         <div class="section-title">
           Profile information

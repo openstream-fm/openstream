@@ -10,6 +10,7 @@
   import { goto } from "$app/navigation";
 
 	import { ripple } from "$lib/ripple";
+	import StationPictureField from "$lib/components/Form/StationPictureField.svelte";
 	
   let name: string = "";
   let slogan: string | null = null;
@@ -28,10 +29,16 @@
   let google_play_url: string | null = null;
   let app_store_url: string | null = null;
 
+  let picture_id: string | null = null;
+
   const send = action(async () => {
+    
+    if(picture_id == null) throw new Error("Logo is required");
+
     const payload: import("$server/defs/api/stations/POST/Payload").Payload = {
       
       account_id: data.account._id,
+      picture_id,
 
       name,
       slogan,
@@ -134,6 +141,17 @@
   <div class="page">
     <div class="page-title">Create a station</div>
     <form novalidate class="create-box" on:submit|preventDefault={send}>
+
+      <div class="section">
+        <div class="section-title">
+          Logo
+        </div>
+      
+        <div class="field">
+          <StationPictureField account={data.account} bind:picture_id={picture_id} />
+        </div>
+      </div>
+
       <div class="section">
         <div class="section-title">
           Profile information
@@ -164,7 +182,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="section">
         <div class="section-title">
           Contact information

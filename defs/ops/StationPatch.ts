@@ -5,6 +5,7 @@ import type { StationPatchLimits } from "./StationPatchLimits";
 
 export interface StationPatch {
   name?: string;
+  picture_id?: string;
   slogan: string | null | null;
   description: string | null | null;
   frequencies?: Array<StationFrequency>;

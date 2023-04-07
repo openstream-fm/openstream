@@ -17,7 +17,7 @@ pub mod me;
 pub mod stations;
 pub mod users;
 
-pub mod station_pics;
+pub mod station_pictures;
 
 pub fn router(
   media_sessions: MediaSessionMap,
@@ -136,21 +136,25 @@ pub fn router(
     .at("/stations/:station/dashboard-stats")
     .get(stations::dashboard_stats::get::Endpoint {}.into_handler());
 
+  app
+    .at("/station-pictures")
+    .post(station_pictures::post::Endpoint {}.into_handler());
+
   for size in StationPicture::WEBP_SIZES {
-    let handler = station_pics::StationPicHandler::Webp(size);
-    let path = format!("/station-pictures/webp/{}/:picture", size as u64);
+    let handler = station_pictures::StationPicHandler::Webp(size);
+    let path = format!("/station-pictures/webp/{}/:picture.webp", size as u32);
     app.get(path, handler);
   }
 
   for size in StationPicture::PNG_SIZES {
-    let handler = station_pics::StationPicHandler::Webp(size);
-    let path = format!("/station-pictures/png/{}/:picture", size as u64);
+    let handler = station_pictures::StationPicHandler::Png(size);
+    let path = format!("/station-pictures/png/{}/:picture.png", size as u32);
     app.get(path, handler);
   }
 
   app.get(
     "/station-pictures/src/:picture",
-    station_pics::StationPicHandler::Source,
+    station_pictures::StationPicHandler::Source,
   );
 
   app

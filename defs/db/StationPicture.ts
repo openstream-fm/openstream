@@ -3,11 +3,15 @@ import type { DateTime } from "../DateTime";
 
 export interface StationPicture {
   _id: string;
+  account_id: string;
   version: number;
   src_filename: string;
   src_content_type: string;
   src_size: number;
   src_size_bytes: number;
+  src_sha256: string;
+  webp_sizes: Array<number>;
+  png_sizes: Array<number>;
   created_at: DateTime;
   updated_at: DateTime;
 }

@@ -17,7 +17,7 @@ pub struct StationPictureVariant {
   pub picture_id: String,
   pub format: StationPictureVariantFormat,
   pub size: f64,
-  pub weight_bytes: f64,
+  pub size_bytes: f64,
   pub content_type: String,
   #[serde(with = "serde_util::bytes")]
   #[ts(type = "Uint8Array")]

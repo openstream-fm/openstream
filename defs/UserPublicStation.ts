@@ -7,6 +7,7 @@ import type { StationLimits } from "./StationLimits";
 export interface UserPublicStation {
   _id: string;
   account_id: string;
+  picture_id: string;
   name: string;
   slug: string;
   slogan: string | null;

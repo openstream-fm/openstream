@@ -7,7 +7,7 @@ export interface StationPictureVariant {
   picture_id: string;
   format: StationPictureVariantFormat;
   size: number;
-  weight_bytes: number;
+  size_bytes: number;
   content_type: string;
   data: Uint8Array;
   created_at: DateTime;

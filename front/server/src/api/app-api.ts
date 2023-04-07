@@ -242,6 +242,11 @@ export const app_api = ({
       }
     })
 
+  api.route("/station-pictures")
+    .post(json(async req => {
+      return await client.stations.pictures.post(ip(req), ua(req), token(req), req.query as any, req)
+    }));
+
   api.use(json(() => {
     throw new ApiError(StatusCodes.NOT_FOUND, "FRONT_RESOURCE_NOT_FOUND", "Resource not found");
   }))

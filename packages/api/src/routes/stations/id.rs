@@ -4,6 +4,8 @@ use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
 use async_trait::async_trait;
 use db::station::PublicStation;
 use db::station::Station;
+use db::station_picture::StationPicture;
+use mongodb::bson::doc;
 use prex::Request;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
@@ -118,6 +120,8 @@ pub mod patch {
     Patch(#[from] ApplyPatchError),
     #[error("station not found: {0}")]
     StationNotFound(String),
+    #[error("picture not found {0}")]
+    PictureNotFound(String),
     #[error("validation: {0}")]
     Validation(#[from] ValidationErrors),
   }
@@ -129,6 +133,9 @@ pub mod patch {
         HandleError::Patch(e) => Self::from(e),
         HandleError::StationNotFound(id) => Self::StationNotFound(id),
         HandleError::Validation(e) => Self::PayloadInvalid(format!("{e}")),
+        HandleError::PictureNotFound(id) => {
+          Self::PayloadInvalid(format!("Picture with id {id} not found"))
+        }
       }
     }
   }
@@ -169,6 +176,15 @@ pub mod patch {
 
       let station = run_transaction!(session => {
         fetch_and_patch!(Station, station, &id, Err(HandleError::StationNotFound(id)), session, {
+          if let Some(picture_id) = &patch.picture_id {
+            let filter = doc! { StationPicture::KEY_ACCOUNT_ID: &station.account_id, StationPicture::KEY_ID: picture_id };
+            match tx_try!(StationPicture::exists_with_session(filter, &mut session).await) {
+              true => {},
+              false => {
+                return Err(HandleError::PictureNotFound(picture_id.to_string()))
+              }
+            }
+          }
           station.apply_patch(patch.clone(), access_token_scope.as_public_scope())?;
         })
       });

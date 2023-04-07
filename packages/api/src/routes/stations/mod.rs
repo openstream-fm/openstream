@@ -157,7 +157,9 @@ pub mod get {
 pub mod post {
 
   use db::config::Config;
+  use db::run_transaction;
   use db::station::{Limit, Limits, Station, StationFrequency};
+  use db::station_picture::StationPicture;
   use serde_util::DateTime;
   use ts_rs::TS;
   use validate::url::patterns::*;
@@ -172,6 +174,8 @@ pub mod post {
   #[validify]
   pub struct Payload {
     pub account_id: String,
+
+    pub picture_id: String,
 
     #[modify(trim)]
     #[validate(length(min = "NAME_MIN", max = "NAME_MAX"), non_control_character)]
@@ -348,8 +352,10 @@ pub mod post {
     AccountNotFound(String),
     #[error("validation error: {0}")]
     ValidationError(#[from] ValidationErrors),
-    #[error("invalid name (slug)")]
+    #[error("Invalid name (slug)")]
     InvalidNameSlug,
+    #[error("Picture with id {0} not found")]
+    PictureNotFound(String),
   }
 
   impl From<HandleError> for ApiError {
@@ -359,6 +365,9 @@ pub mod post {
         HandleError::Token(e) => ApiError::from(e),
         HandleError::AccountNotFound(id) => ApiError::AccountNotFound(id),
         HandleError::ValidationError(e) => ApiError::PayloadInvalid(format!("{e}")),
+        HandleError::PictureNotFound(id) => {
+          ApiError::PayloadInvalid(format!("Picture with id {id} not found"))
+        }
         HandleError::InvalidNameSlug => {
           ApiError::PayloadInvalid(String::from("Station name is invalid"))
         }
@@ -396,6 +405,7 @@ pub mod post {
 
       let Payload {
         account_id,
+        picture_id,
         name,
         slogan,
         description,
@@ -479,6 +489,7 @@ pub mod post {
       let station = Station {
         id: Station::uid(),
         account_id,
+        picture_id,
 
         name,
         slug,
@@ -514,9 +525,21 @@ pub mod post {
       };
 
       // we validate directly the station and not the payload
-      let station = Validify::validify(station.into())?;
+      let station: Station = Validify::validify(station.into())?;
 
-      Station::insert(&station).await?;
+      run_transaction!(session => {
+        {
+          let filter = doc!{ StationPicture::KEY_ACCOUNT_ID: &station.account_id, StationPicture::KEY_ID: &station.picture_id };
+          match tx_try!(StationPicture::exists_with_session(filter, &mut session).await) {
+            true => {}
+            false => {
+              return Err(HandleError::PictureNotFound(station.picture_id.clone()))
+            }
+          }
+        };
+
+        tx_try!(Station::insert_with_session(&station, &mut session).await);
+      });
 
       let out = Output {
         station: station.into_public(access_token_scope.as_public_scope()),

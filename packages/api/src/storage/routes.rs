@@ -12,20 +12,20 @@ pub fn router() -> Builder {
   );
 
   for size in StationPicture::WEBP_SIZES {
-    let handler = api_routes::station_pics::StationPicHandler::Webp(size);
-    let path = format!("/station-pictures/webp/{}/:picture", size as u64);
+    let handler = api_routes::station_pictures::StationPicHandler::Webp(size);
+    let path = format!("/station-pictures/webp/{}/:picture.webp", size as u32);
     router.get(path, handler);
   }
 
   for size in StationPicture::PNG_SIZES {
-    let handler = api_routes::station_pics::StationPicHandler::Webp(size);
-    let path = format!("/station-pictures/png/{}/:picture", size as u64);
+    let handler = api_routes::station_pictures::StationPicHandler::Png(size);
+    let path = format!("/station-pictures/png/{}/:picture.png", size as u32);
     router.get(path, handler);
   }
 
   router.get(
     "/station-pictures/src/:picture",
-    api_routes::station_pics::StationPicHandler::Source,
+    api_routes::station_pictures::StationPicHandler::Source,
   );
 
   router

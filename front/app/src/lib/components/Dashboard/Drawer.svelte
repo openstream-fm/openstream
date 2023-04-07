@@ -52,7 +52,7 @@
   }
 
   .top {
-    height: var(--top-height);
+    height: var(--top-h);
     font-weight: 600;
     font-size: 1.5rem;
     display: flex;
@@ -75,8 +75,8 @@
     align-items: center;
     justify-content: center;
     font-size: 1.75rem;
-    width: var(--top-height);
-    height: var(--top-height);
+    width: var(--top-h);
+    height: var(--top-h);
     cursor: pointer;
     user-select: none;
     transition: background-color 150ms ease;

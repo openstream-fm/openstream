@@ -30,8 +30,17 @@
     align-items: center;
     justify-content: flex-start;
     flex: none;
-    gap: 1rem;
     padding: 1rem 1.5rem 1rem 1.5rem;
+  }
+
+  .station-pic {
+    width: 2rem;
+    height: 2rem;
+    flex: none;
+    border-radius: 0.25rem;
+    background-position: center;
+    background-size: contain;
+    background-repeat: no-repeat;
   }
 
   .station-name {
@@ -39,6 +48,7 @@
     display: flex;
     flex-shrink: 1;
     min-width: 4rem;
+    margin-inline-start: 0.75rem;
   }
 
   .station-name, .station-action {
@@ -50,6 +60,7 @@
     flex-direction: row;
     align-items: center;
     flex: none;
+    margin-inline-start: 1rem;
   }
 
   .station-action {
@@ -80,6 +91,7 @@
   <div class="station-out" in:fly={{ duration: 300, y: -25 }}>
     <div class="station-scroll super-thin-scroll">
       <div class="station">
+        <div class="station-pic" style="background-image: url({ data.config.storagePublicURL }/station-pictures/webp/64/{data.station.picture_id}.webp)" />
         <div class="station-name">
           <div class="station-name-ellipsis">
             {data.station.name}
