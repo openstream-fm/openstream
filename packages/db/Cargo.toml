@@ -38,7 +38,6 @@ rand = "0.8.5"
 static_init = "1.0.3"
 parking_lot = "0.12.1"
 validify = "0.1.0"
-webp = "0.2.2"
 ril = { version = "0.9.0", features = ["all"] }
 
 [dev-dependencies]
