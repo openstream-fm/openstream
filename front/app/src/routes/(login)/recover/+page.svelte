@@ -89,7 +89,7 @@
 </style>
 
 <svelte:head>
-  <title>Recover your station</title>
+  <title>Recover your account</title>
 </svelte:head>
 
 
@@ -98,7 +98,7 @@
   <div class="fields">
     <div class="field field-box">
       <Email label="Email" value="" />
-      <span class="comment">We'll send you an e-mail to recover your station</span>
+      <span class="comment">We'll send you an e-mail to recover your accounts</span>
       <a class="na back" href="/login">Back to login</a>
     </div>
     <button use:ripple class="ripple-container">
