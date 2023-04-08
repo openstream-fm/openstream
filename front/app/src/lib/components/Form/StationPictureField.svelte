@@ -9,6 +9,7 @@
 	import { ripple } from '$share/ripple';
 	import { _post } from '$share/net.client';
 	import { browser } from '$app/environment';
+	import { _error } from '$share/notify';
 
 	let error_message: string | null;
 	let loading: boolean = false;
@@ -70,7 +71,11 @@
       picture_id = picture._id;
 
     } catch(e: any) {
-      if(token === _token) error_message = String(e?.message);
+      if(token === _token) {
+        const message = String(e?.message || "Unkown error");
+        _error(message);
+        error_message = String(message);
+      }
     } finally {
       if(token === _token) loading = false;
     }
@@ -162,7 +167,7 @@
   @media screen and (max-width: 600px) {
     .station-picture-field {
       flex-direction: column;
-      gap: 1rem;
+      gap: 1.25rem;
     }
   } 
 </style>
