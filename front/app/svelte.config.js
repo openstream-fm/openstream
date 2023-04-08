@@ -14,6 +14,7 @@ const config = {
 			"$share": "../share/src",
 		},
 		files: {
+			serviceWorker: "./src/service-worker.ts",
 			hooks: {
 				server: "./src/hooks.server.ts"
 			},

@@ -1,0 +1,28 @@
+{
+	"name": "Openstream Studio",
+	"short_name": "Openstream Studio",
+	"start_url": "/?utm_source=pwa",
+	"display": "standalone",
+  "scope": "/",
+  "background_color": "#ffffff",
+  "theme_color": "#ff4136",
+	"icons": [
+		{
+			"src": "/icons/192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+    {
+			"src": "/icons/192.png",
+			"sizes": "192x192",
+			"type": "image/png",
+      "purpose": "any maskable"
+		},
+    {
+			"src": "images/512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+      "purpose": "any maskable"
+    }
+	]
+}
