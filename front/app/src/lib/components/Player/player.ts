@@ -25,6 +25,7 @@ export namespace PlayerState {
     audio_state: AudioState,
     station: {
       _id: string,
+      picture_id: string,
       name: string
     }
   }
@@ -33,6 +34,7 @@ export namespace PlayerState {
     type: "track"
     audio_state: AudioState,
     file: import("$server/defs/db/AudioFile").AudioFile
+    picture_id: string,
   }
 }
 
@@ -73,6 +75,7 @@ const now_playing_stop = () => {
     current_now_playing_unsub = null;
   }
 }
+
 
 export const pause = () => {
   // TODO: why onpause not called with station audio type
@@ -150,7 +153,7 @@ export const player_audio_state = derived(player_state, (state): AudioState => {
   else return assert_never(state);
 })
 
-export const play_station = (station: { _id: string, name: string }) => {
+export const play_station = (station: { _id: string, picture_id: string, name: string }) => {
   if(!browser) throw new Error("player.play_station called in ssr context");
   const $state = get(player_state);
   if($state.type === "station" && $state.station._id === station._id) {
@@ -173,6 +176,14 @@ export const play_station = (station: { _id: string, name: string }) => {
   }
 }
 
+
+export const player_picture_id = derived(player_state, $player_state => {
+  if($player_state.type === "closed") return null;
+  else if($player_state.type === "station") return $player_state.station.picture_id;
+  else if($player_state.type === "track") return $player_state.picture_id;
+  else assert_never($player_state);
+})
+
 // we use derived to subscribe to two store at once
 // we need to subscribe to the store, derived only runs if it has subscribers
 derived([player_state, now_playing], ([$player_state, $now_playing]) => {
@@ -186,7 +197,8 @@ derived([player_state, now_playing], ([$player_state, $now_playing]) => {
   }
 }).subscribe(() => {})
 
-export const play_track = (file: import("$server/defs/db/AudioFile").AudioFile) => {
+
+export const play_track = (file: import("$server/defs/db/AudioFile").AudioFile, picture_id: string) => {
   if(!browser) throw new Error("player.play_track called in ssr context");
   destroy_audio_tag();
   now_playing_stop();
@@ -194,6 +206,7 @@ export const play_track = (file: import("$server/defs/db/AudioFile").AudioFile) 
     type: "track",
     file,
     audio_state: "loading",
+    picture_id,
   })
 
   const audio = get_audio_tag(storage_audio_url(file.station_id, file._id));

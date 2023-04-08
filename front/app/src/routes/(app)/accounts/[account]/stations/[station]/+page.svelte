@@ -33,7 +33,7 @@
 
   const toggle_play = () => {
     if($station_preview_state === "playing" || $station_preview_state === "loading") pause();
-    else play_station({ _id: data.station._id, name: data.station.name })
+    else play_station({ _id: data.station._id, picture_id: data.station.picture_id, name: data.station.name })
   }
 
   const stats_num = (v: number): string => {

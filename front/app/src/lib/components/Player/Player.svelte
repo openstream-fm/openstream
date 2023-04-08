@@ -4,9 +4,11 @@
 	import { ripple } from "$share/ripple";
 	import { mdiClose, mdiPause, mdiPlay } from "@mdi/js";
 	import { slide } from "svelte/transition";
-	import { player_state, player_title, player_subtitle, player_audio_state, pause, resume, close } from "./player";
+	import { player_state, player_title, player_subtitle, player_audio_state, pause, resume, close, player_picture_id } from "./player";
 	import { expoInOut } from "svelte/easing";
 
+  import { page } from "$app/stores";
+  
   $: state = $player_state;
   $: title = $player_title;
   $: subtitle = $player_subtitle;
@@ -55,6 +57,24 @@
     height: var(--player-h);
   }
 
+  .info {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .pic {
+    width: 2.25rem;
+    height: 2.25rem;
+    margin-inline-end: 1rem;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 0.25rem;
+  }
+
   .titles {
     flex: 1;
   }
@@ -82,13 +102,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 1rem;
+    padding: 0 0.5rem;
   }
 
   .toggle {
     flex: none;
-    width: 3rem;
-    height: 3rem;
+    width: 3.5rem;
+    height: 3.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -151,17 +171,20 @@
         </button>
       </div>
 
-      <div class="titles">
-        <div class="title">
-          <span>
-            {title}
-          </span>
-        </div>
-        {#if subtitle}
-          <div class="subtitle" transition:slide|local={{ duration: 200 }}>
-            <span>{subtitle}</span>
+      <div class="info">
+        <div class="pic" style="background-image: url({$page.data.config.storagePublicURL}/station-pictures/webp/64/{$player_picture_id}.webp)" /> 
+        <div class="titles">
+          <div class="title">
+            <span>
+              {title}
+            </span>
           </div>
-        {/if}
+          {#if subtitle}
+            <div class="subtitle" transition:slide|local={{ duration: 200 }}>
+              <span>{subtitle}</span>
+            </div>
+          {/if}
+        </div>
       </div>
 
       <div class="btns">

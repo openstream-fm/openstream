@@ -208,7 +208,7 @@
       if($player_audio_state === "paused") resume();
       else pause();
     } else {
-      play_track(file);
+      play_track(file, data.station.picture_id);
     }
   }
 
