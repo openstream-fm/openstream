@@ -33,7 +33,7 @@
 <div class="dashboard" in:fly={{ duration: 300, x: -25 }}>
   <Drawer fixed_open={drawer_fixed_open} {close_drawer_fixed} {open_drawer_fixed} />
   <div class="content">
-    <Top drawer_fixed_open={drawer_fixed_open} {close_drawer_fixed} {open_drawer_fixed} />
+    <Top {drawer_fixed_open} {close_drawer_fixed} {open_drawer_fixed} />
     <div class="page">
       <slot />
     </div>

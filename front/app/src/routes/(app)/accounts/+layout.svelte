@@ -3,9 +3,7 @@
 	import { onMount } from "svelte";
 
   onMount(() => {
-    return () => {
-      close();
-    }
+    return () => close()
   })
 </script>
 

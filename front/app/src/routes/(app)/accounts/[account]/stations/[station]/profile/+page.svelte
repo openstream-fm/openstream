@@ -131,7 +131,7 @@
 </style>
 
 <svelte:head>
-  <title>Select station</title>
+  <title>Station Profile</title>
 </svelte:head>
 
 <Page>
