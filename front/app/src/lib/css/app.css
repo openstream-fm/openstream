@@ -12,6 +12,7 @@
 
   --drawer-width: 250px;
   --top-h: 4.5rem;
+  --player-h: 5rem;
 
   --red-rgb: 255, 65, 54;
   --red: rgb(var(--red-rgb));
@@ -29,8 +30,8 @@
   --bg-gray: rgb(var(--bg-gray-rgb));
 
   --z-top: 1000;
-  --z-player: 1100;
-  --z-drawer-wide: 1200;
+  --z-drawer-wide: 1100;
+  --z-player: 1200;
   --z-user-menu: 1300;
   --z-drawer-fixed: 1400;
   --z-overlay: 3000;

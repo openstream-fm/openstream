@@ -134,7 +134,7 @@
 </style>
 
 <svelte:head>
-  <title>Select station</title>
+  <title>Crete new station</title>
 </svelte:head>
 
 <Page>

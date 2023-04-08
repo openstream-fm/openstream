@@ -47,7 +47,7 @@
 </style>
 
 <svelte:head>
-  <title>Create account</title>
+  <title>Create new account</title>
 </svelte:head>
 
 <div class="layout" in:fly|local={{ x: -25, duration: 200 }}>
@@ -66,6 +66,4 @@
 
     </div>
   </div>
-
-  <Player />
 </div>

@@ -3,8 +3,9 @@
   import Icon from "$share/Icon.svelte";
 	import { ripple } from "$share/ripple";
 	import { mdiClose, mdiPause, mdiPlay } from "@mdi/js";
-	import { fly, slide } from "svelte/transition";
+	import { slide } from "svelte/transition";
 	import { player_state, player_title, player_subtitle, player_audio_state, pause, resume, close } from "./player";
+	import { expoInOut } from "svelte/easing";
 
   $: state = $player_state;
   $: title = $player_title;
@@ -17,6 +18,17 @@
     if(audio_state === "playing") pause();
     else if(audio_state === "loading") pause();
     else if(audio_state === "paused") resume();
+  }
+
+  const transition = (node: HTMLElement) => {
+    return () => {
+      const h = node.clientHeight;
+      return {
+        css: (t: number, u: number) => `opacity: ${t}; margin-block-end: -${u * h}px`,
+        easing: expoInOut, 
+        duration: 350,
+      }
+    }
   }
 </script>
 
@@ -40,7 +52,7 @@
     align-items: center;
     box-shadow: rgba(0,0,0,0.25) 0 0 6px;
     background: #fff;
-    height: 5rem;
+    height: var(--player-h);
   }
 
   .titles {
@@ -124,7 +136,7 @@
 
 {#if state.type !== "closed"}
   <div class="player-holder">
-    <div class="player" aria-label="Player" transition:fly|local={{ y: 50, duration: 350 }}>
+    <div class="player" aria-label="Player" transition:transition|local>
 
       <div class="toggle-out">
         <button use:ripple class="toggle ripple-container" aria-label={toggle_aria_label} data-audio-state={audio_state} on:click={toggle}>

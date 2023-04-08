@@ -164,6 +164,4 @@
       </div>
     {/if}
   </div>
-  
-  <Player />
 </div>
