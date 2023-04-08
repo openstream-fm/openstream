@@ -3,6 +3,7 @@
 	"short_name": "Openstream Studio",
 	"start_url": "/?utm_source=pwa",
 	"display": "standalone",
+  "orientation": "portrait",
   "scope": "/",
   "background_color": "#ffffff",
   "theme_color": "#ff4136",
@@ -18,13 +19,13 @@
 			"type": "image/png"
     },
     {
-			"src": "images/512.png",
+			"src": "/icons/512.png",
 			"sizes": "512x512",
 			"type": "image/png",
       "purpose": "any"
     },
     {
-			"src": "images/512.png",
+			"src": "/icons/512.png",
 			"sizes": "512x512",
 			"type": "image/png",
       "purpose": "maskable"
