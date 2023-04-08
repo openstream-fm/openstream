@@ -22,7 +22,7 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
 
     app.use("/api", app_api({ config, logger }))
     app.use(express.static(path.resolve(__dirname, "../../static/studio"), { etag: true }))
-    app.use(express.static(path.resolve(__dirname, "../../../static"), { etag: true }))
+    app.use(express.static(path.resolve(__dirname, "../../../static"), { etag: true, dotfiles: "allow" }))
 
     if(env.SVELTEKIT_APP_DEV) {
       app.use(sveltekit_dev_proxy(env.SVELTEKIT_APP_PORT))
