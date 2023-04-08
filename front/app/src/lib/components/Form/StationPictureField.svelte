@@ -8,19 +8,24 @@
 	import CircularProgress from '$share/CircularProgress.svelte';
 	import { ripple } from '$share/ripple';
 	import { _post } from '$share/net.client';
+	import { browser } from '$app/environment';
 
 	let error_message: string | null;
 	let loading: boolean = false;
 
-	$: bg_url = picture_id
-		? `${$page.data.config.storagePublicURL}/station-pictures/webp/256/${picture_id}.webp`
-		: no_img;
+  const bg_url = (storage_url: string, picture_id: string | null, loading: boolean) => {
+    if(picture_id != null && !loading) {
+      return `${storage_url}/station-pictures/webp/256/${picture_id}.webp`;
+    } else {
+      return no_img;
+    }
+  }
 
   let files: FileList | undefined;
 
   let _token = 0; 
 
-  $: files?.[0] && on_file(files[0])
+  $: browser && files?.[0] && on_file(files[0])
   const on_file = async (file: File) => {
     const token = ++_token;
     error_message = null;
@@ -110,6 +115,7 @@
 	}
 
 	.picture-bg {
+    display: flex;
 		flex: 1;
 		background-size: contain;
 		background-position: center;
@@ -118,9 +124,11 @@
 
   .loading {
     display: flex;
+    flex: 1;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
+    font-size: 3.5rem;
+    color: var(--red);
   }
 
 	.error-message {
@@ -163,7 +171,7 @@
 <div class="station-picture-field">
 	<div class="start">
 		<div class="picture-out">
-			<div class="picture-bg" style="background-image: url({bg_url})">
+			<div class="picture-bg" style="background-image: url({bg_url($page.data.config.storagePublicURL, picture_id, loading)})">
         {#if loading}
           <div class="loading">
             <CircularProgress />

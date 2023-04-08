@@ -259,16 +259,10 @@ pub enum CreateStationPictureError {
   ImageNotSquare,
   #[error("Image must be of 512x512px or larger")]
   ImageTooSmallSize,
-  #[error("Account with id {0} does not exists")]
+  #[error("Account with id {0} not found")]
   AccountNotFound(String),
-  // #[error("Image is not supported or invalid ({0})")]
-  // Image(#[from] image::ImageError),
   #[error("Image is not supported or invalid ({0})")]
   Ril(ril::Error),
-  // #[error("Webp encoding error {0}")]
-  // Webp(String),
-  // #[error("Io error: {0}")]
-  // Io(#[from] std::io::Error),
 }
 
 impl From<ril::Error> for CreateStationPictureError {

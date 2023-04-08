@@ -2,7 +2,26 @@
   export let data: import("./$types").LayoutData;
   import { page } from "$app/stores";
 	import { ripple } from "$share/ripple";
-	import { fly } from "svelte/transition";
+	import { crossfade, fade, fly } from "svelte/transition";
+
+  const scroll_into_view = (node: HTMLElement) => {
+    // @ts-ignore
+    if(node.scrollIntoViewIfNeeded) {
+      // @ts-ignore
+      node.scrollIntoViewIfNeeded(true);
+    }
+  }
+
+  // @ts-ignore
+  const [_enter, _leave] = crossfade({ duration: 300, fallback: fade });
+
+  const current_enter = (node: HTMLElement) => {
+    return _enter(node, { key: null })
+  }
+
+  const current_leave = (node: HTMLElement) => {
+    return _leave(node, { key: null })
+  }
 </script>
 
 <style>
@@ -64,18 +83,22 @@
   }
 
   .station-action {
+    display: flex;
+    flex-direction: column;
     flex: none;
     color: var(--blue);
     text-decoration: none;
-    transition: background-color 200ms ease;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.25rem;
-    flex: none;
+    margin: 0 0.1rem;
+    position: relative;
   }
 
-  .station-action.current {
-    background: rgba(var(--red-rgb),  0.05);
+  .action-name {
+    padding: 0.6rem 0.75rem;
   }
+
+  /* .station-action.current {
+    background: rgba(var(--red-rgb),  0.05);
+  } */
 
   .station-name-ellipsis {
     white-space: nowrap;
@@ -83,6 +106,18 @@
     text-overflow: ellipsis;
     flex: 1;
     min-width: 0;
+  }
+
+  .current-action-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    /* border-bottom: 1px solid var(--blue); */
+    border-radius: 0.25rem 0.25rem;
+    pointer-events: none;
+    background: rgba(var(--blue-rgb), 0.1);
   }
 </style>
 
@@ -100,29 +135,44 @@
         <div class="station-actions">
           <a
             href="/accounts/{data.station.account_id}/stations/{data.station._id}"
-            class="station-action ripple-container"
+            class="station-action"
             class:current={$page.url.pathname === `/accounts/${data.station.account_id}/stations/${data.station._id}`}
-            use:ripple
-            >
-            Dashboard
+            on:click={event => scroll_into_view(event.currentTarget)}
+          >
+            <span class="action-name ripple-container">
+              Dashboard
+            </span>
+            {#if $page.url.pathname === `/accounts/${data.station.account_id}/stations/${data.station._id}`}
+              <div class="current-action-line" in:current_enter out:current_leave />
+            {/if}
           </a>
 
           <a
             href="/accounts/{data.station.account_id}/stations/{data.station._id}/profile"
-            class="station-action ripple-container"
+            class="station-action"
             class:current={$page.url.pathname === `/accounts/${data.station.account_id}/stations/${data.station._id}/profile`}
-            use:ripple
-            >
-            Profile
+            on:click={event => scroll_into_view(event.currentTarget)}
+          >
+            <span class="action-name ripple-container">
+              Profile
+            </span>
+            {#if $page.url.pathname === `/accounts/${data.station.account_id}/stations/${data.station._id}/profile`}
+              <div class="current-action-line" in:current_enter out:current_leave />
+            {/if}
           </a>
 
           <a
             href="/accounts/{data.station.account_id}/stations/{data.station._id}/playlist"
-            class="station-action ripple-container"
+            class="station-action"
             class:current={$page.url.pathname === `/accounts/${data.station.account_id}/stations/${data.station._id}/playlist`}
-            use:ripple
-            >  
-            Playlist
+            on:click={event => scroll_into_view(event.currentTarget)}
+          >
+            <span class="action-name ripple-container">
+              Playlist
+            </span>
+            {#if $page.url.pathname === `/accounts/${data.station.account_id}/stations/${data.station._id}/playlist`}
+              <div class="current-action-line" in:current_enter out:current_leave />
+            {/if}
           </a>
         </div>
       </div>

@@ -158,11 +158,13 @@
 
   .menu-station {
     display: block;
-    padding: 0.75rem 1.5rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    padding: 0.75rem 1rem 0.75rem 0.75rem;
     transition: background-color 150ms ease;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.75rem;
   }
   
   .menu-station.current {
@@ -172,6 +174,24 @@
   .menu-station:hover {
     background: #e8e8e8;
   }
+
+  .station-pic {
+    border-radius: 0.25rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  .station-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+  }
+
+
 </style>
 
 <div class="station">
@@ -225,7 +245,8 @@
                 <div class="station-list thin-scroll">
                   {#each stations.items as item (item._id)}
                     <a href="/accounts/{item.account_id}/stations/{item._id}" class="na menu-station" class:current={item._id === station?._id} on:click={() => menu_open = false}>
-                      {item.name}
+                      <div class="station-pic" style="background-image: url({$page.data.config.storagePublicURL}/station-pictures/webp/32/{item.picture_id}.webp)" />
+                      <span class="station-name">{item.name}</span>
                     </a>
                   {/each}
                 </div>

@@ -40,16 +40,34 @@
     user-select: none;
     font-size: 1.1rem;
     transition: background-color 150ms ease;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
   }
+
 
   .list-item:hover {
     background: #eee;
+  }
+
+  .list-item-pic {
+    border-radius: 0.25rem;
+    flex: none;
+    overflow: hidden;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 2rem;
+    height: 2rem;
+    margin-inline-end: 1rem;
   }
 
   .list-item-name {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    flex: 1;
   }
 
   .no-items {
@@ -103,6 +121,10 @@
       <div class="list-box">
         {#each current_account_stations as station (station._id)}
           <a href="/accounts/{station.account_id}/stations/{station._id}" class="list-item na ripple-container" use:ripple>
+            <div
+              class="list-item-pic"
+              style="background-image: url({data.config.storagePublicURL}/station-pictures/webp/64/{station.picture_id}.webp)"
+            />
             <span class="list-item-name">
               {station.name}
             </span>
