@@ -1,7 +1,7 @@
 {
 	"name": "Openstream Studio",
 	"short_name": "Openstream Studio",
-	"start_url": "/?utm_source=pwa",
+	"start_url": "/#utm_source=pwa",
 	"display": "standalone",
   "orientation": "portrait",
   "scope": "/",
