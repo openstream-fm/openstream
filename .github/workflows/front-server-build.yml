@@ -11,7 +11,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ${{ env.working-directory }}/front/server
+        working-directory: ./front/server
 
     runs-on: ubuntu-latest
 
