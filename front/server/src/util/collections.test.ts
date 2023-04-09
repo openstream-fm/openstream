@@ -103,7 +103,7 @@ describe('collections: equals', () => {
 });
 
 
-describe('collections>: diff', () => {
+describe('collections: diff', () => {
   it('returns an empty object for equal objects', () => {
     const db = { a: 1, b: 'hello' };
     const current = { a: 1, b: 'hello' };
