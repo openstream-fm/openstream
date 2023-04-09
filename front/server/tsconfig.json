@@ -1,7 +1,7 @@
 {
   "ts-node": {
     "moduleTypes": {
-      "*": "cjs"
+      "*": "module"
     }
   },
 
