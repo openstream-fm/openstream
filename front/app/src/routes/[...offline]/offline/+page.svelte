@@ -29,6 +29,7 @@
   }
 
   .retry {
+    display: flex;
     padding: 0.75rem 1rem;
     background: var(--blue);
     color: #fff;
@@ -47,7 +48,7 @@
   <div class="page">
     <h1>Seems that you are offline</h1>    
     <p>You need internet access to use this app</p>
-    <a class="retry ripple-container" use:ripple href="javascript:location.reload()">
+    <a class="na retry ripple-container" use:ripple href="javascript:location.reload()">
       Retry
     </a>
   </div>
