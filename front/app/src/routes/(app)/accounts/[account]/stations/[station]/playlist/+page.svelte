@@ -15,6 +15,7 @@
 	import { _message, _progress } from "$share/notify";
   import Dialog from "$share/Dialog.svelte";
   import { close, player_playing_audio_file_id, player_audio_state, resume, pause, play_track, player_state, play_station } from "$lib/components/Player/player";
+  import { prevent_unload } from "$share/prevent-unload";
 
   let dragging_i: number | null = null;
   let drag_target_i: number | null = null;
@@ -248,18 +249,13 @@
   let uploading: Item[] = [];
   let files: FileList | undefined;
 
-  beforeNavigate(({ willUnload, from, to, cancel }) => {
-    if(from && to && from.route === to.route) return;
+  prevent_unload(() => {
     if(uploading.some(item => item.state === "waiting" || item.state === "uploading")) {
-      if(willUnload){
-        cancel();
-      } else {
-        const ok = confirm("Leaving this page will cancel pending uploads. Do you want to leave anyway?");
-        if(!ok) cancel();
-      }
+      return "Leaving this page will cancel pending uploads. Do you want to leave anyway?";
+    } else {
+      return null;
     }
   })
-
 
   let controller: AbortController | null = null;
   let unmounted = false;

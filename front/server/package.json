@@ -9,7 +9,7 @@
     "start": "node --no-warnings --experimental-specifier-resolution=node openstream-front start",
     "dev": "SVELTEKIT_APP_DEV=1 SVELTEKIT_APP_PORT=3100 nodemon --exec node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm src/cli.ts start",
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
@@ -31,11 +31,14 @@
     "typia": "^3.4.18"
   },
   "devDependencies": {
+    "@jest/globals": "^29.5.0",
     "@types/connect-mongodb-session": "^2.4.4",
     "@types/cookie-parser": "^1.4.3",
     "@types/express": "^4.17.14",
     "@types/express-session": "^1.17.5",
     "@types/node-fetch": "^2.6.2",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
     "ttypescript": "^1.5.15",
