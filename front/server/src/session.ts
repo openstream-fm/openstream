@@ -45,9 +45,9 @@ export function decrypt(hash: string, key: Buffer, logger: Logger): string {
 const get_cookie_session = (req: Request, name: string, key: Buffer, logger: Logger): SessionData => {
   try {
     const v = req.cookies[name];
-    logger.info(`v: ${v}`)
+    logger.debug(`v: ${v}`)
     if(typeof v !== "string") {
-      logger.info(`not string, ${typeof v}`)
+      logger.debug(`not string, ${typeof v}`)
       return { user: null };
     }
     const json_string = decrypt(v, key, logger);
