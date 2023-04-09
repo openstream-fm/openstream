@@ -17,6 +17,7 @@ pub mod me;
 pub mod stations;
 pub mod users;
 
+pub mod devices;
 pub mod station_pictures;
 
 pub fn router(

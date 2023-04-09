@@ -298,16 +298,28 @@ pub async fn internal_get_access_token_scope(
 ) -> Result<AccessTokenScope, GetAccessTokenScopeError> {
   let doc = internal_get_access_token(req, media).await?;
 
-  let scope = match doc.scope {
+  let scope = get_scope_from_token(&doc).await?;
+
+  Ok(scope)
+}
+
+pub async fn get_scope_from_token(
+  token: &AccessToken,
+) -> Result<AccessTokenScope, GetAccessTokenScopeError> {
+  let scope = match &token.scope {
     Scope::Global => AccessTokenScope::Global,
 
-    Scope::Admin { admin_id } => match Admin::get_by_id(&admin_id).await? {
-      None => return Err(GetAccessTokenScopeError::AdminNotFound(admin_id)),
+    Scope::Admin { admin_id } => match Admin::get_by_id(admin_id).await? {
+      None => {
+        return Err(GetAccessTokenScopeError::AdminNotFound(
+          admin_id.to_string(),
+        ))
+      }
       Some(admin) => AccessTokenScope::Admin(admin),
     },
 
-    Scope::User { user_id } => match User::get_by_id(&user_id).await? {
-      None => return Err(GetAccessTokenScopeError::UserNotFound(user_id)),
+    Scope::User { user_id } => match User::get_by_id(user_id).await? {
+      None => return Err(GetAccessTokenScopeError::UserNotFound(user_id.to_string())),
       Some(user) => AccessTokenScope::User(user),
     },
   };

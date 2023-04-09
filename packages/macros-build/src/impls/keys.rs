@@ -59,12 +59,15 @@ pub fn keys(_args: TokenStream, tokens: TokenStream) -> TokenStream {
           },
         };
 
-        if matches!(tagged, Tagged::Externally) {
-          keys.push((
-            variant.span(),
-            variant_key.trim_start_matches('_').to_string(),
-            variant_value.clone(),
-          ));
+        match tagged {
+          Tagged::Adjacently { .. } | Tagged::Internally { .. } | Tagged::Externally => {
+            let key = format!(
+              "ENUM_VARIANT_{}",
+              variant_key.trim_matches('_').to_uppercase()
+            );
+            keys.push((variant.span(), key, variant_value.clone()))
+          }
+          _ => {}
         }
 
         match &variant.fields {

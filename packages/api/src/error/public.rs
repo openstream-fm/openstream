@@ -68,6 +68,7 @@ pub enum PublicErrorCode {
   UserNotFound,
   AccountNotFound,
   AudioFileNotFound,
+  DeviceNotFound,
   QueryStringInvalid,
   PayloadIo,
   PayloadJson,
