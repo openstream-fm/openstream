@@ -242,6 +242,16 @@ export const app_api = ({
       }
     })
 
+  api.route("/devices")
+    .get(json(async req => {
+      return await client.devices.list(ip(req), ua(req), token(req), req.query as any);
+    }))
+
+  api.route("/devices/:device")
+    .delete(json(async req => {
+      return await client.devices.delete(ip(req), ua(req), token(req), req.params.device);
+    }))
+
   api.route("/station-pictures")
     .post(json(async req => {
       return await client.stations.pictures.post(ip(req), ua(req), token(req), req.query as any, req)

@@ -4,4 +4,5 @@ export interface Query {
   skip?: number;
   limit?: number;
   user_id?: string;
+  admin_id?: string;
 }

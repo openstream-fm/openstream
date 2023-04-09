@@ -23,6 +23,7 @@ export class Client {
   users: Users;
   accounts: Accounts;
   stations: Stations;
+  devices: Devices;
 
   constructor(base_url: string, { logger }: { logger: Logger }) {
     this.base_url = base_url.trim().replace(/\/+$/g, "")
@@ -32,6 +33,7 @@ export class Client {
     this.users = new Users(this);
     this.accounts = new Accounts(this);
     this.stations = new Stations(this);
+    this.devices = new Devices(this);
   }
 
   async fetch(_url: string, init: RequestInit = {}): Promise<Response> {
@@ -204,6 +206,22 @@ export class Accounts {
 
   async patch(ip: string | null, ua: string | null, token: string, id: string, payload: import("./defs/api/accounts/[account]/PATCH/Payload").Payload): Promise<import("./defs/api/accounts/[account]/PATCH/Output").Output> {
     return await this.client.patch(ip, ua, token, `/accounts/${id}`, payload);
+  }
+}
+
+export class Devices {
+  client: Client;
+
+  constructor(client: Client) {
+    this.client = client;
+  }
+
+  async list(ip: string | null, ua: string | null, token: string, query: import("./defs/api/devices/GET/Query").Query): Promise<import("./defs/api/devices/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/devices${qss(query)}`);
+  }
+
+  async delete(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/devices/[device]/DELETE/Output").Output> {
+    return await this.client.get(ip, ua, token, `/devices/${id}`);
   }
 }
 
