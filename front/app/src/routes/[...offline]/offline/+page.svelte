@@ -29,7 +29,7 @@
   }
 
   .retry {
-    display: flex;
+    display: inline-block;
     padding: 0.75rem 1rem;
     background: var(--blue);
     color: #fff;
