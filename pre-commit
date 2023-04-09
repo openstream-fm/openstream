@@ -12,7 +12,7 @@ check="$green$check_char$nc"
 errors=0
 
 echo -n "Checking formatting... "
-cargo fmt --write-mode=replace
+cargo fmt
 
 echo -n "Running tests... "
 if result=$(cargo test --color always 2>&1); then
