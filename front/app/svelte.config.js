@@ -2,6 +2,7 @@
 import adapter from '@sveltejs/adapter-node';
 import preprocess from 'svelte-preprocess';
 import os from "os";
+import child_process from "child_process";
 
 const version = () => {
 	if(os.hostname().includes("fedora")) {
