@@ -19,35 +19,35 @@ If you want to control the logging output completely, see the `custom_logger` ex
 
 #[cfg(all(feature = "color", feature = "humantime"))]
 fn main() {
-    use env_logger::{fmt::Color, Builder, Env};
+  use env_logger::{fmt::Color, Builder, Env};
 
-    use std::io::Write;
+  use std::io::Write;
 
-    fn init_logger() {
-        let env = Env::default()
-            .filter("MY_LOG_LEVEL")
-            .write_style("MY_LOG_STYLE");
+  fn init_logger() {
+    let env = Env::default()
+      .filter("MY_LOG_LEVEL")
+      .write_style("MY_LOG_STYLE");
 
-        Builder::from_env(env)
-            .format(|buf, record| {
-                let mut style = buf.style();
-                style.set_bg(Color::Yellow).set_bold(true);
+    Builder::from_env(env)
+      .format(|buf, record| {
+        let mut style = buf.style();
+        style.set_bg(Color::Yellow).set_bold(true);
 
-                let timestamp = buf.timestamp();
+        let timestamp = buf.timestamp();
 
-                writeln!(
-                    buf,
-                    "My formatted log ({}): {}",
-                    timestamp,
-                    style.value(record.args())
-                )
-            })
-            .init();
-    }
+        writeln!(
+          buf,
+          "My formatted log ({}): {}",
+          timestamp,
+          style.value(record.args())
+        )
+      })
+      .init();
+  }
 
-    init_logger();
+  init_logger();
 
-    log::info!("a log from `MyLogger`");
+  log::info!("a log from `MyLogger`");
 }
 
 #[cfg(not(all(feature = "color", feature = "humantime")))]

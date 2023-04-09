@@ -1,13 +1,14 @@
 use async_trait::async_trait;
-use db::station::Station;
 use db::audio_file::AudioFile;
+use db::station::Station;
 use db::stream_connection::StreamConnection;
 use db::Model;
-use drop_tracer::{Token, DropTracer};
+use drop_tracer::{DropTracer, Token};
 use futures::stream::FuturesUnordered;
 use futures::TryStreamExt;
 use hyper::header::{HeaderName, ACCEPT_RANGES, CACHE_CONTROL, RETRY_AFTER};
 use hyper::{header::CONTENT_TYPE, http::HeaderValue, Body, Server, StatusCode};
+use ip_counter::IpCounter;
 use log::*;
 use media_sessions::playlist::run_playlist_session;
 use media_sessions::MediaSessionMap;
@@ -17,13 +18,12 @@ use prex::{handler::Handler, Next, Request, Response};
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use shutdown::Shutdown;
-use transfer_map::TransferTracer;
+use socket2::{Domain, Protocol, Socket, Type};
 use std::future::Future;
 use std::net::SocketAddr;
-use std::sync::atomic::{AtomicU64, Ordering, AtomicBool};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
-use socket2::{Domain, Protocol, Socket, Type};
-use ip_counter::IpCounter;
+use transfer_map::TransferTracer;
 
 pub mod transfer_map;
 
@@ -48,7 +48,7 @@ pub struct StreamServer {
   addrs: Vec<SocketAddr>,
   media_sessions: MediaSessionMap,
   shutdown: Shutdown,
-  drop_tracer:  DropTracer,
+  drop_tracer: DropTracer,
   transfer_map: TransferTracer,
   ip_counter: IpCounter,
 }
@@ -66,11 +66,16 @@ pub enum StreamServerError {
   #[error("io error: {0}")]
   Io(#[from] std::io::Error),
   #[error("hyper error: {0}")]
-  Hyper(#[from] hyper::Error)
+  Hyper(#[from] hyper::Error),
 }
 
 impl StreamServer {
-  pub fn new(addrs: Vec<SocketAddr>, shutdown: Shutdown, drop_tracer: DropTracer, media_sessions: MediaSessionMap) -> Self {
+  pub fn new(
+    addrs: Vec<SocketAddr>,
+    shutdown: Shutdown,
+    drop_tracer: DropTracer,
+    media_sessions: MediaSessionMap,
+  ) -> Self {
     Self {
       addrs,
       shutdown,
@@ -96,7 +101,7 @@ impl StreamServer {
         self.transfer_map.clone(),
         self.shutdown.clone(),
         self.drop_tracer.clone(),
-        self.ip_counter.clone()
+        self.ip_counter.clone(),
       ),
     );
 
@@ -123,7 +128,6 @@ impl StreamServer {
       socket.listen(128)?;
 
       let tcp = socket.into();
-
 
       let server = Server::from_tcp(tcp)?
         .http1_only(true)
@@ -168,7 +172,13 @@ struct StreamHandler {
 }
 
 impl StreamHandler {
-  pub fn new(media_sessions: MediaSessionMap, transfer_map: TransferTracer, shutdown: Shutdown, drop_tracer: DropTracer, ip_counter: IpCounter) -> Self {
+  pub fn new(
+    media_sessions: MediaSessionMap,
+    transfer_map: TransferTracer,
+    shutdown: Shutdown,
+    drop_tracer: DropTracer,
+    ip_counter: IpCounter,
+  ) -> Self {
     Self {
       media_sessions,
       transfer_map,
@@ -184,19 +194,20 @@ impl StreamHandler {
     let ip = req.isomorphic_ip();
 
     // we do not trace ip counts from internal net or loopback ips (not global)
-    
+
     // TODO:
     // provide a way to whitelist global ips (from openstream itself or for test purposes)
     // maybe with a internal password for each stream in the provided
     // by the client as a request header
     let _ip_count = match ip_rfc::global(&ip) {
       false => 0,
-      true => match self.ip_counter.increment_with_limit(ip, constants::STREAM_IP_CONNECTIONS_LIMIT) {
+      true => match self
+        .ip_counter
+        .increment_with_limit(ip, constants::STREAM_IP_CONNECTIONS_LIMIT)
+      {
         Some(n) => n,
-        None => {
-          return Err(StreamError::TooManyOpenIpConnections)
-        }
-      }
+        None => return Err(StreamError::TooManyOpenIpConnections),
+      },
     };
 
     let ip_decrementer = {
@@ -427,7 +438,8 @@ impl From<StreamError> for Response {
       StreamError::TooManyOpenIpConnections => (
         StatusCode::TOO_MANY_REQUESTS,
         "TOO_MANY_CONNECTIONS",
-        "Too many open connections from your network, close some connections or try again later".into(),
+        "Too many open connections from your network, close some connections or try again later"
+          .into(),
         Some(30u32),
       ),
 
@@ -443,23 +455,22 @@ impl From<StreamError> for Response {
         "STATION_TRANSFER_LIMIT",
         "Station transfer limit reached".into(),
         Some(60 * 60 * 24),
-      )
+      ),
     };
 
     let mut res = Response::new(status);
 
-    res.headers_mut().append(
-      CONTENT_TYPE,
-      TEXT_PLAIN_UTF8
-    );
+    res.headers_mut().append(CONTENT_TYPE, TEXT_PLAIN_UTF8);
 
     res
       .headers_mut()
       .append(X_OPENSTREAM_REJECTION_CODE, HeaderValue::from_static(code));
 
     if let Some(secs) = retry_after_secs {
-      res.headers_mut()
-        .append(RETRY_AFTER, HeaderValue::from_str(&secs.to_string()).unwrap());
+      res.headers_mut().append(
+        RETRY_AFTER,
+        HeaderValue::from_str(&secs.to_string()).unwrap(),
+      );
     }
 
     *res.body_mut() = Body::from(message);

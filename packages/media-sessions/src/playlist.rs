@@ -1,4 +1,4 @@
-use std::sync::atomic::{AtomicUsize, Ordering, AtomicU64};
+use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::time::Instant;
 
 use constants::{PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY, STREAM_BURST_LENGTH, STREAM_CHUNK_SIZE};

@@ -23,18 +23,18 @@ extern crate log;
 use env_logger::{Builder, Env};
 
 fn init_logger() {
-    let env = Env::default()
-        .filter("MY_LOG_LEVEL")
-        .write_style("MY_LOG_STYLE");
+  let env = Env::default()
+    .filter("MY_LOG_LEVEL")
+    .write_style("MY_LOG_STYLE");
 
-    Builder::from_env(env)
-        .format_level(false)
-        .format_timestamp_nanos()
-        .init();
+  Builder::from_env(env)
+    .format_level(false)
+    .format_timestamp_nanos()
+    .init();
 }
 
 fn main() {
-    init_logger();
+  init_logger();
 
-    info!("a log from `MyLogger`");
+  info!("a log from `MyLogger`");
 }

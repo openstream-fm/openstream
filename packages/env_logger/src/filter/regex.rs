@@ -6,24 +6,24 @@ use self::regex::Regex;
 
 #[derive(Debug)]
 pub struct Filter {
-    inner: Regex,
+  inner: Regex,
 }
 
 impl Filter {
-    pub fn new(spec: &str) -> Result<Filter, String> {
-        match Regex::new(spec) {
-            Ok(r) => Ok(Filter { inner: r }),
-            Err(e) => Err(e.to_string()),
-        }
+  pub fn new(spec: &str) -> Result<Filter, String> {
+    match Regex::new(spec) {
+      Ok(r) => Ok(Filter { inner: r }),
+      Err(e) => Err(e.to_string()),
     }
+  }
 
-    pub fn is_match(&self, s: &str) -> bool {
-        self.inner.is_match(s)
-    }
+  pub fn is_match(&self, s: &str) -> bool {
+    self.inner.is_match(s)
+  }
 }
 
 impl fmt::Display for Filter {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.inner.fmt(f)
-    }
+  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    self.inner.fmt(f)
+  }
 }

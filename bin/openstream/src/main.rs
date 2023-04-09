@@ -26,7 +26,6 @@ use source::SourceServer;
 use stream::StreamServer;
 use tokio::runtime::Runtime;
 
-
 use jemallocator::Jemalloc;
 
 #[global_allocator]
@@ -152,7 +151,10 @@ async fn shared_init(config: String) -> Result<Config, anyhow::Error> {
     .context("failed to parse mongodb connection string")?;
 
   info!("mongodb config hosts: {:?}", client_options.hosts);
-  info!("mongodb client compressors: {:?}", client_options.compressors);
+  info!(
+    "mongodb client compressors: {:?}",
+    client_options.compressors
+  );
 
   let client = mongodb::Client::with_options(client_options.clone())
     .context("failed to create mongodb client")?;
@@ -232,12 +234,10 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   let local_ip = local_ip_address::local_ip().context("error obtaining local ip")?;
   info!("local ip address: {}", local_ip.yellow());
 
-
   // info!("retrieving public ip...");
   // let ip = ip::get_ip_v4().await.context("error obtaining public ip")?;
   // info!("public ip address: {}", ip.yellow());
 
-  
   let config::Config {
     mongodb: _,
     ref stream,
@@ -278,13 +278,23 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   }
 
   if let Some(stream_config) = stream {
-    let stream = StreamServer::new(stream_config.addrs.clone(), shutdown.clone(), drop_tracer.clone(), media_sessions.clone());
+    let stream = StreamServer::new(
+      stream_config.addrs.clone(),
+      shutdown.clone(),
+      drop_tracer.clone(),
+      media_sessions.clone(),
+    );
     let fut = stream.start()?;
     futs.push(fut.boxed());
   }
 
   if let Some(api_config) = api {
-    let api = ApiServer::new(api_config.addrs.clone(), shutdown.clone(), drop_tracer.clone(), media_sessions.clone());
+    let api = ApiServer::new(
+      api_config.addrs.clone(),
+      shutdown.clone(),
+      drop_tracer.clone(),
+      media_sessions.clone(),
+    );
     let fut = api.start()?;
     futs.push(fut.boxed());
   }
@@ -315,9 +325,7 @@ fn cluster(opts: Cluster) -> Result<(), anyhow::Error> {
 }
 
 async fn cluster_async(Cluster { instances, config }: Cluster) -> Result<(), anyhow::Error> {
-  
   println!("======== cluster start ========");
-
 
   let futs = FuturesUnordered::new();
 
@@ -326,7 +334,6 @@ async fn cluster_async(Cluster { instances, config }: Cluster) -> Result<(), any
   }
 
   let exe = std::env::current_exe().context("failed to get curret exe")?;
-
 
   for i in 0..instances {
     let exe = exe.clone();
@@ -338,7 +345,7 @@ async fn cluster_async(Cluster { instances, config }: Cluster) -> Result<(), any
       cmd.arg("--config");
       cmd.arg(&config);
       cmd.env("INSTANCE_ID", &format!("{}", i));
-      
+
       cmd.stdin(std::process::Stdio::inherit());
       cmd.stdout(std::process::Stdio::inherit());
       cmd.stderr(std::process::Stdio::inherit());
@@ -358,7 +365,7 @@ async fn cluster_async(Cluster { instances, config }: Cluster) -> Result<(), any
 
   Ok(())
 }
- 
+
 fn token(
   CreateToken {
     config,
