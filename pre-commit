@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# this pre-commit hook ensure that the repo has the 
+# latest ts definitions as they are generated from
+# cargo test command
+
 check_char='\xE2\x9C\x93'
 cross_char='\xE2\x9D\x8C'
 green='\033[0;32m'
@@ -6,10 +11,8 @@ nc='\033[0m'
 check="$green$check_char$nc"
 errors=0
 
-
 echo -n "Checking formatting... "
 cargo fmt --write-mode=replace
-fi
 
 echo -n "Running tests... "
 if result=$(cargo test --color always 2>&1); then
