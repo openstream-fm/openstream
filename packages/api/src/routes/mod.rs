@@ -138,6 +138,14 @@ pub fn router(
     .get(stations::dashboard_stats::get::Endpoint {}.into_handler());
 
   app
+    .at("/devices")
+    .get(devices::get::Endpoint {}.into_handler());
+
+  app
+    .at("/devices/:device")
+    .delete(devices::id::delete::Endpoint {}.into_handler());
+
+  app
     .at("/station-pictures")
     .post(station_pictures::post::Endpoint {}.into_handler());
 
