@@ -32,6 +32,10 @@ domain = "localhost"
 # sessions will expire after specified days from the last user request
 maxAgeDays = 30
 
+# string (required)
+# name of the session cookie
+cookieName = "openstream-front-tid"
+
 
 # app web interface settings (optional)
 # removing this config group is the same as setting enabled=false

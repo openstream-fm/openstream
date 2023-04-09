@@ -23,7 +23,7 @@ export type Config = {
     secret: string
     domain: string
     maxAgeDays: number
-    cookieName?: string,
+    cookieName: string,
   }
 
   admin?: {

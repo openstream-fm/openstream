@@ -42,9 +42,9 @@ export function decrypt(hash: string, key: Buffer, logger: Logger): string {
   }
 }
 
-const get_cookie_session = (req: Request, key: Buffer, logger: Logger): SessionData => {
+const get_cookie_session = (req: Request, name: string, key: Buffer, logger: Logger): SessionData => {
   try {
-    const v = req.cookies[COOKIE_NAME];
+    const v = req.cookies[name];
     logger.info(`v: ${v}`)
     if(typeof v !== "string") {
       logger.info(`not string, ${typeof v}`)
@@ -87,20 +87,26 @@ export const session = (config: Config, _logger: Logger) => {
   const logger = _logger.scoped("cookie-session");
   const key = crypto.scryptSync(config.session.secret, "salt", 24);
 
-  const name = config.session.cookieName || COOKIE_NAME;
-  const maxAge = config.session.maxAgeDays * 1000 * 60 * 60 * 24;
-  const options = { maxAge, httpOnly: true, sameSite: "strict" as const };
-  const clear_options = { httpOnly: options.httpOnly, sameSite: options.sameSite };
-
   const router = Router();
   router.use(cookieParser());
   router.use((req: Request, res: Response, next: NextFunction) => {
-    req.cookie_session = get_cookie_session(req, key, logger);
+    req.cookie_session = get_cookie_session(req, config.session.cookieName, key, logger);
     res.set_session = (data: SessionData) => {
       const encoded = encrypt(JSON.stringify(data), key, logger);
-      res.cookie(name, encoded, options);
+      res.cookie(config.session.cookieName, encoded, {
+        domain: config.session.domain,
+        httpOnly: true,
+        maxAge: config.session.maxAgeDays * 1000 * 60 * 60 * 24,
+        sameSite: "strict",
+        signed: false,
+      });
     }
-    res.clear_session = () => res.clearCookie(name, clear_options);
+    res.clear_session = () => res.clearCookie(config.session.cookieName, {
+      domain: config.session.domain,
+      httpOnly: true,
+      sameSite: "strict",
+      signed: false,
+    });
     next();
   })
 
