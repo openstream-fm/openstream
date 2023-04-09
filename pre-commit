@@ -2,7 +2,7 @@
 
 # this pre-commit hook ensure that the repo has the 
 # latest ts definitions as they are generated from
-# cargo test command
+# cargo test command, without this ci tests on frontend could fail
 
 check_char='\xE2\x9C\x93'
 cross_char='\xE2\x9D\x8C'

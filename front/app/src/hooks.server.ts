@@ -10,14 +10,19 @@ export const handle: Handle = async ({ event, resolve }) => {
   if(ip == null) server_logger.warn(`handle: received request without ${X_REAL_IP} header: ${event.request.url}`);
   event.locals.ip = ip || "0.0.0.0";
 
-  const proto = event.request.headers.get(PROTOCOL_HEADER);
-  if(proto == null) server_logger.warn(`handle: received request without ${PROTOCOL_HEADER} header: ${event.request.url}`);
-  if(proto !== "http" && proto !== "https") {
+  let proto_header = event.request.headers.get(PROTOCOL_HEADER);
+  let proto: "http" | "https";
+  if(proto_header == null) {
+    server_logger.warn(`handle: received request without ${PROTOCOL_HEADER} header: ${event.request.url}`);
+    proto = "http";
+  } else if(proto_header !== "http" && proto_header !== "https") {
     server_logger.warn(`handle: received request with unknown ${PROTOCOL_HEADER} header (${proto}): ${event.request.url}`)
-    event.locals.protocol = "http";
+    proto = "http";
   } else {
-    event.locals.protocol = "https";
+    proto = proto_header;
   }
+
+  event.locals.protocol = proto;
 
   const res = await resolve(event);
 
