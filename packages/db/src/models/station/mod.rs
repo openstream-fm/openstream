@@ -258,6 +258,7 @@ pub enum PublicStation {
 #[serde(deny_unknown_fields)]
 #[validify]
 pub struct StationPatch {
+  #[ts(optional)]
   #[serde(skip_serializing_if = "Option::is_none")]
   #[modify(trim)]
   #[validate(length(min = "NAME_MIN", max = "NAME_MAX"), non_control_character)]
@@ -266,6 +267,7 @@ pub struct StationPatch {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub picture_id: Option<String>,
 
+  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -275,6 +277,7 @@ pub struct StationPatch {
   #[validate(length(min = "SLOGAN_MIN", max = "SLOGAN_MAX"), non_control_character)]
   pub slogan: Option<Option<String>>,
 
+  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -287,6 +290,7 @@ pub struct StationPatch {
   // location and language
   // pub language_id: Option<String>,
   // pub region_id: Option<String>,
+  #[ts(optional)]
   #[serde(skip_serializing_if = "Option::is_none")]
   #[validate]
   pub frequencies: Option<Vec<StationFrequency>>,
@@ -296,6 +300,7 @@ pub struct StationPatch {
   // pub hero_picture_id: Option<String>,
 
   // contact
+  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -305,6 +310,7 @@ pub struct StationPatch {
   #[validate(email, length(max = "EMAIL_MAX"), non_control_character)]
   pub email: Option<Option<String>>,
 
+  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -314,6 +320,7 @@ pub struct StationPatch {
   #[validate(phone, length(max = "PHONE_MAX"), non_control_character)]
   pub phone: Option<Option<String>>,
 
+  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -324,6 +331,7 @@ pub struct StationPatch {
   pub whatsapp: Option<Option<String>>,
 
   // links
+  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -338,6 +346,7 @@ pub struct StationPatch {
   )]
   pub website_url: Option<Option<String>>,
 
+  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -352,6 +361,7 @@ pub struct StationPatch {
   )]
   pub twitter_url: Option<Option<String>>,
 
+  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -366,6 +376,7 @@ pub struct StationPatch {
   )]
   pub facebook_url: Option<Option<String>>,
 
+  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -380,6 +391,7 @@ pub struct StationPatch {
   )]
   pub instagram_url: Option<Option<String>>,
 
+  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -394,6 +406,7 @@ pub struct StationPatch {
   )]
   pub youtube_url: Option<Option<String>>,
 
+  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -404,6 +417,7 @@ pub struct StationPatch {
   pub twitch_url: Option<Option<String>>,
 
   // app links
+  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -418,6 +432,7 @@ pub struct StationPatch {
   )]
   pub google_play_url: Option<Option<String>>,
 
+  #[ts(optional)]
   #[serde(
     default,
     deserialize_with = "map_some",
@@ -432,10 +447,15 @@ pub struct StationPatch {
   )]
   pub app_store_url: Option<Option<String>>,
 
+  #[ts(optional)]
   #[serde(skip_serializing_if = "Option::is_none")]
   pub limits: Option<StationPatchLimits>,
+
+  #[ts(optional)]
   #[serde(skip_serializing_if = "Option::is_none")]
   pub user_metadata: Option<Metadata>,
+
+  #[ts(optional)]
   #[serde(skip_serializing_if = "Option::is_none")]
   pub system_metadata: Option<Metadata>,
 }

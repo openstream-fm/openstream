@@ -11,53 +11,60 @@
 	import { ripple } from "$lib/ripple";
 	import StationPictureField from "$lib/components/Form/StationPictureField.svelte";
 	
-  let name: string = data.station.name
-  let slogan: string | null = data.station.slogan;
-  let description: string | null = data.station.description;
-  let email: string | null = data.station.email;
-  let phone: string | null = data.station.phone;
-  let whatsapp: string | null = data.station.whatsapp;
+  import { clone, diff, equals } from "$server/util/collections";
+	import { mdiFileGifBox } from "@mdi/js";
+	import { tooltip } from "$share/tooltip";
 
-  let website_url: string | null = data.station.website_url;
-  let twitter_url: string | null = data.station.twitter_url;
-  let facebook_url: string | null = data.station.facebook_url;
-  let instagram_url: string | null = data.station.instagram_url;
-  let youtube_url: string | null = data.station.youtube_url;
-  let twitch_url: string | null = data.station.twitch_url;
+  let db = {
+    name: data.station.name,
+    slogan: data.station.slogan,
+    description: data.station.description,
+    email: data.station.email,
+    phone: data.station.phone,
+    whatsapp: data.station.whatsapp,
+    website_url: data.station.website_url,
+    twitter_url: data.station.twitter_url,
+    facebook_url: data.station.facebook_url,
+    instagram_url: data.station.instagram_url,
+    youtube_url: data.station.youtube_url,
+    twitch_url: data.station.twitch_url,
+    google_play_url: data.station.google_play_url,
+    app_store_url: data.station.app_store_url,
+    picture_id: data.station.picture_id as string | null,
+  };
 
-  let google_play_url: string | null = data.station.google_play_url;
-  let app_store_url: string | null = data.station.app_store_url;
+  let current = clone(db);
 
-  let picture_id: string | null = data.station.picture_id;
+  $: can_save = !equals(db, current);
 
   // TODO: send only a diff
 
   const send = action(async () => {
     
-    if(picture_id == null) throw new Error("Logo is required");
+    if(!can_save) {
+      _message("No changes to save");
+      return;
+    }
+
+    const dif = diff(db, current);
+
+    let picture_id: string | undefined;
+    if(dif.picture_id === null) {
+      throw new Error("Logo is required");
+    } else {
+      picture_id = dif.picture_id;
+    }
 
     const payload: import("$server/defs/api/stations/[station]/PATCH/Payload").Payload = {
-      picture_id: picture_id || void 0,
-      name,
-      slogan,
-      description,
-      email,
-      phone,
-      whatsapp,
-      website_url,
-      twitter_url,
-      facebook_url,
-      instagram_url,
-      youtube_url,
-      twitch_url,
-      google_play_url,
-      app_store_url,
-      
+      ...dif,
+      picture_id,
       frequencies: void 0,
     }
 
     await _patch<import("$server/defs/api/stations/[station]/PATCH/Output").Output>(`/api/stations/${data.station._id}`, payload);
     
+    db = clone(current);
+
     _message("Station updated");
 
     invalidateAll();
@@ -128,6 +135,10 @@
     align-self: flex-end;
     font-weight: 600;
   }
+
+  .submit.disabled {
+    background: #999;
+  }
 </style>
 
 <svelte:head>
@@ -145,7 +156,7 @@
         </div>
         <div class="fields">
           <div class="field">
-            <StationPictureField account={data.account} bind:picture_id />
+            <StationPictureField account={data.account} bind:picture_id={current.picture_id} />
           </div>
         </div>
       </div>
@@ -159,14 +170,14 @@
             <NullTextField
               label="Name *"
               trim
-              bind:value={name}
+              bind:value={current.name}
             />
           </div>
           <div class="field">
             <NullTextField
               label="Slogan"
               trim
-              bind:value={slogan}
+              bind:value={current.slogan}
             />
           </div>
           <div class="field">
@@ -175,7 +186,7 @@
               multiline
               minrows={15}
               maxrows={50}
-              bind:value={description}
+              bind:value={current.description}
             />
           </div>
         </div>
@@ -189,7 +200,7 @@
           <div class="field">
             <NullEmail
               label="Email"
-              bind:value={email}
+              bind:value={current.email}
             />
           </div>
           <div class="field">
@@ -197,7 +208,7 @@
               type="tel"
               label="Full phone number"
               trim
-              bind:value={phone}
+              bind:value={current.phone}
             />
           </div>
           <div class="field">
@@ -205,7 +216,7 @@
               type="tel"
               label="Full WhatsApp number"
               trim
-              bind:value={whatsapp}
+              bind:value={current.whatsapp}
             />
           </div>
         </div>
@@ -221,7 +232,7 @@
               type="url"
               label="Website URL"
               trim
-              bind:value={website_url}
+              bind:value={current.website_url}
             />
           </div>
           <div class="field">
@@ -229,7 +240,7 @@
               type="url"
               label="Twitter URL"
               trim
-              bind:value={twitter_url}
+              bind:value={current.twitter_url}
             />
           </div>
           <div class="field">
@@ -237,7 +248,7 @@
               type="url"
               label="Facebook URL"
               trim
-              bind:value={facebook_url}
+              bind:value={current.facebook_url}
             />
           </div>
           <div class="field">
@@ -245,7 +256,7 @@
               type="url"
               label="Instagram URL"
               trim
-              bind:value={instagram_url}
+              bind:value={current.instagram_url}
             />
           </div>
           <div class="field">
@@ -253,7 +264,7 @@
               type="url"
               label="Youtube URL"
               trim
-              bind:value={youtube_url}
+              bind:value={current.youtube_url}
             />
           </div>
           <div class="field">
@@ -261,7 +272,7 @@
               type="url"
               label="Twitch URL"
               trim
-              bind:value={twitch_url}
+              bind:value={current.twitch_url}
             />
           </div>
         </div>
@@ -277,7 +288,7 @@
               type="url"
               label="Google Play URL"
               trim
-              bind:value={google_play_url}
+              bind:value={current.google_play_url}
             />
           </div>
           <div class="field">
@@ -285,14 +296,14 @@
               type="url"
               label="App Store URL"
               trim
-              bind:value={app_store_url}
+              bind:value={current.app_store_url}
             />
           </div>
         </div>
       </div>
 
       <div class="submit-wrap">
-        <button class="submit ripple-container" use:ripple type="submit">
+        <button class="submit ripple-container" class:disabled={!can_save} disabled={!can_save} use:tooltip={can_save ? null : "No changes to save"} use:ripple type="submit">
           Save
         </button>
       </div>
