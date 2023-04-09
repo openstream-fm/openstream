@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import Page from "$lib/components/Page.svelte";
 	import { ripple } from "$share/ripple";
 </script>

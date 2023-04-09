@@ -1,17 +1,12 @@
 <script lang="ts">
   import { page } from "$app/stores";
-	import Page from "$lib/components/Page.svelte";
 	import { ripple } from "$lib/ripple";
+	import { fly } from "svelte/transition";
 
   $: error = $page.error!;
 </script>
 
 <style>
-
-  .page {
-    padding: 0 1rem;
-  }
-
   h1 {
     font-size: 7rem;
     filter: drop-shadow(var(--red) 0.025em 0.025em 0);
@@ -24,13 +19,19 @@
 
   .code {
     margin-top: 2rem;
+    padding: 0.5rem;
+    border: rgba(0,0,0,0.1) 1px solid;
+    border-radius: 0.25rem;
+    background: rgba(0,0,0,0.05);
   }
 
   .btns {
     margin-top: 1rem;
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    gap: 2rem;
+    align-items: center;
+    justify-content: center;
   }
 
   .btn {
@@ -43,6 +44,35 @@
     appearance: none;
     text-decoration: none;
     font-weight: 500;
+    box-shadow: 0 4px 8px 0 rgb(0 0 0 / 12%), 0 2px 4px 0 rgb(0 0 0 / 8%);
+    border-radius: 0.25rem;
+  }
+
+  .top {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+  }
+
+  .title {
+    color: var(--red);
+    font-size: min(6vw, 2rem);
+    font-weight: 600;
+  }
+
+  .layout {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-gray);
+  }
+
+  .page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 </style>
 
@@ -50,7 +80,12 @@
   <title>{error?.status || 500} {error?.message || "Error"}</title>
 </svelte:head>
 
-<Page>
+<div class="layout" in:fly|local={{ x: -25, duration: 200 }}>
+  <div class="top">
+    <div class="title">
+      openstream
+    </div>
+  </div>
   <div class="page">
     <h1>{error.status ?? 500}</h1>
 
@@ -71,4 +106,4 @@
       </a>
     </div>
   </div>
-</Page>
+</div>

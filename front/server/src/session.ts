@@ -98,6 +98,7 @@ export const session = (config: Config, _logger: Logger) => {
         httpOnly: true,
         maxAge: config.session.maxAgeDays * 1000 * 60 * 60 * 24,
         sameSite: "strict",
+        path: "/",
         signed: false,
       });
     }
@@ -105,6 +106,7 @@ export const session = (config: Config, _logger: Logger) => {
       domain: config.session.domain,
       httpOnly: true,
       sameSite: "strict",
+      path: "/",
       signed: false,
     });
     next();

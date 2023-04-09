@@ -1,5 +1,10 @@
 <script>
 	import Player from "$lib/components/Player/Player.svelte";
+  import { close } from "$lib/components/Player/player";
+  import { onMount } from "svelte";
+  onMount(() => {
+    return () => close();
+  })
 </script>
 
 <style>

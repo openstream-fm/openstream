@@ -12,7 +12,10 @@ for(let i = 1; i < 8; i++) {
   offline_urls.push(url);
 }
 
-console.log(offline_urls);
+addEventListener("install", event => {
+  // @ts-ignore
+  self.skipWaiting();
+})
 
 precacheAndRoute([
   ...offline_urls.map(url => {
@@ -28,7 +31,6 @@ setDefaultHandler(new NetworkOnly());
 setCatchHandler(async ({request, url}) => {
   if(url.origin === self.origin && request.destination === "document") {
     const target = "/" + url.pathname.slice(1).split("/").fill("offline").join("/");
-    console.log(target);
     const response = await matchPrecache(target);
     if(response) return response;
   }
@@ -87,3 +89,14 @@ registerRoute(
     ]
   })
 )
+
+registerRoute(
+  ({ request }) => request.destination === "document",
+  new NetworkOnly(),  
+)
+
+registerRoute(
+  ({ url }) => url.origin === self.origin && (url.pathname === "/api" || url.pathname.startsWith("/api/")),
+  new NetworkOnly(),  
+)
+
