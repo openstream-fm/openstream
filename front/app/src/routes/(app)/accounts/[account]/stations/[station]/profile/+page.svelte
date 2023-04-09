@@ -12,8 +12,8 @@
 	import StationPictureField from "$lib/components/Form/StationPictureField.svelte";
 	
   import { clone, diff, equals } from "$server/util/collections";
-	import { mdiFileGifBox } from "@mdi/js";
 	import { tooltip } from "$share/tooltip";
+	import { prevent_unload } from "$share/prevent-unload";
 
   let db = {
     name: data.station.name,
@@ -37,6 +37,11 @@
 
   $: can_save = !equals(db, current);
 
+  prevent_unload(() => {
+    if(can_save) return "You have pending changes, are you sure you want to leave this page?";
+    else return null;
+  })
+
   // TODO: send only a diff
 
   const send = action(async () => {
@@ -58,7 +63,7 @@
     const payload: import("$server/defs/api/stations/[station]/PATCH/Payload").Payload = {
       ...dif,
       picture_id,
-      frequencies: void 0,
+      // frequencies: void 0,
     }
 
     await _patch<import("$server/defs/api/stations/[station]/PATCH/Output").Output>(`/api/stations/${data.station._id}`, payload);

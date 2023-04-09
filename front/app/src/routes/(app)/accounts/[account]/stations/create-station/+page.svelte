@@ -12,49 +12,51 @@
 	import { ripple } from "$lib/ripple";
 	import StationPictureField from "$lib/components/Form/StationPictureField.svelte";
 	
-  let name: string = "";
-  let slogan: string | null = null;
-  let description: string | null = null;
-  let email: string | null = null;
-  let phone: string | null = null;
-  let whatsapp: string | null = null;
+  import { clone, equals } from "$server/util/collections";
+	import { prevent_unload } from "$share/prevent-unload";
 
-  let website_url: string | null = null;
-  let twitter_url: string | null = null;
-  let facebook_url: string | null = null;
-  let instagram_url: string | null = null;
-  let youtube_url: string | null = null;
-  let twitch_url: string | null = null;
+  let start = {
+    name: "",
+    slogan: null as string | null,
+    description: null as string | null,
+    
+    email: null as string | null,
+    phone: null as string | null,
+    whatsapp: null as string | null,
+    
+    website_url: null as string | null,
+    twitter_url: null as string | null,
+    facebook_url: null as string | null,
+    instagram_url: null as string | null,
+    youtube_url: null as string | null,
+    twitch_url: null as string | null,
 
-  let google_play_url: string | null = null;
-  let app_store_url: string | null = null;
+    google_play_url: null as string | null,
+    app_store_url: null as string | null,
 
-  let picture_id: string | null = null;
+    picture_id: null as string | null,
+  }
+
+  let current = clone(start);
+
+  prevent_unload(() => {
+    if(equals(start, current)) return null;
+    else return "If you leave this page your changes will be lost. Do you want to leave anyway?"
+  })
 
   const send = action(async () => {
     
-    if(picture_id == null) throw new Error("Logo is required");
+    let picture_id: string;
+
+    if(current.picture_id == null) throw new Error("Station logo is required");
+    picture_id = current.picture_id;
+
+    if(current.name.trim() === "") throw new Error("Station name is required");
 
     const payload: import("$server/defs/api/stations/POST/Payload").Payload = {
-      
+      ...current,
       account_id: data.account._id,
       picture_id,
-
-      name,
-      slogan,
-      description,
-      email,
-      phone,
-      whatsapp,
-      website_url,
-      twitter_url,
-      facebook_url,
-      instagram_url,
-      youtube_url,
-      twitch_url,
-      google_play_url,
-      app_store_url,
-      
       frequencies: null,
     }
 
@@ -149,7 +151,7 @@
       
         <div class="fields">
           <div class="field">
-            <StationPictureField account={data.account} bind:picture_id />
+            <StationPictureField account={data.account} bind:picture_id={current.picture_id} />
           </div>
         </div>
       </div>
@@ -163,14 +165,14 @@
             <NullTextField
               label="Name *"
               trim
-              bind:value={name}
+              bind:value={current.name}
             />
           </div>
           <div class="field">
             <NullTextField
               label="Slogan"
               trim
-              bind:value={slogan}
+              bind:value={current.slogan}
             />
           </div>
           <div class="field">
@@ -179,7 +181,7 @@
               multiline
               minrows={15}
               maxrows={50}
-              bind:value={description}
+              bind:value={current.description}
             />
           </div>
         </div>
@@ -193,7 +195,7 @@
           <div class="field">
             <NullEmail
               label="Email"
-              bind:value={email}
+              bind:value={current.email}
             />
           </div>
           <div class="field">
@@ -201,7 +203,7 @@
               type="tel"
               label="Full phone number"
               trim
-              bind:value={phone}
+              bind:value={current.phone}
             />
           </div>
           <div class="field">
@@ -209,7 +211,7 @@
               type="tel"
               label="Full WhatsApp number"
               trim
-              bind:value={whatsapp}
+              bind:value={current.whatsapp}
             />
           </div>
         </div>
@@ -225,7 +227,7 @@
               type="url"
               label="Website URL"
               trim
-              bind:value={website_url}
+              bind:value={current.website_url}
             />
           </div>
           <div class="field">
@@ -233,7 +235,7 @@
               type="url"
               label="Twitter URL"
               trim
-              bind:value={twitter_url}
+              bind:value={current.twitter_url}
             />
           </div>
           <div class="field">
@@ -241,7 +243,7 @@
               type="url"
               label="Facebook URL"
               trim
-              bind:value={facebook_url}
+              bind:value={current.facebook_url}
             />
           </div>
           <div class="field">
@@ -249,7 +251,7 @@
               type="url"
               label="Instagram URL"
               trim
-              bind:value={instagram_url}
+              bind:value={current.instagram_url}
             />
           </div>
           <div class="field">
@@ -257,7 +259,7 @@
               type="url"
               label="Youtube URL"
               trim
-              bind:value={youtube_url}
+              bind:value={current.youtube_url}
             />
           </div>
           <div class="field">
@@ -265,7 +267,7 @@
               type="url"
               label="Twitch URL"
               trim
-              bind:value={twitch_url}
+              bind:value={current.twitch_url}
             />
           </div>
         </div>
@@ -281,7 +283,7 @@
               type="url"
               label="Google Play URL"
               trim
-              bind:value={google_play_url}
+              bind:value={current.google_play_url}
             />
           </div>
           <div class="field">
@@ -289,7 +291,7 @@
               type="url"
               label="App Store URL"
               trim
-              bind:value={app_store_url}
+              bind:value={current.app_store_url}
             />
           </div>
         </div>
