@@ -147,8 +147,10 @@
           Logo
         </div>
       
-        <div class="field">
-          <StationPictureField account={data.account} bind:picture_id={picture_id} />
+        <div class="fields">
+          <div class="field">
+            <StationPictureField account={data.account} bind:picture_id />
+          </div>
         </div>
       </div>
 

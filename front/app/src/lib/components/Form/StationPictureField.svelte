@@ -90,7 +90,6 @@
 		display: flex;
 		flex-direction: row;
     gap: 2rem;
-    padding: 2rem 2rem 0 2rem;
 	}
 
   .start {
