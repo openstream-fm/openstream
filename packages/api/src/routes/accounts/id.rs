@@ -38,7 +38,7 @@ pub mod get {
     type HandleError = Infallible;
 
     async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
-      let account_id = req.param("account_id").unwrap();
+      let account_id = req.param("account").unwrap();
 
       let access_token_scope = request_ext::get_access_token_scope(&req).await?;
 

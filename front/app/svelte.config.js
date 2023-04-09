@@ -9,16 +9,22 @@ const config = {
 	preprocess: preprocess(),
 
 	kit: {
+		serviceWorker: {
+			register: false,
+		},
+
 		alias: {
 			"$server": "../server/src",
 			"$share": "../share/src",
 		},
+
 		files: {
 			serviceWorker: "./src/service-worker.ts",
 			hooks: {
 				server: "./src/hooks.server.ts"
 			},
 		},
+		
 		adapter: adapter(),
 	}
 };

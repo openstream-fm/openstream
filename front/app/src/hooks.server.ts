@@ -16,7 +16,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     server_logger.warn(`handle: received request without ${PROTOCOL_HEADER} header: ${event.request.url}`);
     proto = "http";
   } else if(proto_header !== "http" && proto_header !== "https") {
-    server_logger.warn(`handle: received request with unknown ${PROTOCOL_HEADER} header (${proto}): ${event.request.url}`)
+    server_logger.warn(`handle: received request with unknown ${PROTOCOL_HEADER} header (${proto_header}): ${event.request.url}`)
     proto = "http";
   } else {
     proto = proto_header;
