@@ -1,6 +1,6 @@
 module.exports = {
   apps: [{
-    instances: 12,
+    instances: 1,
     name: "openstream",
     exec_mode: "fork",
     time: false,
@@ -10,7 +10,7 @@ module.exports = {
     script: "./target/release/openstream",
     args: ["start"],
     env: {
-      RUST_LOG: "warn",
+      RUST_LOG_STYLE: "always",
       FORCE_COLOR: 1,
     }
   }]

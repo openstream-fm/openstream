@@ -3,7 +3,7 @@ import type { UserConfig } from 'vite';
 
 const config: UserConfig = {
 	resolve: {
-		dedupe: ["@sveltejs/kit", "svelte", "@mdi/js"],
+		dedupe: ["@sveltejs/kit", "svelte", "@mdi/js", "http-status-codes"],
 	},
 	server: {
 		https: false,
