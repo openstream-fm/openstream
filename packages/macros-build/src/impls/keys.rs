@@ -54,8 +54,11 @@ pub fn keys(_args: TokenStream, tokens: TokenStream) -> TokenStream {
         let variant_value = match variant_attrs.rename {
           Some(name) => name,
           None => match variant_attrs.rename_all {
-            None => variant_key.to_string(),
             Some(inflection) => inflection.apply(&variant_key),
+            None => match enum_attrs.rename_all {
+              Some(inflection) => inflection.apply(&variant_key),
+              None => variant_key.to_string(),
+            },
           },
         };
 
