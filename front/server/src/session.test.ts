@@ -31,13 +31,13 @@ test("get_cookie_session - success with valid cookie name and value", (t) => {
   const req: Request = {
     cookies: {
       [config.session.cookie_name]: encrypt(
-        JSON.stringify({ user: { _id: "id", token: "token", media_key: "key" } }),
+        JSON.stringify({ device_id: "deviceid", user: { _id: "id", token: "token", media_key: "key" } }),
         key,
         logger
       ),
     },
   } as Request;
-  const sessionData: SessionData = { user: { _id: "id", token: "token", media_key: "key" } };
+  const sessionData: SessionData = { device_id: "deviceid", user: { _id: "id", token: "token", media_key: "key" } };
   const result = get_cookie_session(req, config.session.cookie_name, key, logger);
   t.deepEqual(result, sessionData);
 });
@@ -49,10 +49,12 @@ test("get_cookie_session - ignores invalid cookie", (t) => {
       [config.session.cookie_name]: "invalid",
     },
   } as Request;
-  const sessionData: SessionData = { user: null };
+  const sessionData: SessionData = { device_id: "deviceid", user: null };
   // @ts-ignore
   const result = get_cookie_session(req, config.session.cookie_name, key, logger);
-  t.deepEqual(result, sessionData);
+  t.true(typeof result.device_id === "string"),
+  t.true(result.device_id.length === 24)
+  t.true(result.user === null);
 });
 
 test("get_cookie_session - ignores malformed cookie", (t) => {
@@ -62,10 +64,9 @@ test("get_cookie_session - ignores malformed cookie", (t) => {
       [config.session.cookie_name]: "malformed",
     },
   } as Request;
-  const sessionData: SessionData = { user: null };
-  // @ts-ignore
   const result = get_cookie_session(req, config.session.cookie_name, key, logger);
-  t.deepEqual(result, sessionData);
+  t.true(typeof result.device_id === "string");
+  t.true(result.user === null);
 });
 
 test.todo("res.set_session - calls cookie")
