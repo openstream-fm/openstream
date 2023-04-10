@@ -45,12 +45,12 @@ const readonly = { subscribe: now_playing.subscribe };
 export { readonly as player_now_playing }
 
 export const storage_audio_url = (station_id: string, file_id: string) => {
-  const base: string = get(page).data.config.storagePublicURL;
+  const base: string = get(page).data.config.storage_public_url;
   return `${base}/stations/${station_id}/files/${file_id}/stream?token=${media_token()}`
 }
 
 export const station_stream_url = (station_id: string) => {
-  const base = get(page).data.config.streamPublicURL;
+  const base = get(page).data.config.stream_public_url;
   return `${base}/stream/${station_id}` 
 }
 
