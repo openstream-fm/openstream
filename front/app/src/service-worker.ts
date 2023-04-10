@@ -12,10 +12,10 @@ for(let i = 1; i < 8; i++) {
   offline_urls.push(url);
 }
 
-addEventListener("install", event => {
-  // @ts-ignore
-  self.skipWaiting();
-})
+// addEventListener("install", event => {
+//   // @ts-ignore
+//   self.skipWaiting();
+// })
 
 precacheAndRoute([
   ...offline_urls.map(url => {
