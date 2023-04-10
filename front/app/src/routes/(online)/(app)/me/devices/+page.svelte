@@ -67,6 +67,7 @@
     margin-top: 2rem;
     font-size: 2rem;
     font-weight: 600;
+    text-align: center;
   }
 
   .note {
@@ -88,7 +89,7 @@
     flex-direction: column;
     align-items: stretch;
     min-width: 0;
-    padding-top: 3rem;
+    padding: 1rem 0;
   }
 
   .delete-dialog-btns {
@@ -154,7 +155,7 @@
     <div class="note">The same device may appear more than one time in this list. Devices will be disconnected after 7 days without usage.</div>
     <div class="list">
       {#if current != null}
-        <div class="device-wrap">  
+        <div class="device-wrap" aria-current>  
           <Device device={current} />
         </div>
       {/if}
