@@ -28,4 +28,6 @@ jobs:
       - run: npm ci
         working-directory: ./front/server
       - run: npm ci
+        working-directory: ./front/share
+      - run: npm ci
       - run: npm run build --if-present
