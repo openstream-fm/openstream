@@ -5,8 +5,6 @@ import { Config } from "./config";
 import crypto from "crypto";
 import { Logger } from "./logger";
 
-const COOKIE_NAME = "openstream-front.sid";
-
 export type SessionData = {
   user: { _id: string, token: string, media_key: string } | null;
 }
@@ -42,7 +40,7 @@ export function decrypt(hash: string, key: Buffer, logger: Logger): string {
   }
 }
 
-const get_cookie_session = (req: Request, name: string, key: Buffer, logger: Logger): SessionData => {
+export const get_cookie_session = (req: Request, name: string, key: Buffer, logger: Logger): SessionData => {
   try {
     const v = req.cookies[name];
     logger.debug(`v: ${v}`)
