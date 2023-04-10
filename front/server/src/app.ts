@@ -16,7 +16,7 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
 
   process.title = "openstream-front";
 
-  if(config.app) {
+  if(config.studio) {
 
     let app = express();
 
@@ -27,13 +27,13 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
     if(env.SVELTEKIT_APP_DEV) {
       app.use(sveltekit_dev_proxy(env.SVELTEKIT_APP_PORT))
     } else {
-      process.env.APP_API_PORT = String(config.app.port);
+      process.env.APP_API_PORT = String(config.studio.port);
       const { handler }: { handler: RequestHandler } = await import("" + "../../app/build/handler.js")
       app.use(kit(handler));
     }
 
-    app.listen(config.app.port, () => {
-      logger.scoped("start").info(`api server bound to port ${color.yellow(config.app!.port)}`);
+    app.listen(config.studio.port, () => {
+      logger.scoped("start").info(`api server bound to port ${color.yellow(config.studio!.port)}`);
     });
   }
 }

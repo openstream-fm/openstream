@@ -3,16 +3,19 @@ import toml from "toml"
 import { readFileSync } from "fs";
 import { color } from "./color"
 import { Logger } from "./logger"
+import type { PartialDeep } from "type-fest";
+import * as dot from "dot-prop";
+import { clone } from "./util/collections";
 
 export type Config = {
   openstream: {
-    apiBaseURL: string
+    api_base_url: string
     token: string
   }
 
   public: {
-    streamPublicURL: string
-    storagePublicURL: string
+    stream_public_url: string
+    storage_public_url: string
   }
 
   mongodb: {
@@ -22,35 +25,123 @@ export type Config = {
   session: {
     secret: string
     domain: string
-    maxAgeDays: number
-    cookieName: string,
+    max_age_days: number
+    cookie_name: string,
   }
 
-  admin?: {
-    enabled: boolean,
-    port: number
-    publicBaseURL: string
-  }
-
-  app?: {
+  studio: {
     enabled: boolean
     port: number    
-    publicBaseURL: string
+    public_base_url: string
   }
 }
 
-export const load = (filename: string, { logger: _logger }: { logger: Logger }): Config => {
-  const logger = _logger.scoped("config");
+/**
+ * merges enviromental variables with config readed from config file
+ * enviromental variables are prefixex with OPENSTREAM_FRONT
+ * and config properties are mapped such as public.api_base_url transforms to OPENSTREAM_FRONT_PUBLIC_API_BASE_URL 
+ * @param env: available for test porposes
+ */
 
-  logger.info(`loading config from ${color.yellow(filename)}`);
-  
-  try {
-    const source = readFileSync(filename, "utf8");
-    const config = assertEquals<Config>(toml.parse(source));
-    return config;
-  } catch(e: any) {
-    logger.warn(`error loading config file: ${e}`);
-    logger.error(e);
-    process.exit(1);
+export const merge_env = (partial: PartialDeep<Config>, env = process.env): PartialDeep<Config> => {
+  const config = clone(partial);
+
+  /**
+   *  maps config deep props to env keys, properties are mapped such as
+   *  public.api_base_url transforms to OPENSTREAM_FRONT_PUBLIC_API_BASE_URL 
+   */
+  const map_prop = (property_path: string): string => {
+    return `OPENSTREAM_FRONT_${property_path.replaceAll(".", "_").toUpperCase()}`;
   }
+
+  /**
+   * override config option with enviromental variable if set
+   * property is expected to be a number
+   * */
+  const num = (property_path: string) => {
+    const key = map_prop(property_path);
+    const s = env[key]?.trim();
+    if(s != null) {
+      const n = Number(s);
+      if(Number.isNaN(n)) throw new Error(`env.${key} should be a number`);
+      dot.setProperty(config, property_path, n);
+    }
+  }
+
+  /**
+   * override config option with enviromental variable if set
+   * property is expected to be a string
+   */
+  const str = (property_path: string) => {
+    const key = map_prop(property_path);
+    const s = env[key]?.trim();
+    if(s != null) {
+      dot.setProperty(config, property_path, s.trim());
+    }
+  }
+
+  /**
+   * override config option with enviromental variable if set
+   * property is expected to be a string
+   * accepted env values are "1" "true" "0" "false"
+   */
+  const bool = (property_path: string) => {
+    const key = map_prop(property_path);
+    const s = env[key]?.trim();
+    if(s != null) {
+      switch(s) {
+        case "1":
+        case "true":
+          dot.setProperty(config, property_path, true);
+          break;
+        case "0":
+        case "false":
+          dot.setProperty(config, property_path, false);
+          break;
+        default:
+          throw new Error(`env.${key} should be a boolean, accepted values are "1", "true", "0", "false", received ${s}`)
+      }
+    }
+  }
+
+  str("openstream.api_base_url")
+  str("openstream.token")
+
+  str("public.stream_public_url")
+  str("public.storage_public_url")
+
+  str("mongodb.url")
+
+  str("session.secret");
+  str("session.domain");
+  num("session.max_age_days");
+  str("session.cookie_name")
+
+  bool("studio.enabled");
+  num("studio.port");
+  str("studio.public_base_url");
+
+  return config;
+}
+
+export const load_from_string = (source: string, env = process.env): Config => {
+  // check that there are no unknown keys or invalid types for present keys
+  const partial_config = assertEquals<PartialDeep<Config>>(toml.parse(source));
+
+  // override config with available env variables
+  const partial_merged_config = merge_env(partial_config, env);
+
+  // asserts that the final config object is of expected type
+  const config = assertEquals<Config>(partial_merged_config);
+
+  return config;
+}
+
+export const load = (filename: string, { logger: _logger, env = process.env }: { logger: Logger, env?: typeof process.env }): Config => {
+  const logger = _logger.scoped("config");
+  logger.info(`loading config from ${color.yellow(filename)}`);
+
+  // read toml formatted config string from file
+  const source = readFileSync(filename, "utf8");
+  return load_from_string(source, env);
 }

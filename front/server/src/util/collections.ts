@@ -1,7 +1,7 @@
 export const clone = <T>(src: T): T => {
   const t = typeof src;
   if(src == null) return src;
-  if(t === "number" || t === "string" || t === "function") return src;
+  if(t === "number" || t === "string" || t === "boolean" || t === "function") return src;
   if(t === "object") {
     // @ts-ignore
     if(src instanceof Date) return new Date(src);

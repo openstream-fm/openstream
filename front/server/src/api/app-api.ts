@@ -23,7 +23,7 @@ export const app_api = ({
   logger: Logger,
 }) => {
 
-  const client = new Client(config.openstream.apiBaseURL, { logger: _logger });
+  const client = new Client(config.openstream.api_base_url, { logger: _logger });
 
   const logger = _logger.scoped("app-api");
 

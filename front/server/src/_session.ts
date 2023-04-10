@@ -16,7 +16,7 @@ const session_config = (config: Config): Parameters<typeof _session>[0] => {
     secret: config.session.secret,
     cookie: {
       // domain: config.session.domain,
-      maxAge: config.session.maxAgeDays * 24 * 60 * 60 * 1000
+      maxAge: config.session.max_age_days * 24 * 60 * 60 * 1000
     },
     store: store(config),
     rolling: true,
