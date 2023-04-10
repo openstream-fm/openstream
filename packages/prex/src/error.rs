@@ -8,9 +8,3 @@ pub enum RouterBuilderError {
   #[error("Paths must start with '/': {path:?}")]
   NoSlashAtStart { path: String },
 }
-
-#[derive(Error, Debug)]
-pub enum ResponseError {
-  #[error("Endpoint not found")]
-  EndpointNotFound,
-}
