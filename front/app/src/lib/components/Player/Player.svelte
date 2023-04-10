@@ -22,7 +22,7 @@
     else if(audio_state === "paused") resume();
   }
 
-  const transition = (node: HTMLElement) => {
+  const transition = (node: HTMLElement, params = {}) => {
     return () => {
       const h = node.clientHeight;
       return {

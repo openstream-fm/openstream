@@ -7,7 +7,7 @@
 		"build": "PROTOCOL_HEADER=x-forwarded-proto ADDRESS_HEADER=x-real-ip APP_API_PORT=8965 vite build",
 		"preview": "vite preview",
 		"test": "playwright test",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --ignore '../server/**/*'",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --plugin-search-dir . --check . && eslint .",
 		"format": "prettier --plugin-search-dir . --write ."

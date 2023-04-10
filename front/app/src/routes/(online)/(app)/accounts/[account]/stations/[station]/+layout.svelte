@@ -14,11 +14,11 @@
 
   const [_enter, _leave] = crossfade({ duration: 300, fallback: (node) => fade(node, { duration: 200 }) });
 
-  const current_enter = (node: HTMLElement) => {
+  const current_enter = (node: HTMLElement, params = {}) => {
     return _enter(node, { key: null })
   }
 
-  const current_leave = (node: HTMLElement) => {
+  const current_leave = (node: HTMLElement, params = {}) => {
     return _leave(node, { key: null })
   }
 </script>

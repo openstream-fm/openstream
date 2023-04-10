@@ -2,7 +2,7 @@ import { assertEquals } from "typia";
 import toml from "toml"
 import { readFileSync } from "fs";
 import { color } from "./color"
-import { Logger } from "./logger"
+import type { Logger } from "./logger"
 import type { PartialDeep } from "type-fest";
 import * as dot from "dot-prop";
 import { clone } from "./util/collections";

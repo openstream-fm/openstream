@@ -11,4 +11,4 @@ export const load = (async ({ parent }) => {
 
   return {};
 
-}) satisfies import("./$types").LayoutLoad;
+}) satisfies import("./$types").PageLoad;
