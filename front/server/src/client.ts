@@ -226,7 +226,7 @@ export class Devices {
   }
 
   async delete(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/devices/[device]/DELETE/Output").Output> {
-    return await this.client.get(ip, ua, token, `/devices/${id}`);
+    return await this.client.delete(ip, ua, token, `/devices/${id}`);
   }
 }
 

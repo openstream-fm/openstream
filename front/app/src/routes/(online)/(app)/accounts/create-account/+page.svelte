@@ -1,6 +1,5 @@
 <script lang="ts">
 	import TopUser from "$lib/components/Dashboard/TopUser.svelte";
-	import Player from "$lib/components/Player/Player.svelte";
 	// import { ripple } from "$lib/ripple";
 	import { fly } from "svelte/transition";
 </script>

@@ -1,4 +1,5 @@
 <script>
+  export let disabled = false;
 	import TextField from "./TextField.svelte";
 </script>
 
@@ -12,11 +13,15 @@
     --spacing: var(--spacing-y) var(--spacing-x);
   }
 
-  .field-container:focus-within {
+  .field-container:not(.disabled):focus-within {
     border-bottom-color: var(--blue); 
+  }
+
+  .disabled {
+    background: #f3f3f3;
   }
 </style>
 
-<label class="field-container">
+<label class="field-container" class:disabled>
   <slot />
 </label>

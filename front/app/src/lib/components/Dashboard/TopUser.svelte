@@ -108,7 +108,7 @@
     top: 0;
     right: 0;
     background: #fff;
-    width: 300px;
+    width: min(calc(100vw - 3rem), 21rem);
     box-shadow: 0 5px 25px 0 rgb(0 0 0 / 10%);
     border: 1px solid rgba(0,0,0,.1);
     border-radius: 0.25rem;
@@ -116,6 +116,9 @@
     flex-direction: column;
     align-items: stretch;
     min-width: 0;
+    max-height: calc(100vh - var(--top-h) - 1rem);
+    overflow-x: hidden;
+    overflow-y: auto;
     z-index: var(--z-user-menu);
   }
 
@@ -147,7 +150,7 @@
     margin-inline-end: 0.75rem;
   }
 
-  .menu-section-link:hover {
+  .menu-section-link:not(.not-link):hover {
     background-color: #f6f6f6;
   }
 
@@ -156,7 +159,7 @@
     overflow-y: auto;
   }
 
-  .menu-station {
+  .menu-station, .menu-account {
     display: block;
     padding: 0.75rem 1rem 0.75rem 0.75rem;
     transition: background-color 150ms ease;
@@ -167,12 +170,16 @@
     gap: 0.75rem;
   }
   
-  .menu-station.current {
+  .menu-station.current, .menu-account {
     background: #f6f6f6;
   }
 
-  .menu-station:hover {
+  .menu-station:hover, .menu-account:hover {
     background: #e8e8e8;
+  }
+
+  .menu-account {
+    padding-inline-start: 2.75rem;
   }
 
   .station-pic {
@@ -189,6 +196,43 @@
     overflow: hidden;
     text-overflow: ellipsis;
     flex: 1;
+  }
+
+  .menu-head {
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .menu-head-icon {
+    font-size: 3rem;
+    padding: 1rem;
+    display: flex;
+    flex-direction: row;
+  }
+
+  .menu-head-info {
+    flex: 1;
+    padding: 0 1.25rem 0 0;
+    font-size: 1.05rem;
+  }
+
+  .menu-head-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+  .menu-head-email {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #666;
+    margin-top: 0.2rem;
+    font-size: 0.95rem;
   }
 
 
@@ -209,7 +253,16 @@
     <div class="menu-position-out">
       <div class="menu-position-in">
         {#if menu_open}
-          <div class="menu" transition:fly|local={{ y: -25, x: 10, duration: 200 }}>
+          <div class="menu thin-scroll" transition:fly|local={{ y: -25, x: 10, duration: 200 }}>
+            <div class="menu-head menu-section">
+              <div class="menu-head-icon">
+                <Icon d={mdiAccountCircleOutline} />
+              </div>
+              <div class="menu-head-info">
+                <div class="menu-head-name">{user.first_name} {user.last_name}</div>
+                <div class="menu-head-email">{user.email}</div>
+              </div>
+            </div>
             <div class="menu-section">
               <a href="/me" class="na menu-section-link ripple-container" use:ripple>
                 <div class="menu-icon">
@@ -227,7 +280,7 @@
               </a>
               <div class="station-list thin-scroll">
                 {#each accounts.items as item (item._id)}
-                  <a href="/accounts/{item._id}" class="na menu-station" class:current={item._id === account?._id} on:click={() => menu_open = false}>
+                  <a href="/accounts/{item._id}" class="na menu-account" class:current={item._id === account?._id} on:click={() => menu_open = false}>
                     {item.name}
                   </a>
                 {/each}
@@ -236,12 +289,21 @@
             {#if stations != null}
               <div class="menu-section">
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <div class="menu-section-link ripple-container" use:ripple>
-                  <div class="menu-icon">
-                    <Icon d={mdiCastAudioVariant} />
+                {#if account != null}
+                  <a href="/accounts/{account._id}/stations" class="na menu-section-link ripple-container" use:ripple>
+                    <div class="menu-icon">
+                      <Icon d={mdiCastAudioVariant} />
+                    </div>
+                    Stations
+                  </a>
+                {:else}
+                  <div class="menu-section-link not-link">
+                    <div class="menu-icon">
+                      <Icon d={mdiCastAudioVariant} />
+                    </div>
+                    Stations
                   </div>
-                  Stations
-                </div>
+                {/if}
                 <div class="station-list thin-scroll">
                   {#each stations.items as item (item._id)}
                     <a href="/accounts/{item.account_id}/stations/{item._id}" class="na menu-station" class:current={item._id === station?._id} on:click={() => menu_open = false}>

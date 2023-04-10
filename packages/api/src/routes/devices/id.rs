@@ -82,7 +82,6 @@ pub mod delete {
         device_id,
       } = input;
 
-      // TODO: typecheck enum tag values with keys macro
       let token = match AccessToken::get_by_id(&device_id).await? {
         Some(token) => token,
         None => return Err(HandleError::DeviceNotFound(device_id)),

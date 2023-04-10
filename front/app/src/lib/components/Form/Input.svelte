@@ -9,6 +9,7 @@
   export let type: string = "text";
   export let autocomplete: string | undefined = void 0;
   export let trim: boolean = false;
+  export let disabled: boolean = false;
 
   export let multiline: boolean = false;
   export let minrows: number = 3;
@@ -43,7 +44,7 @@
 </script>
 
 {#if multiline}
-  <textarea {rows} {autocomplete} class={css["forms-input"]} value={display_value} on:input={event => on_input(event.currentTarget.value)} on:input />
+  <textarea class={css["forms-input"]}  {rows} {autocomplete} {disabled} value={display_value} on:input={event => on_input(event.currentTarget.value)} on:input />
 {:else}
-  <input {type} {autocomplete} class={css["forms-input"]} value={display_value} on:input={event => on_input(event.currentTarget.value)} on:input />
+  <input {type} class={css["forms-input"]} {autocomplete} {disabled} value={display_value} on:input={event => on_input(event.currentTarget.value)} on:input />
 {/if}

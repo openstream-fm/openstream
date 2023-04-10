@@ -4,6 +4,7 @@
   export let type: string = "text";
   export let autocomplete: string | undefined = void 0;
   export let trim: boolean = false;
+  export let disabled: boolean = false;
 
   export let multiline: boolean | undefined = void 0;
   export let minrows: number | undefined = void 0;
@@ -16,9 +17,10 @@
   import Label from "../Label.svelte";
 </script>
 
-<FieldContainer>
+<FieldContainer {disabled}>
   <NullInput
     type={type}
+    {disabled}
     {autocomplete}
     {trim}
     {multiline}
