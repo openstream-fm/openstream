@@ -175,7 +175,7 @@
 <div class="station-picture-field">
 	<div class="start">
 		<div class="picture-out">
-			<div class="picture-bg" style="background-image: url({bg_url($page.data.config.storagePublicURL, picture_id, loading)})">
+			<div class="picture-bg" style="background-image: url({bg_url($page.data.config.storage_public_url, picture_id, loading)})">
         {#if loading}
           <div class="loading">
             <CircularProgress />

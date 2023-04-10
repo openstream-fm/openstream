@@ -124,7 +124,7 @@
   <div class="station-out" in:fade={{ duration: 200 }}>
     <div class="station-scroll super-thin-scroll">
       <div class="station">
-        <div class="station-pic" style="background-image: url({ data.config.storagePublicURL }/station-pictures/webp/64/{data.station.picture_id}.webp)" />
+        <div class="station-pic" style="background-image: url({ data.config.storage_public_url }/station-pictures/webp/64/{data.station.picture_id}.webp)" />
         <div class="station-name">
           <div class="station-name-ellipsis">
             {data.station.name}
