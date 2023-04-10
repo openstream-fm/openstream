@@ -24,6 +24,8 @@ const assert_validate = <T>(t: ExecutionContext<unknown>, v: IValidation<T>) => 
   }
 }
 
+test.todo("client integration tests");
+
 // TODO: implement this with fake database
 // TODO: tsc is going crazy with max stack size exceeded error on build
 
