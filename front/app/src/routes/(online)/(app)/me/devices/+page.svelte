@@ -152,7 +152,7 @@
   </div>
   <div class="page">
     <div class="page-title">Connected devices</div>
-    <div class="note">The same device may appear more than one time in this list. Devices will be disconnected after 7 days without usage.</div>
+    <div class="note">The same device may appear more than once in this list. Devices will be disconnected after 7 days without usage.</div>
     <div class="list">
       {#if current != null}
         <div class="device-wrap" aria-current>  

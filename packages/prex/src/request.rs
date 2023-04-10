@@ -195,11 +195,7 @@ impl Request {
   pub fn isomorphic_ip(&self) -> IpAddr {
     let mut ip = self.remote_addr().ip();
 
-    // log::info!("remote_addr ip: {}", ip);
-
     if is_trusted_ip(ip) {
-      log::info!("is trusted: {ip}");
-      // nginx forwarded ip
       if let Some(v) = self.headers().get("x-real-ip") {
         if let Ok(v) = v.to_str() {
           if let Ok(client_ip) = v.parse() {
@@ -212,7 +208,7 @@ impl Request {
 
     if is_trusted_ip(ip) {
       log::info!("is trusted: {ip}");
-      // client forwarded ip
+
       if let Some(v) = self.headers.get("x-openstream-forwarded-ip") {
         if let Ok(v) = v.to_str() {
           if let Ok(forward_ip) = v.parse() {
@@ -223,7 +219,6 @@ impl Request {
       }
     }
 
-    // log::info!("final ip: {ip}");
     ip
   }
 
@@ -291,4 +286,176 @@ impl Request {
 pub struct BasicAuth {
   pub user: String,
   pub password: String,
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use std::str::FromStr;
+
+  fn mock_parts() -> Parts {
+    Parts {
+      local_addr: SocketAddr::from_str("127.0.0.1:8080").unwrap(),
+      remote_addr: SocketAddr::from_str("127.0.0.1:12345").unwrap(),
+      method: Method::GET,
+      uri: Uri::from_static("http://localhost"),
+      version: Version::HTTP_11,
+      headers: HeaderMap::new(),
+      extensions: Extensions::new(),
+      params: Params::new(),
+      body: Body::empty(),
+    }
+  }
+
+  #[test]
+  fn is_trusted_ip() {
+    assert!(super::is_trusted_ip(IpAddr::from_str("127.0.0.1").unwrap()));
+    assert!(!super::is_trusted_ip(IpAddr::from_str("8.8.8.8").unwrap()));
+  }
+
+  #[test_util::async_test]
+  async fn read_body_json() {
+    let mut request = Request::from_parts(mock_parts());
+    *request.body_mut() = Body::from(r#"{"key": "value"}"#);
+
+    let json: std::collections::HashMap<String, String> =
+      request.read_body_json(1024).await.unwrap();
+    assert_eq!(json.get("key").unwrap(), "value");
+  }
+
+  #[test_util::async_test]
+  async fn read_body_bytes() {
+    let mut request = Request::from_parts(mock_parts());
+    *request.body_mut() = Body::from("test body");
+
+    let bytes: Result<Bytes, _> = request.read_body_bytes(1024).await;
+    assert!(bytes.is_ok());
+    assert_eq!(bytes.unwrap(), Bytes::from("test body"));
+  }
+
+  #[test]
+  fn basic_auth() {
+    let mut parts = mock_parts();
+    parts.headers.insert(
+      AUTHORIZATION,
+      "Basic dXNlcm5hbWU6cGFzc3dvcmQ=".parse().unwrap(),
+    );
+    let request = Request::from_parts(parts);
+
+    let auth = request.basic_auth();
+    assert!(auth.is_some());
+    let auth = auth.unwrap();
+    assert_eq!(auth.user, "username");
+    assert_eq!(auth.password, "password");
+  }
+
+  #[test]
+  fn request_getters() {
+    let request = Request::from_parts(mock_parts());
+    assert_eq!(
+      request.local_addr(),
+      SocketAddr::from_str("127.0.0.1:8080").unwrap()
+    );
+    assert_eq!(
+      request.remote_addr(),
+      SocketAddr::from_str("127.0.0.1:12345").unwrap()
+    );
+    assert_eq!(request.method(), &Method::GET);
+    assert_eq!(request.uri(), &Uri::from_static("http://localhost"));
+    assert_eq!(request.version(), Version::HTTP_11);
+    assert_eq!(request.headers().len(), 0);
+  }
+
+  #[test]
+  fn request_setters() {
+    let mut request = Request::from_parts(mock_parts());
+    *request.local_addr_mut() = SocketAddr::from_str("127.0.0.1:9000").unwrap();
+    *request.remote_addr_mut() = SocketAddr::from_str("127.0.0.1:6789").unwrap();
+    *request.method_mut() = Method::POST;
+    *request.uri_mut() = Uri::from_static("http://example.com");
+    *request.version_mut() = Version::HTTP_2;
+
+    assert_eq!(
+      request.local_addr(),
+      SocketAddr::from_str("127.0.0.1:9000").unwrap()
+    );
+    assert_eq!(
+      request.remote_addr(),
+      SocketAddr::from_str("127.0.0.1:6789").unwrap()
+    );
+    assert_eq!(request.method(), &Method::POST);
+    assert_eq!(request.uri(), &Uri::from_static("http://example.com"));
+    assert_eq!(request.version(), Version::HTTP_2);
+  }
+
+  #[test]
+  fn request_param() {
+    let mut parts = mock_parts();
+    parts.params.set("key".to_string(), "value".to_string());
+    let request = Request::from_parts(parts);
+
+    assert_eq!(request.param("key"), Some("value"));
+    assert_eq!(request.param("nonexistent"), None);
+  }
+
+  #[test]
+  fn test_parts_from_request() {
+    let request = Request::from_parts(mock_parts());
+    let parts = Parts {
+      local_addr: request.local_addr,
+      remote_addr: request.remote_addr,
+      method: request.method,
+      uri: request.uri,
+      version: request.version,
+      headers: request.headers,
+      extensions: request.extensions,
+      params: request.params,
+      body: request.body,
+    };
+
+    assert_eq!(
+      parts.local_addr,
+      SocketAddr::from_str("127.0.0.1:8080").unwrap()
+    );
+    assert_eq!(
+      parts.remote_addr,
+      SocketAddr::from_str("127.0.0.1:12345").unwrap()
+    );
+    assert_eq!(parts.method, Method::GET);
+    assert_eq!(parts.uri, Uri::from_static("http://localhost"));
+    assert_eq!(parts.version, Version::HTTP_11);
+    assert_eq!(parts.headers.len(), 0);
+  }
+
+  #[test_util::async_test]
+  async fn test_read_body_json_error_too_large() {
+    let mut request = Request::from_parts(mock_parts());
+    *request.body_mut() = Body::from(r#"{"key": "value"}"#);
+
+    let json: Result<std::collections::HashMap<String, String>, _> =
+      request.read_body_json(5).await;
+    assert!(matches!(json.unwrap_err(), ReadBodyJsonError::TooLarge(5)));
+  }
+
+  #[test_util::async_test]
+  async fn test_read_body_bytes_error_too_large() {
+    let mut request = Request::from_parts(mock_parts());
+    *request.body_mut() = Body::from("test body");
+
+    let bytes: Result<Bytes, _> = request.read_body_bytes(5).await;
+    assert!(matches!(
+      bytes.unwrap_err(),
+      ReadBodyBytesError::TooLarge(5)
+    ));
+  }
+
+  #[test_util::async_test]
+  async fn test_read_body_json_error_malformed_json() {
+    let mut request = Request::from_parts(mock_parts());
+    *request.body_mut() = Body::from(r#"{"key": "value",}"#); // Note the extra comma
+
+    let json: Result<std::collections::HashMap<String, String>, _> =
+      request.read_body_json(1024).await;
+    assert!(matches!(json.unwrap_err(), ReadBodyJsonError::Json(_)));
+  }
 }

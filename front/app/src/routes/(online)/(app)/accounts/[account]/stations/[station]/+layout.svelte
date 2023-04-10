@@ -152,7 +152,7 @@
             on:click={event => scroll_into_view(event.currentTarget)}
           >
             <span class="action-name ripple-container">
-              Profile
+              Me
             </span>
             {#if $page.url.pathname === `/accounts/${data.station.account_id}/stations/${data.station._id}/profile`}
               <div class="current-action-line" in:current_enter|local out:current_leave|local />

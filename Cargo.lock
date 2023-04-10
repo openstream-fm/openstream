@@ -2821,6 +2821,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
+ "test-util",
  "thiserror",
  "tokio",
  "tower",

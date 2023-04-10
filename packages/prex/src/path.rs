@@ -62,26 +62,26 @@ mod tests {
   #[test]
   fn normalize_remove_repeated() {
     assert_eq!(
+      normalize("//one//two//three"),
       String::from("/one/two/three"),
-      normalize("//one//two//three")
     );
 
     assert_eq!(
+      normalize("//one///two////three"),
       String::from("/one/two/three"),
-      normalize("//one///two////three")
     );
   }
 
   #[test]
   fn normalize_prepend() {
-    assert_eq!(String::from("/one/two/three"), normalize("one/two/three"));
+    assert_eq!(normalize("one/two/three"), String::from("/one/two/three"),);
   }
 
   #[test]
   fn normalize_all() {
     assert_eq!(
+      normalize("/one//two///three////"),
       String::from("/one/two/three"),
-      normalize("/one//two///three////")
     )
   }
 }
