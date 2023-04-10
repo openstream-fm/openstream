@@ -155,6 +155,13 @@ pub mod post {
 
       let media_key = AccessToken::random_media_key();
 
+      let delete_filter = current_filter_doc! {
+        GeneratedBy::KEY_ENUM_TAG: { "$in": [ GeneratedBy::KEY_ENUM_VARIANT_LOGIN, GeneratedBy::KEY_ENUM_VARIANT_REGISTER ] },
+        GeneratedBy::KEY_DEVICE_ID: &device_id,
+        Scope::KEY_ENUM_TAG: Scope::KEY_ENUM_VARIANT_USER,
+        Scope::KEY_USER_ID: &user.id,
+      };
+
       let token = AccessToken {
         id: AccessToken::uid(),
         hash: crypt::sha256(&key),
@@ -169,12 +176,6 @@ pub mod post {
         last_used_at: None,
         hits: 0,
         deleted_at: None,
-      };
-
-      let delete_filter = current_filter_doc! {
-        GeneratedBy::KEY_ENUM_TAG: { "$in": [ GeneratedBy::KEY_ENUM_VARIANT_LOGIN, GeneratedBy::KEY_ENUM_VARIANT_REGISTER ] },
-        Scope::KEY_ENUM_TAG: Scope::KEY_ENUM_VARIANT_USER,
-        Scope::KEY_USER_ID: &user.id,
       };
 
       run_transaction!(session => {
