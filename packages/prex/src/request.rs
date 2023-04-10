@@ -9,7 +9,7 @@ use serde::de::DeserializeOwned;
 use std::net::{IpAddr, SocketAddr};
 
 fn is_trusted_ip(ip: IpAddr) -> bool {
-  ip_rfc::global(&ip)
+  !ip_rfc::global(&ip)
 }
 
 #[derive(Debug)]
@@ -195,11 +195,15 @@ impl Request {
   pub fn isomorphic_ip(&self) -> IpAddr {
     let mut ip = self.remote_addr().ip();
 
+    // log::info!("remote_addr ip: {}", ip);
+
     if is_trusted_ip(ip) {
+      log::info!("is trusted: {ip}");
       // nginx forwarded ip
       if let Some(v) = self.headers().get("x-real-ip") {
         if let Ok(v) = v.to_str() {
           if let Ok(client_ip) = v.parse() {
+            // log::info!("x-real-ip: {ip}");
             ip = client_ip;
           }
         }
@@ -207,16 +211,19 @@ impl Request {
     }
 
     if is_trusted_ip(ip) {
+      log::info!("is trusted: {ip}");
       // client forwarded ip
       if let Some(v) = self.headers.get("x-openstream-forwarded-ip") {
         if let Ok(v) = v.to_str() {
           if let Ok(forward_ip) = v.parse() {
+            // log::info!("x-openstream-forwarded-ip: {ip}");
             ip = forward_ip;
           }
         }
       }
     }
 
+    // log::info!("final ip: {ip}");
     ip
   }
 

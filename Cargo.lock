@@ -2817,6 +2817,7 @@ dependencies = [
  "http-auth-basic",
  "hyper",
  "ip_rfc",
+ "log",
  "regex",
  "serde",
  "serde_json",
