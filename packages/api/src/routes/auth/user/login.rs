@@ -2,7 +2,7 @@ pub mod post {
   use async_trait::async_trait;
   use db::access_token::{AccessToken, GeneratedBy, Scope};
   use db::user::{User, UserPublicUser};
-  use db::Model;
+  use db::{current_filter_doc, run_transaction, Model};
   use mongodb::bson::doc;
   use prex::{request::ReadBodyJsonError, Request};
   use serde::{Deserialize, Serialize};
@@ -22,6 +22,7 @@ pub mod post {
   pub struct Payload {
     email: String,
     password: String,
+    device_id: String,
   }
 
   #[derive(Debug, Clone)]
@@ -49,6 +50,12 @@ pub mod post {
     Db(#[from] mongodb::error::Error),
     #[error("too many requests")]
     TooManyRequests,
+    #[error("email missing")]
+    EmailMissing,
+    #[error("password missing")]
+    PasswordMissing,
+    #[error("device id invalid")]
+    DeviceIdInvalid,
     #[error("no match email")]
     NoMatchEmail,
     #[error("no password")]
@@ -65,6 +72,9 @@ pub mod post {
         HandleError::NoMatchEmail => ApiError::AuthFailed,
         HandleError::NoPassword => ApiError::AuthFailed,
         HandleError::NoMatchPassword => ApiError::AuthFailed,
+        HandleError::EmailMissing => ApiError::PayloadInvalid("email is required".into()),
+        HandleError::PasswordMissing => ApiError::PayloadInvalid("password is required".into()),
+        HandleError::DeviceIdInvalid => ApiError::PayloadInvalid("device_id is invalid".into()),
       }
     }
   }
@@ -77,21 +87,7 @@ pub mod post {
     type Output = Output;
 
     async fn parse(&self, mut req: Request) -> Result<Input, Self::ParseError> {
-      let mut payload: Payload = req.read_body_json(1000 * 5).await?;
-
-      payload.email = payload.email.trim().to_string();
-
-      if payload.email.is_empty() {
-        return Err(ReadBodyJsonError::PayloadInvalid(String::from(
-          "Email is required",
-        )));
-      }
-
-      if payload.password.is_empty() {
-        return Err(ReadBodyJsonError::PayloadInvalid(String::from(
-          "Password is required",
-        )));
-      };
+      let payload: Payload = req.read_body_json(1000 * 5).await?;
 
       let ip = req.isomorphic_ip();
 
@@ -111,15 +107,31 @@ pub mod post {
         user_agent,
       } = input;
 
+      let Payload {
+        email,
+        password,
+        device_id,
+      } = payload;
+
+      let email = email.trim().to_lowercase();
+
+      if email.is_empty() {
+        return Err(HandleError::EmailMissing);
+      };
+
+      if password.is_empty() {
+        return Err(HandleError::PasswordMissing);
+      };
+
+      if !AccessToken::is_device_id_valid(&device_id) {
+        return Err(HandleError::DeviceIdInvalid);
+      };
+
       if should_reject(ip) {
         return Err(HandleError::TooManyRequests);
       }
 
       hit(ip);
-
-      let Payload { email, password } = payload;
-
-      let email = email.trim().to_lowercase();
 
       let user = match User::find_by_email(&email).await? {
         None => return Err(HandleError::NoMatchEmail),
@@ -148,14 +160,27 @@ pub mod post {
         hash: crypt::sha256(&key),
         media_hash: crypt::sha256(&media_key),
         scope: Scope::User { user_id },
-        generated_by: GeneratedBy::Login { ip, user_agent },
+        generated_by: GeneratedBy::Login {
+          ip,
+          user_agent,
+          device_id,
+        },
         created_at: DateTime::now(),
         last_used_at: None,
         hits: 0,
         deleted_at: None,
       };
 
-      AccessToken::insert(&token).await?;
+      let delete_filter = current_filter_doc! {
+        GeneratedBy::KEY_ENUM_TAG: { "$in": [ GeneratedBy::KEY_ENUM_VARIANT_LOGIN, GeneratedBy::KEY_ENUM_VARIANT_REGISTER ] },
+        Scope::KEY_ENUM_TAG: Scope::KEY_ENUM_VARIANT_USER,
+        Scope::KEY_USER_ID: &user.id,
+      };
+
+      run_transaction!(session => {
+        tx_try!(AccessToken::set_deleted_with_session(delete_filter.clone(), &mut session).await);
+        tx_try!(AccessToken::insert_with_session(&token, &mut session).await);
+      });
 
       let user = UserPublicUser::from(user);
 

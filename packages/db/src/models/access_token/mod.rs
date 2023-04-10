@@ -66,11 +66,13 @@ pub enum GeneratedBy {
     #[serde(with = "serde_util::ip")]
     ip: IpAddr,
     user_agent: UserAgent,
+    device_id: String,
   },
   Register {
     #[serde(with = "serde_util::ip")]
     ip: IpAddr,
     user_agent: UserAgent,
+    device_id: String,
   },
   Api {
     title: String,
@@ -357,6 +359,19 @@ impl AccessToken {
 
   pub fn random_media_key() -> String {
     uid::uid(24)
+  }
+
+  const DEVICE_ID_LEN: usize = 24;
+  pub fn random_device_id() -> String {
+    uid::uid(Self::DEVICE_ID_LEN)
+  }
+
+  pub fn is_device_id_valid(device_id: &str) -> bool {
+    if device_id.len() != Self::DEVICE_ID_LEN {
+      false
+    } else {
+      lazy_regex::regex_is_match!("^[a-z0-9]+$", device_id)
+    }
   }
 
   pub fn is_generatyed_login(&self) -> bool {

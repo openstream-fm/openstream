@@ -12,4 +12,5 @@ export interface Payload {
   user_system_metadata?: Metadata;
   account_user_metadata?: Metadata;
   account_system_metadata?: Metadata;
+  device_id: string;
 }

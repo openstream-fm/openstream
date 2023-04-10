@@ -836,6 +836,7 @@ dependencies = [
  "futures-util",
  "hyper",
  "indexmap",
+ "lazy-regex",
  "lazy_static",
  "log",
  "logger",

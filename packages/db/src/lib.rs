@@ -191,6 +191,21 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
     Ok(())
   }
 
+  async fn set_deleted(filter: Document) -> MongoResult<UpdateResult> {
+    let update = doc! { "$set": { crate::KEY_DELETED_AT: DateTime::now() } };
+    Self::cl().update_many(filter, update, None).await
+  }
+
+  async fn set_deleted_with_session(
+    filter: Document,
+    session: &mut ClientSession,
+  ) -> MongoResult<UpdateResult> {
+    let update = doc! { "$set": { crate::KEY_DELETED_AT: DateTime::now() } };
+    Self::cl()
+      .update_many_with_session(filter, update, None, session)
+      .await
+  }
+
   async fn set_deleted_by_id(id: &str) -> MongoResult<UpdateResult> {
     let update = doc! { "$set": { crate::KEY_DELETED_AT: DateTime::now() } };
     Self::update_by_id(id, update).await

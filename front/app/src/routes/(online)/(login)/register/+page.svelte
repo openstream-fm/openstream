@@ -21,7 +21,7 @@
       throw new Error("Confirmation password does not match");
     }
 
-    const payload: import("$server/defs/api/auth/user/register/POST/Payload").Payload = {
+    const payload: Omit<import("$server/defs/api/auth/user/register/POST/Payload").Payload, "device_id"> = {
       first_name,
       last_name,
       account_name,

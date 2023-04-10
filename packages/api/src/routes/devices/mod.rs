@@ -168,8 +168,8 @@ pub mod get {
         let is_current = token.id == current_token_id;
 
         let (ip, ua) = match token.generated_by {
-          GeneratedBy::Login { ip, user_agent } => (ip, user_agent),
-          GeneratedBy::Register { ip, user_agent } => (ip, user_agent),
+          GeneratedBy::Login { ip, user_agent, .. } => (ip, user_agent),
+          GeneratedBy::Register { ip, user_agent, .. } => (ip, user_agent),
           // unreachable: the mongodb filter ensures this invariants
           _ => unreachable!(),
         };

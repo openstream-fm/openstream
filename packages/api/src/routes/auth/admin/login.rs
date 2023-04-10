@@ -22,6 +22,7 @@ pub mod post {
   pub struct Payload {
     email: String,
     password: String,
+    device_id: String,
   }
 
   #[derive(Debug, Clone)]
@@ -53,6 +54,12 @@ pub mod post {
     NoMatchEmail,
     #[error("no match password")]
     NoMatchPassword,
+    #[error("email missing")]
+    EmailMissing,
+    #[error("password missing")]
+    PasswordMissing,
+    #[error("device id invalid")]
+    DeviceIdInvalid,
   }
 
   impl From<HandleError> for ApiError {
@@ -62,6 +69,9 @@ pub mod post {
         HandleError::TooManyRequests => ApiError::TooManyRequests,
         HandleError::NoMatchEmail => ApiError::AuthFailed,
         HandleError::NoMatchPassword => ApiError::AuthFailed,
+        HandleError::EmailMissing => ApiError::PayloadInvalid("Email is required".into()),
+        HandleError::PasswordMissing => ApiError::PayloadInvalid("Password is required".into()),
+        HandleError::DeviceIdInvalid => ApiError::PayloadInvalid("device_id is invalid".into()),
       }
     }
   }
@@ -74,21 +84,7 @@ pub mod post {
     type Output = Output;
 
     async fn parse(&self, mut req: Request) -> Result<Input, Self::ParseError> {
-      let mut payload: Payload = req.read_body_json(1000 * 5).await?;
-
-      payload.email = payload.email.trim().to_string();
-
-      if payload.email.is_empty() {
-        return Err(ReadBodyJsonError::PayloadInvalid(String::from(
-          "Email is required",
-        )));
-      }
-
-      if payload.password.is_empty() {
-        return Err(ReadBodyJsonError::PayloadInvalid(String::from(
-          "Password is required",
-        )));
-      };
+      let payload: Payload = req.read_body_json(1000 * 5).await?;
 
       let ip = req.isomorphic_ip();
 
@@ -108,13 +104,31 @@ pub mod post {
         user_agent,
       } = input;
 
+      let Payload {
+        email,
+        password,
+        device_id,
+      } = payload;
+
+      let email = email.trim().to_string();
+
+      if email.is_empty() {
+        return Err(HandleError::EmailMissing);
+      }
+
+      if password.is_empty() {
+        return Err(HandleError::PasswordMissing);
+      };
+
+      if !AccessToken::is_device_id_valid(&device_id) {
+        return Err(HandleError::DeviceIdInvalid);
+      }
+
       if should_reject(ip) {
         return Err(HandleError::TooManyRequests);
       }
 
       hit(ip);
-
-      let Payload { email, password } = payload;
 
       let email = email.trim().to_lowercase();
 
@@ -139,7 +153,11 @@ pub mod post {
         hash: crypt::sha256(&key),
         media_hash: crypt::sha256(&media_key),
         scope: Scope::Admin { admin_id },
-        generated_by: GeneratedBy::Login { ip, user_agent },
+        generated_by: GeneratedBy::Login {
+          ip,
+          user_agent,
+          device_id,
+        },
         last_used_at: None,
         hits: 0,
         created_at: DateTime::now(),

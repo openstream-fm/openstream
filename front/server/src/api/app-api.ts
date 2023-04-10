@@ -40,16 +40,11 @@ export const app_api = ({
   }))
 
   api.post("/login", json(async (req, res) => {
-    if(req.cookie_session.user != null) {
-      await client.auth.user.logout(ip(req), ua(req), token(req)).catch(() => {});
-    }
-
-    {
-      const r = await client.auth.user.login(ip(req), ua(req), req.body);
-      const data = req.cookie_session;
-      res.set_session({ ...data, user: { _id: r.user._id, token: r.token, media_key: r.media_key  } });
-      return { user: r.user, media_key: r.media_key }
-    }
+    const sess = req.cookie_session;
+    const r = await client.auth.user.login(ip(req), ua(req), { ...req.body, device_id: sess.device_id });
+    const data = req.cookie_session;
+    res.set_session({ ...data, user: { _id: r.user._id, token: r.token, media_key: r.media_key  } });
+    return { user: r.user, media_key: r.media_key }
   }))
 
   api.post("/logout", json(async (req, res) => {
@@ -60,17 +55,10 @@ export const app_api = ({
   }))
 
   api.post("/register", json(async (req, res) => {
-    // invalidate previous token
-    if(req.cookie_session.user != null) {
-      await client.auth.user.logout(ip(req), ua(req), token(req)).catch(() => {});
-    }
-
-    {
-      const { account, user, token, media_key } = await client.auth.user.register(ip(req), ua(req), config.openstream.token, req.body);
-      const data = req.cookie_session;
-      res.set_session({ ...data, user: { _id: user._id, token, media_key }});
-      return { user, account }
-    }
+    const sess = req.cookie_session;
+    const { account, user, token, media_key } = await client.auth.user.register(ip(req), ua(req), config.openstream.token, { ...req.body, device_id: sess.device_id });
+    res.set_session({ ...sess, user: { _id: user._id, token, media_key }});
+    return { user, account }
   }))
 
   api.get("/users/me", json(async req => {

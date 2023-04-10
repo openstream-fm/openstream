@@ -10,7 +10,7 @@
   let password = "";
 
   const login = action(async () => {
-    const payload: import("$server/defs/api/auth/user/login/POST/Payload").Payload = { email, password };
+    const payload: Omit<import("$server/defs/api/auth/user/login/POST/Payload").Payload, "device_id"> = { email, password };
     await _post("/api/login", payload);
     await invalidate("user:me");
     goto("/");

@@ -5,7 +5,16 @@ import { Config } from "./config";
 import crypto from "crypto";
 import { Logger } from "./logger";
 
+export const random_device_id = () => {
+  let buf = "";
+  for(let i = 0; i < 24; i++) {
+    buf += Math.floor(Math.random() * 32).toString(32);
+  }
+  return buf;
+}
+
 export type SessionData = {
+  device_id: string,
   user: { _id: string, token: string, media_key: string } | null;
 }
 
@@ -46,7 +55,7 @@ export const get_cookie_session = (req: Request, name: string, key: Buffer, logg
     logger.debug(`v: ${v}`)
     if(typeof v !== "string") {
       logger.debug(`not string, ${typeof v}`)
-      return { user: null };
+      return { device_id: random_device_id(), user: null };
     }
     const json_string = decrypt(v, key, logger);
     let data: any;
@@ -60,11 +69,11 @@ export const get_cookie_session = (req: Request, name: string, key: Buffer, logg
       return data;
     } else {
       logger.warn(`not is<SessionData>, ${JSON.stringify(data)}`)
-      return { user: null };
+      return { device_id: random_device_id(), user: null,  };
     }
   } catch(e) {
     logger.warn(`error: ${e}`)
-    return { user: null }
+    return { device_id: random_device_id(), user: null }
   }
 }
 
@@ -100,6 +109,10 @@ export const session = (config: Config, _logger: Logger) => {
         signed: false,
       });
     }
+    
+    // rolling cookie (and set device id, if first time)
+    res.set_session(req.cookie_session);
+
     res.clear_session = () => res.clearCookie(config.session.cookie_name, {
       domain: config.session.domain,
       httpOnly: true,

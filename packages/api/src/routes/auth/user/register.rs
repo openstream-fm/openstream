@@ -68,6 +68,8 @@ pub mod post {
     AccountNameTooLong,
     #[error("password too long")]
     PasswordTooLong,
+    #[error("device id invalid")]
+    DeviceIdInvalid,
   }
 
   impl From<mongodb::error::Error> for HandleError {
@@ -114,6 +116,9 @@ pub mod post {
         HandleError::PasswordTooLong => {
           ApiError::PayloadInvalid(String::from("Password must be of 80 characters or less"))
         }
+        HandleError::DeviceIdInvalid => {
+          ApiError::PayloadInvalid(String::from("device_id is invalid"))
+        }
       }
     }
   }
@@ -141,6 +146,8 @@ pub mod post {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     account_system_metadata: Option<Metadata>,
+
+    device_id: String,
   }
 
   // #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
@@ -222,7 +229,12 @@ pub mod post {
         account_system_metadata,
         user_user_metadata,
         user_system_metadata,
+        device_id,
       } = payload;
+
+      if !AccessToken::is_device_id_valid(&device_id) {
+        return Err(HandleError::DeviceIdInvalid);
+      }
 
       let email = email.trim().to_lowercase();
       let first_name = first_name.trim().to_string();
@@ -336,7 +348,11 @@ pub mod post {
         scope: Scope::User {
           user_id: user.id.clone(),
         },
-        generated_by: GeneratedBy::Register { ip, user_agent },
+        generated_by: GeneratedBy::Register {
+          ip,
+          user_agent,
+          device_id,
+        },
         last_used_at: None,
         hits: 0,
         created_at: now,
