@@ -11,7 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@mdi/js": "^7.1.96",
-    "@sveltejs/kit": "^1.0.1",
+    "@sveltejs/kit": "^1.15.2",
     "svelte": "^3.55.0"
   }
 }
