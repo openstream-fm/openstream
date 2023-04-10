@@ -126,6 +126,11 @@ pub mod get {
 
       // TODO: typecheck enum tag values with keys macro
       let generated_filter = doc! { GeneratedBy::KEY_ENUM_TAG: { "$in": [ GeneratedBy::KEY_ENUM_VARIANT_LOGIN, GeneratedBy::KEY_ENUM_VARIANT_REGISTER ] } };
+      log::info!(
+        "device: generated_filter: {}",
+        serde_json::to_string(&generated_filter).unwrap()
+      );
+
       let scope_filter = match access_token_scope {
         AccessTokenScope::Global => match &query.admin_id {
           Some(admin_id) => {
@@ -154,8 +159,16 @@ pub mod get {
           doc! { Scope::KEY_ENUM_TAG: Scope::KEY_ENUM_VARIANT_USER, Scope::KEY_USER_ID: user.id }
         }
       };
+      log::info!(
+        "device: scope_filter: {}",
+        serde_json::to_string(&scope_filter).unwrap()
+      );
 
       let filter = current_filter_doc! { "$and": [ generated_filter, scope_filter ] };
+      log::info!(
+        "device: filter: {}",
+        serde_json::to_string(&filter).unwrap()
+      );
 
       let skip = query.skip.unwrap_or_else(default_skip);
       let limit = query.limit.unwrap_or_else(default_limit);
