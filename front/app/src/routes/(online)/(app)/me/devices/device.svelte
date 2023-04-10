@@ -47,7 +47,7 @@
   const get_os_icon = (...args: any[]) => {
     const v = device.ua.os?.toLowerCase();
     if(v === "android") return mdiAndroid;
-    if(v === "ios") return mdiAppleIos;
+    if(v === "ios" || v === "iphone" || v === "ipad" || v === "ipod") return mdiAppleIos;
     if(v === "windows") return mdiMicrosoftWindows;
     if(v === "linux") return mdiLinux;
     if(v === "osx") return mdiApple;
