@@ -50,7 +50,7 @@
     if(v === "ios" || v === "iphone" || v === "ipad" || v === "ipod") return mdiAppleIos;
     if(v === "windows") return mdiMicrosoftWindows;
     if(v === "linux") return mdiLinux;
-    if(v === "osx") return mdiApple;
+    if(v === "osx" || v === "mac" || v === "max osx") return mdiApple;
     return null;
   }
 </script>
