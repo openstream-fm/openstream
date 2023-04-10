@@ -8,7 +8,7 @@
     "start": "node --no-warnings --experimental-specifier-resolution=node openstream-front start",
     "dev": "SVELTEKIT_APP_DEV=1 SVELTEKIT_APP_PORT=3100 nodemon --exec node --no-warnings --experimental-specifier-resolution=node --loader ts-node/esm src/cli.ts start",
     "build": "tsc",
-    "test": "ava"
+    "test": "npm run build && ava --match='!*integration*'"
   },
   "keywords": [],
   "author": "",
@@ -54,7 +54,7 @@
       "rewritePaths": {
         "src/": "dist/"
       },
-      "compile": "tsc"
+      "compile": false
     }
   }
 }

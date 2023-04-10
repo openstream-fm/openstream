@@ -53,6 +53,11 @@ test('clone - should throw an error when an unknown type is passed in', t => {
   t.throws(() => clone(Symbol()));
 });
 
+test('clone - should return the same boolean when a boolean is passed in', t => {
+  t.deepEqual(clone(true), true);
+  t.deepEqual(clone(false), false);
+});
+
 test('equals - returns true for equal numbers', t => {
   t.true(equals(1, 1));
 });
@@ -97,6 +102,16 @@ test('equals - throws an error for unknown types', t => {
   t.throws(() => equals(Symbol(), Symbol()));
 });
 
+test('equals - returns true for equal booleans', t => {
+  t.true(equals(true, true));
+  t.true(equals(false, false));
+});
+
+test('equals - returns false for different booleans', t => {
+  t.false(equals(true, false));
+  t.false(equals(false, true));
+});
+
 test('diff - returns an empty object for equal objects', t => {
   const db = { a: 1, b: 'hello' };
   const current = { a: 1, b: 'hello' };
@@ -135,4 +150,18 @@ test('diff - adds undefined on extra properties in db object', t => {
 
 test('diff - throws an error for unknown types', t => {
   t.throws(() => diff({ a: Symbol() }, { a: Symbol() }));
+});
+
+test('diff - returns an empty object for equal booleans', t => {
+  const db = { a: true, b: false };
+  const current = { a: true, b: false };
+  const result = diff(db, current);
+  t.deepEqual(result, {});
+});
+
+test('diff - returns a partial object for different booleans', t => {
+  const db = { a: true, b: false };
+  const current = { a: false, b: true };
+  const result = diff(db, current);
+  t.deepEqual(result, { a: false, b: true });
 });

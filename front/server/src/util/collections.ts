@@ -32,7 +32,7 @@ export const equals = <T>(src: T, target: T) => {
   if(t !== typeof target) return false;
   if(src == null) return t == target; // we treat null and undefined as the same
   if(t === "function") throw new Error("equals: Cannot compare a function");
-  if(t === "number" || t === "string") return src === target;
+  if(t === "boolean" || t === "number" || t === "string") return src === target;
   if(t === "object") {
     if(src instanceof Date) {
       if(target instanceof Date) {

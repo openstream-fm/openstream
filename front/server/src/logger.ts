@@ -41,13 +41,15 @@ export class ConsoleLogger implements Logger {
   #options: Options;
   #level: LogLevel;
   #scope: string | null;
+  #console: Console;
   #s: string;
 
-  constructor(level: LogLevel, scope: string | null = null, options: Partial<Options> = {}) {
+  constructor(level: LogLevel, scope: string | null = null, options: Partial<Options> = {}, _console: Console = console) {
     
     this.#level = level;
     this.#scope = scope;
     this.#options = { ts: options.ts ?? true };
+    this.#console = _console;
 
     if(this.#scope != null) {
       this.#s = ` ${color.bold(this.#scope)} >`
@@ -64,6 +66,10 @@ export class ConsoleLogger implements Logger {
     return { ...this.#options };
   }
 
+  get console (): Readonly<Console> {
+    return this.#console;
+  }
+
   
   #ts(): string {
     return this.#options.ts ? `${timestamp()} ` : "";
@@ -74,50 +80,50 @@ export class ConsoleLogger implements Logger {
   }
 
   scoped(scope: string | null): ConsoleLogger {
-    return new ConsoleLogger(this.#level, scope, this.#options);
+    return new ConsoleLogger(this.#level, scope, this.#options, this.#console);
   }
 
   with_level(level: LogLevel): ConsoleLogger {
-    return new ConsoleLogger(level, this.#scope, this.#options);
+    return new ConsoleLogger(level, this.#scope, this.#options, this.#console);
   }
 
   with_options (options: Partial<Options>): ConsoleLogger {
-    return new ConsoleLogger(this.#level, this.#scope, { ...this.#options, ...options })
+    return new ConsoleLogger(this.#level, this.#scope, { ...this.#options, ...options }, this.#console)
   }
 
   debug(arg: any) {
     if(this.#level >= LogLevel.DEBUG) {
-      console.log(`${this.#ts()}${color.blue(`DEBUG`)}${this.#s} ${arg}`)
+      this.#console.log(`${this.#ts()}${color.blue(`DEBUG`)}${this.#s} ${arg}`)
     }
   }
 
   info(arg: any) {
     if(this.#level >= LogLevel.INFO) {
-      console.log(`${this.#ts()}${color.green(`INFO`)} ${this.#s} ${arg}`)
+      this.#console.log(`${this.#ts()}${color.green(`INFO`)} ${this.#s} ${arg}`)
     }
   }
 
   warn(arg: any) {
     if(this.#level >= LogLevel.WARN) {
-      console.warn(`${this.#ts()}${color.yellow(`WARN`)} ${this.#s} ${arg}`)
+      this.#console.warn(`${this.#ts()}${color.yellow(`WARN`)} ${this.#s} ${arg}`)
     }
   }
 
   error(error: string | Error) {
     if(this.#level >= LogLevel.ERROR) {
       if(typeof error === "string") {
-        console.warn(`${this.#ts()}${color.red(`ERROR`)}${this.#s} ${error}`);
+        this.#console.warn(`${this.#ts()}${color.red(`ERROR`)}${this.#s} ${error}`);
       } else {
         const stack = error?.stack;
         if(stack) {
           const [head, _skip, ...rest] = stack.toString().split("\n");
           const ts = this.#ts();
-          console.warn(`${ts}${color.red(`ERROR`)}${this.#s} ${head}`)
+          this.#console.warn(`${ts}${color.red(`ERROR`)}${this.#s} ${head}`)
           for(const line of rest) {
-            console.warn(`${ts} ${color.red("---")} ${this.#s} ${line.trim()}`)
+            this.#console.warn(`${ts} ${color.red("---")} ${this.#s} ${line.trim()}`)
           }
         } else {
-          console.warn(`${this.#ts()}${color.red(`ERROR`)}${this.#s} ${error}`);
+          this.#console.warn(`${this.#ts()}${color.red(`ERROR`)}${this.#s} ${error}`);
         }
       }
     }

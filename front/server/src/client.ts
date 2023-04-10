@@ -5,7 +5,7 @@ import { Readable } from "stream";
 import { ACCESS_TOKEN_HEADER, FORWARD_IP_HEADER } from "./constants";
 import { ClientError } from "./client-error";
 import { Logger } from "./logger";
-import fetch, { Response, RequestInit, Headers } from "node-fetch";
+import node_fetch, { Response, RequestInit, Headers } from "node-fetch";
 
 import http from "http";
 import https from "https";
@@ -17,6 +17,8 @@ const qss = (v: any) => {
 export class Client {
 
   private base_url: string;
+  private node_fetch: typeof node_fetch;
+
   logger: Logger;
 
   auth: Auth;
@@ -24,11 +26,14 @@ export class Client {
   accounts: Accounts;
   stations: Stations;
   devices: Devices;
+  
 
-  constructor(base_url: string, { logger }: { logger: Logger }) {
+  constructor(base_url: string, { logger, fetch = node_fetch }: { logger: Logger, fetch?: typeof node_fetch  }) {
     this.base_url = base_url.trim().replace(/\/+$/g, "")
     this.logger = logger.scoped("client");
     
+    this.node_fetch = fetch;
+
     this.auth = new Auth(this);
     this.users = new Users(this);
     this.accounts = new Accounts(this);
@@ -40,7 +45,7 @@ export class Client {
     const url = `${this.base_url}${_url}`;
     const method = init.method ?? "GET";
     this.logger.debug(`fetch: ${method} ${url}`);
-    return await fetch(url, { 
+    return await this.node_fetch(url, { 
       agent: (url) => url.protocol === "http:" ? http.globalAgent : https.globalAgent,
       ...init
     }).catch(e => {
