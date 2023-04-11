@@ -10,4 +10,4 @@ bytes = "1.2.1"
 ffmpeg = { version = "0.1.0", path = "../../packages/ffmpeg" }
 hyper = { version = "0.14.20", features = ["full"] }
 prex = { version = "0.1.0", path = "../../packages/prex" }
-tokio = { version = "1.21.2", features = ["full"] }
+tokio = { version = "1.27.0", features = ["full"] }

@@ -14,4 +14,4 @@ test-util = { version = "0.1.0", path = "../test-util" }
 tokio-stream = "0.1.11"
 
 [dev-dependencies]
-tokio = { version = "1.21.2", features = ["full"] }
+tokio = { version = "1.27.0", features = ["full"] }

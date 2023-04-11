@@ -10,4 +10,4 @@ hyper = { version = "0.14.22", features = ["full"] }
 log = "0.4.17"
 logger = { version = "0.1.0", path = "../../packages/logger" }
 prex = { version = "0.1.0", path = "../../packages/prex" }
-tokio = { version = "1.21.2", features = ["full"] }
+tokio = { version = "1.27.0", features = ["full"] }

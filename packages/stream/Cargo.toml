@@ -9,7 +9,7 @@ edition = "2021"
 bytes = "1.2.1"
 hyper = { version = "0.14.20", features = ["full"] }
 prex = { version = "0.1.0", path = "../prex" }
-tokio = { version = "1.21.2", features = ["full"] }
+tokio = { version = "1.27.0", features = ["full"] }
 channels = { path = "../channels" }
 log = "0.4.17"
 owo-colors = { version = "3.5.0", path = "../owo-colors" }
@@ -22,7 +22,7 @@ futures = "0.3.25"
 http = { version = "0.1.0", path = "../http" }
 db = { version = "0.1.0", path = "../db" }
 serde-util = { version = "0.1.0", path = "../serde-util" }
-mongodb = "=2.4.0-beta" # 2.3.1
+mongodb = "2.4.0" # 2.3.1
 media-sessions = { version = "0.1.0", path = "../media-sessions" }
 parking_lot = "0.12.1"
 constants = { version = "0.1.0", path = "../../config/constants" }

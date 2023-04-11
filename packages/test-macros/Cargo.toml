@@ -12,4 +12,4 @@ proc-macro2 = "1.0.7"
 quota = "0.0.0"
 quote = "1"
 syn = { version = "1.0.56", features = ["full"] }
-tokio = { version = "1.23.0", features = ["full"] }
+tokio = { version = "1.27.0", features = ["full"] }
