@@ -16,33 +16,33 @@
 
   $: current = data.devices.items.find(item => item.is_current);
 
-  //$: devices = data.devices.items.filter(item => !item.is_current);
+  $: devices = data.devices.items.filter(item => !item.is_current);
 
-  const devices: Item[] = [];
+  // const devices: Item[] = [];
 
-  for(const name of [ "chrome", "safari", "firefox", "opera", "edge", null ]) {
-    for(const os of [ "linux", "android", "windows", "osx", "ios", null ]) {
-      devices.push({
-        _id: Math.random().toString(),
-        admin_id: null,
-        user_id: null,
-        created_at: new Date().toString(),
-        last_used_at: null,
-        ip: "127.0.0.1",
-        is_current: false,
-        ua: {
-          name,
-          os,
-          browser_type: null,
-          category: null,
-          os_version: null,
-          ua: null,
-          vendor: null,
-          version: null,
-        }
-      });
-    }
-  }
+  // for(const name of [ "chrome", "safari", "firefox", "opera", "edge", null ]) {
+  //   for(const os of [ "linux", "android", "windows", "osx", "ios", null ]) {
+  //     devices.push({
+  //       _id: Math.random().toString(),
+  //       admin_id: null,
+  //       user_id: null,
+  //       created_at: new Date().toString(),
+  //       last_used_at: null,
+  //       ip: "127.0.0.1",
+  //       is_current: false,
+  //       ua: {
+  //         name,
+  //         os,
+  //         browser_type: null,
+  //         category: null,
+  //         os_version: null,
+  //         ua: null,
+  //         vendor: null,
+  //         version: null,
+  //       }
+  //     });
+  //   }
+  // }
 
   let disconnect_item: Item | null = null;
 
