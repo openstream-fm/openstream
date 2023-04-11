@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" id="browser">
+  <g data-name="79-Browser">
+    <path fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+      d="M44 24A20 20 0 0 1 30.26 43a19.9 19.9 0 0 1-12.52 0 20 20 0 0 1 0-38A19.9 19.9 0 0 1 30.26 5 20 20 0 0 1 44 24zM30.26 43a20 20 0 0 0 0-38M17.74 5h0M17.74 43h0"></path>
+    <line x1="24" x2="24" y1="5" y2="43" fill="none" stroke="#000" stroke-linecap="round"
+      stroke-linejoin="round" stroke-width="2"></line>
+    <path fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+      d="M8.78 11a33.13 33.13 0 0 0 5.82 2.28A33.41 33.41 0 0 0 24 14.64a33.47 33.47 0 0 0 9.15-1.28 34.09 34.09 0 0 0 6-2.37M9.11 37.35a33.69 33.69 0 0 1 5.72-2.19 33.74 33.74 0 0 1 24 2.22"></path>
+    <line x1="5" x2="43" y1="24" y2="24" fill="none" stroke="#000" stroke-linecap="round"
+      stroke-linejoin="round" stroke-width="2"></line>
+    <path fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+      d="M29.49 5l.16.28a36.83 36.83 0 0 1 0 37.26h0M18.25 5l-.16.28a36.79 36.79 0 0 0 .05 37.26h0"></path>
+  </g>
+</svg>
