@@ -160,7 +160,8 @@ pub mod get {
       let skip = query.skip.unwrap_or_else(default_skip);
       let limit = query.limit.unwrap_or_else(default_limit);
 
-      let sort = doc! { AccessToken::KEY_CREATED_AT: -1 };
+      // null are the smallest in mongodb so this is ok
+      let sort = doc! { AccessToken::KEY_LAST_USED_AT: -1 };
 
       let page = AccessToken::paged(filter, sort, skip, limit).await?;
 
