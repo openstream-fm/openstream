@@ -268,7 +268,7 @@
                 <div class="menu-icon">
                   <Icon d={mdiAccountCircleOutline} />
                 </div>
-                Profile
+                Me
               </a>
             </div>
             <div class="menu-section">
