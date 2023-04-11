@@ -21,6 +21,7 @@
   import icon_osx from "$share/img/os-icons/osx.svg";
   import icon_ios from "$share/img/os-icons/ios.svg";
 	import NullEmail from "$lib/components/Form/Nullable/NullEmail.svelte";
+	import { browser } from "$app/environment";
 
 
   $: data = get_data(device);
@@ -41,8 +42,8 @@
 
     data.push({ label: "IP", value: device.ip });
 
-    data.push({ label: "Connected", value: new Date(device.created_at).toLocaleString() })
-    data.push({ label: "Last used", value: new Date(device.last_used_at || device.created_at).toLocaleString() })
+    data.push({ label: "Last used", value: browser ? new Date(device.last_used_at || device.created_at).toLocaleString() : "" })
+    data.push({ label: "Connected", value: browser ? new Date(device.created_at).toLocaleString() : "" })
 
     return data;
   }

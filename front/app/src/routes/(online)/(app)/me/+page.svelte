@@ -249,7 +249,7 @@
       <div class="section-title">Change your email</div>
       <div class="fields">
         <div class="field">
-          <Email label="Current email" value={data.user.email} />
+          <Email label="Current email" disabled value={data.user.email} />
         </div>
         <div class="field">
           <Email label="New email" bind:value={new_email} />

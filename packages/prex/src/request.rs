@@ -199,7 +199,6 @@ impl Request {
       if let Some(v) = self.headers().get("x-real-ip") {
         if let Ok(v) = v.to_str() {
           if let Ok(client_ip) = v.parse() {
-            // log::info!("x-real-ip: {ip}");
             ip = client_ip;
           }
         }
@@ -207,12 +206,9 @@ impl Request {
     }
 
     if is_trusted_ip(ip) {
-      log::info!("is trusted: {ip}");
-
       if let Some(v) = self.headers.get("x-openstream-forwarded-ip") {
         if let Ok(v) = v.to_str() {
           if let Ok(forward_ip) = v.parse() {
-            // log::info!("x-openstream-forwarded-ip: {ip}");
             ip = forward_ip;
           }
         }
