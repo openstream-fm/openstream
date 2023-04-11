@@ -26,9 +26,12 @@ pub mod get {
     export_to = "../../defs/api/stations/[station]/dashboard-stats/GET/"
   )]
   pub struct Output {
-    pub listeners_last_24h: u64,
-    pub listeners_last_7d: u64,
-    pub listeners_last_30d: u64,
+    pub sessions_24h: u64,
+    pub sessions_7d: u64,
+    pub sessions_30d: u64,
+    pub listeners_24h: u64,
+    pub listeners_7d: u64,
+    pub listeners_30d: u64,
   }
 
   #[async_trait]
@@ -48,16 +51,31 @@ pub mod get {
     async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
       let Self::Input { station } = input;
 
-      let (l24h, l7d, l30d) = tokio::try_join!(
+      let (s24h, s7d, s30d, l24h, l7d, l30d) = tokio::try_join!(
         StreamConnection::count_for_station_in_last(&station.id, time::Duration::HOUR * 24),
         StreamConnection::count_for_station_in_last(&station.id, time::Duration::DAY * 7),
         StreamConnection::count_for_station_in_last(&station.id, time::Duration::DAY * 30),
+        StreamConnection::count_unique_ips_for_station_in_last(
+          &station.id,
+          time::Duration::HOUR * 24
+        ),
+        StreamConnection::count_unique_ips_for_station_in_last(
+          &station.id,
+          time::Duration::DAY * 7
+        ),
+        StreamConnection::count_unique_ips_for_station_in_last(
+          &station.id,
+          time::Duration::DAY * 30
+        ),
       )?;
 
       let out = Output {
-        listeners_last_24h: l24h,
-        listeners_last_7d: l7d,
-        listeners_last_30d: l30d,
+        sessions_24h: s24h,
+        sessions_7d: s7d,
+        sessions_30d: s30d,
+        listeners_24h: l24h,
+        listeners_7d: l7d,
+        listeners_30d: l30d,
       };
 
       Ok(out)

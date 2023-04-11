@@ -122,6 +122,48 @@ impl StreamConnection {
     let count = Self::cl().count_documents(filter, None).await?;
     Ok(count)
   }
+
+  pub async fn count_unique_ips_for_station_in_last(
+    station_id: &str,
+    in_last: time::Duration,
+  ) -> Result<u64, mongodb::error::Error> {
+    use futures_util::TryStreamExt;
+
+    let since: DateTime = (time::OffsetDateTime::now_utc() - in_last).into();
+    let filter = doc! {
+      Self::KEY_STATION_ID: station_id,
+      Self::KEY_CREATED_AT: { "$gte": since },
+      Self::KEY_TRANSFER_BYTES: { "$ne": 0 },
+    };
+
+    let pipeline = vec![
+      doc! { "$match": filter },
+      doc! { "$group": { "_id": format!("${}.{}", Self::KEY_REQUEST, Request::KEY_REAL_IP) } },
+      doc! { "$group": { "_id": "_id", "count": { "$sum": 1 } } },
+      doc! { "$project": { "_id": 0, "count": 1 } },
+    ];
+
+    #[derive(Debug, Serialize, Deserialize)]
+    struct CountDocument {
+      count: f64,
+    }
+
+    let count = match Self::cl()
+      .aggregate(pipeline, None)
+      .await?
+      .try_next()
+      .await?
+    {
+      None => 0.0,
+      Some(doc) => {
+        let CountDocument { count } =
+          bson::from_document(doc).unwrap_or(CountDocument { count: 0.0 });
+        count
+      }
+    };
+
+    Ok(count as u64)
+  }
 }
 
 #[cfg(test)]

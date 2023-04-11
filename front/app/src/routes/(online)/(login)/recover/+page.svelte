@@ -98,7 +98,7 @@
   <div class="fields">
     <div class="field field-box">
       <Email label="Email" value="" />
-      <span class="comment">We'll send you an e-mail to recover your accounts</span>
+      <span class="comment">We'll send you an e-mail for you to recover access</span>
       <a class="na back" href="/login">Back to login</a>
     </div>
     <button use:ripple class="ripple-container">

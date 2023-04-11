@@ -9,6 +9,7 @@
 	import Icon from "$share/Icon.svelte";
 	import { _get } from "$share/net.client";
 	import { ripple } from "$share/ripple";
+	import { tooltip } from "$share/tooltip";
 	import { mdiMicrophoneOutline, mdiPause, mdiPlay } from "@mdi/js";
 	import { onMount } from "svelte";
 	import { derived } from "svelte/store";
@@ -61,6 +62,16 @@
     return `${to_fixed_2(v)} PB`;
   }
 
+  const sessions_str = (n: number) => {
+    if(n === 1) return "session";
+    else return "sessions";
+  }
+
+  const listeners_str = (n: number) => {
+    if(n === 1) return "user";
+    else return "users";
+  }
+
   const UPDATE_INTERVAL = 5_000;
 
   onMount(() => {
@@ -92,6 +103,15 @@
     
     return () => clearTimeout(timer);
   })
+
+  // data.dashboard_stats.listeners_24h = Math.floor(Math.random() * 1e6);
+  // data.dashboard_stats.listeners_7d = Math.floor(Math.random() * 1e6);
+  // data.dashboard_stats.listeners_30d = Math.floor(Math.random() * 1e6);
+  // data.dashboard_stats.sessions_24h = Math.floor(Math.random() * 1e6);
+  // data.dashboard_stats.sessions_7d = Math.floor(Math.random() * 1e6);
+  // data.dashboard_stats.sessions_30d = Math.floor(Math.random() * 1e6);
+
+  const f = (v: number) => new Intl.NumberFormat().format(v);
 </script>
 
 <style>
@@ -267,9 +287,24 @@
   }
 
   .stats-value {
-    font-size: 1.2rem;
+    font-size: 0.95rem;
     color: var(--green);
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+  }
+
+  .ses, .lis {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .n {
+    font-size: 1.3rem;
     font-weight: 600;
+    color: var(--green);
   }
 
   .top-boxes[data-air="off"] > .top-box-preview {
@@ -350,20 +385,41 @@
 
     <div class="top-box top-box-stats">
       <div class="stats-title">
-        Sessions
+        Stats
       </div>
       <div class="stats-items">
         <div class="stats-item">
           <div class="stats-label">24 hours</div>
-          <div class="stats-value">{stats_num(data.dashboard_stats.listeners_last_24h)}</div>
+          <div class="stats-value">
+            <div class="lis" use:tooltip={`${f(data.dashboard_stats.listeners_24h)} ${listeners_str(data.dashboard_stats.listeners_24h)}`}>
+              <span class="n">{stats_num(data.dashboard_stats.listeners_24h)}</span> {listeners_str(data.dashboard_stats.listeners_24h)}
+            </div>
+            <div class="ses" use:tooltip={`${f(data.dashboard_stats.sessions_24h)} ${sessions_str(data.dashboard_stats.sessions_24h)}`}>
+              <span class="n">{stats_num(data.dashboard_stats.sessions_24h)}</span> {sessions_str(data.dashboard_stats.sessions_24h)}
+            </div>
+          </div>
         </div>
         <div class="stats-item">
           <div class="stats-label">7 days</div>
-          <div class="stats-value">{stats_num(data.dashboard_stats.listeners_last_7d)}</div>
+          <div class="stats-value">
+            <div class="lis" use:tooltip={`${f(data.dashboard_stats.listeners_7d)} ${listeners_str(data.dashboard_stats.listeners_7d)}`}>
+              <span class="n">{stats_num(data.dashboard_stats.listeners_7d)}</span> {listeners_str(data.dashboard_stats.listeners_7d)}
+            </div>
+            <div class="ses" use:tooltip={`${f(data.dashboard_stats.sessions_7d)} ${sessions_str(data.dashboard_stats.sessions_7d)}`}>
+              <span class="n">{stats_num(data.dashboard_stats.sessions_7d)}</span> {sessions_str(data.dashboard_stats.sessions_7d)}
+            </div>
+          </div>
         </div>
         <div class="stats-item">
           <div class="stats-label">30 days</div>
-          <div class="stats-value">{stats_num(data.dashboard_stats.listeners_last_30d)}</div>
+          <div class="stats-value">
+            <div class="lis" use:tooltip={`${f(data.dashboard_stats.listeners_30d)} ${listeners_str(data.dashboard_stats.listeners_30d)}`}>
+              <span class="n">{stats_num(data.dashboard_stats.listeners_30d)}</span> {listeners_str(data.dashboard_stats.listeners_30d)}
+            </div>
+            <div class="ses" use:tooltip={`${f(data.dashboard_stats.sessions_30d)} ${sessions_str(data.dashboard_stats.sessions_30d)}`}>
+              <span class="n">{stats_num(data.dashboard_stats.sessions_30d)}</span> {sessions_str(data.dashboard_stats.sessions_30d)}
+            </div>
+          </div>
         </div>
       </div>
     </div>

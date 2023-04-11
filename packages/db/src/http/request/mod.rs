@@ -6,7 +6,7 @@ use user_agent::{UserAgent, UserAgentExt};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
 #[ts(export, export_to = "../../defs/db/http/")]
-// #[serde(rename_all = "camelCase")]
+#[macros::keys]
 pub struct Request {
   #[serde(with = "serde_util::ip")]
   pub real_ip: IpAddr,
