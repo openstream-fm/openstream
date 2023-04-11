@@ -112,7 +112,11 @@ export class ConsoleLogger implements Logger {
   error(error: string | Error) {
     if(this.#level >= LogLevel.ERROR) {
       if(typeof error === "string") {
-        this.#console.warn(`${this.#ts()}${color.red(`ERROR`)}${this.#s} ${error}`);
+        const [head, ...tail] = error.split("\n");
+        this.#console.warn(`${this.#ts()}${color.red(`ERROR`)}${this.#s} ${head}`);
+        for(const line of tail) {
+          this.#console.warn(`${this.#ts()} ${color.red(`---`)} ${this.#s} ${line}`);  
+        }
       } else {
         const stack = error?.stack;
         if(stack) {

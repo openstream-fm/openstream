@@ -20,8 +20,8 @@
   import icon_windows from "$share/img/os-icons/windows.svg";
   import icon_osx from "$share/img/os-icons/osx.svg";
   import icon_ios from "$share/img/os-icons/ios.svg";
-	import NullEmail from "$lib/components/Form/Nullable/NullEmail.svelte";
-	import { browser } from "$app/environment";
+
+  import { browser } from "$app/environment";
 
 
   $: data = get_data(device);
@@ -35,9 +35,9 @@
     }
 
     if(device.ua.os) {
-      data.push({ label: "OS", value: device.ua.os })
+      data.push({ label: "System", value: device.ua.os })
     } else {
-      data.push({ label: "OS", value: "Unknown" });
+      data.push({ label: "System", value: "Unknown" });
     }
 
     data.push({ label: "IP", value: device.ip });
@@ -62,9 +62,9 @@
   $: os_icon = get_os_icon(device);
   const get_os_icon = (...args: any[]) => {
     const v = device.ua.os?.toLowerCase();
-    if(v === "linux") return icon_linux;
-    if(v === "windows") return icon_windows;
-    if(v === "android") return icon_android;
+    if(v?.includes("linux")) return icon_linux;
+    if(v?.includes("windows")) return icon_windows;
+    if(v?.includes("android")) return icon_android;
     if(v === "ios" || v === "iphone" || v === "ipad" || v === "ipod") return icon_ios;
     if(v === "osx" || v === "mac" || v === "mac osx") return icon_osx;
     return null;

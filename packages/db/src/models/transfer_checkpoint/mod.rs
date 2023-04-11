@@ -90,23 +90,24 @@ pub async fn checkpoint_now() -> Result<Option<TransferCheckpoint>, mongodb::err
 /// TransferCheckpoint will set used transfer to 0 for all stations at the start of every month
 pub fn start_background_task() -> tokio::task::JoinHandle<()> {
   tokio::spawn(async move {
-    info!("transfer checkpoint background job started");
+    info!(target: "service", "transfer checkpoint background job started");
 
     loop {
       match checkpoint_now().await {
         Err(e) => {
-          warn!("error creating transfer checkpoint: {e}");
+          warn!(target: "service", "error creating transfer checkpoint: {e}");
         }
 
         Ok(Some(doc)) => {
           info!(
+            target: "service",
             "transfer checkpoint created: {} {}-{} matched={}, modified={}",
             doc.id, doc.year, doc.month, doc.matched_count, doc.modified_count
           );
         }
 
         Ok(None) => {
-          info!("transfer checkpoint => current month checkpoint already exists");
+          info!(target: "service", "transfer checkpoint => current month checkpoint already exists");
         }
       }
 
@@ -123,7 +124,7 @@ pub fn start_background_task() -> tokio::task::JoinHandle<()> {
         + time::Duration::HOUR
         + time::Duration::seconds_f64(rand_offset_secs);
 
-      info!("transfer checkpoint: sleeping until {}", sleep_until);
+      info!(target: "service", "transfer checkpoint: sleeping until {}", sleep_until);
       let sleep_secs = (sleep_until - now).as_seconds_f64();
       tokio::time::sleep(std::time::Duration::from_secs_f64(sleep_secs)).await;
     }

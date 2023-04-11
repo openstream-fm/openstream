@@ -43,7 +43,7 @@ export type Config = {
  * @param env: available for test porposes
  */
 
-export const merge_env = (partial: PartialDeep<Config>, env = process.env): PartialDeep<Config> => {
+export const merge_env = (partial: PartialDeep<Config>, { logger, env = process.env }: { logger?: Logger, env?: typeof process.env }): PartialDeep<Config> => {
   const config = clone(partial);
 
   /**
@@ -64,6 +64,7 @@ export const merge_env = (partial: PartialDeep<Config>, env = process.env): Part
     if(s != null) {
       const n = Number(s);
       if(Number.isNaN(n)) throw new Error(`env.${key} should be a number`);
+      logger?.info(`using env ${color.yellow(key)} as ${color.yellow(`$config.${property_path}`)}`);
       dot.setProperty(config, property_path, n);
     }
   }
@@ -76,6 +77,7 @@ export const merge_env = (partial: PartialDeep<Config>, env = process.env): Part
     const key = map_prop(property_path);
     const s = env[key]?.trim();
     if(s != null) {
+      logger?.info(`using env ${color.yellow(key)} as ${color.yellow(`$config.${property_path}`)}`);
       dot.setProperty(config, property_path, s.trim());
     }
   }
@@ -92,14 +94,16 @@ export const merge_env = (partial: PartialDeep<Config>, env = process.env): Part
       switch(s) {
         case "1":
         case "true":
+          logger?.info(`using env ${color.yellow(key)} as ${color.yellow(`$config.${property_path}`)}`);
           dot.setProperty(config, property_path, true);
           break;
         case "0":
         case "false":
+          logger?.info(`using env ${color.yellow(key)} as ${color.yellow(`$config.${property_path}`)}`);
           dot.setProperty(config, property_path, false);
           break;
         default:
-          throw new Error(`env.${key} should be a boolean, accepted values are "1", "true", "0", "false", received ${s}`)
+          throw new Error(`env ${key} should be a boolean, accepted values are "1", "true", "0", "false", received ${s}`)
       }
     }
   }
@@ -124,12 +128,12 @@ export const merge_env = (partial: PartialDeep<Config>, env = process.env): Part
   return config;
 }
 
-export const load_from_string = (source: string, env = process.env): Config => {
+export const load_from_string = (source: string, { logger, env = process.env }: { logger?: Logger, env?: typeof process.env } = {}): Config => {
   // check that there are no unknown keys or invalid types for present keys
   const partial_config = assertEquals<PartialDeep<Config>>(toml.parse(source));
 
   // override config with available env variables
-  const partial_merged_config = merge_env(partial_config, env);
+  const partial_merged_config = merge_env(partial_config, { env, logger });
 
   // asserts that the final config object is of expected type
   const config = assertEquals<Config>(partial_merged_config);
@@ -137,11 +141,18 @@ export const load_from_string = (source: string, env = process.env): Config => {
   return config;
 }
 
-export const load = (filename: string, { logger: _logger, env = process.env }: { logger: Logger, env?: typeof process.env }): Config => {
+export const load = (filename: string | null, { logger: _logger, env = process.env }: { logger: Logger, env?: typeof process.env }): Config => {
   const logger = _logger.scoped("config");
-  logger.info(`loading config from ${color.yellow(filename)}`);
 
-  // read toml formatted config string from file
-  const source = readFileSync(filename, "utf8");
-  return load_from_string(source, env);
+  let source: string = "";
+  
+  if(filename == null) {
+    logger.info("loading config only from env varianbles");
+  } else {
+    logger.info(`loading config from ${color.yellow(filename)}`);
+    // read toml formatted config string from file
+    source = readFileSync(filename, "utf8");
+  }
+
+  return load_from_string(source, { env, logger });
 }

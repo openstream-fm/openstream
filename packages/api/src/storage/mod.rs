@@ -76,7 +76,7 @@ impl StorageServer {
 
       {
         use owo_colors::*;
-        info!("storage server bound to {}", addr.yellow());
+        info!(target: "storage", "storage server bound to {}", addr.yellow());
       }
 
       let fut = server
@@ -96,6 +96,6 @@ impl StorageServer {
 
 impl Drop for StorageServer {
   fn drop(&mut self) {
-    info!("storage server dropped");
+    info!(target: "storage", "storage server dropped");
   }
 }

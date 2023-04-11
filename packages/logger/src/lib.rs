@@ -126,7 +126,7 @@ impl<'a, 'b> FormattedRecord<'a, 'b> {
   }
 
   pub fn format_module_path(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    write!(f, "{}", self.record.module_path().unwrap_or("").bold())
+    write!(f, "{}", self.record.target().bold())
   }
 
   pub fn format_level(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

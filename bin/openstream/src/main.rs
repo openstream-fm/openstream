@@ -124,6 +124,7 @@ async fn shared_init(config: String) -> Result<Config, anyhow::Error> {
   let _ = dotenv::dotenv();
 
   info!(
+    target: "start",
     "openstream {}{} process started",
     "v".yellow(),
     VERSION.yellow()
@@ -133,6 +134,7 @@ async fn shared_init(config: String) -> Result<Config, anyhow::Error> {
     .with_context(|| format!("error loading config file from {}", config.yellow()))?;
 
   info!(
+    target: "start",
     "loading config file from {}",
     canonical_config_path.to_string_lossy().yellow()
   );
@@ -144,14 +146,15 @@ async fn shared_init(config: String) -> Result<Config, anyhow::Error> {
     )
   })?;
 
-  debug!("config loaded: resolved config: {:#?}", config);
+  debug!(target: "start", "config loaded: resolved config: {:#?}", config);
 
   let client_options = mongodb::options::ClientOptions::parse(config.mongodb.url.as_str())
     .await
     .context("failed to parse mongodb connection string")?;
 
-  info!("mongodb config hosts: {:?}", client_options.hosts);
+  info!(target: "start", "mongodb config hosts: {:?}", client_options.hosts);
   info!(
+    target: "start",
     "mongodb client compressors: {:?}",
     client_options.compressors
   );
@@ -163,7 +166,7 @@ async fn shared_init(config: String) -> Result<Config, anyhow::Error> {
     bail!("no database specified in config, under [mongodb] url");
   }
 
-  info!("connecting to mongodb and testing transactions support...");
+  info!(target: "start", "connecting to mongodb and testing transactions support...");
 
   {
     let test_cl_name = format!("__transactions_test_{}", uid::uid(5));
@@ -204,11 +207,11 @@ async fn shared_init(config: String) -> Result<Config, anyhow::Error> {
     }
   }
 
-  info!("mongodb client connected with transactions support");
+  info!(target: "start", "mongodb client connected with transactions support");
 
   db::init(client, config.mongodb.storage_db_name.clone());
 
-  info!("ensuring mongodb collections...");
+  info!(target: "start", "ensuring mongodb collections...");
   db::ensure_collections()
     .await
     .context("error ensuring mongodb collections and indexes")?;
@@ -227,12 +230,13 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     .context("error getting ffmpeg path (is ffmpeg installed and available in executable path?)")?;
 
   info!(
+    target: "start",
     "using system ffmpeg from {}",
     ffmpeg_path.to_string_lossy().yellow()
   );
 
   let local_ip = local_ip_address::local_ip().context("error obtaining local ip")?;
-  info!("local ip address: {}", local_ip.yellow());
+  info!(target: "start", "local ip address: {}", local_ip.yellow());
 
   // info!("retrieving public ip...");
   // let ip = ip::get_ip_v4().await.context("error obtaining public ip")?;
@@ -257,7 +261,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
       tokio::signal::ctrl_c()
         .await
         .expect("failed to listen to SIGINT signal");
-      info!("{} received, starting graceful shutdown", "SIGINT".yellow());
+      info!(target: "start", "{} received, starting graceful shutdown", "SIGINT".yellow());
       shutdown.shutdown();
     }
   });

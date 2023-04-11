@@ -4,16 +4,17 @@ import fs from "fs";
 import path from "path";
 //import { promises } from "fs";
 
+import { TypeGuardError } from "typia";
+
 import * as config from "./config";
 import * as app from "./app"
 import { ConsoleLogger } from "./logger";
 import { LogLevel } from "./log-level";
 
-//import { fileURLToPath } from  "url";
+import { fileURLToPath } from  "url";
 import { env } from "./env";
 
-//const __dirname =  path.dirname(fileURLToPath(import.meta.url));
-//const { mkdir } = promises;
+const __dirname =  path.dirname(fileURLToPath(import.meta.url));
 
 // const originalEmit = process.emit;
 // // @ts-ignore
@@ -44,8 +45,10 @@ const createConfig = (opts: { output: string }) => {
 
   fs.copyFileSync(sample, dest);
   logger.info("> Config file created in " + color.yellow(dest));
-  logger.info("- every config option have a env variable counterpart") 
+  logger.info("- every config option has a env variable counterpart") 
   logger.info("- env variables will override config options if present")
+  logger.info("- you can skip the config file entirely providing --config=null as an argument to the start function")
+  logger.info("- in that case you must fill all the configuration from env variables")
   logger.info("> Before start edit the settings as needed")
   logger.info("> Then run " + color.yellow("openstream-front start") + " in the config directory")
   process.exit(0);
@@ -53,16 +56,27 @@ const createConfig = (opts: { output: string }) => {
 
 const start = async (opts: { config: string }) => {
   
-  const logger = new ConsoleLogger(env.LOG_LEVEL);
+  const logger = new ConsoleLogger(env.LOG_LEVEL).scoped("start");
   
   let conf: config.Config;
 
   try {
-    conf = config.load(path.resolve(process.cwd(), opts.config), { logger });
+    let filename = opts.config == "null" ? null : path.resolve(process.cwd(), opts.config);
+    conf = config.load(filename, { logger });
   } catch(e: any) {
-    // report the error to the user and exit with error status code
-    logger.warn(`error loading config file: ${e}`);
-    logger.error(e);
+    logger.error(`error loading config: ${e}`);
+    if(e instanceof TypeGuardError) {
+      let message = [
+        `generated config object is invalid at path ${color.yellow(e.path?.replace("$input.", "$config.") || "")}`,
+        `expected: ${color.yellow(String(e.expected))}`,
+        `generated: ${color.yellow(JSON.stringify(e.value) || "undefined")}`,
+      ].join("\n")
+      logger.error(message);
+    } else {
+      // report the error to the user and exit with error status code
+      logger.error(e);
+    }
+
     process.exit(1);
   }
 

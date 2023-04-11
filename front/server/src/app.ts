@@ -33,7 +33,7 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
     }
 
     app.listen(config.studio.port, () => {
-      logger.scoped("start").info(`api server bound to port ${color.yellow(config.studio!.port)}`);
+      logger.scoped("start").info(`studio server bound to port ${color.yellow(config.studio!.port)}`);
     });
   }
 }

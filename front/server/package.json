@@ -43,9 +43,9 @@
   },
   "ava": {
     "nodeArguments": [
-			"--no-warnings",
-			"--experimental-specifier-resolution=node"
-		],
+      "--no-warnings",
+      "--experimental-specifier-resolution=node"
+    ],
     "typescript": {
       "extensions": [
         "ts",

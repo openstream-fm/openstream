@@ -50,7 +50,7 @@ domain = "openstream.fm"
 # number (required)
 # sessions will expire after specified days from the last user request
 # env.OPENSTREAM_FRONT_SESSION_MAX_AGE_DAYS
-max_age_days = 30
+max_age_days = 7
 
 # string (required)
 # name of the session cookie

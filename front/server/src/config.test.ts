@@ -63,7 +63,7 @@ test("load_from_string - success on valid input", (t) => {
 
 test("merge_env - success on valid input", (t) => {
   const config: Config = load_from_string(exampleConfig);
-  const mergedConfig = merge_env(config, exampleEnv);
+  const mergedConfig = merge_env(config, { env: exampleEnv });
   t.is(mergedConfig.openstream?.api_base_url, "https://api.env.com");
   t.is(mergedConfig.openstream?.token, "env_token");
   t.is(mergedConfig.public?.stream_public_url, "https://stream.env.com");
@@ -112,7 +112,7 @@ test("merge_env - throws with invalid number value", (t) => {
   const invalidEnv = { ...exampleEnv, OPENSTREAM_FRONT_SESSION_MAX_AGE_DAYS: "invalid" };
 
   t.throws(() => {
-    merge_env(config, invalidEnv);
+    merge_env(config, { env: invalidEnv });
   });
 });
 
@@ -120,7 +120,7 @@ test("merge_env - throws with invalid boolean value", (t) => {
   const config: Config = load_from_string(exampleConfig);
   const invalidEnv = { ...exampleEnv, OPENSTREAM_FRONT_STUDIO_ENABLED: "invalid" };
   t.throws(() => {
-    merge_env(config, invalidEnv);
+    merge_env(config, { env: invalidEnv });
   });
 });
 

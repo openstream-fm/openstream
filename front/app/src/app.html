@@ -14,7 +14,10 @@
 		<script>
 			if ('serviceWorker' in navigator) {
 				addEventListener('load', function () {
-					navigator.serviceWorker.register('/service-worker.js');
+					navigator.serviceWorker.register('/service-worker.js', {
+						// TODO: use type module only in dev
+						type: "module"
+					});
 				});
 			}
 		</script>
