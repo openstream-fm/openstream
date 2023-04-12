@@ -614,7 +614,8 @@ pub struct HlsContents<'a> {
 
 impl<'a> Display for HlsContents<'a> {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-      // writeln!(f, "#EXTM3U")?;
+      writeln!(f, "#EXTM3U")?;
+      f.write_str("\n")?;
       writeln!(f, "{}", self.target)?;
       Ok(())
   }
