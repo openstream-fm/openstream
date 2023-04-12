@@ -19,11 +19,14 @@ use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use shutdown::Shutdown;
 use socket2::{Domain, Protocol, Socket, Type};
+use std::fmt::Display;
 use std::future::Future;
 use std::net::SocketAddr;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
 use transfer_map::TransferTracer;
+use url::Url;
+
 
 pub mod transfer_map;
 
@@ -33,6 +36,12 @@ const X_OPENSTREAM_REJECTION_CODE: HeaderName =
 
 #[allow(clippy::declare_interior_mutable_const)]
 const CONTENT_TYPE_MPEG: HeaderValue = HeaderValue::from_static("audio/mpeg");
+
+#[allow(clippy::declare_interior_mutable_const)]
+const CONTENT_TYPE_X_MPEG_URL: HeaderValue = HeaderValue::from_static("audio/x-mpegurl"); 
+
+#[allow(clippy::declare_interior_mutable_const)]
+const CONTENT_TYPE_PLS: HeaderValue = HeaderValue::from_static("audio/x-scpls");
 
 #[allow(clippy::declare_interior_mutable_const)]
 const ACCEPT_RANGES_NONE: HeaderValue = HeaderValue::from_static("none");
@@ -46,6 +55,7 @@ const TEXT_PLAIN_UTF8: HeaderValue = HeaderValue::from_static("text/plain;charse
 #[derive(Debug)]
 pub struct StreamServer {
   addrs: Vec<SocketAddr>,
+  public_base_url: Url,
   media_sessions: MediaSessionMap,
   shutdown: Shutdown,
   drop_tracer: DropTracer,
@@ -72,12 +82,14 @@ pub enum StreamServerError {
 impl StreamServer {
   pub fn new(
     addrs: Vec<SocketAddr>,
+    public_base_url: Url,
     shutdown: Shutdown,
     drop_tracer: DropTracer,
     media_sessions: MediaSessionMap,
   ) -> Self {
     Self {
       addrs,
+      public_base_url,
       shutdown,
       drop_tracer,
       media_sessions,
@@ -93,6 +105,14 @@ impl StreamServer {
 
     app.with(http::middleware::server);
     app.get("/status", http::middleware::status);
+
+    app.get(
+      "/stream/:id.:ext(m3u8?)", LinkHandler::new(LinkHandlerKind::M3u, self.public_base_url.clone(), self.media_sessions.clone())
+    );
+
+    app.get(
+      "/stream/:id.pls", LinkHandler::new(LinkHandlerKind::Pls, self.public_base_url.clone(), self.media_sessions.clone())
+    );
 
     app.get(
       "/stream/:id",
@@ -446,14 +466,14 @@ impl From<StreamError> for Response {
       StreamError::ListenersLimit => (
         StatusCode::SERVICE_UNAVAILABLE,
         "STATION_LISTENERS_LIMIT",
-        "Station concurrent listeners limit reached".into(),
+        "Station has reached its concurrent listeners limit".into(),
         Some(30),
       ),
 
       StreamError::TransferLimit => (
         StatusCode::SERVICE_UNAVAILABLE,
         "STATION_TRANSFER_LIMIT",
-        "Station transfer limit reached".into(),
+        "Station has reached its monthly transfer limit".into(),
         Some(60 * 60 * 24),
       ),
     };
@@ -476,5 +496,146 @@ impl From<StreamError> for Response {
     *res.body_mut() = Body::from(message);
 
     res
+  }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum LinkHandlerKind {
+  M3u,
+  Pls,
+}
+
+#[derive(Debug, Clone)]
+pub struct LinkHandler {
+  kind: LinkHandlerKind,
+  public_base_url: Url,
+  media_sessions: MediaSessionMap,
+}
+
+impl LinkHandler {
+  pub fn new(kind: LinkHandlerKind, public_base_url: Url, media_sessions: MediaSessionMap) -> Self {
+    Self {
+      kind,
+      public_base_url,
+      media_sessions
+    }
+  }
+
+
+  async fn handle(&self, req: Request) -> Result<Response, StreamError> {
+    let station_id = req.param("id").unwrap().to_string();
+
+    let station = match Station::get_by_id(&station_id).await? {
+      Some(station) => station,
+      None => return Err(StreamError::StationNotFound(station_id.to_string())),
+    };
+
+    if station.limits.transfer.avail() == 0 {
+      return Err(StreamError::TransferLimit);
+    }
+
+    if station.limits.listeners.avail() == 0 {
+      return Err(StreamError::ListenersLimit);
+    }
+
+    #[allow(clippy::collapsible_if)]
+    if self.media_sessions.read().get(&station_id).is_none() {
+      // TODO: use station limit or query for audio file?
+      // if station.limits.storage.used == 0 {
+      //   return Err(StreamError::NotStreaming(station.id.clone()));
+      // }
+
+      if !AudioFile::exists(doc! { AudioFile::KEY_STATION_ID: &station.id }).await? {
+        return Err(StreamError::NotStreaming(station.id));
+      }
+    };
+
+    let target = self.public_base_url.join(&format!("./stream/{}", station.id)).expect("error Url::join on stream station url");
+
+    let (body, content_type) = match self.kind {
+      LinkHandlerKind::M3u => {
+        let file = HlsContents {
+          target: &target,
+        };
+
+        let body = Body::from(file.to_string());
+        let content_type = CONTENT_TYPE_X_MPEG_URL;
+        (body, content_type)
+      }
+
+      LinkHandlerKind::Pls => {
+        let file = PlsContents {
+          target: &target,
+          title: &station.name,
+        };
+        
+        let body = Body::from(file.to_string());
+        let content_type = CONTENT_TYPE_PLS;
+        (body, content_type)
+      }
+    };
+
+    let mut res = Response::new(StatusCode::OK);
+    res
+      .headers_mut()
+      .append(CONTENT_TYPE,  content_type);
+
+    res
+      .headers_mut()
+      .append(CACHE_CONTROL, CACHE_CONTROL_NO_CACHE);
+
+    *res.body_mut() = body;
+    
+    Ok(res)
+  }
+}
+
+#[async_trait]
+impl Handler for LinkHandler {
+  async fn call(&self, req: Request, _: Next) -> Response {
+    self.handle(req).await.into()
+  }
+}
+
+
+
+/// render a .m3u/.m3u8 file
+/// #EXTM3U
+/// https://stream.openstream.fm/stream/:station_id
+#[derive(Debug, Clone)]
+pub struct HlsContents<'a> {
+  target: &'a Url
+}
+
+impl<'a> Display for HlsContents<'a> {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+      writeln!(f, "#EXTM3U")?;
+      writeln!(f, "{}", self.target)?;
+      Ok(())
+  }
+}
+
+/// render a .pls file
+/// [Playlist]
+/// NumberOfEntries=1
+/// File1=https://stream.openstream.fm/stream/:station_id
+/// Title1=Station Name
+/// Length=-1
+/// Version=2
+#[derive(Debug, Clone)]
+pub struct PlsContents<'a> {
+  pub target: &'a Url,
+  pub title: &'a str,
+}
+
+impl<'a> Display for PlsContents<'a> {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+      writeln!(f, "[Playlist]")?;
+      writeln!(f, "NumberOfEntries=1")?;
+      writeln!(f, "File1={}", self.target)?;
+      writeln!(f, "Title1={}", self.title)?;
+      writeln!(f, "Length=-1")?;
+      writeln!(f, "Version=2")?;
+      Ok(())
   }
 }

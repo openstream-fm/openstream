@@ -10,7 +10,7 @@
   import { invalidateAll } from "$app/navigation";
 	import Email from "$lib/components/Form/Email.svelte";
 	import Password from "$lib/components/Form/Password.svelte";
-	import { mdiDevices } from "@mdi/js";
+	import { mdiAccountOutline, mdiDevices, mdiPhoneOutline } from "@mdi/js";
 	import Icon from "$share/Icon.svelte";
   export let data: import("./$types").PageData;
 
@@ -98,6 +98,8 @@
     font-size: 2rem;
     margin-top: 5rem;
     margin-bottom: 5rem;
+    text-align: center;
+    width: 20rem;
   }
 
   .section {
@@ -228,13 +230,13 @@
       <div class="section-title">Profile</div>
       <div class="fields">
         <div class="field">
-          <TextField label="Your first name" trim bind:value={profile_current.first_name} />
+          <TextField label="Your first name" icon={mdiAccountOutline} trim bind:value={profile_current.first_name} />
         </div>
         <div class="field">
-          <TextField label="Your last name" trim bind:value={profile_current.last_name} />
+          <TextField label="Your last name" icon={mdiAccountOutline} trim bind:value={profile_current.last_name} />
         </div>
         <div class="field">
-          <NullTextField type="tel" label="Your phone number" trim bind:value={profile_current.phone} />
+          <NullTextField type="tel" label="Your phone number" icon={mdiPhoneOutline} trim bind:value={profile_current.phone} />
         </div>
       </div>
       <div class="submit-wrap">

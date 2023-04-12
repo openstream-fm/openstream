@@ -69,6 +69,7 @@ export const equals = <T>(src: T, target: T) => {
     return true;
 
   }
+  
   throw new Error(`equals: cannot compare unkown type ${t}`);
 }
 

@@ -3,7 +3,7 @@
 	"version": "0.0.1",
 	"scripts": {
 		"prepare": "ts-patch install -s",
-		"dev": "APP_API_PORT=8965 vite dev --port 3100 --host 127.0.0.1",
+		"dev": "APP_API_PORT=8965 vite dev --port 3100 --host",
 		"build": "PROTOCOL_HEADER=x-forwarded-proto ADDRESS_HEADER=x-real-ip APP_API_PORT=8965 vite build",
 		"preview": "vite preview",
 		"test": "playwright test",

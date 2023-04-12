@@ -5,6 +5,8 @@
   export let autocomplete: string | undefined = void 0;
   export let trim: boolean = false;
   export let disabled: boolean = false;
+  export let icon: string | null = null;
+  export let on_change: ((v: string) => void) | null =  null; 
 
   export let multiline: boolean | undefined = void 0;
   export let minrows: number | undefined = void 0;
@@ -17,18 +19,19 @@
   import Label from "./Label.svelte";
 </script>
 
-<FieldContainer {disabled}>
+<FieldContainer {disabled} {icon}>
   <Input
     type={type}
     {autocomplete}
     {trim}
     {disabled}
-    bind:value
-    bind:empty
-    on:input
     {multiline}
     {minrows}
     {maxrows}
+    bind:value
+    bind:empty
+    on:input
+    {on_change}
   />
   <Label {label} full={!empty} />
 </FieldContainer>

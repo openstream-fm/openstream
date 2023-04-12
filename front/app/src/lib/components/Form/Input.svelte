@@ -15,6 +15,8 @@
   export let minrows: number = 3;
   export let maxrows: number = 1000;
 
+  export let on_change: ((v: string) => void) | null = null; 
+
   $: empty = display_value === "";
 
   $: text_lines = display_value.split("\n").length;
@@ -38,10 +40,23 @@
     let h = current_display;
     if(trim) h = h.trim();
     set_value(h);
+    on_change?.(h);
   }
 
   import css from "./forms.module.css"; 
 </script>
+
+<style>
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus {
+    color: currentColor;
+    background: #fff;
+  }
+</style>
 
 {#if multiline}
   <textarea class={css["forms-input"]}  {rows} {autocomplete} {disabled} value={display_value} on:input={event => on_input(event.currentTarget.value)} on:input />

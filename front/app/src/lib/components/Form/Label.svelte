@@ -12,12 +12,19 @@
     margin: var(--spacing);
   }
 
-  :global(.field-container:focus-within) > .label {
+  :global(.field-container:focus-within) .label {
     color: var(--blue);
   }
 
-  :global(.field-container:focus-within) > .label, .full {
+  :global(.field-container:not(.with-icon):focus-within) .label,
+  :global(.field-container:not(.with-icon)) .full {
     transform: translateY(-110%) scale(0.7);
+    transform-origin: 0 0;
+  }
+
+  :global(.field-container.with-icon:focus-within) .label,
+  :global(.field-container.with-icon) .full {
+    transform: translateX(-1.75rem) translateY(-110%) scale(0.7);
     transform-origin: 0 0;
   }
 </style>

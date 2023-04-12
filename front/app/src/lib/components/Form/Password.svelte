@@ -3,6 +3,10 @@
   export let label: string;
   export let visible: boolean = false;
   export let autocomplete = "password";
+  export let on_change: ((v: string) => void) | null = null;
+
+  import { mdiEye, mdiEyeOff, mdiLockOutline } from "@mdi/js";
+  export let icon: string | null = mdiLockOutline; 
 
   let empty = value === "";
 
@@ -10,7 +14,6 @@
   import FieldContainer from "./FieldContainer.svelte";
   import Label from "./Label.svelte";
 
-  import { mdiEye, mdiEyeOff } from "@mdi/js";
 	import Input from "./Input.svelte";
   
   let click_token = false;
@@ -63,9 +66,9 @@
   }
 </style>
 
-<FieldContainer>
+<FieldContainer {icon}>
   <div class="wrap">
-    <Input type={visible ? "text" : "password"} {autocomplete} bind:value bind:empty on:input />
+    <Input type={visible ? "text" : "password"} {autocomplete} bind:value bind:empty on:input {on_change} />
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="btn" on:pointerdown|capture|preventDefault={pointerdown} on:click={click}>
       <Icon d={visible ? mdiEyeOff : mdiEye} />

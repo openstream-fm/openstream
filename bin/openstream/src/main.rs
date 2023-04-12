@@ -284,6 +284,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   if let Some(stream_config) = stream {
     let stream = StreamServer::new(
       stream_config.addrs.clone(),
+      stream_config.public_base_url.clone(),
       shutdown.clone(),
       drop_tracer.clone(),
       media_sessions.clone(),

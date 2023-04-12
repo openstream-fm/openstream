@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let account: import('$server/defs/api/accounts/[account]/GET/Output').Output['account'];
+	export let account_id: string;
 	export let picture_id: string | null;
 
 	import no_img from '$share/img/no-img-square.jpg';
@@ -34,7 +34,7 @@
 
     try {
       const query: import("$server/defs/api/station-pictures/POST/Query").Query = {
-        account_id: account._id,
+        account_id,
         content_type: file.type,
         filename: file.name,
       };
