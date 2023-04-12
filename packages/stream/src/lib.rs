@@ -561,6 +561,7 @@ impl LinkHandler {
       LinkHandlerKind::M3u => {
         let file = HlsContents {
           target: &target,
+          title: &station.name,
         };
 
         let body = Body::from(file.to_string());
@@ -609,13 +610,18 @@ impl Handler for LinkHandler {
 /// https://stream.openstream.fm/stream/:station_id
 #[derive(Debug, Clone)]
 pub struct HlsContents<'a> {
-  target: &'a Url
+  target: &'a Url,
+  #[allow(unused)]
+  title: &'a str,
 }
 
 impl<'a> Display for HlsContents<'a> {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-      writeln!(f, "#EXTM3U")?;
-      f.write_str("\n")?;
+      // writeln!(f, "#EXTM3U")?;
+      // writeln!(f, "#EXTENC:UTF-8")?;
+      // f.write_str("\n")?;
+      // writeln!(f, "#EXTINF:1,{}", self.title)?;
+      // writeln!(f, "#EXT-X-TARGETDURATION:3600")?;
       writeln!(f, "{}", self.target)?;
       Ok(())
   }
