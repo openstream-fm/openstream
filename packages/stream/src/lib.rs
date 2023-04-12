@@ -104,8 +104,13 @@ impl StreamServer {
     let mut app = prex::prex();
 
     app.with(http::middleware::server);
+
+    let cors = prex::middleware::cors::cors().allow_origin("*").allow_methods("GET");
+    app.with(cors);
+  
     app.get("/status", http::middleware::status);
 
+  
     app.get(
       "/stream/:id.:ext(m3u8?)", LinkHandler::new(LinkHandlerKind::M3u, self.public_base_url.clone(), self.media_sessions.clone())
     );
