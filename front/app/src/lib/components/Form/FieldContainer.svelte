@@ -4,21 +4,21 @@
   export let btn: { icon: string, action: () => void } | null = null;
 	import Icon from "$share/Icon.svelte";
 
-  let btn_click_token = false;
+  // let btn_click_token = false;
 
-  const btn_pointerdown = () => {
-    btn_click_token = true;
-    btn?.action();
-  }
+  // const btn_pointerdown = () => {
+  //   btn_click_token = true;
+  //   btn?.action();
+  // }
 
-  // handle enter key
-  const btn_click = () => {
-    let token = btn_click_token;
-    btn_click_token = false;
-    if (!token) {
-      btn?.action();
-    }
-  }
+  // // handle enter key
+  // const btn_click = () => {
+  //   let token = btn_click_token;
+  //   btn_click_token = false;
+  //   if (!token) {
+  //     btn?.action();
+  //   }
+  // }
 </script>
 
 
@@ -109,7 +109,10 @@
   </div>
   {#if btn != null}
     <div class="btn-out">
-      <button class="btn" on:pointerdown|capture|preventDefault={btn_pointerdown} on:click|preventDefault={btn_click}>
+      <!-- <button class="btn" on:pointerdown|capture|preventDefault={btn_pointerdown} on:click|preventDefault={btn_click}>
+        <Icon d={btn.icon} />
+      </button> -->
+      <button class="btn" on:click|preventDefault={() => btn?.action()}>
         <Icon d={btn.icon} />
       </button>
     </div>
