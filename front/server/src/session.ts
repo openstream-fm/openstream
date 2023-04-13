@@ -1,9 +1,10 @@
 import cookieParser from "cookie-parser";
-import { NextFunction, Request, Response, Router } from "express";
+import type { NextFunction, Request, Response } from "express"
+import { Router } from "express";
 import { is } from "typia";
-import { Config } from "./config";
+import type { Config } from "./config";
 import crypto from "crypto";
-import { Logger } from "./logger";
+import type { Logger } from "./logger";
 
 export const random_device_id = () => {
   let buf = "";

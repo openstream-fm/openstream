@@ -1,7 +1,7 @@
-import { Config } from "../config";
+import type { Config } from "../config";
 import { Router, json as json_body_parser } from "express";
 import { ApiError, BadRequest, json_catch_handler } from "../error";
-import { Logger } from "../logger";
+import type { Logger } from "../logger";
 import { json } from "../handler";
 import { Client } from "../client";
 import { session } from "../session";
@@ -15,14 +15,14 @@ import { mediakey } from "../media_key";
 import { ua } from "../ua";
 
 export type PublicConfig = {
-  storage_base_url: string
+  storage_public_url: string
   stream_public_url: string
   source_public_url: string
 }
 
 export const public_config = (host: string): PublicConfig => {
   const config: PublicConfig = {
-    storage_base_url: `https://${host.replace("studio.", "storage.")}`,
+    storage_public_url: `https://${host.replace("studio.", "storage.")}`,
     stream_public_url: `https://${host.replace("studio.", "stream.")}`,
     source_public_url: `http://${host.replace("studio.", "source.")}`,
   }

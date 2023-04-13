@@ -1,11 +1,12 @@
 import StatusCode from "http-status-codes";
 import qs from "qs";
 import type { ErrorCode } from "./types";
-import { Readable } from "stream";
+import type { Readable } from "stream";
 import { ACCESS_TOKEN_HEADER, FORWARD_IP_HEADER } from "./constants";
 import { ClientError } from "./client-error";
-import { Logger } from "./logger";
-import node_fetch, { Response, RequestInit, Headers } from "node-fetch";
+import type { Logger } from "./logger";
+import node_fetch, { Headers } from "node-fetch";
+import type { Response, RequestInit } from "node-fetch";
 
 import http from "http";
 import https from "https";
