@@ -50,7 +50,7 @@ export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
     return await fetch(url, request);
   } catch(e: any) {
     server_logger.error(`handle-fetch error for ${event.request.url} => ${url}`)
-    server_logger.error(e);
+    server_logger.error(e?.cause ? e.cause : e);
     throw e;
   }
 }

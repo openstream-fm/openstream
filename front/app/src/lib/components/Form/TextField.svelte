@@ -5,6 +5,7 @@
   export let autocomplete: string | undefined = void 0;
   export let trim: boolean = false;
   export let disabled: boolean = false;
+  export let readonly: boolean = false;
   export let icon: string | null = null;
   export let on_change: ((v: string) => void) | null =  null; 
 
@@ -12,6 +13,8 @@
   export let minrows: number | undefined = void 0;
   export let maxrows: number | undefined = void 0;
 
+  export let btn: { icon: string, action: () => void } | null = null;
+	
   let empty = (trim ? value.trim() : value) === "";
 
   import FieldContainer from "./FieldContainer.svelte";
@@ -19,7 +22,7 @@
   import Label from "./Label.svelte";
 </script>
 
-<FieldContainer {disabled} {icon}>
+<FieldContainer {disabled} {icon} {btn}>
   <Input
     type={type}
     {autocomplete}
@@ -28,6 +31,7 @@
     {multiline}
     {minrows}
     {maxrows}
+    {readonly}
     bind:value
     bind:empty
     on:input

@@ -1,4 +1,5 @@
 use constants::STREAM_CHANNEL_CAPACITY;
+use db::play_history_item::PlayHistoryItem;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockUpgradableReadGuard, RwLockWriteGuard};
 use shutdown::Shutdown;
 use std::collections::btree_map::Entry;
@@ -308,11 +309,19 @@ impl MediaSessionInfo {
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum MediaSessionKind {
-  Live {},
+  Live { content_type: String },
   Playlist {},
 }
 
 impl MediaSessionKind {
+  #[inline]
+  pub fn content_type(&self) -> &str {
+    match self {
+      MediaSessionKind::Live { content_type } => content_type,
+      MediaSessionKind::Playlist {} => "audio/mpeg",
+    }
+  }
+
   #[inline]
   fn is_live(&self) -> bool {
     matches!(self, MediaSessionKind::Live { .. })

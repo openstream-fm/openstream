@@ -172,6 +172,20 @@
               <div class="current-action-line" in:current_enter|local out:current_leave|local />
             {/if}
           </a>
+
+          <a
+          href="/accounts/{data.station.account_id}/stations/{data.station._id}/broadcast"
+          class="station-action"
+          class:current={$page.url.pathname === `/accounts/${data.station.account_id}/stations/${data.station._id}/broadcast`}
+          on:click={event => scroll_into_view(event.currentTarget)}
+        >
+          <span class="action-name ripple-container">
+            Broadcast
+          </span>
+          {#if $page.url.pathname === `/accounts/${data.station.account_id}/stations/${data.station._id}/broadcast`}
+            <div class="current-action-line" in:current_enter|local out:current_leave|local />
+          {/if}
+        </a>
         </div>
       </div>
     </div>

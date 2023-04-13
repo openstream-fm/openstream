@@ -10,6 +10,7 @@
   export let autocomplete: string | undefined = void 0;
   export let trim: boolean = false;
   export let disabled: boolean = false;
+  export let readonly: boolean = false;
 
   export let multiline: boolean = false;
   export let minrows: number = 3;
@@ -46,20 +47,8 @@
   import css from "./forms.module.css"; 
 </script>
 
-<style>
-  input:-webkit-autofill,
-  input:-webkit-autofill:hover, 
-  input:-webkit-autofill:focus,
-  textarea:-webkit-autofill,
-  textarea:-webkit-autofill:hover,
-  textarea:-webkit-autofill:focus {
-    color: currentColor;
-    background: #fff;
-  }
-</style>
-
 {#if multiline}
-  <textarea class={css["forms-input"]}  {rows} {autocomplete} {disabled} value={display_value} on:input={event => on_input(event.currentTarget.value)} on:input />
+  <textarea class={css["forms-input"]}  {rows} {autocomplete} {disabled} {readonly} value={display_value} on:input={event => on_input(event.currentTarget.value)} on:input />
 {:else}
-  <input {type} class={css["forms-input"]} {autocomplete} {disabled} value={display_value} on:input={event => on_input(event.currentTarget.value)} on:input />
+  <input {type} class={css["forms-input"]} {autocomplete} {disabled} {readonly} value={display_value} on:input={event => on_input(event.currentTarget.value)} on:input />
 {/if}

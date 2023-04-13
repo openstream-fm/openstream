@@ -198,6 +198,20 @@ impl Handler for SourceHandler {
       return res;
     };
 
+    let content_type = match req
+      .headers()
+      .get(CONTENT_TYPE)
+      .and_then(|t| t.to_str().ok())
+    {
+      None => {
+        let mut res = Response::new(StatusCode::BAD_REQUEST);
+        res.headers_mut().insert(CONTENT_TYPE, TEXT_PLAIN_UTF8);
+        *res.body_mut() = Body::from("content-type header is required");
+        return res;
+      }
+
+      Some(t) => t.to_string(),
+    };
     // safety unwrap: param "id" is required in route defnition
     let id = req.param("id").unwrap().to_string();
 
@@ -249,7 +263,7 @@ impl Handler for SourceHandler {
     let tx = {
       let mut map = self.media_sessions.write();
       match map.entry(&station.id) {
-        Entry::Vacant(_) => map.transmit(&station.id, MediaSessionKind::Live {}),
+        Entry::Vacant(_) => map.transmit(&station.id, MediaSessionKind::Live { content_type }),
         Entry::Occupied(entry) => {
           let session = entry.get();
           match session.kind() {
@@ -260,7 +274,7 @@ impl Handler for SourceHandler {
             }
 
             MediaSessionKind::Playlist { .. } => {
-              map.transmit(&station.id, MediaSessionKind::Live {})
+              map.transmit(&station.id, MediaSessionKind::Live { content_type })
             }
           }
         }
@@ -326,7 +340,7 @@ impl Handler for SourceHandler {
 
         let (status, message) = match e {
            LiveError::Db(_) => (StatusCode::INTERNAL_SERVER_ERROR, String::from("internal error creating live media session, try again later or report it to the administrators")),
-           LiveError::Mp3(_) => (StatusCode::FORBIDDEN, String::from("invalid or unsupported stream format")),
+           LiveError::Data(_) => (StatusCode::FORBIDDEN, String::from("io error reading data")),
         };
 
         let mut res = Response::new(status);

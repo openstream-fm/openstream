@@ -15,7 +15,9 @@ export type Config = {
 
   public: {
     stream_public_url: string
+    source_public_url: string
     storage_public_url: string
+
   }
 
   mongodb: {
@@ -112,6 +114,7 @@ export const merge_env = (partial: PartialDeep<Config>, { logger, env = process.
   str("openstream.token")
 
   str("public.stream_public_url")
+  str("public.source_public_url")
   str("public.storage_public_url")
 
   str("mongodb.url")

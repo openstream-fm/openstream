@@ -1,6 +1,7 @@
 {
 	"name": "Openstream Studio",
 	"short_name": "Openstream Studio",
+	"description": "Manage you Openstream broadcaster account",
 	"start_url": "/",
 	"display": "standalone",
   "orientation": "portrait",

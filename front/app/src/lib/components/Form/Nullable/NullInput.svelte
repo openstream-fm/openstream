@@ -6,6 +6,7 @@
   export let autocomplete: string | undefined = void 0;
   export let trim: boolean = false;
   export let disabled: boolean = false;
+  export let readonly: boolean = false;
   export let empty = !value;
 
   export let multiline: boolean | undefined = void 0;
@@ -24,6 +25,7 @@
 <Input
   {type}
   {disabled}
+  {readonly}
   {autocomplete}
   {trim}
   {multiline}

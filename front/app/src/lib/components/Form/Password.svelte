@@ -3,76 +3,21 @@
   export let label: string;
   export let visible: boolean = false;
   export let autocomplete = "password";
+  export let disabled: boolean = false;
+  export let readonly: boolean = false;
   export let on_change: ((v: string) => void) | null = null;
 
   import { mdiEye, mdiEyeOff, mdiLockOutline } from "@mdi/js";
+	import TextField from "./TextField.svelte";
   export let icon: string | null = mdiLockOutline; 
 
-  let empty = value === "";
-
-	import Icon from "$share/Icon.svelte";
-  import FieldContainer from "./FieldContainer.svelte";
-  import Label from "./Label.svelte";
-
-	import Input from "./Input.svelte";
-  
-  let click_token = false;
-
-  const pointerdown = () => {
-    click_token = true;
-    visible = !visible;
+  const action = () => visible = !visible;
+  $: btn = {
+    action,
+    icon: visible ? mdiEyeOff : mdiEye,
   }
 
-  // handle enter key
-  const click = () => {
-    let t = click_token;
-    click_token = false;
-    if (!t) {
-      visible = !visible;
-    }
-  }
+  $: type = visible ? "text" : "password";
 </script>
 
-<style>
-  .wrap {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    flex: 1;
-  }
-
-  .btn {
-    user-select: none;
-    cursor: pointer;
-    flex: none;
-    appearance: none;
-    background: transparent;
-    padding: 0;
-    border: 0;
-    margin: 0;
-    width: 2.5rem;
-    font-size: 1.5em;
-    border-radius: 0.25em;
-    align-self: stretch;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #bbb;
-    transition: background-color 200ms ease, color 200ms ease;
-  }
-
-  .btn:hover {
-    color: #888;
-  }
-</style>
-
-<FieldContainer {icon}>
-  <div class="wrap">
-    <Input type={visible ? "text" : "password"} {autocomplete} bind:value bind:empty on:input {on_change} />
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="btn" on:pointerdown|capture|preventDefault={pointerdown} on:click={click}>
-      <Icon d={visible ? mdiEyeOff : mdiEye} />
-    </div>
-  </div>
-  <Label {label} full={!empty} />
-</FieldContainer>
+<TextField {type} {label} {icon} {btn} {disabled} {readonly} {autocomplete} bind:value {on_change} on:input/>

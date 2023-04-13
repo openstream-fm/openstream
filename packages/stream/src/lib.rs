@@ -284,6 +284,8 @@ impl StreamHandler {
         }
       };
 
+      let content_type = rx.info().kind().content_type().to_string();
+
       let conn_doc = {
         let now = DateTime::now();
         StreamConnection {
@@ -362,7 +364,7 @@ impl StreamHandler {
       let mut res = Response::new(StatusCode::OK);
       res
         .headers_mut()
-        .append(CONTENT_TYPE,  CONTENT_TYPE_MPEG);
+        .append(CONTENT_TYPE,  HeaderValue::from_str(&content_type).unwrap_or(CONTENT_TYPE_MPEG));
 
       res
         .headers_mut()

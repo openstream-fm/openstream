@@ -116,10 +116,19 @@
 
 <style>
 
+  .page {
+    display: flex;
+    flex-direction: column;
+    --spacing: 1.5rem;
+    gap: 1.5rem;
+    container-type: inline-size;
+    container-name: page;
+  }
+
   .meters {
     display: flex;
     flex-direction: row;
-    gap: 1rem;
+    gap: var(--spacing);
     align-items: stretch;
   }
 
@@ -170,11 +179,17 @@
     }
   }
 
-  .top-boxes {
-    margin-bottom: 1.5rem;
+  .top {
     display: flex;
     flex-direction: row;
-    gap: 2rem;
+    gap: var(--spacing);
+  }
+
+  .top-boxes {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing);
+    flex: 5;
   }
 
   .top-box {
@@ -259,6 +274,8 @@
 
   .top-box-stats {
     align-items: stretch;
+    container-type: inline-size;
+    container-name: stats-box;
   }
 
   .stats-title {
@@ -284,6 +301,7 @@
   .stats-item {
     display: block;
     margin-top: 0.5rem;
+    line-height: 1.2rem;
   }
 
   .stats-value {
@@ -307,15 +325,33 @@
     color: var(--green);
   }
 
+  @container stats-box (width < 150px) {
+    .stats-value {
+      font-size: 0.8rem;
+    }
+
+    .n {
+      font-size: 1.15rem;
+    }
+  }
+
   .top-boxes[data-air="off"] > .top-box-preview {
     visibility: hidden;
     order: 3;
   }
 
-  @media screen and (max-width: 700px) {
-    .top-boxes {
+  @container page (width < 700px) {
+    .top {
       flex-direction: column;
-      gap: 1rem; 
+    }
+    
+    .broadcast-btn-out {
+      order: 1;
+    }
+
+    .top-boxes {
+      order: 2;
+      flex-direction: column;
     }
 
     .top-boxes[data-air="off"] > .top-box-preview {
@@ -330,6 +366,58 @@
       max-width: 10rem;
     }
   } 
+
+  .top-box {
+    flex: 3;
+  }
+
+  .broadcast-btn-out {
+    flex: 1;
+    display: flex;
+    container-type: inline-size;
+    container-name: broadcast-btn;
+  }
+  
+  .broadcast-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    text-align: center;
+    color: #fff;
+    background: #fff;
+    border: var(--blue) 1px solid;
+    color: var(--blue);
+    font-size: 1.1rem;
+    padding: 1rem 0;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,.1),0 10px 10px -5px rgba(0,0,0,.04);
+    border-radius: 0.5rem;
+    font-weight: 600;    
+    text-align: center;
+  }
+
+  .broadcast-btn-text-wide {
+    display: none;
+  }
+
+  @container broadcast-btn (width < 125px) {
+    .broadcast-btn {
+      font-size: 0.9rem;
+    }
+  }
+
+  @container broadcast-btn (width > 300px) {
+    .broadcast-btn-text-wide {
+      display: inline;
+    }
+
+    .broadcast-btn-text-narrow {
+      display: none;
+    }
+  }
+
+  
 </style>
 
 <svelte:head>
@@ -338,131 +426,155 @@
 
 <Page>
 
-  <div class="top-boxes" data-air={on_air ? "on" : "off"}>
-    <div class="top-box top-box-air" class:on={on_air} class:off={!on_air}>
-      <div class="air-icon">
-        <Icon d={mdiMicrophoneOutline} />
-      </div>
-      <div class="air-title">
-        {#if on_air}
-          <span class="on-air">ON AIR</span>
-        {:else}
-          <span class="off-air">OFF AIR</span>
-        {/if}
-      </div>
-      {#if on_air}
-        <div class="air-subtitle">
-          {#if data.now_playing.kind === "playlist" || data.now_playing.kind === "none"}
-            Playlist
-          {:else if data.now_playing.kind === "live"}
-            Live Streaming
+  <!-- <div class="broadcast-btn-out"> 
+    <button class="broadcast-btn ripple-container" use:ripple>
+      Broadcast Settings
+    </button>
+  </div> -->
+
+  <div class="page">
+    <div class="top">
+      <div class="top-boxes" data-air={on_air ? "on" : "off"}>
+        <div class="top-box top-box-air" class:on={on_air} class:off={!on_air}>
+          <div class="air-icon">
+            <Icon d={mdiMicrophoneOutline} />
+          </div>
+          <div class="air-title">
+            {#if on_air}
+              <span class="on-air">ON AIR</span>
+            {:else}
+              <span class="off-air">OFF AIR</span>
+            {/if}
+          </div>
+          {#if on_air}
+            <div class="air-subtitle">
+              {#if data.now_playing.kind === "playlist" || data.now_playing.kind === "none"}
+                Playlist
+              {:else if data.now_playing.kind === "live"}
+                Live Streaming
+              {/if}
+            </div>
           {/if}
         </div>
-      {/if}
-    </div>
 
-    <div class="top-box top-box-preview">
-      <button
-        use:ripple class="preview-btn ripple-container"
-        data-state={$station_preview_state}
-        on:click={toggle_play}
-        aria-label={$station_preview_state === "playing" ? "Pause" : "Play"}
-      >
-        {#if $station_preview_state === "playing"}
-          <Icon d={mdiPause} />
-        {:else if $station_preview_state === "paused"}
-          <Icon d={mdiPlay} />
-        {:else}
-          <!-- "loading" -->
-          <CircularProgress />
-        {/if}
-      </button>
+        <div class="top-box top-box-preview">
+          <button
+            use:ripple class="preview-btn ripple-container"
+            data-state={$station_preview_state}
+            on:click={toggle_play}
+            aria-label={$station_preview_state === "playing" ? "Pause" : "Play"}
+          >
+            {#if $station_preview_state === "playing"}
+              <Icon d={mdiPause} />
+            {:else if $station_preview_state === "paused"}
+              <Icon d={mdiPlay} />
+            {:else}
+              <!-- "loading" -->
+              <CircularProgress />
+            {/if}
+          </button>
 
-      <div class="preview-title">
-        Preview
-      </div>
-    </div>
+          <div class="preview-title">
+            Preview
+          </div>
+        </div>
 
-    <div class="top-box top-box-stats">
-      <div class="stats-title">
-        Stats
-      </div>
-      <div class="stats-items">
-        <div class="stats-item">
-          <div class="stats-label">24 hours</div>
-          <div class="stats-value">
-            <div class="lis" use:tooltip={`${f(data.dashboard_stats.listeners_24h)} ${listeners_str(data.dashboard_stats.listeners_24h)}`}>
-              <span class="n">{stats_num(data.dashboard_stats.listeners_24h)}</span> {listeners_str(data.dashboard_stats.listeners_24h)}
+        <div class="top-box top-box-stats">
+          <div class="stats-title">
+            Stats
+          </div>
+          <div class="stats-items">
+            <div class="stats-item">
+              <div class="stats-label">24 hours</div>
+              <div class="stats-value">
+                <div class="lis" use:tooltip={`${f(data.dashboard_stats.listeners_24h)} ${listeners_str(data.dashboard_stats.listeners_24h)}`}>
+                  <span class="n">{stats_num(data.dashboard_stats.listeners_24h)}</span> {listeners_str(data.dashboard_stats.listeners_24h)}
+                </div>
+                <div class="ses" use:tooltip={`${f(data.dashboard_stats.sessions_24h)} ${sessions_str(data.dashboard_stats.sessions_24h)}`}>
+                  <span class="n">{stats_num(data.dashboard_stats.sessions_24h)}</span> {sessions_str(data.dashboard_stats.sessions_24h)}
+                </div>
+              </div>
             </div>
-            <div class="ses" use:tooltip={`${f(data.dashboard_stats.sessions_24h)} ${sessions_str(data.dashboard_stats.sessions_24h)}`}>
-              <span class="n">{stats_num(data.dashboard_stats.sessions_24h)}</span> {sessions_str(data.dashboard_stats.sessions_24h)}
+            <div class="stats-item">
+              <div class="stats-label">7 days</div>
+              <div class="stats-value">
+                <div class="lis" use:tooltip={`${f(data.dashboard_stats.listeners_7d)} ${listeners_str(data.dashboard_stats.listeners_7d)}`}>
+                  <span class="n">{stats_num(data.dashboard_stats.listeners_7d)}</span> {listeners_str(data.dashboard_stats.listeners_7d)}
+                </div>
+                <div class="ses" use:tooltip={`${f(data.dashboard_stats.sessions_7d)} ${sessions_str(data.dashboard_stats.sessions_7d)}`}>
+                  <span class="n">{stats_num(data.dashboard_stats.sessions_7d)}</span> {sessions_str(data.dashboard_stats.sessions_7d)}
+                </div>
+              </div>
+            </div>
+            <div class="stats-item">
+              <div class="stats-label">30 days</div>
+              <div class="stats-value">
+                <div class="lis" use:tooltip={`${f(data.dashboard_stats.listeners_30d)} ${listeners_str(data.dashboard_stats.listeners_30d)}`}>
+                  <span class="n">{stats_num(data.dashboard_stats.listeners_30d)}</span> {listeners_str(data.dashboard_stats.listeners_30d)}
+                </div>
+                <div class="ses" use:tooltip={`${f(data.dashboard_stats.sessions_30d)} ${sessions_str(data.dashboard_stats.sessions_30d)}`}>
+                  <span class="n">{stats_num(data.dashboard_stats.sessions_30d)}</span> {sessions_str(data.dashboard_stats.sessions_30d)}
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <div class="stats-item">
-          <div class="stats-label">7 days</div>
-          <div class="stats-value">
-            <div class="lis" use:tooltip={`${f(data.dashboard_stats.listeners_7d)} ${listeners_str(data.dashboard_stats.listeners_7d)}`}>
-              <span class="n">{stats_num(data.dashboard_stats.listeners_7d)}</span> {listeners_str(data.dashboard_stats.listeners_7d)}
-            </div>
-            <div class="ses" use:tooltip={`${f(data.dashboard_stats.sessions_7d)} ${sessions_str(data.dashboard_stats.sessions_7d)}`}>
-              <span class="n">{stats_num(data.dashboard_stats.sessions_7d)}</span> {sessions_str(data.dashboard_stats.sessions_7d)}
-            </div>
-          </div>
-        </div>
-        <div class="stats-item">
-          <div class="stats-label">30 days</div>
-          <div class="stats-value">
-            <div class="lis" use:tooltip={`${f(data.dashboard_stats.listeners_30d)} ${listeners_str(data.dashboard_stats.listeners_30d)}`}>
-              <span class="n">{stats_num(data.dashboard_stats.listeners_30d)}</span> {listeners_str(data.dashboard_stats.listeners_30d)}
-            </div>
-            <div class="ses" use:tooltip={`${f(data.dashboard_stats.sessions_30d)} ${sessions_str(data.dashboard_stats.sessions_30d)}`}>
-              <span class="n">{stats_num(data.dashboard_stats.sessions_30d)}</span> {sessions_str(data.dashboard_stats.sessions_30d)}
-            </div>
-          </div>
-        </div>
       </div>
-    </div>
-  </div>
 
-  <div class="meters">
-    <div class="meter">
-      <div class="meter-title">
-        Listeners
-      </div>
-      <div class="meter-graph">
-        <CircularMeter used={data.station.limits.listeners.used / data.station.limits.listeners.total} />
-      </div>
-      <div class="meter-text">
-        <span class="used">{data.station.limits.listeners.used}</span>
-        <span class="of">of</span>
-        <span class="avail">{data.station.limits.listeners.total}</span>
-      </div>
-    </div>
-    <div class="meter">
-      <div class="meter-title">
-        Transfer
-      </div>
-      <div class="meter-graph">
-        <CircularMeter used={data.station.limits.transfer.used / data.station.limits.transfer.total} />
-      </div>
-      <div class="meter-text">
-        <span class="used">{preety_bytes(data.station.limits.transfer.used)}</span>
-        <span class="of">of</span>
-        <span class="avail">{preety_bytes(data.station.limits.transfer.total)}</span>
+      <div class="broadcast-btn-out">
+        <a class="na broadcast-btn ripple-container" href="/accounts/{data.account._id}/stations/{data.station._id}/broadcast" use:ripple>
+          Broadcast
+          <!-- <span class="broadcast-btn-text-narrow">
+            Broadcast
+            <br />
+            Settings
+          </span>
+          <span class="broadcast-btn-text-wide">
+            Broadcast Settings
+          </span> -->
+        </a>
       </div>
     </div>
-    <div class="meter">
-      <div class="meter-title">
-        Storage
+
+    <div class="meters">
+      <div class="meter">
+        <div class="meter-title">
+          Listeners
+        </div>
+        <div class="meter-graph">
+          <CircularMeter used={data.station.limits.listeners.used / data.station.limits.listeners.total} />
+        </div>
+        <div class="meter-text">
+          <span class="used">{data.station.limits.listeners.used}</span>
+          <span class="of">of</span>
+          <span class="avail">{data.station.limits.listeners.total}</span>
+        </div>
       </div>
-      <div class="meter-graph">
-        <CircularMeter used={data.station.limits.storage.used / data.station.limits.storage.total} />
+      <div class="meter">
+        <div class="meter-title">
+          Transfer
+        </div>
+        <div class="meter-graph">
+          <CircularMeter used={data.station.limits.transfer.used / data.station.limits.transfer.total} />
+        </div>
+        <div class="meter-text">
+          <span class="used">{preety_bytes(data.station.limits.transfer.used)}</span>
+          <span class="of">of</span>
+          <span class="avail">{preety_bytes(data.station.limits.transfer.total)}</span>
+        </div>
       </div>
-      <div class="meter-text">
-        <span class="used">{preety_bytes(data.station.limits.storage.used)}</span>
-        <span class="of">of</span>
-        <span class="avail">{preety_bytes(data.station.limits.storage.total)}</span>
+      <div class="meter">
+        <div class="meter-title">
+          Storage
+        </div>
+        <div class="meter-graph">
+          <CircularMeter used={data.station.limits.storage.used / data.station.limits.storage.total} />
+        </div>
+        <div class="meter-text">
+          <span class="used">{preety_bytes(data.station.limits.storage.used)}</span>
+          <span class="of">of</span>
+          <span class="avail">{preety_bytes(data.station.limits.storage.total)}</span>
+        </div>
       </div>
     </div>
   </div>

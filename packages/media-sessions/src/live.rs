@@ -15,27 +15,24 @@ use shutdown::Shutdown;
 use stream_util::IntoTryBytesStreamChunked;
 
 #[derive(Debug, thiserror::Error)]
-pub enum LiveError {
+pub enum LiveError<E> {
   #[error("mongodb: {0}")]
   Db(#[from] mongodb::error::Error),
-  #[error("mp3: {0}")]
-  Mp3(#[from] mp3::ReadRateError),
+  #[error("data: {0}")]
+  Data(E),
   // #[error("probe: {0}")]
   // Probe(#[from] mp3::ProbeError),
   // #[error("play: {0}")]
   // Play(#[from] mp3::PlayError),
 }
 
-pub async fn run_live_session(
+pub async fn run_live_session<E: std::error::Error + Send + Sync + 'static>(
   tx: Transmitter,
-  data: impl Stream<Item = Result<Bytes, impl std::error::Error + Send + Sync + 'static>>
-    + Send
-    + Sync
-    + 'static,
+  data: impl Stream<Item = Result<Bytes, E>> + Send + Sync + 'static,
   request: db::http::Request,
   shutdown: Shutdown,
   drop_tracer: DropTracer,
-) -> Result<(), LiveError> {
+) -> Result<(), LiveError<E>> {
   let station_id = tx.info.station_id().to_string();
 
   let document = {
@@ -74,11 +71,15 @@ pub async fn run_live_session(
   )));
 
   //let data = Box::pin(data.chunked(1000).rated(400_000 / 8));
-  let data = Box::pin(data);
+  //let data = Box::pin(data);
 
-  let reader = mp3::TryStreamAsyncRead::new(data);
+  //let reader = mp3::TryStreamAsyncRead::new(data);
 
-  let output = mp3::readrate(reader).chunked(STREAM_CHUNK_SIZE);
+  //let output = mp3::readrate(reader).chunked(STREAM_CHUNK_SIZE);
+  //tokio::pin!(output);
+
+  use stream_util::IntoTryBytesStreamRated;
+  let output = data.rated(400_000 / 8).chunked(STREAM_CHUNK_SIZE);
   tokio::pin!(output);
 
   let mut transfer = 0u64;
@@ -92,7 +93,7 @@ pub async fn run_live_session(
       None => break,
       Some(Err(e)) => {
         warn!("live session error: {e} => {e:?}");
-        return Err(e.into());
+        return Err(LiveError::Data(e));
       }
       Some(Ok(bytes)) => {
         transfer += bytes.len() as u64;
