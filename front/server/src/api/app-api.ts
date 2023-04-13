@@ -11,9 +11,23 @@ import { user_id } from "../user-id";
 import { ACCESS_TOKEN_HEADER, FORWARD_IP_HEADER } from "../constants";
 import { StatusCodes } from "http-status-codes";
 import { pipeline } from "stream/promises";
-import crypto from "crypto";
 import { mediakey } from "../media_key";
 import { ua } from "../ua";
+
+export type PublicConfig = {
+  storage_base_url: string
+  stream_public_url: string
+  source_public_url: string
+}
+
+export const public_config = (host: string): PublicConfig => {
+  const config: PublicConfig = {
+    storage_base_url: `https://${host.replace("studio.", "storage.")}`,
+    stream_public_url: `https://${host.replace("studio.", "stream.")}`,
+    source_public_url: `http://${host.replace("studio.", "source.")}`,
+  }
+  return config;
+}
 
 export const app_api = ({
   config,
@@ -35,8 +49,8 @@ export const app_api = ({
     res.json({ ok: true })
   })
 
-  api.get("/config", json(async () => {
-    return config.public;
+  api.get("/config", json(async (req) => {
+    return public_config(req.hostname || "studio.openstream.fm");
   }))
 
   api.post("/login", json(async (req, res) => {

@@ -25,7 +25,7 @@ use std::net::SocketAddr;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
 use transfer_map::TransferTracer;
-use url::Url;
+// use url::Url;
 
 
 pub mod transfer_map;
@@ -55,7 +55,6 @@ const TEXT_PLAIN_UTF8: HeaderValue = HeaderValue::from_static("text/plain;charse
 #[derive(Debug)]
 pub struct StreamServer {
   addrs: Vec<SocketAddr>,
-  public_base_url: Url,
   media_sessions: MediaSessionMap,
   shutdown: Shutdown,
   drop_tracer: DropTracer,
@@ -82,14 +81,12 @@ pub enum StreamServerError {
 impl StreamServer {
   pub fn new(
     addrs: Vec<SocketAddr>,
-    public_base_url: Url,
     shutdown: Shutdown,
     drop_tracer: DropTracer,
     media_sessions: MediaSessionMap,
   ) -> Self {
     Self {
       addrs,
-      public_base_url,
       shutdown,
       drop_tracer,
       media_sessions,
@@ -112,11 +109,11 @@ impl StreamServer {
 
   
     app.get(
-      "/stream/:id.:ext(m3u8?)", LinkHandler::new(LinkHandlerKind::M3u, self.public_base_url.clone(), self.media_sessions.clone())
+      "/stream/:id.:ext(m3u8?)", LinkHandler::new(LinkHandlerKind::M3u, self.media_sessions.clone())
     );
 
     app.get(
-      "/stream/:id.pls", LinkHandler::new(LinkHandlerKind::Pls, self.public_base_url.clone(), self.media_sessions.clone())
+      "/stream/:id.pls", LinkHandler::new(LinkHandlerKind::Pls, self.media_sessions.clone())
     );
 
     app.get(
@@ -515,21 +512,20 @@ pub enum LinkHandlerKind {
 #[derive(Debug, Clone)]
 pub struct LinkHandler {
   kind: LinkHandlerKind,
-  public_base_url: Url,
   media_sessions: MediaSessionMap,
 }
 
 impl LinkHandler {
-  pub fn new(kind: LinkHandlerKind, public_base_url: Url, media_sessions: MediaSessionMap) -> Self {
+  pub fn new(kind: LinkHandlerKind, media_sessions: MediaSessionMap) -> Self {
     Self {
       kind,
-      public_base_url,
       media_sessions
     }
   }
 
 
   async fn handle(&self, req: Request) -> Result<Response, StreamError> {
+    
     let station_id = req.param("id").unwrap().to_string();
 
     let station = match Station::get_by_id(&station_id).await? {
@@ -557,7 +553,10 @@ impl LinkHandler {
       }
     };
 
-    let target = self.public_base_url.join(&format!("./stream/{}", station.id)).expect("error Url::join on stream station url");
+    let host = req.headers().get("host").and_then(|s| s.to_str().ok()).unwrap_or("stream.openstream.fm");
+    // TODO: add scheme from header
+
+    let target = format!("https://{}/stream/{}", host, &station.id);
 
     let (body, content_type) = match self.kind {
       LinkHandlerKind::M3u => {
@@ -612,7 +611,7 @@ impl Handler for LinkHandler {
 /// https://stream.openstream.fm/stream/:station_id
 #[derive(Debug, Clone)]
 pub struct HlsContents<'a> {
-  target: &'a Url,
+  target: &'a str,
   #[allow(unused)]
   title: &'a str,
 }
@@ -638,7 +637,7 @@ impl<'a> Display for HlsContents<'a> {
 /// Version=2
 #[derive(Debug, Clone)]
 pub struct PlsContents<'a> {
-  pub target: &'a Url,
+  pub target: &'a str,
   pub title: &'a str,
 }
 

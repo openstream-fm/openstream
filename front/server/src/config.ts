@@ -13,12 +13,11 @@ export type Config = {
     token: string
   }
 
-  public: {
-    stream_public_url: string
-    source_public_url: string
-    storage_public_url: string
-
-  }
+  // public: {
+  //   stream_public_url: string
+  //   source_public_url: string
+  //   storage_public_url: string
+  // }
 
   mongodb: {
     url: string
@@ -26,7 +25,7 @@ export type Config = {
 
   session: {
     secret: string
-    domain: string
+    // domain: string
     max_age_days: number
     cookie_name: string,
   }
@@ -34,7 +33,7 @@ export type Config = {
   studio: {
     enabled: boolean
     port: number    
-    public_base_url: string
+    // public_base_url: string
   }
 }
 
@@ -113,20 +112,20 @@ export const merge_env = (partial: PartialDeep<Config>, { logger, env = process.
   str("openstream.api_base_url")
   str("openstream.token")
 
-  str("public.stream_public_url")
-  str("public.source_public_url")
-  str("public.storage_public_url")
+  // str("public.stream_public_url")
+  // str("public.source_public_url")
+  // str("public.storage_public_url")
 
   str("mongodb.url")
 
   str("session.secret");
-  str("session.domain");
+  // str("session.domain");
   num("session.max_age_days");
   str("session.cookie_name")
 
   bool("studio.enabled");
   num("studio.port");
-  str("studio.public_base_url");
+  // str("studio.public_base_url");
 
   return config;
 }

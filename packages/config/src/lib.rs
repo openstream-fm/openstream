@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 use std::path::Path;
-use url::Url;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -9,7 +8,7 @@ pub struct Config {
   pub mongodb: Mongodb,
   pub stream: Option<Stream>,
   pub source: Option<Source>,
-  pub router: Option<Router>,
+  // pub router: Option<Router>,
   pub api: Option<Api>,
   pub storage: Option<Storage>,
 }
@@ -31,43 +30,36 @@ pub struct Mongodb {
 #[serde(deny_unknown_fields)]
 pub struct Stream {
   pub addrs: Vec<SocketAddr>,
-  pub public_base_url: Url,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Source {
   pub addrs: Vec<SocketAddr>,
-  pub public_base_url: Url,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct Router {
-  pub addrs: Vec<SocketAddr>,
-  pub public_base_url: Url,
-}
+// #[derive(Debug, Clone, Serialize, Deserialize)]
+// #[serde(deny_unknown_fields)]
+// pub struct Router {
+//   pub addrs: Vec<SocketAddr>,
+// }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SourceBroadcaster {
   pub addrs: Vec<SocketAddr>,
-  /// if not set, this will default to http://PUBLIC_IP:PORT
-  pub public_base_url: Option<Url>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Api {
   pub addrs: Vec<SocketAddr>,
-  pub public_base_url: Option<Url>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Storage {
   pub addrs: Vec<SocketAddr>,
-  pub public_base_url: Option<Url>,
 }
 
 #[derive(Debug, thiserror::Error)]

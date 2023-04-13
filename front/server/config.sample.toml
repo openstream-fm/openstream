@@ -13,17 +13,17 @@ token="hmtr6dcuqr871vfuqtrrgvy7-jymnmvp2jqqfhhdzz614u5chkcqz5hcc6rczatmasbk6pz2e
 # Token media_key => hmtr6dcuqr871vfuqtrrgvy7-gn1y4jjb1yu5xj3r6wrp2nps
 
 # this data will be shared with the client, it should contain only exposable data
-[public]
+# [public]
 
 # string (required)
 # openstream storage server(s) public url (will be accessed from client side with each logged in user media_key)
 # env.OPENSTREAM_FRONT_PUBLIC_STORAGE_PUBLIC_URL
-storage_public_url="https://storage.local.openstream.fm"
+# storage_public_url="https://storage.local.openstream.fm"
 
 # string (required)
 # openstream stream server(s) public url (will be accessed from client without authentication)
 # env.OPENSTREAM_FRONT_PUBLIC_STREAM_PUBLIC_URL
-stream_public_url="https://stream.local.openstream.fm"
+# stream_public_url="https://stream.local.openstream.fm"
 
 
 
@@ -45,7 +45,7 @@ secret = "supersecret"
 # string (required)
 # shared domain name to store cookies against, must be shared between admin and app servers
 # env.OPENSTREAM_FRONT_SESSION_DOMAIN
-domain = "openstream.fm"
+# domain = "openstream.fm"
 
 # number (required)
 # sessions will expire after specified days from the last user request
@@ -73,4 +73,4 @@ port = 8965
 # string - URL (required)
 # publicly accesible URL to the admin web interface
 # env.OPENSTREAM_FRONT_APP_PUBLIC_BASE_URL
-public_base_url = "http://localhost:8965"
+# public_base_url = "http://localhost:8965"

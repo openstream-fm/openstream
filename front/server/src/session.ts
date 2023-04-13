@@ -97,11 +97,15 @@ export const session = (config: Config, _logger: Logger) => {
   const router = Router();
   router.use(cookieParser());
   router.use((req: Request, res: Response, next: NextFunction) => {
+    
+    const host = req.hostname || "studio.openstream.fm";
+    const domain = host.replace(/^studio./, "");
+
     req.cookie_session = get_cookie_session(req, config.session.cookie_name, key, logger);
     res.set_session = (data: SessionData) => {
       const encoded = encrypt(JSON.stringify(data), key, logger);
       res.cookie(config.session.cookie_name, encoded, {
-        domain: config.session.domain,
+        domain,
         httpOnly: true,
         maxAge: config.session.max_age_days * 1000 * 60 * 60 * 24,
         sameSite: "strict",
@@ -114,7 +118,7 @@ export const session = (config: Config, _logger: Logger) => {
     res.set_session(req.cookie_session);
 
     res.clear_session = () => res.clearCookie(config.session.cookie_name, {
-      domain: config.session.domain,
+      domain,
       httpOnly: true,
       sameSite: "strict",
       path: "/",

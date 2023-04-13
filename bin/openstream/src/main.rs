@@ -19,7 +19,6 @@ use media_sessions::MediaSessionMap;
 use mongodb::bson::doc;
 use mongodb::bson::Document;
 use owo_colors::*;
-use router::RouterServer;
 use serde_util::DateTime;
 use shutdown::Shutdown;
 use source::SourceServer;
@@ -247,7 +246,6 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     ref stream,
     ref source,
     ref api,
-    ref router,
     ref storage,
   } = config.as_ref();
 
@@ -284,7 +282,6 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   if let Some(stream_config) = stream {
     let stream = StreamServer::new(
       stream_config.addrs.clone(),
-      stream_config.public_base_url.clone(),
       shutdown.clone(),
       drop_tracer.clone(),
       media_sessions.clone(),
@@ -310,11 +307,11 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     futs.push(fut.boxed());
   }
 
-  if let Some(router_config) = router {
-    let router = RouterServer::new(router_config.addrs.clone(), shutdown.clone());
-    let fut = router.start()?;
-    futs.push(fut.boxed());
-  }
+  // if let Some(router_config) = router {
+  //   let router = RouterServer::new(router_config.addrs.clone(), shutdown.clone());
+  //   let fut = router.start()?;
+  //   futs.push(fut.boxed());
+  // }
 
   db::models::transfer_checkpoint::start_background_task();
 

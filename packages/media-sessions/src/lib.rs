@@ -1,5 +1,5 @@
+use burst::Burst;
 use constants::STREAM_CHANNEL_CAPACITY;
-use db::play_history_item::PlayHistoryItem;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockUpgradableReadGuard, RwLockWriteGuard};
 use shutdown::Shutdown;
 use std::collections::btree_map::Entry;
@@ -41,17 +41,6 @@ use tokio::sync::broadcast;
 
 type Sender = broadcast::Sender<Bytes>;
 type Receiver = broadcast::Receiver<Bytes>;
-
-use burst::Burst;
-
-// use crate::ChannelMap;
-// #[derive(Debug)]
-// pub struct Transmitter {
-//   pub(crate) id: String,
-//   pub(crate) sender: broadcast::Sender<Bytes>,
-//   pub(crate) channels: ChannelMap,
-//   pub(crate) burst: Arc<RwLock<Burst>>,
-//   pub(crate) token: Token,
 
 #[derive(Debug, Default)]
 pub struct Map {

@@ -11,7 +11,6 @@ const config: Config = {
   session: {
     secret: "secret",
     cookie_name: "cookie_name",
-    domain: "domain",
     max_age_days: 1,
   },
 };

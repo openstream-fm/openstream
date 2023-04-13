@@ -3,6 +3,7 @@
   export let icon: string | null = null;
   export let btn: { icon: string, action: () => void } | null = null;
 	import Icon from "$share/Icon.svelte";
+	import { ripple } from "$share/ripple";
 
   // let btn_click_token = false;
 
@@ -112,7 +113,7 @@
       <!-- <button class="btn" on:pointerdown|capture|preventDefault={btn_pointerdown} on:click|preventDefault={btn_click}>
         <Icon d={btn.icon} />
       </button> -->
-      <button class="btn" on:click|preventDefault={() => btn?.action()}>
+      <button class="btn ripple-container" use:ripple on:click|preventDefault={() => btn?.action()}>
         <Icon d={btn.icon} />
       </button>
     </div>
