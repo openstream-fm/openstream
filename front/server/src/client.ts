@@ -322,6 +322,10 @@ export class Users {
   async post(ip: string | null, ua: string | null, token: string, payload: import("./defs/api/users/POST/Payload").Payload): Promise<import("./defs/api/users/POST/Output").Output> {
     return await this.client.post(ip, ua, token, `/users`, payload);
   }
+
+  async patch(ip: string | null, ua: string | null, token: string, id: string, payload: import("./defs/api/users/[user]/PATCH/Payload").Payload): Promise<import("./defs/api/users/[user]/PATCH/Output").Output> {
+    return await this.client.patch(ip, ua, token, `/users/${id}`, payload);
+  }
 }
 
 export class UserStations {

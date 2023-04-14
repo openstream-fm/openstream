@@ -27,9 +27,10 @@
   const save_profile = action(async () => {
     if(!can_save_profile) return;
     const dif = diff(profile_db, profile_current);
-    // @ts-ignore
-    const payload: import("$server/defs/api/users/[user]/PATCH/Payload").Payload = dif;
-    await _patch(`/users/${data.user._id}`, payload);
+    // TODO: remove this partial
+    const payload: Partial<import("$server/defs/api/users/[user]/PATCH/Payload").Payload> = dif;
+    await _patch(`/api/users/${data.user._id}`, payload);
+    profile_db = clone(profile_current);
     _message("Profile updated");
     invalidateAll();
   });
@@ -37,22 +38,29 @@
   let new_password = "";
   let confirm_new_password = "";
 
-  const change_password = action(() => {
+  const change_password = action(async () => {
     if(new_password === "") throw new Error("New password is required");
-    if(new_password !== confirm_new_password) throw new Error("Passwords does not match");
+    if(new_password !== confirm_new_password) throw new Error("Confirmation password doesn't match");
+    // TODO: remove this partial
+    const payload: Partial<import("$server/defs/api/users/[user]/PATCH/Payload").Payload> = {
+      password: new_password,
+    };
 
-    throw new Error("This feature is not yet implemented");
+    await _patch(`/api/users/${data.user._id}`, payload);
+    new_password = "";
+    confirm_new_password = "";
+    _message("Password updated");
   })
 
-  let new_email = "";
-  let confirm_new_email = "";
+  // let new_email = "";
+  // let confirm_new_email = "";
 
-  const change_email = action(() => {
-    if(new_email === "") throw new Error("New email is required");
-    if(new_email !== confirm_new_email) throw new Error("Emails does not match");
-    if(new_email === data.user.email) throw new Error("Email should not be the same as the current email");
-    throw new Error("This feature is not yet implemented");
-  })
+  // const change_email = action(() => {
+  //   if(new_email === "") throw new Error("New email is required");
+  //   if(new_email !== confirm_new_email) throw new Error("Emails does not match");
+  //   if(new_email === data.user.email) throw new Error("Email should not be the same as the current email");
+  //   throw new Error("This feature is not yet implemented");
+  // })
 </script>
 
 <style>
@@ -230,6 +238,9 @@
       <div class="section-title">Profile</div>
       <div class="fields">
         <div class="field">
+          <Email label="Your email" disabled value={data.user.email} />
+        </div>
+        <div class="field">
           <TextField label="Your first name" icon={mdiAccountOutline} trim bind:value={profile_current.first_name} />
         </div>
         <div class="field">
@@ -247,7 +258,7 @@
       </div>
     </form>
 
-    <form class="section" on:submit|preventDefault={change_email}>
+    <!-- <form class="section" on:submit|preventDefault={change_email}>
       <div class="section-title">Change your email</div>
       <div class="fields">
         <div class="field">
@@ -265,7 +276,7 @@
           Save
         </button>
       </div>
-    </form>
+    </form> -->
 
     <form class="section" on:submit|preventDefault={change_password}>
       <div class="section-title">Change your password</div>

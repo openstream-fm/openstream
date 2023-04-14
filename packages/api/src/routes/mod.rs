@@ -52,7 +52,8 @@ pub fn router(
 
   app
     .at("/users/:user")
-    .get(users::id::get::Endpoint {}.into_handler());
+    .get(users::id::get::Endpoint {}.into_handler())
+    .patch(users::id::patch::Endpoint {}.into_handler());
 
   app
     .at("/accounts")

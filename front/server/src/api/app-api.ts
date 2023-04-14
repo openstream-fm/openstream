@@ -80,9 +80,14 @@ export const app_api = ({
     return { user,  media_key: mediakey(req) };
   }))
 
-  api.get("/users/:user", json(async req => {
-    return await client.users.get(ip(req), ua(req), token(req), req.params.user);
-  }))
+  api.route("/users/:user")
+    .get(json(async req => {
+      return await client.users.get(ip(req), ua(req), token(req), req.params.user);
+    }))
+    .patch(json(async req => {
+      return await client.users.patch(ip(req), ua(req), token(req), req.params.user, req.body);
+    }))
+  
 
   api.route("/accounts")
     .get(json(async req => {
