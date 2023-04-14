@@ -272,6 +272,10 @@ export class Stations {
   async restart_playlist(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/restart-playlist/POST/Output").Output> {
     return await this.client.post(ip, ua, token, `/stations/${id}/restart-playlist`, undefined);
   }
+
+  async reset_source_password(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/reset-source-password/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, `/stations/${id}/reset-source-password`, undefined);
+  }
 }
 
 export class StationPictures {

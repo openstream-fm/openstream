@@ -138,6 +138,10 @@ pub fn router(
     .get(stations::dashboard_stats::get::Endpoint {}.into_handler());
 
   app
+    .at("/stations/:station/reset-source-password")
+    .post(stations::reset_source_password::post::Endpoint {}.into_handler());
+
+  app
     .at("/devices")
     .get(devices::get::Endpoint {}.into_handler());
 

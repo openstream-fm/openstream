@@ -2,6 +2,7 @@ pub mod dashboard_stats;
 pub mod files;
 pub mod id;
 pub mod now_playing;
+pub mod reset_source_password;
 pub mod restart_playlist;
 
 use crate::json::JsonHandler;

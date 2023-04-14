@@ -1,10 +1,14 @@
 <script lang="ts">
+	import { invalidateAll } from '$app/navigation';
 	export let data: import('./$types').PageData;
 	import TextField from '$lib/components/Form/TextField.svelte';
 	import Page from '$lib/components/Page.svelte';
+	import Dialog from '$share/Dialog.svelte';
+	import Icon from '$share/Icon.svelte';
+	import { _post, action } from '$share/net.client';
 	import { _message } from '$share/notify';
 	import { ripple } from '$share/ripple';
-	import { mdiContentCopy, mdiLink } from '@mdi/js';
+	import { mdiContentCopy, mdiLink, mdiLockReset } from '@mdi/js';
 
   import _copy from "copy-to-clipboard";
 
@@ -17,6 +21,19 @@
       }
     }
   }
+
+  let reset_password_open = false;
+
+  const reset_password = action(async () => {
+    const { new_password }: import("$server/defs/api/stations/[station]/reset-source-password/POST/Output").Output =
+      await _post(`/api/stations/${data.station._id}/reset-source-password`, undefined);
+    
+    data.station.source_password = new_password;
+    reset_password_open = false;
+    _message("Mounpoint password reset");
+    // TODO: should we invalidate?
+    // invalidateAll();
+  })
 
 </script>
 
@@ -100,6 +117,45 @@
       flex-direction: column;
     }
   }
+
+  .reset-dialog-btns {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .reset-dialog-btn-cancel,
+  .reset-dialog-btn {
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border-radius: 0.25rem;
+    transition: background-color 150ms ease;
+  }
+
+  .reset-dialog-btn:hover,
+  .reset-dialog-btn-cancel:hover {
+    background: rgba(0,0,0,0.05);
+  }
+
+  .reset-dialog-btn {
+    font-weight: 500;
+    color: var(--blue);
+    border: 2px solid var(--blue);
+    box-shadow: 0 4px 8px #0000001f, 0 2px 4px #00000014;
+  }
+
+  .reset-dialog-btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-inline: -0.25rem 0.5rem;
+    font-size: 1.2rem;
+  }
 </style>
 
 <svelte:head>
@@ -156,7 +212,7 @@
                   readonly
                 />
               </div>
-              <button class="ice-pass-reset-btn ripple-container" use:ripple>
+              <button class="ice-pass-reset-btn ripple-container" use:ripple on:click={() => reset_password_open = true}>
                 Reset
               </button>
             </div>
@@ -214,3 +270,31 @@
 		</div>
 	</div>
 </Page>
+
+{#if reset_password_open}
+  <Dialog
+    title="Reset mount password"
+    width="400px"
+    onClose={() => reset_password_open = false}  
+    >
+    <div class="reset-dialog">
+
+    <div class="reset-dialog-text">
+      Are you sure you want to reset the mountpoint password?
+    </div>
+
+    <div class="reset-dialog-btns">
+      <button class="reset-dialog-btn-cancel ripple-container" use:ripple on:click={() => reset_password_open = false}>
+        Cancel
+      </button>
+
+      <button class="reset-dialog-btn ripple-container" use:ripple on:click={reset_password}>
+        <div class="reset-dialog-btn-icon">
+          <Icon d={mdiLockReset} />
+        </div>
+        Reset password
+      </button>
+    </div>
+    </div>
+  </Dialog>
+  {/if}

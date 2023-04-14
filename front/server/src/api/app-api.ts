@@ -121,6 +121,10 @@ export const app_api = ({
     return await client.stations.restart_playlist(ip(req), ua(req), token(req), req.params.station);
   }))
 
+  api.post("/stations/:station/reset-source-password", json(async req => {
+    return await client.stations.reset_source_password(ip(req), ua(req), token(req), req.params.station);
+  }))
+
   api.get("/stations/:station/limits", json(async req => {
     const { station: { limits } } = await client.stations.get(ip(req), ua(req), token(req), req.params.station);
     return limits;
