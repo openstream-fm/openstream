@@ -11,8 +11,9 @@ nc='\033[0m'
 check="$green$check_char$nc"
 errors=0
 
-echo -n "Cleaning defs directory... \n"
+echo -e "Cleaning defs directory..."
 rm -rf .defs
+echo -e "$check"
 
 echo -n "Running tests... "
 if result=$(cargo test --color always 2>&1); then
