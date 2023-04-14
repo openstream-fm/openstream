@@ -1,8 +1,8 @@
-use crate::Model;
+use crate::{storage_db, Model};
 use bytes::Bytes;
-use mongodb::bson::doc;
 use mongodb::options::IndexOptions;
 use mongodb::IndexModel;
+use mongodb::{bson::doc, Database};
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
@@ -29,6 +29,10 @@ pub struct StationPictureVariant {
 impl Model for StationPictureVariant {
   const CL_NAME: &'static str = "station_picture_variants";
   const UID_LEN: usize = 10;
+
+  fn db() -> mongodb::Database {
+    storage_db()
+  }
 
   fn indexes() -> Vec<IndexModel> {
     let composed_id = IndexModel::builder()
