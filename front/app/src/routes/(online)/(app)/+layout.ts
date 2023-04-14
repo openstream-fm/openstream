@@ -6,7 +6,7 @@ export const load = (async ({ fetch, url, parent, depends }) => {
    depends("accounts:list")
    const { maybe_user } = await parent();
    if (maybe_user == null) {
-      const to = `${url.pathname}${url.search}${url.hash}`;
+      const to = `${url.pathname}${url.search}`;
       const login_url = to === "/" ? "/login" : `/login#${encodeURIComponent(to)}`
       throw redirect(302, login_url);
    }

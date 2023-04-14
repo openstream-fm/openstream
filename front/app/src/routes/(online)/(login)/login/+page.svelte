@@ -12,7 +12,8 @@
   const login = action(async () => {
     const payload: Omit<import("$server/defs/api/auth/user/login/POST/Payload").Payload, "device_id"> = { email, password };
     await _post("/api/login", payload);
-    const target = decodeURIComponent(location.hash.replace(/^#/, ""));
+    const target = decodeURIComponent(location.hash.replace(/^#/, "")) || "/";
+    debugger;
     goto(target, { invalidateAll: true });
   })
 </script>
