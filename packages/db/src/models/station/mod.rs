@@ -153,8 +153,8 @@ pub mod validation {
   pub const SLOGAN_MIN: u64 = 3;
   pub const SLOGAN_MAX: u64 = 50;
 
-  pub const DESC_MIN: u64 = 30;
-  pub const DESC_MAX: u64 = 1000;
+  pub const DESC_MIN: u64 = 1;
+  pub const DESC_MAX: u64 = 2000;
 
   pub const EMAIL_MAX: u64 = 70;
   pub const PHONE_MAX: u64 = 30;

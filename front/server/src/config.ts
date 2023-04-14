@@ -19,9 +19,9 @@ export type Config = {
   //   storage_public_url: string
   // }
 
-  mongodb: {
-    url: string
-  }
+  // mongodb: {
+  //   url: string
+  // }
 
   session: {
     secret: string
@@ -116,7 +116,7 @@ export const merge_env = (partial: PartialDeep<Config>, { logger, env = process.
   // str("public.source_public_url")
   // str("public.storage_public_url")
 
-  str("mongodb.url")
+  // str("mongodb.url")
 
   str("session.secret");
   // str("session.domain");

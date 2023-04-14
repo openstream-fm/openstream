@@ -39,7 +39,6 @@
 
   prevent_unload(() => {
     if(!equals(start, current)) {
-      console.log("prevent unload diff", diff(start, current));
       return "If you leave this page your changes will be lost. Do you want to leave anyway?";
     } else return null;
   })
@@ -66,6 +65,8 @@
 
     _message("New station created");
 
+    current = clone(start);
+    
     goto(`/accounts/${data.account._id}/stations/${station._id}`, { invalidateAll: true });
   });
   

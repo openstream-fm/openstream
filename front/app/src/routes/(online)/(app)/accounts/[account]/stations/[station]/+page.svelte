@@ -336,8 +336,7 @@
   }
 
   .top-boxes[data-air="off"] > .top-box-preview {
-    visibility: hidden;
-    order: 3;
+    display: none;
   }
 
   @container page (width < 700px) {

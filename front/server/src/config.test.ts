@@ -51,7 +51,7 @@ test("load_from_string - success on valid input", (t) => {
   t.is(config.openstream.token, "example_token");
   // t.is(config.public.stream_public_url, "https://stream.example.com");
   // t.is(config.public.storage_public_url, "https://storage.example.com");
-  t.is(config.mongodb.url, "mongodb://localhost:27017");
+  // t.is(config.mongodb.url, "mongodb://localhost:27017");
   t.is(config.session.secret, "example_secret");
   // t.is(config.session.domain, "example.com");
   t.is(config.session.max_age_days, 30);
@@ -68,7 +68,7 @@ test("merge_env - success on valid input", (t) => {
   t.is(mergedConfig.openstream?.token, "env_token");
   // t.is(mergedConfig.public?.stream_public_url, "https://stream.env.com");
   // t.is(mergedConfig.public?.storage_public_url, "https://storage.env.com");
-  t.is(mergedConfig.mongodb?.url, "mongodb://env:27017");
+  // t.is(mergedConfig.mongodb?.url, "mongodb://env:27017");
   t.is(mergedConfig.session?.secret, "env_secret");
   // t.is(mergedConfig.session?.domain, "env.com");
   t.is(mergedConfig.session?.max_age_days, 20);
