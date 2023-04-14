@@ -2,8 +2,9 @@ import { load_get } from "$lib/load";
 
 export const load = (async ({ fetch, url, depends, params }) => {
   
-  depends("station:dashboard");
-  depends("station:limits");
+  depends("resource:stations")
+  depends("api:stations/:id/dashboard-stats");
+  depends("api:stations/:id/now-playing");
   
   const [
     dashboard_stats,

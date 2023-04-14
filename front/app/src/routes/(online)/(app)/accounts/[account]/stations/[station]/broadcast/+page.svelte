@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
+	import { invalidate } from '$app/navigation';
 	export let data: import('./$types').PageData;
 	import TextField from '$lib/components/Form/TextField.svelte';
 	import Page from '$lib/components/Page.svelte';
@@ -31,8 +31,7 @@
     data.station.source_password = new_password;
     reset_password_open = false;
     _message("Mounpoint password reset");
-    // TODO: should we invalidate?
-    // invalidateAll();
+    invalidate("resource:stations");
   })
 
 </script>

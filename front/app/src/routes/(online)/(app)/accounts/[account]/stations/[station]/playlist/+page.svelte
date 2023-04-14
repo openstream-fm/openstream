@@ -304,8 +304,8 @@
       item.state = "done";
       uploading = uploading;
 
-      invalidate("station:limits");
-      invalidate("station:files");
+      invalidate("api:stations/:id/limits");
+      invalidate("api:stations/:id/files");
 
     } catch(e: any) {
       item.state = "error";
@@ -353,8 +353,8 @@
     try {
       await _delete(`/api/stations/${station_id}/files/${file_id}`);
       unselect(file_id);
-      invalidate("station:limits");
-      invalidate("station:files");
+      invalidate("api:stations/:id/limits");
+      invalidate("api:stations/:id/files");
       _message("Track deleted");
       if($player_playing_audio_file_id === file_id) close();
     } catch(e) {
@@ -410,15 +410,15 @@
           i++;
         }
       } catch(e: any) {
-        await invalidate("station:limits");
-        await invalidate("station:files");
+        invalidate("api:stations/:id/limits");
+        invalidate("api:stations/:id/files");
         $selected_ids = $selected_ids.filter(id => data.files.items.some(item => item._id === id));
         reject(String(e?.message));
         throw e;
       }
 
-      invalidate("station:limits");
-      invalidate("station:files");
+      invalidate("api:stations/:id/limits");
+      invalidate("api:stations/:id/files");
       resolve(`${ids.length} tracks deleted`);
       $selected_ids = [];
   
@@ -493,7 +493,7 @@
       album: edit_current_album.trim() || null,
     }
     await _put(`/api/stations/${station_id}/files/${audio_item_to_edit._id}/metadata`, payload);
-    invalidate("station:files");
+    invalidate("api:stations/:id/files");
     audio_item_to_edit = null;
   })
 
@@ -570,11 +570,11 @@
         await _post(`/api/stations/${station_id}/files/${file._id}/order/move-before`, payload);
       }
     } catch(e) {
-      invalidate("station:files");
+      invalidate("api:stations/:id/files");
       throw e;
     }
 
-    invalidate("station:files");
+    invalidate("api:stations/:id/files");
   })
 
   // const swap = action(async (from_i: number, to_i: number) => {
@@ -621,14 +621,14 @@
       await _post(`/api/stations/${station_id}/files/unshuffle`, undefined);
       _message("Playlist unshuffled");
     } catch(e) {
-      invalidate("station:files").then(() => {
+      invalidate("api:stations/:id/files").then(() => {
         play_shuffle_animation();
       });;
       throw e;
     }
 
 
-    invalidate("station:files").then(() => {
+    invalidate("api:stations/:id/files").then(() => {
       play_shuffle_animation();
     });
   })
@@ -640,13 +640,13 @@
       await _post(`/api/stations/${station_id}/files/shuffle`, undefined);
       _message("Playlist shuffled");
     } catch(e) {
-      invalidate("station:files").then(() => {
+      invalidate("api:stations/:id/files").then(() => {
         play_shuffle_animation();
       });;
       throw e;
     }
 
-    invalidate("station:files").then(() => {
+    invalidate("api:stations/:id/files").then(() => {
       play_shuffle_animation();
     });;
   })

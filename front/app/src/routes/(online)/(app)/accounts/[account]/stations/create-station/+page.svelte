@@ -5,7 +5,7 @@
 	import { _post, action } from "$share/net.client";
 	import { _message } from "$share/notify";
 
-  import { goto } from "$app/navigation";
+  import { goto, invalidate } from "$app/navigation";
 
 	import { ripple } from "$lib/ripple";
 	
@@ -67,7 +67,8 @@
 
     current = clone(start);
     
-    goto(`/accounts/${data.account._id}/stations/${station._id}`, { invalidateAll: true });
+    invalidate("resource:stations");
+    goto(`/accounts/${data.account._id}/stations/${station._id}`);
   });
   
 </script>

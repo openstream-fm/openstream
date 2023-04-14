@@ -7,7 +7,7 @@
 	import { _patch, action } from "$share/net.client";
 	import { _message } from "$share/notify";
 	import { fly } from "svelte/transition";
-  import { invalidateAll } from "$app/navigation";
+  import { invalidate } from "$app/navigation";
 	import Email from "$lib/components/Form/Email.svelte";
 	import Password from "$lib/components/Form/Password.svelte";
 	import { mdiAccountOutline, mdiDevices, mdiPhoneOutline } from "@mdi/js";
@@ -32,7 +32,7 @@
     await _patch(`/api/users/${data.user._id}`, payload);
     profile_db = clone(profile_current);
     _message("Profile updated");
-    invalidateAll();
+    invalidate("resource:users"); 
   });
 
   let new_password = "";

@@ -4,7 +4,7 @@
 	import { ripple } from "$lib/ripple";
   import { form } from "../transitions";
   import { action, _post } from "$share/net.client";
-	import { goto } from "$app/navigation";
+	import { goto, invalidate } from "$app/navigation";
 
   let email = "";
   let password = "";
@@ -13,7 +13,6 @@
     const payload: Omit<import("$server/defs/api/auth/user/login/POST/Payload").Payload, "device_id"> = { email, password };
     await _post("/api/login", payload);
     const target = decodeURIComponent(location.hash.replace(/^#/, "")) || "/";
-    debugger;
     goto(target, { invalidateAll: true });
   })
 </script>

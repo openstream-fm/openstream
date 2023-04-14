@@ -2,7 +2,7 @@ import { load_get } from "$lib/load";
 
 export const load = (async ({ fetch, url, parent, depends, params }) => {
 
-  depends("station:limits");
+  depends("api:stations/:id");
   
   const { stations } = await parent();
   const station = stations.items.find(item => item._id === params.station);

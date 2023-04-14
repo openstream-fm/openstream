@@ -3,7 +3,9 @@ import { redirect } from "@sveltejs/kit";
 
 export const load = (async ({ fetch, url, parent, depends }) => {
 
-   depends("accounts:list")
+   depends("resource:accounts", "resource:stations");
+   depends("api:accounts", "api:stations");
+   
    const { maybe_user } = await parent();
    if (maybe_user == null) {
       const to = `${url.pathname}${url.search}`;

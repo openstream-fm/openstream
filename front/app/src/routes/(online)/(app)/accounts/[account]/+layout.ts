@@ -2,7 +2,7 @@ import { load_get } from "$lib/load";
 
 export const load = (async ({ fetch, url, parent, depends, params }) => {
 
-  depends("accounts:item");
+  depends("api:accounts/:id");
 
   const { accounts } = await parent();
   

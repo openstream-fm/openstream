@@ -4,7 +4,7 @@
   import Page from "$lib/components/Page.svelte";
 	import { _patch, _post, action } from "$share/net.client";
 	import { _message } from "$share/notify";
-  import { invalidateAll } from "$app/navigation";
+  import { invalidate } from "$app/navigation";
 	import { ripple } from "$lib/ripple";
   import { clone, diff, equals } from "$server/util/collections";
 	import { tooltip } from "$share/tooltip";
@@ -67,7 +67,7 @@
 
     _message("Station updated");
 
-    invalidateAll();
+    invalidate("resource:stations");
   });
   
 </script>

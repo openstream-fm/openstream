@@ -50,7 +50,7 @@
 		await _delete(`/api/devices/${disconnect_item._id}`);
 		_message('Device disconnected');
 		disconnect_item = null;
-		invalidate('me:devices');
+		invalidate('resource:devices');
 	});
 </script>
 
