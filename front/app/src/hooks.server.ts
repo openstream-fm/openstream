@@ -41,13 +41,23 @@ export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
   
   server_logger.debug(`handle-fetch: ${event.request.url} => ${request.url} ip=${event.locals.ip} proto=${event.locals.protocol}`)
 
-  request.headers.set(FORWARD_IP_HEADER, event.locals.ip);
-  request.headers.set(PROTOCOL_HEADER, event.locals.protocol);
-  const cookie = event.request.headers.get("cookie");
-  if(cookie) request.headers.set("cookie", cookie);
-  
+  const target = new Request(request)
+
+  for(const key of [
+    "accept-language",
+    "user-agent",
+    "cookie",
+    "host"
+  ]) {
+    const v = event.request.headers.get(key);
+    if(v) target.headers.set(key, v);
+  }
+
+  target.headers.set(FORWARD_IP_HEADER, event.locals.ip);
+  target.headers.set(PROTOCOL_HEADER, event.locals.protocol);
+    
   try {
-    return await fetch(url, request);
+    return await fetch(url, target);
   } catch(e: any) {
     server_logger.error(`handle-fetch error for ${event.request.url} => ${url}`)
     server_logger.error(e?.cause ? e.cause : e);
