@@ -1,8 +1,8 @@
 use crate::{storage_db, Model};
 use bytes::Bytes;
+use mongodb::bson::doc;
 use mongodb::options::IndexOptions;
 use mongodb::IndexModel;
-use mongodb::{bson::doc, Database};
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;

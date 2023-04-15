@@ -8,7 +8,7 @@
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
   anyhow::bail!("already migrated");
-  // shared_init(String::from("./config.toml")).await?;
+  // shared_init(String::from("./openstream.toml")).await?;
   // migrate().await?;
   // Ok(())
 }

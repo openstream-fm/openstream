@@ -164,9 +164,9 @@
     font-weight: 600;
   }
 
-  .submit.disabled {
+  /* .submit.disabled {
     background: #999;
-  }
+  } */
 
   .more {
     width: min(80%, 500px);

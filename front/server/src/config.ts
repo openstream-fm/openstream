@@ -6,6 +6,7 @@ import type { Logger } from "./logger"
 import type { PartialDeep } from "type-fest";
 import * as dot from "dot-prop";
 import { clone } from "./util/collections";
+import CommentJSON from "comment-json";
 
 export type Config = {
   openstream: {
@@ -130,9 +131,16 @@ export const merge_env = (partial: PartialDeep<Config>, { logger, env = process.
   return config;
 }
 
-export const load_from_string = (source: string, { logger, env = process.env }: { logger?: Logger, env?: typeof process.env } = {}): Config => {
-  // check that there are no unknown keys or invalid types for present keys
-  const partial_config = assertEquals<PartialDeep<Config>>(toml.parse(source));
+// if source is null means load only from env variables
+export const load_from_string = (source: string | null, format: "toml" | "json", { logger, env = process.env }: { logger?: Logger, env?: typeof process.env } = {}): Config => {
+  
+  let partial_config: PartialDeep<Config> = {};
+
+  if(source != null) {
+    const object = format === "json" ? CommentJSON.parse(source) : toml.parse(source);
+    // check that there are no unknown keys or invalid types for present keys
+    partial_config = assertEquals<PartialDeep<Config>>(object);   
+  } 
 
   // override config with available env variables
   const partial_merged_config = merge_env(partial_config, { env, logger });
@@ -146,15 +154,17 @@ export const load_from_string = (source: string, { logger, env = process.env }: 
 export const load = (filename: string | null, { logger: _logger, env = process.env }: { logger: Logger, env?: typeof process.env }): Config => {
   const logger = _logger.scoped("config");
 
-  let source: string = "";
-  
+  let source: string | null = null;
+  let format: "toml" | "json" = "toml";
+
   if(filename == null) {
     logger.info("loading config only from env varianbles");
   } else {
     logger.info(`loading config from ${color.yellow(filename)}`);
-    // read toml formatted config string from file
+    if(filename.endsWith(".json")) format = "json";
+    // read formatted config string from file
     source = readFileSync(filename, "utf8");
   }
 
-  return load_from_string(source, { env, logger });
+  return load_from_string(source, format, { env, logger });
 }

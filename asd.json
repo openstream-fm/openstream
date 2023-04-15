@@ -1,0 +1,39 @@
+// this file can contain comments
+// you can mark it as "JSON with Comments" if you are using VSCode 
+{
+  // mongodb related settings
+  "mongodb": {
+    // string (required)
+    // must have a defined database in the path and a replicaSet in the query params
+    // internally openstream uses transactions so replicaSet is required
+    "url": "mongodb://localhost:27017/openstream?replicaSet=rs1"
+  },
+
+  // the [stream] server is where end users will be redirected from [router] servers to listen to the streams
+  "stream": {
+    // string(SocketAddr)[] (required)
+    // socket addrs to bind the stream server to
+    "addrs": [ "0.0.0.0:20200" ]
+  },
+
+  // the [source] server is where openstream receives the audio data from streamers, it is Icecast compatible
+  "source": {
+    // string(SocketAddr)[] (required)
+    // socket addrs to bind the source receiver server to
+    "addrs": [ "0.0.0.0:20600" ]
+  },
+
+  // the [api] server is the main interface for users and admins to interact with openstream server
+  "api": {
+    // string(SocketAddr)[] (required)
+    // socket addrs to bind the api server to
+    "addrs": [ "0.0.0.0:20700" ]
+  },
+
+  // the [storage] server is the interface to access user's files
+  "storage": {
+    // string(SocketAddr)[] (required)
+    // socket addrs to bind the api server to
+    "addrs": [ "0.0.0.0:20900" ]
+  }
+}

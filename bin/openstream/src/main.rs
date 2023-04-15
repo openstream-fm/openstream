@@ -54,7 +54,7 @@ enum Command {
 #[command(about = "Start openstream server(s) from a config file")]
 struct Start {
   /// Path to the configuration file (relative to cwd)
-  #[clap(short, long, default_value_t = String::from("./config.toml"))]
+  #[clap(short, long, default_value_t = String::from("./openstream.toml"))]
   config: String,
 }
 
@@ -66,7 +66,7 @@ struct Cluster {
   instances: u16,
 
   /// Path to the configuration file (relative to cwd)
-  #[clap(short, long, default_value_t = String::from("./config.toml"))]
+  #[clap(short, long, default_value_t = String::from("./openstream.toml"))]
   config: String,
 }
 
@@ -76,7 +76,7 @@ struct Cluster {
 )]
 struct CreateToken {
   /// Path to the configuration file (relative to cwd)
-  #[clap(short, long, default_value_t = String::from("./config.toml"))]
+  #[clap(short, long, default_value_t = String::from("./openstream.toml"))]
   config: String,
 
   /// Do not ask for confirmation
@@ -91,8 +91,9 @@ struct CreateToken {
 #[derive(Debug, Parser)]
 #[command(about = "Create a default config file for later editing")]
 struct CreateConfig {
-  /// Path to the output file (relative to cwd) to write the default config to
-  #[clap(short, long, default_value_t = String::from("./config.toml"))]
+  /// Path to the output file (relative to cwd) to write the default config to.
+  /// It can be in .toml or .json format (format is guessed from output filename)
+  #[clap(short, long, default_value_t = String::from("./openstream.toml"))]
   output: String,
 }
 
@@ -458,7 +459,13 @@ fn create_config(CreateConfig { output }: CreateConfig) -> Result<(), anyhow::Er
     );
   }
 
-  std::fs::write(file.clone(), include_bytes!("../../../config.default.toml"))
+  let contents = if output.ends_with(".json") {
+    include_str!("../../../openstream.sample.json")
+  } else {
+    include_str!("../../../openstream.sample.toml")
+  };
+
+  std::fs::write(file.clone(), contents)
     .with_context(|| format!("error writing config file to {}", file.to_string_lossy()))?;
 
   eprintln!("config file created in {}", output.yellow());

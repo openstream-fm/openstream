@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 use std::path::Path;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
   pub mongodb: Mongodb,
@@ -19,20 +19,20 @@ impl Config {
   }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Mongodb {
   pub url: String,
   pub storage_db_name: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Stream {
   pub addrs: Vec<SocketAddr>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Source {
   pub addrs: Vec<SocketAddr>,
@@ -44,19 +44,19 @@ pub struct Source {
 //   pub addrs: Vec<SocketAddr>,
 // }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct SourceBroadcaster {
   pub addrs: Vec<SocketAddr>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Api {
   pub addrs: Vec<SocketAddr>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Storage {
   pub addrs: Vec<SocketAddr>,
@@ -67,8 +67,11 @@ pub enum LoadConfigError {
   #[error("io error: {0}")]
   Io(#[from] std::io::Error),
 
-  #[error("invalid config: {0}")]
+  #[error("invalid config toml: {0}")]
   Toml(#[from] toml::de::Error),
+
+  #[error("invalid config json: {0}")]
+  Json(#[from] serde_json::Error),
 
   #[error(
     "invalid config: at least one of [stream], [source], [api] or [storage] must be defined"
@@ -76,13 +79,35 @@ pub enum LoadConfigError {
   NoInterfaces,
 }
 
-pub fn load(path: impl AsRef<Path>) -> Result<Config, LoadConfigError> {
-  let buf = std::fs::read_to_string(path)?;
-  parse(buf)
+#[derive(Debug, Clone, Copy)]
+pub enum ConfigFileFormat {
+  Toml,
+  Json,
 }
 
-pub fn parse(contents: impl AsRef<str>) -> Result<Config, LoadConfigError> {
-  let config: Config = toml::from_str(contents.as_ref())?;
+pub fn load(path: impl AsRef<Path>) -> Result<Config, LoadConfigError> {
+  let path = path.as_ref();
+  let format = if path.to_string_lossy().ends_with(".json") {
+    ConfigFileFormat::Json
+  } else {
+    ConfigFileFormat::Toml
+  };
+
+  let buf = std::fs::read_to_string(path)?;
+  parse(buf, format)
+}
+
+pub fn parse(
+  contents: impl AsRef<str>,
+  format: ConfigFileFormat,
+) -> Result<Config, LoadConfigError> {
+  let config: Config = match format {
+    ConfigFileFormat::Toml => toml::from_str(contents.as_ref())?,
+    ConfigFileFormat::Json => {
+      let reader = json_comments::StripComments::new(contents.as_ref().as_bytes());
+      serde_json::from_reader(reader)?
+    }
+  };
 
   if !config.has_interfaces() {
     return Err(LoadConfigError::NoInterfaces);

@@ -36,8 +36,11 @@ const createConfig = (opts: { output: string }) => {
   const logger = new ConsoleLogger(LogLevel.INFO);
   logger.info("> Creating config file in " + color.yellow(opts.output));
 
-  const sample = path.resolve(__dirname, "../config.sample.toml");
+  let ext = opts.output.endsWith(".json") ? "json" : "toml";
+  let sample = path.resolve(__dirname, `../openstream-front.sample.${ext}`)
+
   const dest = path.resolve(process.cwd(), opts.output);
+  
   if(fs.existsSync(dest)) {
     logger.warn(color.red(`> Aborting: file ${dest} already exists`))
     return process.exit(1);
@@ -86,13 +89,13 @@ const start = async (opts: { config: string }) => {
 cmd.version(VERSION);
 
 cmd.command("start")
-  .description("starts the webmail server")
-  .option("-c --config <path>", "path to the config file", "./config.toml")
+  .description("start the webmail server")
+  .option("-c --config <path>", "path to the config file", "./openstream-front.toml")
   .action(start);
 
 cmd.command("create-config")
-  .description("create the default config.toml file")
-  .option("-o --output <path>", "path to ouput file", "./config.toml")
+  .description("create the default config file, it can be in TOML format (default) or in JSON format (guessed from the output file extension)")
+  .option("-o --output <path>", "path to ouput file", "./openstream-front.toml")
   .action(createConfig)
 
 cmd.parse(process.argv);

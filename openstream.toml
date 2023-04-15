@@ -1,0 +1,27 @@
+[mongodb]
+url="mongodb://mongodb1:27017,mongodb2:27017,mongodb2:27057/dev_openstream?replicaSet=rs1&w=1&readPreference=nearest&localThresholdMS=1000"
+storage_db_name = "dev_openstream_storage"
+
+[stream]
+addrs = [
+  "0.0.0.0:20200",
+  "0.0.0.0:20201",
+  "0.0.0.0:20202",
+  "0.0.0.0:20203",
+  "0.0.0.0:20204",
+  "0.0.0.0:20205",
+  "0.0.0.0:20206",
+  "0.0.0.0:20207",
+]
+
+[source]
+addrs = [ "0.0.0.0:20600" ]
+
+[api]
+addrs = [ "0.0.0.0:20700" ]
+
+[storage]
+addrs = [ "0.0.0.0:20900" ]
+
+# [router]
+# addrs = [ "0.0.0.0:20800" ]

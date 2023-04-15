@@ -22,7 +22,7 @@ async fn craete_test_stations() -> Result<(), anyhow::Error> {
   // let canonical_config_path = std::fs::canonicalize(config.as_str())
   //   .with_context(|| format!("error loading config file from {}", config.yellow()))?;
 
-  let config = "./config.toml";
+  let config = "./openstream.toml";
 
   info!("loading config file from {}", config.yellow());
 
