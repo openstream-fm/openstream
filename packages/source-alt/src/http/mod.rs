@@ -103,13 +103,14 @@ pub async fn parse_request_head(buf: &[u8]) -> Result<RequestHead, ReadHeadError
   let mut proxy_protocol_ip = None;
 
   match proxy_protocol::v1::parse_ip_from_proxy_line(line) {
-    Some(addr) => proxy_protocol_ip = Some(addr),
-    None => {
+    None => {}
+    Some(addr) => {
+      proxy_protocol_ip = Some(addr);
       line = match lines.next() {
+        Some(line) => line,
         None => {
           return Err(ReadHeadError::NoHeadLine);
         }
-        Some(line) => line,
       }
     }
   }

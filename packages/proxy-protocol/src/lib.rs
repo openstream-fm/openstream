@@ -8,7 +8,7 @@ pub mod v1 {
       r#"^PROXY TCP(?P<version>4|6) (?P<src_addr>[0-9a-fA-F\.:]+) (?P<dst_addr>[0-9a-fA-F\.:]+) (?P<src_port>[0-9]+) (?P<dst_port>[0-9]+)$"#
     );
 
-    let caps = re.captures(line.trim()).unwrap();
+    let caps = re.captures(line.trim())?;
 
     let ip = caps.name("src_addr").unwrap().as_str();
 

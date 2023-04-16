@@ -40,6 +40,14 @@ pub async fn source(
   // if not PUT is SOURCE checked in router
   let _is_put = head.method == Method::PUT;
 
+  let real_ip = match prex::request::is_trusted_ip(remote_addr.ip()) {
+    true => match head.proxy_protocol_ip {
+      Some(ip) => ip,
+      None => remote_addr.ip(),
+    },
+    false => remote_addr.ip(),
+  };
+
   let is_continue = match head.headers.get("expect") {
     None => false,
     Some(h) => h.as_bytes().eq_ignore_ascii_case(b"100-continue"),
@@ -257,7 +265,7 @@ pub async fn source(
     let request_document = db::http::Request {
       local_addr: db::http::SocketAddr::from_http(local_addr),
       remote_addr: db::http::SocketAddr::from_http(remote_addr),
-      real_ip: head.proxy_protocol_ip.unwrap_or_else(|| remote_addr.ip()),
+      real_ip,
       version: db::http::Version::from_http(head.version),
       method: db::http::Method::from_http(&head.method),
       uri: db::http::Uri::from_http(&head.uri),

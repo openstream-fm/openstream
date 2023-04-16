@@ -8,7 +8,7 @@ use hyper::{Body, Method};
 use serde::de::DeserializeOwned;
 use std::net::{IpAddr, SocketAddr};
 
-fn is_trusted_ip(ip: IpAddr) -> bool {
+pub fn is_trusted_ip(ip: IpAddr) -> bool {
   !ip_rfc::global(&ip)
 }
 
