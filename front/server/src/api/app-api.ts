@@ -198,7 +198,7 @@ export const app_api = ({
     
   api.route("/stations/:station/files/:file/metadata")
     .put(json(async req => {
-      return await client.stations.files.put_metadata(ip(req), ua(req), token(req), req.params.station, req.params.file, req.body);
+      return await client.stations.files.patch_metadata(ip(req), ua(req), token(req), req.params.station, req.params.file, req.body);
     }))
 
   api.route("/stations/:station/now-playing")
