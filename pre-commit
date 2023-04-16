@@ -11,8 +11,11 @@ nc='\033[0m'
 check="$green$check_char$nc"
 errors=0
 
-echo -n "Cleaning defs directory... "
+original_pwd=$(pwd);
+
+cd $(git rev-parse --show-toplevel)
 rm -rf .defs
+echo -n "Cleaning defs directory... "
 echo -e "$check"
 
 echo -n "Running tests... "
@@ -25,6 +28,7 @@ fi
 
 if [ "$errors" != 0 ]; then
 	echo "Failed"
+	cd "$original_pwd"
 	exit 1
 else
 	echo "OK"
