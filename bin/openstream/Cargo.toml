@@ -35,3 +35,5 @@ jemallocator = "0.5.0"
 uid = { version = "0.1.0", path = "../../packages/uid" }
 local-ip-address = "0.5.0"
 crypt = { version = "0.1.0", path = "../../packages/crypt" }
+thiserror = "1.0.40"
+hyper = "0.14.26"

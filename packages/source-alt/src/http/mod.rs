@@ -1,6 +1,6 @@
 pub mod error;
 
-use hyper::{header::HeaderName, http::HeaderValue, HeaderMap, Method, Version};
+use hyper::{header::HeaderName, http::HeaderValue, HeaderMap, Method, Uri, Version};
 use log::*;
 use std::str::FromStr;
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
@@ -14,7 +14,7 @@ pub const MAX_RESPONSE_HEAD_SIZE: usize = 8 * 1024;
 pub struct RequestHead {
   pub version: Version,
   pub method: Method,
-  pub uri: String,
+  pub uri: Uri,
   pub headers: HeaderMap,
 }
 
@@ -125,7 +125,7 @@ pub async fn parse_request_head(buf: &[u8]) -> Result<RequestHead, ReadHeadError
   let head = RequestHead {
     version,
     method,
-    uri: String::from(uri),
+    uri: hyper::Uri::from_str(uri)?,
     headers,
   };
 

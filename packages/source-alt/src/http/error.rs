@@ -1,9 +1,12 @@
 use std::fmt::Display;
 
+use hyper::http::uri::InvalidUri;
+
 #[derive(Debug)]
 pub enum ReadHeadError {
   Io(std::io::Error),
   Hyper(hyper::Error),
+  InvalidUri(InvalidUri),
   SizeExceeded,
   NoHeadLine,
   NoMethod,
@@ -19,6 +22,7 @@ impl Display for ReadHeadError {
     match self {
       Self::Io(inner) => inner.fmt(f),
       Self::Hyper(inner) => inner.fmt(f),
+      Self::InvalidUri(_) => write!(f, "invalid uri"),
       Self::SizeExceeded => write!(f, "request head size exceeded"),
       Self::NoHeadLine => write!(f, "request head doesn't have a head line"),
       Self::NoMethod => write!(f, "request method not found"),
@@ -47,6 +51,12 @@ impl std::error::Error for ReadHeadError {
 impl From<std::io::Error> for ReadHeadError {
   fn from(inner: std::io::Error) -> Self {
     Self::Io(inner)
+  }
+}
+
+impl From<InvalidUri> for ReadHeadError {
+  fn from(inner: InvalidUri) -> Self {
+    Self::InvalidUri(inner)
   }
 }
 

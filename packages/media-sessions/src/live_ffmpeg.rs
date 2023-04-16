@@ -31,212 +31,221 @@ pub async fn run_live_session<E: std::error::Error>(
   shutdown: Shutdown,
   drop_tracer: DropTracer,
 ) -> Result<(), LiveError> {
-  tokio::pin!(data);
+  let signal = shutodown.signal();
 
-  let station_id = tx.info.station_id().to_string();
+  let fut = async move {
+    tokio::pin!(data);
 
-  let document = {
-    use db::media_session::*;
-    let document = MediaSession {
-      id: MediaSession::uid(),
-      station_id: station_id.clone(),
-      created_at: DateTime::now(),
-      updated_at: DateTime::now(),
-      kind: MediaSessionKind::Live { request },
-      state: MediaSessionState::Open,
+    let station_id = tx.info.station_id().to_string();
+
+    let document = {
+      use db::media_session::*;
+      let document = MediaSession {
+        id: MediaSession::uid(),
+        station_id: station_id.clone(),
+        created_at: DateTime::now(),
+        updated_at: DateTime::now(),
+        kind: MediaSessionKind::Live { request },
+        state: MediaSessionState::Open,
+      };
+
+      match MediaSession::insert(&document).await {
+        Ok(_) => {}
+        Err(e) => {
+          error!("error inserting live session document into db: {e} => {e:?}");
+          return Err(LiveError::Db(e));
+        }
+      };
+      document
     };
 
-    match MediaSession::insert(&document).await {
-      Ok(_) => {}
+    info!(
+      "live media session start {}, station {}",
+      document.id, document.station_id
+    );
+
+    let dropper = MediaSessionDropper(Some((
+      std::time::Instant::now(),
+      document,
+      drop_tracer.token(),
+    )));
+
+    let ffmpeg_config = FfmpegConfig {
+      readrate: true,
+      copycodec: true,
+      ..FfmpegConfig::default()
+    };
+
+    // Err(_) => {
+    //   // FORBIDEN (403) is used to communicate all sorts of errors
+    //   let mut res = Response::new(StatusCode::INTERNAL_SERVER_ERROR);
+    //   *res.body_mut() = Body::from("error allocating internal stream converter, try again later or report it to the administrators");
+    //   return res;
+    // }
+
+    let ff_spawn = match Ffmpeg::new(ffmpeg_config).spawn() {
+      Ok(spawn) => spawn,
       Err(e) => {
-        error!("error inserting live session document into db: {e} => {e:?}");
-        return Err(LiveError::Db(e));
+        error!("live session ffmpeg spawn io: {e} => {e:?}");
+        return Err(LiveError::Spawn(e));
       }
     };
-    document
-  };
 
-  info!(
-    "live media session start {}, station {}",
-    document.id, document.station_id
-  );
+    let FfmpegSpawn {
+      mut stderr,
+      mut stdin,
+      stdout,
+      mut child,
+      config: _,
+    } = ff_spawn;
 
-  let dropper = MediaSessionDropper(Some((
-    std::time::Instant::now(),
-    document,
-    drop_tracer.token(),
-  )));
+    let stderr_handle = async move {
+      let mut data = Vec::new();
+      stderr.read_to_end(&mut data).await?;
+      Result::<Vec<u8>, std::io::Error>::Ok(data)
+    };
 
-  let ffmpeg_config = FfmpegConfig {
-    readrate: true,
-    copycodec: true,
-    ..FfmpegConfig::default()
-  };
+    let stdout_handle = {
+      let shutdown = shutdown.clone();
 
-  // Err(_) => {
-  //   // FORBIDEN (403) is used to communicate all sorts of errors
-  //   let mut res = Response::new(StatusCode::INTERNAL_SERVER_ERROR);
-  //   *res.body_mut() = Body::from("error allocating internal stream converter, try again later or report it to the administrators");
-  //   return res;
-  // }
+      async move {
+        use stream_util::*;
 
-  let ff_spawn = match Ffmpeg::new(ffmpeg_config).spawn() {
-    Ok(spawn) => spawn,
-    Err(e) => {
-      error!("live session ffmpeg spawn io: {e} => {e:?}");
-      return Err(LiveError::Spawn(e));
-    }
-  };
+        let chunks = stdout.into_bytes_stream(STREAM_CHUNK_SIZE);
 
-  let FfmpegSpawn {
-    mut stderr,
-    mut stdin,
-    stdout,
-    mut child,
-    config: _,
-  } = ff_spawn;
+        tokio::pin!(chunks);
 
-  let stderr_handle = async move {
-    let mut data = Vec::new();
-    stderr.read_to_end(&mut data).await?;
-    Result::<Vec<u8>, std::io::Error>::Ok(data)
-  };
-
-  let stdout_handle = {
-    let shutdown = shutdown.clone();
-
-    async move {
-      use stream_util::*;
-
-      let chunks = stdout.into_bytes_stream(STREAM_CHUNK_SIZE);
-
-      tokio::pin!(chunks);
-
-      loop {
-        match chunks.next().await {
-          None => {
-            // trace!("channel {id}: ffmpeg stdout end");
-            break;
-          }
-          Some(Err(_e)) => {
-            // trace!("channel {id}: ffmpeg stdout error: {e}");
-            break;
-          }
-          Some(Ok(bytes)) => {
-            if shutdown.is_closed() {
+        loop {
+          match chunks.next().await {
+            None => {
+              // trace!("channel {id}: ffmpeg stdout end");
               break;
             }
-            // trace!("channel {id}: ffmpeg stdout data: {} bytes", bytes.len());
-            // only fails if there are no receivers but we continue either way
-            match tx.send(bytes) {
-              Ok(_) => continue,
-              Err(SendError::NoListeners(_)) => continue,
-              Err(SendError::Terminated(_)) => break,
-            };
+            Some(Err(_e)) => {
+              // trace!("channel {id}: ffmpeg stdout error: {e}");
+              break;
+            }
+            Some(Ok(bytes)) => {
+              if shutdown.is_closed() {
+                break;
+              }
+              // trace!("channel {id}: ffmpeg stdout data: {} bytes", bytes.len());
+              // only fails if there are no receivers but we continue either way
+              match tx.send(bytes) {
+                Ok(_) => continue,
+                Err(SendError::NoListeners(_)) => continue,
+                Err(SendError::Terminated(_)) => break,
+              };
+            }
           }
         }
       }
-    }
-  };
+    };
 
-  let write_handle = {
-    // move stdin to drop on close
-    async move {
-      loop {
-        let data = data.next().await;
+    let write_handle = {
+      // move stdin to drop on close
+      async move {
+        loop {
+          let data = data.next().await;
 
-        if shutdown.is_closed() {
-          break;
-        }
-
-        match data {
-          None => {
-            // trace!("channel {id}: recv body end");
+          if shutdown.is_closed() {
             break;
           }
 
-          Some(Err(_e)) => {
-            // trace!("channel {id}: recv body error: {e}");
-            break;
-          }
+          match data {
+            None => {
+              // trace!("channel {id}: recv body end");
+              break;
+            }
 
-          Some(Ok(data)) => {
-            // trace!("channel {id}: recv body data: {} bytes", data.len());
+            Some(Err(_e)) => {
+              // trace!("channel {id}: recv body error: {e}");
+              break;
+            }
 
-            match stdin.write_all(data.as_ref()).await {
-              Err(_e) => {
-                // trace!("channel {id} stdin error: {e}");
-                break;
-              }
+            Some(Ok(data)) => {
+              // trace!("channel {id}: recv body data: {} bytes", data.len());
 
-              Ok(()) => {
-                continue;
-                // trace!("channel {id} stdin write: {} bytes", data.len());
+              match stdin.write_all(data.as_ref()).await {
+                Err(_e) => {
+                  // trace!("channel {id} stdin error: {e}");
+                  break;
+                }
+
+                Ok(()) => {
+                  continue;
+                  // trace!("channel {id} stdin write: {} bytes", data.len());
+                }
               }
             }
           }
         }
       }
-    }
-  };
+    };
 
-  let status_handle = async move { child.wait().await };
+    let status_handle = async move { child.wait().await };
 
-  let (status, _write, _stdout, stderr) =
-    tokio::join!(status_handle, write_handle, stdout_handle, stderr_handle);
+    let (status, _write, _stdout, stderr) =
+      tokio::join!(status_handle, write_handle, stdout_handle, stderr_handle);
 
-  let exit = match status {
-    Ok(exit) => exit,
+    let exit = match status {
+      Ok(exit) => exit,
 
-    Err(e) => {
-      warn!(
-        "live session for station {station_id}: ffmpeg child error: {} => {:?}",
-        e, e
-      );
-      return Err(LiveError::ExitIo(e));
+      Err(e) => {
+        warn!(
+          "live session for station {station_id}: ffmpeg child error: {} => {:?}",
+          e, e
+        );
+        return Err(LiveError::ExitIo(e));
+        // let mut headers = HeaderMap::with_capacity(1);
+        // headers.append(CONTENT_TYPE, HeaderValue::from_static("text/plain"));
+
+        // let body = Body::from("unexpected error allocating the stream converter (exit 1), please report this to the administrators");
+
+        // let mut res = Response::new(StatusCode::INTERNAL_SERVER_ERROR);
+        // *res.headers_mut() = headers;
+        // *res.body_mut() = body;
+
+        // return res;
+      }
+    };
+
+    // trace!("channel {id}: ffmpeg child end: {exit}");
+    drop(dropper);
+
+    if exit.success() {
+      Ok(())
+
+      // let mut res = Response::new(StatusCode::OK);
+      // *res.body_mut() = Body::from("data streamed successfully");
+
       // let mut headers = HeaderMap::with_capacity(1);
       // headers.append(CONTENT_TYPE, HeaderValue::from_static("text/plain"));
 
-      // let body = Body::from("unexpected error allocating the stream converter (exit 1), please report this to the administrators");
+      // res
+    } else {
+      match stderr {
+        Err(e) => {
+          warn!("channel {station_id}: ffmpeg exit non-zero: exit={exit} stderr_error={e}");
+          Err(LiveError::StderrError(e))
+          // format!("internal error allocating stream converter (stderr 1)")
+        }
 
-      // let mut res = Response::new(StatusCode::INTERNAL_SERVER_ERROR);
-      // *res.headers_mut() = headers;
-      // *res.body_mut() = body;
-
-      // return res;
+        Ok(v) => {
+          let stderr = String::from_utf8_lossy(v.as_ref()).to_string();
+          warn!(
+            "live session for station {station_id}: ffmpeg exit non-zero: exit={exit} stderr={stderr}"
+          );
+          Err(LiveError::ExitNotOk { stderr })
+          // format!("error converting the audio stream (exit), possibly the audio is corrupted or is using a not supported format: {out}")
+        }
+      }
     }
   };
 
-  // trace!("channel {id}: ffmpeg child end: {exit}");
-  drop(dropper);
-
-  if exit.success() {
-    Ok(())
-
-    // let mut res = Response::new(StatusCode::OK);
-    // *res.body_mut() = Body::from("data streamed successfully");
-
-    // let mut headers = HeaderMap::with_capacity(1);
-    // headers.append(CONTENT_TYPE, HeaderValue::from_static("text/plain"));
-
-    // res
-  } else {
-    match stderr {
-      Err(e) => {
-        warn!("channel {station_id}: ffmpeg exit non-zero: exit={exit} stderr_error={e}");
-        Err(LiveError::StderrError(e))
-        // format!("internal error allocating stream converter (stderr 1)")
-      }
-
-      Ok(v) => {
-        let stderr = String::from_utf8_lossy(v.as_ref()).to_string();
-        warn!(
-          "live session for station {station_id}: ffmpeg exit non-zero: exit={exit} stderr={stderr}"
-        );
-        Err(LiveError::ExitNotOk { stderr })
-        // format!("error converting the audio stream (exit), possibly the audio is corrupted or is using a not supported format: {out}")
-      }
-    }
+  tokio::select! {
+    r = fut => r,
+    _ => signal => Ok(())
   }
 }
 

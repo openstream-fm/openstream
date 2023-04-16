@@ -37,11 +37,12 @@ pub async fn run_live_session<E: std::error::Error + Send + Sync + 'static>(
 
   let document = {
     use db::media_session::*;
+    let now = DateTime::now();
     let document = MediaSession {
       id: MediaSession::uid(),
       station_id: station_id.clone(),
-      created_at: DateTime::now(),
-      updated_at: DateTime::now(),
+      created_at: now,
+      updated_at: now,
       transfer_bytes: 0,
       kind: MediaSessionKind::Live { request },
       state: MediaSessionState::Open,
@@ -82,55 +83,44 @@ pub async fn run_live_session<E: std::error::Error + Send + Sync + 'static>(
   let output = data.rated(400_000 / 8).chunked(STREAM_CHUNK_SIZE);
   tokio::pin!(output);
 
-  let mut transfer = 0u64;
+  let signal = shutdown.signal();
+  let fut = async move {
+    let mut transfer = 0u64;
 
-  loop {
-    if shutdown.is_closed() || tx.is_terminated() {
-      break;
-    }
-
-    match output.next().await {
-      None => break,
-      Some(Err(e)) => {
-        warn!("live session error: {e} => {e:?}");
-        return Err(LiveError::Data(e));
+    loop {
+      if shutdown.is_closed() || tx.is_terminated() {
+        break;
       }
-      Some(Ok(bytes)) => {
-        transfer += bytes.len() as u64;
-        transfer_bytes.store(transfer, Ordering::Relaxed);
-        match tx.send(bytes) {
-          Ok(_) => continue,
-          Err(SendError::NoListeners(_)) => continue,
-          Err(SendError::Terminated(_)) => break,
+
+      match output.next().await {
+        None => break,
+        Some(Err(e)) => {
+          warn!("live session error: {e} => {e:?}");
+          return Err(LiveError::Data(e));
+        }
+        Some(Ok(bytes)) => {
+          transfer += bytes.len() as u64;
+          transfer_bytes.store(transfer, Ordering::Release);
+          match tx.send(bytes) {
+            Ok(_) => continue,
+            Err(SendError::NoListeners(_)) => continue,
+            Err(SendError::Terminated(_)) => break,
+          }
         }
       }
     }
-  }
 
-  // let mut output = rx.chunked(STREAM_CHUNK_SIZE);
-  // // tokio::pin!(output);
-  // loop {
-  //   if shutdown.is_closed() || tx.is_terminated() {
-  //     break;
-  //   }
+    Ok(())
+  };
 
-  //   match output.next().await {
-  //     None => break,
-  //     Some(Err(e)) => {
-  //       warn!("live media session {document_id} for station {station_id} play error: {e} => {e:?}");
-  //       return Err(e.into());
-  //     }
-  //     Some(Ok(bytes)) => match tx.send(bytes) {
-  //       Ok(_) => continue,
-  //       Err(SendError::NoListeners(_)) => continue,
-  //       Err(SendError::Terminated(_)) => break,
-  //     },
-  //   }
-  // }
+  let result = tokio::select! {
+    result = fut => result,
+    _ = signal => Ok(()),
+  };
 
   drop(dropper);
 
-  Ok(())
+  result
 }
 
 #[derive(Debug)]
@@ -219,6 +209,7 @@ impl Drop for MediaSessionDropper {
           closed_at: DateTime::now(),
           duration_ms,
         };
+        doc.updated_at = DateTime::now();
 
         if let Err(e) = db::media_session::MediaSession::replace(&doc.id, &doc).await {
           error!(

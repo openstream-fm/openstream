@@ -35,12 +35,17 @@ fn from_str(v: &str) -> Option<String> {
 impl UserAgent {
   pub fn parse(agent: &str) -> Self {
     let helper = match PARSER.parse(agent) {
-      None => return UserAgent::default(),
+      None => {
+        return UserAgent {
+          ua: Some(agent.to_string()),
+          ..UserAgent::default()
+        }
+      }
       Some(helper) => helper,
     };
 
     Self {
-      ua: Some(String::from(agent)),
+      ua: Some(agent.to_string()),
       browser_type: from_str(helper.browser_type),
       category: from_str(helper.category),
       name: from_str(helper.name),

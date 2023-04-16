@@ -171,11 +171,15 @@ impl SourceHandler {
       shutdown,
     }
   }
-}
 
-#[async_trait]
-impl Handler for SourceHandler {
-  async fn call(&self, req: Request, _: Next) -> prex::Response {
+  async fn handle(&self, req: Request) -> prex::Response {
+    debug!("source client connected");
+    debug!("== source client headers ==");
+    for (key, value) in req.headers().iter() {
+      debug!("== {:?}: {:?}", key, value);
+    }
+    debug!("== end source client headers ==");
+
     enum SourceMethod {
       Put,
       Source,
@@ -349,6 +353,13 @@ impl Handler for SourceHandler {
         res
       }
     }
+  }
+}
+
+#[async_trait]
+impl Handler for SourceHandler {
+  async fn call(&self, req: Request, _: Next) -> prex::Response {
+    self.handle(req).await
   }
 }
 

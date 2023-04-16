@@ -21,11 +21,13 @@ use mongodb::bson::Document;
 use owo_colors::*;
 use serde_util::DateTime;
 use shutdown::Shutdown;
-use source::SourceServer;
+// use source::SourceServer;
 use stream::StreamServer;
 use tokio::runtime::Runtime;
 
 use jemallocator::Jemalloc;
+
+pub mod error;
 
 #[global_allocator]
 static ALLOCATOR: Jemalloc = Jemalloc;
@@ -268,16 +270,24 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   let futs = futures::stream::FuturesUnordered::new();
 
   if let Some(source_config) = source {
-    let source = SourceServer::new(
-      source_config.addrs.clone(),
-      media_sessions.clone(),
-      drop_tracer.clone(),
-      shutdown.clone(),
-    );
+    // let source = SourceServer::new(
+    //   source_config.addrs.clone(),
+    //   media_sessions.clone(),
+    //   drop_tracer.clone(),
+    //   shutdown.clone(),
+    // );
 
-    let fut = source.start()?;
+    // let fut = source.start()?;
 
-    futs.push(fut.boxed());
+    // futs.push(fut.boxed());
+
+    for addr in source_config.addrs.iter() {
+      let fut = source_alt::start(*addr, media_sessions.clone(), drop_tracer.clone(), shutdown.clone());
+      futs.push(async move {
+        fut.await.map_err(crate::error::ServerStartError::from)?;
+        Ok::<(), crate::error::ServerStartError>(())
+      }.boxed());
+    }
   }
 
   if let Some(stream_config) = stream {
@@ -288,7 +298,10 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
       media_sessions.clone(),
     );
     let fut = stream.start()?;
-    futs.push(fut.boxed());
+    futs.push(async move {
+      fut.await.map_err(crate::error::ServerStartError::from)?;
+      Ok(())
+    }.boxed());
   }
 
   if let Some(api_config) = api {
@@ -299,13 +312,19 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
       media_sessions.clone(),
     );
     let fut = api.start()?;
-    futs.push(fut.boxed());
+    futs.push(async move {
+      fut.await.map_err(crate::error::ServerStartError::from)?;
+      Ok(())
+    }.boxed());
   }
 
   if let Some(storage_config) = storage {
     let storage = StorageServer::new(storage_config.addrs.clone(), shutdown.clone());
     let fut = storage.start()?;
-    futs.push(fut.boxed());
+    futs.push(async move {
+      fut.await.map_err(crate::error::ServerStartError::from)?;
+      Ok(())
+    }.boxed());
   }
 
   // if let Some(router_config) = router {
