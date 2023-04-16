@@ -27,5 +27,6 @@ shutdown = { version = "0.1.0", path = "../shutdown" }
 http-basic-auth = "0.1.2"
 db = { version = "0.1.0", path = "../db" }
 user-agent = { version = "0.1.0", path = "../user-agent" }
+proxy-protocol = { version = "0.1.0", path = "../proxy-protocol" }
 
 [features]

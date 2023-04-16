@@ -2906,6 +2906,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "proxy-protocol"
+version = "0.1.0"
+dependencies = [
+ "lazy-regex",
+]
+
+[[package]]
 name = "quick-error"
 version = "1.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3698,6 +3705,7 @@ dependencies = [
  "owo-colors",
  "parking_lot 0.12.1",
  "prex",
+ "proxy-protocol",
  "regex_static",
  "shutdown",
  "static_init",

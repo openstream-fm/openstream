@@ -50,6 +50,8 @@ members = [
     "packages/lang-util",
     "packages/test-macros",
     "packages/test-util",
+
+    "packages/proxy-protocol",
 ]
 
 [patch.crates-io]

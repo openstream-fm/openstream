@@ -2,7 +2,7 @@ pub mod error;
 
 use hyper::{header::HeaderName, http::HeaderValue, HeaderMap, Method, Uri, Version};
 use log::*;
-use std::str::FromStr;
+use std::{net::IpAddr, str::FromStr};
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 
 use self::error::{ReadHeadError, WriteHeadError};
@@ -12,6 +12,7 @@ pub const MAX_RESPONSE_HEAD_SIZE: usize = 8 * 1024;
 
 #[derive(Debug)]
 pub struct RequestHead {
+  pub proxy_protocol_ip: Option<IpAddr>,
   pub version: Version,
   pub method: Method,
   pub uri: Uri,
@@ -94,10 +95,26 @@ pub async fn parse_request_head(buf: &[u8]) -> Result<RequestHead, ReadHeadError
 
   let mut lines = string.split_terminator("\r\n");
 
-  let (method, uri, version) = match lines.next() {
+  let mut line = match lines.next() {
     None => return Err(ReadHeadError::NoHeadLine),
-    Some(line) => parse_head_line(line)?,
+    Some(line) => line,
   };
+
+  let mut proxy_protocol_ip = None;
+
+  match proxy_protocol::v1::parse_ip_from_proxy_line(line) {
+    Some(addr) => proxy_protocol_ip = Some(addr),
+    None => {
+      line = match lines.next() {
+        None => {
+          return Err(ReadHeadError::NoHeadLine);
+        }
+        Some(line) => line,
+      }
+    }
+  }
+
+  let (method, uri, version) = parse_head_line(line)?;
 
   trace!("leading => {method} {uri} {version:?}");
 
@@ -123,6 +140,7 @@ pub async fn parse_request_head(buf: &[u8]) -> Result<RequestHead, ReadHeadError
   }
 
   let head = RequestHead {
+    proxy_protocol_ip,
     version,
     method,
     uri: hyper::Uri::from_str(uri)?,

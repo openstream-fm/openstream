@@ -257,7 +257,7 @@ pub async fn source(
     let request_document = db::http::Request {
       local_addr: db::http::SocketAddr::from_http(local_addr),
       remote_addr: db::http::SocketAddr::from_http(remote_addr),
-      real_ip: remote_addr.ip(),
+      real_ip: head.proxy_protocol_ip.unwrap_or_else(|| remote_addr.ip()),
       version: db::http::Version::from_http(head.version),
       method: db::http::Method::from_http(&head.method),
       uri: db::http::Uri::from_http(&head.uri),
