@@ -28,8 +28,6 @@ pub async fn source(
   local_addr: SocketAddr,
   remote_addr: SocketAddr,
   head: RequestHead,
-  // TODO: use this leading buf
-  _leading_buf: Vec<u8>,
   id: String,
   media_sessions: MediaSessionMap,
   drop_tracer: DropTracer,

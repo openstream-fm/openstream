@@ -57,7 +57,7 @@ pub async fn start(
 }
 
 pub async fn handle_connection(
-  socket: TcpStream,
+  mut socket: TcpStream,
   local_addr: SocketAddr,
   remote_addr: SocketAddr,
   media_sessions: MediaSessionMap,
@@ -69,15 +69,16 @@ pub async fn handle_connection(
   socket.set_nodelay(true)?;
 
   // using buf reader here increases performance by aprox 6%
-  let mut reader = tokio::io::BufReader::new(socket);
+  // TODO: use buffered reader?
+  // let mut reader = tokio::io::BufReader::new(socket);
 
-  let head = read_request_head(&mut reader).await?;
+  let head = read_request_head(&mut socket).await?;
   trace!("head readed");
 
   // need to copy here because we'll use socket again as non buffered reader
   // and tokio doesn't provide a way to get the buffer as owned
-  let leading_buf = Vec::from(reader.buffer());
-  let socket = reader.into_inner();
+  // let leading_buf = Vec::from(reader.buffer());
+  // let socket = reader.into_inner();
 
   match (&head.method, head.uri.path()) {
     (&Method::GET, "/status") => status(socket, head).await,
@@ -90,7 +91,6 @@ pub async fn handle_connection(
             local_addr,
             remote_addr,
             head,
-            leading_buf,
             id,
             media_sessions,
             drop_tracer,

@@ -17,14 +17,16 @@ import { ua } from "../ua";
 export type PublicConfig = {
   storage_public_url: string
   stream_public_url: string
-  source_public_url: string
+  source_public_host: string
+  source_public_port: number
 }
 
 export const public_config = (host: string): PublicConfig => {
   const config: PublicConfig = {
     storage_public_url: `https://${host.replace("studio.", "storage.")}`,
     stream_public_url: `https://${host.replace("studio.", "stream.")}`,
-    source_public_url: `http://${host.replace("studio.", "source.")}`,
+    source_public_host: `${host.replace("studio.", "source.")}`,
+    source_public_port: 8000,
   }
   return config;
 }

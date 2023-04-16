@@ -171,17 +171,17 @@
 				<div class="ice-settings">
           <div class="ice-field">
             <TextField
-              label="Server address"
-              value={data.config.source_public_url}
-              btn={copy(data.config.source_public_url)}
+              label="Address"
+              value={data.config.source_public_host}
+              btn={copy(data.config.source_public_host)}
               readonly
             />
           </div>
           <div class="ice-field">
             <TextField
               label="Port"
-              value="80"
-              btn={copy("80")}
+              value="{`${data.config.source_public_port}`}"
+              btn={copy(`${data.config.source_public_port}`)}
               readonly
             />
           </div>
