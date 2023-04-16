@@ -14,14 +14,14 @@ errors=0
 original_pwd=$(pwd);
 
 cd $(git rev-parse --show-toplevel)
-rm -rf .defs
+rm -rf ./defs
 echo -n "Cleaning defs directory... "
 echo -e "$check"
 
 echo -n "Running tests... "
 if result=$(cargo test --color always 2>&1); then
 	echo -e "$check"
-	git add .defs
+	git add ./defs
 else
 	echo "$result"
 	errors=1
@@ -32,5 +32,6 @@ if [ "$errors" != 0 ]; then
 	cd "$original_pwd"
 	exit 1
 else
+	cd "$original_pwd"
 	echo "OK"
 fi
