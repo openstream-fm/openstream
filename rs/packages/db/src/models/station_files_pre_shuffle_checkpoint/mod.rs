@@ -9,7 +9,7 @@ use crate::Model;
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(
   export,
-  export_to = "../../../defs/db/",
+  export_to = "../../defs/db/",
   rename = "StationFilesPreShuffleCheckpoint"
 )]
 #[serde(rename_all = "snake_case")]

@@ -11,7 +11,7 @@ static PARSER: Parser = Parser::default();
 /// it does allocate in favor of simplicity
 #[derive(Debug, Default, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
 #[ts(export)]
-#[ts(export_to = "../../../defs/")]
+#[ts(export_to = "../../defs/")]
 // #[serde(rename_all = "camelCase")]
 pub struct UserAgent {
   pub ua: Option<String>,

@@ -5,7 +5,7 @@ use ts_rs::TS;
 use user_agent::{UserAgent, UserAgentExt};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
-#[ts(export, export_to = "../../../defs/db/http/")]
+#[ts(export, export_to = "../../defs/db/http/")]
 #[macros::keys]
 pub struct Request {
   #[serde(with = "serde_util::ip")]

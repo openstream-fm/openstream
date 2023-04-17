@@ -42,7 +42,7 @@ pub mod get {
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(
     export,
-    export_to = "../../../defs/api/stations/[station]/files/[file]/GET/"
+    export_to = "../../defs/api/stations/[station]/files/[file]/GET/"
   )]
   #[serde(rename_all = "snake_case")]
   pub struct Output {
@@ -308,7 +308,7 @@ pub mod delete {
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(
     export,
-    export_to = "../../../defs/api/stations/[station]/files/[file]/DELETE/"
+    export_to = "../../defs/api/stations/[station]/files/[file]/DELETE/"
   )]
   pub struct Output(AudioFile);
 

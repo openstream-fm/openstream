@@ -8,7 +8,7 @@ use serde_util::DateTime;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/db/")]
+#[ts(export, export_to = "../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct StreamConnection {
@@ -40,11 +40,7 @@ pub struct StreamConnectionMongoSet {
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
-#[ts(
-  export,
-  export_to = "../../../defs/db/",
-  rename = "StreamConnectionState"
-)]
+#[ts(export, export_to = "../../defs/db/", rename = "StreamConnectionState")]
 #[serde(rename_all = "snake_case")]
 pub enum State {
   Open,

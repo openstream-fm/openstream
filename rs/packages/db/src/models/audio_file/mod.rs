@@ -14,7 +14,7 @@ use serde_util::{as_f64, DateTime};
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/db/")]
+#[ts(export, export_to = "../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct AudioFile {
@@ -236,7 +236,7 @@ impl Model for AudioFile {
 }
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone, TS)]
-#[ts(export, export_to = "../../../defs/db/", rename = "AudioMetadata")]
+#[ts(export, export_to = "../../defs/db/", rename = "AudioMetadata")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct Metadata {

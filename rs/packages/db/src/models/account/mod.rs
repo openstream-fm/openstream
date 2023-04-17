@@ -7,7 +7,7 @@ use serde_util::DateTime;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/db/")]
+#[ts(export, export_to = "../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct Account {
@@ -21,7 +21,7 @@ pub struct Account {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/")]
+#[ts(export, export_to = "../../defs/")]
 #[serde(rename_all = "snake_case")]
 pub struct UserPublicAccount {
   #[serde(rename = "_id")]
@@ -33,11 +33,11 @@ pub struct UserPublicAccount {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/")]
+#[ts(export, export_to = "../../defs/")]
 pub struct AdminPublicAccount(pub Account);
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/")]
+#[ts(export, export_to = "../../defs/")]
 #[serde(untagged)]
 pub enum PublicAccount {
   Admin(AdminPublicAccount),
@@ -45,7 +45,7 @@ pub enum PublicAccount {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/ops/")]
+#[ts(export, export_to = "../../defs/ops/")]
 #[serde(rename_all = "snake_case")]
 #[serde(deny_unknown_fields)]
 pub struct AccountPatch {

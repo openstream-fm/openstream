@@ -8,18 +8,18 @@ use ts_rs::TS;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[ts(export)]
-#[ts(export_to = "../../../defs/db/")]
+#[ts(export_to = "../../defs/db/")]
 pub struct Metadata(Document);
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
 #[ts(export)]
-#[ts(export_to = "../../../defs/db/")]
+#[ts(export_to = "../../defs/db/")]
 // Record<string, Value> cannot reference itself in typescript
 pub struct Document(BTreeMap<String, Value>);
 
 #[derive(Debug, Clone, TS, Serialize, Deserialize)]
 #[ts(export)]
-#[ts(export_to = "../../../defs/db/")]
+#[ts(export_to = "../../defs/db/")]
 #[serde(untagged)]
 pub enum Value {
   Null,

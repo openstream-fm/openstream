@@ -3,7 +3,7 @@ use ts_rs::TS;
 
 #[allow(non_camel_case_types)]
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize, TS, PartialOrd, Ord)]
-#[ts(export, export_to = "../../../defs/db/http/")]
+#[ts(export, export_to = "../../defs/db/http/")]
 pub enum Version {
   #[serde(rename = "0.9")]
   HTTP_09,

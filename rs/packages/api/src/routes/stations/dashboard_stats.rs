@@ -23,7 +23,7 @@ pub mod get {
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(
     export,
-    export_to = "../../../defs/api/stations/[station]/dashboard-stats/GET/"
+    export_to = "../../defs/api/stations/[station]/dashboard-stats/GET/"
   )]
   pub struct Output {
     pub sessions_24h: u64,

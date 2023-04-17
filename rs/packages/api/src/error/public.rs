@@ -6,7 +6,7 @@ use ts_rs::TS;
 use super::ApiError;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/error/")]
+#[ts(export, export_to = "../../defs/error/")]
 pub struct PublicErrorPayload {
   pub error: PublicError,
 }
@@ -26,7 +26,7 @@ impl From<ApiError> for PublicErrorPayload {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/error/")]
+#[ts(export, export_to = "../../defs/error/")]
 pub struct PublicError {
   #[ts(type = "number")]
   #[serde(with = "serde_util::status_code")]
@@ -46,7 +46,7 @@ impl From<ApiError> for PublicError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/error/")]
+#[ts(export, export_to = "../../defs/error/")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum PublicErrorCode {
   ResourceNotFound,

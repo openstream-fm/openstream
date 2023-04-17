@@ -28,7 +28,7 @@ pub mod get {
   #[allow(clippy::large_enum_variant)]
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export)]
-  #[ts(export_to = "../../../defs/api/stations/[station]/now-playing/GET/")]
+  #[ts(export_to = "../../defs/api/stations/[station]/now-playing/GET/")]
   #[serde(tag = "kind")]
   pub enum Output {
     #[serde(rename = "none")]

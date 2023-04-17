@@ -27,7 +27,7 @@ pub mod get {
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export)]
-  #[ts(export_to = "../../../defs/api/stations/[station]/GET/")]
+  #[ts(export_to = "../../defs/api/stations/[station]/GET/")]
   // #[serde(rename_all = "camelCase")]
   pub struct Output {
     pub station: PublicStation,
@@ -81,7 +81,7 @@ pub mod patch {
   pub struct Endpoint {}
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../../defs/api/stations/[station]/PATCH/")]
+  #[ts(export, export_to = "../../defs/api/stations/[station]/PATCH/")]
   pub struct Payload(pub StationPatch);
 
   #[derive(Debug, Clone)]
@@ -92,7 +92,7 @@ pub mod patch {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../../defs/api/stations/[station]/PATCH/")]
+  #[ts(export, export_to = "../../defs/api/stations/[station]/PATCH/")]
   pub struct Output(pub PublicStation);
 
   #[derive(Debug, thiserror::Error)]

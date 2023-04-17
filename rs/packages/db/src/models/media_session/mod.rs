@@ -5,7 +5,7 @@ use serde_util::DateTime;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
-#[ts(export, export_to = "../../../defs/db/")]
+#[ts(export, export_to = "../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct MediaSession {
@@ -28,7 +28,7 @@ pub struct MediaSession {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
-#[ts(export, export_to = "../../../defs/db/")]
+#[ts(export, export_to = "../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 #[serde(tag = "kind")]
 #[macros::keys]
@@ -55,7 +55,7 @@ impl MediaSessionKind {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
-#[ts(export, export_to = "../../../defs/db/")]
+#[ts(export, export_to = "../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 #[serde(tag = "state")]
 #[macros::keys]
@@ -74,7 +74,7 @@ impl MediaSessionState {
 }
 
 // #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-// #[ts(export, export_to = "../../../defs/db/")]
+// #[ts(export, export_to = "../../defs/db/")]
 // #[serde(rename_all = "snake_case")]
 // #[macros::keys]
 // pub struct MediaSessionError {

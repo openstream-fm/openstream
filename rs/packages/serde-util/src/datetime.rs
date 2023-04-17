@@ -26,7 +26,7 @@ pub fn local_offset() -> UtcOffset {
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, TS)]
 #[ts(export)]
-#[ts(export_to = "../../../defs/")]
+#[ts(export_to = "../../defs/")]
 pub struct DateTime(#[ts(type = "string")] OffsetDateTime);
 
 impl Display for DateTime {

@@ -19,7 +19,7 @@ struct Watcher {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/db/", rename = "BaseEvent")]
+#[ts(export, export_to = "../../defs/db/", rename = "BaseEvent")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct Event {
@@ -33,7 +33,7 @@ pub struct Event {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/db/", rename = "EventVariant")]
+#[ts(export, export_to = "../../defs/db/", rename = "EventVariant")]
 #[serde(rename_all = "snake_case")]
 #[serde(tag = "kind", content = "payload")]
 #[macros::keys]
@@ -167,7 +167,7 @@ impl Model for Event {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/db/event-payload/")]
+#[ts(export, export_to = "../../defs/db/event-payload/")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct AudioListenerStart {
@@ -176,7 +176,7 @@ pub struct AudioListenerStart {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/db/event-payload/")]
+#[ts(export, export_to = "../../defs/db/event-payload/")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct AudioListenerEnd {

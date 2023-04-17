@@ -19,7 +19,7 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../../defs/api/auth/admin/logout/POST/")]
+  #[ts(export, export_to = "../../defs/api/auth/admin/logout/POST/")]
   pub struct Output(EmptyStruct);
 
   #[derive(Debug, Clone)]

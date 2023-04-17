@@ -3,7 +3,7 @@ use std::net::IpAddr;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, Eq, PartialEq, TS)]
-#[ts(export, export_to = "../../../defs/db/http/")]
+#[ts(export, export_to = "../../defs/db/http/")]
 // #[serde(rename_all = "camelCase")]
 pub struct SocketAddr {
   #[serde(with = "serde_util::ip")]

@@ -84,7 +84,7 @@ pub mod post {
   use ts_rs::TS;
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../../defs/api/station-pictures/POST/")]
+  #[ts(export, export_to = "../../defs/api/station-pictures/POST/")]
   pub struct Query {
     pub account_id: String,
     pub filename: String,
@@ -101,7 +101,7 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../../defs/api/station-pictures/POST/")]
+  #[ts(export, export_to = "../../defs/api/station-pictures/POST/")]
   pub struct Output(StationPicture);
 
   #[derive(Debug, thiserror::Error)]

@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, TS, Eq, PartialEq)]
-#[ts(export, export_to = "../../../defs/db/http/")]
+#[ts(export, export_to = "../../defs/db/http/")]
 pub struct Headers(IndexMap<String, String>);
 
 impl Headers {

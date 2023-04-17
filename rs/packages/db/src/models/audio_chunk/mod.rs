@@ -11,7 +11,7 @@ use serde_util::DateTime;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/db/")]
+#[ts(export, export_to = "../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct AudioChunk {

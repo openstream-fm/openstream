@@ -41,7 +41,7 @@ pub mod post {
   #[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
   #[ts(
     export,
-    export_to = "../../../defs/api/stations/[station]/files/unsuffle/POST/"
+    export_to = "../../defs/api/stations/[station]/files/unsuffle/POST/"
   )]
   pub struct Output(EmptyStruct);
 

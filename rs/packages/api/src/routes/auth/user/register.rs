@@ -124,7 +124,7 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../../defs/api/auth/user/register/POST/")]
+  #[ts(export, export_to = "../../defs/api/auth/user/register/POST/")]
   // #[serde(rename_all = "camelCase")]
   #[serde(deny_unknown_fields)]
   pub struct Payload {
@@ -151,7 +151,7 @@ pub mod post {
   }
 
   // #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
-  // #[ts(export, export_to = "../../../defs/api/auth/user/register/POST/")]
+  // #[ts(export, export_to = "../../defs/api/auth/user/register/POST/")]
   // // #[serde(rename_all = "camelCase")]
   // #[serde(deny_unknown_fields)]
   // pub struct PayloadLimits {
@@ -174,7 +174,7 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../../defs/api/auth/user/register/POST/")]
+  #[ts(export, export_to = "../../defs/api/auth/user/register/POST/")]
   // #[serde(rename_all = "camelCase")]
   pub struct Output {
     pub user: PublicUser,
