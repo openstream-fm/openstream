@@ -29,8 +29,10 @@ fi
 
 if [ "$errors" == 0 ]; then
 	echo -n "Running front npm ci... "
-	if result=$(cd front && npm run ci && cd ..); then
+	cd front
+	if result=$(npm run ci 2>&1); then
 		echo -e "$check"
+		cd ..
 		git add ./front
 	else
 		echo "$result"
