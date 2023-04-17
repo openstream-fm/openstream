@@ -1,7 +1,11 @@
 name: Front Server Unit Tests
 
-on: [ push, pull_request ]
-
+on: 
+  push:
+    branches-ignore: [ "master" ] 
+  pull_request:
+      types: [opened, reopened]
+      
 jobs:
   build:
 
