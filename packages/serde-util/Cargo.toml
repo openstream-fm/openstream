@@ -15,7 +15,7 @@ iso8601-timestamp = "0.2.7"
 log = "0.4.17"
 mongodb = "2.4.0"
 serde = "1"
-serde_json = { version = "1.0.89", features = ["preserve_order", "indexmap"] }
+serde_json = { version = "1.0", features = ["preserve_order"] }
 speedate = "0.7.0"
 static_init = "1.0.3"
 time = { version = "0.3.17", features = ["serde-well-known", "local-offset", "serde-human-readable", "macros"] }
