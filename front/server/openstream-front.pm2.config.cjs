@@ -1,6 +1,6 @@
 module.exports = {
   apps: {
-    script: "./openstream-front.js",
+    script: "./dist/cli.js",
     args: ["start"],
     interpreter_args: ["--no-warnings", "--experimental-specifier-resolution=node"],
     name: "openstream-front",
