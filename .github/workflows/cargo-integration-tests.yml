@@ -2,9 +2,10 @@ name: Integration Tests
 
 on: 
   push:
+    branches-ignore: [ "master" ] 
   pull_request:
       types: [opened, reopened]
-      
+
 env:
   CARGO_TERM_COLOR: always
 
