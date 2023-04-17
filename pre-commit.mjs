@@ -23,9 +23,13 @@ const check = () => {
 
 await within(async () => {
 	$.verbose = false;
-	$.log = (entry) => {
-		console.log(JSON.stringify(entry));
-	}
+	// $.log = (entry) => {
+	// 	if(entry.kind === "cd") {
+	// 		writeln(chalk.green(`${cd} ${entry.dir}`));
+	// 	} else if(entry.kind === "cmd") {
+	// 		writeln(chalk.green(entry.cmd));
+	// 	}
+	// }
 
 	const root = (await $`git rev-parse --show-toplevel`).stdout.trim();
 	cd(root);
