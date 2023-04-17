@@ -103,9 +103,11 @@ pub mod get {
         limit,
       } = input;
 
+      let sort = doc! { User::KEY_CREATED_AT: 1 };
+
       let page = match access_token_scope {
         AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
-          User::paged(None, None, skip, limit)
+          User::paged(None, Some(sort), skip, limit)
             .await?
             .map(|item| item.into_public(PublicScope::Admin))
         }

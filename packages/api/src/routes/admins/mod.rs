@@ -96,8 +96,9 @@ pub mod get {
 
       let skip = skip.unwrap_or_else(default_skip);
       let limit = limit.unwrap_or_else(default_limit);
+      let sort = doc! { Admin::KEY_CREATED_AT: 1 };
 
-      let page = Admin::paged(None, None, skip, limit)
+      let page = Admin::paged(None, Some(sort), skip, limit)
         .await?
         .map(Admin::into_public);
 

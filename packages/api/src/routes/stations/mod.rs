@@ -120,9 +120,11 @@ pub mod get {
         Some(account_id) => doc! { Station::KEY_ACCOUNT_ID: account_id },
       };
 
+      let sort = doc! { Station::KEY_CREATED_AT: 1 };
+
       let page = match access_token_scope {
         AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
-          Station::paged(Some(query_account_filter), None, skip, limit)
+          Station::paged(Some(query_account_filter), Some(sort), skip, limit)
             .await?
             .map(|item| item.into_public(PublicScope::Admin))
         }
@@ -144,7 +146,7 @@ pub mod get {
 
           let filter = doc! { "$and": [ query_account_filter, { Station::KEY_ACCOUNT_ID: { "$in": account_ids } } ] };
 
-          Station::paged(filter, None, skip, limit)
+          Station::paged(filter, Some(sort), skip, limit)
             .await?
             .map(|item| item.into_public(PublicScope::User))
         }
