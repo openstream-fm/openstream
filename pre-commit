@@ -27,19 +27,20 @@ await within(async () => {
 	cd(root);
 	
 	write(`Cleaning defs directory...`);
-	await $`rm -rf ./defs`;
+	await $`rm -rf defs`;
 	check();
 
 	write(`Running cargo tests...`);
 	await $`cargo test --color always`;
-	await $`git add ./defs`
+	await $`git add defs`
 	check();
 
 	await within(async () => {
 		write(`Running front npm ci...`);
 		cd("front");
 		await $`npm run ci`;
-		await $`git add .`;
+		await $`git add **/package-lock.json`;
+		await $`git add **/package.json`;
 		check();
 	})
 
