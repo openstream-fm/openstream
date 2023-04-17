@@ -9,7 +9,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
+  "devDependencies": {
     "@mdi/js": "^7.1.96",
     "@sveltejs/kit": "^1.15.2",
     "svelte": "^3.55.0"
