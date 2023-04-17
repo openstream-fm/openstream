@@ -1,5 +1,5 @@
 
 /dist/
 /node_modules/
-config.toml
+openstream-front.toml
 tsconfig.tsbuildinfo
