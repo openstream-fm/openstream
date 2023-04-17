@@ -252,7 +252,7 @@
 							</div>
 						</div>
 						<div class="url">
-							<div class="url-title">M3U</div>
+							<div class="url-title">PLS</div>
 							<div class="url-field">
 								<TextField
 									label=""
