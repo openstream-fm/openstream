@@ -5,7 +5,7 @@ module.exports = {
     exec_mode: "fork",
     time: false,
     merge_logs: true,
-    instance_var: "INSTANCE_ID",
+    // instance_var: "INSTANCE_ID",
     kill_timeout: 60_000,
     script: "./target/release/openstream",
     args: ["start"],
