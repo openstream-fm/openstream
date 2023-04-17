@@ -16,8 +16,8 @@
     "build": "run-s build:server build:app",
     "build:server": "cd server && npm run build",
     "build:app": "cd app && npm run build",
-    "ci": "run-s ci:self ci:share ci:server ci:app",
-    "ci:self": "npm ci --ignore-scripts",
+    "ci": "npm ci --ignore-scripts && npm run ci:packages",
+    "ci:packages": "run-s ci:share ci:server ci:app",
     "ci:share": "cd share && npm ci",
     "ci:server": "cd server && npm ci",
     "ci:app": "cd app && npm ci"
