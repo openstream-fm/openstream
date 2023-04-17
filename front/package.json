@@ -1,0 +1,27 @@
+{
+  "name": "front",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install": "run-s install:share install:server install:app",
+    "install:share": "cd share && npm i",
+    "install:server": "cd server && npm i",
+    "install:app": "cd app && npm i",
+    "build": "run-s build:server build:app",
+    "build:server": "cd server && npm run build",
+    "build:app": "cd app && npm run build",
+    "ci": "run-s ci:self ci:share ci:server ci:app",
+    "ci:self": "npm ci --ignore-scripts",
+    "ci:share": "cd share && npm ci",
+    "ci:server": "cd server && npm ci",
+    "ci:app": "cd app && npm ci"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "npm-run-all": "^4.1.5"
+  }
+}
