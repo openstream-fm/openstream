@@ -26,6 +26,8 @@ await within(async () => {
 	const root = (await $`git rev-parse --show-toplevel`).stdout.trim();
 	cd(root);
 	
+	await $`echo "stdout"; echo "stderr" >&2; exit 1;`;
+	
 	write(`Cleaning defs directory...`);
 	await $`rm -rf ./defs`;
 	check();

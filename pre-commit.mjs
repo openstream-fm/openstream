@@ -43,15 +43,10 @@ await within(async () => {
 		check();
 	})
 
+	await $`echo "stdout"; echo "stderr" >&2; exit 1;`;
+
 	writeln("Done!")
 }).catch(e => {
-	writeln("===============");
-	writeln(chalk.red("Error"));
-	writeln("Exit code: ", e.exitCode);
-	writeln("== STDOUT ==")
-	writeln(e.stdout)
-	writeln("== STDERR ==")
-	writeln(e.stderr);
-	writeln("===============");
-	process.exit(1);
+	console.error(e);
+	echo`${e.toString()}`
 })

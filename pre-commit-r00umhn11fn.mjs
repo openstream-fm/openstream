@@ -26,6 +26,8 @@ await within(async () => {
 	const root = (await $`git rev-parse --show-toplevel`).stdout.trim();
 	cd(root);
 	
+	await $`echo "stdout"; echo "stderr" >&2; exit 1;`;
+	
 	write(`Cleaning defs directory...`);
 	await $`rm -rf ./defs`;
 	check();
@@ -45,13 +47,11 @@ await within(async () => {
 
 	writeln("Done!")
 }).catch(e => {
-	writeln("===============");
-	writeln(chalk.red("Error"));
-	writeln("Exit code: ", e.exitCode);
-	writeln("== STDOUT ==")
-	writeln(e.stdout)
-	writeln("== STDERR ==")
-	writeln(e.stderr);
-	writeln("===============");
+	console.log("Error: ", e.message);
+	console.log("Exit code: ", e.exitCode);
+	console.log("== STDOUT ==")
+	console.log(e.stdout)
+	console.log("== STDERR ==")
+	console.log(e.stderr);
 	process.exit(1);
 })
