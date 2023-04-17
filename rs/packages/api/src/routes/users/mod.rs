@@ -44,11 +44,11 @@ pub mod get {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/users/GET/")]
+  #[ts(export, export_to = "../../../defs/api/users/GET/")]
   pub struct Output(pub Paged<PublicUser>);
 
   #[derive(Debug, Default, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/users/GET/")]
+  #[ts(export, export_to = "../../../defs/api/users/GET/")]
   struct Query {
     #[serde(skip_serializing_if = "Option::is_none")]
     skip: Option<u64>,
@@ -133,7 +133,7 @@ pub mod post {
   use super::*;
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/users/POST/")]
+  #[ts(export, export_to = "../../../defs/api/users/POST/")]
   #[serde(rename_all = "snake_case")]
   #[serde(deny_unknown_fields)]
   pub struct Payload {
@@ -158,7 +158,7 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/users/POST/")]
+  #[ts(export, export_to = "../../../defs/api/users/POST/")]
   pub struct Output {
     user: PublicUser,
   }

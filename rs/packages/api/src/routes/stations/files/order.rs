@@ -52,7 +52,7 @@ pub mod swap {
     #[derive(Debug, Clone, Serialize, Deserialize, TS)]
     #[ts(
       export,
-      export_to = "../../defs/api/stations/[station]/files/[file]/order/swap/POST/"
+      export_to = "../../../defs/api/stations/[station]/files/[file]/order/swap/POST/"
     )]
     #[serde(rename_all = "snake_case")]
     pub struct Payload {
@@ -72,7 +72,7 @@ pub mod swap {
     #[derive(Debug, Clone, Serialize, Deserialize, TS)]
     #[ts(
       export,
-      export_to = "../../defs/api/stations/[station]/files/[file]/order/swap/POST/"
+      export_to = "../../../defs/api/stations/[station]/files/[file]/order/swap/POST/"
     )]
     pub struct Output(EmptyStruct);
 
@@ -179,7 +179,7 @@ pub mod move_to_first {
     #[derive(Debug, Clone, Serialize, Deserialize, TS)]
     #[ts(
       export,
-      export_to = "../../defs/api/stations/[station]/files/[file]/order/move-to-first/POST/"
+      export_to = "../../../defs/api/stations/[station]/files/[file]/order/move-to-first/POST/"
     )]
     #[serde(rename_all = "snake_case")]
     pub struct Output {
@@ -239,7 +239,7 @@ pub mod move_to_last {
     #[derive(Debug, Clone, Serialize, Deserialize, TS)]
     #[ts(
       export,
-      export_to = "../../defs/api/stations/[station]/files/[file]/order/move-to-last/POST/"
+      export_to = "../../../defs/api/stations/[station]/files/[file]/order/move-to-last/POST/"
     )]
     #[serde(rename_all = "snake_case")]
     pub struct Output {
@@ -300,7 +300,7 @@ pub mod move_before {
     #[derive(Debug, Clone, Serialize, Deserialize, TS)]
     #[ts(
       export,
-      export_to = "../../defs/api/stations/[station]/files/[file]/order/move-before/POST/"
+      export_to = "../../../defs/api/stations/[station]/files/[file]/order/move-before/POST/"
     )]
     #[serde(rename_all = "snake_case")]
     pub struct Output {
@@ -310,7 +310,7 @@ pub mod move_before {
     #[derive(Debug, Clone, Serialize, Deserialize, TS)]
     #[ts(
       export,
-      export_to = "../../defs/api/stations/[station]/files/[file]/order/move-before/POST/"
+      export_to = "../../../defs/api/stations/[station]/files/[file]/order/move-before/POST/"
     )]
     #[serde(rename_all = "snake_case")]
     pub struct Payload {
@@ -403,7 +403,7 @@ pub mod move_after {
     #[derive(Debug, Clone, Serialize, Deserialize, TS)]
     #[ts(
       export,
-      export_to = "../../defs/api/stations/[station]/files/[file]/order/move-after/POST/"
+      export_to = "../../../defs/api/stations/[station]/files/[file]/order/move-after/POST/"
     )]
     #[serde(rename_all = "snake_case")]
     pub struct Output {
@@ -413,7 +413,7 @@ pub mod move_after {
     #[derive(Debug, Clone, Serialize, Deserialize, TS)]
     #[ts(
       export,
-      export_to = "../../defs/api/stations/[station]/files/[file]/order/move-after/POST/"
+      export_to = "../../../defs/api/stations/[station]/files/[file]/order/move-after/POST/"
     )]
     #[serde(rename_all = "snake_case")]
     pub struct Payload {

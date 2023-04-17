@@ -18,7 +18,7 @@ pub mod get {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/me/")]
+  #[ts(export, export_to = "../../../defs/api/me/")]
   pub struct Output(pub Me);
 
   #[derive(Debug, Clone)]

@@ -8,7 +8,7 @@ use serde_util::DateTime;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct User {
@@ -27,7 +27,7 @@ pub struct User {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 pub struct UserPublicUser {
   #[serde(rename = "_id")]
@@ -42,7 +42,7 @@ pub struct UserPublicUser {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 pub struct AdminPublicUser {
   #[serde(rename = "_id")]
@@ -58,7 +58,7 @@ pub struct AdminPublicUser {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../../defs/db/")]
 #[serde(untagged)]
 pub enum PublicUser {
   Admin(AdminPublicUser),

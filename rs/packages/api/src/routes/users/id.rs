@@ -25,7 +25,7 @@ pub mod get {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/users/[user]/GET/")]
+  #[ts(export, export_to = "../../../defs/api/users/[user]/GET/")]
   // #[serde(rename_all = "camelCase")]
   pub struct Output {
     user: PublicUser,
@@ -69,7 +69,7 @@ pub mod patch {
   pub struct Endpoint {}
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/users/[user]/PATCH/")]
+  #[ts(export, export_to = "../../../defs/api/users/[user]/PATCH/")]
   // #[serde(rename_all = "camelCase")]
   pub struct Payload {
     first_name: Option<String>,
@@ -91,7 +91,7 @@ pub mod patch {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/users/[user]/PATCH/")]
+  #[ts(export, export_to = "../../../defs/api/users/[user]/PATCH/")]
   // #[serde(rename_all = "camelCase")]
   pub struct Output {
     user: PublicUser,

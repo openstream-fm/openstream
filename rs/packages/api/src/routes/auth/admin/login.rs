@@ -16,7 +16,7 @@ pub mod post {
   use crate::json::JsonHandler;
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/auth/admin/login/POST/")]
+  #[ts(export, export_to = "../../../defs/api/auth/admin/login/POST/")]
   #[serde(rename_all = "snake_case")]
   #[serde(deny_unknown_fields)]
   pub struct Payload {
@@ -33,7 +33,7 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/auth/admin/login/POST/")]
+  #[ts(export, export_to = "../../../defs/api/auth/admin/login/POST/")]
   #[serde(rename_all = "snake_case")]
   pub struct Output {
     admin: PublicAdmin,

@@ -12,7 +12,7 @@ use crate::{
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../../defs/db/")]
 #[macros::keys]
 pub struct TransferCheckpoint {
   #[serde(rename = "_id")]

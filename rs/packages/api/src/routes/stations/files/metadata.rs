@@ -23,7 +23,7 @@ pub mod patch {
   #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone, TS)]
   #[ts(
     export,
-    export_to = "../../defs/api/stations/[station]/files/[file]/metadata/PATCH/"
+    export_to = "../../../defs/api/stations/[station]/files/[file]/metadata/PATCH/"
   )]
   #[serde(rename_all = "snake_case")]
   pub struct Payload {
@@ -107,7 +107,7 @@ pub mod patch {
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(
     export,
-    export_to = "../../defs/api/stations/[station]/files/[file]/metadata/PATCH/"
+    export_to = "../../../defs/api/stations/[station]/files/[file]/metadata/PATCH/"
   )]
   #[serde(rename_all = "snake_case")]
   pub struct Output {

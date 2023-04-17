@@ -7,7 +7,7 @@ use ts_rs::TS;
 use crate::Model;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../../defs/db/")]
 #[macros::keys]
 pub struct UserAccountRelation {
   #[serde(rename = "_id")]
@@ -19,7 +19,7 @@ pub struct UserAccountRelation {
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../../defs/db/")]
 pub enum UserAccountRelationKind {
   #[serde(rename = "owner")]
   Owner,

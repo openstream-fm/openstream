@@ -40,7 +40,7 @@ pub mod get {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
-  #[ts(export, export_to = "../../defs/api/stations/GET/")]
+  #[ts(export, export_to = "../../../defs/api/stations/GET/")]
   struct Query {
     #[serde(skip_serializing_if = "Option::is_none")]
     skip: Option<u64>,
@@ -59,7 +59,7 @@ pub mod get {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/stations/GET/")]
+  #[ts(export, export_to = "../../../defs/api/stations/GET/")]
   pub struct Output(Paged<PublicStation>);
 
   #[derive(Debug, thiserror::Error)]
@@ -171,7 +171,7 @@ pub mod post {
   use super::*;
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/stations/POST/")]
+  #[ts(export, export_to = "../../../defs/api/stations/POST/")]
   #[serde(rename_all = "snake_case")]
   #[serde(deny_unknown_fields)]
   #[validify]
@@ -302,7 +302,7 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/stations/POST/")]
+  #[ts(export, export_to = "../../../defs/api/stations/POST/")]
   #[serde(rename_all = "snake_case")]
   #[serde(deny_unknown_fields)]
   pub struct PayloadLimits {
@@ -323,7 +323,7 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/stations/POST/")]
+  #[ts(export, export_to = "../../../defs/api/stations/POST/")]
   pub struct Output {
     station: PublicStation,
   }

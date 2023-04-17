@@ -32,7 +32,7 @@ pub mod get {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
-  #[ts(export, export_to = "../../defs/api/admins/GET/")]
+  #[ts(export, export_to = "../../../defs/api/admins/GET/")]
   struct Query {
     #[serde(skip_serializing_if = "Option::is_none")]
     skip: Option<u64>,
@@ -47,7 +47,7 @@ pub mod get {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/admins/GET/")]
+  #[ts(export, export_to = "../../../defs/api/admins/GET/")]
   pub struct Output(Paged<PublicAdmin>);
 
   #[derive(Debug, thiserror::Error)]
@@ -120,7 +120,7 @@ pub mod post {
   use super::*;
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/admins/POST/")]
+  #[ts(export, export_to = "../../../defs/api/admins/POST/")]
   #[serde(rename_all = "snake_case")]
   #[serde(deny_unknown_fields)]
   pub struct Payload {
@@ -138,7 +138,7 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/stations/POST/")]
+  #[ts(export, export_to = "../../../defs/api/stations/POST/")]
   pub struct Output {
     admin: PublicAdmin,
   }

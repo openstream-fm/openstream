@@ -28,7 +28,7 @@ use std::sync::Arc;
 use tokio::sync::OnceCell;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
-#[ts(export, export_to = "../../defs/db/", rename = "AccessTokenScope")]
+#[ts(export, export_to = "../../../defs/db/", rename = "AccessTokenScope")]
 #[serde(rename_all = "snake_case")]
 #[serde(tag = "scope")]
 #[macros::keys]
@@ -55,7 +55,7 @@ impl Scope {
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
 #[ts(
   export,
-  export_to = "../../defs/db/",
+  export_to = "../../../defs/db/",
   rename = "AccessTokenGeneratedBy"
 )]
 #[serde(rename_all = "snake_case")]
@@ -110,7 +110,7 @@ impl GeneratedBy {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/db/", rename = "BaseAccessToken")]
+#[ts(export, export_to = "../../../defs/db/", rename = "BaseAccessToken")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct AccessToken {

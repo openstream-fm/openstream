@@ -24,7 +24,7 @@ pub mod post {
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export)]
-  #[ts(export_to = "../../defs/api/stations/[station]/reset-source-password/POST/")]
+  #[ts(export_to = "../../../defs/api/stations/[station]/reset-source-password/POST/")]
   pub struct Output {
     new_password: String,
   }

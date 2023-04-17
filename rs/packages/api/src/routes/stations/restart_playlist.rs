@@ -33,7 +33,7 @@ pub mod post {
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export)]
-  #[ts(export_to = "../../defs/api/stations/[station]/restart-playlist/POST/")]
+  #[ts(export_to = "../../../defs/api/stations/[station]/restart-playlist/POST/")]
   pub struct Output(EmptyStruct);
 
   #[derive(Debug, thiserror::Error)]

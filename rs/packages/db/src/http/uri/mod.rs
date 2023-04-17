@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/db/http/")]
+#[ts(export, export_to = "../../../defs/db/http/")]
 pub struct Uri {
   pub uri: String,
   pub scheme: Option<String>,

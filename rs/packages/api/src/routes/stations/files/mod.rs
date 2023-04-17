@@ -37,14 +37,14 @@ pub mod get {
   }
 
   #[derive(Debug, Serialize, Deserialize, Clone, TS)]
-  #[ts(export, export_to = "../../defs/api/stations/[station]/files/GET/")]
+  #[ts(export, export_to = "../../../defs/api/stations/[station]/files/GET/")]
   pub struct Output {
     files: Paged<AudioFile>,
     playlist_is_randomly_shuffled: bool,
   }
 
   #[derive(Debug, Serialize, Deserialize, Default, TS)]
-  #[ts(export, export_to = "../../defs/api/stations/[station]/files/GET/")]
+  #[ts(export, export_to = "../../../defs/api/stations/[station]/files/GET/")]
   struct Query {
     #[serde(skip_serializing_if = "Option::is_none")]
     skip: Option<u64>,
@@ -142,7 +142,7 @@ pub mod post {
   pub struct Endpoint {}
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/stations/[station]/files/POST/")]
+  #[ts(export, export_to = "../../../defs/api/stations/[station]/files/POST/")]
   pub struct Query {
     pub filename: String,
   }
@@ -156,7 +156,7 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../defs/api/stations/[station]/files/POST/")]
+  #[ts(export, export_to = "../../../defs/api/stations/[station]/files/POST/")]
   #[serde(rename_all = "snake_case")]
   pub struct Output {
     file: AudioFile,

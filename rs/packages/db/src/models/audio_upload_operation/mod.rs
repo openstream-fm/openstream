@@ -7,7 +7,7 @@ use serde_util::DateTime;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../../defs/db/")]
 #[ts(rename = "AudioUploadOperationState")]
 #[serde(rename_all = "snake_case")]
 #[serde(tag = "state")]
@@ -26,7 +26,7 @@ pub enum State {
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(
   export,
-  export_to = "../../defs/db/",
+  export_to = "../../../defs/db/",
   rename = "BaseAudioUploadOperation"
 )]
 #[serde(rename_all = "snake_case")]

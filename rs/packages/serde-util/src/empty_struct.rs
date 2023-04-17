@@ -2,7 +2,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, TS)]
-#[ts(export, export_to = "../../defs/")]
+#[ts(export, export_to = "../../../defs/")]
 pub struct EmptyStruct(#[ts(type = "Record<string, never>")] pub ());
 
 impl Serialize for EmptyStruct {

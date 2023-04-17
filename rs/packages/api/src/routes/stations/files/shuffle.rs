@@ -26,7 +26,7 @@ pub mod post {
   #[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
   #[ts(
     export,
-    export_to = "../../defs/api/stations/[station]/files/suffle/POST/"
+    export_to = "../../../defs/api/stations/[station]/files/suffle/POST/"
   )]
   pub struct Output(EmptyStruct);
 

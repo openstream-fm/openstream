@@ -5,7 +5,7 @@ use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS, Singleton)]
 #[singleton(collection = "config")]
-#[ts(export, export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct Config {
@@ -42,7 +42,7 @@ impl Default for Config {
 // impl Singleton for Config {}
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/db/", rename = "ConfigLimits")]
+#[ts(export, export_to = "../../../defs/db/", rename = "ConfigLimits")]
 #[serde(rename_all = "snake_case")]
 pub struct Limits {
   /// default max concurrent listeners for new stations

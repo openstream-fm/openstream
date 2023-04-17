@@ -12,7 +12,7 @@ use validate::url::patterns::*;
 use validify::validify;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 #[validify]
 #[macros::keys]
@@ -166,7 +166,7 @@ pub mod validation {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/")]
+#[ts(export, export_to = "../../../defs/")]
 #[serde(rename_all = "snake_case")]
 pub struct UserPublicStation {
   #[serde(rename = "_id")]
@@ -222,7 +222,7 @@ pub struct UserPublicStation {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/")]
+#[ts(export, export_to = "../../../defs/")]
 #[serde(rename_all = "snake_case")]
 #[validify]
 #[macros::keys]
@@ -233,7 +233,7 @@ pub struct StationFrequency {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/")]
+#[ts(export, export_to = "../../../defs/")]
 #[serde(rename_all = "kebab-case")]
 pub enum StationFrequencyKind {
   Am,
@@ -241,11 +241,11 @@ pub enum StationFrequencyKind {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/")]
+#[ts(export, export_to = "../../../defs/")]
 pub struct AdminPublicStation(pub Station);
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/")]
+#[ts(export, export_to = "../../../defs/")]
 #[serde(untagged)]
 pub enum PublicStation {
   Admin(AdminPublicStation),
@@ -253,7 +253,7 @@ pub enum PublicStation {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/ops/")]
+#[ts(export, export_to = "../../../defs/ops/")]
 #[serde(rename_all = "snake_case")]
 #[serde(deny_unknown_fields)]
 #[validify]
@@ -461,7 +461,7 @@ pub struct StationPatch {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/ops/")]
+#[ts(export, export_to = "../../../defs/ops/")]
 #[serde(rename_all = "snake_case")]
 #[serde(deny_unknown_fields)]
 pub struct StationPatchLimits {
@@ -690,7 +690,7 @@ impl Station {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/", rename = "StationLimits")]
+#[ts(export, export_to = "../../../defs/", rename = "StationLimits")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct Limits {
@@ -700,7 +700,7 @@ pub struct Limits {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, TS)]
-#[ts(export, export_to = "../../defs/", rename = "StationLimit")]
+#[ts(export, export_to = "../../../defs/", rename = "StationLimit")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct Limit {

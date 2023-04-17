@@ -7,7 +7,11 @@ use ts_rs::TS;
 use crate::Model;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/db/", rename = "BasePlayHistoryItem")]
+#[ts(
+  export,
+  export_to = "../../../defs/db/",
+  rename = "BasePlayHistoryItem"
+)]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct PlayHistoryItem {
@@ -29,7 +33,11 @@ pub struct PlayHistoryItem {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/db/", rename = "PlayHistoryItemKind")]
+#[ts(
+  export,
+  export_to = "../../../defs/db/",
+  rename = "PlayHistoryItemKind"
+)]
 #[serde(rename_all = "snake_case")]
 #[serde(tag = "kind")]
 #[macros::keys]

@@ -6,7 +6,7 @@ use serde_util::DateTime;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/db/")]
+#[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct Admin {
@@ -22,7 +22,7 @@ pub struct Admin {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/")]
+#[ts(export, export_to = "../../../defs/")]
 #[serde(rename_all = "snake_case")]
 pub struct PublicAdmin {
   #[serde(rename = "_id")]
@@ -50,7 +50,7 @@ impl Admin {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../defs/ops/")]
+#[ts(export, export_to = "../../../defs/ops/")]
 #[serde(rename_all = "snake_case")]
 #[serde(deny_unknown_fields)]
 pub struct AdminPatch {

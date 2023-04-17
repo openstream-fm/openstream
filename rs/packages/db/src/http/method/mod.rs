@@ -63,7 +63,7 @@ impl AsRef<str> for Method {
 }
 
 impl ts_rs::TS for Method {
-  const EXPORT_TO: Option<&'static str> = Some("../../defs/db/http/Method.ts");
+  const EXPORT_TO: Option<&'static str> = Some("../../../defs/db/http/Method.ts");
 
   /// Declaration of this type, e.g. `interface User { user_id: number, ... }`.
   /// This function will panic if the type has no declaration.
