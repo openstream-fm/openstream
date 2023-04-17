@@ -18,13 +18,24 @@ rm -rf ./defs
 echo -n "Cleaning defs directory... "
 echo -e "$check"
 
-echo -n "Running tests... "
+echo -n "Running cargo tests... "
 if result=$(cargo test --color always 2>&1); then
 	echo -e "$check"
 	git add ./defs
 else
 	echo "$result"
 	errors=1
+fi
+
+if [ "$errors" == 0 ]; then
+	echo -n "Running front npm ci... "
+	if result=$(cd front && npm run ci && cd ..); then
+		echo -e "$check"
+		git add ./front
+	else
+		echo "$result"
+		errors=1
+	fi
 fi
 
 if [ "$errors" != 0 ]; then
