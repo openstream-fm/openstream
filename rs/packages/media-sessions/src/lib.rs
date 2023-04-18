@@ -408,9 +408,10 @@ pub struct Listener {
 
 impl Listener {
   pub async fn recv(&mut self) -> Result<Bytes, RecvError> {
-    if let Some(bytes) = self.burst.pop_front() {
-      return Ok(bytes);
-    }
+    // TODO: enable this
+    // if let Some(bytes) = self.burst.pop_front() {
+    //   return Ok(bytes);
+    // }
 
     let bytes = self.recv.recv().await?;
 
