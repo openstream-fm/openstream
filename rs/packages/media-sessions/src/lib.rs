@@ -294,6 +294,11 @@ impl MediaSessionInfo {
   pub fn is_playlist(&self) -> bool {
     self.kind.is_playlist()
   }
+
+  #[inline]
+  pub fn content_type(&self) -> &str {
+    self.kind.content_type()
+  }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
@@ -408,10 +413,9 @@ pub struct Listener {
 
 impl Listener {
   pub async fn recv(&mut self) -> Result<Bytes, RecvError> {
-    // TODO: enable this
-    // if let Some(bytes) = self.burst.pop_front() {
-    //   return Ok(bytes);
-    // }
+    if let Some(bytes) = self.burst.pop_front() {
+      return Ok(bytes);
+    }
 
     let bytes = self.recv.recv().await?;
 
