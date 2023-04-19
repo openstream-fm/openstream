@@ -52,6 +52,7 @@ members = [
     "rs/packages/test-util",
 
     "rs/packages/proxy-protocol",
+    "rs/packages/geoip",
 ]
 
 [patch.crates-io]
