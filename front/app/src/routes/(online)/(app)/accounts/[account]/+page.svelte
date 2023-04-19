@@ -8,10 +8,10 @@
 <style>
 
   .map-box {
+    max-width: 45rem;
     background: #fff;
     border-radius: 0.5rem;
     box-shadow: 0 20px 25px -5px #0000001a, 0 10px 10px -5px #0000000a;
-    overflow: hidden;
   }
 
   .map-out {
@@ -34,9 +34,7 @@
   <div class="map-box">
     <div class="map-out">
       <div class="map-viewport">
-        {#if browser}
-          <Map />
-        {/if}
+        <Map />
       </div>
     </div>
   </div>
