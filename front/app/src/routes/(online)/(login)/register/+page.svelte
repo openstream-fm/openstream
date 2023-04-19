@@ -3,8 +3,9 @@
 	import Email from "$lib/components/Form/Email.svelte";
 	import Password from "$lib/components/Form/Password.svelte";
 	import TextField from "$lib/components/Form/TextField.svelte";
-	import { ripple } from "$lib/ripple";
+	import { ripple } from "$share/ripple";
 	import { action, _post } from "$share/net.client";
+	import { mdiAccount, mdiAccountOutline, mdiPhoneOutline } from "@mdi/js";
 	import { form } from "../transitions";
 
   let first_name = "";
@@ -129,25 +130,25 @@
   <div class="title">Sign up</div>
   <div class="fields">
     <div class="field">
-      <TextField autocomplete="given-name" label="Your first name" bind:value={first_name} />
+      <TextField label="Your first name" icon={mdiAccountOutline} autocomplete="given-name" bind:value={first_name} />
     </div>
     <div class="field">
-      <TextField autocomplete="family-name" label="Your last name" bind:value={last_name} />
+      <TextField label="Your last name" icon={mdiAccountOutline} autocomplete="family-name" bind:value={last_name} />
     </div>
     <div class="field">
-      <TextField autocomplete="off" label="Your organization's name" bind:value={account_name} />
+      <TextField label="Your organization's name" icon={mdiAccountOutline} autocomplete="off" bind:value={account_name} />
     </div>
     <div class="field">
-      <TextField type="tel" autocomplete="tel" label="Your phone number" bind:value={phone} />
+      <TextField type="tel" label="Your phone number" icon={mdiPhoneOutline} autocomplete="tel" bind:value={phone} />
     </div>
     <div class="field">
       <Email label="Your email" bind:value={email} />
     </div>
     <div class="field">
-      <Password autocomplete="new-password" label="Your password" bind:value={password} />
+      <Password label="Your password" autocomplete="new-password" bind:value={password} />
     </div>
     <div class="field">
-      <Password autocomplete="new-password" label="Confirm your password" bind:value={confirm_password} />
+      <Password label="Confirm your password" autocomplete="new-password" bind:value={confirm_password} />
     </div>
 
     <button use:ripple class="ripple-container">

@@ -1,6 +1,6 @@
 <script>
 	import Email from "$lib/components/Form/Email.svelte";
-	import { ripple } from "$lib/ripple";
+	import { ripple } from "$share/ripple";
 	import { form } from "../transitions";
 </script>
 

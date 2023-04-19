@@ -10,6 +10,7 @@ use user_agent::{UserAgent, UserAgentExt};
 pub struct Request {
   #[serde(with = "serde_util::ip")]
   pub real_ip: IpAddr,
+  pub country_code: Option<String>,
   pub local_addr: SocketAddr,
   pub remote_addr: SocketAddr,
   pub version: Version,
@@ -22,6 +23,7 @@ pub struct Request {
 impl Request {
   pub fn from_http(req: &prex::Request) -> Self {
     let real_ip = req.isomorphic_ip();
+    let country_code = geoip::ip_to_country_code(&real_ip);
     let remote_addr = SocketAddr::from_http(req.remote_addr());
     let local_addr = SocketAddr::from_http(req.local_addr());
     let version = Version::from_http(req.version());
@@ -32,6 +34,7 @@ impl Request {
 
     Self {
       real_ip,
+      country_code,
       remote_addr,
       local_addr,
       version,

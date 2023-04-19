@@ -22,7 +22,7 @@
   $: current = is_current(href, $page.url);
 
   import { page } from "$app/stores";
-	import { ripple } from "$lib/ripple";
+	import { ripple } from "$share/ripple";
 	import Icon from "$share/Icon.svelte";
 </script>
 

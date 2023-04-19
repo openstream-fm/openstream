@@ -450,7 +450,7 @@
               {#if data.now_playing.kind === "playlist" || data.now_playing.kind === "none"}
                 Playlist
               {:else if data.now_playing.kind === "live"}
-                Live Streaming
+                Live
               {/if}
             </div>
           {/if}

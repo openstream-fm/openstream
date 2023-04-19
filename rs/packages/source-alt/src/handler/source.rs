@@ -261,9 +261,10 @@ pub async fn source(
       .unwrap_or_else(user_agent::UserAgent::default);
 
     let request_document = db::http::Request {
+      real_ip,
+      country_code: geoip::ip_to_country_code(&real_ip),
       local_addr: db::http::SocketAddr::from_http(local_addr),
       remote_addr: db::http::SocketAddr::from_http(remote_addr),
-      real_ip,
       version: db::http::Version::from_http(head.version),
       method: db::http::Method::from_http(&head.method),
       uri: db::http::Uri::from_http(&head.uri),

@@ -48,6 +48,7 @@
   <div class="page">
     <h1>Seems that you are offline</h1>    
     <p>You need internet access to use this app</p>
+    <!-- svelte-ignore a11y-invalid-attribute -->
     <a class="na retry ripple-container" use:ripple href="javascript:location.reload()">
       Retry
     </a>

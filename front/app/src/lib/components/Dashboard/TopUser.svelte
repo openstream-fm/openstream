@@ -15,7 +15,7 @@
 
 
   import { fly } from "svelte/transition";
-	import { ripple } from "$lib/ripple";
+	import { ripple } from "$share/ripple";
 	import { clickOut } from "$lib/actions";
 	import { action, _post } from "$share/net.client";
 	import Icon from "$share/Icon.svelte";

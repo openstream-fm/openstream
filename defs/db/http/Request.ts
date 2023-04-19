@@ -8,6 +8,7 @@ import type { Version } from "./Version";
 
 export interface Request {
   real_ip: string;
+  country_code: string | null;
   local_addr: SocketAddr;
   remote_addr: SocketAddr;
   version: Version;

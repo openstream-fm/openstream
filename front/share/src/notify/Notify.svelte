@@ -8,7 +8,7 @@
 <script lang="ts">
   import { fly } from "svelte/transition";
   import { flip } from "svelte/animate";
-  import { ripple } from "../ripple";
+  import { ripple } from "$share/ripple";
 
   import {
     mdiCheckCircleOutline as successIcon,

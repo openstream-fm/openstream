@@ -5,7 +5,7 @@
 
 	import TopUser from '$lib/components/Dashboard/TopUser.svelte';
 	import Device from './device.svelte';
-	import { ripple } from '$lib/ripple';
+	import { ripple } from '$share/ripple';
 	import { fly, slide } from 'svelte/transition';
 	import { _delete, action } from '$share/net.client';
 	import { mdiTrashCanOutline } from '@mdi/js';

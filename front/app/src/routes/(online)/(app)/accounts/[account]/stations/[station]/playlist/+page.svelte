@@ -3,7 +3,7 @@
 
   import { beforeNavigate, invalidate } from "$app/navigation";
 	import Page from "$lib/components/Page.svelte";
-	import { ripple } from "$lib/ripple";
+	import { ripple } from "$share/ripple";
 	import { action, ClientError, _delete, _get, _post, _put, _request } from "$share/net.client";
   import { mdiPlay, mdiPause, mdiAlertDecagram, mdiCheck, mdiTimerPauseOutline, mdiCircleEditOutline, mdiTrashCanOutline, mdiAutorenew, mdiCheckboxIntermediate, mdiCheckboxBlankOutline, mdiContentSaveOutline, mdiDrag, mdiMusic, mdiShuffleVariant, mdiShuffleDisabled, mdiRestart } from "@mdi/js";
 	import Icon from "$share/Icon.svelte";
@@ -841,7 +841,11 @@
   }
 
   .file-input {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    user-select: none;
   }
 
   .upload-empty-out {

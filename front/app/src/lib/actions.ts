@@ -157,8 +157,6 @@ export const portal = (node: HTMLElement) => {
   }
 }
 
-export { ripple } from "./ripple";
-
 export const intelliHide = (node: HTMLElement) => {
 
   let lastScroll: number | null = null;

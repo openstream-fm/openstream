@@ -18,3 +18,4 @@ ip_rfc = "0.1.0"
 bytes = "1.4.0"
 log = "0.4.17"
 test-util = { version = "0.1.0", path = "../test-util" }
+ip2country = "0.2.0"
