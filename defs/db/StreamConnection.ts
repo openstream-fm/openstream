@@ -9,6 +9,7 @@ export interface StreamConnection {
   request: Request;
   created_at: DateTime;
   transfer_bytes: number;
+  duration_ms: number | null;
   last_transfer_at: DateTime;
   state: StreamConnectionState;
 }

@@ -24,6 +24,7 @@ use std::future::Future;
 use std::net::SocketAddr;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
+use std::time::SystemTime;
 use transfer_map::TransferTracer;
 // use url::Url;
 
@@ -211,6 +212,9 @@ impl StreamHandler {
   }
 
   async fn handle(self, req: Request) -> Result<Response, StreamError> {
+    
+    let start_time = SystemTime::now();
+
     let station_id = req.param("id").unwrap().to_string();
 
     let ip = req.isomorphic_ip();
@@ -293,6 +297,7 @@ impl StreamHandler {
           request: db::http::Request::from_http(&req),
           state: db::stream_connection::State::Open,
           transfer_bytes: 0,
+          duration_ms: None,
         }
       };
 
@@ -310,6 +315,7 @@ impl StreamHandler {
         transfer_bytes: transfer_bytes.clone(),
         station_id: station_id.clone(),
         token: self.media_sessions.drop_token(),
+        start_time,
       };
 
       let (mut body_sender, response_body) = Body::channel();
@@ -392,6 +398,7 @@ struct StreamConnectionDropper {
   id: String,
   station_id: String,
   transfer_bytes: Arc<AtomicU64>,
+  start_time: SystemTime,
   token: Token,
 }
 
@@ -401,8 +408,9 @@ impl Drop for StreamConnectionDropper {
     let id = self.id.clone();
     let station_id = self.station_id.clone();
     let transfer_bytes = self.transfer_bytes.load(Ordering::SeqCst);
+    let duration_ms = self.start_time.elapsed().unwrap().as_millis() as u64;
     tokio::spawn(async move {
-      let r = StreamConnection::set_closed(&id, Some(transfer_bytes))
+      let r = StreamConnection::set_closed(&id, duration_ms, transfer_bytes)
         .await
         .expect("error at StreamConnection::set_closed");
 

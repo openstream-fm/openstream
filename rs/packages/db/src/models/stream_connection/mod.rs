@@ -21,6 +21,8 @@ pub struct StreamConnection {
 
   #[serde(with = "serde_util::as_f64")]
   pub transfer_bytes: u64,
+  #[serde(with = "serde_util::as_f64::option")]
+  pub duration_ms: Option<u64>,
 
   pub last_transfer_at: DateTime,
   pub state: State,
@@ -34,6 +36,10 @@ pub struct StreamConnectionMongoSet {
   pub transfer_bytes: Option<u64>,
 
   pub last_transfer_at: DateTime,
+
+  #[serde(with = "serde_util::as_f64::option")]
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub duration_ms: Option<u64>,
 
   #[serde(skip_serializing_if = "Option::is_none")]
   pub state: Option<State>,
@@ -86,6 +92,7 @@ impl StreamConnection {
     let set = StreamConnectionMongoSet {
       last_transfer_at: DateTime::now(),
       transfer_bytes: Some(transfer_bytes),
+      duration_ms: None,
       state: None,
     };
 
@@ -98,10 +105,12 @@ impl StreamConnection {
 
   pub async fn set_closed(
     id: &str,
-    transfer_bytes: Option<u64>,
+    duration_ms: u64,
+    transfer_bytes: u64,
   ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
     let set = StreamConnectionMongoSet {
-      transfer_bytes,
+      transfer_bytes: Some(transfer_bytes),
+      duration_ms: Some(duration_ms),
       last_transfer_at: DateTime::now(),
       state: Some(State::Closed),
     };
