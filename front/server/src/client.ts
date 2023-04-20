@@ -144,6 +144,10 @@ export class Client {
   async me(ip: string | null, ua: string | null, token: string): Promise<import("./defs/api/me/Output").Output> {
     return await this.get(ip, ua, token, "/me");
   }
+
+  async get_stream_stats(ip: string | null, ua: string | null, token: string): Promise<import("./defs/api/stream-stats/GET/Output").Output> {
+    return await this.get(ip, ua, token, `/stream-stats`);
+  }
 }
 
 export class Auth {
@@ -213,6 +217,10 @@ export class Accounts {
   async patch(ip: string | null, ua: string | null, token: string, id: string, payload: import("./defs/api/accounts/[account]/PATCH/Payload").Payload): Promise<import("./defs/api/accounts/[account]/PATCH/Output").Output> {
     return await this.client.patch(ip, ua, token, `/accounts/${id}`, payload);
   }
+  
+  async get_stream_stats(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/accounts/[account]/stream-stats/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/accounts/${id}/stream-stats`);
+  }
 }
 
 export class Devices {
@@ -259,6 +267,10 @@ export class Stations {
 
   async patch(ip: string | null, ua: string | null, token: string, id: string, payload: import("./defs/api/stations/[station]/PATCH/Payload").Payload): Promise<import("./defs/api/stations/[station]/PATCH/Output").Output> {
     return await this.client.patch(ip, ua, token, `/stations/${id}`, payload);
+  }
+
+  async get_stream_stats(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/stream-stats/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/stations/${id}/stream-stats`);
   }
 
   async get_now_playing(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/now-playing/GET/Output").Output> {

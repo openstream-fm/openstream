@@ -19,6 +19,7 @@ pub mod users;
 
 pub mod devices;
 pub mod station_pictures;
+pub mod stream_stats;
 
 pub fn router(
   media_sessions: MediaSessionMap,
@@ -46,6 +47,10 @@ pub fn router(
     .post(auth::admin::login::post::Endpoint {}.into_handler());
 
   app
+    .at("/stream-stats")
+    .get(stream_stats::get::Endpoint {}.into_handler());
+
+  app
     .at("/users")
     .get(users::get::Endpoint {}.into_handler())
     .post(users::post::Endpoint {}.into_handler());
@@ -66,6 +71,10 @@ pub fn router(
     .patch(accounts::id::patch::Endpoint {}.into_handler());
 
   app
+    .at("/accounts/:account/stream-stats")
+    .get(accounts::stream_stats::get::Endpoint {}.into_handler());
+
+  app
     .at("/stations")
     .get(stations::get::Endpoint {}.into_handler())
     .post(stations::post::Endpoint {}.into_handler());
@@ -74,6 +83,10 @@ pub fn router(
     .at("/stations/:station")
     .get(stations::id::get::Endpoint {}.into_handler())
     .patch(stations::id::patch::Endpoint {}.into_handler());
+
+  app
+    .at("/stations/:station/stream-stats")
+    .get(stations::stream_stats::get::Endpoint {}.into_handler());
 
   app.at("/stations/:station/restart-playlist").post(
     stations::restart_playlist::post::Endpoint {

@@ -77,10 +77,11 @@ export const app_api = ({
     return { user, account }
   }))
 
-  api.get("/users/me", json(async req => {
-    const { user } = await client.users.get(ip(req), ua(req), token(req), user_id(req))
-    return { user,  media_key: mediakey(req) };
-  }))
+  api.route("/users/me")
+    .get(json(async req => {
+      const { user } = await client.users.get(ip(req), ua(req), token(req), user_id(req))
+      return { user,  media_key: mediakey(req) };
+    }))
 
   api.route("/users/:user")
     .get(json(async req => {
@@ -101,12 +102,16 @@ export const app_api = ({
 
   api.route("/accounts/:account")
     .get(json(async req => {
-      return await client.accounts.get(ip(req), ua(req), token(req), req.params.id)
+      return await client.accounts.get(ip(req), ua(req), token(req), req.params.account)
     }))
     .patch(json(async req => {
-      return await client.accounts.patch(ip(req), ua(req), token(req), req.params.id, req.body);
+      return await client.accounts.patch(ip(req), ua(req), token(req), req.params.account, req.body);
     }))
 
+  api.route("/accounts/:account/stream-stats")
+    .get(json(async req => {
+      return await client.accounts.get_stream_stats(ip(req), ua(req), token(req), req.params.account);
+    }))
 
   api.route("/stations")
     .get(json(async req => {
@@ -124,18 +129,26 @@ export const app_api = ({
       return await client.stations.patch(ip(req), ua(req), token(req), req.params.station, req.body);
     }))
 
-  api.post("/stations/:station/restart-playlist", json(async req => {
-    return await client.stations.restart_playlist(ip(req), ua(req), token(req), req.params.station);
-  }))
+  api.route("/stations/:station/stream-stats")
+    .get(json(async req => {
+      return await client.stations.get_stream_stats(ip(req), ua(req), token(req), req.params.station);
+    }))
 
-  api.post("/stations/:station/reset-source-password", json(async req => {
-    return await client.stations.reset_source_password(ip(req), ua(req), token(req), req.params.station);
-  }))
+  api.route("/stations/:station/restart-playlist")
+    .post(json(async req => {
+      return await client.stations.restart_playlist(ip(req), ua(req), token(req), req.params.station);
+    }))
 
-  api.get("/stations/:station/limits", json(async req => {
-    const { station: { limits } } = await client.stations.get(ip(req), ua(req), token(req), req.params.station);
-    return limits;
-  }))
+  api.route("/stations/:station/reset-source-password")
+    .post(json(async req => {
+      return await client.stations.reset_source_password(ip(req), ua(req), token(req), req.params.station);
+    }))
+
+  api.route("/stations/:station/limits")
+    .get(json(async req => {
+      const { station: { limits } } = await client.stations.get(ip(req), ua(req), token(req), req.params.station);
+      return limits;
+    }))
 
   api.route("/stations/:station/files")
     .get(json(async req => {
@@ -212,8 +225,7 @@ export const app_api = ({
     }))
 
   // TODO: deprecate this endpoint (go directly to storage rs backend)
-  api
-    .route("/stations/:station/files/:file/stream")
+  api.route("/stations/:station/files/:file/stream")
     .get(async (req, res, next) => {
   
       try {

@@ -1,4 +1,5 @@
 pub mod id;
+pub mod stream_stats;
 
 use crate::json::JsonHandler;
 use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};

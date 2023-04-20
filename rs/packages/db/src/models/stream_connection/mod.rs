@@ -190,7 +190,7 @@ pub mod stats {
   use mongodb::bson::Document;
   const UNKNOWN: &str = "UNKNOWN";
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../../defs/stream-connection-stats/")]
   pub struct Stats {
     pub time_now: StatsItem,
@@ -199,7 +199,7 @@ pub mod stats {
     pub time_30d: StatsItem,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../../defs/stream-connection-stats/")]
   pub struct StatsItem {
     pub sessions: f64,
@@ -362,7 +362,10 @@ pub mod stats {
         )
         .await?;
 
-      let document = cursor.try_next().await?.unwrap();
+      let document = match cursor.try_next().await? {
+        None => return Ok(Default::default()),
+        Some(document) => document,
+      };
 
       let mut stats: Stats = mongodb::bson::from_document(document).unwrap();
 
@@ -439,7 +442,10 @@ pub mod stats {
         )
         .await?;
 
-      let document = cursor.try_next().await?.unwrap();
+      let document = match cursor.try_next().await? {
+        None => return Ok(Default::default()),
+        Some(document) => document,
+      };
 
       let mut item: StatsItem = mongodb::bson::from_document(document).unwrap();
 
