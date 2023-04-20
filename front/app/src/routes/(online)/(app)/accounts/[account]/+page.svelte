@@ -1,6 +1,5 @@
 <script lang="ts">
   export let data: import("./$types").PageData;
-	import { browser } from "$app/environment";
   import Page from "$lib/components/Page.svelte";
   import Map from "$share/Map/Map.svelte";
 </script>

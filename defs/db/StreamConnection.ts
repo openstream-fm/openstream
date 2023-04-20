@@ -7,9 +7,9 @@ export interface StreamConnection {
   _id: string;
   station_id: string;
   request: Request;
-  created_at: DateTime;
   transfer_bytes: number;
   duration_ms: number | null;
-  last_transfer_at: DateTime;
   state: StreamConnectionState;
+  created_at: DateTime;
+  last_transfer_at: DateTime;
 }

@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use crate::{http::Request, Model};
 use mongodb::{
   bson::{self, doc, Bson},
@@ -17,15 +19,15 @@ pub struct StreamConnection {
   pub station_id: String,
   pub request: Request,
 
-  pub created_at: DateTime,
-
   #[serde(with = "serde_util::as_f64")]
   pub transfer_bytes: u64,
+
   #[serde(with = "serde_util::as_f64::option")]
   pub duration_ms: Option<u64>,
 
-  pub last_transfer_at: DateTime,
   pub state: State,
+  pub created_at: DateTime,
+  pub last_transfer_at: DateTime,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
@@ -52,6 +54,7 @@ pub struct StreamConnectionMongoSet {
   rename = "StreamConnectionState"
 )]
 #[serde(rename_all = "snake_case")]
+#[macros::keys]
 pub enum State {
   Open,
   Closed,
@@ -176,6 +179,207 @@ impl StreamConnection {
     };
 
     Ok(count as u64)
+  }
+}
+
+pub mod stats {
+  use mongodb::bson::Document;
+
+  use super::*;
+
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export, export_to = "../../../defs/stream-connection-stats/")]
+  pub struct Stats {
+    pub time_now: TimedItem,
+    pub time_24h: TimedItem,
+    pub time_7d: TimedItem,
+    pub time_30d: TimedItem,
+  }
+
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export, export_to = "../../../defs/stream-connection-stats/")]
+  pub struct TimedItem {
+    pub sessions: f64,
+    pub ips: f64,
+    pub country_sessions: BTreeMap<String, f64>,
+    pub country_ips: BTreeMap<String, f64>,
+  }
+
+  impl Stats {
+    pub async fn get_for_filter(filter: Document) -> Result<Stats, mongodb::error::Error> {
+      use crate::http;
+      use const_str::concat as str;
+      use futures_util::TryStreamExt;
+
+      let now = time::OffsetDateTime::now_utc();
+      let start_24h = now - time::Duration::HOUR * 24;
+      let start_7d = now - time::Duration::DAY * 7;
+      let start_30d = now - time::Duration::DAY * 30;
+
+      const UNKNOWN: &str = "UNKNOWN";
+
+      fn group_stage_timed_sessions(start: time::OffsetDateTime) -> Document {
+        doc! {
+          "$sum": {
+            "$cond": {
+              "if": { "$gte": [ str!("$", StreamConnection::KEY_CREATED_AT), DateTime::from(start) ] },
+              "then": 1,
+              "else": 0
+            }
+          }
+        }
+      }
+
+      fn group_stage_timed_ips(start: time::OffsetDateTime) -> Document {
+        doc! {
+          "$addToSet": {
+            "$cond": {
+              "if": { "$gte": [ str!("$", StreamConnection::KEY_CREATED_AT), DateTime::from(start) ] },
+              "then": str!("$", StreamConnection::KEY_REQUEST, ".", http::Request::KEY_REAL_IP),
+              "else": "$NONE"
+            }
+          }
+        }
+      }
+
+      let match_stage = doc! {
+        "$match": {
+          "$and": [
+            { StreamConnection::KEY_CREATED_AT: { "$gte": DateTime::from(start_30d) } },
+            filter,
+          ]
+        }
+      };
+
+      let country_group_stage = doc! {
+        "$group": {
+          "_id": str!("$", StreamConnection::KEY_REQUEST, ".", http::Request::KEY_COUNTRY_CODE),
+          "sessions_now": {
+            "$sum": {
+              "$cond": {
+                "if": { "$eq": [ str!("$", StreamConnection::KEY_STATE), State::KEY_ENUM_VARIANT_OPEN ] },
+                "then": 1,
+                "else": 0
+              }
+            }
+          },
+          "ips_now": {
+            "$addToSet": {
+              "$cond": {
+                "if": { "$eq": [ str!("$", StreamConnection::KEY_STATE), State::KEY_ENUM_VARIANT_OPEN ] },
+                "then": str!("$", StreamConnection::KEY_REQUEST, ".", http::Request::KEY_REAL_IP),
+                "else": "$NONE"
+              }
+            }
+          },
+          "sessions_24h": group_stage_timed_sessions(start_24h),
+          "ips_24h": group_stage_timed_ips(start_24h),
+          "sessions_7d": group_stage_timed_sessions(start_7d),
+          "ips_7d": group_stage_timed_ips(start_7d),
+          "sessions_30d": group_stage_timed_sessions(start_30d),
+          "ips_30d": group_stage_timed_ips(start_30d),
+        }
+      };
+
+      let global_group_stage = doc! {
+        "$group": {
+          "_id": null,
+          "sessions_now": { "$sum": "sessions_now" },
+          "sessions_24h": { "$sum": "sessions_24d" },
+          "sessions_7d": { "$sum": "sessions_7d" },
+          "sessions_30d": { "$sum": "sessions_30d" },
+          "ips_now": { "$sum": { "$size": "$ips_now" } },
+          "ips_24h": { "$sum": { "$size": "$ips_20h" } },
+          "ips_7d": { "$sum": { "$size": "$ips_7d" } },
+          "ips_30d": { "$sum": { "$size": "$ips_30d" } },
+          "country_sessions_now": {
+            "$push": {
+              "k": { "$ifNull": [ "$_id", UNKNOWN ] },
+              "v": "$sessions_now",
+            }
+          },
+          "country_sessions_24h": {
+            "$push": {
+              "k": { "$ifNull": [ "$_id", UNKNOWN ] },
+              "v": "$sessions_24h",
+            }
+          },
+          "country_sessions_7d": {
+            "$push": {
+              "k": { "$ifNull": [ "$_id", UNKNOWN ] },
+              "v": "$sessions_7d",
+            }
+          },
+          "country_sessions_30d": {
+            "$push": {
+              "k": { "$ifNull": [ "$_id", UNKNOWN ] },
+              "v": "$sessions_30d",
+            }
+          },
+          "country_ips_now": {
+            "$push": {
+              "k": { "$ifNull": [ "$_id", UNKNOWN ] },
+              "v": { "$size": "$ips_now" },
+            }
+          },
+          "country_ips_24h": {
+            "$push": {
+              "k": { "$ifNull": [ "$_id", UNKNOWN ] },
+              "v": { "$size": "$ips_24h" },
+            }
+          },
+          "country_ips_7d": {
+            "$push": {
+              "k": { "$ifNull": [ "$_id", UNKNOWN ] },
+              "v": { "$size": "$ips_7d" },
+            }
+          },
+          "country_ips_30d": {
+            "$push": {
+              "k": { "$ifNull": [ "$_id", UNKNOWN ] },
+              "v": { "$size": "$ips_30d" },
+            }
+          },
+        }
+      };
+
+      macro_rules! timed_item_projection {
+        ($key:expr) => {
+          doc! {
+            "sessions": str!("$sessions_", $key),
+            "ips": str!("$ips_", $key),
+            "country_sessions": { "$arrayToObject": str!("$country_sessions_", $key) },
+            "country_ips": { "$arrayToObject": str!("$country_ips_", $key) },
+          }
+        };
+      }
+
+      let projection_stage = doc! {
+        "_id": 0,
+        "time_now": timed_item_projection!("now"),
+        "time_24h": timed_item_projection!("24h"),
+        "time_7d": timed_item_projection!("7d"),
+        "time_30d": timed_item_projection!("30d"),
+      };
+
+      let mut cursor = StreamConnection::cl()
+        .aggregate(
+          vec![
+            match_stage,
+            country_group_stage,
+            global_group_stage,
+            projection_stage,
+          ],
+          None,
+        )
+        .await?;
+
+      let document = cursor.try_next().await?.unwrap();
+
+      let stats: Stats = mongodb::bson::from_document(document).unwrap();
+
+      Ok(stats)
+    }
   }
 }
 

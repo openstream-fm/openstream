@@ -138,7 +138,7 @@
 
 <svelte:window bind:innerWidth={windowWidth} />
 
-<div class="viewport" in:fade|local={{ duration: 350 }}>
+<div class="viewport">
   <svg viewBox="0 0 1000 660">
     {#each dataset.features as item (item.properties.iso2)}
       <path
@@ -158,7 +158,7 @@
   <div
     class="map-tooltip"
     class:to-left={tooltip_to_left}
-    transition:fade|local={{ duration: 200 }}
+    in:fade|local={{ duration: 200 }}
     style:--pointer-x="{pointerX}px"
     style:--pointer-y="{pointerY}px"
   >
