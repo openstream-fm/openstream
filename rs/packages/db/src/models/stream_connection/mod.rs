@@ -193,15 +193,15 @@ pub mod stats {
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../../defs/stream-connection-stats/")]
   pub struct Stats {
-    pub time_now: TimedItem,
-    pub time_24h: TimedItem,
-    pub time_7d: TimedItem,
-    pub time_30d: TimedItem,
+    pub time_now: StatsItem,
+    pub time_24h: StatsItem,
+    pub time_7d: StatsItem,
+    pub time_30d: StatsItem,
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../../defs/stream-connection-stats/")]
-  pub struct TimedItem {
+  pub struct StatsItem {
     pub sessions: f64,
     pub ips: f64,
     pub country_sessions: BTreeMap<String, f64>,
@@ -209,12 +209,29 @@ pub mod stats {
   }
 
   impl Stats {
+    pub fn remove_country_zeros(&mut self) {
+      self.time_now.remove_country_zeros();
+      self.time_24h.remove_country_zeros();
+      self.time_7d.remove_country_zeros();
+      self.time_30d.remove_country_zeros();
+    }
+
     pub async fn get_for_filter(filter: Document) -> Result<Stats, mongodb::error::Error> {
       let now = time::OffsetDateTime::now_utc();
       let start_24h = now - time::Duration::HOUR * 24;
       let start_7d = now - time::Duration::DAY * 7;
       let start_30d = now - time::Duration::DAY * 30;
 
+      let match_stage = doc! {
+        "$match": {
+          "$and": [
+            { StreamConnection::KEY_CREATED_AT: { "$gte": DateTime::from(start_30d) } },
+            filter,
+          ]
+        }
+      };
+
+      #[inline]
       fn group_stage_timed_sessions(start: time::OffsetDateTime) -> Document {
         doc! {
           "$sum": {
@@ -227,6 +244,7 @@ pub mod stats {
         }
       }
 
+      #[inline]
       fn group_stage_timed_ips(start: time::OffsetDateTime) -> Document {
         doc! {
           "$addToSet": {
@@ -238,15 +256,6 @@ pub mod stats {
           }
         }
       }
-
-      let match_stage = doc! {
-        "$match": {
-          "$and": [
-            { StreamConnection::KEY_CREATED_AT: { "$gte": DateTime::from(start_30d) } },
-            filter,
-          ]
-        }
-      };
 
       let country_group_stage = doc! {
         "$group": {
@@ -270,13 +279,35 @@ pub mod stats {
             }
           },
           "sessions_24h": group_stage_timed_sessions(start_24h),
-          "ips_24h": group_stage_timed_ips(start_24h),
           "sessions_7d": group_stage_timed_sessions(start_7d),
-          "ips_7d": group_stage_timed_ips(start_7d),
           "sessions_30d": group_stage_timed_sessions(start_30d),
+          "ips_24h": group_stage_timed_ips(start_24h),
+          "ips_7d": group_stage_timed_ips(start_7d),
           "ips_30d": group_stage_timed_ips(start_30d),
         }
       };
+
+      macro_rules! country_sessions_sum {
+        ($key:expr) => {
+          doc! {
+            "$push": {
+              "k": "$_id",
+              "v": str!("$sessions_", $key)
+            }
+          }
+        };
+      }
+
+      macro_rules! country_ips_sum {
+        ($key:expr) => {
+          doc! {
+            "$push": {
+              "k": "$_id",
+              "v": { "$size": str!("$ips_", $key) }
+            }
+          }
+        };
+      }
 
       let global_group_stage = doc! {
         "$group": {
@@ -289,54 +320,14 @@ pub mod stats {
           "ips_24h": { "$sum": { "$size": "$ips_20h" } },
           "ips_7d": { "$sum": { "$size": "$ips_7d" } },
           "ips_30d": { "$sum": { "$size": "$ips_30d" } },
-          "country_sessions_now": {
-            "$push": {
-              "k": "$_id",
-              "v": "$sessions_now",
-            }
-          },
-          "country_sessions_24h": {
-            "$push": {
-              "k": "$_id",
-              "v": "$sessions_24h",
-            }
-          },
-          "country_sessions_7d": {
-            "$push": {
-              "k": "$_id",
-              "v": "$sessions_7d",
-            }
-          },
-          "country_sessions_30d": {
-            "$push": {
-              "k": "$_id",
-              "v": "$sessions_30d",
-            }
-          },
-          "country_ips_now": {
-            "$push": {
-              "k": "$_id",
-              "v": { "$size": "$ips_now" },
-            }
-          },
-          "country_ips_24h": {
-            "$push": {
-              "k": "$_id",
-              "v": { "$size": "$ips_24h" },
-            }
-          },
-          "country_ips_7d": {
-            "$push": {
-              "k": "$_id",
-              "v": { "$size": "$ips_7d" },
-            }
-          },
-          "country_ips_30d": {
-            "$push": {
-              "k": "$_id",
-              "v": { "$size": "$ips_30d" },
-            }
-          },
+          "country_sessions_now": country_sessions_sum!("now"),
+          "country_sessions_24h": country_sessions_sum!("24h"),
+          "country_sessions_7d": country_sessions_sum!("7d"),
+          "country_sessions_30d": country_sessions_sum!("30d"),
+          "country_ips_now": country_ips_sum!("now"),
+          "country_ips_24h": country_ips_sum!("24h"),
+          "country_ips_7d": country_ips_sum!("7d"),
+          "country_ips_30d": country_ips_sum!("30d"),
         }
       };
 
@@ -373,14 +364,21 @@ pub mod stats {
 
       let document = cursor.try_next().await?.unwrap();
 
-      let stats: Stats = mongodb::bson::from_document(document).unwrap();
+      let mut stats: Stats = mongodb::bson::from_document(document).unwrap();
+
+      stats.remove_country_zeros();
 
       Ok(stats)
     }
   }
 
-  impl TimedItem {
-    pub async fn get_for_filter(filter: Document) -> Result<TimedItem, mongodb::error::Error> {
+  impl StatsItem {
+    pub fn remove_country_zeros(&mut self) {
+      self.country_sessions.retain(|_, v| *v != 0.0);
+      self.country_ips.retain(|_, v| *v != 0.0);
+    }
+
+    pub async fn get_for_filter(filter: Document) -> Result<StatsItem, mongodb::error::Error> {
       let match_stage = doc! {
         "$match": filter,
       };
@@ -443,7 +441,9 @@ pub mod stats {
 
       let document = cursor.try_next().await?.unwrap();
 
-      let item: TimedItem = mongodb::bson::from_document(document).unwrap();
+      let mut item: StatsItem = mongodb::bson::from_document(document).unwrap();
+
+      item.remove_country_zeros();
 
       Ok(item)
     }
