@@ -7,17 +7,29 @@
 
   type Dataset = typeof dataset;
   type Item = Dataset["features"][number];
-  type Stats = Partial<Record<string, StatsItem>>;  
-  type StatsItem = { sessions: number, ips: number };
+  type Stats = import("$server/defs/stream-connection-stats/StatsItem").StatsItem;  
   
   const sample_stats: Stats = {
-    "CA": { sessions: 5, ips: 4 },
-    "ES": { sessions: 100, ips: 82 },
-    "CO": { sessions: 500, ips: 436 },
-    "AR": { sessions: 2550, ips: 2400 },
-    "BR": { sessions: 5950, ips: 5342 },
-    "US": { sessions: 6350, ips: 6141 },
-    "FR": { sessions: 7800, ips: 7685 },
+    sessions: 16736,
+    ips: 15850,
+    country_sessions: {
+      "RU": 5,
+      "ES": 100,
+      "CO": 500,
+      "AR": 2550,
+      "BR": 5950,
+      "US": 6350,
+      "FR": 7800,
+    },
+    country_ips: {
+      "RU": 4,
+      "ES": 82,
+      "CO": 436,
+      "AR": 2400,
+      "BR": 5342,
+      "US": 6141,
+      "FR": 7685,
+    }
   };
 
   export let stats: Stats = sample_stats;
@@ -40,16 +52,22 @@
   $: tooltip_to_left = pointerX > windowWidth / 2;
   let tooltip_item: Item | null = null;
   
-  $: tooltip_stats_item = get_tooltip_stats_item(stats, tooltip_item);
-  const get_tooltip_stats_item = (...args: any[]): StatsItem | null => {
-    if(tooltip_item == null) return null;
-    return stats[tooltip_item.properties.iso2] || null;
+  $: tooltip_sessions = get_tooltip_sessions(stats, tooltip_item);
+  const get_tooltip_sessions = (...args: any[]): number => {
+    if(tooltip_item == null) return 0;
+    return stats.country_sessions[tooltip_item.properties.iso2] || 0;
+  }
+
+  $: tooltip_ips = get_tooltip_ips(stats, tooltip_item);
+  const get_tooltip_ips = (...args: any[]): number => {
+    if(tooltip_item == null) return 0;
+    return stats.country_ips[tooltip_item.properties.iso2] || 0;
   }
 
   const get_fill = (stats: Stats, item: Item) => {
     const max = Math.max(0, ...Object.values(stats).map(item => item?.sessions || 0))
     if(max === 0) return "var(--fill-none)";
-    const sessions = stats[item.properties.iso2]?.sessions || 0;
+    const sessions = stats.country_sessions[item.properties.iso2] || 0;
     if(sessions === 0) return "var(--fill-none)";
     const opacity =  0.15 + (sessions / max) * 0.85;
     return `rgba(var(--blue-rgb), ${opacity})`
@@ -145,15 +163,13 @@
         style:--fill={get_fill(stats, item)}
         d={path(as_any(item))}
         on:pointerenter={() => pointerenter(item)}
-        on:mouseleave={() => pointerleave(item)}
+        on:pointerleave={() => pointerleave(item)}
       />
     {/each}
   </svg>
 </div>
 
 {#if tooltip_item != null}
-  {@const sessions = tooltip_stats_item?.sessions || 0}
-  {@const ips = tooltip_stats_item?.ips || 0}
   {@const name = tooltip_item.properties.name}
   <div
     class="map-tooltip"
@@ -166,10 +182,10 @@
       {name}
     </div>
     <div class="map-tooltip-count">
-      {sessions} sessions
+      {tooltip_sessions} sessions
     </div>
     <div class="map-tooltip-count">
-      {ips} unique IPs
+      {tooltip_ips} unique IPs
     </div>
   </div>
 {/if}

@@ -317,7 +317,7 @@ pub mod stats {
           "sessions_7d": { "$sum": "$sessions_7d" },
           "sessions_30d": { "$sum": "$sessions_30d" },
           "ips_now": { "$sum": { "$size": "$ips_now" } },
-          "ips_24h": { "$sum": { "$size": "$ips_20h" } },
+          "ips_24h": { "$sum": { "$size": "$ips_24h" } },
           "ips_7d": { "$sum": { "$size": "$ips_7d" } },
           "ips_30d": { "$sum": { "$size": "$ips_30d" } },
           "country_sessions_now": country_sessions_sum!("now"),
@@ -343,11 +343,13 @@ pub mod stats {
       }
 
       let projection_stage = doc! {
-        "_id": 0,
-        "time_now": timed_item_projection!("now"),
-        "time_24h": timed_item_projection!("24h"),
-        "time_7d": timed_item_projection!("7d"),
-        "time_30d": timed_item_projection!("30d"),
+        "$project": {
+          "_id": 0,
+          "time_now": timed_item_projection!("now"),
+          "time_24h": timed_item_projection!("24h"),
+          "time_7d": timed_item_projection!("7d"),
+          "time_30d": timed_item_projection!("30d"),
+        }
       };
 
       let mut cursor = StreamConnection::cl()
