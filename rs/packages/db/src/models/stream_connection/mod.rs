@@ -183,9 +183,12 @@ impl StreamConnection {
 }
 
 pub mod stats {
-  use mongodb::bson::Document;
-
   use super::*;
+  use crate::http;
+  use const_str::concat as str;
+  use futures_util::TryStreamExt;
+  use mongodb::bson::Document;
+  const UNKNOWN: &str = "UNKNOWN";
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../../defs/stream-connection-stats/")]
@@ -207,16 +210,10 @@ pub mod stats {
 
   impl Stats {
     pub async fn get_for_filter(filter: Document) -> Result<Stats, mongodb::error::Error> {
-      use crate::http;
-      use const_str::concat as str;
-      use futures_util::TryStreamExt;
-
       let now = time::OffsetDateTime::now_utc();
       let start_24h = now - time::Duration::HOUR * 24;
       let start_7d = now - time::Duration::DAY * 7;
       let start_30d = now - time::Duration::DAY * 30;
-
-      const UNKNOWN: &str = "UNKNOWN";
 
       fn group_stage_timed_sessions(start: time::OffsetDateTime) -> Document {
         doc! {
@@ -253,7 +250,7 @@ pub mod stats {
 
       let country_group_stage = doc! {
         "$group": {
-          "_id": str!("$", StreamConnection::KEY_REQUEST, ".", http::Request::KEY_COUNTRY_CODE),
+          "_id": { "$ifNull": [ str!("$", StreamConnection::KEY_REQUEST, ".", http::Request::KEY_COUNTRY_CODE), UNKNOWN ] },
           "sessions_now": {
             "$sum": {
               "$cond": {
@@ -284,59 +281,59 @@ pub mod stats {
       let global_group_stage = doc! {
         "$group": {
           "_id": null,
-          "sessions_now": { "$sum": "sessions_now" },
-          "sessions_24h": { "$sum": "sessions_24d" },
-          "sessions_7d": { "$sum": "sessions_7d" },
-          "sessions_30d": { "$sum": "sessions_30d" },
+          "sessions_now": { "$sum": "$sessions_now" },
+          "sessions_24h": { "$sum": "$sessions_24d" },
+          "sessions_7d": { "$sum": "$sessions_7d" },
+          "sessions_30d": { "$sum": "$sessions_30d" },
           "ips_now": { "$sum": { "$size": "$ips_now" } },
           "ips_24h": { "$sum": { "$size": "$ips_20h" } },
           "ips_7d": { "$sum": { "$size": "$ips_7d" } },
           "ips_30d": { "$sum": { "$size": "$ips_30d" } },
           "country_sessions_now": {
             "$push": {
-              "k": { "$ifNull": [ "$_id", UNKNOWN ] },
+              "k": "$_id",
               "v": "$sessions_now",
             }
           },
           "country_sessions_24h": {
             "$push": {
-              "k": { "$ifNull": [ "$_id", UNKNOWN ] },
+              "k": "$_id",
               "v": "$sessions_24h",
             }
           },
           "country_sessions_7d": {
             "$push": {
-              "k": { "$ifNull": [ "$_id", UNKNOWN ] },
+              "k": "$_id",
               "v": "$sessions_7d",
             }
           },
           "country_sessions_30d": {
             "$push": {
-              "k": { "$ifNull": [ "$_id", UNKNOWN ] },
+              "k": "$_id",
               "v": "$sessions_30d",
             }
           },
           "country_ips_now": {
             "$push": {
-              "k": { "$ifNull": [ "$_id", UNKNOWN ] },
+              "k": "$_id",
               "v": { "$size": "$ips_now" },
             }
           },
           "country_ips_24h": {
             "$push": {
-              "k": { "$ifNull": [ "$_id", UNKNOWN ] },
+              "k": "$_id",
               "v": { "$size": "$ips_24h" },
             }
           },
           "country_ips_7d": {
             "$push": {
-              "k": { "$ifNull": [ "$_id", UNKNOWN ] },
+              "k": "$_id",
               "v": { "$size": "$ips_7d" },
             }
           },
           "country_ips_30d": {
             "$push": {
-              "k": { "$ifNull": [ "$_id", UNKNOWN ] },
+              "k": "$_id",
               "v": { "$size": "$ips_30d" },
             }
           },
@@ -379,6 +376,76 @@ pub mod stats {
       let stats: Stats = mongodb::bson::from_document(document).unwrap();
 
       Ok(stats)
+    }
+  }
+
+  impl TimedItem {
+    pub async fn get_for_filter(filter: Document) -> Result<TimedItem, mongodb::error::Error> {
+      let match_stage = doc! {
+        "$match": filter,
+      };
+
+      let country_group_stage = doc! {
+        "$group": {
+          "_id": {
+            "$ifNull": [ str!("$", StreamConnection::KEY_REQUEST, ".", http::Request::KEY_COUNTRY_CODE), UNKNOWN ]
+          },
+          "sessions": {
+            "$sum": 1
+          },
+          "ips": {
+            "$addToSet": str!("$", StreamConnection::KEY_REQUEST, ".", http::Request::KEY_REAL_IP),
+          }
+        }
+      };
+
+      let global_group_stage = doc! {
+        "$group": {
+          "_id": null,
+          "sessions": { "$sum": "$sessions" },
+          "ips": { "$sum": { "$size": "$ips" } },
+          "country_sessions": {
+            "$push": {
+              "k": "$_id",
+              "v": "$sessions",
+            }
+          },
+          "country_ips": {
+            "$push": {
+              "k": "$_id",
+              "v": { "$size": "$ips" },
+            }
+          }
+        }
+      };
+
+      let projection_stage = doc! {
+        "$project": {
+          "_id": null,
+          "sessions": 1,
+          "ips": 1,
+          "country_sessions": { "$arrayToObject": "$country_sessions" },
+          "country_ips": { "$arrayToObject": "$country_ips" },
+        }
+      };
+
+      let mut cursor = StreamConnection::cl()
+        .aggregate(
+          vec![
+            match_stage,
+            country_group_stage,
+            global_group_stage,
+            projection_stage,
+          ],
+          None,
+        )
+        .await?;
+
+      let document = cursor.try_next().await?.unwrap();
+
+      let item: TimedItem = mongodb::bson::from_document(document).unwrap();
+
+      Ok(item)
     }
   }
 }
