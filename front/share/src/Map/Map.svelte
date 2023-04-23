@@ -11,7 +11,7 @@
   
   const sample_stats: Stats = {
     sessions: 16736,
-    ips: 15850,
+    // ips: 15850,
     country_sessions: {
       "RU": 5,
       "ES": 100,
@@ -21,15 +21,15 @@
       "US": 6350,
       "FR": 7800,
     },
-    country_ips: {
-      "RU": 4,
-      "ES": 82,
-      "CO": 436,
-      "AR": 2400,
-      "BR": 5342,
-      "US": 6141,
-      "FR": 7685,
-    }
+    // country_ips: {
+    //   "RU": 4,
+    //   "ES": 82,
+    //   "CO": 436,
+    //   "AR": 2400,
+    //   "BR": 5342,
+    //   "US": 6141,
+    //   "FR": 7685,
+    // }
   };
 
   export let stats: Stats = sample_stats;
@@ -62,14 +62,14 @@
     return stats.country_sessions[tooltip_item.properties.iso2] || 0;
   }
 
-  $: tooltip_ips = get_tooltip_ips(stats, tooltip_item);
-  const get_tooltip_ips = (...args: any[]): number => {
-    if(tooltip_item == null) return 0;
-    return stats.country_ips[tooltip_item.properties.iso2] || 0;
-  }
+  // $: tooltip_ips = get_tooltip_ips(stats, tooltip_item);
+  // const get_tooltip_ips = (...args: any[]): number => {
+  //   if(tooltip_item == null) return 0;
+  //   return stats.country_ips[tooltip_item.properties.iso2] || 0;
+  // }
 
   const get_fill = (stats: Stats, item: Item) => {
-    const max = Math.max(0, ...Object.values(stats.country_sessions));
+    const max = Math.max(0, ...Object.values(stats.country_sessions).map(Number));
     if(max === 0) return "var(--fill-none)";
     const sessions = stats.country_sessions[item.properties.iso2] || 0;
     if(sessions === 0) return "var(--fill-none)";
@@ -189,8 +189,8 @@
     <div class="map-tooltip-count">
       {tooltip_sessions} sessions
     </div>
-    <div class="map-tooltip-count">
+    <!-- <div class="map-tooltip-count">
       {tooltip_ips} unique IPs
-    </div>
+    </div> -->
   </div>
 {/if}

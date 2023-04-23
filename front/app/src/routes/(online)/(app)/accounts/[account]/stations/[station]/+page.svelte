@@ -477,7 +477,8 @@
             Preview
           </div>
         </div>
-
+        
+        <!-- 
         <div class="top-box top-box-stats">
           <div class="stats-title">
             Stats
@@ -519,6 +520,7 @@
           </div>
         </div>
       </div>
+      -->
 
       <div class="broadcast-btn-out">
         <a class="na broadcast-btn ripple-container" href="/accounts/{data.account._id}/stations/{data.station._id}/broadcast" use:ripple>
