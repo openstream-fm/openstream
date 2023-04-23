@@ -48,8 +48,6 @@ fn it_works() {
 #[macros::keys]
 // #[repr(u8)]
 pub enum CountryCode {
-  KM,
-  NR,
   AD,
   AE,
   AF,
@@ -163,6 +161,7 @@ pub enum CountryCode {
   KG,
   KH,
   KI,
+  KM,
   KN,
   KP,
   KR,
@@ -212,6 +211,7 @@ pub enum CountryCode {
   NL,
   NO,
   NP,
+  NR,
   NU,
   NZ,
   OM,
@@ -319,12 +319,12 @@ mod test {
   use super::*;
 
   #[test]
-  pub fn size_of_eq_1() {
+  pub fn country_code_size_of_eq_1() {
     assert_eq!(std::mem::size_of::<CountryCode>(), 1);
   }
 
   #[test]
-  pub fn size_of_option_eq_1() {
+  pub fn country_code_size_of_option_eq_1() {
     assert_eq!(std::mem::size_of::<Option<CountryCode>>(), 1);
   }
 }

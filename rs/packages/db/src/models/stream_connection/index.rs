@@ -10,7 +10,7 @@ use mongodb::change_stream::event::OperationType;
 use mongodb::options::{ChangeStreamOptions, FullDocumentType};
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::RwLock;
@@ -30,8 +30,6 @@ pub struct Item {
   pub country_code: Option<CountryCode>,
   pub created_at_secs: u32,
 }
-
-struct ArcItem(Arc<Item>);
 
 // #[derive(Debug, Clone, Serialize, Deserialize)]
 // #[macros::keys]
@@ -106,26 +104,22 @@ impl From<StreamConnectionLite> for Item {
 #[derive(Debug, Default)]
 struct ProcessItem {
   sessions: u64,
-  ips: HashSet<u64>,
-  country_sessions: HashMap<CountryCode, u64>,
-  country_ips: HashMap<CountryCode, HashSet<u64>>,
+  // ips: HashSet<u64>,
+  country_sessions: CountryCodeMap<u32>,
+  // country_ips: HashMap<CountryCode, HashSet<u64>>,
 }
 
 impl From<ProcessItem> for StatsItem {
   fn from(v: ProcessItem) -> Self {
     Self {
       sessions: v.sessions as f64,
-      ips: v.ips.len() as f64,
-      country_sessions: v
-        .country_sessions
-        .into_iter()
-        .map(|(k, v)| (k, v as f64))
-        .collect(),
-      country_ips: v
-        .country_ips
-        .into_iter()
-        .map(|(k, v)| (k, v.len() as f64))
-        .collect(),
+      country_sessions: v.country_sessions.into_btree_map_with(|v| v as f64),
+      // ips: v.ips.len() as f64,
+      // country_ips: v
+      //   .country_ips
+      //   .into_iter()
+      //   .map(|(k, v)| (k, v.len() as f64))
+      //   .collect(),
     }
   }
 }
@@ -135,7 +129,7 @@ fn add(item: &mut ProcessItem, conn: &Item) {
   item.sessions += 1;
   // item.ips.insert(conn.ip);
   if let Some(code) = conn.country_code {
-    *item.country_sessions.entry(code).or_insert(0) += 1;
+    *item.country_sessions.get_mut(code) += 1;
     // item
     //   .country_ips
     //   .entry(code)
@@ -397,15 +391,8 @@ impl MemIndex {
       }
 
       let total = last_30d.sessions;
-      let sample = total;
-      let multiplier = 1.0;
-      let sampled = false;
 
       let stats = Stats {
-        total,
-        sample,
-        multiplier,
-        sampled,
         now: now.into(),
         last_24h: last_24h.into(),
         last_7d: last_7d.into(),
@@ -609,4 +596,81 @@ fn hash<T: std::hash::Hash>(t: &T) -> u64 {
   let mut s = std::collections::hash_map::DefaultHasher::new();
   t.hash(&mut s);
   s.finish()
+}
+
+#[derive(Debug, Clone)]
+pub struct CountryCodeMap<T>([T; 256]);
+
+impl<T: Default> CountryCodeMap<T> {
+  pub fn new() -> Self {
+    Self(arr_macro::arr![T::default(); 256])
+  }
+}
+
+impl<T: Default + Copy> Default for CountryCodeMap<T> {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
+impl<T: Default + Copy + Eq> CountryCodeMap<T> {
+  pub fn into_btree_map(self) -> BTreeMap<CountryCode, T> {
+    use strum::IntoEnumIterator;
+    let mut map = BTreeMap::new();
+    for cc in CountryCode::iter() {
+      let v = self.0[cc as usize];
+      if v != T::default() {
+        map.insert(cc, v);
+      }
+    }
+    map
+  }
+
+  pub fn into_btree_map_as<M: From<T>>(self) -> BTreeMap<CountryCode, M> {
+    use strum::IntoEnumIterator;
+    let mut map = BTreeMap::new();
+    for cc in CountryCode::iter() {
+      let v = self.0[cc as usize];
+      if v != T::default() {
+        map.insert(cc, v.into());
+      }
+    }
+    map
+  }
+
+  pub fn into_btree_map_with<M, F: Fn(T) -> M>(self, f: F) -> BTreeMap<CountryCode, M> {
+    use strum::IntoEnumIterator;
+    let mut map = BTreeMap::new();
+    for cc in CountryCode::iter() {
+      let v = self.0[cc as usize];
+      if v != T::default() {
+        map.insert(cc, (f)(v));
+      }
+    }
+    map
+  }
+}
+
+impl<T> CountryCodeMap<T> {
+  #[inline(always)]
+  pub fn get(&self, key: CountryCode) -> &T {
+    unsafe { self.0.get_unchecked(key as usize) }
+  }
+
+  #[inline(always)]
+  pub fn get_mut(&mut self, key: CountryCode) -> &mut T {
+    unsafe { self.0.get_unchecked_mut(key as usize) }
+  }
+}
+
+#[cfg(test)]
+pub mod test {
+  use super::*;
+  use strum::IntoEnumIterator;
+  #[test]
+  fn country_code_size() {
+    for cc in CountryCode::iter() {
+      assert!((cc as usize) < 256);
+    }
+  }
 }

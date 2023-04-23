@@ -2,10 +2,6 @@
 import type { StatsItem } from "./StatsItem";
 
 export interface Stats {
-  total: number;
-  sample: number;
-  multiplier: number;
-  sampled: boolean;
   now: StatsItem;
   last_24h: StatsItem;
   last_7d: StatsItem;
