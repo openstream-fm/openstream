@@ -1,9 +1,9 @@
 <script lang="ts">
-  import dataset from "./countries.lite.geo.mjs";
+  import dataset from "./countries.lite.geo";
   import { geoPath, geoMercator } from "d3";
   import { fade } from "svelte/transition";
   import { onMount } from "svelte";
-  import { add } from "$share/util.js";
+  import { add } from "$share/util";
 
   type Dataset = typeof dataset;
   type Item = Dataset["features"][number];

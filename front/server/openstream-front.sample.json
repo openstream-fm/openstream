@@ -42,5 +42,19 @@
     // port to bind the admin interface to
     // env.OPENSTREAM_FRONT_APP_PORT
     "port": 8965
+  },
+
+  // mapping for [source] servers public ports
+  "source_port": {
+    // source.local.openstream.fm
+    "local": 8000,
+    // source.staging.openstream.fm
+    "staging": 8000,
+    // source.srv1.openstream.fm
+    "srv1": 18000,
+    // source.srv2.openstream.fm
+    "srv2": 28000,
+    // source.openstream.fm
+    "default": 8000
   }
 }

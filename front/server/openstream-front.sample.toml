@@ -12,40 +12,11 @@ api_base_url="http://127.0.0.1:20700"
 token="global openstream access token"
 # Token media_key => hmtr6dcuqr871vfuqtrrgvy7-gn1y4jjb1yu5xj3r6wrp2nps
 
-# this data will be shared with the client, it should contain only exposable data
-# [public]
-
-# string (required)
-# openstream storage server(s) public url (will be accessed from client side with each logged in user media_key)
-# env.OPENSTREAM_FRONT_PUBLIC_STORAGE_PUBLIC_URL
-# storage_public_url="https://storage.local.openstream.fm"
-
-# string (required)
-# openstream stream server(s) public url (will be accessed from client without authentication)
-# env.OPENSTREAM_FRONT_PUBLIC_STREAM_PUBLIC_URL
-# stream_public_url="https://stream.local.openstream.fm"
-
-
-
-# [mongodb]
-# string - MongoURL (required)
-# URL to mongodb deployment (doesn't need to be the same deployment as in openstream config)
-# must have a defined database (pathname)
-# env.OPENSTREAM_CONFIG_MONGODB_URL
-# url="mongodb://localhost:27017/openstream"
-
-
-
 [session]
 # string (required)
 # changes to this secret will invalidate sessions
 # env.OPENSTREAM_FRONT_SESSION_SECRET
 secret = "supersecret"
-
-# string (required)
-# shared domain name to store cookies against, must be shared between admin and app servers
-# env.OPENSTREAM_FRONT_SESSION_DOMAIN
-# domain = "openstream.fm"
 
 # number (required)
 # sessions will expire after specified days from the last user request
@@ -70,7 +41,15 @@ enabled=true
 # env.OPENSTREAM_FRONT_APP_PORT
 port = 8965
 
-# string - URL (required)
-# publicly accesible URL to the admin web interface
-# env.OPENSTREAM_FRONT_APP_PUBLIC_BASE_URL
-# public_base_url = "http://localhost:8965"
+# mapping for [source] servers public ports
+[source_port]
+# source.local.openstream.fm
+local = 8000
+# source.staging.openstream.fm
+staging = 8000
+# source.srv1.openstream.fm
+srv1 = 18000
+# source.srv2.openstream.fm
+srv2 = 28000
+# source.openstream.fm
+default = 8000

@@ -21,13 +21,29 @@ export type PublicConfig = {
   source_public_port: number
 }
 
-export const public_config = (host: string): PublicConfig => {
+export const public_config = (host: string, source_port_map: Config["source_port"]): PublicConfig => {
+  let port: number;
+  if(host === "studio.openstream.fm") {
+    port = source_port_map.default;
+  } else if (host === "studio.staging.openstream.fm") {
+    port = source_port_map.staging;
+  } else if (host === "studio.local.openstream.fm") {
+    port = source_port_map.local;
+  } else if (host === "studio.srv1.openstream.fm") {
+    port = source_port_map.srv1;
+  } else if (host === "studio.srv2.openstream.fm") {
+    port = source_port_map.srv2;
+  } else {
+    port = source_port_map.default;
+  }
+
   const config: PublicConfig = {
     storage_public_url: `https://${host.replace("studio.", "storage.")}`,
     stream_public_url: `https://${host.replace("studio.", "stream.")}`,
     source_public_host: `${host.replace("studio.", "source.")}`,
-    source_public_port: 8000,
+    source_public_port: port,
   }
+
   return config;
 }
 
@@ -47,12 +63,12 @@ export const app_api = ({
   api.use(json_body_parser())
   api.use(session(config, logger));
 
-  api.get("/online", (req, res) => {
+  api.get("/status", (req, res) => {
     res.json({ ok: true })
   })
 
   api.get("/config", json(async (req) => {
-    return public_config(req.headers.host || "studio.openstream.fm");
+    return public_config(req.headers.host || "studio.openstream.fm", config.source_port);
   }))
 
   api.post("/login", json(async (req, res) => {
