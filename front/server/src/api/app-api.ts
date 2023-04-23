@@ -115,8 +115,24 @@ export const app_api = ({
 
   api.route("/accounts/:account/stream-stats/now")
     .get(json(async req => {
-      return await client.accounts.get_stream_stats_now(ip(req), ua(req), token(req), req.params.account);
+      return await client.accounts.get_stream_stats_item_now(ip(req), ua(req), token(req), req.params.account);
     }))
+
+  api.route("/accounts/:account/stream-stats/now/count")
+    .get(json(async req => {
+      return await client.accounts.get_stream_stats_item_now_count(ip(req), ua(req), token(req), req.params.account);
+    }))
+
+  api.route("/accounts/:account/stream-stats/last-:num([0-9]+):unit(ms|s|min|h|d|w)")
+    .get(json(async req => {
+      return await client.accounts.get_stream_stats_item_since(ip(req), ua(req), token(req), req.params.account, req.params.num, req.params.unit);
+    }))
+
+  api.route("/accounts/:account/stream-stats/last-:num([0-9]+):unit(ms|s|min|h|d|w)/count")
+    .get(json(async req => {
+      return await client.accounts.get_stream_stats_item_since_count(ip(req), ua(req), token(req), req.params.account, req.params.num, req.params.unit);
+    }))
+
 
   api.route("/stations")
     .get(json(async req => {
@@ -141,7 +157,22 @@ export const app_api = ({
 
   api.route("/stations/:station/stream-stats/now")
     .get(json(async req => {
-      return await client.stations.get_stream_stats_now(ip(req), ua(req), token(req), req.params.station);
+      return await client.stations.get_stream_stats_item_now(ip(req), ua(req), token(req), req.params.station);
+    }))
+
+  api.route("/stations/:station/stream-stats/now/count")
+    .get(json(async req => {
+      return await client.stations.get_stream_stats_item_now_count(ip(req), ua(req), token(req), req.params.station);
+    }))
+
+  api.route("/stations/:station/stream-stats/last-:num([0-9]+):unit(ms|s|min|h|d|w)")
+    .get(json(async req => {
+      return await client.stations.get_stream_stats_item_since(ip(req), ua(req), token(req), req.params.station, req.params.num, req.params.unit);
+    }))
+
+  api.route("/stations/:station/stream-stats/last-:num([0-9]+):unit(ms|s|min|h|d|w)/count")
+    .get(json(async req => {
+      return await client.stations.get_stream_stats_item_since_count(ip(req), ua(req), token(req), req.params.station, req.params.num, req.params.unit);
     }))
 
   api.route("/stations/:station/restart-playlist")

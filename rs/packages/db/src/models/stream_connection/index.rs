@@ -131,14 +131,14 @@ impl From<ProcessItem> for StatsItem {
 #[inline(always)]
 fn add(item: &mut ProcessItem, conn: &Item) {
   item.sessions += 1;
-  item.ips.insert(conn.ip);
-  if let Some(code) = &conn.country_code {
-    *item.country_sessions.entry(*code).or_insert(0) += 1;
-    item
-      .country_ips
-      .entry(*code)
-      .or_insert_with(Default::default)
-      .insert(conn.ip);
+  // item.ips.insert(conn.ip);
+  if let Some(code) = conn.country_code {
+    *item.country_sessions.entry(code).or_insert(0) += 1;
+    // item
+    //   .country_ips
+    //   .entry(code)
+    //   .or_insert_with(Default::default)
+    //   .insert(conn.ip);
   }
 }
 
@@ -366,7 +366,7 @@ impl MemIndex {
     let ago_24h =
       time::OffsetDateTime::unix_timestamp(date_now - (time::Duration::HOUR * 24)) as u32;
     let ago_7d = time::OffsetDateTime::unix_timestamp(date_now - (time::Duration::DAY * 7)) as u32;
-    let ago_30d =
+    let _ago_30d =
       time::OffsetDateTime::unix_timestamp(date_now - (time::Duration::DAY * 30)) as u32;
 
     let me = self.clone();
@@ -382,15 +382,16 @@ impl MemIndex {
           add(&mut now, conn);
         }
 
-        if conn.created_at_secs > ago_30d {
-          add(&mut last_30d, conn);
-          if conn.created_at_secs > ago_7d {
-            add(&mut last_7d, conn);
-            if conn.created_at_secs > ago_24h {
-              add(&mut last_24h, conn);
-            }
+        // TODO: re-add this?
+        // if conn.created_at_secs > ago_30d {
+        add(&mut last_30d, conn);
+        if conn.created_at_secs > ago_7d {
+          add(&mut last_7d, conn);
+          if conn.created_at_secs > ago_24h {
+            add(&mut last_24h, conn);
           }
         }
+        // }
       }
 
       let total = last_30d.sessions;
@@ -449,10 +450,55 @@ impl MemIndex {
     .await
     .unwrap()
   }
+
+  pub async fn count<F: Filter + Send + Sync + 'static>(&self, filter: F) -> usize {
+    let start = Instant::now();
+    let total = {
+      let lock = self.map.read().await;
+      if filter.is_all() {
+        lock.len()
+      } else {
+        let mut sum: usize = 0;
+        for item in lock.values() {
+          if filter.filter(item) {
+            sum += 1;
+          }
+        }
+        sum
+      }
+    };
+
+    log::info!(
+      "stream connection stats: counted {} items in {}ms",
+      total,
+      start.elapsed().as_millis()
+    );
+
+    total
+  }
 }
 
 pub trait Filter {
   fn filter(&self, item: &Item) -> bool;
+
+  fn is_all(&self) -> bool {
+    false
+  }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct AllFilter;
+
+impl Filter for AllFilter {
+  #[inline(always)]
+  fn filter(&self, _item: &Item) -> bool {
+    true
+  }
+
+  #[inline(always)]
+  fn is_all(&self) -> bool {
+    true
+  }
 }
 
 impl<F: Fn(&Item) -> bool> Filter for F {
@@ -469,16 +515,6 @@ impl Filter for IsOpenFilter {
   #[inline(always)]
   fn filter(&self, item: &Item) -> bool {
     item.is_open == self.0
-  }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct AllFilter;
-
-impl Filter for AllFilter {
-  #[inline(always)]
-  fn filter(&self, _item: &Item) -> bool {
-    true
   }
 }
 
@@ -536,6 +572,23 @@ impl<A: Filter, B: Filter> Filter for OrFilter<A, B> {
   #[inline(always)]
   fn filter(&self, item: &Item) -> bool {
     self.0.filter(item) || self.1.filter(item)
+  }
+}
+
+#[derive(Debug, Clone)]
+pub struct SinceFilter(u32);
+
+impl SinceFilter {
+  pub fn new(duration: time::Duration) -> Self {
+    let date = time::OffsetDateTime::now_utc() - duration;
+    let ts = date.unix_timestamp() as u32;
+    Self(ts)
+  }
+}
+
+impl Filter for SinceFilter {
+  fn filter(&self, item: &Item) -> bool {
+    item.created_at_secs >= self.0
   }
 }
 

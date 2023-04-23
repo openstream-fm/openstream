@@ -7,8 +7,8 @@ use db::{
 };
 use log::*;
 
-const STATION_ID: &str = "4w456arv";
-const C: usize = 250_000;
+const STATION_ID: &str = "1f1y4cr5";
+const C: usize = 1_000_000;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
@@ -56,7 +56,7 @@ async fn create_random_stream_connections() -> Result<(), anyhow::Error> {
     create_random_stream_connection(i).await?
   }
 
-  println!("created {C} stream connections");
+  info!("created {C} stream connections");
 
   Ok(())
 }

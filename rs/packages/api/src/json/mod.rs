@@ -38,15 +38,17 @@ pub trait JsonHandler: Send + Sync + Sized + Clone + 'static {
 
     let input = match self.parse(req).await {
       Err(e) => {
+        let original_err_debug = format!("{:?}", e);
         let err: ApiError = e.into();
         let status = err.status().canonical_reason();
         let code = err.code();
         warn!(
-          "APIError (parse): {} {} => {:?} {:?} {:?}",
+          "APIError (parse): {} {} => {:?} {:?} => {} => {:?}",
           method.as_str(),
           path,
           status,
           code,
+          original_err_debug,
           err
         );
         return err.into_json_response();
@@ -56,15 +58,17 @@ pub trait JsonHandler: Send + Sync + Sized + Clone + 'static {
 
     let output = match self.perform(input).await {
       Err(e) => {
+        let original_err_debug = format!("{:?}", e);
         let err: ApiError = e.into();
         let status = err.status().canonical_reason();
         let code = err.code();
         warn!(
-          "APIError (perform): {} {} => {:?} {:?} {:?}",
+          "APIError (perform): {} {} => {:?} {:?} => {} => {:?}",
           method.as_str(),
           path,
           status,
           code,
+          original_err_debug,
           err
         );
         return err.into_json_response();

@@ -62,6 +62,31 @@ pub fn router(
     .into_handler(),
   );
 
+  app.at("/stream-stats/now/count").get(
+    stream_stats::now::count::get::Endpoint {
+      index: stream_connections_index.clone(),
+    }
+    .into_handler(),
+  );
+
+  app
+    .at("/stream-stats/last-:num([0-9]+):unit(ms|s|min|h|d|w)")
+    .get(
+      stream_stats::since::get::Endpoint {
+        index: stream_connections_index.clone(),
+      }
+      .into_handler(),
+    );
+
+  app
+    .at("/stream-stats/last-:num([0-9]+):unit(ms|s|min|h|d|w)/count")
+    .get(
+      stream_stats::since::count::get::Endpoint {
+        index: stream_connections_index.clone(),
+      }
+      .into_handler(),
+    );
+
   app
     .at("/users")
     .get(users::get::Endpoint {}.into_handler())
@@ -96,6 +121,31 @@ pub fn router(
     .into_handler(),
   );
 
+  app.at("/accounts/:account/stream-stats/now/count").get(
+    accounts::stream_stats::now::count::get::Endpoint {
+      index: stream_connections_index.clone(),
+    }
+    .into_handler(),
+  );
+
+  app
+    .at("/accounts/:account/stream-stats/last-:num([0-9]+):unit(ms|s|min|h|d|w)")
+    .get(
+      accounts::stream_stats::since::get::Endpoint {
+        index: stream_connections_index.clone(),
+      }
+      .into_handler(),
+    );
+
+  app
+    .at("/accounts/:account/stream-stats/last-:num([0-9]+):unit(ms|s|min|h|d|w)/count")
+    .get(
+      accounts::stream_stats::since::count::get::Endpoint {
+        index: stream_connections_index.clone(),
+      }
+      .into_handler(),
+    );
+
   app
     .at("/stations")
     .get(stations::get::Endpoint {}.into_handler())
@@ -115,10 +165,35 @@ pub fn router(
 
   app.at("/stations/:station/stream-stats/now").get(
     stations::stream_stats::now::get::Endpoint {
-      index: stream_connections_index,
+      index: stream_connections_index.clone(),
     }
     .into_handler(),
   );
+
+  app.at("/stations/:station/stream-stats/now/count").get(
+    stations::stream_stats::now::count::get::Endpoint {
+      index: stream_connections_index.clone(),
+    }
+    .into_handler(),
+  );
+
+  app
+    .at("/stations/:station/stream-stats/last-:num([0-9]+):unit(ms|s|min|h|d|w)")
+    .get(
+      stations::stream_stats::since::get::Endpoint {
+        index: stream_connections_index.clone(),
+      }
+      .into_handler(),
+    );
+
+  app
+    .at("/stations/:station/stream-stats/last-:num([0-9]+):unit(ms|s|min|h|d|w)/count")
+    .get(
+      stations::stream_stats::since::count::get::Endpoint {
+        index: stream_connections_index,
+      }
+      .into_handler(),
+    );
 
   app.at("/stations/:station/restart-playlist").post(
     stations::restart_playlist::post::Endpoint {

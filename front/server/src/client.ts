@@ -149,8 +149,20 @@ export class Client {
     return await this.get(ip, ua, token, `/stream-stats`);
   }
 
-  async get_stream_stats_now(ip: string | null, ua: string | null, token: string): Promise<import("./defs/api/stream-stats/now/GET/Output").Output> {
+  async get_stream_stats_item_now(ip: string | null, ua: string | null, token: string): Promise<import("./defs/api/stream-stats/now/GET/Output").Output> {
     return await this.get(ip, ua, token, `/stream-stats/now`);
+  }
+
+  async get_stream_stats_item_now_count(ip: string | null, ua: string | null, token: string): Promise<import("./defs/api/stream-stats/now/count/GET/Output").Output> {
+    return await this.get(ip, ua, token, `/stream-stats/now/count`);
+  }
+
+  async get_stream_stats_item_since(ip: string | null, ua: string | null, token: string, num: number | string, unit: string): Promise<import("./defs/api/stream-stats/last-[num][unit]/GET/Output").Output> {
+    return await this.get(ip, ua, token, `/stream-stats/last-${num}${unit}`);
+  }
+
+  async get_stream_stats_item_since_count(ip: string | null, ua: string | null, token: string, num: number | string, unit: string): Promise<import("./defs/api/stream-stats/last-[num][unit]/count/GET/Output").Output> {
+    return await this.get(ip, ua, token, `/stream-stats/last-${num}${unit}/count`);
   }
 }
 
@@ -226,8 +238,20 @@ export class Accounts {
     return await this.client.get(ip, ua, token, `/accounts/${id}/stream-stats`);
   }
 
-  async get_stream_stats_now(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/accounts/[account]/stream-stats/now/GET/Output").Output> {
+  async get_stream_stats_item_now(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/accounts/[account]/stream-stats/now/GET/Output").Output> {
     return await this.client.get(ip, ua, token, `/accounts/${id}/stream-stats/now`);
+  }
+
+  async get_stream_stats_item_now_count(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/accounts/[account]/stream-stats/now/count/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/accounts/${id}/stream-stats/now/count`);
+  }
+
+  async get_stream_stats_item_since(ip: string | null, ua: string | null, token: string, id: string, num: number | string, unit: string): Promise<import("./defs/api/accounts/[account]/stream-stats/last-[num][unit]/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/accounts/${id}/stream-stats/last-${num}${unit}`);
+  }
+
+  async get_stream_stats_item_since_count(ip: string | null, ua: string | null, token: string, id: string, num: number | string, unit: string): Promise<import("./defs/api/accounts/[account]/stream-stats/last-[num][unit]/count/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/accounts/${id}/stream-stats/last-${num}${unit}/count`);
   }
 }
 
@@ -281,8 +305,20 @@ export class Stations {
     return await this.client.get(ip, ua, token, `/stations/${id}/stream-stats`);
   }
 
-  async get_stream_stats_now(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/stream-stats/GET/Output").Output> {
+  async get_stream_stats_item_now(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/stream-stats/now/GET/Output").Output> {
     return await this.client.get(ip, ua, token, `/stations/${id}/stream-stats/now`);
+  }
+
+  async get_stream_stats_item_now_count(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/stream-stats/now/count/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/stations/${id}/stream-stats/now/count`);
+  }
+
+  async get_stream_stats_item_since(ip: string | null, ua: string | null, token: string, id: string, num: number | string, unit: string): Promise<import("./defs/api/stations/[station]/stream-stats/last-[num][unit]/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/stations/${id}/stream-stats/last-${num}${unit}`);
+  }
+
+  async get_stream_stats_item_since_count(ip: string | null, ua: string | null, token: string, id: string, num: number | string, unit: string): Promise<import("./defs/api/stations/[station]/stream-stats/last-[num][unit]/count/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/stations/${id}/stream-stats/last-${num}${unit}/count`);
   }
 
   async get_now_playing(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/now-playing/GET/Output").Output> {
