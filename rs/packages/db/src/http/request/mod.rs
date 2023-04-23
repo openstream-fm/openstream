@@ -1,4 +1,5 @@
 use super::{Headers, Method, SocketAddr, Uri, Version};
+use geoip::CountryCode;
 use serde::{Deserialize, Serialize};
 use std::net::IpAddr;
 use ts_rs::TS;
@@ -10,7 +11,8 @@ use user_agent::{UserAgent, UserAgentExt};
 pub struct Request {
   #[serde(with = "serde_util::ip")]
   pub real_ip: IpAddr,
-  pub country_code: Option<String>,
+  #[serde(deserialize_with = "geoip::deserialize_option")]
+  pub country_code: Option<CountryCode>,
   pub local_addr: SocketAddr,
   pub remote_addr: SocketAddr,
   pub version: Version,

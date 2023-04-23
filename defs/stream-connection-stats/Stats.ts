@@ -2,8 +2,12 @@
 import type { StatsItem } from "./StatsItem";
 
 export interface Stats {
-  time_now: StatsItem;
-  time_24h: StatsItem;
-  time_7d: StatsItem;
-  time_30d: StatsItem;
+  total: number;
+  sample: number;
+  multiplier: number;
+  sampled: boolean;
+  now: StatsItem;
+  last_24h: StatsItem;
+  last_7d: StatsItem;
+  last_30d: StatsItem;
 }

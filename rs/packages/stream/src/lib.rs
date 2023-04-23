@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use db::audio_file::AudioFile;
 use db::station::Station;
+use db::stream_connection::lite::StreamConnectionLite;
 use db::stream_connection::StreamConnection;
 use db::Model;
 use drop_tracer::{DropTracer, Token};
@@ -28,7 +29,6 @@ use std::time::SystemTime;
 use transfer_map::TransferTracer;
 // use url::Url;
 
-
 pub mod transfer_map;
 
 #[allow(clippy::declare_interior_mutable_const)]
@@ -39,7 +39,7 @@ const X_OPENSTREAM_REJECTION_CODE: HeaderName =
 const CONTENT_TYPE_MPEG: HeaderValue = HeaderValue::from_static("audio/mpeg");
 
 #[allow(clippy::declare_interior_mutable_const)]
-const CONTENT_TYPE_X_MPEG_URL: HeaderValue = HeaderValue::from_static("audio/x-mpegurl"); 
+const CONTENT_TYPE_X_MPEG_URL: HeaderValue = HeaderValue::from_static("audio/x-mpegurl");
 
 #[allow(clippy::declare_interior_mutable_const)]
 const CONTENT_TYPE_PLS: HeaderValue = HeaderValue::from_static("audio/x-scpls");
@@ -103,18 +103,21 @@ impl StreamServer {
 
     app.with(http::middleware::server);
 
-    let cors = prex::middleware::cors::cors().allow_origin("*").allow_methods("GET");
+    let cors = prex::middleware::cors::cors()
+      .allow_origin("*")
+      .allow_methods("GET");
     app.with(cors);
-  
+
     app.get("/status", http::middleware::status);
 
-  
     app.get(
-      "/stream/:id.:ext(m3u8?)", LinkHandler::new(LinkHandlerKind::M3u, self.media_sessions.clone())
+      "/stream/:id.:ext(m3u8?)",
+      LinkHandler::new(LinkHandlerKind::M3u, self.media_sessions.clone()),
     );
 
     app.get(
-      "/stream/:id.pls", LinkHandler::new(LinkHandlerKind::Pls, self.media_sessions.clone())
+      "/stream/:id.pls",
+      LinkHandler::new(LinkHandlerKind::Pls, self.media_sessions.clone()),
     );
 
     app.get(
@@ -212,7 +215,6 @@ impl StreamHandler {
   }
 
   async fn handle(self, req: Request) -> Result<Response, StreamError> {
-    
     let start_time = SystemTime::now();
 
     let station_id = req.param("id").unwrap().to_string();
@@ -289,24 +291,34 @@ impl StreamHandler {
 
       let conn_doc = {
         let now = DateTime::now();
+        let request = db::http::Request::from_http(&req);
+
         StreamConnection {
           id: StreamConnection::uid(),
           station_id: station.id,
-          created_at: now,
-          last_transfer_at: now,
-          request: db::http::Request::from_http(&req),
-          state: db::stream_connection::State::Open,
+          is_open: true,
+          ip: request.real_ip,
+          country_code: request.country_code,
           transfer_bytes: 0,
           duration_ms: None,
+          request,
+          created_at: now,
+          last_transfer_at: now,
         }
       };
+
+      let conn_doc_lite = StreamConnectionLite::from_stream_connection_ref(&conn_doc);
 
       let r = Station::increment_used_listeners(&station_id).await?;
       debug!("Station::increment_used_listeners called for station {station_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
 
       StreamConnection::insert(&conn_doc).await?;
       debug!("StreamConnection::insert called for station {station_id}, connection_id: {}", conn_doc.id);
-      
+
+      StreamConnectionLite::insert(&conn_doc_lite).await?;
+      debug!("StreamConnectionLite::insert called for station {station_id}, connection_id: {}", conn_doc_lite.id);
+
+
       let transfer_bytes = Arc::new(AtomicU64::new(0));
       let closed = Arc::new(AtomicBool::new(false));
 
@@ -410,11 +422,33 @@ impl Drop for StreamConnectionDropper {
     let transfer_bytes = self.transfer_bytes.load(Ordering::SeqCst);
     let duration_ms = self.start_time.elapsed().unwrap().as_millis() as u64;
     tokio::spawn(async move {
-      let r = StreamConnection::set_closed(&id, duration_ms, transfer_bytes)
-        .await
-        .expect("error at StreamConnection::set_closed");
+      {
+        let update = doc! {
+          "$set": {
+            StreamConnection::KEY_IS_OPEN: false,
+            StreamConnection::KEY_DURATION_MS: duration_ms as f64,
+            StreamConnection::KEY_TRANSFER_BYTES: transfer_bytes as f64,
+          }
+        };
 
-      debug!("StreamConnection::set_closed called for station {station_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
+        let r = StreamConnection::update_by_id(&id, update)
+          .await
+          .expect("error updatting StreamConnection document");
+
+        debug!("StreamConnection closed for station {station_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
+      }
+
+      {
+        let update_lite = doc! {
+          "$set": { StreamConnectionLite::KEY_IS_OPEN: false }
+        };
+
+        let r = StreamConnectionLite::update_by_id(&id, update_lite)
+          .await
+          .expect("error updating StreamConnectionLite document");
+
+        debug!("StreamConnectionLite closed for station {station_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
+      }
 
       let r = Station::decrement_used_listeners(&station_id)
         .await
@@ -527,13 +561,11 @@ impl LinkHandler {
   pub fn new(kind: LinkHandlerKind, media_sessions: MediaSessionMap) -> Self {
     Self {
       kind,
-      media_sessions
+      media_sessions,
     }
   }
 
-
   async fn handle(&self, req: Request) -> Result<Response, StreamError> {
-    
     let station_id = req.param("id").unwrap().to_string();
 
     let station = match Station::get_by_id(&station_id).await? {
@@ -561,7 +593,11 @@ impl LinkHandler {
       }
     };
 
-    let host = req.headers().get("host").and_then(|s| s.to_str().ok()).unwrap_or("stream.openstream.fm");
+    let host = req
+      .headers()
+      .get("host")
+      .and_then(|s| s.to_str().ok())
+      .unwrap_or("stream.openstream.fm");
     // TODO: add scheme from header
 
     let target = format!("https://{}/stream/{}", host, &station.id);
@@ -583,7 +619,7 @@ impl LinkHandler {
           target: &target,
           title: &station.name,
         };
-        
+
         let body = Body::from(file.to_string());
         let content_type = CONTENT_TYPE_PLS;
         (body, content_type)
@@ -591,16 +627,14 @@ impl LinkHandler {
     };
 
     let mut res = Response::new(StatusCode::OK);
-    res
-      .headers_mut()
-      .append(CONTENT_TYPE,  content_type);
+    res.headers_mut().append(CONTENT_TYPE, content_type);
 
     res
       .headers_mut()
       .append(CACHE_CONTROL, CACHE_CONTROL_NO_CACHE);
 
     *res.body_mut() = body;
-    
+
     Ok(res)
   }
 }
@@ -611,8 +645,6 @@ impl Handler for LinkHandler {
     self.handle(req).await.into()
   }
 }
-
-
 
 /// render a .m3u/.m3u8 file
 /// #EXTM3U
@@ -626,13 +658,13 @@ pub struct HlsContents<'a> {
 
 impl<'a> Display for HlsContents<'a> {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-      // writeln!(f, "#EXTM3U")?;
-      // writeln!(f, "#EXTENC:UTF-8")?;
-      // f.write_str("\n")?;
-      // writeln!(f, "#EXTINF:1,{}", self.title)?;
-      // writeln!(f, "#EXT-X-TARGETDURATION:3600")?;
-      writeln!(f, "{}", self.target)?;
-      Ok(())
+    // writeln!(f, "#EXTM3U")?;
+    // writeln!(f, "#EXTENC:UTF-8")?;
+    // f.write_str("\n")?;
+    // writeln!(f, "#EXTINF:1,{}", self.title)?;
+    // writeln!(f, "#EXT-X-TARGETDURATION:3600")?;
+    writeln!(f, "{}", self.target)?;
+    Ok(())
   }
 }
 
@@ -651,12 +683,12 @@ pub struct PlsContents<'a> {
 
 impl<'a> Display for PlsContents<'a> {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-      writeln!(f, "[Playlist]")?;
-      writeln!(f, "NumberOfEntries=1")?;
-      writeln!(f, "File1={}", self.target)?;
-      writeln!(f, "Title1={}", self.title)?;
-      writeln!(f, "Length=-1")?;
-      writeln!(f, "Version=2")?;
-      Ok(())
+    writeln!(f, "[Playlist]")?;
+    writeln!(f, "NumberOfEntries=1")?;
+    writeln!(f, "File1={}", self.target)?;
+    writeln!(f, "Title1={}", self.title)?;
+    writeln!(f, "Length=-1")?;
+    writeln!(f, "Version=2")?;
+    Ok(())
   }
 }

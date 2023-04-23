@@ -113,6 +113,11 @@ export const app_api = ({
       return await client.accounts.get_stream_stats(ip(req), ua(req), token(req), req.params.account);
     }))
 
+  api.route("/accounts/:account/stream-stats/now")
+    .get(json(async req => {
+      return await client.accounts.get_stream_stats_now(ip(req), ua(req), token(req), req.params.account);
+    }))
+
   api.route("/stations")
     .get(json(async req => {
       return await client.stations.list(ip(req), ua(req), token(req), req.query);
@@ -132,6 +137,11 @@ export const app_api = ({
   api.route("/stations/:station/stream-stats")
     .get(json(async req => {
       return await client.stations.get_stream_stats(ip(req), ua(req), token(req), req.params.station);
+    }))
+
+  api.route("/stations/:station/stream-stats/now")
+    .get(json(async req => {
+      return await client.stations.get_stream_stats_now(ip(req), ua(req), token(req), req.params.station);
     }))
 
   api.route("/stations/:station/restart-playlist")
@@ -219,10 +229,10 @@ export const app_api = ({
       return await client.stations.get_now_playing(ip(req), ua(req), token(req), req.params.station);
     }))
 
-  api.route("/stations/:station/dashboard-stats")
-    .get(json(async req => {
-      return await client.stations.get_dashboard_stats(ip(req), ua(req), token(req), req.params.station);
-    }))
+  // api.route("/stations/:station/dashboard-stats")
+  //   .get(json(async req => {
+  //     return await client.stations.get_dashboard_stats(ip(req), ua(req), token(req), req.params.station);
+  //   }))
 
   // TODO: deprecate this endpoint (go directly to storage rs backend)
   api.route("/stations/:station/files/:file/stream")

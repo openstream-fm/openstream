@@ -305,11 +305,13 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   }
 
   if let Some(api_config) = api {
+    let stream_connections_index = db::stream_connection::index::MemIndex::new().await;
     let api = ApiServer::new(
       api_config.addrs.clone(),
       shutdown.clone(),
       drop_tracer.clone(),
       media_sessions.clone(),
+      stream_connections_index,
     );
     let fut = api.start()?;
     futs.push(async move {

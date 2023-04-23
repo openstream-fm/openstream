@@ -6,6 +6,7 @@ pub mod request_ext;
 pub mod routes;
 pub mod storage;
 
+use db::stream_connection::index::MemIndex;
 use drop_tracer::DropTracer;
 use futures::stream::FuturesUnordered;
 use futures::TryStreamExt;
@@ -24,6 +25,7 @@ pub struct ApiServer {
   shutdown: Shutdown,
   drop_tracer: DropTracer,
   media_sessions: MediaSessionMap,
+  stream_connections_index: MemIndex,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -45,12 +47,14 @@ impl ApiServer {
     shutdown: Shutdown,
     drop_tracer: DropTracer,
     media_sessions: MediaSessionMap,
+    stream_connections_index: MemIndex,
   ) -> Self {
     Self {
       addrs,
       shutdown,
       drop_tracer,
       media_sessions,
+      stream_connections_index,
     }
   }
 
@@ -66,6 +70,7 @@ impl ApiServer {
       self.media_sessions.clone(),
       self.shutdown.clone(),
       self.drop_tracer.clone(),
+      self.stream_connections_index.clone(),
     ));
 
     let app = app.build().expect("prex app build api");

@@ -3,6 +3,6 @@
 export interface StatsItem {
   sessions: number;
   ips: number;
-  country_sessions: { [key: string]: number };
-  country_ips: { [key: string]: number };
+  country_sessions: Record<string, number | undefined>;
+  country_ips: Record<string, number | undefined>;
 }

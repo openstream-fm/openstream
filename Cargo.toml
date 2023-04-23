@@ -9,6 +9,7 @@ members = [
     "rs/internal-scripts/mixed",
     "rs/internal-scripts/ffstress",
     "rs/internal-scripts/hls-logger",
+    "rs/internal-scripts/create-random-stream-connections",
 
     "rs/config/constants",
 

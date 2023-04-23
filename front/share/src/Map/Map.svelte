@@ -45,6 +45,10 @@
     if(tooltip_item === item) tooltip_item = null;
   }
 
+  const pointerout = () => {
+    tooltip_item = null;
+  }
+
   let pointerX = 0;
   let pointerY = 0;
   let windowWidth = 0;
@@ -65,7 +69,7 @@
   }
 
   const get_fill = (stats: Stats, item: Item) => {
-    const max = Math.max(0, ...Object.values(stats).map(item => item?.sessions || 0))
+    const max = Math.max(0, ...Object.values(stats.country_sessions));
     if(max === 0) return "var(--fill-none)";
     const sessions = stats.country_sessions[item.properties.iso2] || 0;
     if(sessions === 0) return "var(--fill-none)";
@@ -154,7 +158,7 @@
   }
 </style>
 
-<svelte:window bind:innerWidth={windowWidth} />
+<svelte:window bind:innerWidth={windowWidth} on:pointerdown={pointerout} />
 
 <div class="viewport">
   <svg viewBox="0 0 1000 660">
@@ -162,8 +166,9 @@
       <path
         style:--fill={get_fill(stats, item)}
         d={path(as_any(item))}
-        on:pointerenter={() => pointerenter(item)}
-        on:pointerleave={() => pointerleave(item)}
+        on:pointerenter|stopPropagation={() => pointerenter(item)}
+        on:pointerdown|stopPropagation={() => {}}
+        on:mouseleave={() => pointerleave(item)}
       />
     {/each}
   </svg>

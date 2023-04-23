@@ -94,6 +94,7 @@ pub async fn ensure_collections() -> MongoResult<()> {
   access_token::AccessToken::ensure_collection().await?;
   event::Event::ensure_collection().await?;
   stream_connection::StreamConnection::ensure_collection().await?;
+  stream_connection::lite::StreamConnectionLite::ensure_collection().await?;
   play_history_item::PlayHistoryItem::ensure_collection().await?;
   media_session::MediaSession::ensure_collection().await?;
   transfer_checkpoint::TransferCheckpoint::ensure_collection().await?;
