@@ -318,7 +318,7 @@ pub mod since {
         let account_id = req.param("account").unwrap().to_string();
 
         let num_param = req.param("num").unwrap();
-        let num: u16 = match num_param.parse() {
+        let num: u32 = match num_param.parse() {
           Err(_) => return Err(ParseError::InvalidNum(num_param.to_string())),
           Ok(v) => v,
         };
@@ -451,7 +451,7 @@ pub mod since {
           let account_id = req.param("account").unwrap().to_string();
 
           let num_param = req.param("num").unwrap();
-          let num: u16 = match num_param.parse() {
+          let num: u32 = match num_param.parse() {
             Err(_) => return Err(ParseError::InvalidNum(num_param.to_string())),
             Ok(v) => v,
           };

@@ -203,7 +203,7 @@ pub mod since {
 
       async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
         let num_param = req.param("num").unwrap();
-        let num: u16 = match num_param.parse() {
+        let num: u32 = match num_param.parse() {
           Err(_) => return Err(ParseError::InvalidNum(num_param.to_string())),
           Ok(v) => v,
         };
@@ -291,7 +291,7 @@ pub mod since {
 
         async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
           let num_param = req.param("num").unwrap();
-          let num: u16 = match num_param.parse() {
+          let num: u32 = match num_param.parse() {
             Err(_) => return Err(ParseError::InvalidNum(num_param.to_string())),
             Ok(v) => v,
           };

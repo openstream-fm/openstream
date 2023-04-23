@@ -31,6 +31,8 @@ pub struct Item {
   pub created_at_secs: u32,
 }
 
+struct ArcItem(Arc<Item>);
+
 // #[derive(Debug, Clone, Serialize, Deserialize)]
 // #[macros::keys]
 // pub struct ProjectionItem {

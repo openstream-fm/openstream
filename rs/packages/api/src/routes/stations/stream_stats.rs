@@ -219,7 +219,7 @@ pub mod since {
         let station_id = req.param("station").unwrap();
 
         let num_param = req.param("num").unwrap();
-        let num: u16 = match num_param.parse() {
+        let num: u32 = match num_param.parse() {
           Err(_) => return Err(ParseError::InvalidNum(num_param.to_string())),
           Ok(v) => v,
         };
@@ -316,7 +316,7 @@ pub mod since {
           let station_id = req.param("station").unwrap();
 
           let num_param = req.param("num").unwrap();
-          let num: u16 = match num_param.parse() {
+          let num: u32 = match num_param.parse() {
             Err(_) => return Err(ParseError::InvalidNum(num_param.to_string())),
             Ok(v) => v,
           };
