@@ -62,7 +62,7 @@
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
-    margin-inline: 1.25rem 1rem;
+    margin-inline: 1.5rem 1.25rem;
   }
 </style>
 

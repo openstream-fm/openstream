@@ -7,13 +7,34 @@
   export let padding: string = "1.5rem";
   export let onClose: () => void = () => {};
 
-  onMount(() => add(window, "keydown", (event: Event) => {
-    if((event as KeyboardEvent).key === "Escape") onClose();
-  }, { capture: true }))
+  onMount(() => {
+    const uid = Array(5).fill(0).map(() => Math.floor(Math.random() * 36).toString(36)).join("");
+    const hash = `#dialog-${uid}`;    
+    location.hash += hash;
+    const off = [
+      add(window, "keydown", (event: Event) => {
+        if((event as KeyboardEvent).key === "Escape") onClose();
+      }, { capture: true }),
+      
+      add(window, "hashchange", (event: Event) => {
+        if(!location.hash.includes(hash)) onClose();
+      }),
+
+      () => {
+        if(location.hash.includes(hash)) {
+          history.back();
+        }
+      }
+    ];
+  
+    return () => {
+      for(const fn of off) fn();
+    }
+  })
 
   import { fade } from "svelte/transition";
 
-  const custom = (node: Element, options = {}) => {
+  const custom = (_node: Element, _options = {}) => {
     return {
       duration: 150,
       css: (t: number, u: number) => `transform: translateY(${100 * u}px) scale(${0.5 + 0.5 * t}); opacity: ${t}` 
@@ -36,7 +57,7 @@
     margin: auto;
     box-sizing: border-box;
     /*overflow: hidden;*/
-    border-radius: 0 0 0.5rem 0.5rem; 
+    border-radius: 0 0 0.5rem 0.5rem;
     border-top: 2px var(--red) solid;
   }
 
@@ -56,9 +77,18 @@
 </style>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div class="overlay" on:click={onClose} transition:fade|local={{duration: 200}}>
+<div
+  class="overlay"
+  on:click={onClose}
+  transition:fade|local={{ duration: 200 }}
+>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="dialog elev3" style="--width: {width}; --padding: {padding}" on:click|stopPropagation={() => {}} transition:custom|local>
+  <div
+    class="dialog elev3"
+    style="--width: {width}; --padding: {padding}"
+    on:click|stopPropagation={() => {}}
+    transition:custom|local
+  >
     {#if title}
       <div class="title">{title}</div>
     {/if}

@@ -33,7 +33,11 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   const ms = Date.now() - start;
 
-  server_logger[res.ok ? "debug" : "warn"](`handle: ${event.request.url} => ${res.status} ${res.statusText} - ${ms}ms`)
+  const ok = res.status >= 200 && res.status <= 399;
+  const message = `handle: ${event.request.url} => ${res.status} ${res.statusText} - ${ms}ms`;
+
+  if(ok) server_logger.debug(message);
+  else server_logger.warn(message);
 
   return res;
 }
