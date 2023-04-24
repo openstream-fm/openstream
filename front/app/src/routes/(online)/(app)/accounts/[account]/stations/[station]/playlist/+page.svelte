@@ -1475,7 +1475,7 @@
               <button
                 class="shuffle-btn ripple-container"
                 aria-label="Restart playlist"
-                use:tooltip={hide_tooltips ? null : "Restart playlist"}
+                use:tooltip={"Restart playlist"}
                 use:ripple
                 on:click={() => restart_open = true}
                 transition:shuffle_btn_transition|local
@@ -1491,7 +1491,7 @@
                 <button
                   class="shuffle-btn ripple-container"
                   aria-label="Unshuffle playlist"
-                  use:tooltip={hide_tooltips ? null : "Unshuffle playlist"}
+                  use:tooltip={"Unshuffle playlist"}
                   use:ripple
                   on:click={() => unshuffle_open = true}
                   transition:shuffle_btn_transition|local
@@ -1505,7 +1505,7 @@
               <button
                 class="shuffle-btn ripple-container"
                 aria-label="Shuffle playlist"
-                use:tooltip={hide_tooltips ? null : "Shuffle playlist"}
+                use:tooltip={"Shuffle playlist"}
                 use:ripple
                 on:click={() => shuffle_open = true}
                 transition:shuffle_btn_transition|local
@@ -1779,7 +1779,7 @@
                     <button
                       class="file-btn file-btn-edit ripple-container"
                       use:ripple
-                      use:tooltip={hide_tooltips ? null : "Edit"}
+                      use:tooltip={"Edit"}
                       on:click={() => open_edit_item(file)}
                     >
                       <Icon d={mdiCircleEditOutline} />
@@ -1789,7 +1789,7 @@
                     <button
                       class="file-btn file-btn-del ripple-container"
                       use:ripple
-                      use:tooltip={hide_tooltips ? null : "Delete"}
+                      use:tooltip={"Delete"}
                       on:click={() => audio_item_to_delete = file}
                     >
                       <Icon d={mdiTrashCanOutline} />

@@ -1,5 +1,5 @@
 import { browser } from "$app/environment";
-import { default_logger } from "$lib/logger";
+import { default_logger } from "$share/logger";
 import { get_now_playing_store, type NowPlaying } from "$lib/now-playing";
 import { _get } from "$share/net.client";
 import { derived, get, writable } from "svelte/store";

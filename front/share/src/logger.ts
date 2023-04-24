@@ -1,4 +1,4 @@
-import { env } from "$lib/env";
+import { env } from "./env";
 import { color } from "./color";
 
 // fix for bug in vite about enums

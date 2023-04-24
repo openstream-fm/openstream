@@ -77,6 +77,10 @@
     return `rgba(var(--blue-rgb), ${opacity})`
   }
 
+  const tooltip_mount = (node: HTMLElement) => {
+    document.documentElement.appendChild(node);
+  }
+
   onMount(() => {
     const set = (event: Event) => {
       const e = event as PointerEvent;
@@ -102,11 +106,10 @@
 
 <style>
   .viewport {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
-    height: 100%;
+    max-width: var(--map-max-width, none);
+    padding: 2rem;
+    aspect-ratio: 100 / 66;    
   }
 
   svg {
@@ -117,6 +120,7 @@
   path {
     --fill-none: #f3f3f3;
     fill: var(--fill);
+    transition: fill 300ms ease;
     stroke: #aaa;
     stroke-width: 1.25;
     transition: filter 150ms ease;
@@ -127,13 +131,13 @@
   }
 
   .map-tooltip {
+    position: fixed;
     white-space: nowrap;
     padding: 0.5rem 0.75rem;
     background: #fff;
     box-shadow: rgba(0,0,0,0.2) 0 1px 3px 2px;
     color: #000;
     border-radius: 0.25rem;
-    position: fixed;
     top: var(--pointer-y);  
     left: var(--pointer-x);
     z-index: var(--z-map-tooltip);
@@ -182,6 +186,7 @@
     in:fade|local={{ duration: 200 }}
     style:--pointer-x="{pointerX}px"
     style:--pointer-y="{pointerY}px"
+    use:tooltip_mount
   >
     <div class="map-tooltip-name">
       {name}

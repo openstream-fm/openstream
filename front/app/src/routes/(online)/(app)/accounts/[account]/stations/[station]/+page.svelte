@@ -2,17 +2,17 @@
   import CircularMeter from "$lib/components/CircularMeter/CircularMeter.svelte";
   import Page from "$lib/components/Page.svelte";
 	import { pause, player_state, play_station } from "$lib/components/Player/player";
-	import { default_logger } from "$lib/logger";
+	import { default_logger } from "$share/logger";
 	import { get_now_playing_store } from "$lib/now-playing";
 	import type { StationLimits } from "$server/defs/StationLimits";
 	import CircularProgress from "$share/CircularProgress.svelte";
 	import Icon from "$share/Icon.svelte";
 	import { _get } from "$share/net.client";
 	import { ripple } from "$share/ripple";
-	import { tooltip } from "$share/tooltip";
-	import { mdiMicrophoneOutline, mdiPause, mdiPlay } from "@mdi/js";
+  import { mdiMicrophoneOutline, mdiPause, mdiPlay } from "@mdi/js";
 	import { onMount } from "svelte";
 	import { derived } from "svelte/store";
+  import StatsMap from "$share/Map/StatsMap.svelte";
 
   export let data: import("./$types").PageData;
 
@@ -199,7 +199,12 @@
     display: flex;
     flex-direction: column;
     flex: 1;
-    
+  }
+
+  .stats {
+    background: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,.1),0 10px 10px -5px rgba(0,0,0,.04);
   }
 
   .top-box-air {
@@ -531,6 +536,10 @@
         </div>
 
       </div>
+    </div>
+
+    <div class="stats">
+      <StatsMap kind="station" record_id={data.station._id} bind:data={data.stats} />
     </div>
 
     <div class="meters">
