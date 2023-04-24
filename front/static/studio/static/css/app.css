@@ -36,6 +36,7 @@
   --z-user-menu: 1300;
   --z-drawer-fixed: 1400;
   --z-map-tooltip: 2000;
+  --z-tooltip: 2100;
   --z-overlay: 3000;
   
   --some-shadow: 0 4px 20px 0 rgb(0 0 0 / 5%);
@@ -116,7 +117,7 @@ form {
   transform: scale(0);
   color: #fff;
   background: rgba(0, 0, 0, 0.8);
-  z-index: 10000;
+  z-index: var(--z-tooltip);
   border-radius: 0.25rem;
   max-width: calc(100vw - 32px);
 }
