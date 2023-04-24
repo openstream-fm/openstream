@@ -24,7 +24,7 @@ const defaultConfig: Config = {
   },
   source_port: {
     local: 8000,
-    staging: 8000,
+    test: 8000,
     srv1: 18000,
     srv2: 28000,
     default: 8000,
@@ -95,7 +95,7 @@ test("merge_env should merge environment variables with config", (t) => {
     },
     source_port: {
       local: 8000,
-      staging: 8000,
+      test: 8000,
       srv1: 18000,
       srv2: 28000,
       default: 8000,

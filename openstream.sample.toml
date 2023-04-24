@@ -6,44 +6,34 @@
 # internally openstream uses transactions so replicaSet is required
 url="mongodb://localhost:27017/openstream?replicaSet=rs1"
 
-
+# string (optional)
+# storage database 
+storage_db_name = "openstream_storage"
 
 # the [stream] server is where end users will be redirected from [router] servers to listen to the streams
 [stream]
 
 # string(SocketAddr)[] (required)
 # socket addrs to bind the stream server to
-addrs = [ "0.0.0.0:20200" ]
-
-# string (required)
-# public url to access the stream server
-# public_base_url = "http://stream-0001.openstream.fm"
-
-
-# the [router] server redirects end users's clients to proper [stream] servers
-# [router]
-
-# string(SocketAddr)[] (required)
-# socket addrs to bind the stream server to
-# addrs = [ "0.0.0.0:20800" ]
+addrs = [ "0.0.0.0:10200" ]
 
 # the [source] server is where openstream receives the audio data from streamers, it is Icecast compatible
 [source]
 
 # string(SocketAddr)[] (required)
 # socket addrs to bind the source receiver server to
-addrs = [ "0.0.0.0:20600" ]
+addrs = [ "0.0.0.0:10600" ]
 
 # the [api] server is the main interface for users and admins to interact with openstream server
 [api]
 
 # string(SocketAddr)[] (required)
 # socket addrs to bind the api server to
-addrs = [ "0.0.0.0:20700" ]
+addrs = [ "0.0.0.0:10700" ]
 
 # the [storage] server is the interface to access user's files
 [storage]
 
 # string(SocketAddr)[] (required)
 # socket addrs to bind the api server to
-addrs = [ "0.0.0.0:20900" ]
+addrs = [ "0.0.0.0:10900" ]

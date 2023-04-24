@@ -28,9 +28,9 @@ export type Config = {
 
   source_port: {
     local: number
-    staging: number
     srv1: number
     srv2: number
+    test: number
     default: number
   }
 }
@@ -118,7 +118,7 @@ export const merge_env = (partial: PartialDeep<Config>, { logger, env = process.
   num("studio.port");
 
   num("source_port.local");
-  num("source_port.staging");
+  num("source_port.test");
   num("source_port.srv1");
   num("source_port.srv2");
   num("source_port.default");

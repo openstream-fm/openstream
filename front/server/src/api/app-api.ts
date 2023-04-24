@@ -25,14 +25,14 @@ export const public_config = (host: string, source_port_map: Config["source_port
   let port: number;
   if(host === "studio.openstream.fm") {
     port = source_port_map.default;
-  } else if (host === "studio.staging.openstream.fm") {
-    port = source_port_map.staging;
-  } else if (host === "studio.local.openstream.fm") {
-    port = source_port_map.local;
+  } else if (host === "studio.test.openstream.fm") {
+    port = source_port_map.test;
   } else if (host === "studio.srv1.openstream.fm") {
     port = source_port_map.srv1;
   } else if (host === "studio.srv2.openstream.fm") {
     port = source_port_map.srv2;
+  } else if (host === "studio.local.openstream.fm") {
+    port = source_port_map.local;
   } else {
     port = source_port_map.default;
   }
