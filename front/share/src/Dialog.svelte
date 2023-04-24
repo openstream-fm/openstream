@@ -5,19 +5,19 @@
   export let title: string | undefined = void 0;
   export let width: string = "800px";
   export let padding: string = "1.5rem";
-  export let onClose: () => void = () => {};
+  export let on_close: () => void = () => {};
 
   onMount(() => {
     const uid = Array(5).fill(0).map(() => Math.floor(Math.random() * 36).toString(36)).join("");
     const hash = `#dialog-${uid}`;    
     location.hash += hash;
     const off = [
-      add(window, "keydown", (event: Event) => {
-        if((event as KeyboardEvent).key === "Escape") onClose();
+      add(window, "keydown", event => {
+        if((event as KeyboardEvent).key === "Escape") on_close();
       }, { capture: true }),
       
-      add(window, "hashchange", (event: Event) => {
-        if(!location.hash.includes(hash)) onClose();
+      add(window, "hashchange", () => {
+        if(!location.hash.includes(hash)) on_close();
       }),
 
       () => {
@@ -79,7 +79,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
   class="overlay"
-  on:click={onClose}
+  on:click={on_close}
   transition:fade|local={{ duration: 200 }}
 >
   <!-- svelte-ignore a11y-click-events-have-key-events -->

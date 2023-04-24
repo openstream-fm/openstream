@@ -1811,7 +1811,7 @@
   <Dialog
     title="Delete track {audio_item_to_delete.metadata.title || audio_item_to_delete.filename}"
     width="400px"
-    onClose={() => audio_item_to_delete = null}
+    on_close={() => audio_item_to_delete = null}
   >
     <div class="delete-dialog">
       <div class="delete-dialog-text">
@@ -1836,7 +1836,7 @@
   <Dialog
     title="Delete {$selected_ids.length} {$selected_ids.length === 1 ? "track" : "tracks"}"
     width="400px"
-    onClose={() => delete_selection_open = false}
+    on_close={() => delete_selection_open = false}
   >
     <div class="delete-dialog">
       <div class="delete-dialog-text">
@@ -1861,7 +1861,7 @@
   <Dialog
     title="Edit track {audio_item_to_edit.metadata.title || audio_item_to_edit.filename}"
     width="400px"
-    onClose={() => audio_item_to_edit = null}  
+    on_close={() => audio_item_to_edit = null}  
   >
     <div class="edit-dialog">
       <div class="edit-dialog-fields">
@@ -1893,7 +1893,7 @@
   <Dialog
     title="Shuffle playlist"
     width="400px"
-    onClose={() => shuffle_open = false}  
+    on_close={() => shuffle_open = false}  
     >
     <div class="edit-dialog">
 
@@ -1919,7 +1919,7 @@
     <Dialog
       title="Unshuffle playlist"
       width="400px"
-      onClose={() => shuffle_open = false}  
+      on_close={() => shuffle_open = false}  
     >
     <div class="edit-dialog">
 
@@ -1945,7 +1945,7 @@
   <Dialog
     title="Restart playlist"
     width="400px"
-    onClose={() => restart_open = false}  
+    on_close={() => restart_open = false}  
   >
   <div class="edit-dialog">
 

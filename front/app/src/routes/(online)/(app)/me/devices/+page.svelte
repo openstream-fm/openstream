@@ -88,7 +88,7 @@
 </div>
 
 {#if disconnect_item != null}
-	<Dialog title="Disconnect device" width="400px" onClose={() => (disconnect_item = null)}>
+	<Dialog title="Disconnect device" width="400px" on_close={() => (disconnect_item = null)}>
 		<div class="delete-dialog">
 			<div class="delete-dialog-text">This action is permanent.</div>
 			<div class="delete-dialog-btns">

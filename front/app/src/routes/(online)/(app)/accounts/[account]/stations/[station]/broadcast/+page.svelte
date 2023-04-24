@@ -274,7 +274,7 @@
   <Dialog
     title="Reset mount password"
     width="400px"
-    onClose={() => reset_password_open = false}  
+    on_close={() => reset_password_open = false}  
     >
     <div class="reset-dialog">
 
