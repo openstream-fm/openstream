@@ -187,7 +187,7 @@
       {name}
     </div>
     <div class="map-tooltip-count">
-      {tooltip_sessions} sessions
+      {tooltip_sessions} {tooltip_sessions === 1 ? "listener" : "listeners"}
     </div>
     <!-- <div class="map-tooltip-count">
       {tooltip_ips} unique IPs

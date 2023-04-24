@@ -14,6 +14,8 @@
     mdiViewDashboardOutline,
     mdiRadioTower,
   	mdiMenu,
+		mdiAccountMultipleOutline,
+		mdiPoll,
   } from "@mdi/js";
 	import { onMount } from "svelte";
 	import Icon from "$share/Icon.svelte";
@@ -150,6 +152,8 @@
     <div class="links">
       <DrawerItem href="/accounts/{$page.data.account?._id}" label="Account" icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
       <DrawerItem href="/accounts/{$page.data.account?._id}/stations" label="Stations" icon={mdiRadioTower} on_click={close_drawer_fixed} />
+      <DrawerItem href="/accounts/{$page.data.account?._id}/members" label="Members" icon={mdiAccountMultipleOutline} on_click={close_drawer_fixed} />
+      <DrawerItem href="/accounts/{$page.data.account?._id}/analytics" label="Analytics" icon={mdiPoll} on_click={close_drawer_fixed} />
     </div>
   </div>
 </div>

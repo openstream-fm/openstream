@@ -68,7 +68,7 @@ export const app_api = ({
   })
 
   api.get("/config", json(async (req) => {
-    return public_config(req.headers.host || "studio.openstream.fm", config.source_port);
+    return public_config(req.hostname || "studio.openstream.fm", config.source_port);
   }))
 
   api.post("/login", json(async (req, res) => {

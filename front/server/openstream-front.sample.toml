@@ -39,7 +39,7 @@ enabled=true
 # number (required)
 # port to bind the admin interface to
 # env.OPENSTREAM_FRONT_APP_PORT
-port = 8965
+port = 18965
 
 # mapping for [source] servers public ports
 [source_port]
