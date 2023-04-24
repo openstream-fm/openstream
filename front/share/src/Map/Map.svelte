@@ -120,10 +120,9 @@
   path {
     --fill-none: #f3f3f3;
     fill: var(--fill);
-    transition: fill 300ms ease;
     stroke: #aaa;
     stroke-width: 1.25;
-    transition: filter 150ms ease;
+    transition: filter 150ms ease, fill 200ms ease;
   }
 
   path:hover {
