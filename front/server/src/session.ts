@@ -111,7 +111,7 @@ export const session = (config: Config, _logger: Logger) => {
       res.cookie(cookie_name, encoded, {
         domain,
         httpOnly: true,
-        sameSite: "strict",
+        sameSite: "lax",
         path: "/",
         signed: false,
         maxAge: config.session.max_age_days * 1000 * 60 * 60 * 24,
@@ -119,12 +119,12 @@ export const session = (config: Config, _logger: Logger) => {
     }
 
     // rolling cookie (and set device id, if first time)
-    res.set_session(req.cookie_session);
+    // res.set_session(req.cookie_session);
 
     res.clear_session = () => res.clearCookie(cookie_name, {
       domain,
       httpOnly: true,
-      sameSite: "strict",
+      sameSite: "lax",
       path: "/",
       signed: false,
     });

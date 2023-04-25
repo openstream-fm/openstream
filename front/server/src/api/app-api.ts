@@ -61,10 +61,11 @@ export const app_api = ({
 
   let api = Router();
 
-  // api.use((req, res, next) => {
-  //   console.log(req.hostname, req.headers);
-  //   next();
-  // })
+  api.use((req, res, next) => {
+    console.log("===============================");
+    console.log({ url: req.originalUrl, headers: req.headers });
+    next();
+  })
 
   api.use(json_body_parser())
   api.use(session(config, logger));

@@ -9,10 +9,15 @@ export const handle: Handle = async ({ event, resolve }) => {
     throw new Error("Internal error");
   }
 
+  console.log("===============")
+  console.log("kit request");
+  console.log(event.request.url);
+  console.log(event.request.headers);
+
   server_logger.info(`host: ${event.request.headers.get("host")}`, );
 
-  event.locals.set_cookie = new Set();
-  event.locals.cookie = new Set();
+  // event.locals.set_cookie = new Set();
+  // event.locals.cookie = new Set();
 
   const start = Date.now();
 
@@ -36,9 +41,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   const res = await resolve(event);
 
-  for(const cookie of event.locals.set_cookie) {
-    res.headers.append("set-cookie", cookie);
-  }
+  // for(const cookie of event.locals.set_cookie) {
+  //   res.headers.append("set-cookie", cookie);
+  // }
 
   const ms = Date.now() - start;
 
@@ -63,9 +68,11 @@ export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
 
   for(const key of [
     "x-forwarded-proto",
+    "x-forwarded-for",
     "accept-language",
     "user-agent",
     "host",
+    "cookie"
   ]) {
     const v = event.request.headers.get(key);
     if(v) target.headers.set(key, v);
@@ -73,25 +80,26 @@ export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
   
   target.headers.set(FORWARD_IP_HEADER, event.locals.ip);
   target.headers.set(PROTOCOL_HEADER, event.locals.protocol);
+  target.headers.set("x-kit-url", event.request.url);
 
-  const src_cookies = (event.request.headers.get("cookie")?.split(";") || []).map(s => s.trim());
-  const cookie = [...new Set([...src_cookies, ...event.locals.cookie])].join("; ").trim(); 
-  if(cookie) target.headers.set("cookie", cookie);
+  // const src_cookies = (event.request.headers.get("cookie")?.split(";") || []).map(s => s.trim());
+  // const cookie = [...new Set([...src_cookies, ...event.locals.cookie])].join("; ").trim(); 
+  // if(cookie) target.headers.set("cookie", cookie);
     
   try {
     const res = await fetch(url, {
       method: target.method,
       headers: target.headers,
       body: target.body,
-      mode: "same-origin"
+      // mode: "same-origin"
     });
 
-    const set_cookie = res.headers.get("set-cookie");
-    if(set_cookie) {
-      event.locals.set_cookie.add(set_cookie);
-      const cookie = set_cookie.split(";")[0];
-      if(cookie) event.locals.cookie.add(cookie);
-    }
+    // const set_cookie = res.headers.get("set-cookie");
+    // if(set_cookie) {
+    //   event.locals.set_cookie.add(set_cookie);
+    //   const cookie = set_cookie.split(";")[0];
+    //   if(cookie) event.locals.cookie.add(cookie);
+    // }
 
     return res;
 

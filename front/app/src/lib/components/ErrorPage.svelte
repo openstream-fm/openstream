@@ -3,32 +3,14 @@
 	export let error: App.Error = $page.error!;
 	import Page from '$lib/components/Page.svelte';
 	import { ripple } from '$share/ripple';
+
+	let online = true;
+
+	$: status = error.status || 500;
+	$: message = error?.message || "An error ocurred";
+	$: code = error?.code || "CLIENT_PAGE_MISSING_CODE";
+	$: title = online ? `${status} ${message}` : "Offline";
 </script>
-
-<svelte:head>
-	<title>{error?.status || 500} {error?.message || 'Error'}</title>
-</svelte:head>
-
-<Page>
-	<div class="page">
-		<h1>{error.status ?? 500}</h1>
-
-		<h2>{error.message ?? 'An error ocurred'}</h2>
-
-		<div class="code">
-			{error.code ?? 'CLIENT_PAGE_MISSING_CODE'}
-		</div>
-
-		<div class="btns">
-			{#if error.status !== 404}
-				<button on:click={() => location.reload()} use:ripple class="ripple-container btn retry">
-					Retry
-				</button>
-			{/if}
-			<a href="/" use:ripple class="ripple-container btn home"> Take me to home </a>
-		</div>
-	</div>
-</Page>
 
 <style>
 	.page {
@@ -38,19 +20,19 @@
 		align-items: flex-start;
 	}
 
-	h1 {
+	.online h1 {
 		text-align: left;
 		font-size: 7rem;
 		filter: drop-shadow(var(--red) 0.025em 0.025em 0);
 	}
 
-	h2 {
+	.online h2 {
 		text-align: left;
 		margin-top: 1rem;
 		font-size: 2.5rem;
 	}
 
-	.code {
+	.online .code {
 		margin-top: 2rem;
 		padding: 0.75rem;
 		border-radius: 0.25rem;
@@ -59,14 +41,31 @@
 		align-self: flex-start;
 	}
 
-	.btns {
+	.online .btns {
 		margin-top: 1rem;
 		display: flex;
 		flex-direction: row;
 		gap: 2rem;
 		align-items: center;
-		justify-content: center;
+		justify-content: flex-start;
 	}
+
+	.offline h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+  }
+
+  .offline p {
+    font-size: 1.4rem;
+    margin-top: 1.5rem;
+  }
+
+  .offline .btns {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    margin: 2rem 0;
+  }
 
 	.btn {
 		display: block;
@@ -82,3 +81,51 @@
 		border-radius: 0.25rem;
 	}
 </style>
+
+
+<svelte:window bind:online />
+
+<svelte:head>
+	<title>{title}</title>
+</svelte:head>
+
+<Page>
+	<div class="page">
+		
+		{#if online}
+			<div class="online">
+				<h1>{status}</h1>
+
+				<h2>{message}</h2>
+
+				<div class="code">
+					{code}
+				</div>
+
+				<div class="btns">
+					{#if error.status !== 404}
+						<button on:click={() => location.reload()} use:ripple class="ripple-container btn retry">
+							Retry
+						</button>
+					{/if}
+					{#if $page.url.pathname !== "/"}
+						<a href="/" use:ripple class="ripple-container btn home">Take me to home</a>
+					{/if}
+				</div>
+			</div>
+		{:else}
+			<div class="offline">	
+				<h1>Seems that you are offline</h1>    
+					
+				<p>You need internet access to use openstream studio</p>
+				
+				<div class="btns">
+					<!-- svelte-ignore a11y-invalid-attribute -->
+					<a class="na btn ripple-container" use:ripple href="javascript:location.reload()">
+						Retry
+					</a>
+				</div>
+			</div>
+		{/if}
+	</div>
+</Page>

@@ -47,6 +47,10 @@ const config = {
 			},
 		},
 
+		paths: {
+			relative: false,
+		},
+
 		adapter: adapter(),
 	}
 };

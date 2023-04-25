@@ -7,8 +7,8 @@ declare namespace App {
   interface Locals {
     ip: string,
     protocol: "http" | "https",
-    set_cookie: Set<string>,
-    cookie: Set<string>
+    // set_cookie: Set<string>,
+    // cookie: Set<string>
   }
 
   interface Error {
