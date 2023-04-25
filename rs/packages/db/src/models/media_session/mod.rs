@@ -62,24 +62,6 @@ pub enum MediaSessionState {
   Closed,
 }
 
-// #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-// #[ts(export, export_to = "../../../defs/db/")]
-// #[serde(rename_all = "snake_case")]
-// #[macros::keys]
-// pub struct MediaSessionError {
-//   pub debug: String,
-//   pub display: String,
-// }
-
-// impl<E: std::error::Error> From<E> for MediaSessionError {
-//   fn from(e: E) -> Self {
-//     Self {
-//       debug: format!("{:?}", e),
-//       display: format!("{}", e),
-//     }
-//   }
-// }
-
 impl MediaSession {
   pub fn resumed_from(&self) -> Option<&str> {
     match &self.kind {

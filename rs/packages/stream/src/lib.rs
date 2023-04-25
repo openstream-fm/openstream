@@ -8,6 +8,7 @@ use db::Model;
 use drop_tracer::{DropTracer, Token};
 use futures::stream::FuturesUnordered;
 use futures::TryStreamExt;
+use hyper::Method;
 use hyper::header::{HeaderName, ACCEPT_RANGES, CACHE_CONTROL, RETRY_AFTER};
 use hyper::{header::CONTENT_TYPE, http::HeaderValue, Body, Server, StatusCode};
 use ip_counter::IpCounter;
@@ -287,12 +288,10 @@ impl StreamHandler {
               Some(port) => *port,
             };
 
-            let destination = SocketAddr::from((deployment.local_ip, port));
-
             let client = hyper::Client::default();
-          
             let mut hyper_req = hyper::Request::builder()
-              .uri(format!("http://{}:{}{}{}", destination.ip(), destination.port(), req.uri().path(), req.uri().query().unwrap_or("")));
+              .method(Method::GET)
+              .uri(format!("http://{}:{}{}{}", deployment.local_ip, port, req.uri().path(), req.uri().query().unwrap_or("")));
   
             for (key, value) in req.headers().clone().into_iter() {
               if let Some(key) = key {

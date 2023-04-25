@@ -34,7 +34,6 @@ const config = {
 
 		version: {
 			name: version(),
-			pollInterval: 1000,
 		},
 
 		files: {
