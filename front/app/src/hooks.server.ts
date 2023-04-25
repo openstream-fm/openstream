@@ -9,6 +9,11 @@ export const handle: Handle = async ({ event, resolve }) => {
     throw new Error("Internal error");
   }
 
+  server_logger.info(`host: ${event.request.headers.get("host")}`, );
+
+  event.locals.set_cookie = new Set();
+  event.locals.cookie = new Set();
+
   const start = Date.now();
 
   const ip = event.request.headers.get(X_REAL_IP);
@@ -30,6 +35,10 @@ export const handle: Handle = async ({ event, resolve }) => {
   event.locals.protocol = proto;
 
   const res = await resolve(event);
+
+  for(const cookie of event.locals.set_cookie) {
+    res.headers.append("set-cookie", cookie);
+  }
 
   const ms = Date.now() - start;
 
@@ -53,20 +62,39 @@ export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
   const target = new Request(request)
 
   for(const key of [
+    "x-forwarded-proto",
     "accept-language",
     "user-agent",
-    "cookie",
-    "host"
+    "host",
   ]) {
     const v = event.request.headers.get(key);
     if(v) target.headers.set(key, v);
   }
-
+  
   target.headers.set(FORWARD_IP_HEADER, event.locals.ip);
   target.headers.set(PROTOCOL_HEADER, event.locals.protocol);
+
+  const src_cookies = (event.request.headers.get("cookie")?.split(";") || []).map(s => s.trim());
+  const cookie = [...new Set([...src_cookies, ...event.locals.cookie])].join("; ").trim(); 
+  if(cookie) target.headers.set("cookie", cookie);
     
   try {
-    return await fetch(url, target);
+    const res = await fetch(url, {
+      method: target.method,
+      headers: target.headers,
+      body: target.body,
+      mode: "same-origin"
+    });
+
+    const set_cookie = res.headers.get("set-cookie");
+    if(set_cookie) {
+      event.locals.set_cookie.add(set_cookie);
+      const cookie = set_cookie.split(";")[0];
+      if(cookie) event.locals.cookie.add(cookie);
+    }
+
+    return res;
+
   } catch(e: any) {
     server_logger.error(`handle-fetch error for ${event.request.url} => ${url}`)
     server_logger.error(e?.cause ? e.cause : e);

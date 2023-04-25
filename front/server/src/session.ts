@@ -100,10 +100,10 @@ export const session = (config: Config, _logger: Logger) => {
   
   router.use((req: Request, res: Response, next: NextFunction) => {
 
-    const host = req.hostname || "studio.openstream.fm";
-    const domain = host.replace(/^studio./, "");
+    const host = (req.hostname || "openstream.fm").replace("studio.", "");
+    const domain = "openstream.fm";
 
-    const cookie_name = `${config.session.cookie_name}-${domain}`;
+    const cookie_name = `${config.session.cookie_name}-${host}`;
 
     req.cookie_session = get_cookie_session(req, cookie_name, key, logger);
     res.set_session = (data: SessionData) => {
