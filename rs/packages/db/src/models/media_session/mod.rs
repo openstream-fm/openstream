@@ -56,7 +56,6 @@ pub enum MediaSessionKind {
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
-#[serde(tag = "state")]
 #[macros::keys]
 pub enum MediaSessionState {
   Open,
@@ -94,7 +93,7 @@ impl MediaSession {
   ) -> Result<Option<MediaSession>, mongodb::error::Error> {
     let filter = doc! {
       MediaSession::KEY_STATION_ID: station_id,
-      MediaSessionState::KEY_ENUM_TAG: MediaSessionState::KEY_ENUM_VARIANT_OPEN
+      MediaSession::KEY_STATE: MediaSessionState::KEY_ENUM_VARIANT_OPEN
     };
 
     let sort = doc! {
