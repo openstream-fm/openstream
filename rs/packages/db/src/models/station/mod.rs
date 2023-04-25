@@ -675,7 +675,7 @@ impl From<Station> for AdminPublicStation {
 }
 
 impl Station {
-  pub const SOURCE_PASSWORD_LEN: usize = 32;
+  pub const SOURCE_PASSWORD_LEN: usize = 16;
 
   pub fn into_public(self, scope: PublicScope) -> PublicStation {
     match scope {

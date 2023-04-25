@@ -1,12 +1,18 @@
 use crate::params::Params;
 use bytes::Bytes;
 use hyper::body::HttpBody;
-use hyper::header::AUTHORIZATION;
+use hyper::header::{HeaderName, AUTHORIZATION, HOST};
 use hyper::http::Extensions;
 use hyper::{self, HeaderMap, Uri, Version};
 use hyper::{Body, Method};
 use serde::de::DeserializeOwned;
 use std::net::{IpAddr, SocketAddr};
+
+#[allow(clippy::declare_interior_mutable_const)]
+const X_OPENSTREAM_FORWARDED_IP: HeaderName = HeaderName::from_static("x-openstream-forwarded-ip");
+
+#[allow(clippy::declare_interior_mutable_const)]
+const X_REAL_IP: HeaderName = HeaderName::from_static("x-real-ip");
 
 pub fn is_trusted_ip(ip: IpAddr) -> bool {
   !ip_rfc::global(&ip)
@@ -196,7 +202,7 @@ impl Request {
     let mut ip = self.remote_addr().ip();
 
     if is_trusted_ip(ip) {
-      if let Some(v) = self.headers().get("x-real-ip") {
+      if let Some(v) = self.headers().get(X_REAL_IP) {
         if let Ok(v) = v.to_str() {
           if let Ok(client_ip) = v.parse() {
             ip = client_ip;
@@ -206,7 +212,7 @@ impl Request {
     }
 
     if is_trusted_ip(ip) {
-      if let Some(v) = self.headers.get("x-openstream-forwarded-ip") {
+      if let Some(v) = self.headers.get(X_OPENSTREAM_FORWARDED_IP) {
         if let Ok(v) = v.to_str() {
           if let Ok(forward_ip) = v.parse() {
             ip = forward_ip;
@@ -218,6 +224,12 @@ impl Request {
     ip
   }
 
+  #[inline]
+  pub fn host(&self) -> Option<&str> {
+    self.headers.get(HOST)?.to_str().ok()
+  }
+
+  #[inline]
   pub fn basic_auth(&self) -> Option<BasicAuth> {
     let header = self.headers().get(AUTHORIZATION)?.to_str().ok()?;
     let creds = http_auth_basic::Credentials::from_header(header.to_string()).ok()?;

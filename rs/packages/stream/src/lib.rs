@@ -593,14 +593,9 @@ impl LinkHandler {
       }
     };
 
-    let host = req
-      .headers()
-      .get("host")
-      .and_then(|s| s.to_str().ok())
-      .unwrap_or("stream.openstream.fm");
-    // TODO: add scheme from header
+    let host = req.host().unwrap_or("stream.openstream.fm");
 
-    let target = format!("https://{}/stream/{}", host, &station.id);
+    let target = format!("https://{}/stream/{}", host, station.id);
 
     let (body, content_type) = match self.kind {
       LinkHandlerKind::M3u => {
