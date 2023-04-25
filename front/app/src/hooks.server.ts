@@ -4,6 +4,11 @@ import { FORWARD_IP_HEADER, PROTOCOL_HEADER, X_REAL_IP } from "$server/constants
 import { server_logger } from "$lib/logger.server";
 
 export const handle: Handle = async ({ event, resolve }) => {
+  
+  if(event.url.pathname === "/internal-error.html") {
+    throw new Error("Internal error");
+  }
+
   const start = Date.now();
 
   const ip = event.request.headers.get(X_REAL_IP);
@@ -28,7 +33,11 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   const ms = Date.now() - start;
 
-  server_logger[res.ok ? "debug" : "warn"](`handle: ${event.request.url} => ${res.status} ${res.statusText} - ${ms}ms`)
+  const ok = res.status >= 200 && res.status <= 399;
+  const message = `handle: ${event.request.url} => ${res.status} ${res.statusText} - ${ms}ms`;
+
+  if(ok) server_logger.debug(message);
+  else server_logger.warn(message);
 
   return res;
 }

@@ -11,6 +11,7 @@
     background-image: url("$lib/img/login-bg.jpg");
     background-size: cover;
     background-position: center;
+    --field-container-bg: rgba(0,0,0,0);
   }
 
   .logo {

@@ -26,6 +26,7 @@ export interface Station {
   app_store_url: string | null;
   user_metadata: Metadata;
   system_metadata: Metadata;
+  owner_deployment_id: string | null;
   limits: StationLimits;
   playlist_is_randomly_shuffled: boolean;
   source_password: string;

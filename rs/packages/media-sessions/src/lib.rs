@@ -87,7 +87,13 @@ impl<'a> WriteLock<'a> {
 
     let tx = self.transmit(station_id, MediaSessionKind::Playlist {});
 
-    run_playlist_session(tx, shutdown, drop_tracer, false);
+    run_playlist_session(
+      tx,
+      self.map.deployment_id.clone(),
+      shutdown,
+      drop_tracer,
+      false,
+    );
 
     Ok(())
   }
@@ -154,15 +160,17 @@ impl<'a> UpgradableReadLock<'a> {
 
 #[derive(Debug, Clone)]
 pub struct MediaSessionMap {
+  pub deployment_id: String,
   pub(crate) map: Arc<RwLock<Map>>,
   pub(crate) drop_tracer: DropTracer,
 }
 
 impl MediaSessionMap {
   #[inline]
-  pub fn new(drop_tracer: DropTracer) -> Self {
+  pub fn new(deployment_id: String, drop_tracer: DropTracer) -> Self {
     Self {
       map: Default::default(),
+      deployment_id,
       drop_tracer,
     }
   }
@@ -293,6 +301,11 @@ impl MediaSessionInfo {
   #[inline]
   pub fn is_playlist(&self) -> bool {
     self.kind.is_playlist()
+  }
+
+  #[inline]
+  pub fn content_type(&self) -> &str {
+    self.kind.content_type()
   }
 }
 

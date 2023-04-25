@@ -28,5 +28,6 @@ socket2 = "0.4.7"
 media-sessions = { version = "0.1.0", path = "../media-sessions" }
 serde-util = { version = "0.1.0", path = "../serde-util" }
 mp3 = { version = "0.1.0", path = "../mp3" }
+geoip = { version = "0.1.0", path = "../geoip" }
 
 [features]

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import TopUser from "$lib/components/Dashboard/TopUser.svelte";
-	import { ripple } from "$lib/ripple";
+	import { ripple } from "$share/ripple";
 	import { fly } from "svelte/transition";
   export let data: import("./$types").PageData;
 </script>

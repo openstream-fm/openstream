@@ -69,3 +69,19 @@ pub mod as_f64 {
     }
   }
 }
+
+pub mod u32_as_i64 {
+
+  use serde::de::Error;
+  use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+  pub fn serialize<S: Serializer>(v: &u32, ser: S) -> Result<S::Ok, S::Error> {
+    (*v as i64).serialize(ser)
+  }
+
+  pub fn deserialize<'de, D: Deserializer<'de>>(de: D) -> Result<u32, D::Error> {
+    let i = i64::deserialize(de)?;
+    let u = i.try_into().map_err(D::Error::custom)?;
+    Ok(u)
+  }
+}

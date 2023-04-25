@@ -2,7 +2,9 @@ use self::validation::*;
 use crate::error::ApplyPatchError;
 use crate::Model;
 use crate::{metadata::Metadata, PublicScope};
+use drop_tracer::Token;
 use mongodb::bson::doc;
+use mongodb::options::{FindOneAndUpdateOptions, ReturnDocument};
 use mongodb::IndexModel;
 use serde::{Deserialize, Serialize};
 use serde_util::map_some;
@@ -133,6 +135,9 @@ pub struct Station {
   // metadata
   pub user_metadata: Metadata,
   pub system_metadata: Metadata,
+
+  // runtime
+  pub owner_deployment_id: Option<String>,
 
   // misc
   pub limits: Limits,
@@ -474,6 +479,61 @@ pub struct StationPatchLimits {
 }
 
 impl Station {
+  pub async fn try_set_owner_deployment_id(
+    station_id: &str,
+    deployment_id: &str,
+    token: Token,
+  ) -> Result<
+    Result<(Station, DeploymentTakeDropper), Option<(Station, String)>>,
+    mongodb::error::Error,
+  > {
+    let filter = doc! {
+      Station::KEY_ID: station_id,
+    };
+
+    let update = vec![
+      doc! {
+        "$set": {
+          Station::KEY_OWNER_DEPLOYMENT_ID: {
+            "$ifNull": [ const_str::concat!("$", Station::KEY_OWNER_DEPLOYMENT_ID), deployment_id ]
+          }
+        }
+      }
+    ];
+
+    let options = FindOneAndUpdateOptions::builder()
+      .return_document(ReturnDocument::Before)
+      .build();
+
+    let r = Station::cl()
+      .find_one_and_update(filter, update, options)
+      .await?;
+
+    let station = match r {
+      None => return Ok(Err(None)),
+      Some(doc) => doc,
+    };
+
+    match &station.owner_deployment_id {
+      Some(owner_deploymeny_id) => {
+        let owner = owner_deploymeny_id.to_string();
+        Ok(Err(Some((station, owner))))
+      }
+
+      None => {
+        let inner = DeploymentTakeDropperInner {
+          station_id: station_id.to_string(),
+          deployment_id: deployment_id.to_string(),
+          token,
+        };
+
+        let dropper = DeploymentTakeDropper(Some(inner));
+
+        Ok(Ok((station, dropper)))
+      }
+    }
+  }
+
   pub fn apply_patch(
     &mut self,
     mut patch: StationPatch,
@@ -675,7 +735,7 @@ impl From<Station> for AdminPublicStation {
 }
 
 impl Station {
-  pub const SOURCE_PASSWORD_LEN: usize = 32;
+  pub const SOURCE_PASSWORD_LEN: usize = 16;
 
   pub fn into_public(self, scope: PublicScope) -> PublicStation {
     match scope {
@@ -749,6 +809,53 @@ macro_rules! storage_quota {
       Some(station) => Some(station.limits.storage.avail()),
     }
   };
+}
+
+#[derive(Debug)]
+#[must_use]
+pub struct DeploymentTakeDropper(Option<DeploymentTakeDropperInner>);
+
+impl Drop for DeploymentTakeDropper {
+  fn drop(&mut self) {
+    if let Some(inner) = self.0.take() {
+      tokio::spawn(async move {
+        let DeploymentTakeDropperInner {
+          station_id,
+          deployment_id,
+          token,
+        } = inner;
+
+        let filter = doc! {
+          Station::KEY_ID: &station_id,
+          Station::KEY_OWNER_DEPLOYMENT_ID: deployment_id,
+        };
+
+        let update = doc! {
+          "$set": {
+            Station::KEY_OWNER_DEPLOYMENT_ID: null,
+          }
+        };
+
+        if let Err(e) = Station::cl().update_one(filter, update, None).await {
+          log::error!(
+            "error setting owner_deployment_id back to null for station {} => {} => {:?}",
+            station_id,
+            e,
+            e
+          );
+        };
+
+        drop(token);
+      });
+    }
+  }
+}
+
+#[derive(Debug)]
+pub struct DeploymentTakeDropperInner {
+  station_id: String,
+  deployment_id: String,
+  token: Token,
 }
 
 #[cfg(test)]

@@ -23,6 +23,7 @@ use crate::{SendError, Transmitter};
 
 pub fn run_playlist_session(
   tx: Transmitter,
+  deployment_id: String,
   shutdown: Shutdown,
   drop_tracer: DropTracer,
   resume: bool,
@@ -68,6 +69,7 @@ pub fn run_playlist_session(
         let media_session_doc = MediaSession {
           id: MediaSession::uid(),
           station_id: station_id.to_string(),
+          deployment_id,
           created_at: DateTime::now(),
           updated_at: DateTime::now(),
           transfer_bytes: 0,
@@ -80,6 +82,8 @@ pub fn run_playlist_session(
             last_audio_file_order: start_file.order,
           },
           state: MediaSessionState::Open,
+          closed_at: None,
+          duration_ms: None,
         };
 
         MediaSession::insert(&media_session_doc).await?;
@@ -89,7 +93,8 @@ pub fn run_playlist_session(
       let media_session_doc_id = media_session_doc.id.clone();
 
       let dropper = MediaSessionDropper {
-        doc: media_session_doc,
+        id: media_session_doc.id,
+        station_id: media_session_doc.station_id,
         out: out.clone(),
         token: Some(drop_tracer.token()),
         start: Instant::now(),
@@ -292,7 +297,7 @@ async fn resume_info_for_station(
   use db::media_session::{MediaSession, MediaSessionKind};
   let filter = doc! {
     MediaSession::KEY_STATION_ID: station_id,
-    MediaSessionKind::KEY_ENUM_TAG: MediaSessionKind::TAG_PLAYLIST,
+    MediaSessionKind::KEY_ENUM_TAG: MediaSessionKind::KEY_ENUM_VARIANT_PLAYLIST,
   };
   let sort = doc! {
     MediaSession::KEY_CREATED_AT: -1
@@ -419,8 +424,9 @@ impl PlaylistIndexInfoOut {
 
 #[derive(Debug)]
 struct MediaSessionDropper {
+  id: String,
+  station_id: String,
   start: Instant,
-  doc: db::media_session::MediaSession,
   out: PlaylistIndexInfoOut,
   token: Option<Token>,
 }
@@ -434,6 +440,9 @@ impl Drop for MediaSessionDropper {
       Some(token) => token,
     };
 
+    let id = self.id.clone();
+    let station_id = self.station_id.clone();
+
     let now = DateTime::now();
 
     let file_id = self.out.file_id();
@@ -442,45 +451,46 @@ impl Drop for MediaSessionDropper {
     let part = self.out.part();
     let transfer_bytes = self.out.transfer();
 
-    let doc = MediaSession {
-      id: self.doc.id.clone(),
-      station_id: self.doc.station_id.clone(),
-      created_at: self.doc.created_at,
-      updated_at: self.doc.updated_at,
-      transfer_bytes,
-      kind: MediaSessionKind::Playlist {
-        resumed_from: self.doc.resumed_from().map(ToString::to_string),
-        last_audio_file_id: file_id.clone(),
-        last_audio_file_order: file_order,
-        last_audio_chunk_i: i,
-        last_audio_chunk_skip_parts: part,
-        last_audio_chunk_date: now,
-      },
-      state: MediaSessionState::Closed {
-        closed_at: now,
-        duration_ms: self.start.elapsed().as_millis() as u64,
-      },
+    let duration_ms = self.start.elapsed().as_millis();
+
+    let update = doc! {
+      "$set": {
+        MediaSession::KEY_UPDATED_AT: Some(now),
+        MediaSession::KEY_CLOSED_AT: Some(now),
+        MediaSession::KEY_STATE: MediaSessionState::KEY_ENUM_VARIANT_CLOSED,
+        MediaSession::KEY_DURATION_MS: Some(duration_ms as f64),
+        MediaSession::KEY_TRANSFER_BYTES: transfer_bytes as f64,
+        
+        MediaSessionKind::KEY_LAST_AUDIO_FILE_ID: file_id.clone(),
+        MediaSessionKind::KEY_LAST_AUDIO_FILE_ORDER: file_order,
+        MediaSessionKind::KEY_LAST_AUDIO_CHUNK_I: i,
+        MediaSessionKind::KEY_LAST_AUDIO_CHUNK_SKIP_PARTS: part as f64,
+        MediaSessionKind::KEY_LAST_AUDIO_CHUNK_DATE: now,
+
+      }
     };
 
     tokio::spawn(async move {
       info!(
         "saving media session {} station_id={} file_id={} i={} part={}",
-        doc.id, doc.station_id, file_id, i, part,
+        id, station_id, file_id, i, part,
       );
-      match MediaSession::replace(&doc.id, &doc).await {
+
+      match MediaSession::update_by_id(&id, update).await {
         Err(e) => warn!(
           "error saving media session {} for station {}: {}",
-          doc.id, doc.station_id, e
+          id, station_id, e
         ),
         Ok(r) => {
           if r.matched_count != 1 {
             warn!(
               "media session save id={} station_id={} returned matched count != 1 ({})",
-              doc.id, doc.station_id, r.matched_count
+              id, station_id, r.matched_count
             )
           }
         }
       }
+
       drop(token)
     });
   }

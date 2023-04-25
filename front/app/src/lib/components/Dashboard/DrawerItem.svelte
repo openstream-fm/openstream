@@ -22,7 +22,7 @@
   $: current = is_current(href, $page.url);
 
   import { page } from "$app/stores";
-	import { ripple } from "$lib/ripple";
+	import { ripple } from "$share/ripple";
 	import Icon from "$share/Icon.svelte";
 </script>
 
@@ -62,7 +62,7 @@
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
-    margin-inline: 1rem 0.75rem;
+    margin-inline: 1.5rem 1.25rem;
   }
 </style>
 

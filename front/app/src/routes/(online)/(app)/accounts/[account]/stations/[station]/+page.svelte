@@ -2,17 +2,17 @@
   import CircularMeter from "$lib/components/CircularMeter/CircularMeter.svelte";
   import Page from "$lib/components/Page.svelte";
 	import { pause, player_state, play_station } from "$lib/components/Player/player";
-	import { default_logger } from "$lib/logger";
+	import { default_logger } from "$share/logger";
 	import { get_now_playing_store } from "$lib/now-playing";
 	import type { StationLimits } from "$server/defs/StationLimits";
 	import CircularProgress from "$share/CircularProgress.svelte";
 	import Icon from "$share/Icon.svelte";
 	import { _get } from "$share/net.client";
 	import { ripple } from "$share/ripple";
-	import { tooltip } from "$share/tooltip";
-	import { mdiMicrophoneOutline, mdiPause, mdiPlay } from "@mdi/js";
+  import { mdiMicrophoneOutline, mdiPause, mdiPlay } from "@mdi/js";
 	import { onMount } from "svelte";
 	import { derived } from "svelte/store";
+  import StatsMap from "$share/Map/StatsMap.svelte";
 
   export let data: import("./$types").PageData;
 
@@ -188,20 +188,32 @@
   .top-boxes {
     display: flex;
     flex-direction: row;
+    flex: 1;
     gap: var(--spacing);
-    flex: 5;
   }
 
   .top-box {
-    padding: 2rem;
     border-radius: 0.5rem;
     box-shadow: 0 20px 25px -5px rgba(0,0,0,.1),0 10px 10px -5px rgba(0,0,0,.04);
     background: #fff;
     display: flex;
     flex-direction: column;
+    flex: 1;
+  }
+
+  .stats {
+    background: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,.1),0 10px 10px -5px rgba(0,0,0,.04);
+  }
+
+  .top-box-air {
+    flex: 1;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    flex: 1;
   }
 
   .air-icon {
@@ -244,6 +256,15 @@
     color: var(--red);
   }
 
+  .top-box-preview {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem; 
+  }
+
   .preview-btn {
     display: flex;
     flex: none;
@@ -272,7 +293,7 @@
     margin-top: 1.5rem;
   }
 
-  .top-box-stats {
+  /* .top-box-stats {
     align-items: stretch;
     container-type: inline-size;
     container-name: stats-box;
@@ -333,27 +354,28 @@
     .n {
       font-size: 1.15rem;
     }
-  }
+  }f */
 
-  .top-boxes[data-air="off"] > .top-box-preview {
-    display: none;
+  .top-boxes[data-air="off"] > .preview-out {
+    visibility: hidden;
+    order: 3;
   }
 
   @container page (width < 700px) {
-    .top {
+    
+    .top-boxes {
       flex-direction: column;
     }
-    
-    .broadcast-btn-out {
+
+    .top-box {
+      order: 2;
+    }
+
+    .top-box-broadcast {
       order: 1;
     }
 
-    .top-boxes {
-      order: 2;
-      flex-direction: column;
-    }
-
-    .top-boxes[data-air="off"] > .top-box-preview {
+    .top-boxes[data-air="off"] > .preview-out {
       display: none;
     }
 
@@ -366,12 +388,8 @@
     }
   } 
 
-  .top-box {
-    flex: 3;
-  }
-
-  .broadcast-btn-out {
-    flex: 1;
+  .top-box-broadcast {
+    padding: 0;
     display: flex;
     container-type: inline-size;
     container-name: broadcast-btn;
@@ -383,6 +401,8 @@
     align-items: center;
     justify-content: center;
     flex: 1;
+    align-self: stretch;
+    justify-self: stretch;
     text-align: center;
     color: #fff;
     background: #fff;
@@ -390,33 +410,10 @@
     color: var(--blue);
     font-size: 1.1rem;
     padding: 1rem 0;
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,.1),0 10px 10px -5px rgba(0,0,0,.04);
     border-radius: 0.5rem;
     font-weight: 600;    
     text-align: center;
-  }
-
-  .broadcast-btn-text-wide {
-    display: none;
-  }
-
-  @container broadcast-btn (width < 125px) {
-    .broadcast-btn {
-      font-size: 0.9rem;
-    }
-  }
-
-  @container broadcast-btn (width > 300px) {
-    .broadcast-btn-text-wide {
-      display: inline;
-    }
-
-    .broadcast-btn-text-narrow {
-      display: none;
-    }
-  }
-
-  
+  } 
 </style>
 
 <svelte:head>
@@ -434,50 +431,55 @@
   <div class="page">
     <div class="top">
       <div class="top-boxes" data-air={on_air ? "on" : "off"}>
-        <div class="top-box top-box-air" class:on={on_air} class:off={!on_air}>
-          <div class="air-icon">
-            <Icon d={mdiMicrophoneOutline} />
-          </div>
-          <div class="air-title">
-            {#if on_air}
-              <span class="on-air">ON AIR</span>
-            {:else}
-              <span class="off-air">OFF AIR</span>
-            {/if}
-          </div>
-          {#if on_air}
-            <div class="air-subtitle">
-              {#if data.now_playing.kind === "playlist" || data.now_playing.kind === "none"}
-                Playlist
-              {:else if data.now_playing.kind === "live"}
-                Live Streaming
+        <div class="top-box">
+          <div class="top-box-air" class:on={on_air} class:off={!on_air}>
+            <div class="air-icon">
+              <Icon d={mdiMicrophoneOutline} />
+            </div>
+            <div class="air-title">
+              {#if on_air}
+                <span class="on-air">ON AIR</span>
+              {:else}
+                <span class="off-air">OFF AIR</span>
               {/if}
             </div>
-          {/if}
-        </div>
-
-        <div class="top-box top-box-preview">
-          <button
-            use:ripple class="preview-btn ripple-container"
-            data-state={$station_preview_state}
-            on:click={toggle_play}
-            aria-label={$station_preview_state === "playing" ? "Pause" : "Play"}
-          >
-            {#if $station_preview_state === "playing"}
-              <Icon d={mdiPause} />
-            {:else if $station_preview_state === "paused"}
-              <Icon d={mdiPlay} />
-            {:else}
-              <!-- "loading" -->
-              <CircularProgress />
+            {#if on_air}
+              <div class="air-subtitle">
+                {#if data.now_playing.kind === "playlist" || data.now_playing.kind === "none"}
+                  Playlist
+                {:else if data.now_playing.kind === "live"}
+                  Live
+                {/if}
+              </div>
             {/if}
-          </button>
-
-          <div class="preview-title">
-            Preview
           </div>
         </div>
 
+        <div class="top-box preview-out">
+          <div class="top-box-preview">
+            <button
+              use:ripple class="preview-btn ripple-container"
+              data-state={$station_preview_state}
+              on:click={toggle_play}
+              aria-label={$station_preview_state === "playing" ? "Pause" : "Play"}
+            >
+              {#if $station_preview_state === "playing"}
+                <Icon d={mdiPause} />
+              {:else if $station_preview_state === "paused"}
+                <Icon d={mdiPlay} />
+              {:else}
+                <!-- "loading" -->
+                <CircularProgress />
+              {/if}
+            </button>
+
+            <div class="preview-title">
+              Preview
+            </div>
+          </div>
+        </div>
+        
+        <!-- 
         <div class="top-box top-box-stats">
           <div class="stats-title">
             Stats
@@ -518,21 +520,26 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <div class="broadcast-btn-out">
-        <a class="na broadcast-btn ripple-container" href="/accounts/{data.account._id}/stations/{data.station._id}/broadcast" use:ripple>
-          Broadcast
-          <!-- <span class="broadcast-btn-text-narrow">
+        -->
+        <div class="top-box top-box-broadcast">
+          <a class="na broadcast-btn ripple-container" href="/accounts/{data.account._id}/stations/{data.station._id}/broadcast" use:ripple>
             Broadcast
-            <br />
-            Settings
-          </span>
-          <span class="broadcast-btn-text-wide">
-            Broadcast Settings
-          </span> -->
-        </a>
+            <!-- <span class="broadcast-btn-text-narrow">
+              Broadcast
+              <br />
+              Settings
+            </span>
+            <span class="broadcast-btn-text-wide">
+              Broadcast Settings
+            </span> -->
+          </a>
+        </div>
+
       </div>
+    </div>
+
+    <div class="stats">
+      <StatsMap kind="station" record_id={data.station._id} bind:data={data.stats} />
     </div>
 
     <div class="meters">

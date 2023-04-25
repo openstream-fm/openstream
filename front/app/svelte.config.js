@@ -29,6 +29,7 @@ const config = {
 		alias: {
 			"$server": "../server/src",
 			"$share": "../share/src",
+			"$static": "../static/studio/static",
 		},
 
 		version: {
@@ -40,6 +41,7 @@ const config = {
 			serviceWorker: "./src/service-worker.ts",
 			errorTemplate: "./src/error.html",
 			appTemplate: "./src/app.html",
+			assets: "../static/studio",
 			hooks: {
 				server: "./src/hooks.server.ts"
 			},

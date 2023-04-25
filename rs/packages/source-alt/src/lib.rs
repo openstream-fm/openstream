@@ -17,6 +17,7 @@ use crate::handler::{method_not_allowed, not_found, source, status};
 use crate::http::read_request_head;
 
 pub async fn start(
+  deployment_id: String,
   addr: impl Into<SocketAddr>,
   media_sessions: MediaSessionMap,
   drop_tracer: DropTracer,
@@ -39,6 +40,7 @@ pub async fn start(
           socket,
           local_addr,
           remote_addr,
+          deployment_id.clone(),
           media_sessions.clone(),
           drop_tracer.clone(),
           shutdown.clone(),
@@ -60,6 +62,7 @@ pub async fn handle_connection(
   mut socket: TcpStream,
   local_addr: SocketAddr,
   remote_addr: SocketAddr,
+  deployment_id: String,
   media_sessions: MediaSessionMap,
   drop_tracer: DropTracer,
   shutdown: Shutdown,
@@ -84,14 +87,15 @@ pub async fn handle_connection(
     (&Method::GET, "/status") => status(socket, head).await,
     (_, "/status") => method_not_allowed(socket, head, HeaderValue::from_static("GET")).await,
     _ => {
-      if let Some(id) = is_source_client_uri(&head) {
+      if let Some(station_id) = is_source_client_uri(&head) {
         if head.method == Method::PUT || head.method.as_str().eq_ignore_ascii_case("SOURCE") {
           source(
             socket,
             local_addr,
             remote_addr,
             head,
-            id,
+            deployment_id,
+            station_id,
             media_sessions,
             drop_tracer,
             shutdown,

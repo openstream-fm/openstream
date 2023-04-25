@@ -2,7 +2,7 @@
 
 use std::{collections::btree_map::Entry, net::SocketAddr};
 
-use db::{station::Station, Model};
+use db::{deployment::Deployment, station::Station, Model};
 use drop_tracer::DropTracer;
 use hyper::{
   header::{CONTENT_LENGTH, CONTENT_TYPE, WWW_AUTHENTICATE},
@@ -28,12 +28,107 @@ pub async fn source(
   local_addr: SocketAddr,
   remote_addr: SocketAddr,
   head: RequestHead,
-  id: String,
+  deployment_id: String,
+  station_id: String,
   media_sessions: MediaSessionMap,
   drop_tracer: DropTracer,
   shutdown: Shutdown,
 ) -> Result<(), HandlerError> {
-  trace!("source: {} {} => id: {}", head.method, head.uri, id);
+  trace!(
+    "source: {} {} => station_id: {}",
+    head.method,
+    head.uri,
+    station_id
+  );
+
+  macro_rules! write_err {
+    ($status:expr, $message:expr) => {
+      let body = $message;
+      let mut headers = headers!();
+      headers.append(CONTENT_TYPE, HeaderValue::from_static("text/plain"));
+      headers.append(
+        CONTENT_LENGTH,
+        HeaderValue::from_str(body.len().to_string().as_str()).unwrap(),
+      );
+
+      let response = ResponseHead {
+        version: Version::HTTP_10,
+        status: $status,
+        headers,
+      };
+
+      write_response_head(&mut socket, response, false).await?;
+      socket.write_all(body.as_bytes()).await?;
+      socket.flush().await?;
+      return Ok(())
+    };
+  }
+
+  macro_rules! socket_try {
+    ($result:expr, $status:expr, $message:expr) => {
+      match $result {
+        Ok(v) => v,
+        Err(_) => {
+          write_err!($status, $message);
+        }
+      }
+    };
+  }
+
+  let r = socket_try!(
+    Station::try_set_owner_deployment_id(&station_id, &deployment_id, drop_tracer.token()).await,
+    StatusCode::INTERNAL_SERVER_ERROR,
+    "internal error (db)"
+  );
+
+  let (station, dropper) = match r {
+    Err(None) => {
+      write_err!(
+        StatusCode::NOT_FOUND,
+        format!("station with id {} not found", station_id)
+      );
+    }
+
+    Err(Some((station, owner_deployment_id))) => {
+      if deployment_id == owner_deployment_id {
+        (station, None)
+      } else {
+        let deployment = socket_try!(
+          Deployment::get_by_id(&owner_deployment_id).await,
+          StatusCode::INTERNAL_SERVER_ERROR,
+          "internal error (db)"
+        );
+
+        let deployment = match deployment {
+          Some(deployment) => deployment,
+          None => {
+            write_err!(
+              StatusCode::INTERNAL_SERVER_ERROR,
+              "internal error (depl nf), try again later"
+            );
+          }
+        };
+
+        use rand::seq::SliceRandom;
+        let source_port = deployment.source_ports.choose(&mut rand::thread_rng());
+
+        let port = match source_port {
+          Some(port) => *port,
+          None => {
+            write_err!(
+              StatusCode::INTERNAL_SERVER_ERROR,
+              "internal error (depl no port), try again later"
+            );
+          }
+        };
+
+        let destination = SocketAddr::from((deployment.local_ip, port));
+        return passthrough(socket, destination, head.buffer).await;
+      }
+    }
+
+    Ok((station, dropper)) => (station, Some(dropper)),
+  };
 
   // if not PUT is SOURCE checked in router
   let _is_put = head.method == Method::PUT;
@@ -53,68 +148,10 @@ pub async fn source(
 
   let content_type = match head.headers.get(CONTENT_TYPE).and_then(|t| t.to_str().ok()) {
     None => {
-      let body = "content-type header is required";
-      let mut headers = headers!();
-      headers.append(CONTENT_TYPE, HeaderValue::from_static("text/plain"));
-      headers.append(
-        CONTENT_LENGTH,
-        HeaderValue::from_str(body.len().to_string().as_str()).unwrap(),
-      );
-      let response = ResponseHead {
-        version: Version::HTTP_10,
-        status: StatusCode::BAD_REQUEST,
-        headers,
-      };
-
-      write_response_head(&mut socket, response, false).await?;
-      socket.write_all(body.as_bytes()).await?;
-      socket.flush().await?;
-      return Ok(());
+      write_err!(StatusCode::BAD_REQUEST, "content-type header is required");
     }
 
     Some(t) => t.to_string(),
-  };
-
-  let station = match Station::get_by_id(&id).await {
-    Err(_e) => {
-      let body = "internal error (db)";
-      let mut headers = headers!();
-      headers.append(CONTENT_TYPE, HeaderValue::from_static("text/plain"));
-      headers.append(
-        CONTENT_LENGTH,
-        HeaderValue::from_str(body.len().to_string().as_str()).unwrap(),
-      );
-      let response = ResponseHead {
-        version: Version::HTTP_10,
-        status: StatusCode::INTERNAL_SERVER_ERROR,
-        headers,
-      };
-
-      write_response_head(&mut socket, response, false).await?;
-      socket.write_all(body.as_bytes()).await?;
-      socket.flush().await?;
-      return Ok(());
-    }
-    Ok(None) => {
-      let body = format!("station with id {id} not found");
-      let mut headers = headers!();
-      headers.append(CONTENT_TYPE, HeaderValue::from_static("text/plain"));
-      headers.append(
-        CONTENT_LENGTH,
-        HeaderValue::from_str(body.len().to_string().as_str()).unwrap(),
-      );
-      let response = ResponseHead {
-        version: Version::HTTP_10,
-        status: StatusCode::NOT_FOUND,
-        headers,
-      };
-
-      write_response_head(&mut socket, response, false).await?;
-      socket.write_all(body.as_bytes()).await?;
-      socket.flush().await?;
-      return Ok(());
-    }
-    Ok(Some(station)) => station,
   };
 
   let password = station.source_password;
@@ -202,23 +239,10 @@ pub async fn source(
   let tx = match tx {
     Some(tx) => tx,
     None => {
-      let body = "this mountpoint is already in use, try again later";
-      let mut headers = headers!();
-      headers.append(CONTENT_TYPE, HeaderValue::from_static("text/plain"));
-      headers.append(
-        CONTENT_LENGTH,
-        HeaderValue::from_str(body.len().to_string().as_str()).unwrap(),
+      write_err!(
+        StatusCode::UNAUTHORIZED,
+        "this mountpoint is already in use, try again later"
       );
-      let res = ResponseHead {
-        version: Version::HTTP_10,
-        status: StatusCode::UNAUTHORIZED,
-        headers,
-      };
-
-      write_response_head(&mut socket, res, true).await?;
-      socket.write_all(body.as_bytes()).await?;
-      socket.flush().await?;
-      return Ok(());
     }
   };
 
@@ -261,9 +285,10 @@ pub async fn source(
       .unwrap_or_else(user_agent::UserAgent::default);
 
     let request_document = db::http::Request {
+      real_ip,
+      country_code: geoip::ip_to_country_code(&real_ip),
       local_addr: db::http::SocketAddr::from_http(local_addr),
       remote_addr: db::http::SocketAddr::from_http(remote_addr),
-      real_ip,
       version: db::http::Version::from_http(head.version),
       method: db::http::Method::from_http(&head.method),
       uri: db::http::Uri::from_http(&head.uri),
@@ -274,6 +299,7 @@ pub async fn source(
     let r = media_sessions::live::run_live_session(
       tx,
       reader.into_bytes_stream(1000),
+      deployment_id,
       request_document,
       shutdown,
       drop_tracer,
@@ -358,8 +384,21 @@ pub async fn source(
       }
     };
 
+    drop(dropper);
+
     Ok::<(), HandlerError>(())
   });
 
+  Ok(())
+}
+
+pub async fn passthrough(
+  mut incoming: TcpStream,
+  destination: SocketAddr,
+  head: Vec<u8>,
+) -> Result<(), HandlerError> {
+  let mut outgoing = tokio::net::TcpStream::connect(destination).await?;
+  outgoing.write_all(head.as_ref()).await?;
+  tokio::io::copy_bidirectional(&mut outgoing, &mut incoming).await?;
   Ok(())
 }

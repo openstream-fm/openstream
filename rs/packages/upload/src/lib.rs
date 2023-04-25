@@ -253,6 +253,7 @@ async fn upload_audio_file_inner_spawn<
   E: Error + Send + Sync + 'static,
   S: Stream<Item = Result<Bytes, E>> + Send + 'static,
 >(
+  deployment_id: String,
   station_id: String,
   audio_file_id: Option<String>,
   estimated_len: Option<u64>,
@@ -263,6 +264,7 @@ async fn upload_audio_file_inner_spawn<
 
   let mut operation = AudioUploadOperation {
     id: audio_file_id.clone(),
+    deployment_id,
     station_id: station_id.clone(),
     created_at: DateTime::now(),
     state: db::audio_upload_operation::State::Pending,
@@ -320,6 +322,7 @@ pub async fn upload_audio_file<
   E: Error + Send + Sync + 'static,
   S: Stream<Item = Result<Bytes, E>> + Send + 'static,
 >(
+  deployment_id: String,
   station_id: String,
   audio_file_id: Option<String>,
   estimated_len: Option<u64>,
@@ -327,6 +330,7 @@ pub async fn upload_audio_file<
   data: S,
 ) -> Result<AudioFile, UploadError<E>> {
   tokio::spawn(upload_audio_file_inner_spawn(
+    deployment_id,
     station_id,
     audio_file_id,
     estimated_len,

@@ -139,7 +139,9 @@ pub mod post {
   use super::*;
 
   #[derive(Debug, Clone)]
-  pub struct Endpoint {}
+  pub struct Endpoint {
+    pub deployment_id: String,
+  }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../../defs/api/stations/[station]/files/POST/")]
@@ -174,6 +176,7 @@ pub mod post {
       //   .saturating_sub(input.station.limits.storage.used as usize);
 
       let file = upload::upload_audio_file(
+        self.deployment_id.clone(),
         input.station.id,
         None,
         input.size_hint,

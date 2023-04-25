@@ -1,4 +1,5 @@
 use db::station_picture::StationPicture;
+use db::stream_connection::index::MemIndex;
 use drop_tracer::DropTracer;
 use media_sessions::MediaSessionMap;
 use prex::router::builder::Builder;
@@ -19,11 +20,14 @@ pub mod users;
 
 pub mod devices;
 pub mod station_pictures;
+pub mod stream_stats;
 
 pub fn router(
+  deployment_id: String,
   media_sessions: MediaSessionMap,
   shutdown: Shutdown,
   drop_tracer: DropTracer,
+  stream_connections_index: MemIndex,
 ) -> Builder {
   let mut app = prex::prex();
 
@@ -45,6 +49,45 @@ pub fn router(
     .at("/auth/admin/login")
     .post(auth::admin::login::post::Endpoint {}.into_handler());
 
+  app.at("/stream-stats").get(
+    stream_stats::get::Endpoint {
+      index: stream_connections_index.clone(),
+    }
+    .into_handler(),
+  );
+
+  app.at("/stream-stats/now").get(
+    stream_stats::now::get::Endpoint {
+      index: stream_connections_index.clone(),
+    }
+    .into_handler(),
+  );
+
+  app.at("/stream-stats/now/count").get(
+    stream_stats::now::count::get::Endpoint {
+      index: stream_connections_index.clone(),
+    }
+    .into_handler(),
+  );
+
+  app
+    .at("/stream-stats/last-:num([0-9]+):unit(ms|s|min|h|d|w)")
+    .get(
+      stream_stats::since::get::Endpoint {
+        index: stream_connections_index.clone(),
+      }
+      .into_handler(),
+    );
+
+  app
+    .at("/stream-stats/last-:num([0-9]+):unit(ms|s|min|h|d|w)/count")
+    .get(
+      stream_stats::since::count::get::Endpoint {
+        index: stream_connections_index.clone(),
+      }
+      .into_handler(),
+    );
+
   app
     .at("/users")
     .get(users::get::Endpoint {}.into_handler())
@@ -65,6 +108,45 @@ pub fn router(
     .get(accounts::id::get::Endpoint {}.into_handler())
     .patch(accounts::id::patch::Endpoint {}.into_handler());
 
+  app.at("/accounts/:account/stream-stats").get(
+    accounts::stream_stats::get::Endpoint {
+      index: stream_connections_index.clone(),
+    }
+    .into_handler(),
+  );
+
+  app.at("/accounts/:account/stream-stats/now").get(
+    accounts::stream_stats::now::get::Endpoint {
+      index: stream_connections_index.clone(),
+    }
+    .into_handler(),
+  );
+
+  app.at("/accounts/:account/stream-stats/now/count").get(
+    accounts::stream_stats::now::count::get::Endpoint {
+      index: stream_connections_index.clone(),
+    }
+    .into_handler(),
+  );
+
+  app
+    .at("/accounts/:account/stream-stats/last-:num([0-9]+):unit(ms|s|min|h|d|w)")
+    .get(
+      accounts::stream_stats::since::get::Endpoint {
+        index: stream_connections_index.clone(),
+      }
+      .into_handler(),
+    );
+
+  app
+    .at("/accounts/:account/stream-stats/last-:num([0-9]+):unit(ms|s|min|h|d|w)/count")
+    .get(
+      accounts::stream_stats::since::count::get::Endpoint {
+        index: stream_connections_index.clone(),
+      }
+      .into_handler(),
+    );
+
   app
     .at("/stations")
     .get(stations::get::Endpoint {}.into_handler())
@@ -74,6 +156,45 @@ pub fn router(
     .at("/stations/:station")
     .get(stations::id::get::Endpoint {}.into_handler())
     .patch(stations::id::patch::Endpoint {}.into_handler());
+
+  app.at("/stations/:station/stream-stats").get(
+    stations::stream_stats::get::Endpoint {
+      index: stream_connections_index.clone(),
+    }
+    .into_handler(),
+  );
+
+  app.at("/stations/:station/stream-stats/now").get(
+    stations::stream_stats::now::get::Endpoint {
+      index: stream_connections_index.clone(),
+    }
+    .into_handler(),
+  );
+
+  app.at("/stations/:station/stream-stats/now/count").get(
+    stations::stream_stats::now::count::get::Endpoint {
+      index: stream_connections_index.clone(),
+    }
+    .into_handler(),
+  );
+
+  app
+    .at("/stations/:station/stream-stats/last-:num([0-9]+):unit(ms|s|min|h|d|w)")
+    .get(
+      stations::stream_stats::since::get::Endpoint {
+        index: stream_connections_index.clone(),
+      }
+      .into_handler(),
+    );
+
+  app
+    .at("/stations/:station/stream-stats/last-:num([0-9]+):unit(ms|s|min|h|d|w)/count")
+    .get(
+      stations::stream_stats::since::count::get::Endpoint {
+        index: stream_connections_index,
+      }
+      .into_handler(),
+    );
 
   app.at("/stations/:station/restart-playlist").post(
     stations::restart_playlist::post::Endpoint {
@@ -87,7 +208,7 @@ pub fn router(
   app
     .at("/stations/:station/files")
     .get(stations::files::get::Endpoint {}.into_handler())
-    .post(stations::files::post::Endpoint {}.into_handler());
+    .post(stations::files::post::Endpoint { deployment_id }.into_handler());
 
   app
     .at("/stations/:station/files/shuffle")
@@ -134,9 +255,9 @@ pub fn router(
     .at("/stations/:station/now-playing")
     .get(stations::now_playing::get::Endpoint {}.into_handler());
 
-  app
-    .at("/stations/:station/dashboard-stats")
-    .get(stations::dashboard_stats::get::Endpoint {}.into_handler());
+  // app
+  //   .at("/stations/:station/dashboard-stats")
+  //   .get(stations::dashboard_stats::get::Endpoint {}.into_handler());
 
   app
     .at("/stations/:station/reset-source-password")

@@ -2,7 +2,7 @@
 	import TopUser from "$lib/components/Dashboard/TopUser.svelte";
 	import TextField from "$lib/components/Form/TextField.svelte";
 	import NullTextField from "$lib/components/Form/Nullable/NullTextField.svelte";
-	import { ripple } from "$lib/ripple";
+	import { ripple } from "$share/ripple";
 	import { clone, diff, equals } from "$server/util/collections";
 	import { _patch, action } from "$share/net.client";
 	import { _message } from "$share/notify";

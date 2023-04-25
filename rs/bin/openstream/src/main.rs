@@ -226,7 +226,12 @@ fn start(opts: Start) -> Result<(), anyhow::Error> {
 }
 
 async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
+  
+  use db::models::deployment::{Deployment, DeploymentState};
+
   let config = Arc::new(shared_init(config).await?);
+
+  let pid = std::process::id();
 
   let ffmpeg_path = which::which("ffmpeg")
     .context("error getting ffmpeg path (is ffmpeg installed and available in executable path?)")?;
@@ -244,6 +249,34 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   // let ip = ip::get_ip_v4().await.context("error obtaining public ip")?;
   // info!("public ip address: {}", ip.yellow());
 
+  let now = DateTime::now();
+
+  let source_ports = match &config.source {
+    None => vec![],
+    Some(source) => {
+      source.addrs.iter().map(|addr| addr.port()).collect()
+    }
+  };
+
+  let stream_ports = match &config.stream {
+    None => vec![],
+    Some(stream) => {
+      stream.addrs.iter().map(|addr| addr.port()).collect()
+    }
+  };
+
+  let deployment = Deployment {
+    id: Deployment::uid(),
+    pid,
+    local_ip,
+    source_ports,
+    stream_ports,
+    state: DeploymentState::Active,
+    created_at: now,
+    updated_at: now,
+    dropped_at: None,
+  };
+
   let config::Config {
     mongodb: _,
     ref stream,
@@ -254,20 +287,11 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
 
   let shutdown = Shutdown::new();
   let drop_tracer = DropTracer::new("main");
-  let media_sessions = MediaSessionMap::new(drop_tracer.clone());
-
-  tokio::spawn({
-    let shutdown = shutdown.clone();
-    async move {
-      tokio::signal::ctrl_c()
-        .await
-        .expect("failed to listen to SIGINT signal");
-      info!(target: "start", "{} received, starting graceful shutdown", "SIGINT".yellow());
-      shutdown.shutdown();
-    }
-  });
+  let media_sessions = MediaSessionMap::new(deployment.id.clone(), drop_tracer.clone());
 
   let futs = futures::stream::FuturesUnordered::new();
+
+
 
   if let Some(source_config) = source {
     // let source = SourceServer::new(
@@ -281,10 +305,17 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
 
     // futs.push(fut.boxed());
 
-    for addr in source_config.addrs.iter() {
-      let fut = source_alt::start(*addr, media_sessions.clone(), drop_tracer.clone(), shutdown.clone());
+    for addr in source_config.addrs.iter().copied() {
+      let fut = source_alt::start(
+        deployment.id.clone(),
+        addr,
+        media_sessions.clone(),
+        drop_tracer.clone(),
+        shutdown.clone()
+      );
+
       futs.push(async move {
-        fut.await.map_err(crate::error::ServerStartError::from)?;
+        fut.await?;
         Ok::<(), crate::error::ServerStartError>(())
       }.boxed());
     }
@@ -292,6 +323,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
 
   if let Some(stream_config) = stream {
     let stream = StreamServer::new(
+      deployment.id.clone(),
       stream_config.addrs.clone(),
       shutdown.clone(),
       drop_tracer.clone(),
@@ -305,11 +337,14 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   }
 
   if let Some(api_config) = api {
+    let stream_connections_index = db::stream_connection::index::MemIndex::new().await;
     let api = ApiServer::new(
+      deployment.id.clone(),
       api_config.addrs.clone(),
       shutdown.clone(),
       drop_tracer.clone(),
       media_sessions.clone(),
+      stream_connections_index,
     );
     let fut = api.start()?;
     futs.push(async move {
@@ -319,7 +354,11 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   }
 
   if let Some(storage_config) = storage {
-    let storage = StorageServer::new(storage_config.addrs.clone(), shutdown.clone());
+    let storage = StorageServer::new(
+      deployment.id.clone(),
+      storage_config.addrs.clone(),
+      shutdown.clone()
+    );
     let fut = storage.start()?;
     futs.push(async move {
       fut.await.map_err(crate::error::ServerStartError::from)?;
@@ -335,9 +374,80 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
 
   db::models::transfer_checkpoint::start_background_task();
 
+  info!(
+    target: "start",
+    "inserting deployment document: _id={} pid={} local_ip={} ", deployment.id, deployment.pid, deployment.local_ip
+  );
+
+  let deployment_id = deployment.id.clone();
+  Deployment::insert(&deployment).await?;
+
+  tokio::spawn({
+    let shutdown = shutdown.clone();
+    let deployment_id = deployment_id.clone();
+    async move {
+      tokio::signal::ctrl_c()
+        .await
+        .expect("failed to listen to SIGINT signal");
+      
+      info!(target: "start", "{} received, starting graceful shutdown", "SIGINT".yellow());
+      
+      let query = doc! {
+        Deployment::KEY_ID: deployment_id,
+        Deployment::KEY_STATE: DeploymentState::KEY_ENUM_VARIANT_ACTIVE, 
+      };
+
+      let update = doc! {
+        "$set": {
+          Deployment::KEY_STATE: DeploymentState::KEY_ENUM_VARIANT_CLOSING,
+        }
+      };
+
+      if let Err(e) = Deployment::cl().update_one(query, update, None).await {
+        error!(
+          target: "shutdown",
+          "error setting deployment state to 'closing' => {} => {:?}", e, e,
+        )
+      };
+
+      shutdown.shutdown();
+    }
+  });
+
   futs.try_collect().await?;
 
   drop(drop_tracer);
+
+  let now = DateTime::now();
+
+  let query = doc! {
+    Deployment::KEY_ID: &deployment_id,
+  };
+
+  let update = doc! {
+    "$set": {
+      Deployment::KEY_STATE: DeploymentState::KEY_ENUM_VARIANT_CLOSED,
+      Deployment::KEY_UPDATED_AT: now,
+      Deployment::KEY_DROPPED_AT: Some(now),
+    }
+  };
+
+  info!(
+    target: "shutdown",
+    "setting deployment {} as closed", deployment_id
+  );
+
+  if let Err(e) = Deployment::cl().update_one(query, update, None).await {
+    error!(
+      target: "shutdown",
+      "error setting deployment state to 'closed' => {} => {:?}", e, e,
+    )
+  } else {
+    info!(
+      target: "shutdown",
+      "deployment {} closed in database", deployment_id
+    );
+  }
 
   Ok(())
 }

@@ -3,7 +3,7 @@
 
   import { beforeNavigate, invalidate } from "$app/navigation";
 	import Page from "$lib/components/Page.svelte";
-	import { ripple } from "$lib/ripple";
+	import { ripple } from "$share/ripple";
 	import { action, ClientError, _delete, _get, _post, _put, _request } from "$share/net.client";
   import { mdiPlay, mdiPause, mdiAlertDecagram, mdiCheck, mdiTimerPauseOutline, mdiCircleEditOutline, mdiTrashCanOutline, mdiAutorenew, mdiCheckboxIntermediate, mdiCheckboxBlankOutline, mdiContentSaveOutline, mdiDrag, mdiMusic, mdiShuffleVariant, mdiShuffleDisabled, mdiRestart } from "@mdi/js";
 	import Icon from "$share/Icon.svelte";
@@ -841,7 +841,11 @@
   }
 
   .file-input {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    user-select: none;
   }
 
   .upload-empty-out {
@@ -1471,7 +1475,7 @@
               <button
                 class="shuffle-btn ripple-container"
                 aria-label="Restart playlist"
-                use:tooltip={hide_tooltips ? null : "Restart playlist"}
+                use:tooltip={"Restart playlist"}
                 use:ripple
                 on:click={() => restart_open = true}
                 transition:shuffle_btn_transition|local
@@ -1487,7 +1491,7 @@
                 <button
                   class="shuffle-btn ripple-container"
                   aria-label="Unshuffle playlist"
-                  use:tooltip={hide_tooltips ? null : "Unshuffle playlist"}
+                  use:tooltip={"Unshuffle playlist"}
                   use:ripple
                   on:click={() => unshuffle_open = true}
                   transition:shuffle_btn_transition|local
@@ -1501,7 +1505,7 @@
               <button
                 class="shuffle-btn ripple-container"
                 aria-label="Shuffle playlist"
-                use:tooltip={hide_tooltips ? null : "Shuffle playlist"}
+                use:tooltip={"Shuffle playlist"}
                 use:ripple
                 on:click={() => shuffle_open = true}
                 transition:shuffle_btn_transition|local
@@ -1775,7 +1779,7 @@
                     <button
                       class="file-btn file-btn-edit ripple-container"
                       use:ripple
-                      use:tooltip={hide_tooltips ? null : "Edit"}
+                      use:tooltip={"Edit"}
                       on:click={() => open_edit_item(file)}
                     >
                       <Icon d={mdiCircleEditOutline} />
@@ -1785,7 +1789,7 @@
                     <button
                       class="file-btn file-btn-del ripple-container"
                       use:ripple
-                      use:tooltip={hide_tooltips ? null : "Delete"}
+                      use:tooltip={"Delete"}
                       on:click={() => audio_item_to_delete = file}
                     >
                       <Icon d={mdiTrashCanOutline} />
@@ -1807,7 +1811,7 @@
   <Dialog
     title="Delete track {audio_item_to_delete.metadata.title || audio_item_to_delete.filename}"
     width="400px"
-    onClose={() => audio_item_to_delete = null}
+    on_close={() => audio_item_to_delete = null}
   >
     <div class="delete-dialog">
       <div class="delete-dialog-text">
@@ -1832,7 +1836,7 @@
   <Dialog
     title="Delete {$selected_ids.length} {$selected_ids.length === 1 ? "track" : "tracks"}"
     width="400px"
-    onClose={() => delete_selection_open = false}
+    on_close={() => delete_selection_open = false}
   >
     <div class="delete-dialog">
       <div class="delete-dialog-text">
@@ -1857,7 +1861,7 @@
   <Dialog
     title="Edit track {audio_item_to_edit.metadata.title || audio_item_to_edit.filename}"
     width="400px"
-    onClose={() => audio_item_to_edit = null}  
+    on_close={() => audio_item_to_edit = null}  
   >
     <div class="edit-dialog">
       <div class="edit-dialog-fields">
@@ -1889,7 +1893,7 @@
   <Dialog
     title="Shuffle playlist"
     width="400px"
-    onClose={() => shuffle_open = false}  
+    on_close={() => shuffle_open = false}  
     >
     <div class="edit-dialog">
 
@@ -1915,7 +1919,7 @@
     <Dialog
       title="Unshuffle playlist"
       width="400px"
-      onClose={() => shuffle_open = false}  
+      on_close={() => shuffle_open = false}  
     >
     <div class="edit-dialog">
 
@@ -1941,7 +1945,7 @@
   <Dialog
     title="Restart playlist"
     width="400px"
-    onClose={() => restart_open = false}  
+    on_close={() => restart_open = false}  
   >
   <div class="edit-dialog">
 

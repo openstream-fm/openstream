@@ -15,8 +15,8 @@
 			"$server/*": ["../server/src/*"],
 			"$lib":["./src/lib"],
 			"$lib/*":["./src/lib/*"]
-		}
-
+		},
+		"ignoreDeprecations": "5.0"
 	}
 	// Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias
 	//

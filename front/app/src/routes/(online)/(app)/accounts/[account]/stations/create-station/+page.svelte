@@ -7,7 +7,7 @@
 
   import { goto, invalidate } from "$app/navigation";
 
-	import { ripple } from "$lib/ripple";
+	import { ripple } from "$share/ripple";
 	
   import { clone, diff, equals } from "$server/util/collections";
 	import { prevent_unload } from "$share/prevent-unload";

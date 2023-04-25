@@ -12,6 +12,7 @@ pub const MAX_RESPONSE_HEAD_SIZE: usize = 8 * 1024;
 
 #[derive(Debug)]
 pub struct RequestHead {
+  pub buffer: Vec<u8>,
   pub proxy_protocol_ip: Option<IpAddr>,
   pub version: Version,
   pub method: Method,
@@ -85,13 +86,13 @@ pub async fn read_request_head<R: AsyncRead + Unpin>(
 
   trace!("head size => {i} bytes");
 
-  parse_request_head(slice).await
+  parse_request_head(Vec::from(slice)).await
 }
 
-pub async fn parse_request_head(buf: &[u8]) -> Result<RequestHead, ReadHeadError> {
+pub async fn parse_request_head(buffer: Vec<u8>) -> Result<RequestHead, ReadHeadError> {
   trace!("parse_request_head");
 
-  let string = String::from_utf8_lossy(buf);
+  let string = String::from_utf8_lossy(buffer.as_ref());
 
   let mut lines = string.split_terminator("\r\n");
 
@@ -140,11 +141,14 @@ pub async fn parse_request_head(buf: &[u8]) -> Result<RequestHead, ReadHeadError
     }
   }
 
+  let uri = hyper::Uri::from_str(uri)?;
+
   let head = RequestHead {
+    buffer,
     proxy_protocol_ip,
     version,
     method,
-    uri: hyper::Uri::from_str(uri)?,
+    uri,
     headers,
   };
 

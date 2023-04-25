@@ -1,9 +1,10 @@
-pub mod dashboard_stats;
+// pub mod dashboard_stats;
 pub mod files;
 pub mod id;
 pub mod now_playing;
 pub mod reset_source_password;
 pub mod restart_playlist;
+pub mod stream_stats;
 
 use crate::json::JsonHandler;
 use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
@@ -518,6 +519,7 @@ pub mod post {
         limits,
         source_password: Station::random_source_password(),
         playlist_is_randomly_shuffled: false,
+        owner_deployment_id: None,
 
         system_metadata,
         user_metadata,

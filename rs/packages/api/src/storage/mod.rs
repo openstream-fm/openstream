@@ -12,6 +12,7 @@ use std::net::SocketAddr;
 
 #[derive(Debug)]
 pub struct StorageServer {
+  deployment_id: String,
   addrs: Vec<SocketAddr>,
   shutdown: Shutdown,
 }
@@ -30,8 +31,12 @@ pub struct Status {
 }
 
 impl StorageServer {
-  pub fn new(addrs: Vec<SocketAddr>, shutdown: Shutdown) -> Self {
-    Self { addrs, shutdown }
+  pub fn new(deployment_id: String, addrs: Vec<SocketAddr>, shutdown: Shutdown) -> Self {
+    Self {
+      deployment_id,
+      addrs,
+      shutdown,
+    }
   }
 
   pub fn start(
@@ -60,11 +65,11 @@ impl StorageServer {
         socket.set_only_v6(true)?;
       }
 
-      socket.set_reuse_address(true)?;
-      socket.set_reuse_port(true)?;
+      // socket.set_reuse_address(true)?;
+      // socket.set_reuse_port(true)?;
 
       socket.bind(&addr.into())?;
-      socket.listen(128)?;
+      socket.listen(1024)?;
 
       let tcp = socket.into();
 

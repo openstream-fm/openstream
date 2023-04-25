@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Email from "$lib/components/Form/Email.svelte";
 	import Password from "$lib/components/Form/Password.svelte";
-	import { ripple } from "$lib/ripple";
+	import { ripple } from "$share/ripple";
   import { form } from "../transitions";
   import { action, _post } from "$share/net.client";
 	import { goto, invalidate } from "$app/navigation";

@@ -65,11 +65,11 @@ impl RouterServer {
         socket.set_only_v6(true)?;
       }
 
-      socket.set_reuse_address(true)?;
-      socket.set_reuse_port(true)?;
+      // socket.set_reuse_address(true)?;
+      // socket.set_reuse_port(true)?;
 
       socket.bind(&addr.into())?;
-      socket.listen(128)?;
+      socket.listen(1024)?;
 
       let tcp = socket.into();
 

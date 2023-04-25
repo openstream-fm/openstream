@@ -22,6 +22,13 @@ const defaultConfig: Config = {
     enabled: true,
     port: 3000,
   },
+  source_port: {
+    local: 8000,
+    test: 8001,
+    srv1: 8100,
+    srv2: 8200,
+    default: 8000,
+  }
 };
 
 test("load_from_string should load config from JSON string", (t) => {
@@ -44,6 +51,13 @@ cookie_name = "test_cookie"
 [studio]
 enabled = true
 port = 3000
+
+[source_port]
+local = 8000
+test = 8001
+srv1 = 8100
+srv2 = 8200
+default = 8000
 `;
   const config = load_from_string(tomlString, "toml");
   t.deepEqual(config, defaultConfig);
@@ -58,6 +72,11 @@ test("merge_env should merge environment variables with config", (t) => {
     OPENSTREAM_FRONT_SESSION_COOKIE_NAME: "test_cookie_env",
     OPENSTREAM_FRONT_STUDIO_ENABLED: "false",
     OPENSTREAM_FRONT_STUDIO_PORT: "4000",
+    OPENSTREAM_FRONT_SOURCE_PORT_LOCAL: "8000",
+    OPENSTREAM_FRONT_SOURCE_PORT_TEST: "8001",
+    OPENSTREAM_FRONT_SOURCE_PORT_SRV1: "8100",
+    OPENSTREAM_FRONT_SOURCE_PORT_SRV2: "8200",
+    OPENSTREAM_FRONT_SOURCE_PORT_DEFAULT: "8000",
   };
 
   const expectedConfig: Config = {
@@ -74,6 +93,13 @@ test("merge_env should merge environment variables with config", (t) => {
       enabled: false,
       port: 4000,
     },
+    source_port: {
+      local: 8000,
+      test: 8001,
+      srv1: 8100,
+      srv2: 8200,
+      default: 8000,
+    }
   };
 
   const mergedConfig = merge_env(defaultConfig, { env });
@@ -116,6 +142,11 @@ test("load_from_string should load config from JSON string with missing properti
     OPENSTREAM_FRONT_SESSION_COOKIE_NAME: "test_cookie",
     OPENSTREAM_FRONT_STUDIO_ENABLED: "true",
     OPENSTREAM_FRONT_STUDIO_PORT: "3000",
+    OPENSTREAM_FRONT_SOURCE_PORT_LOCAL: "8000",
+    OPENSTREAM_FRONT_SOURCE_PORT_TEST: "8001",
+    OPENSTREAM_FRONT_SOURCE_PORT_SRV1: "8100",
+    OPENSTREAM_FRONT_SOURCE_PORT_SRV2: "8200",
+    OPENSTREAM_FRONT_SOURCE_PORT_DEFAULT: "8000",
   };
 
   const config = load_from_string(partialJsonString, "json", { env });
@@ -137,6 +168,11 @@ max_age_days = 30
     OPENSTREAM_FRONT_SESSION_COOKIE_NAME: "test_cookie",
     OPENSTREAM_FRONT_STUDIO_ENABLED: "true",
     OPENSTREAM_FRONT_STUDIO_PORT: "3000",
+    OPENSTREAM_FRONT_SOURCE_PORT_LOCAL: "8000",
+    OPENSTREAM_FRONT_SOURCE_PORT_TEST: "8001",
+    OPENSTREAM_FRONT_SOURCE_PORT_SRV1: "8100",
+    OPENSTREAM_FRONT_SOURCE_PORT_SRV2: "8200",
+    OPENSTREAM_FRONT_SOURCE_PORT_DEFAULT: "8000",
   };
 
   const config = load_from_string(partialTomlString, "toml", { env });

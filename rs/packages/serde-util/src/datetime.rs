@@ -87,7 +87,7 @@ impl DateTime {
   }
 
   pub fn into_bson(self) -> bson::DateTime {
-    bson::DateTime::from_millis(self.timestamp_millis())
+    bson::DateTime::from_millis(self.timestamp_millis() as i64)
   }
 
   pub fn from_bson(date: bson::DateTime) -> Self {
@@ -105,8 +105,8 @@ impl DateTime {
     Self::new(OffsetDateTime::from_unix_timestamp_nanos(millis as i128 * 1_000_000).unwrap())
   }
 
-  pub fn timestamp_millis(self) -> i64 {
-    (self.0.unix_timestamp_nanos() / 1_000_000) as i64
+  pub fn timestamp_millis(self) -> i128 {
+    self.0.unix_timestamp_nanos() / 1_000_000
   }
 }
 

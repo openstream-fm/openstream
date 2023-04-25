@@ -1,7 +1,7 @@
 import { browser } from "$app/environment";
 import { _get } from "$share/net.client";
 import { type Readable, type Writable, readable, writable } from "svelte/store";
-import { default_logger } from "./logger";
+import { default_logger } from "$share/logger";
 
 export type NowPlaying = import("$server/defs/api/stations/[station]/now-playing/GET/Output").Output;
 export type StoreValue = { station_id: string, info: NowPlaying };

@@ -144,6 +144,26 @@ export class Client {
   async me(ip: string | null, ua: string | null, token: string): Promise<import("./defs/api/me/Output").Output> {
     return await this.get(ip, ua, token, "/me");
   }
+
+  async get_stream_stats(ip: string | null, ua: string | null, token: string): Promise<import("./defs/api/stream-stats/GET/Output").Output> {
+    return await this.get(ip, ua, token, `/stream-stats`);
+  }
+
+  async get_stream_stats_item_now(ip: string | null, ua: string | null, token: string): Promise<import("./defs/api/stream-stats/now/GET/Output").Output> {
+    return await this.get(ip, ua, token, `/stream-stats/now`);
+  }
+
+  async get_stream_stats_item_now_count(ip: string | null, ua: string | null, token: string): Promise<import("./defs/api/stream-stats/now/count/GET/Output").Output> {
+    return await this.get(ip, ua, token, `/stream-stats/now/count`);
+  }
+
+  async get_stream_stats_item_since(ip: string | null, ua: string | null, token: string, num: number | string, unit: string): Promise<import("./defs/api/stream-stats/last-[num][unit]/GET/Output").Output> {
+    return await this.get(ip, ua, token, `/stream-stats/last-${num}${unit}`);
+  }
+
+  async get_stream_stats_item_since_count(ip: string | null, ua: string | null, token: string, num: number | string, unit: string): Promise<import("./defs/api/stream-stats/last-[num][unit]/count/GET/Output").Output> {
+    return await this.get(ip, ua, token, `/stream-stats/last-${num}${unit}/count`);
+  }
 }
 
 export class Auth {
@@ -213,6 +233,26 @@ export class Accounts {
   async patch(ip: string | null, ua: string | null, token: string, id: string, payload: import("./defs/api/accounts/[account]/PATCH/Payload").Payload): Promise<import("./defs/api/accounts/[account]/PATCH/Output").Output> {
     return await this.client.patch(ip, ua, token, `/accounts/${id}`, payload);
   }
+  
+  async get_stream_stats(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/accounts/[account]/stream-stats/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/accounts/${id}/stream-stats`);
+  }
+
+  async get_stream_stats_item_now(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/accounts/[account]/stream-stats/now/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/accounts/${id}/stream-stats/now`);
+  }
+
+  async get_stream_stats_item_now_count(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/accounts/[account]/stream-stats/now/count/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/accounts/${id}/stream-stats/now/count`);
+  }
+
+  async get_stream_stats_item_since(ip: string | null, ua: string | null, token: string, id: string, num: number | string, unit: string): Promise<import("./defs/api/accounts/[account]/stream-stats/last-[num][unit]/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/accounts/${id}/stream-stats/last-${num}${unit}`);
+  }
+
+  async get_stream_stats_item_since_count(ip: string | null, ua: string | null, token: string, id: string, num: number | string, unit: string): Promise<import("./defs/api/accounts/[account]/stream-stats/last-[num][unit]/count/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/accounts/${id}/stream-stats/last-${num}${unit}/count`);
+  }
 }
 
 export class Devices {
@@ -261,13 +301,33 @@ export class Stations {
     return await this.client.patch(ip, ua, token, `/stations/${id}`, payload);
   }
 
+  async get_stream_stats(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/stream-stats/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/stations/${id}/stream-stats`);
+  }
+
+  async get_stream_stats_item_now(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/stream-stats/now/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/stations/${id}/stream-stats/now`);
+  }
+
+  async get_stream_stats_item_now_count(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/stream-stats/now/count/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/stations/${id}/stream-stats/now/count`);
+  }
+
+  async get_stream_stats_item_since(ip: string | null, ua: string | null, token: string, id: string, num: number | string, unit: string): Promise<import("./defs/api/stations/[station]/stream-stats/last-[num][unit]/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/stations/${id}/stream-stats/last-${num}${unit}`);
+  }
+
+  async get_stream_stats_item_since_count(ip: string | null, ua: string | null, token: string, id: string, num: number | string, unit: string): Promise<import("./defs/api/stations/[station]/stream-stats/last-[num][unit]/count/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/stations/${id}/stream-stats/last-${num}${unit}/count`);
+  }
+
   async get_now_playing(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/now-playing/GET/Output").Output> {
     return await this.client.get(ip, ua, token, `/stations/${id}/now-playing`);
   }
 
-  async get_dashboard_stats(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/dashboard-stats/GET/Output").Output> {
-    return await this.client.get(ip, ua, token, `/stations/${id}/dashboard-stats`);
-  }
+  // async get_dashboard_stats(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/dashboard-stats/GET/Output").Output> {
+  //   return await this.client.get(ip, ua, token, `/stations/${id}/dashboard-stats`);
+  // }
 
   async restart_playlist(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/stations/[station]/restart-playlist/POST/Output").Output> {
     return await this.client.post(ip, ua, token, `/stations/${id}/restart-playlist`, undefined);

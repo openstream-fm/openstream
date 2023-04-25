@@ -2,7 +2,7 @@
 	import { onMount } from "svelte";
   import { intertab } from "$share/intertab";
 	import { browser } from "$app/environment";
-	import { default_logger } from "$lib/logger";
+	import { default_logger } from "$share/logger";
 	import { goto } from "$app/navigation";
   import Loading from "$share/Loading.svelte";
 

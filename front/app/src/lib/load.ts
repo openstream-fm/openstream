@@ -53,3 +53,7 @@ export const load_get = async <T>(
 
   return body as T
 }
+
+export const not_found_load = () => {
+  throw error(404, { status: 404, message: "Page not found", code: "CLIENT_PAGE_NOT_FOUND" });
+}

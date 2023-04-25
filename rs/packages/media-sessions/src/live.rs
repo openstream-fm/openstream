@@ -29,6 +29,7 @@ pub enum LiveError<E> {
 pub async fn run_live_session<E: std::error::Error + Send + Sync + 'static>(
   tx: Transmitter,
   data: impl Stream<Item = Result<Bytes, E>> + Send + Sync + 'static,
+  deployment_id: String,
   request: db::http::Request,
   shutdown: Shutdown,
   drop_tracer: DropTracer,
@@ -40,12 +41,15 @@ pub async fn run_live_session<E: std::error::Error + Send + Sync + 'static>(
     let now = DateTime::now();
     let document = MediaSession {
       id: MediaSession::uid(),
+      deployment_id,
       station_id: station_id.clone(),
       created_at: now,
       updated_at: now,
       transfer_bytes: 0,
       kind: MediaSessionKind::Live { request },
       state: MediaSessionState::Open,
+      closed_at: None,
+      duration_ms: None,
     };
 
     match MediaSession::insert(&document).await {
@@ -65,9 +69,10 @@ pub async fn run_live_session<E: std::error::Error + Send + Sync + 'static>(
   let transfer_bytes = Arc::new(AtomicU64::new(0));
 
   let dropper = MediaSessionDropper(Some((
+    document.id,
+    document.station_id,
     std::time::Instant::now(),
     transfer_bytes.clone(),
-    document,
     drop_tracer.token(),
   )));
 
@@ -124,14 +129,7 @@ pub async fn run_live_session<E: std::error::Error + Send + Sync + 'static>(
 }
 
 #[derive(Debug)]
-struct MediaSessionDropper(
-  Option<(
-    std::time::Instant,
-    Arc<AtomicU64>,
-    db::media_session::MediaSession,
-    Token,
-  )>,
-);
+struct MediaSessionDropper(Option<(String, String, std::time::Instant, Arc<AtomicU64>, Token)>);
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 struct PrettyDuration(pub u64);
@@ -192,29 +190,38 @@ impl std::fmt::Display for PrettyBytes {
 
 impl Drop for MediaSessionDropper {
   fn drop(&mut self) {
-    if let Some((start, transfer, mut doc, token)) = self.0.take() {
+    use mongodb::bson::doc;
+
+    if let Some((id, station_id, start, transfer, token)) = self.0.take() {
       let duration_ms = start.elapsed().as_millis() as u64;
       let transfer_bytes = transfer.load(Ordering::Acquire);
       info!(
         "closing live media session {} for station {}: duration = {}, transfer = {}",
-        doc.id,
-        doc.station_id,
+        id,
+        station_id,
         PrettyDuration(duration_ms),
         PrettyBytes(transfer_bytes),
       );
 
       tokio::spawn(async move {
-        doc.transfer_bytes = transfer_bytes;
-        doc.state = MediaSessionState::Closed {
-          closed_at: DateTime::now(),
-          duration_ms,
-        };
-        doc.updated_at = DateTime::now();
+        use db::media_session::MediaSession;
 
-        if let Err(e) = db::media_session::MediaSession::replace(&doc.id, &doc).await {
+        let now = DateTime::now();
+
+        let update = doc! {
+          "$set": {
+            MediaSession::KEY_UPDATED_AT: Some(now),
+            MediaSession::KEY_CLOSED_AT: Some(now),
+            MediaSession::KEY_STATE: MediaSessionState::KEY_ENUM_VARIANT_CLOSED,
+            MediaSession::KEY_DURATION_MS: Some(duration_ms as f64),
+            MediaSession::KEY_TRANSFER_BYTES: transfer_bytes as f64,
+          }
+        };
+
+        if let Err(e) = MediaSession::update_by_id(&id, update).await {
           error!(
             "error closing live session into db, session {}, station {}: = {} {:?}",
-            doc.id, doc.station_id, e, e
+            id, station_id, e, e
           )
         }
 
