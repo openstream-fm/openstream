@@ -29,5 +29,6 @@ db = { version = "0.1.0", path = "../db" }
 user-agent = { version = "0.1.0", path = "../user-agent" }
 proxy-protocol = { version = "0.1.0", path = "../proxy-protocol" }
 geoip = { version = "0.1.0", path = "../geoip" }
+rand = "0.8.5"
 
 [features]

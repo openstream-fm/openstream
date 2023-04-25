@@ -23,6 +23,7 @@ pub mod station_pictures;
 pub mod stream_stats;
 
 pub fn router(
+  deployment_id: String,
   media_sessions: MediaSessionMap,
   shutdown: Shutdown,
   drop_tracer: DropTracer,
@@ -207,7 +208,7 @@ pub fn router(
   app
     .at("/stations/:station/files")
     .get(stations::files::get::Endpoint {}.into_handler())
-    .post(stations::files::post::Endpoint {}.into_handler());
+    .post(stations::files::post::Endpoint { deployment_id }.into_handler());
 
   app
     .at("/stations/:station/files/shuffle")

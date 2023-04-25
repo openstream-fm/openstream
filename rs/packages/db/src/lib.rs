@@ -32,9 +32,11 @@ pub use models::audio_chunk;
 pub use models::audio_file;
 pub use models::audio_upload_operation;
 pub use models::config;
+pub use models::deployment;
 pub use models::event;
 pub use models::media_session;
 pub use models::play_history_item;
+pub use models::relay_session;
 pub use models::station;
 pub use models::station_picture;
 pub use models::station_picture_variant;
@@ -98,6 +100,9 @@ pub async fn ensure_collections() -> MongoResult<()> {
   play_history_item::PlayHistoryItem::ensure_collection().await?;
   media_session::MediaSession::ensure_collection().await?;
   transfer_checkpoint::TransferCheckpoint::ensure_collection().await?;
+  user_account_relation::UserAccountRelation::ensure_collection().await?;
+  deployment::Deployment::ensure_collection().await?;
+  relay_session::RelaySession::ensure_indexes().await?;
   user_account_relation::UserAccountRelation::ensure_collection().await?;
 
   Ok(())

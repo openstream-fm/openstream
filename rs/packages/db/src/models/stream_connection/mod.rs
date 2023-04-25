@@ -19,6 +19,7 @@ pub struct StreamConnection {
   #[serde(rename = "_id")]
   pub id: String,
   pub station_id: String,
+  pub deployment_id: String,
   #[serde(with = "serde_util::as_f64")]
   pub transfer_bytes: u64,
   #[serde(with = "serde_util::as_f64::option")]

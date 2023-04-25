@@ -35,6 +35,7 @@ pub struct AudioUploadOperation {
   #[serde(rename = "_id")]
   pub id: String,
   pub station_id: String,
+  pub deployment_id: String,
   pub created_at: DateTime,
   /// TODO: working in adding support for flattened enums in ts-rs
   #[serde(flatten)]
@@ -81,6 +82,7 @@ mod test {
   fn serialize_json_pending() {
     let operation = AudioUploadOperation {
       id: "id".into(),
+      deployment_id: "dep_id".into(),
       station_id: "station_id".into(),
       created_at: DateTime::now(),
       state: State::Pending,
@@ -94,6 +96,7 @@ mod test {
     let operation = AudioUploadOperation {
       id: "id".into(),
       station_id: "station_id".into(),
+      deployment_id: "dep_id".into(),
       created_at: DateTime::now(),
       state: State::Success {
         commited_at: DateTime::now(),
@@ -108,6 +111,7 @@ mod test {
     let operation = AudioUploadOperation {
       id: "id".into(),
       station_id: "station_id".into(),
+      deployment_id: "dep_id".into(),
       created_at: DateTime::now(),
       state: State::Error {
         cancelled_at: DateTime::now(),

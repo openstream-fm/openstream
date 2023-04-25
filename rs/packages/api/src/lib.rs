@@ -21,6 +21,7 @@ use std::net::SocketAddr;
 
 #[derive(Debug)]
 pub struct ApiServer {
+  deployment_id: String,
   addrs: Vec<SocketAddr>,
   shutdown: Shutdown,
   drop_tracer: DropTracer,
@@ -43,6 +44,7 @@ pub struct Status {
 
 impl ApiServer {
   pub fn new(
+    deployment_id: String,
     addrs: Vec<SocketAddr>,
     shutdown: Shutdown,
     drop_tracer: DropTracer,
@@ -50,6 +52,7 @@ impl ApiServer {
     stream_connections_index: MemIndex,
   ) -> Self {
     Self {
+      deployment_id,
       addrs,
       shutdown,
       drop_tracer,
@@ -67,6 +70,7 @@ impl ApiServer {
     app.get("/status", http::middleware::status);
 
     app.at("/").nest(routes::router(
+      self.deployment_id.clone(),
       self.media_sessions.clone(),
       self.shutdown.clone(),
       self.drop_tracer.clone(),
@@ -89,11 +93,11 @@ impl ApiServer {
         socket.set_only_v6(true)?;
       }
 
-      socket.set_reuse_address(true)?;
-      socket.set_reuse_port(true)?;
+      // socket.set_reuse_address(true)?;
+      // socket.set_reuse_port(true)?;
 
       socket.bind(&addr.into())?;
-      socket.listen(128)?;
+      socket.listen(1024)?;
 
       let tcp = socket.into();
 

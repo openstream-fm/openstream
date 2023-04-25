@@ -4,5 +4,6 @@ import type { DateTime } from "../DateTime";
 export interface BaseAudioUploadOperation {
   _id: string;
   station_id: string;
+  deployment_id: string;
   created_at: DateTime;
 }

@@ -1,4 +1,5 @@
 /target
 .env
 openstream.toml
+openstream-2.toml
 node_modules/

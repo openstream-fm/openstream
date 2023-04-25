@@ -6,25 +6,29 @@ use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
+#[ts(rename = "MediaSessionBase")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct MediaSession {
   #[serde(rename = "_id")]
   pub id: String,
   pub station_id: String,
-  pub created_at: DateTime,
-  pub updated_at: DateTime,
+  pub deployment_id: String,
+
+  pub state: MediaSessionState,
 
   #[ts(skip)]
   #[serde(flatten)]
   pub kind: MediaSessionKind,
 
-  #[ts(skip)]
-  #[serde(flatten)]
-  pub state: MediaSessionState,
-
   #[serde(with = "serde_util::as_f64")]
   pub transfer_bytes: u64,
+  pub closed_at: Option<DateTime>,
+  #[serde(with = "serde_util::as_f64::option")]
+  pub duration_ms: Option<u64>,
+
+  pub created_at: DateTime,
+  pub updated_at: DateTime,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
@@ -49,11 +53,6 @@ pub enum MediaSessionKind {
   Live { request: crate::http::Request },
 }
 
-impl MediaSessionKind {
-  pub const TAG_PLAYLIST: &str = "playlist";
-  pub const TAG_LIVE: &str = "live";
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
@@ -61,16 +60,7 @@ impl MediaSessionKind {
 #[macros::keys]
 pub enum MediaSessionState {
   Open,
-  Closed {
-    closed_at: DateTime,
-    #[serde(with = "serde_util::as_f64")]
-    duration_ms: u64,
-  },
-}
-
-impl MediaSessionState {
-  pub const TAG_OPEN: &str = "open";
-  pub const TAG_CLOSED: &str = "closed";
+  Closed,
 }
 
 // #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -104,7 +94,7 @@ impl MediaSession {
   ) -> Result<Option<MediaSession>, mongodb::error::Error> {
     let filter = doc! {
       MediaSession::KEY_STATION_ID: station_id,
-      MediaSessionState::KEY_ENUM_TAG: MediaSessionState::TAG_OPEN
+      MediaSessionState::KEY_ENUM_TAG: MediaSessionState::KEY_ENUM_VARIANT_OPEN
     };
 
     let sort = doc! {
@@ -143,16 +133,19 @@ impl Model for MediaSession {
       .keys(doc! { MediaSession::KEY_STATION_ID: 1 })
       .build();
     let state = IndexModel::builder()
-      .keys(doc! { MediaSessionState::KEY_ENUM_TAG: 1 })
+      .keys(doc! { MediaSession::KEY_STATE: 1 })
       .build();
     let kind = IndexModel::builder()
       .keys(doc! { MediaSessionKind::KEY_ENUM_TAG: 1 })
       .build();
+    let created_at = IndexModel::builder()
+      .keys(doc! { MediaSession::KEY_CREATED_AT: 1 })
+      .build();
     let closed_at = IndexModel::builder()
-      .keys(doc! { MediaSessionState::KEY_CLOSED_AT: 1 })
+      .keys(doc! { MediaSession::KEY_CLOSED_AT: 1 })
       .build();
 
-    vec![station_id, state, kind, closed_at]
+    vec![station_id, state, kind, created_at, closed_at]
   }
 }
 
@@ -163,11 +156,10 @@ mod test {
 
   #[test]
   fn serde() {
-    logger::init();
-
     let doc = MediaSession {
       id: MediaSession::uid(),
       station_id: Station::uid(),
+      deployment_id: Station::uid(),
       created_at: DateTime::now(),
       updated_at: DateTime::now(),
       transfer_bytes: 0,
@@ -179,10 +171,9 @@ mod test {
         last_audio_chunk_skip_parts: 1,
         last_audio_chunk_date: DateTime::now(),
       },
-      state: MediaSessionState::Closed {
-        closed_at: DateTime::now(),
-        duration_ms: 100,
-      },
+      state: MediaSessionState::Closed,
+      closed_at: Some(DateTime::now()),
+      duration_ms: Some(100),
     };
 
     let buf = mongodb::bson::to_vec(&doc).unwrap();

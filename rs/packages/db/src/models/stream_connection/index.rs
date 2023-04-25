@@ -172,12 +172,14 @@ impl MemIndex {
             };
 
             log::info!(
+              target: "stream_stats",
               "stream connection stats index clear: removed {} items, left {} items",
               before - after,
               after,
             );
 
             log::info!(
+              target: "stream_stats",
               "stream connection stats index size: {}",
               human_bytes::human_bytes(map.read().await.deep_size_of() as f64),
             );
@@ -193,7 +195,10 @@ impl MemIndex {
               ($e:expr, $message:expr) => {
                 match $e {
                   Err(e) => {
-                    log::error!("stream stats index error ({}): {} {:?}", $message, e, e);
+                    log::error!(
+                      target: "stream_stats",
+                      "stream stats index error ({}): {} {:?}", $message, e, e
+                    );
                     continue 'root;
                   }
                   Ok(v) => v,
@@ -207,7 +212,10 @@ impl MemIndex {
 
             loop_time += 1;
 
-            log::info!("stream connection indexing start, loop {loop_time}");
+            log::info!(
+              target: "stream_stats",
+              "stream connection indexing start, loop {loop_time}"
+            );
 
             let indexing_start = Instant::now();
             let indexing_start_timestamp = Timestamp {
@@ -248,12 +256,14 @@ impl MemIndex {
               }
 
               log::info!(
+                target: "stream_stats",
                 "stream connection stats indexing end: {} items in {}ms",
                 lock.len(),
                 indexing_start.elapsed().as_millis()
               );
 
               log::info!(
+                target: "stream_stats",
                 "stream connection stats index size: {}",
                 human_bytes::human_bytes(lock.deep_size_of() as f64),
               )
@@ -286,6 +296,7 @@ impl MemIndex {
                   match event.document_key {
                     None => {
                       log::warn!(
+                        target: "stream_stats",
                         "stream connection stats: event.document_key is None for {:#?}",
                         event
                       );
@@ -306,6 +317,7 @@ impl MemIndex {
                   match event.full_document {
                     None => {
                       log::warn!(
+                        target: "stream_stats",
                         "stream connection stats: event without full document: {:?}",
                         event
                       );
@@ -321,6 +333,7 @@ impl MemIndex {
 
                 OperationType::Invalidate | OperationType::Drop | OperationType::DropDatabase => {
                   log::warn!(
+                    target: "stream_stats",
                     "stream connection stats, operation {:?} received, sleeping and reseting index",
                     event.operation_type
                   );
@@ -330,6 +343,7 @@ impl MemIndex {
 
                 op => {
                   log::error!(
+                    target: "stream_stats",
                     "stream connection stats, unknown operation_type {:?}, resetting cursor",
                     op
                   );
@@ -351,7 +365,6 @@ impl MemIndex {
 
   pub async fn get_stats<F: Filter + Send + Sync + 'static>(&self, filter: F) -> Stats {
     let start = Instant::now();
-    log::info!("get stats started");
 
     let mut now = ProcessItem::default();
     let mut last_24h = ProcessItem::default();
@@ -400,7 +413,8 @@ impl MemIndex {
       };
 
       log::info!(
-        "get stats ended: {} items in {}ms",
+        target: "stream_stats",
+        "stats get: {} items in {}ms",
         total,
         start.elapsed().as_millis()
       );
@@ -413,7 +427,6 @@ impl MemIndex {
 
   pub async fn get_stats_item<F: Filter + Send + Sync + 'static>(&self, filter: F) -> StatsItem {
     let start = Instant::now();
-    log::info!("get stats item started");
 
     let mut item = ProcessItem::default();
 
@@ -429,7 +442,8 @@ impl MemIndex {
       }
 
       log::info!(
-        "get stats item ended: {} items in {}ms",
+        target: "stream_stats",
+        "stats get item: {} items in {}ms",
         item.sessions,
         start.elapsed().as_millis()
       );
@@ -458,7 +472,8 @@ impl MemIndex {
     };
 
     log::info!(
-      "stream connection stats: counted {} items in {}ms",
+      target: "stream_stats",
+      "stats count: {} items in {}ms",
       total,
       start.elapsed().as_millis()
     );

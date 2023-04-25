@@ -6,6 +6,7 @@ import type { Request } from "./http/Request";
 export interface StreamConnection {
   _id: string;
   station_id: string;
+  deployment_id: string;
   transfer_bytes: number;
   duration_ms: number | null;
   is_open: boolean;

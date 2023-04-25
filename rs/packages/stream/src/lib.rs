@@ -55,6 +55,7 @@ const TEXT_PLAIN_UTF8: HeaderValue = HeaderValue::from_static("text/plain;charse
 
 #[derive(Debug)]
 pub struct StreamServer {
+  deployment_id: String,
   addrs: Vec<SocketAddr>,
   media_sessions: MediaSessionMap,
   shutdown: Shutdown,
@@ -81,12 +82,14 @@ pub enum StreamServerError {
 
 impl StreamServer {
   pub fn new(
+    deployment_id: String,
     addrs: Vec<SocketAddr>,
     shutdown: Shutdown,
     drop_tracer: DropTracer,
     media_sessions: MediaSessionMap,
   ) -> Self {
     Self {
+      deployment_id,
       addrs,
       shutdown,
       drop_tracer,
@@ -123,6 +126,7 @@ impl StreamServer {
     app.get(
       "/stream/:id",
       StreamHandler::new(
+        self.deployment_id.clone(),
         self.media_sessions.clone(),
         self.transfer_map.clone(),
         self.shutdown.clone(),
@@ -147,11 +151,11 @@ impl StreamServer {
         socket.set_only_v6(true)?;
       }
 
-      socket.set_reuse_address(true)?;
-      socket.set_reuse_port(true)?;
+      // socket.set_reuse_address(true)?;
+      // socket.set_reuse_port(true)?;
 
       socket.bind(&addr.into())?;
-      socket.listen(128)?;
+      socket.listen(1024)?;
 
       let tcp = socket.into();
 
@@ -190,6 +194,7 @@ impl Drop for StreamServer {
 
 #[derive(Debug, Clone)]
 struct StreamHandler {
+  deployment_id: String,
   media_sessions: MediaSessionMap,
   transfer_map: TransferTracer,
   shutdown: Shutdown,
@@ -199,6 +204,7 @@ struct StreamHandler {
 
 impl StreamHandler {
   pub fn new(
+    deployment_id: String,
     media_sessions: MediaSessionMap,
     transfer_map: TransferTracer,
     shutdown: Shutdown,
@@ -206,6 +212,7 @@ impl StreamHandler {
     ip_counter: IpCounter,
   ) -> Self {
     Self {
+      deployment_id,
       media_sessions,
       transfer_map,
       shutdown,
@@ -281,7 +288,7 @@ impl StreamHandler {
             let mut lock = lock.upgrade();
             let tx = lock.transmit(&station_id, media_sessions::MediaSessionKind::Playlist {});
             let rx = tx.subscribe();
-            run_playlist_session(tx, self.shutdown.clone(), self.drop_tracer.clone(), true);
+            run_playlist_session(tx, self.deployment_id.clone(), self.shutdown.clone(), self.drop_tracer.clone(), true);
             rx
           }
         }
@@ -296,6 +303,7 @@ impl StreamHandler {
         StreamConnection {
           id: StreamConnection::uid(),
           station_id: station.id,
+          deployment_id: self.deployment_id,
           is_open: true,
           ip: request.real_ip,
           country_code: request.country_code,

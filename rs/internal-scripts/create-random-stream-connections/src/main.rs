@@ -115,6 +115,7 @@ async fn create_random_stream_connection(i: usize) -> Result<(), anyhow::Error> 
   let document = StreamConnection {
     id: StreamConnection::uid(),
     station_id: STATION_ID.to_string(),
+    deployment_id: String::from(""),
     is_open,
     ip: request.real_ip,
     country_code: request.country_code,

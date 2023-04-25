@@ -519,6 +519,7 @@ pub mod post {
         limits,
         source_password: Station::random_source_password(),
         playlist_is_randomly_shuffled: false,
+        owner_deployment_id: None,
 
         system_metadata,
         user_metadata,
