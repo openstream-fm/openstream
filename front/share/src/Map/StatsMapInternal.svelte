@@ -3,6 +3,12 @@
 </script>
 
 <script lang="ts">
+  
+  export let data: Stats | null = null;
+  export let kind: "account" | "station";
+  export let record_id: string;
+  export let selected_view: "now" | "last_24h" | "last_7d" | "last_30d" = "now"; 
+  
   import { default_logger } from "$share/logger";
   import { _get } from "$share/net.client";
   import { sleep } from "$share/util";
@@ -10,10 +16,6 @@
   import Map from "./Map.svelte";
   import { ripple } from "$share/ripple";
 
-  export let kind: "account" | "station";
-  export let record_id: string;
-  export let selected_view: "now" | "last_24h" | "last_7d" | "last_30d" = "now"; 
-  
   let view_ids = ["now", "last_24h", "last_7d", "last_30d"] as const;
   let selector_titles = {
     "now": "Now",
@@ -22,7 +24,6 @@
     "last_30d": "30 days",
   } as const;
 
-  export let data: Stats | null = null;
   type Stats = import("$server/defs/stream-connection-stats/Stats").Stats;
   type StatsItem = import("$server/defs/stream-connection-stats/StatsItem").StatsItem;
 
@@ -226,8 +227,10 @@
   <div class="stats-map-display">
     <div class="view-selector">
       {#if data != null}
+        <!-- fix tscheck error -->
+        {@const data_non_null = data}
         {#each view_ids as view_id}
-          {@const stats = data[view_id]}
+          {@const stats = data_non_null[view_id]}
           {@const selected = view_id === selected_view}
           {@const sessions = stats.sessions}
           {@const countries = Object.keys(stats.country_sessions).length}
