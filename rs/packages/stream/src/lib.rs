@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use db::audio_file::AudioFile;
+use db::deployment::Deployment;
 use db::station::Station;
 use db::stream_connection::lite::StreamConnectionLite;
 use db::stream_connection::StreamConnection;
@@ -15,6 +16,7 @@ use media_sessions::playlist::run_playlist_session;
 use media_sessions::MediaSessionMap;
 use media_sessions::RecvError;
 use mongodb::bson::doc;
+use prex::response::Parts;
 use prex::{handler::Handler, Next, Request, Response};
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
@@ -224,38 +226,110 @@ impl StreamHandler {
   async fn handle(self, req: Request) -> Result<Response, StreamError> {
     let start_time = SystemTime::now();
 
+    let Self {
+      deployment_id,
+      media_sessions,
+      drop_tracer,
+      ip_counter,
+      shutdown,
+      transfer_map,
+    } = self;
+
     let station_id = req.param("id").unwrap().to_string();
 
     let ip = req.isomorphic_ip();
 
     // we do not trace ip counts from internal net or loopback ips (not global)
 
-    // TODO:
-    // provide a way to whitelist global ips (from openstream itself or for test purposes)
-    // maybe with a internal password for each stream in the provided
-    // by the client as a request header
     let _ip_count = match ip_rfc::global(&ip) {
       false => 0,
-      true => match self
-        .ip_counter
-        .increment_with_limit(ip, constants::STREAM_IP_CONNECTIONS_LIMIT)
-      {
+      true => match ip_counter.increment_with_limit(ip, constants::STREAM_IP_CONNECTIONS_LIMIT) {
         Some(n) => n,
         None => return Err(StreamError::TooManyOpenIpConnections),
       },
     };
 
     let ip_decrementer = {
-      let map = self.ip_counter.clone();
       defer::defer(move || {
-        map.decrement(ip);
+        ip_counter.decrement(ip);
       })
     };
 
     tokio::spawn(async move {
-      let station = match Station::get_by_id(&station_id).await? {
-        Some(station) => station,
-        None => return Err(StreamError::StationNotFound(station_id.to_string())),
+      
+      let (station, owner_deployment_dropper) = match Station::try_set_owner_deployment_id(&station_id, &deployment_id, drop_tracer.token()).await?  {
+        Err(None) => {
+          return Err(StreamError::StationNotFound(station_id.to_string()));
+        },
+
+        Err(Some((station, owner_deployment_id))) => {
+          if station.limits.transfer.avail() == 0 {
+            return Err(StreamError::TransferLimit);
+          }
+
+          if station.limits.listeners.avail() == 0 {
+            return Err(StreamError::ListenersLimit);
+          }
+
+          if owner_deployment_id == deployment_id {
+            (station, None)
+          } else {
+            let deployment = match Deployment::get_by_id(&owner_deployment_id).await? {
+              None => return Err(StreamError::DeploymentNotFound),
+              Some(doc) => doc,
+            };
+
+            use rand::seq::SliceRandom;
+            let stream_port = deployment.stream_ports.choose(&mut rand::thread_rng());
+    
+            let port = match stream_port {
+              None => return Err(StreamError::DeploymentNoPort),
+              Some(port) => *port,
+            };
+
+            let destination = SocketAddr::from((deployment.local_ip, port));
+
+            let client = hyper::Client::default();
+          
+            let mut hyper_req = hyper::Request::builder()
+              .uri(format!("http://{}:{}{}{}", destination.ip(), destination.port(), req.uri().path(), req.uri().query().unwrap_or("")));
+  
+            for (key, value) in req.headers().clone().into_iter() {
+              if let Some(key) = key {
+                hyper_req = hyper_req.header(key, value);
+              }
+            }
+
+            hyper_req = hyper_req
+              .header("x-openstream-proxied-deployment-id", &deployment_id)
+              .header("connection", "close");
+
+            let hyper_req = match hyper_req.body(Body::empty()) {
+              Ok(req) => req,
+              Err(e) => return Err(StreamError::InternalHyperCreateRequest(e))
+            };
+  
+            match client.request(hyper_req).await {
+              Err(e) => return Err(StreamError::InternalHyperClientRequest(e)),
+              Ok(hyper_res) => {
+                let (hyper_parts, body) = hyper_res.into_parts();
+                let parts = Parts {
+                  headers: hyper_parts.headers,
+                  status: hyper_parts.status,
+                  version: hyper_parts.version,
+                  extensions: hyper_parts.extensions,
+                  body,
+                };
+  
+                return Ok(Response::from_parts(parts));
+              }
+            }
+          }
+        },
+
+        Ok((station, dropper)) => {
+          (station, Some(dropper))
+        }
       };
 
       if station.limits.transfer.avail() == 0 {
@@ -267,7 +341,7 @@ impl StreamHandler {
       }
 
       #[allow(clippy::collapsible_if)]
-      if self.media_sessions.read().get(&station_id).is_none() {
+      if media_sessions.read().get(&station_id).is_none() {
         // TODO: use station limit or query for audio file?
         // if station.limits.storage.used == 0 {
         //   return Err(StreamError::NotStreaming(station.id.clone()));
@@ -279,7 +353,7 @@ impl StreamHandler {
       };
 
       let mut rx = {
-        let lock = self.media_sessions.upgradable_read();
+        let lock = media_sessions.upgradable_read();
 
         match lock.get(&station_id) {
           Some(session) => session.subscribe(),
@@ -288,7 +362,12 @@ impl StreamHandler {
             let mut lock = lock.upgrade();
             let tx = lock.transmit(&station_id, media_sessions::MediaSessionKind::Playlist {});
             let rx = tx.subscribe();
-            run_playlist_session(tx, self.deployment_id.clone(), self.shutdown.clone(), self.drop_tracer.clone(), true);
+            let shutdown = shutdown.clone();
+            let deployment_id = deployment_id.clone();
+            tokio::spawn(async move {
+              let _ = run_playlist_session(tx, deployment_id, shutdown, drop_tracer, true).await.unwrap();
+              drop(owner_deployment_dropper);
+            });
             rx
           }
         }
@@ -303,7 +382,7 @@ impl StreamHandler {
         StreamConnection {
           id: StreamConnection::uid(),
           station_id: station.id,
-          deployment_id: self.deployment_id,
+          deployment_id,
           is_open: true,
           ip: request.real_ip,
           country_code: request.country_code,
@@ -334,15 +413,15 @@ impl StreamHandler {
         id: conn_doc.id.clone(),
         transfer_bytes: transfer_bytes.clone(),
         station_id: station_id.clone(),
-        token: self.media_sessions.drop_token(),
+        token: media_sessions.drop_token(),
         start_time,
       };
 
       let (mut body_sender, response_body) = Body::channel();
 
       tokio::spawn({
-        let shutdown = self.shutdown.clone();
-        let transfer_map = self.transfer_map.clone();
+        let shutdown = shutdown.clone();
+        let transfer_map = transfer_map.clone();
 
         async move {
           loop {
@@ -472,6 +551,10 @@ impl Drop for StreamConnectionDropper {
 #[derive(Debug)]
 pub enum StreamError {
   Db(mongodb::error::Error),
+  InternalHyperCreateRequest(hyper::http::Error),
+  InternalHyperClientRequest(hyper::Error),
+  DeploymentNotFound,
+  DeploymentNoPort,
   StationNotFound(String),
   NotStreaming(String),
   TooManyOpenIpConnections,
@@ -507,6 +590,34 @@ impl From<StreamError> for Response {
         "NOT_STREAMING",
         format!("station with id {id} is not streaming from this server"),
         None,
+      ),
+
+      StreamError::DeploymentNotFound => (
+        StatusCode::SERVICE_UNAVAILABLE,
+        "INTERNAL_DEPLOYMENT_NOT_FOUND",
+        "Internal server error".into(),
+        Some(5),
+      ),
+
+      StreamError::DeploymentNoPort => (
+        StatusCode::SERVICE_UNAVAILABLE,
+        "INTERNAL_DEPLOYMENT_NO_PORT",
+        "Internal server error".into(),
+        Some(5),
+      ),
+
+      StreamError::InternalHyperCreateRequest(_) => (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "INTERNAL_REQUEST_BUILDER",
+        "Internal server error".into(),
+        Some(30),
+      ),
+
+      StreamError::InternalHyperClientRequest(_) => (
+        StatusCode::SERVICE_UNAVAILABLE,
+        "INTERNAL_CLIENT_REQUEST",
+        "Internal server error".into(),
+        Some(5),
       ),
 
       StreamError::TooManyOpenIpConnections => (
