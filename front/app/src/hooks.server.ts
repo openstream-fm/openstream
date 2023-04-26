@@ -9,10 +9,10 @@ export const handle: Handle = async ({ event, resolve }) => {
     throw new Error("Internal error");
   }
 
-  console.log("===============")
-  console.log("kit request");
-  console.log(event.request.url);
-  console.log(event.request.headers);
+  // console.log("===============")
+  // console.log("kit request");
+  // console.log(event.request.url);
+  // console.log(event.request.headers);
 
   server_logger.info(`host: ${event.request.headers.get("host")}`, );
 

@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use db::audio_file::AudioFile;
 use db::deployment::Deployment;
-use db::station::Station;
+use db::station::{Station, OwnerDeploymentInfo};
 use db::stream_connection::lite::StreamConnectionLite;
 use db::stream_connection::StreamConnection;
 use db::Model;
@@ -15,8 +15,8 @@ use log::*;
 use media_sessions::playlist::run_playlist_session;
 use media_sessions::MediaSessionMap;
 use media_sessions::RecvError;
+use media_sessions::relay::run_relay_session;
 use mongodb::bson::doc;
-use prex::response::Parts;
 use prex::{handler::Handler, Next, Request, Response};
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
@@ -30,6 +30,9 @@ use std::sync::Arc;
 use std::time::SystemTime;
 use transfer_map::TransferTracer;
 // use url::Url;
+
+#[allow(clippy::declare_interior_mutable_const)]
+const X_OPENSTREAM_RELAY_CODE: &str = "x-openstream-relay-code";
 
 pub mod transfer_map;
 
@@ -137,6 +140,14 @@ impl StreamServer {
       ),
     );
 
+    app.get(
+      "/relay/:id",
+      RelayHandler::new(
+        self.deployment_id.clone(),
+        self.media_sessions.clone(),
+      ),
+    );
+
     let app = app.build().expect("prex app build stream");
 
     let futs = FuturesUnordered::new();
@@ -191,6 +202,108 @@ impl StreamServer {
 impl Drop for StreamServer {
   fn drop(&mut self) {
     info!("stream server dropped");
+  }
+}
+
+
+
+#[derive(Debug, Clone)]
+struct RelayHandler {
+  deployment_id: String,
+  media_sessions: MediaSessionMap,
+}
+
+impl RelayHandler {
+  pub fn new(deployment_id: String, media_sessions: MediaSessionMap) -> Self {
+    Self { deployment_id, media_sessions }
+  }
+
+  pub async fn handle(&self, req: Request) -> Result<Response, RelayError> {
+    let station_id = req.param("id").unwrap();
+
+    match req.headers().get(X_OPENSTREAM_RELAY_CODE) {
+      None => return Err(RelayError::RelayCodeMismatch),
+      Some(v) => match v.to_str() {
+        Err(_) => {
+          return Err(RelayError::RelayCodeMismatch);
+        },
+        Ok(v) => if v != self.deployment_id {
+          return Err(RelayError::RelayCodeMismatch);
+        }
+      }
+    }
+
+    let (mut rx, content_type) = {
+      let lock = self.media_sessions.read();
+      match lock.get(station_id) {
+        None => {
+          return Err(RelayError::NotStreaming);
+        }
+        Some(ms) => {
+          let rx = ms.subscribe();
+          let content_type = ms.info().content_type();
+          (rx, content_type.to_string())
+        }
+      }
+    };
+
+    let (mut sender, body) = hyper::Body::channel();
+
+    tokio::spawn(async move {
+      loop {
+        match rx.recv().await {
+          Err(_) => break,
+          Ok(bytes) => {
+            match sender.send_data(bytes).await {
+              Err(_) => break,
+              Ok(_) => continue,
+            }
+          }
+        }
+      }
+    });
+
+    let mut res = Response::new(StatusCode::OK);
+    *res.body_mut() = body;
+    if let Ok(v) = HeaderValue::from_str(&content_type) {
+      res.headers_mut().append("content-type", v);
+    }
+
+    Ok(res)
+  }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum RelayError {
+  #[error("relay code mismatch")]
+  RelayCodeMismatch,
+  #[error("relay not streaming")]
+  NotStreaming,
+}
+
+impl From<RelayError> for Response {
+  fn from(e: RelayError) -> Self {
+    let (status, message) = match e {
+      RelayError::RelayCodeMismatch => {
+        (StatusCode::UNAUTHORIZED, "relay code mismatch")
+      },
+      RelayError::NotStreaming => {
+        (StatusCode::SERVICE_UNAVAILABLE, "station not streaming from this server")
+      }
+    };
+
+    let mut res = Response::new(status);
+    *res.body_mut() = Body::from(message);
+    res.headers_mut().append("content-type", HeaderValue::from_static("text/plain"));
+
+    res
+  }
+}
+
+#[async_trait]
+impl Handler for RelayHandler {
+  async fn call(&self, req: Request, _: Next) -> Response {
+    self.handle(req).await.into()
   }
 }
 
@@ -257,122 +370,135 @@ impl StreamHandler {
 
     tokio::spawn(async move {
       
-      let (station, owner_deployment_dropper) = match Station::try_set_owner_deployment_id(&station_id, &deployment_id, drop_tracer.token()).await?  {
-        Err(None) => {
-          return Err(StreamError::StationNotFound(station_id.to_string()));
-        },
+      let info = OwnerDeploymentInfo {
+        deployment_id: deployment_id.clone(),
+        task_id: Station::random_owner_task_id(),
+        // audio/mpeg is because we'll start a playlist media session on demand
+        content_type: String::from("audio/mpeg"),
+      };
 
-        Err(Some((station, owner_deployment_id))) => {
-          if station.limits.transfer.avail() == 0 {
-            return Err(StreamError::TransferLimit);
-          }
+      let (mut rx, station) = 'rx: {
+        let (station, dropper) = match Station::try_set_owner_deployment_info(&station_id, info, drop_tracer.token()).await?  {
+          Err(None) => {
+            return Err(StreamError::StationNotFound(station_id.to_string()));
+          },
 
-          if station.limits.listeners.avail() == 0 {
-            return Err(StreamError::ListenersLimit);
-          }
-
-          if owner_deployment_id == deployment_id {
-            (station, None)
-          } else {
-            let deployment = match Deployment::get_by_id(&owner_deployment_id).await? {
-              None => return Err(StreamError::DeploymentNotFound),
-              Some(doc) => doc,
-            };
-
-            use rand::seq::SliceRandom;
-            let stream_port = deployment.stream_ports.choose(&mut rand::thread_rng());
+          Err(Some((station, owner_info))) => {
+            if owner_info.deployment_id == deployment_id {
+              (station, None)
+            } else {
+              if station.limits.transfer.avail() == 0 {
+                return Err(StreamError::TransferLimit);
+              }
     
-            let port = match stream_port {
-              None => return Err(StreamError::DeploymentNoPort),
-              Some(port) => *port,
-            };
+              if station.limits.listeners.avail() == 0 {
+                return Err(StreamError::ListenersLimit);
+              }
 
-            let destination = SocketAddr::from((deployment.local_ip, port));
+              let deployment = match Deployment::get_by_id(&owner_info.deployment_id).await? {
+                None => return Err(StreamError::DeploymentNotFound),
+                Some(doc) => doc,
+              };
 
-            let client = hyper::Client::default();
-          
-            let mut hyper_req = hyper::Request::builder()
-              .uri(format!("http://{}:{}{}{}", destination.ip(), destination.port(), req.uri().path(), req.uri().query().unwrap_or("")));
-  
-            for (key, value) in req.headers().clone().into_iter() {
-              if let Some(key) = key {
-                hyper_req = hyper_req.header(key, value);
+              use rand::seq::SliceRandom;
+              let stream_port = deployment.stream_ports.choose(&mut rand::thread_rng());
+      
+              let port = match stream_port {
+                None => return Err(StreamError::DeploymentNoPort),
+                Some(port) => *port,
+              };
+
+              let destination = SocketAddr::from((deployment.local_ip, port));
+
+              let client = hyper::Client::default();
+            
+              let mut hyper_req = hyper::Request::builder()
+                .uri(format!("http://{}:{}/relay/{}", destination.ip(), destination.port(), req.uri().path())); 
+    
+              for (key, value) in req.headers().clone().into_iter() {
+                if let Some(key) = key {
+                  hyper_req = hyper_req.header(key, value);
+                }
+              }
+
+              hyper_req = hyper_req
+                .header(X_OPENSTREAM_RELAY_CODE, &owner_info.deployment_id)
+                .header("x-openstream-relay-remote-addr", format!("{}", req.remote_addr()))
+                .header("x-openstream-relay-local-addr", format!("{}", req.local_addr()))
+                .header("x-openstream-relay-deployment-id", &deployment_id)
+                .header("x-openstream-relay-target-deployment-id", &deployment_id)
+                .header("connection", "close");
+
+              let hyper_req = match hyper_req.body(Body::empty()) {
+                Ok(req) => req,
+                Err(e) => return Err(StreamError::InternalHyperCreateRequest(e))
+              };
+    
+              match client.request(hyper_req).await {
+                Err(e) => return Err(StreamError::InternalHyperClientRequest(e)),
+                Ok(hyper_res) => {
+                  // if error return the same error to the client
+                  if !hyper_res.status().is_success() {
+                    return Err(StreamError::RelayStatus(hyper_res.status()));
+                  }
+
+                  let tx = media_sessions.write().transmit(&station_id, media_sessions::MediaSessionKind::Relay { content_type: owner_info.content_type });
+                  let rx = tx.subscribe();
+                  run_relay_session(tx, deployment_id.clone(), owner_info.deployment_id, hyper_res, shutdown.clone(), drop_tracer.clone());
+
+                  break 'rx (rx, station);
+                }
               }
             }
+          },
 
-            hyper_req = hyper_req
-              .header("x-openstream-proxied-remote-addr", format!("{}", req.remote_addr()))
-              .header("x-openstream-proxied-local-addr", format!("{}", req.local_addr()))
-              .header("x-openstream-proxied-deployment-id", &deployment_id)
-              .header("connection", "close");
+          Ok((station, dropper)) => {
+            (station, Some(dropper))
+          }
+        };
+        
+        if station.limits.transfer.avail() == 0 {
+          return Err(StreamError::TransferLimit);
+        }
+      
+        if station.limits.listeners.avail() == 0 {
+          return Err(StreamError::ListenersLimit);
+        }
 
-            let hyper_req = match hyper_req.body(Body::empty()) {
-              Ok(req) => req,
-              Err(e) => return Err(StreamError::InternalHyperCreateRequest(e))
-            };
-  
-            match client.request(hyper_req).await {
-              Err(e) => return Err(StreamError::InternalHyperClientRequest(e)),
-              Ok(hyper_res) => {
-                let (hyper_parts, body) = hyper_res.into_parts();
-                let parts = Parts {
-                  headers: hyper_parts.headers,
-                  status: hyper_parts.status,
-                  version: hyper_parts.version,
-                  extensions: hyper_parts.extensions,
-                  body,
-                };
-  
-                return Ok(Response::from_parts(parts));
-              }
+        #[allow(clippy::collapsible_if)]
+        if media_sessions.read().get(&station_id).is_none() {
+          // TODO: use station limit or query for audio file?
+          // if station.limits.storage.used == 0 {
+          //   return Err(StreamError::NotStreaming(station.id.clone()));
+          // }
+
+          if !AudioFile::exists(doc! { AudioFile::KEY_STATION_ID: &station.id }).await? {
+            return Err(StreamError::NotStreaming(station.id));
+          }
+        };
+
+        let rx = {
+          let lock = media_sessions.upgradable_read();
+
+          match lock.get(&station_id) {
+            Some(session) => session.subscribe(),
+
+            None => {
+              let mut lock = lock.upgrade();
+              let tx = lock.transmit(&station_id, media_sessions::MediaSessionKind::Playlist {});
+              let rx = tx.subscribe();
+              let shutdown = shutdown.clone();
+              let deployment_id = deployment_id.clone();
+              tokio::spawn(async move {
+                let _ = run_playlist_session(tx, deployment_id, shutdown, drop_tracer, true).await.unwrap();
+                drop(dropper);
+              });
+              rx
             }
           }
-        },
+        };
 
-        Ok((station, dropper)) => {
-          (station, Some(dropper))
-        }
-      };
-
-      if station.limits.transfer.avail() == 0 {
-        return Err(StreamError::TransferLimit);
-      }
-
-      if station.limits.listeners.avail() == 0 {
-        return Err(StreamError::ListenersLimit);
-      }
-
-      #[allow(clippy::collapsible_if)]
-      if media_sessions.read().get(&station_id).is_none() {
-        // TODO: use station limit or query for audio file?
-        // if station.limits.storage.used == 0 {
-        //   return Err(StreamError::NotStreaming(station.id.clone()));
-        // }
-
-        if !AudioFile::exists(doc! { AudioFile::KEY_STATION_ID: &station.id }).await? {
-          return Err(StreamError::NotStreaming(station.id));
-        }
-      };
-
-      let mut rx = {
-        let lock = media_sessions.upgradable_read();
-
-        match lock.get(&station_id) {
-          Some(session) => session.subscribe(),
-
-          None => {
-            let mut lock = lock.upgrade();
-            let tx = lock.transmit(&station_id, media_sessions::MediaSessionKind::Playlist {});
-            let rx = tx.subscribe();
-            let shutdown = shutdown.clone();
-            let deployment_id = deployment_id.clone();
-            tokio::spawn(async move {
-              let _ = run_playlist_session(tx, deployment_id, shutdown, drop_tracer, true).await.unwrap();
-              drop(owner_deployment_dropper);
-            });
-            rx
-          }
-        }
+        (rx, station)
       };
 
       let content_type = rx.info().kind().content_type().to_string();
@@ -562,6 +688,7 @@ pub enum StreamError {
   TooManyOpenIpConnections,
   ListenersLimit,
   TransferLimit,
+  RelayStatus(StatusCode),
 }
 
 impl From<mongodb::error::Error> for StreamError {
@@ -642,6 +769,13 @@ impl From<StreamError> for Response {
         "STATION_TRANSFER_LIMIT",
         "Station has reached its monthly transfer limit".into(),
         Some(60 * 60 * 24),
+      ),
+
+      StreamError::RelayStatus(s) => (
+        StatusCode::SERVICE_UNAVAILABLE,
+        "RELAY_STATUS",
+        format!("Internal error, relay responded with not ok status code: {}", s.as_u16()),
+        Some(5),
       ),
     };
 

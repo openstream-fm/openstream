@@ -4,7 +4,6 @@ use parking_lot::{RwLock, RwLockReadGuard, RwLockUpgradableReadGuard, RwLockWrit
 use shutdown::Shutdown;
 use std::collections::btree_map::Entry;
 use std::collections::BTreeMap;
-use std::net::SocketAddr;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
 
@@ -313,14 +312,9 @@ impl MediaSessionInfo {
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum MediaSessionKind {
-  Live {
-    content_type: String,
-  },
+  Live { content_type: String },
   Playlist {},
-  Relay {
-    content_type: String,
-    target: SocketAddr,
-  },
+  Relay { content_type: String },
 }
 
 impl MediaSessionKind {

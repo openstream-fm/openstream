@@ -2,7 +2,11 @@
 
 use std::{collections::btree_map::Entry, net::SocketAddr};
 
-use db::{deployment::Deployment, station::Station, Model};
+use db::{
+  deployment::Deployment,
+  station::{OwnerDeploymentInfo, Station},
+  Model,
+};
 use drop_tracer::DropTracer;
 use hyper::{
   header::{CONTENT_LENGTH, CONTENT_TYPE, WWW_AUTHENTICATE},
@@ -75,8 +79,22 @@ pub async fn source(
     };
   }
 
+  let content_type = match head.headers.get(CONTENT_TYPE).and_then(|t| t.to_str().ok()) {
+    None => {
+      write_err!(StatusCode::BAD_REQUEST, "content-type header is required");
+    }
+
+    Some(t) => t.to_string(),
+  };
+
+  let info = OwnerDeploymentInfo {
+    deployment_id: deployment_id.clone(),
+    task_id: Station::random_owner_task_id(),
+    content_type: content_type.clone(),
+  };
+
   let r = socket_try!(
-    Station::try_set_owner_deployment_id(&station_id, &deployment_id, drop_tracer.token()).await,
+    Station::try_set_owner_deployment_info(&station_id, info, drop_tracer.token()).await,
     StatusCode::INTERNAL_SERVER_ERROR,
     "internal error (db)"
   );
@@ -89,12 +107,12 @@ pub async fn source(
       );
     }
 
-    Err(Some((station, owner_deployment_id))) => {
-      if deployment_id == owner_deployment_id {
+    Err(Some((station, info))) => {
+      if deployment_id == info.deployment_id {
         (station, None)
       } else {
         let deployment = socket_try!(
-          Deployment::get_by_id(&owner_deployment_id).await,
+          Deployment::get_by_id(&info.deployment_id).await,
           StatusCode::INTERNAL_SERVER_ERROR,
           "internal error (db)"
         );
@@ -144,14 +162,6 @@ pub async fn source(
   let is_continue = match head.headers.get("expect") {
     None => false,
     Some(h) => h.as_bytes().eq_ignore_ascii_case(b"100-continue"),
-  };
-
-  let content_type = match head.headers.get(CONTENT_TYPE).and_then(|t| t.to_str().ok()) {
-    None => {
-      write_err!(StatusCode::BAD_REQUEST, "content-type header is required");
-    }
-
-    Some(t) => t.to_string(),
   };
 
   let password = station.source_password;
@@ -228,10 +238,7 @@ pub async fn source(
         let session = entry.get();
         match session.kind() {
           MediaSessionKind::Live { .. } => None,
-          
-          MediaSessionKind::Playlist { .. } | 
-          // we already check that the source is either none or in this deployment
-          MediaSessionKind::Relay { .. } => {
+          MediaSessionKind::Playlist { .. } | MediaSessionKind::Relay { .. } => {
             Some(map.transmit(&station.id, MediaSessionKind::Live { content_type }))
           }
         }
