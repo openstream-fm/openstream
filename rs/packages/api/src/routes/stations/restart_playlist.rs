@@ -108,7 +108,7 @@ pub mod post {
                   let client = hyper::Client::default();
                   let addr = deployment.local_ip;
                   let uri = format!(
-                    "http://{}:{}/runtime/reset-playlist/{}",
+                    "http://{}:{}/runtime/restart-playlist/{}",
                     addr, port, station.id
                   );
 
