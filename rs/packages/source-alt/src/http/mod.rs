@@ -22,7 +22,7 @@ pub struct RequestHead {
 impl Debug for RequestHead {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     f.debug_struct("RequestHead")
-      .field("buffer", &String::from_utf8_lossy(&self.buffer))
+      //.field("buffer", &String::from_utf8_lossy(&self.buffer))
       .field("proxy-protocol-ip", &self.proxy_protocol_ip)
       .field("version", &self.version)
       .field("method", &self.method)
