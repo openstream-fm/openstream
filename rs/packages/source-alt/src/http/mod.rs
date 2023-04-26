@@ -26,6 +26,7 @@ impl Debug for RequestHead {
       .field("proxy-protocol-ip", &self.proxy_protocol_ip)
       .field("version", &self.version)
       .field("method", &self.method)
+      .field("uri", &format!("{}", self.uri))
       .field("headers", &self.headers)
       .finish()
   }

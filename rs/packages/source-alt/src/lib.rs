@@ -77,7 +77,7 @@ pub async fn handle_connection(
 
   let head = read_request_head(&mut socket).await?;
   info!(
-    "source request: local_addr={} remote_addr={} request={:#?}",
+    "source request: local_addr={} remote_addr={} request={:?}",
     local_addr, remote_addr, head
   );
 
