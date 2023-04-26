@@ -19,6 +19,7 @@ pub mod stations;
 pub mod users;
 
 pub mod devices;
+pub mod runtime;
 pub mod station_pictures;
 pub mod stream_stats;
 
@@ -52,6 +53,22 @@ pub fn router(
   app.at("/stream-stats").get(
     stream_stats::get::Endpoint {
       index: stream_connections_index.clone(),
+    }
+    .into_handler(),
+  );
+
+  app.at("/runtime/source-password-updated/:station").post(
+    runtime::source_password_updated::station_id::post::Endpoint {
+      media_sessions: media_sessions.clone(),
+    }
+    .into_handler(),
+  );
+
+  app.at("/runtime/restart-playlist/:station").post(
+    runtime::restart_playlist::station_id::post::Endpoint {
+      media_sessions: media_sessions.clone(),
+      drop_tracer: drop_tracer.clone(),
+      shutdown: shutdown.clone(),
     }
     .into_handler(),
   );
@@ -198,7 +215,8 @@ pub fn router(
 
   app.at("/stations/:station/restart-playlist").post(
     stations::restart_playlist::post::Endpoint {
-      media_sessions,
+      deployment_id: deployment_id.clone(),
+      media_sessions: media_sessions.clone(),
       shutdown,
       drop_tracer,
     }
@@ -208,7 +226,12 @@ pub fn router(
   app
     .at("/stations/:station/files")
     .get(stations::files::get::Endpoint {}.into_handler())
-    .post(stations::files::post::Endpoint { deployment_id }.into_handler());
+    .post(
+      stations::files::post::Endpoint {
+        deployment_id: deployment_id.clone(),
+      }
+      .into_handler(),
+    );
 
   app
     .at("/stations/:station/files/shuffle")
@@ -259,9 +282,13 @@ pub fn router(
   //   .at("/stations/:station/dashboard-stats")
   //   .get(stations::dashboard_stats::get::Endpoint {}.into_handler());
 
-  app
-    .at("/stations/:station/reset-source-password")
-    .post(stations::reset_source_password::post::Endpoint {}.into_handler());
+  app.at("/stations/:station/reset-source-password").post(
+    stations::reset_source_password::post::Endpoint {
+      deployment_id,
+      media_sessions,
+    }
+    .into_handler(),
+  );
 
   app
     .at("/devices")

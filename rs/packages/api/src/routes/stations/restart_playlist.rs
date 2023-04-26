@@ -9,18 +9,23 @@ use ts_rs::TS;
 
 pub mod post {
 
-  use db::media_session::{MediaSession, MediaSessionKind};
+  use db::{
+    deployment::Deployment,
+    media_session::{MediaSession, MediaSessionKind},
+    Model,
+  };
   use drop_tracer::DropTracer;
-  use media_sessions::RestartError;
+  use hyper::http::HeaderValue;
   use serde_util::empty_struct::EmptyStruct;
   use shutdown::Shutdown;
 
-  use crate::error::ApiError;
+  use crate::{error::ApiError, request_ext::X_ACCESS_TOKEN};
 
   use super::*;
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {
+    pub deployment_id: String,
     pub drop_tracer: DropTracer,
     pub shutdown: Shutdown,
     pub media_sessions: media_sessions::MediaSessionMap,
@@ -28,6 +33,7 @@ pub mod post {
 
   #[derive(Debug, Clone)]
   pub struct Input {
+    access_token_header: Option<HeaderValue>,
     station: Station,
   }
 
@@ -65,13 +71,20 @@ pub mod post {
 
     async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
       let station_id = req.param("station").unwrap();
+      let access_token_header = req.headers().get(X_ACCESS_TOKEN).cloned();
       let access_token_scope = request_ext::get_access_token_scope(&req).await?;
       let station = access_token_scope.grant_station_scope(station_id).await?;
-      Ok(Self::Input { station })
+      Ok(Self::Input {
+        access_token_header,
+        station,
+      })
     }
 
     async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
-      let Self::Input { station } = input;
+      let Self::Input {
+        access_token_header,
+        station,
+      } = input;
 
       match MediaSession::get_current_for_station(&station.id).await? {
         None => {
@@ -82,20 +95,44 @@ pub mod post {
 
         Some(media_session) => match media_session.kind {
           MediaSessionKind::Live { .. } => return Err(HandleError::StationIsLive),
-          MediaSessionKind::Playlist { .. } => {}
+          MediaSessionKind::Playlist { .. } => {
+            if media_session.deployment_id == self.deployment_id {
+              let mut lock = self.media_sessions.write();
+              let _ = lock.restart(&station.id, self.shutdown.clone(), self.drop_tracer.clone());
+            } else {
+              #[allow(clippy::collapsible_else_if)]
+              if let Some(deployment) = Deployment::get_by_id(&media_session.deployment_id).await? {
+                use rand::seq::SliceRandom;
+                let port = deployment.api_ports.choose(&mut rand::thread_rng());
+                if let Some(port) = port {
+                  let client = hyper::Client::default();
+                  let addr = deployment.local_ip;
+                  let uri = format!(
+                    "http://{}:{}/runtime/reset-playlist/{}",
+                    addr, port, station.id
+                  );
+
+                  let mut req = hyper::Request::builder()
+                    .method(hyper::http::Method::POST)
+                    .uri(uri);
+
+                  if let Some(v) = access_token_header {
+                    if let Ok(v) = v.to_str() {
+                      req = req.header(X_ACCESS_TOKEN, v);
+                    }
+                  }
+
+                  if let Ok(req) = req.body(hyper::Body::empty()) {
+                    tokio::spawn(async move {
+                      let _ = client.request(req).await;
+                    });
+                  }
+                }
+              }
+            }
+          }
         },
       };
-
-      match self.media_sessions.write().restart(
-        &station.id,
-        self.shutdown.clone(),
-        self.drop_tracer.clone(),
-      ) {
-        Ok(_) => {}
-        Err(e) => match e {
-          RestartError::LiveStreaming => return Err(HandleError::StationIsLive),
-        },
-      }
 
       Ok(Output(EmptyStruct(())))
     }

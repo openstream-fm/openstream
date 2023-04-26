@@ -265,12 +265,20 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     }
   };
 
+  let api_ports = match &config.api {
+    None => vec![],
+    Some(api) => {
+      api.addrs.iter().map(|addr| addr.port()).collect()
+    }
+  };
+
   let deployment = Deployment {
     id: Deployment::uid(),
     pid,
     local_ip,
     source_ports,
     stream_ports,
+    api_ports,
     state: DeploymentState::Active,
     created_at: now,
     updated_at: now,
