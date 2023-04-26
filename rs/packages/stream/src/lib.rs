@@ -413,7 +413,7 @@ impl StreamHandler {
               let client = hyper::Client::default();
             
               let mut hyper_req = hyper::Request::builder()
-                .uri(format!("http://{}:{}/relay/{}", destination.ip(), destination.port(), req.uri().path())); 
+                .uri(format!("http://{}:{}/relay/{}", destination.ip(), destination.port(), station_id)); 
     
               for (key, value) in req.headers().clone().into_iter() {
                 if let Some(key) = key {
