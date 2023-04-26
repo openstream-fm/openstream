@@ -277,7 +277,7 @@ impl SourceHandler {
               return res;
             }
 
-            MediaSessionKind::Playlist { .. } => {
+            MediaSessionKind::Playlist { .. } | MediaSessionKind::Relay { .. } => {
               map.transmit(&station.id, MediaSessionKind::Live { content_type })
             }
           }

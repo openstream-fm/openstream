@@ -27,6 +27,9 @@ pub const STREAM_IP_CONNECTIONS_LIMIT: u64 = 8;
 /// delay to shutdown a playlist media session when it run out of listeners
 pub const PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY: Duration = Duration::from_secs(10);
 
+/// delay to shutdown a relay session when it run out of listeners
+pub const RELAY_NO_LISTENERS_SHUTDOWN_DELAY: Duration = Duration::from_secs(5);
+
 /// limit of authotization intents from the same ip
 pub const API_IP_LIMIT: usize = 60;
 

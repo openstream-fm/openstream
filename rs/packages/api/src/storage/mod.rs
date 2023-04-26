@@ -12,6 +12,7 @@ use std::net::SocketAddr;
 
 #[derive(Debug)]
 pub struct StorageServer {
+  #[allow(unused)]
   deployment_id: String,
   addrs: Vec<SocketAddr>,
   shutdown: Shutdown,

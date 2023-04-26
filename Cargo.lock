@@ -2326,6 +2326,7 @@ dependencies = [
  "drop-tracer",
  "ffmpeg",
  "futures-util",
+ "hyper",
  "log",
  "mongodb",
  "mp3",

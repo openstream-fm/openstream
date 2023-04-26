@@ -228,7 +228,10 @@ pub async fn source(
         let session = entry.get();
         match session.kind() {
           MediaSessionKind::Live { .. } => None,
-          MediaSessionKind::Playlist { .. } => {
+          
+          MediaSessionKind::Playlist { .. } | 
+          // we already check that the source is either none or in this deployment
+          MediaSessionKind::Relay { .. } => {
             Some(map.transmit(&station.id, MediaSessionKind::Live { content_type }))
           }
         }

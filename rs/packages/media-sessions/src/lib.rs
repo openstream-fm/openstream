@@ -4,11 +4,13 @@ use parking_lot::{RwLock, RwLockReadGuard, RwLockUpgradableReadGuard, RwLockWrit
 use shutdown::Shutdown;
 use std::collections::btree_map::Entry;
 use std::collections::BTreeMap;
+use std::net::SocketAddr;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
 
 pub mod live;
 pub mod playlist;
+pub mod relay;
 
 use playlist::run_playlist_session;
 
@@ -311,8 +313,14 @@ impl MediaSessionInfo {
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum MediaSessionKind {
-  Live { content_type: String },
+  Live {
+    content_type: String,
+  },
   Playlist {},
+  Relay {
+    content_type: String,
+    target: SocketAddr,
+  },
 }
 
 impl MediaSessionKind {
@@ -321,17 +329,23 @@ impl MediaSessionKind {
     match self {
       MediaSessionKind::Live { content_type } => content_type,
       MediaSessionKind::Playlist {} => "audio/mpeg",
+      MediaSessionKind::Relay { content_type, .. } => content_type,
     }
   }
 
   #[inline]
-  fn is_live(&self) -> bool {
+  pub fn is_live(&self) -> bool {
     matches!(self, MediaSessionKind::Live { .. })
   }
 
   #[inline]
-  fn is_playlist(&self) -> bool {
+  pub fn is_playlist(&self) -> bool {
     matches!(self, MediaSessionKind::Playlist { .. })
+  }
+
+  #[inline]
+  pub fn is_relay(&self) -> bool {
+    matches!(self, MediaSessionKind::Relay { .. })
   }
 }
 
