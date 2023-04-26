@@ -2,7 +2,7 @@ pub mod error;
 
 use hyper::{header::HeaderName, http::HeaderValue, HeaderMap, Method, Uri, Version};
 use log::*;
-use std::{net::IpAddr, str::FromStr};
+use std::{fmt::Debug, net::IpAddr, str::FromStr};
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 
 use self::error::{ReadHeadError, WriteHeadError};
@@ -10,7 +10,6 @@ use self::error::{ReadHeadError, WriteHeadError};
 pub const MAX_REQUEST_HEAD_SIZE: usize = 8 * 1024;
 pub const MAX_RESPONSE_HEAD_SIZE: usize = 8 * 1024;
 
-#[derive(Debug)]
 pub struct RequestHead {
   pub buffer: Vec<u8>,
   pub proxy_protocol_ip: Option<IpAddr>,
@@ -20,6 +19,17 @@ pub struct RequestHead {
   pub headers: HeaderMap,
 }
 
+impl Debug for RequestHead {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    f.debug_struct("RequestHead")
+      .field("buffer", &String::from_utf8_lossy(&self.buffer))
+      .field("proxy-protocol-ip", &self.proxy_protocol_ip)
+      .field("version", &self.version)
+      .field("method", &self.method)
+      .field("headers", &self.headers)
+      .finish()
+  }
+}
 #[derive(Debug)]
 pub struct ResponseHead {
   pub version: hyper::Version,
@@ -77,7 +87,8 @@ pub async fn read_request_head<R: AsyncRead + Unpin>(
     let byte = reader.read_u8().await?;
 
     if byte == b'\n' && i >= 3 && &buf[(i - 3)..i] == b"\r\n\r" {
-      break &buf[0..i - 3];
+      buf[i] = byte;
+      break &buf[0..=i];
     }
 
     buf[i] = byte;

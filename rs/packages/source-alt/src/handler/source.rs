@@ -284,8 +284,6 @@ pub async fn source(
 
   tokio::spawn(async move {
     let (reader, mut writer) = socket.into_split();
-    let shutdown = shutdown.clone();
-    let drop_tracer = drop_tracer.clone();
 
     let user_agent = head
       .headers
