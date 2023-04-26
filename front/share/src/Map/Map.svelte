@@ -73,8 +73,8 @@
   onMount(() => {
     const set = (event: Event) => {
       const e = event as PointerEvent;
-      pointerX = e.x;
-      pointerY = e.y;
+      pointerX = e.pageX;
+      pointerY = e.pageY;
     };
 
     const off = [
@@ -119,7 +119,7 @@
   }
 
   .map-tooltip {
-    position: fixed;
+    position: absolute;
     white-space: nowrap;
     padding: 0.5rem 0.75rem;
     background: #fff;
