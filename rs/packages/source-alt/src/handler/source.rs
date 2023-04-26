@@ -81,7 +81,7 @@ pub async fn source(
 
   let content_type = match head.headers.get(CONTENT_TYPE).and_then(|t| t.to_str().ok()) {
     None => {
-      write_err!(StatusCode::BAD_REQUEST, "content-type header is required");
+      write_err!(StatusCode::FORBIDDEN, "content-type header is required");
     }
 
     Some(t) => t.to_string(),
@@ -250,7 +250,7 @@ pub async fn source(
     Some(tx) => tx,
     None => {
       write_err!(
-        StatusCode::UNAUTHORIZED,
+        StatusCode::FORBIDDEN,
         "this mountpoint is already in use, try again later"
       );
     }
