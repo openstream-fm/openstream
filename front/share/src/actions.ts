@@ -133,7 +133,7 @@ import { tick } from "svelte";
 // }
 
 
-export const clickOut = (node: Node, handler: (event: MouseEvent) => void) => {
+export const click_out = (node: Node, handler: (event: MouseEvent) => void) => {
   return { 
     destroy: add(node.ownerDocument || document, "click", (event: MouseEvent) => {
       let target: Element | null = (event.target as Element);

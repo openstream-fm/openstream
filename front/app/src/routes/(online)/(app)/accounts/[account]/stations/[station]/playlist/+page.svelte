@@ -9,7 +9,7 @@
 	import Icon from "$share/Icon.svelte";
 	import { onMount } from "svelte";
   import CircularProgress from "$share/CircularProgress.svelte";
-	import { add } from "$lib/actions";
+	import { add } from "$share/actions";
 	import { tooltip } from "$share/tooltip";
   import { fade, fly, scale, slide } from "svelte/transition";
 	import { _message, _progress } from "$share/notify";

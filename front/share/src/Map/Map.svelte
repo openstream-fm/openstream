@@ -1,39 +1,27 @@
 <script lang="ts">
+  export let stats: Stats;
+  export let show_ips = false;
+
+  // TODO: remove this type and use Analytics type when available from backend defs
+  type Stats = {
+    sessions: number,
+    country_sessions: Record<string, number | undefined>,
+    ips?: number,
+    country_ips?: Record<string, number | undefined>,
+  } 
+
+  type Dataset = typeof dataset;
+  type Item = Dataset["features"][number];
+
+  // import("$server/defs/stream-connection-stats/StatsItem").StatsItem & { country_ips: Stats["country_sessions"] };  
+  
   import dataset from "./countries.lite.geo";
   import { geoPath, geoMercator } from "d3";
   import { fade } from "svelte/transition";
   import { onMount } from "svelte";
   import { add } from "$share/util";
-
-  type Dataset = typeof dataset;
-  type Item = Dataset["features"][number];
-  type Stats = import("$server/defs/stream-connection-stats/StatsItem").StatsItem;  
-  
-  const sample_stats: Stats = {
-    sessions: 16736,
-    // ips: 15850,
-    country_sessions: {
-      "RU": 5,
-      "ES": 100,
-      "CO": 500,
-      "AR": 2550,
-      "BR": 5950,
-      "US": 6350,
-      "FR": 7800,
-    },
-    // country_ips: {
-    //   "RU": 4,
-    //   "ES": 82,
-    //   "CO": 436,
-    //   "AR": 2400,
-    //   "BR": 5342,
-    //   "US": 6141,
-    //   "FR": 7685,
-    // }
-  };
-
-  export let stats: Stats = sample_stats;
-
+  import { click_out } from "$share/actions";
+ 
   const pointerenter = (item: typeof dataset.features[number]) => {
     //logger.info(`hover start: `, item.properties.iso2, item.properties.name, item);
     dataset.features = [...dataset.features.filter(each => item !== each), item];
@@ -62,11 +50,12 @@
     return stats.country_sessions[tooltip_item.properties.iso2] || 0;
   }
 
-  // $: tooltip_ips = get_tooltip_ips(stats, tooltip_item);
-  // const get_tooltip_ips = (...args: any[]): number => {
-  //   if(tooltip_item == null) return 0;
-  //   return stats.country_ips[tooltip_item.properties.iso2] || 0;
-  // }
+  $: tooltip_ips = get_tooltip_ips(stats, tooltip_item);
+  const get_tooltip_ips = (...args: any[]): number => {
+    if(!show_ips) return 0;
+    if(tooltip_item == null) return 0;
+    return stats.country_ips?.[tooltip_item.properties.iso2] || 0;
+  }
 
   const get_fill = (stats: Stats, item: Item) => {
     const max = Math.max(0, ...Object.values(stats.country_sessions).map(Number));
@@ -164,7 +153,7 @@
 <svelte:window bind:innerWidth={windowWidth} on:pointerdown={pointerout} />
 
 <div class="viewport">
-  <svg viewBox="0 0 1000 660">
+  <svg viewBox="0 0 1000 660" use:click_out={() => tooltip_item = null}>
     {#each dataset.features as item (item.properties.iso2)}
       <path
         style:--fill={get_fill(stats, item)}
@@ -193,8 +182,10 @@
     <div class="map-tooltip-count">
       {tooltip_sessions} {tooltip_sessions === 1 ? "listener" : "listeners"}
     </div>
-    <!-- <div class="map-tooltip-count">
-      {tooltip_ips} unique IPs
-    </div> -->
+    {#if show_ips}
+      <div class="map-tooltip-count">
+        {tooltip_ips} {tooltip_ips === 1 ? "unique IP" : "unique IPs"}
+      </div>
+    {/if}
   </div>
 {/if}
