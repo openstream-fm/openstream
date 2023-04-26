@@ -240,7 +240,16 @@ const set_audio_state = (audio_state: AudioState) => {
 
 const get_audio_tag = (src: string): HTMLAudioElement => {
   if(audio == null) {
+
     audio = new Audio(src);
+
+    let start = Date.now();
+
+    const _play = audio.play;
+    audio.play = () => {
+      start = Date.now();
+      return _play.call(audio)
+    }
 
     set_audio_state("loading");
 
@@ -267,6 +276,20 @@ const get_audio_tag = (src: string): HTMLAudioElement => {
     audio.onplaying = () => {
       logger.info("onplaying")
       set_audio_state("playing");
+    }
+
+    audio.onended = () => {
+      const $player_state = get(player_state);
+      if($player_state.type === "station") {
+        const src = audio?.src;
+        if(src != null) {
+          if(Date.now() - start > 5000) {
+            destroy_audio_tag();
+            const audio = get_audio_tag(src);
+            audio.play();
+          }
+        }
+      }
     }
     
     return audio
