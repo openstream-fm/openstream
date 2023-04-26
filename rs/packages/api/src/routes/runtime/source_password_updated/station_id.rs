@@ -31,7 +31,7 @@ pub mod post {
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export)]
-  #[ts(export_to = "../../../defs/api/runtime/source-password-updated/[station_id]/POST/")]
+  #[ts(export_to = "../../../defs/api/runtime/source-password-updated/[station]/POST/")]
   pub struct Output(EmptyStruct);
 
   #[async_trait]
@@ -42,7 +42,7 @@ pub mod post {
     type HandleError = Infallible;
 
     async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
-      let station_id = req.param("station_id").unwrap();
+      let station_id = req.param("station").unwrap();
       let access_token_scope = request_ext::get_access_token_scope(&req).await?;
       let _ = access_token_scope.grant_station_scope(station_id).await?;
       Ok(Self::Input {
