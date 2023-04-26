@@ -96,9 +96,10 @@ pub fn run_relay_session(
                 if let Some(since) = no_listeners_since {
                   if since.elapsed() > RELAY_NO_LISTENERS_SHUTDOWN_DELAY {
                     break 'root;
-                  } else {
-                    no_listeners_since = Some(Instant::now())
                   }
+                } else {
+                  no_listeners_since = Some(Instant::now());
+                  continue 'root;
                 }
               }
 
