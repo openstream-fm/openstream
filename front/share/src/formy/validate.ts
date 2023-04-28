@@ -91,7 +91,9 @@ export const _email = ({
 } = {}) => {
   return (v: string | null | undefined) => {
     if(is_empty_string(v)) {
-      if(required) return `This field must a string, got ${typeof v}`; 
+      if(required) {
+        return "This field is required";
+      } 
     } else {
       if(typeof v !== "string") {
         return `This field must be a string, received: ${typeof v}`;

@@ -19,7 +19,7 @@ use tokio::sync::RwLock;
 
 #[derive(Debug, Clone)]
 pub struct MemIndex {
-  map: Arc<RwLock<HashMap<String, Item>>>,
+  map: Arc<RwLock<MultiMap>>,
 }
 
 #[derive(Debug, Clone, deepsize::DeepSizeOf)]
@@ -30,44 +30,6 @@ pub struct Item {
   pub country_code: Option<CountryCode>,
   pub created_at_secs: u32,
 }
-
-// #[derive(Debug, Clone, Serialize, Deserialize)]
-// #[macros::keys]
-// pub struct ProjectionItem {
-//   #[serde(rename = "u")]
-//   pub id: String,
-
-//   #[serde(rename = "s")]
-//   pub station_id: String,
-
-//   #[serde(rename = "x")]
-//   pub is_open: bool,
-
-//   #[serde(rename = "i")]
-//   #[serde(with = "serde_util::ip")]
-//   pub ip: IpAddr,
-
-//   #[serde(rename = "c")]
-//   pub country_code: Option<String>,
-
-//   #[serde(rename = "d")]
-//   pub created_at: serde_util::DateTime,
-// }
-
-// impl ProjectionItem {
-//   pub fn into_parts(self) -> (String, Item) {
-//     (
-//       self.id,
-//       Item {
-//         station_id: self.station_id,
-//         is_open: self.is_open,
-//         ip: self.ip,
-//         country_code: self.country_code,
-//         created_at_secs: self.created_at.unix_timestamp() as u32,
-//       },
-//     )
-//   }
-// }
 
 pub fn split_id_item(conn: StreamConnectionLite) -> (String, Item) {
   (
@@ -138,10 +100,68 @@ fn add(item: &mut ProcessItem, conn: &Item) {
   }
 }
 
+#[derive(Debug, Default, deepsize::DeepSizeOf)]
+pub struct MultiMap {
+  pub primary: HashMap<String, Item>,
+  pub by_station_id: HashMap<u64, HashMap<String, Item>>,
+}
+
+impl MultiMap {
+  pub fn len(&self) -> usize {
+    self.primary.len()
+  }
+
+  pub fn is_empty(&self) -> bool {
+    self.len() == 0
+  }
+
+  pub fn insert(&mut self, id: String, item: Item) -> Option<Item> {
+    self.primary.insert(id.clone(), item.clone());
+    self
+      .by_station_id
+      .entry(item.station_id)
+      .or_default()
+      .insert(id, item)
+  }
+
+  pub fn remove(&mut self, id: &String) -> Option<Item> {
+    if let Some(item) = self.primary.remove(id) {
+      if let Some(map) = self.by_station_id.get_mut(&item.station_id) {
+        let prev = map.remove(id);
+        if map.is_empty() {
+          self.by_station_id.remove(&item.station_id);
+        }
+        prev
+      } else {
+        None
+      }
+    } else {
+      None
+    }
+  }
+
+  pub fn retain<F: Fn(&Item) -> bool>(&mut self, filter: F) {
+    let mut ids = vec![];
+
+    for (_, map) in self.by_station_id.iter() {
+      for (id, item) in map {
+        if !filter(item) {
+          ids.push(id.clone());
+        }
+      }
+    }
+
+    for id in ids {
+      self.remove(&id);
+    }
+  }
+}
+
 impl MemIndex {
   pub async fn new() -> Self {
-    let map = Arc::new(RwLock::new(HashMap::<String, Item>::new()));
+    let map = Arc::new(RwLock::new(MultiMap::default()));
     let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
+
     tokio::spawn({
       let map = map.clone();
       async move {
@@ -166,7 +186,7 @@ impl MemIndex {
             let (before, after) = {
               let mut lock = map.write().await;
               let before = lock.len();
-              lock.retain(|_, item| item.created_at_secs > remove_since);
+              lock.retain(|item| item.created_at_secs > remove_since);
               let after = lock.len();
               (before, after)
             };
@@ -227,7 +247,7 @@ impl MemIndex {
               let mut lock = map.write().await;
 
               // resetting the map
-              *lock = HashMap::new();
+              *lock = MultiMap::default();
 
               if loop_time == 1 {
                 let _ = tx.send(());
@@ -363,7 +383,11 @@ impl MemIndex {
     Self { map }
   }
 
-  pub async fn get_stats<F: Filter + Send + Sync + 'static>(&self, filter: F) -> Stats {
+  pub async fn get_stats<F: Filter + Send + Sync + 'static>(
+    &self,
+    station_query: StationQuery,
+    filter: F,
+  ) -> Stats {
     let start = Instant::now();
 
     let mut now = ProcessItem::default();
@@ -382,25 +406,50 @@ impl MemIndex {
     tokio::task::spawn_blocking(move || {
       let lock = me.map.blocking_read();
 
-      for conn in lock.values() {
-        if !filter.filter(conn) {
-          continue;
-        }
+      macro_rules! add_filtered {
+        ($item:ident) => {
+          if filter.filter($item) {
+            if $item.is_open {
+              add(&mut now, $item);
+            }
 
-        if conn.is_open {
-          add(&mut now, conn);
-        }
+            // TODO: re-add this?
+            // if conn.created_at_secs > ago_30d {
+            add(&mut last_30d, $item);
+            if $item.created_at_secs > ago_7d {
+              add(&mut last_7d, $item);
+              if $item.created_at_secs > ago_24h {
+                add(&mut last_24h, $item);
+              }
+            }
+          }
+        };
+      }
 
-        // TODO: re-add this?
-        // if conn.created_at_secs > ago_30d {
-        add(&mut last_30d, conn);
-        if conn.created_at_secs > ago_7d {
-          add(&mut last_7d, conn);
-          if conn.created_at_secs > ago_24h {
-            add(&mut last_24h, conn);
+      match station_query {
+        StationQuery::All => {
+          for item in lock.primary.values() {
+            add_filtered!(item);
           }
         }
-        // }
+
+        StationQuery::One(station_id) => {
+          if let Some(map) = lock.by_station_id.get(&station_id) {
+            for item in map.values() {
+              add_filtered!(item)
+            }
+          }
+        }
+
+        StationQuery::Some(set) => {
+          for station_id in set {
+            if let Some(map) = lock.by_station_id.get(&station_id) {
+              for item in map.values() {
+                add_filtered!(item)
+              }
+            }
+          }
+        }
       }
 
       let total = last_30d.sessions;
@@ -425,7 +474,11 @@ impl MemIndex {
     .unwrap()
   }
 
-  pub async fn get_stats_item<F: Filter + Send + Sync + 'static>(&self, filter: F) -> StatsItem {
+  pub async fn get_stats_item<F: Filter + Send + Sync + 'static>(
+    &self,
+    station_query: StationQuery,
+    filter: F,
+  ) -> StatsItem {
     let start = Instant::now();
 
     let mut item = ProcessItem::default();
@@ -434,11 +487,38 @@ impl MemIndex {
     tokio::task::spawn_blocking(move || {
       let lock = me.map.blocking_read();
 
-      for conn in lock.values() {
-        if !filter.filter(conn) {
-          continue;
+      macro_rules! add_filtered {
+        ($conn:ident) => {
+          if filter.filter($conn) {
+            add(&mut item, $conn);
+          }
+        };
+      }
+
+      match station_query {
+        StationQuery::All => {
+          for conn in lock.primary.values() {
+            add_filtered!(conn);
+          }
         }
-        add(&mut item, conn);
+
+        StationQuery::One(station_id) => {
+          if let Some(map) = lock.by_station_id.get(&station_id) {
+            for conn in map.values() {
+              add_filtered!(conn)
+            }
+          }
+        }
+
+        StationQuery::Some(set) => {
+          for station_id in set {
+            if let Some(map) = lock.by_station_id.get(&station_id) {
+              for conn in map.values() {
+                add_filtered!(conn)
+              }
+            }
+          }
+        }
       }
 
       log::info!(
@@ -454,21 +534,51 @@ impl MemIndex {
     .unwrap()
   }
 
-  pub async fn count<F: Filter + Send + Sync + 'static>(&self, filter: F) -> usize {
+  pub async fn count<F: Filter + Send + Sync + 'static>(
+    &self,
+    station_query: StationQuery,
+    filter: F,
+  ) -> usize {
     let start = Instant::now();
     let total = {
       let lock = self.map.read().await;
-      if filter.is_all() {
-        lock.len()
-      } else {
-        let mut sum: usize = 0;
-        for item in lock.values() {
-          if filter.filter(item) {
+
+      let mut sum: usize = 0;
+
+      macro_rules! add_filtered {
+        ($conn:ident) => {
+          if filter.filter($conn) {
             sum += 1;
           }
-        }
-        sum
+        };
       }
+
+      match station_query {
+        StationQuery::All => {
+          for conn in lock.primary.values() {
+            add_filtered!(conn);
+          }
+        }
+
+        StationQuery::One(station_id) => {
+          if let Some(map) = lock.by_station_id.get(&station_id) {
+            for conn in map.values() {
+              add_filtered!(conn)
+            }
+          }
+        }
+
+        StationQuery::Some(set) => {
+          for station_id in set {
+            if let Some(map) = lock.by_station_id.get(&station_id) {
+              for conn in map.values() {
+                add_filtered!(conn)
+              }
+            }
+          }
+        }
+      }
+      sum
     };
 
     log::info!(
@@ -675,6 +785,31 @@ impl<T> CountryCodeMap<T> {
   #[inline(always)]
   pub fn get_mut(&mut self, key: CountryCode) -> &mut T {
     unsafe { self.0.get_unchecked_mut(key as usize) }
+  }
+}
+
+pub enum StationQuery {
+  All,
+  One(u64),
+  Some(HashSet<u64>),
+}
+
+impl StationQuery {
+  pub fn all() -> Self {
+    Self::All
+  }
+
+  pub fn one(station_id: String) -> Self {
+    Self::One(hash(&station_id))
+  }
+
+  pub fn some<Iter: IntoIterator<Item = String>>(ids: Iter) -> Self {
+    let iter = ids.into_iter();
+    let mut set = HashSet::new();
+    for id in iter {
+      set.insert(hash(&id));
+    }
+    Self::Some(set)
   }
 }
 
