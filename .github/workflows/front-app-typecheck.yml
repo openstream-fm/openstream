@@ -1,4 +1,4 @@
-name: Front App Typecheck
+name: front-studio-typecheck
 
 on: 
   push:
