@@ -1,4 +1,4 @@
-name: Front Server Build
+name: front-server-build
 
 on: 
   push:

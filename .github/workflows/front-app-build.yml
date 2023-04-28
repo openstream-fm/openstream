@@ -1,4 +1,4 @@
-name: Front App Build
+name: front-studio-build
 
 on: 
   push:

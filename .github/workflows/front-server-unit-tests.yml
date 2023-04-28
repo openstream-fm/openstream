@@ -1,4 +1,4 @@
-name: Front Server Unit Tests
+name: front-server-unit-tests
 
 on: 
   push:
