@@ -18,6 +18,7 @@ export const load = (async ({ fetch, url, depends, params }) => {
   return { 
     now_playing,
     stats,
+    current_page: "dashboard",
   }
 
 }) satisfies import("./$types").PageLoad;

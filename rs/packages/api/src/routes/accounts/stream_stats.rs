@@ -13,7 +13,7 @@ use ts_rs::TS;
 
 pub mod get {
 
-  use db::stream_connection::index::{MemIndex, StationIdFilter, StationIdSetFilter};
+  use db::stream_connection::index::{AllFilter, MemIndex, StationQuery};
 
   use super::*;
 
@@ -76,10 +76,18 @@ pub mod get {
       let stats = match set.len() {
         1 => {
           let station_id = set.into_iter().next().unwrap();
-          self.index.get_stats(StationIdFilter::new(station_id)).await
+          self
+            .index
+            .get_stats(StationQuery::one(station_id), AllFilter)
+            .await
         }
 
-        _ => self.index.get_stats(StationIdSetFilter::new(set)).await,
+        _ => {
+          self
+            .index
+            .get_stats(StationQuery::some(set), AllFilter)
+            .await
+        }
       };
 
       Ok(Output { stats })
@@ -93,7 +101,7 @@ pub mod now {
     use super::*;
 
     use db::stream_connection::{
-      index::{IsOpenFilter, MemIndex, StationIdFilter, StationIdSetFilter},
+      index::{IsOpenFilter, MemIndex, StationQuery},
       stats::StatsItem,
     };
 
@@ -156,14 +164,17 @@ pub mod now {
         let stats = match set.len() {
           1 => {
             let station_id = set.into_iter().next().unwrap();
-            let filter = (IsOpenFilter(true), StationIdFilter::new(station_id));
-            self.index.get_stats_item(filter).await
+            self
+              .index
+              .get_stats_item(StationQuery::one(station_id), IsOpenFilter(true))
+              .await
           }
 
           _ => {
-            let filter = (IsOpenFilter(true), StationIdSetFilter::new(set));
-
-            self.index.get_stats_item(filter).await
+            self
+              .index
+              .get_stats_item(StationQuery::some(set), IsOpenFilter(true))
+              .await
           }
         };
 
@@ -178,9 +189,7 @@ pub mod now {
     pub mod get {
       use super::*;
 
-      use db::stream_connection::index::{
-        IsOpenFilter, MemIndex, StationIdFilter, StationIdSetFilter,
-      };
+      use db::stream_connection::index::{IsOpenFilter, MemIndex, StationQuery};
 
       #[derive(Debug, Clone)]
       pub struct Endpoint {
@@ -239,14 +248,17 @@ pub mod now {
           let total = match set.len() {
             1 => {
               let station_id = set.into_iter().next().unwrap();
-              let filter = (IsOpenFilter(true), StationIdFilter::new(station_id));
-              self.index.count(filter).await
+              self
+                .index
+                .count(StationQuery::one(station_id), IsOpenFilter(true))
+                .await
             }
 
             _ => {
-              let filter = (IsOpenFilter(true), StationIdSetFilter::new(set));
-
-              self.index.count(filter).await
+              self
+                .index
+                .count(StationQuery::some(set), IsOpenFilter(true))
+                .await
             }
           };
 
@@ -261,7 +273,7 @@ pub mod since {
   use super::*;
   pub mod get {
     use db::stream_connection::{
-      index::{MemIndex, SinceFilter, StationIdFilter, StationIdSetFilter},
+      index::{MemIndex, SinceFilter, StationQuery},
       stats::StatsItem,
     };
 
@@ -373,14 +385,17 @@ pub mod since {
         let stats = match set.len() {
           1 => {
             let station_id = set.into_iter().next().unwrap();
-            let filter = (SinceFilter::new(duration), StationIdFilter::new(station_id));
-            self.index.get_stats_item(filter).await
+            self
+              .index
+              .get_stats_item(StationQuery::one(station_id), SinceFilter::new(duration))
+              .await
           }
 
           _ => {
-            let filter = (SinceFilter::new(duration), StationIdSetFilter::new(set));
-
-            self.index.get_stats_item(filter).await
+            self
+              .index
+              .get_stats_item(StationQuery::some(set), SinceFilter::new(duration))
+              .await
           }
         };
 
@@ -392,9 +407,7 @@ pub mod since {
   pub mod count {
     use super::*;
     pub mod get {
-      use db::stream_connection::index::{
-        MemIndex, SinceFilter, StationIdFilter, StationIdSetFilter,
-      };
+      use db::stream_connection::index::{MemIndex, SinceFilter, StationQuery};
 
       use crate::error::ApiError;
 
@@ -504,13 +517,17 @@ pub mod since {
           let total = match set.len() {
             1 => {
               let station_id = set.into_iter().next().unwrap();
-              let filter = (SinceFilter::new(duration), StationIdFilter::new(station_id));
-              self.index.count(filter).await
+              self
+                .index
+                .count(StationQuery::one(station_id), SinceFilter::new(duration))
+                .await
             }
 
             _ => {
-              let filter = (SinceFilter::new(duration), StationIdSetFilter::new(set));
-              self.index.count(filter).await
+              self
+                .index
+                .count(StationQuery::some(set), SinceFilter::new(duration))
+                .await
             }
           };
 

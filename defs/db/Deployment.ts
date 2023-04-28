@@ -8,6 +8,7 @@ export interface Deployment {
   pid: number;
   source_ports: Array<number>;
   stream_ports: Array<number>;
+  api_ports: Array<number>;
   state: DeploymentState;
   created_at: DateTime;
   updated_at: DateTime;

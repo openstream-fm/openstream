@@ -25,8 +25,8 @@ const defaultConfig: Config = {
   source_port: {
     local: 8000,
     test: 8001,
-    srv1: 8100,
-    srv2: 8200,
+    s1: 8100,
+    s2: 8200,
     default: 8000,
   }
 };
@@ -55,8 +55,8 @@ port = 3000
 [source_port]
 local = 8000
 test = 8001
-srv1 = 8100
-srv2 = 8200
+s1 = 8100
+s2 = 8200
 default = 8000
 `;
   const config = load_from_string(tomlString, "toml");
@@ -74,8 +74,8 @@ test("merge_env should merge environment variables with config", (t) => {
     OPENSTREAM_FRONT_STUDIO_PORT: "4000",
     OPENSTREAM_FRONT_SOURCE_PORT_LOCAL: "8000",
     OPENSTREAM_FRONT_SOURCE_PORT_TEST: "8001",
-    OPENSTREAM_FRONT_SOURCE_PORT_SRV1: "8100",
-    OPENSTREAM_FRONT_SOURCE_PORT_SRV2: "8200",
+    OPENSTREAM_FRONT_SOURCE_PORT_S1: "8100",
+    OPENSTREAM_FRONT_SOURCE_PORT_S2: "8200",
     OPENSTREAM_FRONT_SOURCE_PORT_DEFAULT: "8000",
   };
 
@@ -96,8 +96,8 @@ test("merge_env should merge environment variables with config", (t) => {
     source_port: {
       local: 8000,
       test: 8001,
-      srv1: 8100,
-      srv2: 8200,
+      s1: 8100,
+      s2: 8200,
       default: 8000,
     }
   };
@@ -144,8 +144,8 @@ test("load_from_string should load config from JSON string with missing properti
     OPENSTREAM_FRONT_STUDIO_PORT: "3000",
     OPENSTREAM_FRONT_SOURCE_PORT_LOCAL: "8000",
     OPENSTREAM_FRONT_SOURCE_PORT_TEST: "8001",
-    OPENSTREAM_FRONT_SOURCE_PORT_SRV1: "8100",
-    OPENSTREAM_FRONT_SOURCE_PORT_SRV2: "8200",
+    OPENSTREAM_FRONT_SOURCE_PORT_S1: "8100",
+    OPENSTREAM_FRONT_SOURCE_PORT_S2: "8200",
     OPENSTREAM_FRONT_SOURCE_PORT_DEFAULT: "8000",
   };
 
@@ -170,8 +170,8 @@ max_age_days = 30
     OPENSTREAM_FRONT_STUDIO_PORT: "3000",
     OPENSTREAM_FRONT_SOURCE_PORT_LOCAL: "8000",
     OPENSTREAM_FRONT_SOURCE_PORT_TEST: "8001",
-    OPENSTREAM_FRONT_SOURCE_PORT_SRV1: "8100",
-    OPENSTREAM_FRONT_SOURCE_PORT_SRV2: "8200",
+    OPENSTREAM_FRONT_SOURCE_PORT_S1: "8100",
+    OPENSTREAM_FRONT_SOURCE_PORT_S2: "8200",
     OPENSTREAM_FRONT_SOURCE_PORT_DEFAULT: "8000",
   };
 

@@ -3,7 +3,7 @@ use crate::error::ApplyPatchError;
 use crate::Model;
 use crate::{metadata::Metadata, PublicScope};
 use drop_tracer::Token;
-use mongodb::bson::doc;
+use mongodb::bson::{doc, Bson};
 use mongodb::options::{FindOneAndUpdateOptions, ReturnDocument};
 use mongodb::IndexModel;
 use serde::{Deserialize, Serialize};
@@ -137,7 +137,7 @@ pub struct Station {
   pub system_metadata: Metadata,
 
   // runtime
-  pub owner_deployment_id: Option<String>,
+  pub owner_deployment_info: Option<OwnerDeploymentInfo>,
 
   // misc
   pub limits: Limits,
@@ -149,6 +149,22 @@ pub struct Station {
   pub created_at: DateTime,
   pub updated_at: DateTime,
   pub deleted_at: Option<DateTime>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../../../defs/db/")]
+#[serde(rename_all = "snake_case")]
+#[macros::keys]
+pub struct OwnerDeploymentInfo {
+  pub deployment_id: String,
+  pub task_id: String,
+  pub content_type: String,
+}
+
+impl From<OwnerDeploymentInfo> for Bson {
+  fn from(info: OwnerDeploymentInfo) -> Bson {
+    mongodb::bson::to_bson(&info).unwrap()
+  }
 }
 
 pub mod validation {
@@ -479,27 +495,32 @@ pub struct StationPatchLimits {
 }
 
 impl Station {
-  pub async fn try_set_owner_deployment_id(
+  pub fn random_owner_task_id() -> String {
+    uid::uid(6)
+  }
+
+  pub async fn try_set_owner_deployment_info(
     station_id: &str,
-    deployment_id: &str,
+    info: OwnerDeploymentInfo,
     token: Token,
   ) -> Result<
-    Result<(Station, DeploymentTakeDropper), Option<(Station, String)>>,
+    Result<(Station, DeploymentTakeDropper), Option<(Station, OwnerDeploymentInfo)>>,
     mongodb::error::Error,
   > {
     let filter = doc! {
       Station::KEY_ID: station_id,
     };
 
-    let update = vec![
-      doc! {
-        "$set": {
-          Station::KEY_OWNER_DEPLOYMENT_ID: {
-            "$ifNull": [ const_str::concat!("$", Station::KEY_OWNER_DEPLOYMENT_ID), deployment_id ]
-          }
+    let update = vec![doc! {
+      "$set": {
+        Station::KEY_OWNER_DEPLOYMENT_INFO: {
+          "$ifNull": [
+            const_str::concat!("$", Station::KEY_OWNER_DEPLOYMENT_INFO),
+            info.clone(),
+          ]
         }
       }
-    ];
+    }];
 
     let options = FindOneAndUpdateOptions::builder()
       .return_document(ReturnDocument::Before)
@@ -514,16 +535,16 @@ impl Station {
       Some(doc) => doc,
     };
 
-    match &station.owner_deployment_id {
-      Some(owner_deploymeny_id) => {
-        let owner = owner_deploymeny_id.to_string();
-        Ok(Err(Some((station, owner))))
+    match &station.owner_deployment_info {
+      Some(owner_deploymeny_info) => {
+        let info = owner_deploymeny_info.clone();
+        Ok(Err(Some((station, info))))
       }
 
       None => {
         let inner = DeploymentTakeDropperInner {
           station_id: station_id.to_string(),
-          deployment_id: deployment_id.to_string(),
+          task_id: info.task_id,
           token,
         };
 
@@ -815,31 +836,45 @@ macro_rules! storage_quota {
 #[must_use]
 pub struct DeploymentTakeDropper(Option<DeploymentTakeDropperInner>);
 
+#[derive(Debug)]
+pub struct DeploymentTakeDropperInner {
+  station_id: String,
+  task_id: String,
+  token: Token,
+}
+
 impl Drop for DeploymentTakeDropper {
   fn drop(&mut self) {
     if let Some(inner) = self.0.take() {
       tokio::spawn(async move {
         let DeploymentTakeDropperInner {
           station_id,
-          deployment_id,
+          task_id,
           token,
         } = inner;
 
+        const KEY_OWNER_TASK: &str = const_str::concat!(
+          Station::KEY_OWNER_DEPLOYMENT_INFO,
+          ".",
+          OwnerDeploymentInfo::KEY_TASK_ID
+        );
+
         let filter = doc! {
           Station::KEY_ID: &station_id,
-          Station::KEY_OWNER_DEPLOYMENT_ID: deployment_id,
+          KEY_OWNER_TASK: &task_id,
         };
 
         let update = doc! {
           "$set": {
-            Station::KEY_OWNER_DEPLOYMENT_ID: null,
+            Station::KEY_OWNER_DEPLOYMENT_INFO: null,
           }
         };
 
         if let Err(e) = Station::cl().update_one(filter, update, None).await {
           log::error!(
-            "error setting owner_deployment_id back to null for station {} => {} => {:?}",
+            "error setting owner_deployment_id back to null for station={} task={} => {} => {:?}",
             station_id,
+            task_id,
             e,
             e
           );
@@ -849,13 +884,6 @@ impl Drop for DeploymentTakeDropper {
       });
     }
   }
-}
-
-#[derive(Debug)]
-pub struct DeploymentTakeDropperInner {
-  station_id: String,
-  deployment_id: String,
-  token: Token,
 }
 
 #[cfg(test)]

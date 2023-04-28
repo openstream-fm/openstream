@@ -16,7 +16,7 @@
 
   import { fly } from "svelte/transition";
 	import { ripple } from "$share/ripple";
-	import { clickOut } from "$lib/actions";
+	import { click_out } from "$share/actions";
 	import { action, _post } from "$share/net.client";
 	import Icon from "$share/Icon.svelte";
 	import { mdiAccountCircleOutline, mdiAccountMultipleOutline, mdiCastAudioVariant, mdiLogout } from "@mdi/js";
@@ -245,7 +245,7 @@
       <div class="account-name">{account.name}</div>
     {/if}
   </div>
-  <div class="menu-holder" use:clickOut={() => menu_open = false}>
+  <div class="menu-holder" use:click_out={() => menu_open = false}>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class="pic ripple-container" use:ripple on:click={() => menu_open = !menu_open} use:ripple>
       {user.first_name.charAt(0).toUpperCase()}
@@ -264,7 +264,7 @@
               </div>
             </div>
             <div class="menu-section">
-              <a href="/me" class="na menu-section-link ripple-container" use:ripple>
+              <a href="/me" class="na menu-section-link ripple-container" use:ripple on:click={() => menu_open = false}>
                 <div class="menu-icon">
                   <Icon d={mdiAccountCircleOutline} />
                 </div>
@@ -272,7 +272,7 @@
               </a>
             </div>
             <div class="menu-section">
-              <a href="/accounts" class="na menu-section-link ripple-container" use:ripple>
+              <a href="/accounts" class="na menu-section-link ripple-container" use:ripple on:click={() => menu_open = false}>
                 <div class="menu-icon">
                   <Icon d={mdiAccountMultipleOutline} />
                 </div>

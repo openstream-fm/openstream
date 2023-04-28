@@ -3,7 +3,7 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "fm.openstream.staging.studio.twa",
+      "package_name": "fm.openstream.studio.twa",
       "sha256_cert_fingerprints": [
         "61:7F:61:F5:78:F7:A7:A6:84:F8:9A:51:68:91:94:C0:FC:D9:40:D8:D6:AB:B3:B7:70:62:95:F3:E1:C2:86:78"
       ]

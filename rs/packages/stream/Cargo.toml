@@ -32,6 +32,7 @@ ip-counter = { version = "0.1.0", path = "../ip-counter" }
 ip_rfc = "0.1.0"
 defer = "0.1.0"
 url = "2.3.1"
+rand = "0.8.5"
 
 [features]
 

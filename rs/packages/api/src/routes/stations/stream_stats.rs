@@ -4,13 +4,15 @@ use crate::request_ext::{self, GetAccessTokenScopeError};
 use async_trait::async_trait;
 use db::stream_connection::stats::Stats;
 // use db::stream_connection::StreamConnection;
-use db::stream_connection::index::{MemIndex, StationIdFilter};
+use db::stream_connection::index::MemIndex;
 use mongodb::bson::doc;
 use prex::Request;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 pub mod get {
+
+  use db::stream_connection::index::{AllFilter, StationQuery};
 
   use super::*;
 
@@ -52,7 +54,10 @@ pub mod get {
       //let filter = doc! { StreamConnection::KEY_STATION_ID: station_id };
       //let stats = Stats::get_for_filter(filter).await?;
 
-      let stats = self.index.get_stats(StationIdFilter::new(station_id)).await;
+      let stats = self
+        .index
+        .get_stats(StationQuery::one(station_id), AllFilter)
+        .await;
 
       Ok(Output { stats })
     }
@@ -64,7 +69,10 @@ pub mod now {
   pub mod get {
     use super::*;
 
-    use db::stream_connection::{index::IsOpenFilter, stats::StatsItem};
+    use db::stream_connection::{
+      index::{IsOpenFilter, StationQuery},
+      stats::StatsItem,
+    };
 
     #[derive(Debug, Clone)]
     pub struct Endpoint {
@@ -101,8 +109,10 @@ pub mod now {
 
       async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
         let Input { station_id } = input;
-        let filter = (IsOpenFilter(true), StationIdFilter::new(station_id));
-        let stats = self.index.get_stats_item(filter).await;
+        let stats = self
+          .index
+          .get_stats_item(StationQuery::one(station_id), IsOpenFilter(true))
+          .await;
 
         Ok(Output { stats })
       }
@@ -114,7 +124,7 @@ pub mod now {
     pub mod get {
       use super::*;
 
-      use db::stream_connection::index::IsOpenFilter;
+      use db::stream_connection::index::{IsOpenFilter, StationQuery};
 
       #[derive(Debug, Clone)]
       pub struct Endpoint {
@@ -151,8 +161,10 @@ pub mod now {
 
         async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
           let Input { station_id } = input;
-          let filter = (IsOpenFilter(true), StationIdFilter::new(station_id));
-          let total = self.index.count(filter).await;
+          let total = self
+            .index
+            .count(StationQuery::one(station_id), IsOpenFilter(true))
+            .await;
 
           Ok(Output { total })
         }
@@ -168,7 +180,10 @@ pub mod since {
 
     use super::*;
 
-    use db::stream_connection::{index::SinceFilter, stats::StatsItem};
+    use db::stream_connection::{
+      index::{SinceFilter, StationQuery},
+      stats::StatsItem,
+    };
 
     #[derive(Debug, Clone)]
     pub struct Endpoint {
@@ -250,8 +265,10 @@ pub mod since {
           duration,
           station_id,
         } = input;
-        let filter = (SinceFilter::new(duration), StationIdFilter::new(station_id));
-        let stats = self.index.get_stats_item(filter).await;
+        let stats = self
+          .index
+          .get_stats_item(StationQuery::one(station_id), SinceFilter::new(duration))
+          .await;
 
         Ok(Output { stats })
       }
@@ -263,7 +280,7 @@ pub mod since {
     pub mod get {
       use super::*;
       use crate::error::ApiError;
-      use db::stream_connection::index::{SinceFilter, StationIdFilter};
+      use db::stream_connection::index::{SinceFilter, StationQuery};
 
       #[derive(Debug, Clone)]
       pub struct Endpoint {
@@ -347,8 +364,10 @@ pub mod since {
             duration,
             station_id,
           } = input;
-          let filter = (SinceFilter::new(duration), StationIdFilter::new(station_id));
-          let total = self.index.count(filter).await;
+          let total = self
+            .index
+            .count(StationQuery::one(station_id), SinceFilter::new(duration))
+            .await;
 
           Ok(Output { total })
         }

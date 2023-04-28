@@ -5,22 +5,8 @@ import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { matchPrecache, precacheAndRoute } from "workbox-precaching";
 import { build, version } from "$service-worker";
 
-// there's a quirk in sveltekit not working when serving /offline from other url
-const offline_urls: string[] = [];
-for(let i = 1; i < 8; i++) {
-  const url = "/" + Array(i).fill("offline").join("/")
-  offline_urls.push(url);
-}
-
-// addEventListener("install", event => {
-//   // @ts-ignore
-//   self.skipWaiting();
-// })
-
 precacheAndRoute([
-  ...offline_urls.map(url => {
-    return { url, revision: version }
-  }),
+  { url: "/offline", revision: version },
   ...build.map(url => {
     return { url, revision: version };
   })
@@ -30,8 +16,7 @@ setDefaultHandler(new NetworkOnly());
 
 setCatchHandler(async ({request, url}) => {
   if(url.origin === self.origin && request.destination === "document") {
-    const target = "/" + url.pathname.slice(1).split("/").fill("offline").join("/");
-    const response = await matchPrecache(target);
+    const response = await matchPrecache("/offline");
     if(response) return response;
   }
 
@@ -71,7 +56,7 @@ registerRoute(
     cacheName: "station-audio-files",
     plugins: [
       new CacheableResponsePlugin({
-        statuses: [0, 200]
+        statuses: [0, 200],
       })
     ]
   })

@@ -20,10 +20,16 @@ pub struct Deployment {
   pub pid: u32,
 
   #[serde(with = "serde_util::port::vec")]
+  #[serde(default)]
   pub source_ports: Vec<u16>,
 
   #[serde(with = "serde_util::port::vec")]
+  #[serde(default)]
   pub stream_ports: Vec<u16>,
+
+  #[serde(with = "serde_util::port::vec")]
+  #[serde(default)]
+  pub api_ports: Vec<u16>,
 
   pub state: DeploymentState,
 

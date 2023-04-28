@@ -16,12 +16,14 @@
   	mdiMenu,
 		mdiAccountMultipleOutline,
 		mdiPoll,
+		mdiClose,
   } from "@mdi/js";
 	import { onMount } from "svelte";
 	import Icon from "$share/Icon.svelte";
 	import { ripple } from "$share/ripple";
 	import { fade } from "svelte/transition";
 	import { browser } from "$app/environment";
+  import logo from "$share/img/logo.png";
 
   import { player_state } from "../Player/player";
 
@@ -64,8 +66,42 @@
     justify-content: flex-start;
   }
 
+  .toggle {
+    flex: none;
+    display: none;
+    width: 4rem;
+    height: 100%;
+    font-size: 1.5rem;
+    align-items: center;
+    justify-content: center;
+    margin-inline-end: -1.5rem;
+    transition: background-color 200ms ease;
+  }
+  
+  .toggle:hover {
+    background: rgba(0,0,0,0.05);
+  }
+
   .logo {
-    margin-inline-start: 1.5rem;
+    margin-inline-start: 1rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .logo-icon {
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    font-size: 1.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-inline-end: 0.5rem;
+  }
+
+  .logo-text {
+    font-size: 1.5rem;
+    font-weight: 700;
   }
 
   .inner {
@@ -77,23 +113,6 @@
 
   .player-open .inner {
     height: calc(100vh - var(--player-h));
-  }
-
-  .toggle {
-    display: none;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.75rem;
-    width: var(--top-h);
-    height: var(--top-h);
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 150ms ease;
-    margin-inline-end: -1.25rem;
-  }
-
-  .toggle:hover {
-    background: rgba(0,0,0,0.05);
   }
 
   .drawer-overlay {
@@ -126,6 +145,16 @@
       display: flex;
     }
 
+    .logo-icon {
+      width: 2rem;
+      height: 2rem;
+      font-size: 1.35rem;
+    }
+
+    .logo-text {
+      font-size: 1.35rem;
+    }
+
     .drawer:not(.fixed-open) {
       margin-inline-start: calc(var(--drawer-width) * -1);
       box-shadow: none;
@@ -141,11 +170,15 @@
 <div class="drawer" class:player-open={$player_state.type !== "closed"} class:fixed-open={fixed_open}>
   <div class="inner">
     <div class="top">
-      <button class="toggle ripple-container" use:ripple aria-label="Toggle drawer" on:click={toggle}>
+      <button class="toggle ripple-container" use:ripple aria-label="Toogle drawer" on:click={close_drawer_fixed}>
         <Icon d={mdiMenu} />
       </button>
       <div class="logo">
-        openstream
+        <div class="logo-icon" style="background-image: url({logo})">
+        </div>
+        <div class="logo-text">
+          openstream
+        </div>
       </div>
     </div>
 

@@ -100,10 +100,10 @@ export const session = (config: Config, _logger: Logger) => {
   
   router.use((req: Request, res: Response, next: NextFunction) => {
 
-    const host = req.hostname || "studio.openstream.fm";
-    const domain = host.replace(/^studio./, "");
+    const host = (req.hostname || "openstream.fm").replace("studio.", "");
+    const domain = "openstream.fm";
 
-    const cookie_name = `${config.session.cookie_name}-${domain}`;
+    const cookie_name = `${config.session.cookie_name}-${host}`;
 
     req.cookie_session = get_cookie_session(req, cookie_name, key, logger);
     res.set_session = (data: SessionData) => {
@@ -111,7 +111,7 @@ export const session = (config: Config, _logger: Logger) => {
       res.cookie(cookie_name, encoded, {
         domain,
         httpOnly: true,
-        sameSite: "strict",
+        sameSite: "lax",
         path: "/",
         signed: false,
         maxAge: config.session.max_age_days * 1000 * 60 * 60 * 24,
@@ -119,12 +119,12 @@ export const session = (config: Config, _logger: Logger) => {
     }
 
     // rolling cookie (and set device id, if first time)
-    res.set_session(req.cookie_session);
+    // res.set_session(req.cookie_session);
 
     res.clear_session = () => res.clearCookie(cookie_name, {
       domain,
       httpOnly: true,
-      sameSite: "strict",
+      sameSite: "lax",
       path: "/",
       signed: false,
     });

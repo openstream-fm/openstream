@@ -9,6 +9,7 @@ use std::sync::Arc;
 
 pub mod live;
 pub mod playlist;
+pub mod relay;
 
 use playlist::run_playlist_session;
 
@@ -313,6 +314,7 @@ impl MediaSessionInfo {
 pub enum MediaSessionKind {
   Live { content_type: String },
   Playlist {},
+  Relay { content_type: String },
 }
 
 impl MediaSessionKind {
@@ -321,17 +323,23 @@ impl MediaSessionKind {
     match self {
       MediaSessionKind::Live { content_type } => content_type,
       MediaSessionKind::Playlist {} => "audio/mpeg",
+      MediaSessionKind::Relay { content_type, .. } => content_type,
     }
   }
 
   #[inline]
-  fn is_live(&self) -> bool {
+  pub fn is_live(&self) -> bool {
     matches!(self, MediaSessionKind::Live { .. })
   }
 
   #[inline]
-  fn is_playlist(&self) -> bool {
+  pub fn is_playlist(&self) -> bool {
     matches!(self, MediaSessionKind::Playlist { .. })
+  }
+
+  #[inline]
+  pub fn is_relay(&self) -> bool {
+    matches!(self, MediaSessionKind::Relay { .. })
   }
 }
 

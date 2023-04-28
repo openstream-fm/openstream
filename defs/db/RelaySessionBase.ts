@@ -5,8 +5,8 @@ import type { RelaySessionState } from "./RelaySessionState";
 export interface RelaySessionBase {
   _id: string;
   station_id: string;
-  source_deployment_id: string;
-  relay_deployment_id: string;
+  deployment_id: string;
+  target_deployment_id: string;
   state: RelaySessionState;
   transfer_bytes: number;
   closed_at: DateTime | null;

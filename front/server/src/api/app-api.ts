@@ -27,10 +27,10 @@ export const public_config = (host: string, source_port_map: Config["source_port
     port = source_port_map.default;
   } else if (host === "studio.test.openstream.fm") {
     port = source_port_map.test;
-  } else if (host === "studio.srv1.openstream.fm") {
-    port = source_port_map.srv1;
-  } else if (host === "studio.srv2.openstream.fm") {
-    port = source_port_map.srv2;
+  } else if (host === "studio.s1.openstream.fm") {
+    port = source_port_map.s1;
+  } else if (host === "studio.s2.openstream.fm") {
+    port = source_port_map.s2;
   } else if (host === "studio.local.openstream.fm") {
     port = source_port_map.local;
   } else {
@@ -60,6 +60,13 @@ export const app_api = ({
   const logger = _logger.scoped("app-api");
 
   let api = Router();
+
+  // api.use((req, res, next) => {
+  //   console.log("===============================");
+  //   console.log({ url: req.originalUrl, headers: req.headers });
+  //   next();
+  // })
+
   api.use(json_body_parser())
   api.use(session(config, logger));
 

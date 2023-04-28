@@ -33,7 +33,9 @@
   --z-top: 1000;
   --z-drawer-wide: 1100;
   --z-player: 1200;
-  --z-user-menu: 1300;
+  --z-station-top: 1300;
+  --z-station-menu: 1350;
+  --z-user-menu: 1375;
   --z-drawer-fixed: 1400;
   --z-map-tooltip: 2000;
   --z-tooltip: 2100;

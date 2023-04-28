@@ -34,7 +34,6 @@ const config = {
 
 		version: {
 			name: version(),
-			pollInterval: 1000,
 		},
 
 		files: {
@@ -45,6 +44,10 @@ const config = {
 			hooks: {
 				server: "./src/hooks.server.ts"
 			},
+		},
+
+		paths: {
+			relative: false,
 		},
 
 		adapter: adapter(),

@@ -272,12 +272,12 @@ impl SourceHandler {
           let session = entry.get();
           match session.kind() {
             MediaSessionKind::Live { .. } => {
-              let mut res = Response::new(StatusCode::FORBIDDEN);
-              *res.body_mut() = Body::from("this source is already in use, try again later");
+              let mut res = Response::new(StatusCode::UNPROCESSABLE_ENTITY);
+              *res.body_mut() = Body::from("this mountpoint is already in use, try again later or change the source password from your station dashboard in openstream studio app");
               return res;
             }
 
-            MediaSessionKind::Playlist { .. } => {
+            MediaSessionKind::Playlist { .. } | MediaSessionKind::Relay { .. } => {
               map.transmit(&station.id, MediaSessionKind::Live { content_type })
             }
           }
@@ -345,7 +345,7 @@ impl SourceHandler {
 
         let (status, message) = match e {
            LiveError::Db(_) => (StatusCode::INTERNAL_SERVER_ERROR, String::from("internal error creating live media session, try again later or report it to the administrators")),
-           LiveError::Data(_) => (StatusCode::FORBIDDEN, String::from("io error reading data")),
+           LiveError::Data(_) => (StatusCode::BAD_REQUEST, String::from("io error reading data")),
         };
 
         let mut res = Response::new(status);

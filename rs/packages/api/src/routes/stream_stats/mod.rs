@@ -11,6 +11,8 @@ use ts_rs::TS;
 
 pub mod get {
 
+  use db::stream_connection::index::StationQuery;
+
   use super::*;
 
   #[derive(Debug, Clone)]
@@ -46,7 +48,7 @@ pub mod get {
     async fn perform(&self, _input: Self::Input) -> Result<Self::Output, Self::HandleError> {
       // let filter = doc! {};
       // let stats = Stats::get_for_filter(filter).await?;
-      let stats = self.index.get_stats(AllFilter).await;
+      let stats = self.index.get_stats(StationQuery::all(), AllFilter).await;
       Ok(Output { stats })
     }
   }
@@ -55,7 +57,10 @@ pub mod get {
 pub mod now {
   use super::*;
   pub mod get {
-    use db::stream_connection::{index::IsOpenFilter, stats::StatsItem};
+    use db::stream_connection::{
+      index::{IsOpenFilter, StationQuery},
+      stats::StatsItem,
+    };
 
     use super::*;
 
@@ -93,7 +98,7 @@ pub mod now {
         // let filter = doc! {};
         // let stats = Stats::get_for_filter(filter).await?;
         let filter = IsOpenFilter(true);
-        let stats = self.index.get_stats_item(filter).await;
+        let stats = self.index.get_stats_item(StationQuery::all(), filter).await;
         Ok(Output { stats })
       }
     }
@@ -103,7 +108,7 @@ pub mod now {
     use super::*;
     pub mod get {
 
-      use db::stream_connection::index::IsOpenFilter;
+      use db::stream_connection::index::{IsOpenFilter, StationQuery};
 
       use super::*;
       #[derive(Debug, Clone)]
@@ -137,10 +142,10 @@ pub mod now {
         }
 
         async fn perform(&self, _input: Self::Input) -> Result<Self::Output, Self::HandleError> {
-          // let filter = doc! {};
-          // let stats = Stats::get_for_filter(filter).await?;
-          let filter = IsOpenFilter(true);
-          let total = self.index.count(filter).await;
+          let total = self
+            .index
+            .count(StationQuery::All, IsOpenFilter(true))
+            .await;
           Ok(Output { total })
         }
       }
@@ -151,7 +156,10 @@ pub mod now {
 pub mod since {
   use super::*;
   pub mod get {
-    use db::stream_connection::{index::SinceFilter, stats::StatsItem};
+    use db::stream_connection::{
+      index::{SinceFilter, StationQuery},
+      stats::StatsItem,
+    };
 
     use crate::error::ApiError;
 
@@ -229,8 +237,10 @@ pub mod since {
 
       async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
         let Input { duration } = input;
-        let filter = SinceFilter::new(duration);
-        let stats = self.index.get_stats_item(filter).await;
+        let stats = self
+          .index
+          .get_stats_item(StationQuery::all(), SinceFilter::new(duration))
+          .await;
         Ok(Output { stats })
       }
     }
@@ -239,7 +249,7 @@ pub mod since {
   pub mod count {
     use super::*;
     pub mod get {
-      use db::stream_connection::index::SinceFilter;
+      use db::stream_connection::index::{SinceFilter, StationQuery};
 
       use crate::error::ApiError;
 
@@ -318,7 +328,7 @@ pub mod since {
         async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
           let Input { duration } = input;
           let filter = SinceFilter::new(duration);
-          let total = self.index.count(filter).await;
+          let total = self.index.count(StationQuery::all(), filter).await;
           Ok(Output { total })
         }
       }

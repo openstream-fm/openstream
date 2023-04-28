@@ -76,7 +76,10 @@ pub async fn handle_connection(
   // let mut reader = tokio::io::BufReader::new(socket);
 
   let head = read_request_head(&mut socket).await?;
-  trace!("head readed");
+  info!(
+    "source request: local_addr={} remote_addr={} request={:?}",
+    local_addr, remote_addr, head
+  );
 
   // need to copy here because we'll use socket again as non buffered reader
   // and tokio doesn't provide a way to get the buffer as owned

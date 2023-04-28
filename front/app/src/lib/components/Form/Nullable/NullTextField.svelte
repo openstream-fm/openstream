@@ -11,6 +11,8 @@
   export let minrows: number | undefined = void 0;
   export let maxrows: number | undefined = void 0;
 
+  export let maxlength: number | undefined = void 0;
+
   export let icon: string | null | undefined = void 0;
   export let btn: { icon: string, action: () => void } | null = null;
 	
@@ -36,6 +38,7 @@
   {maxrows}
   {icon}
   {btn}
+  {maxlength}
   value={value || ""}
   on:input
   on_change={internal_on_change}

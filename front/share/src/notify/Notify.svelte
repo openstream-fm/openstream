@@ -130,6 +130,7 @@
     left: 0.5em;
     display: flex;
     flex-direction: column-reverse;
+    align-items: flex-start;
     max-width: 80%;
   }
 

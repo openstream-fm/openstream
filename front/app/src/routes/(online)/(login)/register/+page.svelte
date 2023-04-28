@@ -7,6 +7,9 @@
 	import { action, _post } from "$share/net.client";
 	import { mdiAccount, mdiAccountOutline, mdiPhoneOutline } from "@mdi/js";
 	import { form } from "../transitions";
+	import Validator from "$share/formy/Validator.svelte";
+	import { _confirmation_password, _email, _new_password, _phone, _string } from "$share/formy/validate";
+	import Formy from "$share/formy/Formy.svelte";
 
   let first_name = "";
   let last_name = "";
@@ -126,37 +129,46 @@
   <title>Sign up</title>
 </svelte:head>
 
-<form on:submit|preventDefault={register} class="box" in:form>
-  <div class="title">Sign up</div>
-  <div class="fields">
-    <div class="field">
-      <TextField label="Your first name" icon={mdiAccountOutline} autocomplete="given-name" bind:value={first_name} />
-    </div>
-    <div class="field">
-      <TextField label="Your last name" icon={mdiAccountOutline} autocomplete="family-name" bind:value={last_name} />
-    </div>
-    <div class="field">
-      <TextField label="Your organization's name" icon={mdiAccountOutline} autocomplete="off" bind:value={account_name} />
-    </div>
-    <div class="field">
-      <TextField type="tel" label="Your phone number" icon={mdiPhoneOutline} autocomplete="tel" bind:value={phone} />
-    </div>
-    <div class="field">
-      <Email label="Your email" bind:value={email} />
-    </div>
-    <div class="field">
-      <Password label="Your password" autocomplete="new-password" bind:value={password} />
-    </div>
-    <div class="field">
-      <Password label="Confirm your password" autocomplete="new-password" bind:value={confirm_password} />
-    </div>
+<Formy action={register} let:submit>
+  <form on:submit={submit} class="box" in:form>
+    <div class="title">Sign up</div>
+    <div class="fields">
+      <div class="field">
+        <TextField label="Your first name" trim icon={mdiAccountOutline} autocomplete="given-name" bind:value={first_name} />
+        <Validator value={first_name} fn={_string({ required: true, maxlen: 50 })} />
+      </div>
+      <div class="field">
+        <TextField label="Your last name" trim icon={mdiAccountOutline} autocomplete="family-name" bind:value={last_name} />
+        <Validator value={last_name} fn={_string({ required: true, maxlen: 50 })} />
+      </div>
+      <div class="field">
+        <TextField label="Your organization's name" trim icon={mdiAccountOutline} autocomplete="off" bind:value={account_name} />
+        <Validator value={account_name} fn={_string({ required: true, maxlen: 50 })} />
+      </div>
+      <div class="field">
+        <TextField type="tel" label="Your phone number" icon={mdiPhoneOutline} autocomplete="tel" bind:value={phone} />
+        <Validator value={phone} fn={_phone({ required: true })} />
+      </div>
+      <div class="field">
+        <Email label="Your email" bind:value={email} />
+        <Validator value={email} fn={_email({ required: true })} /> 
+      </div>
+      <div class="field">
+        <Password label="Your password" autocomplete="new-password" bind:value={password} />
+        <Validator value={password} fn={_new_password({ minlen: 8, maxlen: 50 })} />
+      </div>
+      <div class="field">
+        <Password label="Confirm your password" autocomplete="new-password" bind:value={confirm_password} />
+        <Validator value={{ password, confirm_password }} fn={_confirmation_password()} />
+      </div>
 
-    <button use:ripple class="ripple-container">
-      Sign up
-    </button>
-  </div>
-  <div class="new-box">
-    <span class="comment">Already have an station?</span>
-    <a class="na link sign-in" href="/login">Sign in</a>
-  </div>
-</form>
+      <button use:ripple class="ripple-container">
+        Sign up
+      </button>
+    </div>
+    <div class="new-box">
+      <span class="comment">Already have an station?</span>
+      <a class="na link sign-in" href="/login">Sign in</a>
+    </div>
+  </form>
+</Formy>

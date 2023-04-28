@@ -6,6 +6,7 @@
   export let trim: boolean = false;
   export let disabled: boolean = false;
   export let readonly: boolean = false;
+  export let maxlength: number | undefined = void 0;
   export let icon: string | null = null;
   export let on_change: ((v: string) => void) | null =  null; 
 
@@ -32,6 +33,7 @@
     {minrows}
     {maxrows}
     {readonly}
+    {maxlength}
     bind:value
     bind:empty
     on:input
