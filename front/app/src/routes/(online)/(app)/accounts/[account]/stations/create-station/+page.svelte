@@ -12,6 +12,7 @@
   import { clone, diff, equals } from "$server/util/collections";
 	import { prevent_unload } from "$share/prevent-unload";
 	import StationProfile from "$lib/components/StationProfile.svelte";
+	import Formy from "$share/formy/Formy.svelte";
 
   let start = {
     name: null as string | null,
@@ -129,15 +130,17 @@
 <Page>
   <div class="page">
     <div class="page-title">Create a station</div>
-    <form novalidate class="create-box" on:submit|preventDefault={send}>
+    <Formy action={send} let:submit>
+      <form novalidate class="create-box" on:submit={submit}>
 
-      <StationProfile account_id={data.account._id} bind:current />
+        <StationProfile account_id={data.account._id} bind:current />
 
-      <div class="submit-wrap">
-        <button class="submit ripple-container" use:ripple type="submit">
-          Create station
-        </button>
-      </div>
-    </form>
+        <div class="submit-wrap">
+          <button class="submit ripple-container" use:ripple type="submit">
+            Create station
+          </button>
+        </div>
+      </form>
+    </Formy>
   </div>
 </Page>

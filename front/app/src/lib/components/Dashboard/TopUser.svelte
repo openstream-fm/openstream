@@ -264,7 +264,7 @@
               </div>
             </div>
             <div class="menu-section">
-              <a href="/me" class="na menu-section-link ripple-container" use:ripple>
+              <a href="/me" class="na menu-section-link ripple-container" use:ripple on:click={() => menu_open = false}>
                 <div class="menu-icon">
                   <Icon d={mdiAccountCircleOutline} />
                 </div>
@@ -272,7 +272,7 @@
               </a>
             </div>
             <div class="menu-section">
-              <a href="/accounts" class="na menu-section-link ripple-container" use:ripple>
+              <a href="/accounts" class="na menu-section-link ripple-container" use:ripple on:click={() => menu_open = false}>
                 <div class="menu-icon">
                   <Icon d={mdiAccountMultipleOutline} />
                 </div>

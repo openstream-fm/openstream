@@ -1,5 +1,7 @@
 <script lang="ts">
-	import TopUser from "$lib/components/Dashboard/TopUser.svelte";
+  export let data: import("./$types").PageData;
+
+  import TopUser from "$lib/components/Dashboard/TopUser.svelte";
 	import TextField from "$lib/components/Form/TextField.svelte";
 	import NullTextField from "$lib/components/Form/Nullable/NullTextField.svelte";
 	import { ripple } from "$share/ripple";
@@ -12,7 +14,15 @@
 	import Password from "$lib/components/Form/Password.svelte";
 	import { mdiAccountOutline, mdiDevices, mdiPhoneOutline } from "@mdi/js";
 	import Icon from "$share/Icon.svelte";
-  export let data: import("./$types").PageData;
+  import Formy from "$share/formy/Formy.svelte";
+  import Validator from "$share/formy/Validator.svelte";
+  import {
+    _new_password,
+    _confirmation_password,
+    _string,
+    _phone,
+  } from "$share/formy/validate";
+	import { tooltip } from "$share/tooltip";
 
   let profile_db = {
     first_name: data.user.first_name,
@@ -25,7 +35,11 @@
   $: can_save_profile = !equals(profile_db, profile_current);
 
   const save_profile = action(async () => {
-    if(!can_save_profile) return;
+    if(!can_save_profile) {
+      _message("No changes to save");
+      return;
+    };
+    
     const dif = diff(profile_db, profile_current);
     // TODO: remove this partial
     const payload: Partial<import("$server/defs/api/users/[user]/PATCH/Payload").Payload> = dif;
@@ -123,7 +137,7 @@
     padding: 2rem;
   }
 
-  .section + .section {
+  .section-password {
     margin-top: 5rem;
   }
 
@@ -234,29 +248,62 @@
       {data.user.first_name} {data.user.last_name}
     </div>
 
-    <form class="section" on:submit|preventDefault={save_profile}>
-      <div class="section-title">Profile</div>
-      <div class="fields">
-        <div class="field">
-          <Email label="Your email" disabled value={data.user.email} />
+    <Formy action={save_profile} let:submit>
+      <form class="section section-profile" on:submit={submit}>
+        <div class="section-title">Profile</div>
+        <div class="fields">
+          <div class="field">
+            <Email label="Your email" disabled value={data.user.email} />
+          </div>
+          <div class="field">
+            <TextField
+              label="Your first name"
+              icon={mdiAccountOutline}
+              trim
+              maxlength={50}
+              bind:value={profile_current.first_name}
+            />
+            <Validator value={profile_current.first_name} fn={_string({ required: true, maxlen: 50 })} /> 
+          </div>
+          <div class="field">
+            <TextField
+              label="Your last name"
+              icon={mdiAccountOutline}
+              trim
+              bind:value={profile_current.last_name}
+              maxlength={50}
+            />
+            <Validator value={profile_current.last_name} fn={_string({ required: true, maxlen: 50 })} /> 
+          </div>
+          <div class="field">
+            <NullTextField
+              type="tel"
+              label="Your phone number"
+              icon={mdiPhoneOutline}
+              trim
+              bind:value={profile_current.phone}
+              maxlength={40}  
+            />
+            <Validator value={profile_current.phone} fn={_phone()} />
+          </div>
         </div>
-        <div class="field">
-          <TextField label="Your first name" icon={mdiAccountOutline} trim bind:value={profile_current.first_name} />
+        <div class="submit-wrap">
+          <!--
+            <button
+            class="submit ripple-container"
+            type="submit"
+            use:ripple={{ opacity: !can_save_profile ? 0 : void 0 }}
+            class:disabled={!can_save_profile}
+            aria-disabled={!can_save_profile}
+            use:tooltip={can_save_profile ? null : "No changes to save"}
+          >
+          -->
+          <button class="submit ripple-container" type="submit" use:ripple>
+            Save
+          </button>
         </div>
-        <div class="field">
-          <TextField label="Your last name" icon={mdiAccountOutline} trim bind:value={profile_current.last_name} />
-        </div>
-        <div class="field">
-          <NullTextField type="tel" label="Your phone number" icon={mdiPhoneOutline} trim bind:value={profile_current.phone} />
-        </div>
-      </div>
-      <div class="submit-wrap">
-        <!-- <button class="submit ripple-container" type="submit" use:ripple={{ opacity: can_save_profile ? 0 : void 0 }} class:disabled={!can_save_profile} disabled={!can_save_profile}> -->
-        <button class="submit ripple-container" type="submit" use:ripple>
-          Save
-        </button>
-      </div>
-    </form>
+      </form>
+    </Formy>
 
     <!-- <form class="section" on:submit|preventDefault={change_email}>
       <div class="section-title">Change your email</div>
@@ -278,22 +325,26 @@
       </div>
     </form> -->
 
-    <form class="section" on:submit|preventDefault={change_password}>
-      <div class="section-title">Change your password</div>
-      <div class="fields">
-        <div class="field">
-          <Password label="New password" autocomplete="new-password" bind:value={new_password} />
+    <Formy action={change_password} let:submit>
+      <form class="section section-password" on:submit={submit}>
+        <div class="section-title">Change your password</div>
+        <div class="fields">
+          <div class="field">
+            <Password label="New password" autocomplete="new-password" bind:value={new_password} />
+            <Validator value={new_password} fn={_new_password({ minlen: 8, maxlen: 50 })} />
+          </div>
+          <div class="field">
+            <Password label="Confirm password" autocomplete="new-password" bind:value={confirm_new_password} />
+            <Validator value={{password: new_password, confirm_password: confirm_new_password }} fn={_confirmation_password()} />
+          </div>
         </div>
-        <div class="field">
-          <Password label="Confirm password" bind:value={confirm_new_password} />
+        <div class="submit-wrap">
+          <button class="submit ripple-container" type="submit" use:ripple> 
+            Save
+          </button>
         </div>
-      </div>
-      <div class="submit-wrap">
-        <button class="submit ripple-container" type="submit" use:ripple> 
-          Save
-        </button>
-      </div>
-    </form>
+      </form>
+    </Formy>
 
     <div class="more">
       <div class="more-title">

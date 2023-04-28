@@ -10,7 +10,8 @@
 	import { tooltip } from "$share/tooltip";
 	import { prevent_unload } from "$share/prevent-unload";
 	import StationProfile from "$lib/components/StationProfile.svelte";
-	
+  import Formy from "$share/formy/Formy.svelte";
+
   let db = {
     name: data.station.name,
     slogan: data.station.slogan,
@@ -133,15 +134,17 @@
 <Page>
   <div class="page">
     <div class="page-title">Station Profile</div>
-    <form novalidate class="create-box" on:submit|preventDefault={send}>
-      
-      <StationProfile account_id={data.account._id} bind:current />
-
-      <div class="submit-wrap">
-        <button class="submit ripple-container" class:disabled={!can_save} disabled={!can_save} use:tooltip={can_save ? null : "No changes to save"} use:ripple type="submit">
-          Save
-        </button>
-      </div>
-    </form>
+    <Formy action={send} let:submit>
+      <form novalidate class="create-box" on:submit={submit}>
+        
+        <StationProfile account_id={data.account._id} bind:current />
+        
+        <div class="submit-wrap">
+          <button class="submit ripple-container" class:disabled={!can_save} disabled={!can_save} use:tooltip={can_save ? null : "No changes to save"} use:ripple type="submit">
+            Save
+          </button>
+        </div>
+      </form>
+    </Formy>
   </div>
 </Page>

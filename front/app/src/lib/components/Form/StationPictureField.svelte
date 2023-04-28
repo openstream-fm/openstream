@@ -1,6 +1,7 @@
 <script lang="ts">
 	export let account_id: string;
 	export let picture_id: string | null;
+  export let required: boolean;
 
 	import no_img from '$share/img/no-img-square.jpg';
 
@@ -10,6 +11,7 @@
 	import { _post } from '$share/net.client';
 	import { browser } from '$app/environment';
 	import { _error } from '$share/notify';
+	import Validator from '$share/formy/Validator.svelte';
 
 	let error_message: string | null;
 	let loading: boolean = false;
@@ -163,6 +165,10 @@
     margin-top: 1rem;
   }
 
+  .validation {
+    margin-top: 0.5rem;
+  }
+
   @media screen and (max-width: 600px) {
     .station-picture-field {
       flex-direction: column;
@@ -196,8 +202,13 @@
 		<div class="info-line">Minimum image size: 512x512px</div>
 		<div class="info-line">Maximum file size: 2MB</div>
 		<div class="info-line">Image must be square</div>
-		{#if error_message != null}
+    {#if error_message != null}
 			<div class="error-message">{error_message}</div>
 		{/if}
+		{#if required}
+      <div class="validation">
+        <Validator value={picture_id} fn={v => v == null ? "The logo is required" : null} />
+      </div>
+    {/if}
 	</div>
 </div>

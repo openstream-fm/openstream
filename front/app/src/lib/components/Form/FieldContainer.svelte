@@ -84,6 +84,7 @@
     border: 0;
     margin: 0;
     width: 2rem;
+    height: 2rem;
     font-size: 1.25em;
     border-radius: 0.25em;
     align-self: stretch;

@@ -11,6 +11,7 @@
   export let trim: boolean = false;
   export let disabled: boolean = false;
   export let readonly: boolean = false;
+  export let maxlength: number | undefined = void 0;
 
   export let multiline: boolean = false;
   export let minrows: number = 3;
@@ -48,7 +49,7 @@
 </script>
 
 {#if multiline}
-  <textarea class={css["forms-input"]}  {rows} {autocomplete} {disabled} {readonly} value={display_value} on:input={event => on_input(event.currentTarget.value)} on:input />
+  <textarea class={css["forms-input"]} {maxlength} {rows} {autocomplete} {disabled} {readonly} value={display_value} on:input={event => on_input(event.currentTarget.value)} on:input />
 {:else}
   <input {type} class={css["forms-input"]} {autocomplete} {disabled} {readonly} value={display_value} on:input={event => on_input(event.currentTarget.value)} on:input />
 {/if}
