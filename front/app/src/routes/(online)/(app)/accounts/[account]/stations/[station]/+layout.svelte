@@ -129,7 +129,7 @@
   }
 
   .station-selector-item.current {
-    background: rgba(0,0,0,0.05);
+    background: rgba(var(--blue-rgb), 0.1);
   }
 
   .station-selector-anchor {

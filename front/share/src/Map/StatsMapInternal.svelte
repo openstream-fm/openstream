@@ -1,5 +1,6 @@
 <script lang="ts" context="module">
   const logger = default_logger.scoped("stats-map");
+  import type { View } from "./StatsMap.svelte";
 </script>
 
 <script lang="ts">
@@ -7,7 +8,7 @@
   export let data: Stats | null = null;
   export let kind: "account" | "station";
   export let record_id: string;
-  export let selected_view: "now" | "last_24h" | "last_7d" | "last_30d" = "now"; 
+  export let view: View = "now"; 
   
   import { default_logger } from "$share/logger";
   import { _get } from "$share/net.client";
@@ -231,10 +232,10 @@
         {@const data_non_null = data}
         {#each view_ids as view_id}
           {@const stats = data_non_null[view_id]}
-          {@const selected = view_id === selected_view}
+          {@const selected = view_id === view}
           {@const sessions = stats.sessions}
           {@const countries = Object.keys(stats.country_sessions).length}
-          <button class="view-btn ripple-container" class:selected use:ripple on:click={() => selected_view = view_id}>
+          <button class="view-btn ripple-container" class:selected use:ripple on:click={() => view = view_id}>
             <div class="view-title">
               {selector_titles[view_id]}
             </div>
@@ -254,7 +255,7 @@
     </div>
     <div class="map-out">
       {#if data != null}
-        <Map stats={data[selected_view]} />
+        <Map stats={data[view]} />
       {/if}
     </div>
   </div>
