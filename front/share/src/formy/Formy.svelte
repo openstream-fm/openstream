@@ -2,7 +2,8 @@
   export let action: () => void;
 
   import { setContext } from "svelte";
-  import { FORMY_KEY, FormyContext, FormyValidation, ValidationItem } from "./formy";
+  import { FORMY_KEY } from "./formy";
+  import type { FormyContext, ValidationItem } from "./formy"
 
   let _token = 0;
   const map = new Map<number, ValidationItem>();

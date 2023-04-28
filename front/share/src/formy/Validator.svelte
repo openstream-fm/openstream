@@ -5,7 +5,8 @@
   export let value: Value;
   export let fn: (v: Value) => string | null; 
 
-  import { FORMY_KEY, FormyContext } from "./formy";
+  import { FORMY_KEY } from "./formy";
+  import type { FormyContext } from "./formy";
   import { getContext } from "svelte";
   // import { add } from "$share/util";
 
