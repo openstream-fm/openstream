@@ -71,6 +71,7 @@ export const country_names: Record<CountryCode, string> = Object.fromEntries(Obj
   GQ: "Equatorial Guinea",
   ER: "Eritrea",
   EE: "Estonia",
+  EU: "European Union",
   SZ: "Eswatini",
   ET: "Ethiopia",
   FK: "Islas Malvinas",

@@ -7,15 +7,20 @@ use db::{
 };
 use log::*;
 
-const STATION_ID: &str = "1f1y4cr5";
-const C: usize = 1_000_000;
-
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-  create_random_stream_connections().await
+  let c: usize = std::env::var("C")
+    .context("env C is required")?
+    .parse()
+    .context("env C must be a usize")?;
+  let station_id = std::env::var("S").context("env S is required")?;
+  create_random_stream_connections(c, station_id).await
 }
 
-async fn create_random_stream_connections() -> Result<(), anyhow::Error> {
+async fn create_random_stream_connections(
+  c: usize,
+  station_id: String,
+) -> Result<(), anyhow::Error> {
   use owo_colors::*;
   logger::init();
   //let _ = dotenv::dotenv();
@@ -47,23 +52,27 @@ async fn create_random_stream_connections() -> Result<(), anyhow::Error> {
     .await
     .context("error ensuring mongodb collections and indexes")?;
 
-  let _ = match Station::get_by_id(STATION_ID).await? {
-    None => anyhow::bail!("cannot find station with id {STATION_ID}"),
+  let _ = match Station::get_by_id(&station_id).await? {
+    None => anyhow::bail!("cannot find station with id {station_id}"),
     Some(station) => station,
   };
 
-  for i in 0..C {
-    create_random_stream_connection(i).await?
+  for i in 0..c {
+    create_random_stream_connection(c, &station_id, i).await?
   }
 
-  info!("created {C} stream connections");
+  info!("created {c} stream connections");
 
   Ok(())
 }
 
-async fn create_random_stream_connection(i: usize) -> Result<(), anyhow::Error> {
+async fn create_random_stream_connection(
+  c: usize,
+  station_id: &str,
+  i: usize,
+) -> Result<(), anyhow::Error> {
   if i % 10_000 == 0 {
-    info!("creating stream connection {i} of {C}");
+    info!("creating stream connection {i} of {c}");
   }
 
   let ip = std::net::IpAddr::from([
@@ -114,7 +123,7 @@ async fn create_random_stream_connection(i: usize) -> Result<(), anyhow::Error> 
 
   let document = StreamConnection {
     id: StreamConnection::uid(),
-    station_id: STATION_ID.to_string(),
+    station_id: station_id.to_string(),
     deployment_id: String::from(""),
     is_open,
     ip: request.real_ip,

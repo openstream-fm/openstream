@@ -11,7 +11,6 @@ use user_agent::{UserAgent, UserAgentExt};
 pub struct Request {
   #[serde(with = "serde_util::ip")]
   pub real_ip: IpAddr,
-  #[serde(deserialize_with = "geoip::deserialize_option")]
   pub country_code: Option<CountryCode>,
   pub local_addr: SocketAddr,
   pub remote_addr: SocketAddr,

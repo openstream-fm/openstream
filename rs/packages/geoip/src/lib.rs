@@ -1,4 +1,4 @@
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 use std::net::IpAddr;
 use std::str::FromStr;
 use strum::*;
@@ -11,7 +11,11 @@ pub fn ip_to_country_code(addr: &IpAddr) -> Option<CountryCode> {
     s => match CountryCode::from_str(s) {
       Ok(v) => Some(v),
       Err(_) => {
-        log::warn!("failed to convert from string to CountryCode: {s}");
+        if s != "ZZ"
+        /* && s != "EU"*/
+        {
+          log::warn!("failed to convert from string to CountryCode: {s}");
+        }
         None
       }
     },
@@ -114,6 +118,7 @@ pub enum CountryCode {
   DO, //: "Dominican Republic",
   EC, //: "Ecuador",
   EG, //: "Egypt",
+  EU, //: "European Union",
   SV, //: "El Salvador",
   GQ, //: "Equatorial Guinea",
   ER, //: "Eritrea",
@@ -297,6 +302,7 @@ pub enum CountryCode {
   YE, //: "Yemen",
   ZM, //: "Zambia",
   ZW, //: "Zimbabwe",
+      // ZZ, //: "Unkown/Other"
 }
 
 impl std::hash::Hash for CountryCode {
@@ -308,19 +314,6 @@ impl std::hash::Hash for CountryCode {
 impl std::cmp::PartialEq for CountryCode {
   fn eq(&self, other: &Self) -> bool {
     *self as u8 == *other as u8
-  }
-}
-
-pub fn deserialize_option<'de, D: Deserializer<'de>>(
-  de: D,
-) -> Result<Option<CountryCode>, D::Error> {
-  let helper: Option<String> = Deserialize::deserialize(de)?;
-  match helper {
-    None => Ok(None),
-    Some(v) => match CountryCode::from_str(&v) {
-      Ok(v) => Ok(Some(v)),
-      Err(_) => Ok(None),
-    },
   }
 }
 

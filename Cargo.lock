@@ -901,6 +901,7 @@ dependencies = [
  "crypt",
  "deepsize",
  "defer-lite",
+ "derive_more",
  "drop-tracer",
  "false",
  "futures-util",

@@ -50,6 +50,7 @@ array-macro = "2.1.5"
 strum = "0.24.1"
 arr_macro = "0.2.1"
 drop-tracer = { version = "0.1.0", path = "../drop-tracer" }
+derive_more = "0.99.17"
 
 [dev-dependencies]
 serde_json = { version = "1.0", features = ["preserve_order"] }

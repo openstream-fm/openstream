@@ -26,7 +26,6 @@ pub struct StreamConnection {
   pub duration_ms: Option<u64>,
   pub is_open: bool,
   pub created_at: DateTime,
-  #[serde(deserialize_with = "geoip::deserialize_option")]
   pub country_code: Option<CountryCode>,
   #[serde(with = "serde_util::ip")]
   pub ip: IpAddr,

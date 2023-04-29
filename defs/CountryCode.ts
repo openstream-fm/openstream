@@ -67,6 +67,7 @@ export type CountryCode =
   | "DO"
   | "EC"
   | "EG"
+  | "EU"
   | "SV"
   | "GQ"
   | "ER"
