@@ -3,6 +3,7 @@ use crate::error::ApplyPatchError;
 use crate::Model;
 use crate::{metadata::Metadata, PublicScope};
 use drop_tracer::Token;
+use geoip::CountryCode;
 use mongodb::bson::{doc, Bson};
 use mongodb::options::{FindOneAndUpdateOptions, ReturnDocument};
 use mongodb::IndexModel;
@@ -35,6 +36,9 @@ pub struct Station {
   #[modify(trim)]
   #[validate(length(min = "SLOGAN_MIN", max = "SLOGAN_MAX"), non_control_character)]
   pub slogan: Option<String>,
+
+  pub type_of_content: StationTypeOfContent,
+  pub country_code: CountryCode,
 
   #[modify(trim)]
   #[validate(length(min = "DESC_MIN", max = "DESC_MAX"))]
@@ -151,6 +155,50 @@ pub struct Station {
   pub deleted_at: Option<DateTime>,
 }
 
+#[derive(
+  Debug,
+  Clone,
+  Copy,
+  Serialize,
+  Deserialize,
+  ts_rs::TS,
+  strum::AsRefStr,
+  strum::Display,
+  strum::EnumCount,
+  strum::EnumIter,
+  strum::EnumVariantNames,
+)]
+#[serde(rename_all = "lowercase")]
+#[strum(serialize_all = "lowercase")]
+#[ts(export, export_to = "../../../defs/db/")]
+#[macros::keys]
+pub enum StationTypeOfContent {
+  Comedy,
+  Educational,
+  General,
+  Music,
+  News,
+  Religious,
+  Sports,
+  Talk,
+}
+
+impl StationTypeOfContent {
+  pub fn display_name(&self) -> &'static str {
+    use StationTypeOfContent::*;
+    match self {
+      General => "General",
+      News => "News",
+      Talk => "Talk",
+      Music => "Music",
+      Educational => "Educational",
+      Sports => "Sports",
+      Religious => "Religious",
+      Comedy => "Comedy",
+    }
+  }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
@@ -201,6 +249,8 @@ pub struct UserPublicStation {
   pub slogan: Option<String>,
   pub description: Option<String>,
 
+  pub type_of_content: StationTypeOfContent,
+  pub country_code: CountryCode,
   // location and language
   // pub language_id: Option<String>,
   // pub region_id: Option<String>,
@@ -307,6 +357,9 @@ pub struct StationPatch {
   #[modify(trim)]
   #[validate(length(min = "DESC_MIN", max = "DESC_MAX"))]
   pub description: Option<Option<String>>,
+
+  pub type_of_content: Option<StationTypeOfContent>,
+  pub country_code: Option<CountryCode>,
 
   // location and language
   // pub language_id: Option<String>,
@@ -585,6 +638,8 @@ impl Station {
     apply!(name);
     apply!(slogan);
     apply!(description);
+    apply!(type_of_content);
+    apply!(country_code);
 
     apply!(email);
     apply!(whatsapp);
@@ -710,7 +765,8 @@ impl From<Station> for UserPublicStation {
       id: station.id,
       account_id: station.account_id,
       picture_id: station.picture_id,
-
+      type_of_content: station.type_of_content,
+      country_code: station.country_code,
       //language_id: station.language_id,
       //region_id: station.region_id,
       frequencies: station.frequencies,

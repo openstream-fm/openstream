@@ -162,8 +162,9 @@ pub mod post {
 
   use db::config::Config;
   use db::run_transaction;
-  use db::station::{Limit, Limits, Station, StationFrequency};
+  use db::station::{Limit, Limits, Station, StationFrequency, StationTypeOfContent};
   use db::station_picture::StationPicture;
+  use geoip::CountryCode;
   use serde_util::DateTime;
   use ts_rs::TS;
   use validate::url::patterns::*;
@@ -194,6 +195,9 @@ pub mod post {
     #[modify(trim)]
     #[validate(length(min = "DESC_MIN", max = "DESC_MAX"))]
     pub description: Option<String>,
+
+    pub type_of_content: StationTypeOfContent,
+    pub country_code: CountryCode,
 
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim, lowercase)]
@@ -414,6 +418,9 @@ pub mod post {
         slogan,
         description,
 
+        type_of_content,
+        country_code,
+
         email,
         phone,
         whatsapp,
@@ -499,6 +506,8 @@ pub mod post {
         slug,
         slogan,
         description,
+        type_of_content,
+        country_code,
 
         email,
         phone,

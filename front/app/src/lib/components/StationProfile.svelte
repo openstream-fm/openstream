@@ -29,6 +29,10 @@
 		_twitter_url,
     _google_play_url
 	} from '$share/formy/validate';
+	import CountryField from './Form/CountryField.svelte';
+	import type { CountryCode } from '$server/defs/CountryCode';
+	import TypeOfContentField from './Form/TypeOfContentField.svelte';
+	import type { StationTypeOfContent } from '$server/defs/db/StationTypeOfContent';
 
 	export let account_id: string;
 	export let current: {
@@ -37,6 +41,8 @@
 		name: string | null;
 		slogan: string | null;
 		description: string | null;
+		country_code: CountryCode | "";
+		type_of_content: StationTypeOfContent | "",
 
 		email: string | null;
 		phone: string | null;
@@ -110,7 +116,23 @@
 			/>
 			<Validator value={current.description} fn={_string({ maxlen: 2000 })} />
 		</div>
+		<div class="field">
+			<CountryField
+				label="Country"
+				bind:value={current.country_code}
+			/>
+			<Validator value={current.country_code} fn={_string({ required: true })} />
+		</div>
+		<div class="field">
+			<TypeOfContentField
+				label="Country"
+				bind:value={current.type_of_content}
+			/>
+			<Validator value={current.type_of_content} fn={_string({ required: true })} />
+		</div>
+
 	</div>
+
 </div>
 
 <div class="section">

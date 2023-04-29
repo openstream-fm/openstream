@@ -28,6 +28,8 @@
     google_play_url: data.station.google_play_url,
     app_store_url: data.station.app_store_url,
     picture_id: data.station.picture_id as string | null,
+    country_code: data.station.country_code as typeof data.station.country_code | "",
+    type_of_content: data.station.type_of_content as typeof data.station.type_of_content | "",
   };
 
   let current = clone(db);
@@ -56,9 +58,17 @@
     const name = dif.name;
     if(name === null) throw new Error("Station name is required");
 
+    const type_of_content = dif.type_of_content;
+    if(type_of_content === "") throw new Error("Type of contet is required");
+
+    const country_code = dif.country_code;
+    if(country_code === "") throw new Error("Country is required");
+
     const payload: import("$server/defs/api/stations/[station]/PATCH/Payload").Payload = {
       ...dif,
       name,
+      type_of_content: type_of_content ?? null,
+      country_code: country_code ?? null,
       picture_id,
     }
 
