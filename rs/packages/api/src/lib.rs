@@ -99,7 +99,7 @@ impl ApiServer {
       match socket.bind(&addr.into()) {
         Ok(()) => {}
         Err(e) => {
-          error!("error binding to addr {}", addr);
+          error!("error binding to addr {} => {}", addr, e);
           return Err(e.into());
         }
       };

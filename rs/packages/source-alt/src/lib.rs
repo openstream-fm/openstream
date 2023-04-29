@@ -44,7 +44,7 @@ pub async fn start(
   match socket.bind(&local_addr.into()) {
     Ok(()) => {}
     Err(e) => {
-      error!("error binding to addr {}", local_addr);
+      error!("error binding to addr {} => {}", local_addr, e);
       return Err(e);
     }
   };
