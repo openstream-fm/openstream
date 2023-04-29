@@ -73,7 +73,7 @@ export const country_names: Record<CountryCode, string> = Object.fromEntries(Obj
   EE: "Estonia",
   SZ: "Eswatini",
   ET: "Ethiopia",
-  FK: "Islands Malvinas",
+  FK: "Islas Malvinas",
   FO: "Faroe Islands",
   FJ: "Fiji",
   FI: "Finland",
