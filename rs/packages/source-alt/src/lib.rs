@@ -37,11 +37,18 @@ pub async fn start(
   }
 
   // TODO: remove this reuse_addr
-  socket.set_reuse_address(true)?;
+  // socket.set_reuse_address(true)?;
   socket.set_nonblocking(true)?;
   // socket.set_reuse_port(true)?;
 
-  socket.bind(&local_addr.into())?;
+  match socket.bind(&local_addr.into()) {
+    Ok(()) => {}
+    Err(e) => {
+      error!("error binding to addr {}", local_addr);
+      return Err(e);
+    }
+  };
+
   socket.listen(1024)?;
 
   let std: std::net::TcpListener = socket.into();
@@ -66,10 +73,6 @@ pub async fn start(
           drop_tracer.clone(),
           shutdown.clone(),
         ));
-
-        if shutdown.is_closed() {
-          return Ok(())
-        }
       },
 
       _ = shutdown.signal() => {
