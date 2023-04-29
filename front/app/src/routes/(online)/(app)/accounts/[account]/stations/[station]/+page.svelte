@@ -13,6 +13,8 @@
 	import { onMount } from "svelte";
 	import { derived } from "svelte/store";
   import StatsMap from "$share/Map/StatsMap.svelte";
+	import { sleep } from "$share/util";
+	import { intersect } from "$share/actions";
 
   export let data: import("./$types").PageData;
 
@@ -37,12 +39,12 @@
     else play_station({ _id: data.station._id, picture_id: data.station.picture_id, name: data.station.name })
   }
 
-  const stats_num = (v: number): string => {
-    if(v < 1_000) return `${v}`;
-    if(v < 1_000_000) return `${(v / 1_000).toFixed(1)} K`;
-    if(v < 1_000_000_000) return `${(v / 1_000_000).toFixed(1)} M`;
-    return `${(v / 1_000_000_000).toFixed(1)} B`
-  }
+  // const stats_num = (v: number): string => {
+  //   if(v < 1_000) return `${v}`;
+  //   if(v < 1_000_000) return `${(v / 1_000).toFixed(1)} K`;
+  //   if(v < 1_000_000_000) return `${(v / 1_000_000).toFixed(1)} M`;
+  //   return `${(v / 1_000_000_000).toFixed(1)} B`
+  // }
 
   const units = [ "B", "KB", "MB", "GB", "TB" ];
   
@@ -62,56 +64,55 @@
     return `${to_fixed_2(v)} PB`;
   }
 
-  const sessions_str = (n: number) => {
-    if(n === 1) return "session";
-    else return "sessions";
-  }
+  // const sessions_str = (n: number) => {
+  //   if(n === 1) return "session";
+  //   else return "sessions";
+  // }
 
-  const listeners_str = (n: number) => {
-    if(n === 1) return "user";
-    else return "users";
-  }
+  // const listeners_str = (n: number) => {
+  //   if(n === 1) return "user";
+  //   else return "users";
+  // }
 
-  const UPDATE_INTERVAL = 5_000;
+  const LIMITS_UPDATE_INTERVAL = 5_000;
+  let limits_on_screen = true;
 
   onMount(() => {
-
-    const update = async () => {
-      
-      const token = timer;
-
-      const skip = document.hidden === true;
-
-      if(skip) {
-        logger.info("skipping update tick because of document.hidden");
-      } else {
-        try {
-          const limits: StationLimits = await _get(`/api/stations/${data.station._id}/limits`);
-          logger.info(`station limits updated`);
-          data.station.limits = limits;
-        } catch(e) {
-          logger.warn(`error updating station limits: ${e}`);
+    let mounted = true;
+    
+    (async () => {
+      let _prev_skip: boolean | null = null;
+      let last = Date.now();
+      while(true) {
+        if(!mounted) return;
+        await sleep(100)
+        const skip = document.visibilityState === "hidden" || limits_on_screen === false;
+        const prev_skip = _prev_skip;
+        _prev_skip = skip;
+        if(skip) {
+          if(skip !== prev_skip) {
+            logger.info(`pausing limits update (document: ${document.visibilityState}, on_screen: ${limits_on_screen})`);
+          }
+        } else {
+          if(skip !== prev_skip) {
+            logger.info(`(re)starting limits update (document: ${document.visibilityState}, on_screen: ${limits_on_screen})`);
+          }
+          if(Date.now() - last < LIMITS_UPDATE_INTERVAL) continue;
+          try {
+            const limits: StationLimits = await _get(`/api/stations/${data.station._id}/limits`);
+            logger.info(`station limits updated`);
+            data.station.limits = limits;
+          } catch(e) {
+            logger.warn(`error updating station limits: ${e}`);
+          } finally {
+            last = Date.now();
+          }
         }
       }
-
-      if(token === timer) {
-        timer = setTimeout(update, skip ? 1000 : UPDATE_INTERVAL);
-      }
-    }
-
-    let timer = setTimeout(update, UPDATE_INTERVAL);
+    })()
     
-    return () => clearTimeout(timer);
+    return () => mounted = false
   })
-
-  // data.dashboard_stats.listeners_24h = Math.floor(Math.random() * 1e6);
-  // data.dashboard_stats.listeners_7d = Math.floor(Math.random() * 1e6);
-  // data.dashboard_stats.listeners_30d = Math.floor(Math.random() * 1e6);
-  // data.dashboard_stats.sessions_24h = Math.floor(Math.random() * 1e6);
-  // data.dashboard_stats.sessions_7d = Math.floor(Math.random() * 1e6);
-  // data.dashboard_stats.sessions_30d = Math.floor(Math.random() * 1e6);
-
-  const f = (v: number) => new Intl.NumberFormat().format(v);
 </script>
 
 <style>
@@ -542,7 +543,7 @@
       <StatsMap kind="station" record_id={data.station._id} bind:data={data.stats} />
     </div>
 
-    <div class="meters">
+    <div class="meters" use:intersect={{ enter: () => limits_on_screen = true, leave: () => limits_on_screen = false}}>
       <div class="meter">
         <div class="meter-title">
           Listeners

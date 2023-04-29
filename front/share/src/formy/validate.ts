@@ -5,7 +5,7 @@ export const INSTAGRAM = /^https:\/\/www\.instagram\.com\/.+/;
 export const YOUTUBE = /^https:\/\/www\.youtube\.com\/.+/;
 export const TWITCH = /^https:\/\/twitch\.tv\/.+/;
 export const GOOGLE_PLAY = /^https:\/\/play\.google\.com\/.+/;
-export const APP_STORE =/^https:\/\/apps\.apple\.com\/.+/;
+export const APP_STORE = /^https:\/\/apps\.apple\.com\/.+/;
 
 
 export const is_valid_email = (str: string) => EMAIL.test(str);
@@ -284,8 +284,8 @@ const Pattern = (regex: RegExp, message: string) => {
 
 export const _twitter_url = Pattern(TWITTER, "This field must be a valid Twitter URL, navigate to your Twitter page and copy the entire URL from there");
 export const _facebook_url = Pattern(FACEBOOK, "This field must be a valid Facebook URL, navigate to your Facebook page and copy the entire URL from there");
-export const _instagram_url = Pattern(YOUTUBE, "This field must be a valid Instagram URL, navigate to your Instagram page and copy the entire URL from there");
-export const _youtube_url = Pattern(INSTAGRAM, "This field must be a valid Youtube URL, navigate to your Youtube page and copy the entire URL from there");
+export const _instagram_url = Pattern(INSTAGRAM, "This field must be a valid Instagram URL, navigate to your Instagram page and copy the entire URL from there");
+export const _youtube_url = Pattern(YOUTUBE, "This field must be a valid Youtube URL, navigate to your Youtube page and copy the entire URL from there");
 export const _twitch_url = Pattern(TWITCH, "This field must be a valid Twitch URL, navigate to your Twitch page and copy the entire URL from there");
 export const _google_play_url = Pattern(GOOGLE_PLAY, "This field must be a valid Google Play URL, navigate to your app's page at Google Play and copy the entire URL from there");
 export const _app_store_url = Pattern(APP_STORE, "This field must be a valid App Store URL, navigate to your app's page at App Store and copy the entire URL from there");

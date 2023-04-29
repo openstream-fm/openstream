@@ -122,9 +122,9 @@
     font-weight: 600;
   }
 
-  .submit.disabled {
+  /* .submit.disabled {
     background: #999;
-  }
+  } */
 </style>
 
 <svelte:head>
@@ -140,7 +140,7 @@
         <StationProfile account_id={data.account._id} bind:current />
         
         <div class="submit-wrap">
-          <button class="submit ripple-container" class:disabled={!can_save} disabled={!can_save} use:tooltip={can_save ? null : "No changes to save"} use:ripple type="submit">
+          <button class="submit ripple-container" use:ripple type="submit">
             Save
           </button>
         </div>

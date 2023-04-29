@@ -2,6 +2,7 @@ import { browser } from "$app/environment";
 import { _get } from "$share/net.client";
 import { type Readable, type Writable, readable, writable } from "svelte/store";
 import { default_logger } from "$share/logger";
+import { sleep } from "$share/util";
 
 export type NowPlaying = import("$server/defs/api/stations/[station]/now-playing/GET/Output").Output;
 export type StoreValue = { station_id: string, info: NowPlaying };
@@ -23,38 +24,47 @@ export const get_now_playing_store = (station_id: string, default_info: NowPlayi
   const store = writable<StoreValue | null>(start_value);
   
   let count = 0;
+  let stopped = false;
   
-  let timer_id: any;
-
-  const start = () => {
+  const start = async () => {
     
     logger.info(`start ${station_id} => ${map.size} (${[...map.keys()].join(",")}) current subs`)
-    
-    const fn = async () => {
-      const token = timer_id;
-      const skip = document.hidden === true;
+    let _prev_skip = false;
+    let last = 0;
+
+    while(true) {
+      await sleep(100);
+      if(stopped) break;
+      const skip = document.visibilityState === "hidden";
+      const prev_skip = _prev_skip;
+      _prev_skip = skip;
+     
       if(skip) {
-        logger.info(`skipping tick for station ${station_id} because of document.hidden`);
+        if(prev_skip !== skip) {
+          logger.info(`pausing update for station ${station_id}, (document: ${document.visibilityState})`);
+        }
       } else {
+        if(prev_skip !== skip) {
+          logger.info(`(re)starting update for station ${station_id}, (document: ${document.visibilityState})`);
+        }
+
+        if(Date.now() - last < NOW_PLAYING_INTERNVAL) continue;
         try {
           const info = await _get<NowPlaying>(`/api/stations/${station_id}/now-playing`);
           logger.info(`info updated for ${station_id}`)
           store.set({ station_id, info });
         } catch(e) {
           logger.warn(`error obtaining now playing info: ${e}`);
+        } finally {
+          last = Date.now();
         }
       }
-
-      if(token === timer_id) timer_id = setTimeout(fn, skip ? 1000 : NOW_PLAYING_INTERNVAL);
     }
-
-    fn();
   }
 
   const stop = () => {
+    stopped = true;
     map.delete(station_id);
-    clearTimeout(timer_id);
-    timer_id = -1;
     logger.info(`stop ${station_id} => ${map.size} (${[...map.keys()].join(",")}) current subs`)
   }
 

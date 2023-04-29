@@ -13,8 +13,7 @@ export const handle: Handle = async ({ event, resolve }) => {
   // console.log("kit request");
   // console.log(event.request.url);
   // console.log(event.request.headers);
-
-  server_logger.info(`host: ${event.request.headers.get("host")}`, );
+  // server_logger.info(`host: ${event.request.headers.get("host")}`, );
 
   // event.locals.set_cookie = new Set();
   // event.locals.cookie = new Set();

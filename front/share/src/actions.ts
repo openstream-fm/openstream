@@ -7,12 +7,23 @@ export const add = <E extends Event = Event>(target: EventTarget, event: string,
   }
 }
 
-export const intersect = (node: Element, options: IntersectionObserverInit = {}) => {
+export const intersect = (
+  node: Element, {
+    enter,
+    leave,
+    options = {}
+  }: {
+    enter: () => void,
+    leave: () => void,
+    options?: IntersectionObserverInit,
+  }) => {
   if (typeof IntersectionObserver !== "undefined") {
     const observer = new IntersectionObserver(entries => {
-      entries[0].isIntersecting ?
-        node.dispatchEvent(new CustomEvent("enter-screen")) :
-        node.dispatchEvent(new CustomEvent("leave-screen"))
+      if(entries[0]?.isIntersecting) {
+        enter();
+      } else {
+        leave();
+      }  
     }, options)
 
     observer.observe(node);
@@ -34,16 +45,18 @@ export const intersect = (node: Element, options: IntersectionObserverInit = {})
 
       if (prev !== is) {
         prev = is;
-        is ?
-          node.dispatchEvent(new CustomEvent("enter-screen")) :
-          node.dispatchEvent(new CustomEvent("leave-screen"))
+        if(is) {
+          enter();
+        } else {
+          leave();
+        }
       }
     }
 
     fn();
 
     const remove = [
-      add(window, "scroll", fn, { capture: true }),
+      add(window, "scroll", fn, { passive: true, capture: true }),
       add(window, "resize", fn)
     ]
 
@@ -54,8 +67,6 @@ export const intersect = (node: Element, options: IntersectionObserverInit = {})
     }
   }
 }
-
-import { tick } from "svelte";
 
 // export const tooltip = (node: HTMLElement, _params: null | string | {tip: string}) => {
 

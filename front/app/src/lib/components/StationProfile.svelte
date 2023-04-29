@@ -240,7 +240,7 @@
 				maxlength={150}
 				bind:value={current.app_store_url}
 			/>
-      <Validator value={current.google_play_url} fn={_app_store_url({ maxlen: 150 })} />
+      <Validator value={current.app_store_url} fn={_app_store_url({ maxlen: 150 })} />
 		</div>
 	</div>
 </div>

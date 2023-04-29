@@ -2,7 +2,6 @@
 	import Page from "$lib/components/Page.svelte";
 	import { ripple } from "$share/ripple";
   export let data: import("./$types").PageData;
-
   $: current_account_stations = data.stations.items.filter(item => item.account_id === data.account._id);
 </script>
 
