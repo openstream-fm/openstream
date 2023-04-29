@@ -36,15 +36,17 @@ pub async fn start(
     socket.set_only_v6(true)?;
   }
 
+  // TODO: remove this reuse_addr
   socket.set_reuse_address(true)?;
+  socket.set_nonblocking(true)?;
   // socket.set_reuse_port(true)?;
 
   socket.bind(&local_addr.into())?;
   socket.listen(1024)?;
 
-  let tcp: std::net::TcpListener = socket.into();
+  let std: std::net::TcpListener = socket.into();
 
-  let listener: TcpListener = tcp.try_into()?;
+  let listener = TcpListener::from_std(std)?;
 
   info!("source server bound to {}", local_addr.yellow());
 
