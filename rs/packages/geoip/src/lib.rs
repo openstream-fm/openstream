@@ -314,10 +314,10 @@ impl std::cmp::PartialEq for CountryCode {
 pub fn deserialize_option<'de, D: Deserializer<'de>>(
   de: D,
 ) -> Result<Option<CountryCode>, D::Error> {
-  let helper: Option<&str> = Deserialize::deserialize(de)?;
+  let helper: Option<String> = Deserialize::deserialize(de)?;
   match helper {
     None => Ok(None),
-    Some(v) => match CountryCode::from_str(v) {
+    Some(v) => match CountryCode::from_str(&v) {
       Ok(v) => Ok(Some(v)),
       Err(_) => Ok(None),
     },

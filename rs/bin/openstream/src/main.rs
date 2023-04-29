@@ -50,11 +50,20 @@ enum Command {
   Cluster(Cluster),
   CreateConfig(CreateConfig),
   CreateToken(CreateToken),
+  CheckDb(CheckDb),
 }
 
 #[derive(Debug, Parser)]
 #[command(about = "Start openstream server(s) from a config file")]
 struct Start {
+  /// Path to the configuration file (relative to cwd)
+  #[clap(short, long, default_value_t = String::from("./openstream.toml"))]
+  config: String,
+}
+
+#[derive(Debug, Parser)]
+#[command(about = "Check that all documents in the database can be deserialized into their rust form")]
+struct CheckDb {
   /// Path to the configuration file (relative to cwd)
   #[clap(short, long, default_value_t = String::from("./openstream.toml"))]
   config: String,
@@ -110,6 +119,7 @@ fn cmd() -> Result<(), anyhow::Error> {
     Command::Start(opts) => start(opts),
     Command::CreateConfig(opts) => create_config(opts),
     Command::CreateToken(opts) => token(opts),
+    Command::CheckDb(opts) => check_db(opts),
   }
 }
 
@@ -223,6 +233,42 @@ async fn shared_init(config: String) -> Result<Config, anyhow::Error> {
 
 fn start(opts: Start) -> Result<(), anyhow::Error> {
   runtime().block_on(start_async(opts))
+}
+
+fn check_db(opts: CheckDb) -> Result<(), anyhow::Error> {
+  runtime().block_on(check_db_async(opts))
+}
+
+async fn check_db_async(opts: CheckDb) -> Result<(), anyhow::Error> {
+
+  shared_init(opts.config).await?;
+
+  let map = db::check::check_all().await;
+  let mut has_errors = false;
+
+  info!("=================");
+
+  for (name, result) in map.iter() {
+    match result {
+      Ok(n) => {
+        info!("collection {name} is ok, checked {n} documents");
+      },
+      Err(e) => {
+        has_errors = true;
+        warn!("collection {name} failed with error: {e}");
+      }
+    }
+  };
+
+  if has_errors {
+    warn!("status: fail");
+    info!("=================");
+    bail!("status: fail");
+  } else {
+    info!("=================");
+    info!("status: success");
+    Ok(())
+  }
 }
 
 async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {

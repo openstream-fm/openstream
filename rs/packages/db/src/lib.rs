@@ -23,6 +23,7 @@ pub mod error;
 pub mod http;
 pub mod metadata;
 
+pub mod check;
 pub mod models;
 
 pub use models::access_token;
