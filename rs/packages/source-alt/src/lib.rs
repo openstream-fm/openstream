@@ -2,6 +2,8 @@ mod error;
 mod handler;
 mod http;
 
+use crate::handler::{method_not_allowed, not_found, source, status};
+use crate::http::read_request_head;
 use drop_tracer::DropTracer;
 use error::HandlerError;
 use http::RequestHead;
@@ -10,11 +12,9 @@ use log::*;
 use media_sessions::MediaSessionMap;
 use owo_colors::*;
 use shutdown::Shutdown;
+use socket2::{Domain, Protocol, Socket, Type};
 use std::net::SocketAddr;
 use tokio::net::{TcpListener, TcpStream};
-
-use crate::handler::{method_not_allowed, not_found, source, status};
-use crate::http::read_request_head;
 
 pub async fn start(
   deployment_id: String,
@@ -25,7 +25,26 @@ pub async fn start(
 ) -> Result<(), std::io::Error> {
   let local_addr = addr.into();
 
-  let listener = TcpListener::bind(local_addr).await?;
+  let domain = match local_addr {
+    SocketAddr::V4(_) => Domain::IPV4,
+    SocketAddr::V6(_) => Domain::IPV6,
+  };
+
+  let socket = Socket::new(domain, Type::STREAM, Some(Protocol::TCP))?;
+
+  if local_addr.is_ipv6() {
+    socket.set_only_v6(true)?;
+  }
+
+  socket.set_reuse_address(true)?;
+  // socket.set_reuse_port(true)?;
+
+  socket.bind(&local_addr.into())?;
+  socket.listen(1024)?;
+
+  let tcp: std::net::TcpListener = socket.into();
+
+  let listener: TcpListener = tcp.try_into()?;
 
   info!("source server bound to {}", local_addr.yellow());
 
