@@ -93,6 +93,7 @@ impl ApiServer {
         socket.set_only_v6(true)?;
       }
 
+      socket.set_nonblocking(true)?;
       // socket.set_reuse_address(true)?;
       // socket.set_reuse_port(true)?;
 
