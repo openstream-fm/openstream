@@ -41,7 +41,7 @@
   --z-tooltip: 2100;
   --z-overlay: 3000;
   
-  --some-shadow: 0 4px 20px 0 rgb(0 0 0 / 5%);
+  --some-shadow: 0 4px 20px 0 rgb(0 0 0 / 20%);
 }
 
 html {

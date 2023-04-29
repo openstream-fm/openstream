@@ -86,7 +86,7 @@
 
 
 <div class="section section-logo">
-	<div class="section-title">Logo</div>
+	<div class="section-title">Logo *</div>
 	<div class="fields">
 		<div class="field">
 			<StationPictureField required {account_id} bind:picture_id={current.picture_id} />
@@ -118,14 +118,14 @@
 		</div>
 		<div class="field">
 			<CountryField
-				label="Country"
+				label="Country *"
 				bind:value={current.country_code}
 			/>
 			<Validator value={current.country_code} fn={_string({ required: true })} />
 		</div>
 		<div class="field">
 			<TypeOfContentField
-				label="Type of content"
+				label="Type of content *"
 				bind:value={current.type_of_content}
 			/>
 			<Validator value={current.type_of_content} fn={_string({ required: true })} />

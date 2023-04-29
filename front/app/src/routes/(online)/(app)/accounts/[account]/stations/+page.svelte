@@ -78,6 +78,14 @@
 
   .no-items-message {
     font-size: 1.1rem;
+    text-align: center;
+    line-height: 1.5rem;
+  }
+
+  @media screen and (max-width: 460px) {
+    .no-items-message {
+      font-size: 1rem;
+    }
   }
 
   .no-items-create {
@@ -139,15 +147,14 @@
       </a> 
       
     {:else}
-      <div class="list-box">
-        <div class="no-items">
-          <div class="no-items-message">
-            This account doesn't have stations yet
-          </div>
-          <a href="/accounts/{data.account._id}/stations/create-station" class="na no-items-create ripple-container" use:ripple>
-            Create a station
-          </a>
+      <div class="no-items">
+        <div class="no-items-message">
+          This account doesn't have stations yet.<br>
+          To start broadcasting, create a new station.
         </div>
+        <a href="/accounts/{data.account._id}/stations/create-station" class="na no-items-create ripple-container" use:ripple>
+          Create a station
+        </a>
       </div>
     {/if}
   </div>

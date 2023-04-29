@@ -34,8 +34,8 @@
       password,
     };
     
-    await _post("/api/register", payload);
-    await goto("/", { invalidateAll: true });
+    const { account } = await _post<import("$server/defs/api/auth/user/register/POST/Output").Output>("/api/register", payload);
+    await goto(`/accounts/${account._id}/welcome`, { invalidateAll: true });
   })
 </script>
 
@@ -130,7 +130,7 @@
 </svelte:head>
 
 <Formy action={register} let:submit>
-  <form on:submit={submit} class="box" in:form>
+  <form novalidate on:submit={submit} class="box" in:form>
     <div class="title">Sign up</div>
     <div class="fields">
       <div class="field">

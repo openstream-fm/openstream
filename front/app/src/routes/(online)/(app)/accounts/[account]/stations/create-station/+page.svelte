@@ -13,6 +13,8 @@
 	import { prevent_unload } from "$share/prevent-unload";
 	import StationProfile from "$lib/components/StationProfile.svelte";
 	import Formy from "$share/formy/Formy.svelte";
+	import { onMount } from "svelte";
+	import Dialog from "$share/Dialog.svelte";
 
   let start = {
     name: null as string | null,
@@ -82,7 +84,6 @@
     invalidate("resource:stations");
     goto(`/accounts/${data.account._id}/stations/${station._id}`);
   });
-  
 </script>
 
 <style>
