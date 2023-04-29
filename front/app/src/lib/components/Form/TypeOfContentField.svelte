@@ -1,6 +1,5 @@
 <script lang="ts" context="module">
 	import type { StationTypeOfContent } from "$server/defs/db/StationTypeOfContent";
-	import { mdiRadio } from "@mdi/js";
   const record: Record<StationTypeOfContent, string> = {
     general: "General",
     talk: "Talk",
@@ -12,12 +11,7 @@
     religious: "Religious",
   }
 
-  const options = [
-    { label: "", value: "" },
-    ...Object.entries(record).map(([ value, label ]) => {
-      return { label, value }
-    })
-  ];
+  const required_options = Object.entries(record).map(([ value, label ]) => { return { label, value } });
 </script>
 
 <script lang="ts">
@@ -28,11 +22,13 @@
   export let disabled: boolean = false;
   export let on_change: ((v: string) => void) | null =  null; 
 
-  let empty = value === "";
+  $: empty = value === "";
+  $: options = value === "" ? [{label: "", value: ""}, ...required_options] : required_options;
 
+  import { mdiRadio } from "@mdi/js";
 	import FieldContainer from "./FieldContainer.svelte";
 	import Label from "./Label.svelte";
-	import Select from "./Select.svelte";
+  import Select from "./Select.svelte";
 </script>
 
 <FieldContainer {icon}>

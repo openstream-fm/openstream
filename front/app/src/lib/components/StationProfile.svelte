@@ -125,7 +125,7 @@
 		</div>
 		<div class="field">
 			<TypeOfContentField
-				label="Country"
+				label="Type of content"
 				bind:value={current.type_of_content}
 			/>
 			<Validator value={current.type_of_content} fn={_string({ required: true })} />

@@ -206,7 +206,9 @@ export const _url = ({
 }) => {
   return (v: string | null | undefined) => {
     if(is_empty_string(v)) {
-      return `This field is required`;
+      if(required) {
+        return `This field is required`;
+      }
     } else {
       if(typeof v !== "string") {
         return `This field must of a string, received ${typeof v}`;

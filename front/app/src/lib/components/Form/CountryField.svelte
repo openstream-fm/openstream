@@ -1,10 +1,5 @@
 <script lang="ts" context="module">
-  const options = [
-    { label: "", value: "" },
-    ...Object.entries(country_names).map(([ value, label ]) => {
-      return { label, value }
-    })
-  ];
+  const country_options = Object.entries(country_names).map(([ value, label ]) => { return { label, value } });
 </script>
 
 <script lang="ts">
@@ -15,7 +10,8 @@
   export let disabled: boolean = false;
   export let on_change: ((v: string) => void) | null =  null; 
 
-  let empty = value === "";
+  $: empty = value === "";
+  $: options = value === "" ? [{label: "", value: ""}, ...country_options] : country_options;
 
   import { country_names } from "$share/geo";
   import { mdiMapMarkerOutline } from "@mdi/js";

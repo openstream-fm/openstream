@@ -10,7 +10,7 @@
 </script>
 
 <select class={css["forms-input"]} class:thin-scroll={true} {autocomplete} {disabled} bind:value on:change={event => on_change?.(event.currentTarget.value)}>
-  {#each options as { label, value }}
-    <option {value}>{label}</option>
+  {#each options as item}
+    <option value={item.value} selected={value === item.value}>{item.label}</option>
   {/each}
 </select>
