@@ -115,13 +115,48 @@
     padding-bottom: 3rem;
   }
 
-  .page-title {
-    font-weight: 600;
-    font-size: 2rem;
+  .page-top {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     margin-top: 5rem;
     margin-bottom: 5rem;
-    text-align: center;
-    width: 20rem;
+    padding: 0 1.5rem;
+    max-width: 600px;
+  }
+
+  .page-user-logo {
+    width: 1.85em;
+    height: 1.85em;
+    font-size: 2em;
+    color: #fff;
+    font-weight: 600;
+    box-shadow: var(--some-shadow);
+    border-radius: 50%;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--red);
+    margin-inline-end: 0.75em;
+  }
+
+  .page-title {
+    font-weight: 600;
+    font-size: 1.5em;
+    text-align: left;
+  }
+
+  .page-subtitle {
+    font-size: max(1rem, 1.1em);
+    margin-top: 0.25rem;
+    text-align: left;
+  }
+
+  @media screen and (max-width: 500px) {
+    .page-top {
+      font-size: 0.8rem;
+    }
   }
 
   .section {
@@ -244,8 +279,18 @@
   </div>
   <div class="page">
     
-    <div class="page-title">
-      {data.user.first_name} {data.user.last_name}
+    <div class="page-top">
+      <div class="page-user-logo">
+        {data.user.first_name.slice(0, 1)}
+      </div>
+      <div class="page-titles">
+        <div class="page-title">
+          {data.user.first_name} {data.user.last_name}
+        </div>
+        <div class="page-subtitle">
+          {data.user.email}
+        </div>
+      </div>
     </div>
 
     <Formy action={save_profile} let:submit>

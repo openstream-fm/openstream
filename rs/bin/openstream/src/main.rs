@@ -468,7 +468,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     }
   });
 
-  futs.try_collect().await?;
+  let r: Result<(), crate::error::ServerStartError> = futs.try_collect().await;
 
   drop(drop_tracer);
 
@@ -503,7 +503,10 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     );
   }
 
+  r.context("A server instance returned a non ok result")?;
+
   Ok(())
+  
 }
 
 fn cluster(opts: Cluster) -> Result<(), anyhow::Error> {
