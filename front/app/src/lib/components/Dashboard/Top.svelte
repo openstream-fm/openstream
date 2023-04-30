@@ -53,7 +53,7 @@
     background-color: rgba(0,0,0,0.05);
   }
 
-  .station {
+  /* .station {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -84,7 +84,7 @@
     text-overflow: ellipsis;
     flex: 1;
     min-width: 0;
-  }
+  } */
 
   @media screen and (max-width: 900px) {
     .drawer-toggle {
@@ -92,11 +92,11 @@
     }
   } 
 
-  @media screen and (max-width: 460px) {
+  /* @media screen and (max-width: 460px) {
     .station-name {
       display: none;
     }
-  }
+  } */
 </style>
 
 <div class="top">

@@ -4,6 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+# array-macro = "2.1.5"
+# unused = "0.1.0"
+# defer-lite = "1.0.0"
+# ip2country = "0.2.0"
+# syn = "1.0.103"
+# quote = "1.0.21"
 lazy_static = "1.4.0"
 mongodb = "2.4.0"
 serde = "1.0.145"
@@ -14,15 +20,11 @@ uid = { path = "../uid" }
 once_cell = { version = "1.15.0", features = ["parking_lot"] }
 bytes = "1.2.1"
 async-trait = "0.1.58"
-syn = "1.0.103"
-quote = "1.0.21"
 log = "0.4.17"
 futures-util = "0.3.25"
-unused = "0.1.0"
 woothee = { version = "0.13.0", features = ["serde", "serde_derive"] }
 user-agent = { version = "0.1.0", path = "../user-agent" }
 validate = { version = "0.1.0", path = "../validate" }
-defer-lite = "1.0.0"
 async-stream = "0.3.3"
 ts-rs = { version = "6.2.0", features = ["chrono", "chrono-impl", "format", "indexmap-impl"] }
 time = { version = "0.3.17", features = ["serde-well-known", "local-offset", "serde-human-readable"] }
@@ -33,20 +35,16 @@ crypt = { version = "0.1.0", path = "../crypt" }
 thiserror = "1.0.38"
 macros = { version = "0.1.0", path = "../macros" }
 const-str = { version = "0.5.3", features = ["all"] }
-logger = { version = "0.1.0", path = "../logger" }
 rand = "0.8.5"
 static_init = "1.0.3"
 parking_lot = "0.12.1"
 validify = "0.1.0"
 ril = { version = "0.9.0", features = ["all"] }
 lazy-regex = "2.5.0"
-ip2country = "0.2.0"
 geoip = { version = "0.1.0", path = "../geoip" }
 rayon = "1.7.0"
 deepsize = "0.2.0"
 human_bytes = { version = "0.4.1", default-features = false }
-false = "0.0.0"
-array-macro = "2.1.5"
 strum = "0.24.1"
 arr_macro = "0.2.1"
 drop-tracer = { version = "0.1.0", path = "../drop-tracer" }
@@ -54,3 +52,4 @@ derive_more = "0.99.17"
 
 [dev-dependencies]
 serde_json = { version = "1.0", features = ["preserve_order"] }
+logger = { version = "0.1.0", path = "../logger" }

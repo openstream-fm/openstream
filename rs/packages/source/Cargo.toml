@@ -6,12 +6,13 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+# ffmpeg = { version = "0.1.0", path = "../ffmpeg" }
+# mp3 = { version = "0.1.0", path = "../mp3" }
+# channels = { version = "0.1.0", path = "../channels" }
 async-trait = "0.1.58"
 bytes = "1.2.1"
-channels = { version = "0.1.0", path = "../channels" }
 drop-tracer = { version = "0.1.0", path = "../drop-tracer" }
 constants = { version = "0.1.0", path = "../../config/constants" }
-ffmpeg = { version = "0.1.0", path = "../ffmpeg" }
 futures = "0.3.25"
 hyper = "0.14.20"
 log = "0.4.17"
@@ -27,7 +28,6 @@ thiserror = "1.0.38"
 socket2 = "0.4.7"
 media-sessions = { version = "0.1.0", path = "../media-sessions" }
 serde-util = { version = "0.1.0", path = "../serde-util" }
-mp3 = { version = "0.1.0", path = "../mp3" }
 geoip = { version = "0.1.0", path = "../geoip" }
 
 [features]
