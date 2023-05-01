@@ -103,7 +103,7 @@ pub mod get {
 
     async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
       let access_token = request_ext::get_access_token(&req).await?;
-      let access_token_scope = request_ext::get_scope_from_token(&access_token).await?;
+      let access_token_scope = request_ext::get_scope_from_token(&req, &access_token).await?;
 
       let query = match req.uri().query() {
         None => Default::default(),
@@ -178,6 +178,7 @@ pub mod get {
         let (admin_id, user_id) = match token.scope {
           Scope::Admin { admin_id } => (Some(admin_id), None),
           Scope::User { user_id } => (None, Some(user_id)),
+          Scope::AdminAsUser { .. } => (None, None),
           Scope::Global => (None, None),
         };
 

@@ -17,6 +17,7 @@ export const random_device_id = () => {
 export type SessionData = {
   device_id: string,
   user: { _id: string, token: string, media_key: string } | null;
+  admin: { _id: string, token: string, media_key: string } | null,
 }
 
 const ALGO = "aes-192-cbc"
@@ -56,7 +57,7 @@ export const get_cookie_session = (req: Request, name: string, key: Buffer, logg
     logger.debug(`v: ${v}`)
     if (typeof v !== "string") {
       logger.debug(`not string, ${typeof v}`)
-      return { device_id: random_device_id(), user: null };
+      return { device_id: random_device_id(), user: null, admin: null };
     }
     const json_string = decrypt(v, key, logger);
     let data: any;
@@ -70,11 +71,11 @@ export const get_cookie_session = (req: Request, name: string, key: Buffer, logg
       return data;
     } else {
       logger.warn(`not is<SessionData>, ${JSON.stringify(data)}`)
-      return { device_id: random_device_id(), user: null, };
+      return { device_id: random_device_id(), user: null, admin: null };
     }
   } catch (e) {
     logger.warn(`error: ${e}`)
-    return { device_id: random_device_id(), user: null }
+    return { device_id: random_device_id(), user: null, admin: null }
   }
 }
 

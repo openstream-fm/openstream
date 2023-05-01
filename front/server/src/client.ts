@@ -190,6 +190,10 @@ export class AuthAdmin {
   async logout(ip: string | null, ua: string | null, token: string): Promise<import("./defs/api/auth/admin/logout/POST/Output").Output> {
     return await this.client.post(ip, ua, token, "/auth/admin/logout", void 0);
   }
+
+  async delegate(ip: string | null, ua: string | null, token: string, user_id: string, payload: import("./defs/api/auth/admin/delegate/[user]/POST/Payload").Payload): Promise<import("./defs/api/auth/admin/delegate/[user]/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, `/auth/admin/delegate/${user_id}`, payload);
+  }
 }
 
 export class AuthUser {

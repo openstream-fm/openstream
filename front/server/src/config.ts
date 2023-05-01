@@ -26,6 +26,11 @@ export type Config = {
     port: number    
   }
 
+  admin: {
+    enabled: boolean
+    port: number    
+  }
+
   source_port: {
     local: number
     s1: number
@@ -117,6 +122,9 @@ export const merge_env = (partial: PartialDeep<Config>, { logger, env = process.
   bool("studio.enabled");
   num("studio.port");
 
+  bool("admin.enabled");
+  num("admin.port");
+  
   num("source_port.local");
   num("source_port.test");
   num("source_port.s1");

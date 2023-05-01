@@ -57,7 +57,7 @@ pub mod post {
     async fn perform(&self, input: Input) -> Result<Output, Self::HandleError> {
       let Input { access_token } = input;
       match &access_token.scope {
-        Scope::Global | Scope::User { .. } => {
+        Scope::Global | Scope::User { .. } | Scope::AdminAsUser { .. } => {
           return Err(GetAccessTokenScopeError::OutOfScope.into());
         }
         Scope::Admin { .. } => match &access_token.generated_by {

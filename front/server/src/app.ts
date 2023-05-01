@@ -1,7 +1,7 @@
 import express, { RequestHandler } from "express";
 import type { Config } from "./config";
 import type { Logger } from "./logger";
-import { app_api } from "./api/app-api";
+import { studio_api } from "./api/studio-api";
 
 import path from "path";
 import { env } from "./env";
@@ -20,7 +20,7 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
 
     let app = express();
 
-    app.use("/api", app_api({ config, logger }))
+    app.use("/api", studio_api({ config, logger }))
     app.use(express.static(path.resolve(__dirname, "../../static/studio"), { etag: true, dotfiles: "allow" }))
 
     if(env.SVELTEKIT_APP_DEV) {

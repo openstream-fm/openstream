@@ -14,10 +14,17 @@ use db::{
   Model,
 };
 use prex::Request;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_querystring::de::ParseMode;
 
 pub static X_ACCESS_TOKEN: &str = "x-access-token";
+
+#[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
+pub struct DelegateQuery {
+  #[serde(default, skip_serializing_if = "Option::is_none")]
+  #[ts(optional)]
+  as_user: Option<String>,
+}
 
 #[derive(Debug, Clone, thiserror::Error)]
 pub enum GetAccessTokenScopeError {
@@ -297,17 +304,41 @@ pub async fn internal_get_access_token_scope(
   media: bool,
 ) -> Result<AccessTokenScope, GetAccessTokenScopeError> {
   let doc = internal_get_access_token(req, media).await?;
-
-  let scope = get_scope_from_token(&doc).await?;
-
+  let scope = get_scope_from_token(req, &doc).await?;
   Ok(scope)
 }
 
 pub async fn get_scope_from_token(
+  req: &Request,
   token: &AccessToken,
 ) -> Result<AccessTokenScope, GetAccessTokenScopeError> {
+  macro_rules! delegate_if_needed {
+    ($base:expr) => {
+      match req.uri().query() {
+        None => return Ok($base),
+        Some(qs) => {
+          let DelegateQuery { as_user } =
+            match serde_querystring::from_str(qs, serde_querystring::de::ParseMode::UrlEncoded) {
+              Err(_) => return Ok($base),
+              Ok(qs) => qs,
+            };
+
+          let user_id = match as_user {
+            None => return Ok($base),
+            Some(user_id) => user_id,
+          };
+
+          match User::get_by_id(&user_id).await? {
+            None => return Err(GetAccessTokenScopeError::UserNotFound(user_id.to_string())),
+            Some(user) => return Ok(AccessTokenScope::User(user)),
+          }
+        }
+      }
+    };
+  }
+
   let scope = match &token.scope {
-    Scope::Global => AccessTokenScope::Global,
+    Scope::Global => delegate_if_needed!(AccessTokenScope::Global),
 
     Scope::Admin { admin_id } => match Admin::get_by_id(admin_id).await? {
       None => {
@@ -315,13 +346,15 @@ pub async fn get_scope_from_token(
           admin_id.to_string(),
         ))
       }
-      Some(admin) => AccessTokenScope::Admin(admin),
+      Some(admin) => delegate_if_needed!(AccessTokenScope::Admin(admin)),
     },
 
-    Scope::User { user_id } => match User::get_by_id(user_id).await? {
-      None => return Err(GetAccessTokenScopeError::UserNotFound(user_id.to_string())),
-      Some(user) => AccessTokenScope::User(user),
-    },
+    Scope::User { user_id } | Scope::AdminAsUser { user_id, .. } => {
+      match User::get_by_id(user_id).await? {
+        None => return Err(GetAccessTokenScopeError::UserNotFound(user_id.to_string())),
+        Some(user) => AccessTokenScope::User(user),
+      }
+    }
   };
 
   Ok(scope)
