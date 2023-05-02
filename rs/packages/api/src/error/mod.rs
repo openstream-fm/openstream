@@ -85,8 +85,11 @@ pub enum ApiError {
   #[error("payload invalid: {0}")]
   PayloadInvalid(String),
 
-  #[error("auth failed")]
-  AuthFailed,
+  #[error("user auth failed")]
+  UserAuthFailed,
+
+  #[error("admin auth failed")]
+  AdminAuthFailed,
 
   #[error("user email exists")]
   UserEmailExists,
@@ -174,7 +177,10 @@ impl ApiError {
       PayloadJson(_) => StatusCode::BAD_REQUEST,
       PayloadTooLarge(_) => StatusCode::BAD_REQUEST,
       PayloadInvalid(_) => StatusCode::BAD_REQUEST,
-      AuthFailed => StatusCode::BAD_REQUEST,
+
+      UserAuthFailed => StatusCode::BAD_REQUEST,
+      AdminAuthFailed => StatusCode::BAD_REQUEST,
+
       UserEmailExists => StatusCode::CONFLICT,
       AdminEmailExists => StatusCode::CONFLICT,
 
@@ -228,7 +234,8 @@ impl ApiError {
       PayloadJson(e) => format!("Invalid JSON payload: {e}"),
       PayloadTooLarge(_) => format!("Payload size exceeded"),
       PayloadInvalid(e) => format!("{e}"),
-      AuthFailed => format!("There's no user with that email and password"),
+      UserAuthFailed => format!("There's no user with that email and password"),
+      AdminAuthFailed => format!("There's no admin with that email and password"),
       UserEmailExists => format!("User email already exists"),
       AdminEmailExists => format!("Admin email already exists"),
 
@@ -283,7 +290,8 @@ impl ApiError {
       PayloadJson(_) => PublicErrorCode::PayloadJson,
       PayloadTooLarge(_) => PublicErrorCode::PayloadTooLarge,
       PayloadInvalid(_) => PublicErrorCode::PayloadInvalid,
-      AuthFailed => PublicErrorCode::AuthFailed,
+      UserAuthFailed => PublicErrorCode::UserAuthFailed,
+      AdminAuthFailed => PublicErrorCode::AdminAuthFailed,
       UserEmailExists => PublicErrorCode::UserEmailExists,
       AdminEmailExists => PublicErrorCode::AdminEmailExists,
 

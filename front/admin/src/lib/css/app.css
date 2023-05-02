@@ -1,0 +1,188 @@
+/* @import url('https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Jost:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Overpass:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Signika:wght@300;400;500;600;700&display=swap'); */
+/* @import url("https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500;600;700;800;900"); */
+/* @import url("./fonts/overpass/font.css");*/
+/* @import url("./cera/cera.css"); */
+/* @import url("./gilroy/gilroy.css"); */
+/* @import url("./g/g.css");  */
+@import url("./circular/circular.css");
+
+
+:root {
+  font-family: Circular, "Fira Sans", G, Cera, Jost, Overpass, sans-serif;
+  font-size: 16px;
+
+  --drawer-width: 250px;
+  --top-h: 4.5rem;
+  --player-h: 5rem;
+
+  --red-rgb: 255, 65, 54;
+  --red: rgb(var(--red-rgb));
+  --blue-rgb: 0, 116, 217;
+  --blue: rgb(var(--blue-rgb));
+  
+  --loading-color: var(--red);
+
+  --green: #75A633;
+
+  --orange: #FF851B;
+  --selection-blue: #C2DBFF;
+
+  --bg-gray-rgb: 244, 244, 244;
+  --bg-gray: rgb(var(--bg-gray-rgb));
+
+  --z-station-top: 800;
+  --z-station-menu: 900;
+  --z-top: 1000;
+  --z-drawer-wide: 1100;
+  --z-player: 1200;
+  --z-user-menu: 1375;
+  --z-drawer-fixed: 1400;
+  --z-map-tooltip: 2000;
+  --z-tooltip: 2100;
+  --z-overlay: 3000;
+  
+  --some-shadow: 0 4px 20px 0 rgb(0 0 0 / 20%);
+}
+
+html {
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-gray);
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media screen and (max-width: 900px) {
+  html.station-drawer-fixed-open {
+    overflow: hidden;
+  }
+}
+
+body, #app {
+  display: flex;
+  flex-grow: 1;
+  margin: 0;
+  align-self: stretch;
+  justify-self: stretch;
+}
+
+*, *:after, *:before {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+p, h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+}
+
+input, textarea, button, select {
+  font: inherit;
+}
+
+button, input[type="submit"] {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  appareance: none;
+  cursor: pointer;
+}
+
+form {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+}
+
+.na {
+  color: inherit;
+  text-decoration: none;
+}
+
+.ripple-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.tooltip {
+  position: fixed;
+  display: inline-block;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  pointer-events: none;
+  transition: opacity 150ms ease 0ms, transform 150ms ease 0ms;
+  opacity: 0;
+  transform: scale(0);
+  color: #fff;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: var(--z-tooltip);
+  border-radius: 0.25rem;
+  max-width: calc(100vw - 32px);
+}
+  
+.tooltip.visible {
+  transition: transform 250ms ease 300ms, opacity 250ms ease 300ms;
+  transform: none; 
+  opacity: 1;
+}
+
+.overlay {
+  position: fixed;
+  z-index: var(--z-overlay);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.thin-scroll {
+  scrollbar-width: thin;
+}
+
+.thin-scroll::-webkit-scrollbar{
+  width: 5px;
+  height: 5px;
+}
+
+.thin-scroll::-webkit-scrollbar-track {
+  background: #ddd;
+}
+
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: #aaa;
+}
+
+.thin-scroll::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+.super-thin-scroll {
+  scrollbar-width: thin;
+}
+
+.super-thin-scroll::-webkit-scrollbar{
+  width: 2px;
+  height: 2px;
+}
+
+.super-thin-scroll::-webkit-scrollbar-track {
+  background: #ddd;
+}
+
+.super-thin-scroll::-webkit-scrollbar-thumb {
+  background: #aaa;
+}
+
+.super-thin-scroll::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}

@@ -1,8 +1,6 @@
 <script lang="ts">
   import { fly } from "svelte/transition";
-
-  import Player from "$lib/components/Player/Player.svelte";
-	import Top from "$lib/components/Dashboard/Top.svelte";
+  import Top from "$lib/components/Dashboard/Top.svelte";
 	import Drawer from "$lib/components/Dashboard/Drawer.svelte";
   
   let drawer_fixed_open = false;

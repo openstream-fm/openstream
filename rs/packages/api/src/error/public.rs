@@ -74,7 +74,9 @@ pub enum PublicErrorCode {
   PayloadJson,
   PayloadTooLarge,
   PayloadInvalid,
-  AuthFailed,
+
+  UserAuthFailed,
+  AdminAuthFailed,
 
   UserEmailExists,
   AdminEmailExists,

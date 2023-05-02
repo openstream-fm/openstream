@@ -69,9 +69,9 @@ pub mod post {
       match e {
         HandleError::Db(e) => e.into(),
         HandleError::TooManyRequests => ApiError::TooManyRequests,
-        HandleError::NoMatchEmail => ApiError::AuthFailed,
-        HandleError::NoPassword => ApiError::AuthFailed,
-        HandleError::NoMatchPassword => ApiError::AuthFailed,
+        HandleError::NoMatchEmail => ApiError::UserAuthFailed,
+        HandleError::NoPassword => ApiError::UserAuthFailed,
+        HandleError::NoMatchPassword => ApiError::UserAuthFailed,
         HandleError::EmailMissing => ApiError::PayloadInvalid("email is required".into()),
         HandleError::PasswordMissing => ApiError::PayloadInvalid("password is required".into()),
         HandleError::DeviceIdInvalid => ApiError::PayloadInvalid("device_id is invalid".into()),

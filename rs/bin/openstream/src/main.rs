@@ -7,6 +7,7 @@ use clap::{Parser, Subcommand};
 use config::Config;
 use db::access_token::{AccessToken, GeneratedBy};
 use db::Model;
+use db::admin::Admin;
 use drop_tracer::DropTracer;
 use futures::stream::FuturesUnordered;
 use futures::{FutureExt, TryStreamExt};
@@ -50,6 +51,7 @@ enum Command {
   Cluster(Cluster),
   CreateConfig(CreateConfig),
   CreateToken(CreateToken),
+  CreateAdmin(CreateAdmin),
   CheckDb(CheckDb),
 }
 
@@ -100,6 +102,36 @@ struct CreateToken {
 }
 
 #[derive(Debug, Parser)]
+#[command(
+  about = "Create a new administrator in all deployments that share the same mongodb config"
+)]
+struct CreateAdmin {
+  /// Path to the configuration file (relative to cwd)
+  #[clap(short, long, default_value_t = String::from("./openstream.toml"))]
+  config: String,
+
+  /// Do not ask for confirmation
+  #[clap(short = 'y', long, default_value_t = false)]
+  assume_yes: bool,
+
+  /// Use this value for the first_name instead of asking
+  #[clap(long)]
+  first_name: Option<String>,
+
+  /// Use this value for the last_name instead of asking
+  #[clap(long)]
+  last_name: Option<String>,
+
+  /// Use this value for the email instead of asking
+  #[clap(long)]
+  email: Option<String>,
+
+  /// Use this value for the password instead of asking
+  #[clap(long)]
+  password: Option<String>,
+}
+
+#[derive(Debug, Parser)]
 #[command(about = "Create a default config file for later editing")]
 struct CreateConfig {
   /// Path to the output file (relative to cwd) to write the default config to.
@@ -119,6 +151,7 @@ fn cmd() -> Result<(), anyhow::Error> {
     Command::Start(opts) => start(opts),
     Command::CreateConfig(opts) => create_config(opts),
     Command::CreateToken(opts) => token(opts),
+    Command::CreateAdmin(opts) => create_admin(opts),
     Command::CheckDb(opts) => check_db(opts),
   }
 }
@@ -623,6 +656,164 @@ fn token(
         let (token, key, media_key) = create(title).await?;
         println!("New global access token generated => {}-{} \nToken media_key => {}-{}", token.id, key, token.id, media_key)
       } else {
+        eprintln!("Operation aborted")
+      }
+    }
+
+    Ok(())
+  })
+}
+
+fn create_admin(
+  CreateAdmin {
+    config,
+    first_name,
+    last_name,
+    email,
+    password,
+    assume_yes,
+  }: CreateAdmin,
+) -> Result<(), anyhow::Error> {
+  runtime().block_on(async move {
+    
+    async fn create(first_name: String, last_name: String, email: String, password: String) -> Result<Admin, anyhow::Error> {
+      
+      let now = DateTime::now();
+
+      let hash = crypt::hash(&password);
+
+      let admin = Admin {
+        id: Admin::uid(),
+        first_name,
+        last_name,
+        email,
+        password: hash,
+        system_metadata: Default::default(),
+        created_at: now,
+        updated_at: now,
+        deleted_at: None,
+      };
+
+      Admin::insert(&admin).await.context("mongodb error ocurred when inserting new admin")?;
+      Ok(admin)
+    }
+
+    shared_init(config).await?;
+
+    let first_name = {
+      if let Some(v) = first_name {
+        let v = v.trim().to_string();
+        if v.is_empty() {
+          bail!("First name is required");
+        }
+        v
+      } else {
+        loop {
+          let v: String = dialoguer::Input::new()
+            .with_prompt("First name of the new administrator?")
+            .allow_empty(true)
+            .interact()?;
+
+          if v.trim().is_empty() {
+            println!("The first name is required");
+            continue;
+          } else {
+            break v.trim().to_string();
+          }
+        }
+      }
+    };
+
+    let last_name = {
+      if let Some(v) = last_name {
+        let v = v.trim().to_string();
+        if v.is_empty() {
+          bail!("Last name is required");
+        }
+        v
+      } else {
+        loop {
+          let v: String = dialoguer::Input::new()
+            .with_prompt("Last name of the new administrator?")
+            .allow_empty(true)
+            .interact()?;
+
+          if v.trim().is_empty() {
+            println!("Last name is required");
+            continue;
+          } else {
+            break v.trim().to_string();
+          }
+        }
+      }
+    };
+
+    let email = {
+      if let Some(v) = email {
+        let v = v.trim().to_string(); 
+        if !validate::email::is_valid_email(&v) {
+          bail!("Email address is invalid");
+        } 
+        v
+      } else {
+        loop {
+          let v: String = dialoguer::Input::new()
+            .with_prompt("Email address of the new administrator?")
+            .allow_empty(true)
+            .interact()?;
+
+          if v.trim().is_empty() {
+            println!("Email address name is required");
+            continue;
+          } else if !validate::email::is_valid_email(&v) {
+            println!("Email address is invalid");
+            continue
+          } else {        
+            break v.trim().to_string();
+          }
+        }
+      }
+    };
+
+    let password = {
+      if let Some(v) = password {
+        if v.len() < 8 {
+          bail!("Password must have 8 characters or more");
+        }
+        v
+      } else {
+        loop {
+          let v: String = dialoguer::Input::new()
+            .with_prompt("Password for the new administrator?")
+            .allow_empty(true)
+            .interact()?;
+
+          if v.len() < 8 {
+            println!("Password must have 8 characters or more");
+            continue;
+          } else {        
+            break v
+          }
+        }
+      }
+    };
+
+
+    if assume_yes {
+      let admin = create(first_name, last_name, email, password).await?;
+      println!("New admin created: {} {} <{}>", admin.first_name, admin.last_name, admin.email);
+    } else {
+      let confirm = dialoguer::Confirm::new()
+        .with_prompt("This will generate a global admininistrator in all openstream instances that share this mongodb deployment?")
+        .default(true)
+        .show_default(true)
+        .wait_for_newline(true)
+        .interact()?;
+
+      if confirm {
+        let admin = create(first_name, last_name, email, password).await?;
+        println!("New admin created: {} {} <{}>", admin.first_name, admin.last_name, admin.email);
+        } else {
         eprintln!("Operation aborted")
       }
     }

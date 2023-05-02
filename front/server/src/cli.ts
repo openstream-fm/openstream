@@ -7,7 +7,7 @@ import path from "path";
 import { TypeGuardError } from "typia";
 
 import * as config from "./config";
-import * as app from "./app"
+import * as app from "./server"
 import { ConsoleLogger } from "./logger";
 import { LogLevel } from "./log-level";
 

@@ -23,6 +23,7 @@ export class Client {
   logger: Logger;
 
   auth: Auth;
+  admins: Admins;  
   users: Users;
   accounts: Accounts;
   stations: Stations;
@@ -36,6 +37,7 @@ export class Client {
     this.node_fetch = fetch;
 
     this.auth = new Auth(this);
+    this.admins = new Admins(this);
     this.users = new Users(this);
     this.accounts = new Accounts(this);
     this.stations = new Stations(this);
@@ -365,6 +367,31 @@ export class StationPictures {
     return await this.client.get_json_body(res)
   }
 }
+
+export class Admins {
+  client: Client;
+
+  constructor(client: Client) {
+    this.client = client;
+  }
+
+  async list(ip: string | null, ua: string | null, token: string, query: import("./defs/api/admins/GET/Query").Query): Promise<import("./defs/api/admins/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/admins${qss(query)}`);
+  }
+
+  async get(ip: string | null, ua: string | null, token: string, admin_id: string): Promise<import("./defs/api/admins/[admin]/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/admins/${admin_id}`);
+  }
+
+  async post(ip: string | null, ua: string | null, token: string, payload: import("./defs/api/admins/POST/Payload").Payload): Promise<import("./defs/api/admins/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, `/admins`, payload);
+  }
+
+  async patch(ip: string | null, ua: string | null, token: string, id: string, payload: import("./defs/api/admins/[admin]/PATCH/Payload").Payload): Promise<import("./defs/api/admins/[admin]/PATCH/Output").Output> {
+    return await this.client.patch(ip, ua, token, `/admins/${id}`, payload);
+  }
+}
+
 
 export class Users {
   client: Client;

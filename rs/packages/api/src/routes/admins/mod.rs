@@ -138,7 +138,7 @@ pub mod post {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../../defs/api/stations/POST/")]
+  #[ts(export, export_to = "../../../defs/api/admins/POST/")]
   pub struct Output {
     admin: PublicAdmin,
   }
@@ -268,6 +268,7 @@ pub mod post {
         system_metadata,
         created_at: now,
         updated_at: now,
+        deleted_at: None,
       };
 
       run_transaction!(session => {

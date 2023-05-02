@@ -92,7 +92,7 @@ declare global {
   }
 }
 
-export const session = (config: Config, _logger: Logger) => {
+export const session = (mode: "studio" | "admin", config: Config, _logger: Logger) => {
   const logger = _logger.scoped("cookie-session");
   const key = crypto.scryptSync(config.session.secret, "salt", 24);
 
@@ -101,7 +101,7 @@ export const session = (config: Config, _logger: Logger) => {
   
   router.use((req: Request, res: Response, next: NextFunction) => {
 
-    const host = (req.hostname || "openstream.fm").replace("studio.", "");
+    const host = (req.hostname || "openstream.fm").replace(`${mode}.`, "");
     const domain = "openstream.fm";
 
     const cookie_name = `${config.session.cookie_name}-${host}`;

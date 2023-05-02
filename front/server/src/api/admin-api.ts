@@ -10,6 +10,8 @@ import { admin_token } from "../token";
 import { StatusCodes } from "http-status-codes";
 import { ua } from "../ua";
 import { shared_api } from "./shared-api";
+import { admin_media_key } from "../media_key";
+import { admin_id } from "../admin-id";
 
 export type PublicConfig = {
   storage_public_url: string
@@ -37,7 +39,7 @@ export const public_config = (host: string, source_port_map: Config["source_port
   const config: PublicConfig = {
     storage_public_url: `https://${host.replace("admin.", "storage.")}`,
     stream_public_url: `https://${host.replace("admin.", "stream.")}`,
-    source_public_host: `${host.replace("studio.", "source.")}`,
+    source_public_host: `${host.replace("admin.", "source.")}`,
     source_public_port: port,
   }
 
@@ -59,7 +61,7 @@ export const admin_api = ({
   let api = Router();
 
   api.use(json_body_parser())
-  api.use(session(config, logger));
+  api.use(session("admin", config, logger));
 
   api.get("/status", (req, res) => {
     res.json({ ok: true })
@@ -90,6 +92,28 @@ export const admin_api = ({
     res.set_session({ ...data, user: { _id: user._id, token, media_key }});
     return { user, media_key };
   }))
+
+  api.route("/admins")
+    .get(json(async req => {
+      return await client.admins.list(ip(req), ua(req), admin_token(req), req.query);
+    }))
+    .post(json(async req => {
+      return await client.admins.post(ip(req), ua(req), admin_token(req), req.body);
+    }))
+
+  api.route("/admins/me")
+    .get(json(async req => {
+      const { admin } = await client.admins.get(ip(req), ua(req), admin_token(req), admin_id(req))
+      return { admin, media_key: admin_media_key(req) };
+    }))
+
+  api.route("/admins/:admin")
+    .get(json(async req => {
+      return await client.admins.get(ip(req), ua(req), admin_token(req), req.params.admin);
+    }))
+    .patch(json(async req => {
+      return await client.admins.patch(ip(req), ua(req), admin_token(req), req.params.admin, req.body);
+    }))
 
   api.use(shared_api({
     client,

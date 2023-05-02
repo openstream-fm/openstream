@@ -61,7 +61,7 @@ export const studio_api = ({
   let api = Router();
 
   api.use(json_body_parser())
-  api.use(session(config, logger));
+  api.use(session("studio", config, logger));
 
   api.get("/status", (req, res) => {
     res.json({ ok: true })
