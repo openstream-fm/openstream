@@ -15,7 +15,7 @@
     "install-production:server": "cd server && npm install --omit=dev --ignore-scripts",
     "install-production:admin": "cd admin && npm install --omit=dev --ignore-scripts",
     "install-production:app": "cd app && npm install --omit=dev --ignore-scripts",
-    "build": "run-s build:server build:app",
+    "build": "run-s build:server build:admin build:app",
     "build:server": "cd server && npm run build",
     "build:admin": "cd admin && npm run build",
     "build:app": "cd app && npm run build",
