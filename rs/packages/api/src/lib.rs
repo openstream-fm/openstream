@@ -94,7 +94,7 @@ impl ApiServer {
       }
 
       socket.set_nonblocking(true)?;
-      // socket.set_reuse_address(true)?;
+      socket.set_reuse_address(true)?;
       // socket.set_reuse_port(true)?;
 
       match socket.bind(&addr.into()) {

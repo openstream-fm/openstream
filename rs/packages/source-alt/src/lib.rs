@@ -36,9 +36,8 @@ pub async fn start(
     socket.set_only_v6(true)?;
   }
 
-  // TODO: remove this reuse_addr
-  // socket.set_reuse_address(true)?;
   socket.set_nonblocking(true)?;
+  socket.set_reuse_address(true)?;
   // socket.set_reuse_port(true)?;
 
   match socket.bind(&local_addr.into()) {
