@@ -20,7 +20,7 @@
     "build:admin": "cd admin && npm run build",
     "build:app": "cd app && npm run build",
     "ci": "npm ci --ignore-scripts && npm run ci:packages",
-    "ci:packages": "run-s ci:share ci:server ci:app",
+    "ci:packages": "run-s ci:share ci:server ci:admin ci:app",
     "ci:share": "cd share && npm ci",
     "ci:server": "cd server && npm ci",
     "ci:admin": "cd admin && npm ci",
