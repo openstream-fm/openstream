@@ -145,10 +145,12 @@ export const player_subtitle = derived([player_state, now_playing], ([state, now
       } else {
         return "Playlist"
       }
+    } else {
+       return assert_never(now_playing)
     }
-    else return assert_never(now_playing)
+  } else {
+    return assert_never(state)
   }
-  else return assert_never(state)
 })
 
 export const player_playing_audio_file_id = derived(player_state, (state): string | null => {
