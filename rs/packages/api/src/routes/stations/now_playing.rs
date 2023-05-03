@@ -39,7 +39,12 @@ pub mod get {
       artist: Option<String>,
     },
     #[serde(rename = "playlist")]
-    Playilist { file: AudioFile },
+    Playilist {
+      file_id: String,
+      filename: String,
+      title: Option<String>,
+      artist: Option<String>,
+    },
   }
 
   #[async_trait]
@@ -81,7 +86,12 @@ pub mod get {
             None => Output::None {
               start_on_connect: station.limits.storage.used != 0,
             },
-            Some(file) => Output::Playilist { file },
+            Some(file) => Output::Playilist {
+              file_id: file.id,
+              filename: file.filename,
+              title: file.metadata.title,
+              artist: file.metadata.artist,
+            },
           },
         },
       };

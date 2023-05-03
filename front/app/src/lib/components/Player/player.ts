@@ -134,8 +134,8 @@ export const player_subtitle = derived([player_state, now_playing], ([state, now
         return "Live streaming";
       }
     } else if(now_playing.kind === "playlist") {
-      const artist = now_playing.file.metadata.artist;
-      const title = now_playing.file.metadata.title?.trim() || now_playing.file.filename.trim() || null;
+      const title = now_playing.title?.trim() || now_playing.filename.trim() || null;
+      const artist = now_playing.artist;
       if(title && artist) {
         return `${title} - ${artist}`
       } else if(title) {
