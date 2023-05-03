@@ -2,7 +2,7 @@ mod error;
 mod handler;
 mod http;
 
-use crate::handler::{method_not_allowed, not_found, source, status};
+use crate::handler::{metadata, method_not_allowed, not_found, source, status};
 use crate::http::read_request_head;
 use drop_tracer::DropTracer;
 use error::HandlerError;
@@ -112,6 +112,12 @@ pub async fn handle_connection(
   match (&head.method, head.uri.path()) {
     (&Method::GET, "/status") => status(socket, head).await,
     (_, "/status") => method_not_allowed(socket, head, HeaderValue::from_static("GET")).await,
+    (&Method::GET, "/admin/metadata") => {
+      metadata(socket, remote_addr, local_addr, head, deployment_id.clone()).await
+    }
+    (_, "/admin/metadata") => {
+      method_not_allowed(socket, head, HeaderValue::from_static("GET")).await
+    }
     _ => {
       if let Some(station_id) = is_source_client_uri(&head) {
         if head.method == Method::PUT || head.method.as_str().eq_ignore_ascii_case("SOURCE") {
@@ -138,7 +144,7 @@ pub async fn handle_connection(
 }
 
 fn is_source_client_uri(head: &RequestHead) -> Option<String> {
-  let re = regex_static::static_regex!("^/?([^/]{1,20})/source/?$");
+  let re = regex_static::static_regex!("^/?([a-zA-Z0-9]{1,20})/source/?$");
   if let Some(caps) = re.captures(head.uri.path()) {
     let id = caps.get(1).unwrap().as_str();
     Some(id.to_string())

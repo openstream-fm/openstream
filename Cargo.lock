@@ -118,7 +118,7 @@ dependencies = [
  "prex",
  "rand 0.8.5",
  "serde",
- "serde-querystring",
+ "serde-querystring 0.1.0",
  "serde-util",
  "serde_json",
  "sha1",
@@ -3559,6 +3559,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde-querystring"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ce88f8e75d0920545b35b78775e0927137337401f65b01326ce299734885fd21"
+dependencies = [
+ "lexical",
+ "serde",
+]
+
+[[package]]
 name = "serde-util"
 version = "0.1.0"
 dependencies = [
@@ -3800,8 +3810,10 @@ dependencies = [
  "geoip",
  "http-basic-auth",
  "hyper",
+ "lazy-regex",
  "log",
  "media-sessions",
+ "mongodb",
  "once_cell",
  "owo-colors",
  "parking_lot 0.12.1",
@@ -3809,10 +3821,14 @@ dependencies = [
  "proxy-protocol",
  "rand 0.8.5",
  "regex_static",
+ "serde",
+ "serde-querystring 0.2.1",
+ "serde-util",
  "shutdown",
  "socket2 0.5.2",
  "static_init",
  "stream-util",
+ "thiserror",
  "tokio",
  "tokio-stream",
  "user-agent",

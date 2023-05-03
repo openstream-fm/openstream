@@ -3,4 +3,6 @@ import type { AudioFile } from "../../../../../db/AudioFile";
 
 export type Output = { kind: "none"; start_on_connect: boolean } | {
   kind: "live";
+  title: string | null;
+  artist: string | null;
 } | { kind: "playlist"; file: AudioFile };

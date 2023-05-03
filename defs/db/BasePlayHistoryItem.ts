@@ -4,7 +4,8 @@ import type { DateTime } from "../DateTime";
 export interface BasePlayHistoryItem {
   _id: string;
   station_id: string;
-  name: string;
+  deployment_id: string;
+  title: string;
   artist: string | null;
   created_at: DateTime;
 }

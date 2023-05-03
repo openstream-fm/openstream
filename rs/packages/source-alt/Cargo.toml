@@ -31,5 +31,11 @@ proxy-protocol = { version = "0.1.0", path = "../proxy-protocol" }
 geoip = { version = "0.1.0", path = "../geoip" }
 rand = "0.8.5"
 socket2 = "0.5.2"
+thiserror = "1.0.40"
+mongodb = "2.4.0"
+serde-querystring = "0.2.1"
+serde = { version = "1.0.160", features = ["derive"] }
+lazy-regex = "2.5.0"
+serde-util = { version = "0.1.0", path = "../serde-util" }
 
 [features]

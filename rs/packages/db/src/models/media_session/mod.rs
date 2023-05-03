@@ -13,6 +13,7 @@ pub struct MediaSession {
   #[serde(rename = "_id")]
   pub id: String,
   pub station_id: String,
+
   pub deployment_id: String,
 
   pub state: MediaSessionState,
@@ -20,6 +21,7 @@ pub struct MediaSession {
   #[ts(skip)]
   #[serde(flatten)]
   pub kind: MediaSessionKind,
+  pub now_playing: Option<MediaSessionNowPlaying>,
 
   #[serde(with = "serde_util::as_f64")]
   pub transfer_bytes: u64,
@@ -60,6 +62,27 @@ pub enum MediaSessionKind {
 pub enum MediaSessionState {
   Open,
   Closed,
+}
+
+#[derive(Debug, Clone, Serialize, Eq, PartialEq, Deserialize, TS)]
+#[ts(export, export_to = "../../../defs/db/")]
+#[serde(rename_all = "snake_case")]
+#[macros::keys]
+pub struct MediaSessionNowPlaying {
+  pub title: String,
+  pub artist: Option<String>,
+}
+
+impl From<MediaSessionNowPlaying> for mongodb::bson::Bson {
+  fn from(value: MediaSessionNowPlaying) -> Self {
+    mongodb::bson::to_bson(&value).expect("error convering MediaSessionNowPlaying to Bson")
+  }
+}
+
+impl From<MediaSessionNowPlaying> for mongodb::bson::Document {
+  fn from(value: MediaSessionNowPlaying) -> Self {
+    mongodb::bson::to_document(&value).expect("error convering MediaSessionNowPlaying to Document")
+  }
 }
 
 impl MediaSession {
@@ -152,6 +175,7 @@ mod test {
         last_audio_chunk_skip_parts: 1,
         last_audio_chunk_date: DateTime::now(),
       },
+      now_playing: None,
       state: MediaSessionState::Closed,
       closed_at: Some(DateTime::now()),
       duration_ms: Some(100),

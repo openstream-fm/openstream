@@ -11,7 +11,7 @@ pub mod get {
 
   use db::{
     audio_file::AudioFile,
-    media_session::{MediaSession, MediaSessionKind},
+    media_session::{MediaSession, MediaSessionKind, MediaSessionNowPlaying},
     Model,
   };
 
@@ -34,7 +34,10 @@ pub mod get {
     #[serde(rename = "none")]
     None { start_on_connect: bool },
     #[serde(rename = "live")]
-    Live,
+    Live {
+      title: Option<String>,
+      artist: Option<String>,
+    },
     #[serde(rename = "playlist")]
     Playilist { file: AudioFile },
   }
@@ -61,7 +64,16 @@ pub mod get {
           start_on_connect: station.limits.storage.used != 0,
         },
         Some(media_session) => match media_session.kind {
-          MediaSessionKind::Live { .. } => Output::Live,
+          MediaSessionKind::Live { .. } => match media_session.now_playing {
+            None => Output::Live {
+              title: None,
+              artist: None,
+            },
+            Some(MediaSessionNowPlaying { title, artist }) => Output::Live {
+              title: Some(title),
+              artist,
+            },
+          },
           MediaSessionKind::Playlist {
             last_audio_file_id, ..
           } => match AudioFile::get_by_id(&last_audio_file_id).await? {

@@ -19,17 +19,19 @@ pub struct PlayHistoryItem {
   pub id: String,
   pub station_id: String,
 
+  pub deployment_id: String,
+
   // if we dont have at least name in file metadata
   // we don't log the play history item
-  // and we reject live log requests if they doesn't include name at least
-  pub name: String,
+  // and we reject live metadata requests if they doesn't include song at least
+  pub title: String,
   pub artist: Option<String>,
-
-  pub created_at: DateTime,
 
   #[ts(skip)]
   #[serde(flatten)]
   pub kind: Kind,
+
+  pub created_at: DateTime,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -43,10 +45,7 @@ pub struct PlayHistoryItem {
 #[macros::keys]
 pub enum Kind {
   Live,
-  Playlist {
-    playlist_id: String,
-    file_id: String,
-  },
+  Playlist { file_id: String },
 }
 
 impl Model for PlayHistoryItem {
@@ -55,7 +54,12 @@ impl Model for PlayHistoryItem {
 
   fn indexes() -> Vec<IndexModel> {
     // TODO: should we add more indexes ?
-    let station_id_created = IndexModel::builder()
+
+    let created_at = IndexModel::builder()
+      .keys(doc! { Self::KEY_CREATED_AT: 1 })
+      .build();
+
+    let station_id_created_at = IndexModel::builder()
       .keys(doc! { Self::KEY_STATION_ID: 1, Self::KEY_CREATED_AT: 1 })
       .build();
 
@@ -63,7 +67,7 @@ impl Model for PlayHistoryItem {
       .keys(doc! { Kind::KEY_ENUM_TAG: 1 })
       .build();
 
-    vec![station_id_created, kind]
+    vec![created_at, station_id_created_at, kind]
   }
 }
 
