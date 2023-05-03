@@ -6,13 +6,16 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+db = { version = "0.1.0", path = "../db" }
 # merge-streams = "0.1.2"
 # tokio-stream = "0.1.11"
 hyper = "0.14.23"
+mongodb = "2.4.0"
 pin-project = "1.0.12"
 prex = { version = "0.1.0", path = "../prex" }
 serde = "1.0.149"
 serde_json = { version = "1.0", features = ["preserve_order"] }
+thiserror = "1.0.40"
 tokio = { version = "1.27.0", features = ["full"] }
 
 [dev-dependencies]

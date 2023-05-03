@@ -18,3 +18,5 @@ pub mod stream_connection;
 pub mod transfer_checkpoint;
 pub mod user;
 pub mod user_account_relation;
+
+pub mod db_writable_test;

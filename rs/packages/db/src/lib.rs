@@ -33,6 +33,7 @@ pub use models::audio_chunk;
 pub use models::audio_file;
 pub use models::audio_upload_operation;
 pub use models::config;
+pub use models::db_writable_test;
 pub use models::deployment;
 pub use models::event;
 pub use models::media_session;
@@ -87,6 +88,7 @@ pub fn try_init(
 
 pub async fn ensure_collections() -> MongoResult<()> {
   config::Config::ensure_collection().await?;
+  db_writable_test::DbWritableTest::ensure_collection().await?;
   user::User::ensure_collection().await?;
   account::Account::ensure_collection().await?;
   station::Station::ensure_collection().await?;

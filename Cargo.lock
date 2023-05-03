@@ -1597,12 +1597,15 @@ dependencies = [
 name = "http"
 version = "0.1.0"
 dependencies = [
+ "db",
  "hyper",
+ "mongodb",
  "pin-project",
  "prex",
  "serde",
  "serde_json",
  "test-util",
+ "thiserror",
  "tokio",
 ]
 
