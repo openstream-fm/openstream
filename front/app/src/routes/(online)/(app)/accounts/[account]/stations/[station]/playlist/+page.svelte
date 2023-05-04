@@ -169,7 +169,6 @@
   $: if ($now_playing) data.now_playing = $now_playing.info;
 
   $: playlist_duration = getPlaylistDuration(data.files.items);
-
   const getPlaylistDuration = (files: AudioFile[]): number => {
     let d = 0;
     for(const item of files) {
