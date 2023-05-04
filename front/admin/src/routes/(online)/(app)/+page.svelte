@@ -62,6 +62,10 @@
   }
 </style>
 
+<svelte:head>
+  <title>Admin</title>
+</svelte:head>
+
 <Page>
   <input type="text" class="search-bar" placeholder="Search anything..." />
 

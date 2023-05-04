@@ -73,6 +73,11 @@
   }
 </style>
 
+
+<svelte:head>
+  <title>Stations</title>
+</svelte:head>
+
 <Page>
   <h1>Stations</h1>
   <p>{data.stations.total} stations</p>

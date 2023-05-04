@@ -45,6 +45,10 @@
   }
 </style>
 
+<svelte:head>
+  <title>Users</title>
+</svelte:head>
+
 <Page>
   <h1>Users</h1>
   <p>{data.admins.total} users</p>

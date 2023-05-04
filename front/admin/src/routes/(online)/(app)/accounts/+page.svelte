@@ -49,6 +49,10 @@
   }
 </style>
 
+<svelte:head>
+  <title>Accounts</title>
+</svelte:head>
+
 <Page>
   <h1>Accounts</h1>
   <p>{data.accounts.total} accounts</p>
