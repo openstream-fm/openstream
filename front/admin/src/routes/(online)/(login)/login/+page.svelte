@@ -119,7 +119,7 @@
   <title>Sign in</title>
 </svelte:head>
 
-<form class="box" on:submit|preventDefault={login} in:form>
+<form novalidate class="box" on:submit|preventDefault={login} in:form>
   <div class="title">Sign in</div>
   <div class="fields">
     <div class="field">

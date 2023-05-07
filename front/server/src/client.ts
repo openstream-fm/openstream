@@ -236,28 +236,32 @@ export class Accounts {
     return await this.client.post(ip, ua, token, `/accounts`, payload);
   }
 
-  async patch(ip: string | null, ua: string | null, token: string, id: string, payload: import("./defs/api/accounts/[account]/PATCH/Payload").Payload): Promise<import("./defs/api/accounts/[account]/PATCH/Output").Output> {
-    return await this.client.patch(ip, ua, token, `/accounts/${id}`, payload);
+  async patch(ip: string | null, ua: string | null, token: string, account_id: string, payload: import("./defs/api/accounts/[account]/PATCH/Payload").Payload): Promise<import("./defs/api/accounts/[account]/PATCH/Output").Output> {
+    return await this.client.patch(ip, ua, token, `/accounts/${account_id}`, payload);
   }
   
-  async get_stream_stats(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/accounts/[account]/stream-stats/GET/Output").Output> {
-    return await this.client.get(ip, ua, token, `/accounts/${id}/stream-stats`);
+  async list_members(ip: string | null, ua: string | null, token: string, account_id: string): Promise<import("./defs/api/accounts/[account]/members/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/accounts/${account_id}/members`)  
   }
 
-  async get_stream_stats_item_now(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/accounts/[account]/stream-stats/now/GET/Output").Output> {
-    return await this.client.get(ip, ua, token, `/accounts/${id}/stream-stats/now`);
+  async get_stream_stats(ip: string | null, ua: string | null, token: string, account_id: string): Promise<import("./defs/api/accounts/[account]/stream-stats/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/accounts/${account_id}/stream-stats`);
   }
 
-  async get_stream_stats_item_now_count(ip: string | null, ua: string | null, token: string, id: string): Promise<import("./defs/api/accounts/[account]/stream-stats/now/count/GET/Output").Output> {
-    return await this.client.get(ip, ua, token, `/accounts/${id}/stream-stats/now/count`);
+  async get_stream_stats_item_now(ip: string | null, ua: string | null, token: string, account_id: string): Promise<import("./defs/api/accounts/[account]/stream-stats/now/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/accounts/${account_id}/stream-stats/now`);
   }
 
-  async get_stream_stats_item_since(ip: string | null, ua: string | null, token: string, id: string, num: number | string, unit: string): Promise<import("./defs/api/accounts/[account]/stream-stats/last-[num][unit]/GET/Output").Output> {
-    return await this.client.get(ip, ua, token, `/accounts/${id}/stream-stats/last-${num}${unit}`);
+  async get_stream_stats_item_now_count(ip: string | null, ua: string | null, token: string, account_id: string): Promise<import("./defs/api/accounts/[account]/stream-stats/now/count/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/accounts/${account_id}/stream-stats/now/count`);
   }
 
-  async get_stream_stats_item_since_count(ip: string | null, ua: string | null, token: string, id: string, num: number | string, unit: string): Promise<import("./defs/api/accounts/[account]/stream-stats/last-[num][unit]/count/GET/Output").Output> {
-    return await this.client.get(ip, ua, token, `/accounts/${id}/stream-stats/last-${num}${unit}/count`);
+  async get_stream_stats_item_since(ip: string | null, ua: string | null, token: string, account_id: string, num: number | string, unit: string): Promise<import("./defs/api/accounts/[account]/stream-stats/last-[num][unit]/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/accounts/${account_id}/stream-stats/last-${num}${unit}`);
+  }
+
+  async get_stream_stats_item_since_count(ip: string | null, ua: string | null, token: string, account_id: string, num: number | string, unit: string): Promise<import("./defs/api/accounts/[account]/stream-stats/last-[num][unit]/count/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/accounts/${account_id}/stream-stats/last-${num}${unit}/count`);
   }
 }
 

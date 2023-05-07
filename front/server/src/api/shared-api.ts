@@ -46,7 +46,12 @@ export const shared_api = ({
       return await client.accounts.get(ip(req), ua(req), get_token(req), req.params.account)
     }))
     .patch(json(async req => {
-      return await client.accounts.patch(ip(req), ua(req), get_token(req), req.params.account, req.body);
+      return await client.accounts.patch(ip(req), ua(req), get_token(req), req.params.account, req.body)
+    }))
+
+  api.route("/accounts/:account/members")
+    .get(json(async req => {
+      return await client.accounts.list_members(ip(req), ua(req), get_token(req), req.params.account)
     }))
 
   api.route("/accounts/:account/stream-stats")

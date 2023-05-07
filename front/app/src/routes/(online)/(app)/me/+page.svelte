@@ -294,7 +294,7 @@
     </div>
 
     <Formy action={save_profile} let:submit>
-      <form class="section section-profile" on:submit={submit}>
+      <form novalidate class="section section-profile" on:submit={submit}>
         <div class="section-title">Profile</div>
         <div class="fields">
           <div class="field">
@@ -371,7 +371,7 @@
     </form> -->
 
     <Formy action={change_password} let:submit>
-      <form class="section section-password" on:submit={submit}>
+      <form novalidate class="section section-password" on:submit={submit}>
         <div class="section-title">Change your password</div>
         <div class="fields">
           <div class="field">
