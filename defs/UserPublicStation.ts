@@ -3,7 +3,6 @@ import type { CountryCode } from "./CountryCode";
 import type { DateTime } from "./DateTime";
 import type { Metadata } from "./db/Metadata";
 import type { StationFrequency } from "./StationFrequency";
-import type { StationLimits } from "./StationLimits";
 import type { StationTypeOfContent } from "./db/StationTypeOfContent";
 
 export interface UserPublicStation {
@@ -29,7 +28,6 @@ export interface UserPublicStation {
   app_store_url: string | null;
   google_play_url: string | null;
   user_metadata: Metadata;
-  limits: StationLimits;
   playlist_is_randomly_shuffled: boolean;
   source_password: string;
   created_at: DateTime;

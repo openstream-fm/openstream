@@ -2,7 +2,6 @@
 import type { CountryCode } from "../CountryCode";
 import type { Metadata } from "../db/Metadata";
 import type { StationFrequency } from "../StationFrequency";
-import type { StationPatchLimits } from "./StationPatchLimits";
 import type { StationTypeOfContent } from "../db/StationTypeOfContent";
 
 export interface StationPatch {
@@ -24,7 +23,6 @@ export interface StationPatch {
   twitch_url?: string | null;
   google_play_url?: string | null;
   app_store_url?: string | null;
-  limits?: StationPatchLimits;
   user_metadata?: Metadata;
   system_metadata?: Metadata;
 }

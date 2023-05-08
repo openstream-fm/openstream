@@ -3,6 +3,7 @@ import type { Metadata } from "../../../db/Metadata";
 
 export interface Payload {
   name: string;
+  plan_id: string;
   user_id?: string;
   user_metadata?: Metadata;
   system_metadata?: Metadata;

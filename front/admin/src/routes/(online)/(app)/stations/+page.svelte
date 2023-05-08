@@ -38,13 +38,13 @@
 
   .item-pic {
     flex: none;
-    width: 4rem;
-    height: 4rem;
+    width: 3rem;
+    height: 3rem;
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
     border-radius: 0.5rem;
-    margin-inline-end: 1rem;
+    margin-inline-end: 0.75rem;
   }
 
   .item-info {
@@ -64,12 +64,6 @@
   .item-subtitle {
     margin-top: 0.25rem;
     color: #555;
-  }
-
-  .item-listeners {
-    color: #555;
-    font-size: 0.9rem;
-    margin-top: 0.25rem;
   }
 </style>
 
@@ -94,13 +88,6 @@
               {account.name}
             {:else}
               #{item.account_id}
-            {/if}
-          </div>
-          <div class="item-listeners">
-            {#if item.limits.listeners.used === 1}
-              1 listener
-            {:else}
-              {item.limits.listeners.used} listeners
             {/if}
           </div>
         </div>

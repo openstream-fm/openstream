@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use db::account::Account;
 use db::audio_file::AudioFile;
 use db::deployment::Deployment;
 use db::station::{Station, OwnerDeploymentInfo};
@@ -395,11 +396,16 @@ impl StreamHandler {
             if owner_info.deployment_id == deployment_id {
               (station, None)
             } else {
-              if station.limits.transfer.avail() == 0 {
+              let account = match Account::get_by_id(&station.account_id).await? {
+                Some(account) => account,
+                None => return Err(StreamError::AccountNotFound(station.account_id))
+              };
+
+              if account.limits.transfer.avail() == 0 {
                 return Err(StreamError::TransferLimit);
               }
     
-              if station.limits.listeners.avail() == 0 {
+              if account.limits.listeners.avail() == 0 {
                 return Err(StreamError::ListenersLimit);
               }
 
@@ -465,11 +471,16 @@ impl StreamHandler {
           }
         };
         
-        if station.limits.transfer.avail() == 0 {
+        let account = match Account::get_by_id(&station.account_id).await? {
+          Some(account) => account,
+          None => return Err(StreamError::AccountNotFound(station.account_id))
+        };
+
+        if account.limits.transfer.avail() == 0 {
           return Err(StreamError::TransferLimit);
         }
       
-        if station.limits.listeners.avail() == 0 {
+        if account.limits.listeners.avail() == 0 {
           return Err(StreamError::ListenersLimit);
         }
 
@@ -532,8 +543,8 @@ impl StreamHandler {
 
       let conn_doc_lite = StreamConnectionLite::from_stream_connection_ref(&conn_doc);
 
-      let r = Station::increment_used_listeners(&station_id).await?;
-      debug!("Station::increment_used_listeners called for station {station_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
+      let r = Account::increment_used_listeners(&station_id).await?;
+      debug!("Account::increment_used_listeners called for station {station_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
 
       StreamConnection::insert(&conn_doc).await?;
       debug!("StreamConnection::insert called for station {station_id}, connection_id: {}", conn_doc.id);
@@ -549,6 +560,7 @@ impl StreamHandler {
         id: conn_doc.id.clone(),
         transfer_bytes: transfer_bytes.clone(),
         station_id: station_id.clone(),
+        account_id: station.account_id.clone(),
         token: media_sessions.drop_token(),
         start_time,
       };
@@ -585,7 +597,7 @@ impl StreamHandler {
                 match body_sender.send_data(bytes).await {
                   Err(_) => break,
                   Ok(()) => {
-                    transfer_map.increment(&station_id, len);
+                    transfer_map.increment(&station.account_id, len);
                     transfer_bytes.fetch_add(len as u64, Ordering::SeqCst);
                   }
                 };
@@ -632,6 +644,7 @@ impl Handler for StreamHandler {
 struct StreamConnectionDropper {
   id: String,
   station_id: String,
+  account_id: String,
   transfer_bytes: Arc<AtomicU64>,
   start_time: SystemTime,
   token: Token,
@@ -642,6 +655,7 @@ impl Drop for StreamConnectionDropper {
     let token = self.token.clone();
     let id = self.id.clone();
     let station_id = self.station_id.clone();
+    let account_id = self.account_id.clone();
     let transfer_bytes = self.transfer_bytes.load(Ordering::SeqCst);
     let duration_ms = self.start_time.elapsed().unwrap().as_millis() as u64;
     tokio::spawn(async move {
@@ -673,11 +687,11 @@ impl Drop for StreamConnectionDropper {
         debug!("StreamConnectionLite closed for station {station_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
       }
 
-      let r = Station::decrement_used_listeners(&station_id)
+      let r = Account::decrement_used_listeners(&account_id)
         .await
         .expect("error at Station::decrement_used_listeners");
 
-      debug!("Station::decrement_used_listeners called for station {station_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
+      debug!("Account::decrement_used_listeners called for station {station_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
 
       drop(token);
     });
@@ -692,6 +706,7 @@ pub enum StreamError {
   DeploymentNotFound,
   DeploymentNoPort,
   StationNotFound(String),
+  AccountNotFound(String),
   NotStreaming(String),
   TooManyOpenIpConnections,
   ListenersLimit,
@@ -719,6 +734,13 @@ impl From<StreamError> for Response {
         StatusCode::NOT_FOUND,
         "NO_STATION",
         format!("station with id {id} not found"),
+        None,
+      ),
+
+      StreamError::AccountNotFound(id) => (
+        StatusCode::NOT_FOUND,
+        "ACCOUNT_NOT_FOUND",
+        format!("account with id {id} not found"),
         None,
       ),
 
@@ -836,11 +858,16 @@ impl LinkHandler {
       None => return Err(StreamError::StationNotFound(station_id.to_string())),
     };
 
-    if station.limits.transfer.avail() == 0 {
+    let account = match Account::get_by_id(&station.account_id).await? {
+      Some(account) => account,
+      None => return Err(StreamError::AccountNotFound(station.account_id)),
+    };
+
+    if account.limits.transfer.avail() == 0 {
       return Err(StreamError::TransferLimit);
     }
 
-    if station.limits.listeners.avail() == 0 {
+    if account.limits.listeners.avail() == 0 {
       return Err(StreamError::ListenersLimit);
     }
 

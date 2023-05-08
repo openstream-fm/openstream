@@ -19,6 +19,7 @@ pub mod stations;
 pub mod users;
 
 pub mod devices;
+pub mod plans;
 pub mod runtime;
 pub mod station_pictures;
 pub mod stream_stats;
@@ -58,13 +59,6 @@ pub fn router(
     .at("/auth/admin/logout")
     .post(auth::admin::logout::post::Endpoint {}.into_handler());
 
-  app.at("/stream-stats").get(
-    stream_stats::get::Endpoint {
-      index: stream_connections_index.clone(),
-    }
-    .into_handler(),
-  );
-
   app.at("/runtime/source-password-updated/:station").post(
     runtime::source_password_updated::station_id::post::Endpoint {
       media_sessions: media_sessions.clone(),
@@ -77,6 +71,13 @@ pub fn router(
       media_sessions: media_sessions.clone(),
       drop_tracer: drop_tracer.clone(),
       shutdown: shutdown.clone(),
+    }
+    .into_handler(),
+  );
+
+  app.at("/stream-stats").get(
+    stream_stats::get::Endpoint {
+      index: stream_connections_index.clone(),
     }
     .into_handler(),
   );
@@ -112,6 +113,17 @@ pub fn router(
       }
       .into_handler(),
     );
+
+  app
+    .at("/plans")
+    .get(plans::get::Endpoint {}.into_handler())
+    .post(plans::post::Endpoint {}.into_handler());
+
+  app
+    .at("/plans/:plan")
+    .get(plans::id::get::Endpoint {}.into_handler())
+    .patch(plans::id::patch::Endpoint {}.into_handler())
+    .delete(plans::id::delete::Endpoint {}.into_handler());
 
   app
     .at("/users")

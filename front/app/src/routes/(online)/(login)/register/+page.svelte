@@ -27,6 +27,8 @@
     }
 
     const payload: Omit<import("$server/defs/api/auth/user/register/POST/Payload").Payload, "device_id"> = {
+      // TODO: add plan id logic
+      plan_id: "",
       first_name,
       last_name,
       account_name,

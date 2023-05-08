@@ -20,6 +20,7 @@ export type PublicErrorCode =
   | "ACCOUNT_NOT_FOUND"
   | "AUDIO_FILE_NOT_FOUND"
   | "DEVICE_NOT_FOUND"
+  | "PLAN_NOT_FOUND"
   | "QUERY_STRING_INVALID"
   | "PAYLOAD_IO"
   | "PAYLOAD_JSON"

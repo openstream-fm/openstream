@@ -45,7 +45,14 @@
   }
 
   .item-subtitle {
+    margin-top: 0.25rem;
     color: #555;
+  }
+
+  .item-listeners {
+    color: #555;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
   }
 </style>
 
@@ -63,6 +70,13 @@
       <a href="/accounts/{item._id}" class="na item ripple-container" use:ripple>
         <div class="item-title">{item.name}</div>
         <div class="item-subtitle">{stations.length} stations</div>
+        <div class="item-listeners">
+          {#if item.limits.listeners.used === 1}
+            1 listener
+          {:else}
+            {item.limits.listeners.used} listeners
+          {/if}
+        </div>
       </a>
     {/each}
   </div>

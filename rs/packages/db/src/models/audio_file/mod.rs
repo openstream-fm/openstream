@@ -1,8 +1,7 @@
 use crate::{
+  account::{Account, Limit, Limits},
   audio_chunk::AudioChunk,
-  run_transaction,
-  station::{Limit, Limits, Station},
-  Model,
+  run_transaction, Model,
 };
 use mongodb::{
   bson::{doc, Document},
@@ -150,14 +149,14 @@ impl AudioFile {
 
     // update station
     const KEY: &str = const_str::concat!(
-      Station::KEY_LIMITS,
+      Account::KEY_LIMITS,
       ".",
       Limits::KEY_STORAGE,
       ".",
       Limit::KEY_USED
     );
     let update = doc! { "$inc": { KEY: (audio_file.len as f64) * -1.0 } };
-    Station::update_by_id_with_session(&audio_file.station_id, update, session).await?;
+    Account::update_by_id_with_session(&audio_file.station_id, update, session).await?;
 
     Ok(Some(audio_file))
   }

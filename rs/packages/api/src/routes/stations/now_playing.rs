@@ -3,6 +3,7 @@ use crate::request_ext::{self, GetAccessTokenScopeError};
 
 use async_trait::async_trait;
 use db::station::Station;
+use mongodb::bson::doc;
 use prex::Request;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
@@ -65,9 +66,13 @@ pub mod get {
       let Self::Input { station } = input;
 
       let out = match MediaSession::get_current_for_station(&station.id).await? {
-        None => Output::None {
-          start_on_connect: station.limits.storage.used != 0,
-        },
+        None => {
+          let filter = doc! { AudioFile::KEY_STATION_ID: &station.id };
+          let exists = AudioFile::exists(filter).await?;
+          Output::None {
+            start_on_connect: exists,
+          }
+        }
         Some(media_session) => match media_session.kind {
           MediaSessionKind::Live { .. } => match media_session.now_playing {
             None => Output::Live {
@@ -83,9 +88,13 @@ pub mod get {
             last_audio_file_id, ..
           } => match AudioFile::get_by_id(&last_audio_file_id).await? {
             // this would never happen
-            None => Output::None {
-              start_on_connect: station.limits.storage.used != 0,
-            },
+            None => {
+              let filter = doc! { AudioFile::KEY_STATION_ID: &station.id };
+              let exists = AudioFile::exists(filter).await?;
+              Output::None {
+                start_on_connect: exists,
+              }
+            }
             Some(file) => Output::Playilist {
               file_id: file.id,
               filename: file.filename,

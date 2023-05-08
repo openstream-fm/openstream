@@ -15,7 +15,7 @@ use db::metadata::Metadata;
 use db::models::user_account_relation::UserAccountRelation;
 use db::station::PublicStation;
 use db::station::{validation::*, Station};
-use db::{Model, Paged, PublicScope, Singleton};
+use db::{Model, Paged, PublicScope};
 use mongodb::bson::doc;
 use prex::request::ReadBodyJsonError;
 use prex::Request;
@@ -159,10 +159,8 @@ pub mod get {
 }
 
 pub mod post {
-
-  use db::config::Config;
   use db::run_transaction;
-  use db::station::{Limit, Limits, Station, StationFrequency, StationTypeOfContent};
+  use db::station::{Station, StationFrequency, StationTypeOfContent};
   use db::station_picture::StationPicture;
   use geoip::CountryCode;
   use serde_util::DateTime;
@@ -292,10 +290,6 @@ pub mod post {
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[validate]
     pub frequencies: Option<Vec<StationFrequency>>,
-
-    #[ts(optional)]
-    //#[serde(skip_serializing_if = "Option::is_none")]
-    pub limits: Option<PayloadLimits>,
 
     #[ts(optional)]
     //#[serde(skip_serializing_if = "Option::is_none")]
@@ -437,14 +431,11 @@ pub mod post {
 
         frequencies,
 
-        limits: payload_limits,
         user_metadata,
         system_metadata,
       } = payload;
 
       access_token_scope.grant_account_scope(&account_id).await?;
-
-      let config = <Config as Singleton>::get().await?;
 
       let system_metadata = match &access_token_scope {
         AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
@@ -452,40 +443,6 @@ pub mod post {
         }
 
         AccessTokenScope::User(_) => Default::default(),
-      };
-
-      let limits = match &access_token_scope {
-        AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
-          let payload_limits = payload_limits.unwrap_or_default();
-          Limits {
-            listeners: Limit {
-              used: 0,
-              total: payload_limits.listeners.unwrap_or(config.limits.listeners),
-            },
-            transfer: Limit {
-              used: 0,
-              total: payload_limits.transfer.unwrap_or(config.limits.transfer),
-            },
-            storage: Limit {
-              used: 0,
-              total: payload_limits.storage.unwrap_or(config.limits.storage),
-            },
-          }
-        }
-        AccessTokenScope::User(_) => Limits {
-          listeners: Limit {
-            used: 0,
-            total: config.limits.listeners,
-          },
-          transfer: Limit {
-            used: 0,
-            total: config.limits.transfer,
-          },
-          storage: Limit {
-            used: 0,
-            total: config.limits.storage,
-          },
-        },
       };
 
       let user_metadata = user_metadata.unwrap_or_default();
@@ -525,7 +482,6 @@ pub mod post {
 
         frequencies: frequencies.unwrap_or_default(),
 
-        limits,
         source_password: Station::random_source_password(),
         playlist_is_randomly_shuffled: false,
         owner_deployment_info: None,
