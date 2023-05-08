@@ -52,6 +52,8 @@ pub enum PublicErrorCode {
   ResourceNotFound,
   TooManyRequests,
 
+  BadRequest,
+
   InternalDb,
   InternalSerialize,
 
@@ -101,4 +103,6 @@ pub enum PublicErrorCode {
 
   PlaylistStartIsLive,
   PlaylistStartNoFiles,
+
+  RenderMail,
 }

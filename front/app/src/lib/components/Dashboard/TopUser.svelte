@@ -23,7 +23,7 @@
 	import { goto } from "$app/navigation";
 
   const sign_out = action(async () => {
-    await _post("/api/logout", {});
+    await _post("/api/auth/user/logout", {});
     goto("/", { invalidateAll: true })
   })
 

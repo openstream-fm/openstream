@@ -71,7 +71,7 @@ export const studio_api = ({
     return public_config(req.hostname || "studio.openstream.fm", config.source_port);
   }))
 
-  api.post("/login", json(async (req, res) => {
+  api.post("/auth/user/login", json(async (req, res) => {
     const sess = req.cookie_session;
     const r = await client.auth.user.login(ip(req), ua(req), { ...req.body, device_id: sess.device_id });
     const data = req.cookie_session;
@@ -79,18 +79,22 @@ export const studio_api = ({
     return { user: r.user, media_key: r.media_key }
   }))
 
-  api.post("/logout", json(async (req, res) => {
+  api.post("/auth/user/logout", json(async (req, res) => {
     const r = await client.auth.user.logout(ip(req), ua(req), user_token(req)).catch(() => {});
     const data = req.cookie_session;
     res.set_session({ ...data, user: null });
     return r;
   }))
 
-  api.post("/register", json(async (req, res) => {
+  api.post("/auth/user/register", json(async (req, res) => {
     const sess = req.cookie_session;
     const { account, user, token, media_key } = await client.auth.user.register(ip(req), ua(req), config.openstream.token, { ...req.body, device_id: sess.device_id });
     res.set_session({ ...sess, user: { _id: user._id, token, media_key }});
     return { user, account }
+  }))
+
+  api.post("/auth/user/recover", json(async (req, res) => {
+    return await client.auth.user.recover(ip(req), ua(req), req.body);
   }))
 
   api.route("/users/me")

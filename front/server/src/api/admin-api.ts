@@ -71,7 +71,7 @@ export const admin_api = ({
     return public_config(req.hostname || "admin.openstream.fm", config.source_port);
   }))
 
-  api.post("/login", json(async (req, res) => {
+  api.post("/auth/admin/login", json(async (req, res) => {
     const sess = req.cookie_session;
     const r = await client.auth.admin.login(ip(req), ua(req), { ...req.body, device_id: sess.device_id });
     const data = req.cookie_session;
@@ -79,7 +79,7 @@ export const admin_api = ({
     return { admin: r.admin, media_key: r.media_key }
   }))
 
-  api.post("/logout", json(async (req, res) => {
+  api.post("/auth/admin/logout", json(async (req, res) => {
     const r = await client.auth.admin.logout(ip(req), ua(req), admin_token(req)).catch(() => {});
     const data = req.cookie_session;
     res.set_session({ ...data, admin: null });

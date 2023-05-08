@@ -215,7 +215,10 @@ export class AuthUser {
   async register(ip: string | null, ua: string | null, token: string, payload: import("./defs/api/auth/user/register/POST/Payload").Payload): Promise<import("./defs/api/auth/user/register/POST/Output").Output> {
     return await this.client.post(ip, ua, token, "/auth/user/register", payload)
   }
-}
+
+  async recover(ip: string | null, ua: string | null, payload: import("./defs/api/auth/user/recover/POST/Payload").Payload): Promise<import("./defs/api/auth/user/recover/POST/Output").Output> {
+    return await this.client.post(ip, ua, null, "/auth/user/recover", payload)
+  }}
 
 export class Accounts {
   client: Client;

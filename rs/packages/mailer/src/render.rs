@@ -1,18 +1,11 @@
+use crate::error::RenderError;
 use askama::Template;
-use css_inline::{CSSInliner, InlineError, InlineOptions};
+use css_inline::{CSSInliner, InlineOptions};
 
 #[derive(Debug, Clone)]
 pub struct Render {
   pub html: String,
   pub text: String,
-}
-
-#[derive(Debug, thiserror::Error)]
-pub enum RenderError {
-  #[error("askama: {0}")]
-  Askama(#[from] askama::Error),
-  #[error("css inline: {0}")]
-  CSSInline(#[from] InlineError),
 }
 
 pub fn render<T: Template>(template: &T) -> Result<Render, RenderError> {

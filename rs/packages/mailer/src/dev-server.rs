@@ -1,5 +1,7 @@
+pub mod error;
 pub mod render;
 pub mod templates;
+
 use std::net::SocketAddr;
 
 use anyhow::Context;

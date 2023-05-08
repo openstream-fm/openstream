@@ -20,3 +20,5 @@ pub mod user;
 pub mod user_account_relation;
 
 pub mod db_writable_test;
+pub mod token_user_email_confirmation;
+pub mod token_user_recovery;

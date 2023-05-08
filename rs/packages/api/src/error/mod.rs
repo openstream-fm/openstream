@@ -5,6 +5,7 @@ use http_range::HttpRangeParseError;
 use hyper::header::{CONTENT_LENGTH, CONTENT_TYPE};
 use hyper::http::HeaderValue;
 use hyper::{Body, StatusCode};
+use mailer::error::RenderError;
 use prex::request::{ReadBodyBytesError, ReadBodyJsonError};
 use prex::*;
 use serde_json;
@@ -24,6 +25,9 @@ pub enum ApiError {
 
   #[error("resource not found")]
   ResourceNotFound,
+
+  #[error("bad request: {0}")]
+  BadRequestCustom(String),
 
   #[error("mongodb: {0}")]
   Db(#[from] mongodb::error::Error),
@@ -147,6 +151,9 @@ pub enum ApiError {
 
   #[error("cannot start playlist (no files for account")]
   PlaylistStartNoFiles,
+
+  #[error("render mail: {0}")]
+  RenderMail(mailer::error::RenderError),
 }
 
 impl ApiError {
@@ -157,6 +164,7 @@ impl ApiError {
       TooManyRequests => StatusCode::TOO_MANY_REQUESTS,
       ResourceNotFound => StatusCode::NOT_FOUND,
       Db(_) => StatusCode::INTERNAL_SERVER_ERROR,
+      BadRequestCustom(_) => StatusCode::BAD_REQUEST,
       // for Kind::Hyper(e) we assume that is a network error responsability of the client so we respond BAD_REQUEST
       Hyper(_) => StatusCode::BAD_REQUEST,
       TokenMissing => StatusCode::UNAUTHORIZED,
@@ -206,6 +214,8 @@ impl ApiError {
 
       PlaylistStartIsLive => StatusCode::BAD_REQUEST,
       PlaylistStartNoFiles => StatusCode::BAD_REQUEST,
+
+      RenderMail(_) => StatusCode::INTERNAL_SERVER_ERROR,
     }
   }
 
@@ -214,6 +224,7 @@ impl ApiError {
     match self {
       TooManyRequests => format!("Too many requests"),
       ResourceNotFound => format!("Resource not found"),
+      BadRequestCustom(message) => message.clone(),
       Db(_) => format!("Internal server error"),
       Hyper(_) => format!("I/O request error"),
       TokenMissing => format!("Access token is required"),
@@ -262,6 +273,7 @@ impl ApiError {
 
       PlaylistStartIsLive => format!("Station is currenly live streaming"),
       PlaylistStartNoFiles => format!("Station playlist is empty"),
+      RenderMail(_) => format!("There was an error rendering the email, try again later"),
     }
   }
 
@@ -270,6 +282,7 @@ impl ApiError {
     match self {
       TooManyRequests => PublicErrorCode::TooManyRequests,
       ResourceNotFound => PublicErrorCode::ResourceNotFound,
+      BadRequestCustom(_) => PublicErrorCode::BadRequest,
       Db(_) => PublicErrorCode::InternalDb,
       Hyper(_) => PublicErrorCode::IoRequest,
       TokenMissing => PublicErrorCode::TokenMissing,
@@ -316,6 +329,7 @@ impl ApiError {
 
       PlaylistStartIsLive => PublicErrorCode::PlaylistStartIsLive,
       PlaylistStartNoFiles => PublicErrorCode::PlaylistStartNoFiles,
+      RenderMail(_) => PublicErrorCode::RenderMail,
     }
   }
 
@@ -412,5 +426,11 @@ impl From<CreateStationPictureError> for ApiError {
       }
       AccountNotFound(_) => ApiError::QueryString2(format!("{e}")),
     }
+  }
+}
+
+impl From<RenderError> for ApiError {
+  fn from(e: RenderError) -> Self {
+    Self::RenderMail(e)
   }
 }

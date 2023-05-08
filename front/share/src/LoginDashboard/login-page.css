@@ -1,0 +1,95 @@
+
+.login-page-box {
+  position: relative;
+  z-index: var(--z-login-front);
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(2px);
+  box-shadow: 0 4px 20px 0 rgb(0 0 0 / 12%);
+  width: min(80%, max(20rem, min(30rem, 55%)));
+  align-self: center;
+  margin: auto 0;
+  padding-bottom: 5rem;
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-page-title {
+  font-weight: 600;
+  font-size: 2rem;
+  text-align: center;
+  margin: 3.5rem 0;
+}
+
+.login-page-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  width: min(78%, 25rem);
+  align-self: center;
+}
+
+.login-page-field {
+  align-self: stretch;
+}
+
+.login-page-button {
+  color: #fff;
+  background: var(--blue);
+  box-shadow: 0 4px 20px 0 rgb(0 0 0 / 16%);
+  padding: 0.75rem;
+  appearance: none;
+  border: 0;
+  margin: 0;
+  outline: 0;
+  cursor: pointer;
+  user-select: none;
+  align-self: flex-end;
+  font-weight: 600;
+  position: relative;
+  transition: color 200ms ease;
+}
+
+.login-page-button.sending {
+  color: transparent;
+}
+
+.login-page-link, .login-page-comment {
+  font-size: 0.9em;
+  transition: color 200ms ease;
+}
+
+.login-page-link {
+  color: rgba(var(--blue-rgb), 0.6);
+}
+
+.login-page-link:hover {
+  color: var(--blue);
+}
+
+.login-page-comment {
+  color: #999;
+}
+
+.login-page-switch-box {
+  align-self: center;
+  margin-top: 3.5rem;
+  margin-bottom: -2rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.login-page-btn-sending-progress {
+  position: absolute;
+  top: calc(50% - 1rem);
+  left: calc(50% - 1rem);
+  width: 2rem;
+  height: 2rem;
+  font-size: 1.1rem;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

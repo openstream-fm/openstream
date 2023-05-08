@@ -1,5 +1,5 @@
 <script lang="ts">
-  import LoginDashboard from "$lib/components/LoginDashboard/LoginDashboard.svelte";
+  import LoginDashboard from "$share/LoginDashboard/LoginDashboard.svelte";
 	import Page from "$lib/components/Page.svelte";
 	import { ripple } from "$share/ripple";
 </script>

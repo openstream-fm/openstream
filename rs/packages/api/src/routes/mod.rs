@@ -35,10 +35,6 @@ pub fn router(
   app.at("/me").get(me::get::Endpoint {}.into_handler());
 
   app
-    .at("/auth/user/register")
-    .post(auth::user::register::post::Endpoint {}.into_handler());
-
-  app
     .at("/auth/user/login")
     .post(auth::user::login::post::Endpoint {}.into_handler());
 
@@ -47,8 +43,20 @@ pub fn router(
     .post(auth::user::logout::post::Endpoint {}.into_handler());
 
   app
+    .at("/auth/user/register")
+    .post(auth::user::register::post::Endpoint {}.into_handler());
+
+  app
+    .at("/auth/user/recover")
+    .post(auth::user::recover::post::Endpoint {}.into_handler());
+
+  app
     .at("/auth/admin/login")
     .post(auth::admin::login::post::Endpoint {}.into_handler());
+
+  app
+    .at("/auth/admin/logout")
+    .post(auth::admin::logout::post::Endpoint {}.into_handler());
 
   app.at("/stream-stats").get(
     stream_stats::get::Endpoint {

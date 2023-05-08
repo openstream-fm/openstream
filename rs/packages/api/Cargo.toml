@@ -13,6 +13,7 @@ chrono = "0.4.23"
 constants = { version = "0.1.0", path = "../../config/constants" }
 cookie = { version = "0.16.2", features = ["sha2", "secure", "signed", "base64"] }
 crypt = { version = "0.1.0", path = "../crypt" }
+css-inline = "0.8.5"
 db = { version = "0.1.0", path = "../db" }
 drop-tracer = { version = "0.1.0", path = "../drop-tracer" }
 futures = "0.3.25"
@@ -24,6 +25,7 @@ http-range = "0.1.5"
 hyper = { version = "0.14.20", features = ["full"] }
 lazy-regex = "2.5.0"
 log = "0.4.17"
+mailer = { version = "0.1.0", path = "../mailer" }
 media-sessions = { version = "0.1.0", path = "../media-sessions" }
 mongodb = "2.4.0"
 owo-colors = { version = "3.5.0", path = "../owo-colors" }

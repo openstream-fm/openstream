@@ -3,6 +3,7 @@
 export type PublicErrorCode =
   | "RESOURCE_NOT_FOUND"
   | "TOO_MANY_REQUESTS"
+  | "BAD_REQUEST"
   | "INTERNAL_DB"
   | "INTERNAL_SERIALIZE"
   | "IO_REQUEST"
@@ -42,4 +43,5 @@ export type PublicErrorCode =
   | "UNRESOLVABLE_ADMIN_ME"
   | "UNRESOLVABLE_USER_ME"
   | "PLAYLIST_START_IS_LIVE"
-  | "PLAYLIST_START_NO_FILES";
+  | "PLAYLIST_START_NO_FILES"
+  | "RENDER_MAIL";

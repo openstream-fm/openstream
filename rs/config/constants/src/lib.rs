@@ -30,8 +30,8 @@ pub const PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY: Duration = Duration::from_secs(1
 /// delay to shutdown a relay session when it run out of listeners
 pub const RELAY_NO_LISTENERS_SHUTDOWN_DELAY: Duration = Duration::from_secs(5);
 
-/// limit of authotization intents from the same ip
-pub const API_IP_LIMIT: usize = 60;
+/// limit of authotization, or other sensible api endpoints requests from the same ip
+pub const API_IP_LIMIT: usize = 10;
 
-/// limit restart interval of authorization intents from the same ip (use with API_IP_LIMIT)
+/// limit restart interval of API_IP_LIMIT
 pub const API_IP_LIMIT_DURATION: Duration = Duration::from_secs(60);

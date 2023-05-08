@@ -1,5 +1,5 @@
 <script>
-  import LoginDashboard from "$lib/components/LoginDashboard/LoginDashboard.svelte";
+  import LoginDashboard from "$share/LoginDashboard/LoginDashboard.svelte";
 </script>
 
 <LoginDashboard>
