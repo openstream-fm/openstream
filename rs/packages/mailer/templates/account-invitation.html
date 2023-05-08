@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %} 
+  <style>
+    .title {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    .content {
+      margin-top: 45px;
+    }
+
+    .accept {
+      display: inline-block;
+      color: #fff;
+      background: rgb(0, 116, 217);
+      padding: 14px 18px;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: 700;
+    }
+  </style>
+
+
+  <h1 class="title">{{ sender_first_name }} {{ sender_last_name }} invited you to join the account {{ account_name }} at Openstream.</h1>
+
+  <div class="content">
+    <p class="text">Hello!</p>
+    <p class="text">
+      <b>{{ sender_first_name }} {{ sender_last_name }}</b>
+      invited you join the account <b>{{ account_name }}</b>
+      at <b>Openstream</b>
+    </p>
+
+    <p class="text">To accept or reject the invitation click below:</p>
+
+    <div class="accept-out">
+      <a class="accept" href="{{ invitation_url|safe }}" target="_blank">Go to the Invitation</a>
+    </div>
+
+    <br />
+  
+    <p class="text">
+      Have a nice day! <br />
+      The Openstream team.
+    </p>
+  </div>
+
+{% endblock %}

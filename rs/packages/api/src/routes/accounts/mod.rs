@@ -1,4 +1,5 @@
 pub mod id;
+pub mod members;
 pub mod stream_stats;
 
 use crate::json::JsonHandler;

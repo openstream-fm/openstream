@@ -11,7 +11,7 @@ module.exports = {
     instances: 1,
     env: {
       RUST_LOG_STYLE: "always",
-      FORCE_COLOR: 1,
+      FORCE_COLOR: "1",
     }
   }, {
     namespace: "s2",

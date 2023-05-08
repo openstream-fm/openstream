@@ -125,6 +125,10 @@ pub fn router(
     .get(accounts::id::get::Endpoint {}.into_handler())
     .patch(accounts::id::patch::Endpoint {}.into_handler());
 
+  app
+    .at("/accounts/:account/members")
+    .get(accounts::members::get::Endpoint {}.into_handler());
+
   app.at("/accounts/:account/stream-stats").get(
     accounts::stream_stats::get::Endpoint {
       index: stream_connections_index.clone(),
