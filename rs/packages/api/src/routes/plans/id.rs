@@ -202,7 +202,7 @@ pub mod patch {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../../defs/api/admins/[admin]/PATCH/")]
+  #[ts(export, export_to = "../../../defs/api/plans/[plan]/PATCH/")]
   pub struct Output(Plan);
 
   #[derive(Debug, thiserror::Error)]

@@ -93,6 +93,26 @@ export const admin_api = ({
     return { user, media_key };
   }))
 
+  api.route("/plans")
+  .get(json(async req => {
+    return await client.plans.list(ip(req), ua(req), admin_token(req), req.query as any);
+  }))
+  .post(json(async req => {
+    return await client.plans.post(ip(req), ua(req), admin_token(req), req.body)
+  }))
+
+  api.route("/plans/:plan")
+    .get(json(async req => {
+      return await client.plans.get(ip(req), ua(req), admin_token(req), req.params.plan);
+    }))
+    .patch(json(async req => {
+      return await client.plans.patch(ip(req), ua(req), admin_token(req), req.params.plan, req.body)
+    }))
+    .delete(json(async req => {
+      return await client.plans.delete(ip(req), ua(req), admin_token(req), req.params.plan)
+    }))
+
+  
   api.route("/admins")
     .get(json(async req => {
       return await client.admins.list(ip(req), ua(req), admin_token(req), req.query);

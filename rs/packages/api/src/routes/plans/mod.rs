@@ -37,7 +37,7 @@ pub mod get {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../../defs/api/plan/GET/")]
+  #[ts(export, export_to = "../../../defs/api/plans/GET/")]
   pub struct Output {
     pub items: Vec<Plan>,
   }

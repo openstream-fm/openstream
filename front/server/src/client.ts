@@ -23,20 +23,22 @@ export class Client {
   logger: Logger;
 
   auth: Auth;
-  admins: Admins;  
+  plans: Plans;
+  admins: Admins;
   users: Users;
   accounts: Accounts;
   stations: Stations;
   devices: Devices;
-  
 
-  constructor(base_url: string, { logger, fetch = node_fetch }: { logger: Logger, fetch?: typeof node_fetch  }) {
+
+  constructor(base_url: string, { logger, fetch = node_fetch }: { logger: Logger, fetch?: typeof node_fetch }) {
     this.base_url = base_url.trim().replace(/\/+$/g, "")
     this.logger = logger.scoped("client");
-    
+
     this.node_fetch = fetch;
 
     this.auth = new Auth(this);
+    this.plans = new Plans(this);
     this.admins = new Admins(this);
     this.users = new Users(this);
     this.accounts = new Accounts(this);
@@ -48,7 +50,7 @@ export class Client {
     const url = `${this.base_url}${_url}`;
     const method = init.method ?? "GET";
     this.logger.debug(`fetch: ${method} ${url}`);
-    return await this.node_fetch(url, { 
+    return await this.node_fetch(url, {
       agent: (url) => url.protocol === "http:" ? http.globalAgent : https.globalAgent,
       ...init
     }).catch(e => {
@@ -64,7 +66,7 @@ export class Client {
       throw new ClientError(StatusCode.BAD_GATEWAY, "FRONT_GATEWAY_JSON", "Gateway error");
     })
 
-    if(body?.error) {
+    if (body?.error) {
       let message = typeof body.error.message ? body.error.message : "Internal server error";
       let code = typeof body.error?.code === "string" ? (body.error.code as ErrorCode) : "FRONT_GATEWAY_MISSING_CODE";
       throw new ClientError(res.status, code, message);
@@ -84,18 +86,18 @@ export class Client {
     token: string | null
     wpayload: boolean,
   }): Headers {
-    
+
     const headers = new Headers();
-    
-    if(ip) headers.append(FORWARD_IP_HEADER, ip);
-    
+
+    if (ip) headers.append(FORWARD_IP_HEADER, ip);
+
     // remove default user agent
     headers.append("user-agent", ua || "openstream-unknown")
-    
-    if(token) headers.append(ACCESS_TOKEN_HEADER, token);
-    
-    if(wpayload) headers.append("content-type", "application/json");
-    
+
+    if (token) headers.append(ACCESS_TOKEN_HEADER, token);
+
+    if (wpayload) headers.append("content-type", "application/json");
+
 
     return headers
   }
@@ -218,7 +220,36 @@ export class AuthUser {
 
   async recover(ip: string | null, ua: string | null, payload: import("./defs/api/auth/user/recover/POST/Payload").Payload): Promise<import("./defs/api/auth/user/recover/POST/Output").Output> {
     return await this.client.post(ip, ua, null, "/auth/user/recover", payload)
-  }}
+  }
+}
+
+export class Plans {
+  client: Client;
+
+  constructor(client: Client) {
+    this.client = client;
+  }
+
+  async list(ip: string | null, ua: string | null, token: string | null, query: import("./defs/api/plans/GET/Query").Query): Promise<import("./defs/api/plans/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/plans${qss(query)}`);
+  }
+
+  async get(ip: string | null, ua: string | null, token: string | null, plan_id: string): Promise<import("./defs/api/plans/[plan]/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/plans/${plan_id}`);
+  }
+
+  async post(ip: string | null, ua: string | null, token: string, payload: import("./defs/api/plans/POST/Payload").Payload): Promise<import("./defs/api/plans/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, `/plans`, payload);
+  }
+
+  async patch(ip: string | null, ua: string | null, token: string, plan_id: string, payload: import("./defs/api/plans/[plan]/PATCH/Payload").Payload): Promise<import("./defs/api/plans/[plan]/PATCH/Output").Output> {
+    return await this.client.patch(ip, ua, token, `/plans/${plan_id}`, payload);
+  }
+
+  async delete(ip: string | null, ua: string | null, token: string, plan_id: string): Promise<import("./defs/api/plans/[plan]/DELETE/Output").Output> {
+    return await this.client.delete(ip, ua, token, `/plans/${plan_id}`);
+  }
+}
 
 export class Accounts {
   client: Client;
@@ -242,9 +273,9 @@ export class Accounts {
   async patch(ip: string | null, ua: string | null, token: string, account_id: string, payload: import("./defs/api/accounts/[account]/PATCH/Payload").Payload): Promise<import("./defs/api/accounts/[account]/PATCH/Output").Output> {
     return await this.client.patch(ip, ua, token, `/accounts/${account_id}`, payload);
   }
-  
+
   async list_members(ip: string | null, ua: string | null, token: string, account_id: string): Promise<import("./defs/api/accounts/[account]/members/GET/Output").Output> {
-    return await this.client.get(ip, ua, token, `/accounts/${account_id}/members`)  
+    return await this.client.get(ip, ua, token, `/accounts/${account_id}/members`)
   }
 
   async get_stream_stats(ip: string | null, ua: string | null, token: string, account_id: string): Promise<import("./defs/api/accounts/[account]/stream-stats/GET/Output").Output> {
@@ -287,7 +318,7 @@ export class Devices {
 export class Stations {
 
   client: Client;
-  
+
   files: StationFiles;
 
   pictures: StationPictures;
@@ -360,8 +391,8 @@ export class StationPictures {
   async post(ip: string | null, ua: string | null, token: string, query: import("./defs/api/station-pictures/POST/Query").Query, data: Readable | Buffer): Promise<import("./defs/api/station-pictures/POST/Output").Output> {
     const headers = new Headers();
 
-    if(ip) headers.append(FORWARD_IP_HEADER, ip);
-    if(ua) headers.append("user-agent", ua)
+    if (ip) headers.append(FORWARD_IP_HEADER, ip);
+    if (ua) headers.append("user-agent", ua)
     headers.append(ACCESS_TOKEN_HEADER, token);
     headers.append("content-type", "application/octet-stream");
 
@@ -440,7 +471,7 @@ export class UserStations {
 
 
 export class StationFiles {
-  
+
   client: Client;
 
   constructor(client: Client) {
@@ -461,11 +492,11 @@ export class StationFiles {
   }
 
   async post(ip: string | null, ua: string | null, token: string, station_id: string, content_type: string, content_length: number, query: import("./defs/api/stations/[station]/files/POST/Query").Query, data: Readable): Promise<import("./defs/api/stations/[station]/files/POST/Output").Output> {
-    
+
     const headers = new Headers();
 
-    if(ip) headers.append(FORWARD_IP_HEADER, ip);
-    if(ua) headers.append("user-agent", ua);
+    if (ip) headers.append(FORWARD_IP_HEADER, ip);
+    if (ua) headers.append("user-agent", ua);
     headers.append(ACCESS_TOKEN_HEADER, token);
     headers.append("content-type", content_type);
     headers.append("content-length", String(content_length));
@@ -473,7 +504,7 @@ export class StationFiles {
     let res = await this.client.fetch(`/stations/${station_id}/files${qss(query)}`, {
       method: "POST",
       headers,
-      body: data 
+      body: data
     })
 
     return await this.client.get_json_body(res)
