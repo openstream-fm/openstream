@@ -11,6 +11,7 @@
   let db = {
     identifier: "",
     display_name: "",
+    color: "",
     price: null as number | null,
     stations: null as number | null,
     listeners: null as number | null,
@@ -31,6 +32,7 @@
         identifier,
         display_name,
         price,
+        color,
         stations,
         listeners,
         transfer,
@@ -47,6 +49,7 @@
       const payload: import("$server/defs/api/plans/POST/Payload").Payload = {
         identifier,
         display_name,
+        color,
         price,
         stations,
         listeners,

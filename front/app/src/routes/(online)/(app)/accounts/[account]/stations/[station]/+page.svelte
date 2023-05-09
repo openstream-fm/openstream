@@ -4,7 +4,6 @@
 	import { pause, player_state, play_station } from "$lib/components/Player/player";
 	import { default_logger } from "$share/logger";
 	import { get_now_playing_store } from "$lib/now-playing";
-	import type { StationLimits } from "$server/defs/StationLimits";
 	import CircularProgress from "$share/CircularProgress.svelte";
 	import Icon from "$share/Icon.svelte";
 	import { _get } from "$share/net.client";

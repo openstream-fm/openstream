@@ -123,8 +123,8 @@ export const player_subtitle = derived([player_state, now_playing], ([state, now
     else if(now_playing.kind === "none") return null;
     else if(now_playing.kind === "live") return "Live streaming";
     else if(now_playing.kind === "playlist") {
-      const artist = now_playing.file.metadata.artist;
-      const title = now_playing.file.metadata.title || now_playing.file.filename;
+      const artist = now_playing.artist;
+      const title = now_playing.title || now_playing.filename;
       if(artist) {
         return `${title} - ${artist}`
       } else {
