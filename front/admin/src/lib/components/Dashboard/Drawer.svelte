@@ -19,13 +19,15 @@
 		mdiClose,
 		mdiAccountOutline,
 		mdiAccount,
+		mdiCurrencyUsd,
   } from "@mdi/js";
 	import { onMount } from "svelte";
 	import Icon from "$share/Icon.svelte";
 	import { ripple } from "$share/ripple";
 	import { fade } from "svelte/transition";
 	import { browser } from "$app/environment";
-  import logo from "$share/img/logo.png";
+  // @ts-ignore
+  import logo from "$share/img/logo-trans-128.png?w=64&format=webp";
 
   import { player_state } from "../Player/player";
 
@@ -190,6 +192,7 @@
       <DrawerItem href="/users" label="Users" icon={mdiAccountMultipleOutline} on_click={close_drawer_fixed} />
       <DrawerItem href="/accounts" label="Accounts" icon={mdiAccountOutline} on_click={close_drawer_fixed} />
       <DrawerItem href="/stations" label="Stations" icon={mdiRadioTower} on_click={close_drawer_fixed} />
+      <DrawerItem href="/plans" label="Plans" icon={mdiCurrencyUsd} on_click={close_drawer_fixed} />
       <DrawerItem href="/analytics" label="Analytics" icon={mdiPoll} on_click={close_drawer_fixed} />
     </div>
   </div>

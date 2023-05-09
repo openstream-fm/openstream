@@ -134,6 +134,8 @@ pub mod post {
     #[validate(length(min = 1))]
     pub display_name: String,
 
+    pub is_user_selectable: bool,
+
     #[validate(range(min = 0.0))]
     pub price: f64,
 
@@ -199,7 +201,7 @@ pub mod post {
     async fn parse(&self, mut req: Request) -> Result<Input, ParseError> {
       let access_token_scope = request_ext::get_access_token_scope(&req).await?;
 
-      if !access_token_scope.has_full_access() {
+      if !access_token_scope.is_admin_or_global() {
         return Err(GetAccessTokenScopeError::OutOfScope.into());
       }
 
@@ -215,6 +217,7 @@ pub mod post {
       let Payload {
         ref identifier,
         ref display_name,
+        is_user_selectable,
         price,
         stations,
         listeners,
@@ -249,6 +252,7 @@ pub mod post {
             storage,
           },
           order,
+          is_user_selectable,
           created_at: now,
           updated_at: now,
           deleted_at: None,

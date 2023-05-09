@@ -58,7 +58,7 @@ pub mod get {
 
       let access_token_scope = request_ext::get_access_token_scope(&req).await?;
 
-      if !access_token_scope.has_full_access() {
+      if !access_token_scope.is_admin_or_global() {
         return Err(GetAccessTokenScopeError::OutOfScope);
       };
 
@@ -129,7 +129,7 @@ pub mod delete {
 
       let access_token_scope = request_ext::get_access_token_scope(&req).await?;
 
-      if !access_token_scope.has_full_access() {
+      if !access_token_scope.is_admin_or_global() {
         return Err(GetAccessTokenScopeError::OutOfScope);
       };
 
@@ -193,6 +193,9 @@ pub mod patch {
 
     #[ts(optional)]
     storage: Option<u64>,
+
+    #[ts(optional)]
+    is_user_selectable: Option<bool>,
   }
 
   #[derive(Debug, Clone)]
@@ -254,7 +257,7 @@ pub mod patch {
 
       let access_token_scope = request_ext::get_access_token_scope(&req).await?;
 
-      if access_token_scope.has_full_access() {
+      if !access_token_scope.is_admin_or_global() {
         return Err(GetAccessTokenScopeError::OutOfScope.into());
       }
 
@@ -276,6 +279,7 @@ pub mod patch {
         listeners,
         transfer,
         storage,
+        is_user_selectable,
       } = payload;
 
       let plan = run_transaction!(session => {
@@ -310,6 +314,10 @@ pub mod patch {
 
         if let Some(storage) = storage {
           plan.limits.storage = storage;
+        }
+
+        if let Some(is_user_selectable) = is_user_selectable {
+          plan.is_user_selectable = is_user_selectable;
         }
 
         plan.updated_at = DateTime::now();

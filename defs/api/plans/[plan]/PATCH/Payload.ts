@@ -8,4 +8,5 @@ export interface Payload {
   listeners?: number;
   transfer?: number;
   storage?: number;
+  is_user_selectable?: boolean;
 }

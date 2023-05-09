@@ -19,6 +19,7 @@ pub struct Plan {
   pub price: f64,
   pub limits: PlanLimits,
   pub order: f64,
+  pub is_user_selectable: bool,
   pub created_at: DateTime,
   pub updated_at: DateTime,
   pub deleted_at: Option<DateTime>,

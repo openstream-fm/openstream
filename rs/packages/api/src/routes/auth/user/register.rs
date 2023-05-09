@@ -221,7 +221,7 @@ pub mod post {
         payload,
       } = input;
 
-      if !access_token_scope.has_full_access() {
+      if !access_token_scope.is_admin_or_global() {
         return Err(HandleError::TokenOutOfScope);
       }
 
@@ -316,6 +316,10 @@ pub mod post {
         Some(plan) => plan,
         None => return Err(HandleError::PlanNotFound(plan_id)),
       };
+
+      if !plan.is_user_selectable {
+        return Err(HandleError::PlanNotFound(plan_id));
+      }
 
       let password = crypt::hash(password);
 

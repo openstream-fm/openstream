@@ -3,7 +3,7 @@ import { redirect } from "@sveltejs/kit";
 
 export const load = (async ({ fetch, url, parent, depends }) => {
 
-   depends("resource:admins", "resource:users", "resource:accounts", "resource:stations");
+   depends("resource:plans", "resource:admins", "resource:users", "resource:accounts", "resource:stations");
    depends("api:admins", "api:users","api:accounts", "api:stations");
    
    const { maybe_admin } = await parent();
@@ -15,6 +15,7 @@ export const load = (async ({ fetch, url, parent, depends }) => {
 
    return {
       admin: maybe_admin,
+      plans: load_get<import("$server/defs/api/plans/GET/Output").Output>(`/api/plans?show=all`, { fetch, url }),
       admins: load_get<import("$server/defs/api/admins/GET/Output").Output>(`/api/admins?limit=100000`, { fetch, url }),
       users: load_get<import("$server/defs/api/users/GET/Output").Output>(`/api/users?limit=100000`, { fetch, url }),
       accounts: load_get<import("$server/defs/api/accounts/GET/Output").Output>(`/api/accounts?limit=100000`, { fetch, url }),

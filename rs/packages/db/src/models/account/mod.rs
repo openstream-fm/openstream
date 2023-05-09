@@ -28,6 +28,7 @@ pub struct Account {
 pub struct UserPublicAccount {
   #[serde(rename = "_id")]
   pub id: String,
+  pub plan_id: String,
   pub name: String,
   pub limits: Limits,
   pub created_at: DateTime,
@@ -191,6 +192,7 @@ impl From<Account> for UserPublicAccount {
   fn from(account: Account) -> Self {
     Self {
       id: account.id,
+      plan_id: account.plan_id,
       name: account.name,
       limits: account.limits,
       created_at: account.created_at,

@@ -8,13 +8,13 @@
 
 
 <style>
-  .dashboard {
+  .login-dashboard {
     flex: 1;
     display: flex;
     align-self: stretch;
     justify-self: stretch;
     flex-direction: column;
-    padding-inline: min(5%, max(12rem, 10%));
+    /* padding-inline: min(5%, max(12rem, 10%)); */
     padding-block: 8rem;
     position: relative;
     --field-container-bg: rgba(0,0,0,0);
@@ -60,18 +60,28 @@
     color: #000;
   }
 
+  .content {
+    position: relative;
+    z-index: var(--z-login-front);
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+
   @media screen and (max-width: 600px) {
-    .dashboard {
+    .login-dashboard {
       padding-inline: 0;
     }
   }
 </style>
 
-<div class="dashboard">
+<div class="login-dashboard">
   <div class="bg" style:background-image="url({ bg })" />
   <div class="logo">
     <div class="logo-icon" style:background-image="url({ logo })" />
     <div class="logo-text">openstream</div>
   </div>
-  <slot />
+  <div class="content">
+    <slot />
+  </div>
 </div>

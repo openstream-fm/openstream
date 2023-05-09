@@ -86,7 +86,7 @@ impl AccessTokenScope {
     }
   }
 
-  pub fn has_full_access(&self) -> bool {
+  pub fn is_admin_or_global(&self) -> bool {
     self.is_global() || self.is_admin()
   }
 

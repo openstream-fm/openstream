@@ -293,6 +293,10 @@ pub mod post {
         None => return Err(HandleError::PlanNotFound(plan_id)),
       };
 
+      if access_token_scope.is_user() && !plan.is_user_selectable {
+        return Err(HandleError::PlanNotFound(plan_id));
+      }
+
       // TODO: validate name length
 
       let system_metadata = match &access_token_scope {
