@@ -201,13 +201,13 @@
 
 
 <svelte:head>
-  <title>Plan {data.plan.display_name}</title>
+  <title>{data.plan.display_name}</title>
 </svelte:head>
 
 <Page>
   <div class="page">
     
-    <h1>Plan {data.plan.display_name}</h1>
+    <h1>{data.plan.display_name}</h1>
     
     <Formy action={save} let:submit>
       <form novalidate class="box" on:submit={submit}>
