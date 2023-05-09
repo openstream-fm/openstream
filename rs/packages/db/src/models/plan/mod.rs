@@ -18,6 +18,7 @@ pub struct Plan {
   pub display_name: String,
   pub price: f64,
   pub limits: PlanLimits,
+  pub color: String,
   pub order: f64,
   pub is_user_selectable: bool,
   pub created_at: DateTime,

@@ -6,13 +6,13 @@ use mongodb::bson::doc;
 
 use db::admin::Admin;
 use db::models::user_account_relation::UserAccountRelation;
-use db::PublicScope;
 use db::{
   access_token::{AccessToken, Scope},
   account::Account,
   user::User,
   Model,
 };
+use db::{current_filter_doc, PublicScope};
 use prex::Request;
 use serde::{Deserialize, Serialize};
 use serde_querystring::de::ParseMode;
@@ -109,7 +109,7 @@ impl AccessTokenScope {
     match self {
       AccessTokenScope::Global | AccessTokenScope::Admin(_) => {}
       AccessTokenScope::User(user) => {
-        let filter = doc! { UserAccountRelation::KEY_USER_ID: &user.id, UserAccountRelation::KEY_ACCOUNT_ID: account_id };
+        let filter = current_filter_doc! { UserAccountRelation::KEY_USER_ID: &user.id, UserAccountRelation::KEY_ACCOUNT_ID: account_id };
         let exists = UserAccountRelation::exists(filter).await?;
         if !exists {
           return Err(GetAccessTokenScopeError::OutOfScope);
@@ -364,6 +364,19 @@ pub async fn get_access_token_scope(
   req: &Request,
 ) -> Result<AccessTokenScope, GetAccessTokenScopeError> {
   internal_get_access_token_scope(req, false).await
+}
+
+// TODO: this should be in reverse order
+pub async fn get_optional_access_token_scope(
+  req: &Request,
+) -> Result<Option<AccessTokenScope>, GetAccessTokenScopeError> {
+  match get_access_token_scope(req).await {
+    Ok(scope) => Ok(Some(scope)),
+    Err(e) => match e {
+      GetAccessTokenScopeError::Missing => Ok(None),
+      _ => Err(e),
+    },
+  }
 }
 
 pub async fn get_media_access_token_scope(

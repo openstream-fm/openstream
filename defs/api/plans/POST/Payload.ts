@@ -5,6 +5,7 @@ export interface Payload {
   display_name: string;
   is_user_selectable: boolean;
   price: number;
+  color: string;
   stations: number;
   listeners: number;
   transfer: number;

@@ -115,6 +115,7 @@ impl StreamServer {
     let cors = prex::middleware::cors::cors()
       .allow_origin("*")
       .allow_methods("GET");
+
     app.with(cors);
 
     app.get("/status", http::middleware::status);
@@ -543,15 +544,14 @@ impl StreamHandler {
 
       let conn_doc_lite = StreamConnectionLite::from_stream_connection_ref(&conn_doc);
 
-      let r = Account::increment_used_listeners(&station_id).await?;
-      debug!("Account::increment_used_listeners called for station {station_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
-
       StreamConnection::insert(&conn_doc).await?;
       debug!("StreamConnection::insert called for station {station_id}, connection_id: {}", conn_doc.id);
 
       StreamConnectionLite::insert(&conn_doc_lite).await?;
       debug!("StreamConnectionLite::insert called for station {station_id}, connection_id: {}", conn_doc_lite.id);
 
+      let r = Account::increment_used_listeners(&station.account_id).await?;
+      info!("Account::increment_used_listeners called for account {account_id}, matched: {matched}, modified: {modified}", account_id=station.account_id, matched=r.matched_count, modified=r.modified_count);
 
       let transfer_bytes = Arc::new(AtomicU64::new(0));
       let closed = Arc::new(AtomicBool::new(false));
@@ -689,9 +689,9 @@ impl Drop for StreamConnectionDropper {
 
       let r = Account::decrement_used_listeners(&account_id)
         .await
-        .expect("error at Station::decrement_used_listeners");
+        .expect("error at Account::decrement_used_listeners");
 
-      debug!("Account::decrement_used_listeners called for station {station_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
+      debug!("Account::decrement_used_listeners called for account {account_id}, matched: {matched}, modified: {modified}", matched=r.matched_count, modified=r.modified_count);
 
       drop(token);
     });
@@ -789,22 +789,22 @@ impl From<StreamError> for Response {
 
       StreamError::ListenersLimit => (
         StatusCode::SERVICE_UNAVAILABLE,
-        "STATION_LISTENERS_LIMIT",
-        "Station has reached its concurrent listeners limit".into(),
+        "ACCOUNT_LISTENERS_LIMIT",
+        "Account has reached its concurrent listeners limit".into(),
         Some(30),
       ),
 
       StreamError::TransferLimit => (
         StatusCode::SERVICE_UNAVAILABLE,
-        "STATION_TRANSFER_LIMIT",
-        "Station has reached its monthly transfer limit".into(),
+        "ACCOUNT_TRANSFER_LIMIT",
+        "Account has reached its monthly transfer limit".into(),
         Some(60 * 60 * 24),
       ),
 
       StreamError::RelayStatus(s) => (
         StatusCode::SERVICE_UNAVAILABLE,
         "RELAY_STATUS",
-        format!("Internal error, relay responded with not ok status code: {}", s.as_u16()),
+        format!("Internal error, relay responded with not ok status code: {}, try again in a few seconds", s.as_u16()),
         Some(5),
       ),
     };

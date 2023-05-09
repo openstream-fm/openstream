@@ -108,4 +108,6 @@ pub enum PublicErrorCode {
   PlaylistStartNoFiles,
 
   RenderMail,
+
+  CreateStationAccountLimit,
 }

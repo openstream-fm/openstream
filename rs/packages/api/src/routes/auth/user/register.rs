@@ -317,7 +317,7 @@ pub mod post {
         None => return Err(HandleError::PlanNotFound(plan_id)),
       };
 
-      if !plan.is_user_selectable {
+      if plan.deleted_at.is_some() || !plan.is_user_selectable {
         return Err(HandleError::PlanNotFound(plan_id));
       }
 

@@ -126,7 +126,7 @@ form {
   background: rgba(0, 0, 0, 0.8);
   z-index: var(--z-tooltip);
   border-radius: 0.25rem;
-  max-width: calc(100vw - 32px);
+  max-width: min(300px, calc(100vw - 32px));
 }
   
 .tooltip.visible {

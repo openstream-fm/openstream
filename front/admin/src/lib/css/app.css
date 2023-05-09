@@ -116,6 +116,7 @@ form {
   pointer-events: none;
   transition: opacity 150ms ease 0ms, transform 150ms ease 0ms;
   opacity: 0;
+  max-width: 300px;
   transform: scale(0);
   color: #fff;
   background: rgba(0, 0, 0, 0.8);

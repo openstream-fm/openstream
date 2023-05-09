@@ -4,6 +4,7 @@ export interface Payload {
   price?: number;
   identifier?: string;
   display_name?: string;
+  color?: string;
   stations?: number;
   listeners?: number;
   transfer?: number;

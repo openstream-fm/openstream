@@ -9,7 +9,7 @@ use ts_rs::TS;
 
 pub mod get {
 
-  use crate::error::ApiError;
+  use crate::{error::ApiError, request_ext::AccessTokenScope};
   use db::plan::Plan;
 
   use super::*;
@@ -20,6 +20,7 @@ pub mod get {
   #[derive(Debug, Clone)]
   pub struct Input {
     plan_id: String,
+    optional_access_token_scope: Option<AccessTokenScope>,
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -56,22 +57,36 @@ pub mod get {
     async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
       let plan_id = req.param("plan").unwrap().to_string();
 
-      let access_token_scope = request_ext::get_access_token_scope(&req).await?;
+      let optional_access_token_scope = request_ext::get_optional_access_token_scope(&req).await?;
 
-      if !access_token_scope.is_admin_or_global() {
-        return Err(GetAccessTokenScopeError::OutOfScope);
-      };
-
-      Ok(Self::Input { plan_id })
+      Ok(Self::Input {
+        plan_id,
+        optional_access_token_scope,
+      })
     }
 
     async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
-      let Self::Input { plan_id } = input;
+      let Self::Input {
+        plan_id,
+        optional_access_token_scope,
+      } = input;
 
       let plan = match Plan::get_by_id(&plan_id).await? {
         Some(plan) => plan,
         None => return Err(HandleError::PlanNotFound(plan_id)),
       };
+
+      if optional_access_token_scope.is_none()
+        && (!plan.is_user_selectable || plan.deleted_at.is_some())
+      {
+        return Err(HandleError::PlanNotFound(plan_id));
+      }
+
+      if matches!(optional_access_token_scope, Some(AccessTokenScope::User(_)))
+        && !plan.is_user_selectable
+      {
+        return Err(HandleError::PlanNotFound(plan_id));
+      }
 
       Ok(Output { plan })
     }
@@ -183,6 +198,11 @@ pub mod patch {
     display_name: Option<String>,
 
     #[ts(optional)]
+    #[modify(trim)]
+    #[validate(length(min = 1))]
+    color: Option<String>,
+
+    #[ts(optional)]
     stations: Option<u64>,
 
     #[ts(optional)]
@@ -274,6 +294,7 @@ pub mod patch {
       let Payload {
         display_name,
         identifier,
+        color,
         price,
         stations,
         listeners,
@@ -294,6 +315,10 @@ pub mod patch {
 
         if let Some(ref display_name) = display_name {
           plan.display_name = display_name.clone();
+        }
+
+        if let Some(ref color) = color {
+          plan.color = color.clone();
         }
 
         if let Some(price) = price {

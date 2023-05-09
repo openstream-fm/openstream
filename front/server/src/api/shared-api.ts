@@ -51,7 +51,7 @@ export const shared_api = ({
 
   api.route("/accounts/:account/limits")
     .get(json(async req => {
-      const { account: { limits } } = await client.accounts.get(ip(req), ua(req), get_token(req), req.params.station);
+      const { account: { limits } } = await client.accounts.get(ip(req), ua(req), get_token(req), req.params.account);
       return limits;
     }))
 

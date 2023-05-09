@@ -157,6 +157,9 @@ pub enum ApiError {
 
   #[error("render mail: {0}")]
   RenderMail(mailer::error::RenderError),
+
+  #[error("create station account limit")]
+  CreateStationAccountLimit,
 }
 
 impl ApiError {
@@ -220,6 +223,8 @@ impl ApiError {
       PlaylistStartNoFiles => StatusCode::BAD_REQUEST,
 
       RenderMail(_) => StatusCode::INTERNAL_SERVER_ERROR,
+
+      CreateStationAccountLimit => StatusCode::FAILED_DEPENDENCY,
     }
   }
 
@@ -279,6 +284,7 @@ impl ApiError {
       PlaylistStartIsLive => format!("Station is currenly live streaming"),
       PlaylistStartNoFiles => format!("Station playlist is empty"),
       RenderMail(_) => format!("There was an error rendering the email, try again later"),
+      CreateStationAccountLimit => format!("You reached your limit of stations for this account, upgrade your plan to add more stations"),
     }
   }
 
@@ -336,6 +342,7 @@ impl ApiError {
       PlaylistStartIsLive => PublicErrorCode::PlaylistStartIsLive,
       PlaylistStartNoFiles => PublicErrorCode::PlaylistStartNoFiles,
       RenderMail(_) => PublicErrorCode::RenderMail,
+      CreateStationAccountLimit => PublicErrorCode::CreateStationAccountLimit,
     }
   }
 

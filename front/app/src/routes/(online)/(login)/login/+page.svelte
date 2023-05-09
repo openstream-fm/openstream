@@ -59,7 +59,7 @@
 
   <div class="login-page-switch-box">
     <span class="login-page-comment">New user?</span>
-    <a class="na login-page-link sign-up" href="/register">Sign up</a>
+    <a class="na login-page-link sign-up" href="/plans">Sign up</a>
   </div>
   
 </div>

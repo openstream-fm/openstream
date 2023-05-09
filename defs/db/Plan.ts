@@ -8,6 +8,7 @@ export interface Plan {
   display_name: string;
   price: number;
   limits: PlanLimits;
+  color: string;
   order: number;
   is_user_selectable: boolean;
   created_at: DateTime;

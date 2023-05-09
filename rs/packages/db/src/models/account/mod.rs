@@ -69,11 +69,13 @@ pub struct AccountPatch {
 #[serde(deny_unknown_fields)]
 pub struct AccountPatchLimits {
   #[serde(skip_serializing_if = "Option::is_none")]
+  stations: Option<u64>,
+  #[serde(skip_serializing_if = "Option::is_none")]
+  listeners: Option<u64>,
+  #[serde(skip_serializing_if = "Option::is_none")]
   storage: Option<u64>,
   #[serde(skip_serializing_if = "Option::is_none")]
   transfer: Option<u64>,
-  #[serde(skip_serializing_if = "Option::is_none")]
-  listeners: Option<u64>,
 }
 
 impl Account {
@@ -124,16 +126,20 @@ impl Account {
         }
 
         if let Some(limits) = patch.limits {
+          if let Some(stations) = limits.stations {
+            self.limits.stations.total = stations;
+          }
+
+          if let Some(listeners) = limits.listeners {
+            self.limits.listeners.total = listeners;
+          }
+
           if let Some(storage) = limits.storage {
             self.limits.storage.total = storage;
           }
 
           if let Some(transfer) = limits.transfer {
             self.limits.transfer.total = transfer;
-          }
-
-          if let Some(listeners) = limits.listeners {
-            self.limits.listeners.total = listeners;
           }
         }
       }
@@ -149,42 +155,25 @@ impl Account {
     size: usize,
   ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
     const KEY: &str = crate::key!(Account::KEY_LIMITS, Limits::KEY_TRANSFER, Limit::KEY_USED);
-
-    Self::cl()
-      .update_one(
-        doc! { Account::KEY_ID: id },
-        doc! { "$inc": { KEY: size as f64 } },
-        None,
-      )
-      .await
+    Self::update_by_id(id, doc! { "$inc": { KEY: size as f64 } }).await
   }
 
   pub async fn increment_used_listeners(
     id: &str,
   ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
     const KEY: &str = crate::key!(Account::KEY_LIMITS, Limits::KEY_LISTENERS, Limit::KEY_USED);
-
-    Self::cl()
-      .update_one(
-        doc! { Account::KEY_ID: id },
-        doc! { "$inc": { KEY: 1 } },
-        None,
-      )
-      .await
+    let update = doc! { "$inc": { KEY: 1.0_f64 } };
+    log::info!("increment_used_listeners account={id} update: {:?}", update);
+    Self::update_by_id(id, update).await
   }
 
   pub async fn decrement_used_listeners(
     id: &str,
   ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
     const KEY: &str = crate::key!(Account::KEY_LIMITS, Limits::KEY_LISTENERS, Limit::KEY_USED);
-
-    Self::cl()
-      .update_one(
-        doc! { Account::KEY_ID: id },
-        doc! { "$inc": { KEY: -1 } },
-        None,
-      )
-      .await
+    let update = doc! { "$inc": { KEY: -1.0_f64 } };
+    log::info!("decrement_used_listeners account={id} update: {:?}", update);
+    Self::update_by_id(id, update).await
   }
 }
 

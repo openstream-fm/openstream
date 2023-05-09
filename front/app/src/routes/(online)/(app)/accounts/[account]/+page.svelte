@@ -93,7 +93,8 @@
   const LIMITS_UPDATE_INTERVAL = 5_000;
   let limits_on_screen = true;
 
-  onMount(() => {
+  const limits = (node: HTMLElement) => {
+    
     const logger = default_logger.scoped("limits");
 
     let mounted = true;
@@ -117,7 +118,7 @@
           }
           if(Date.now() - last < LIMITS_UPDATE_INTERVAL) continue;
           try {
-            const limits: AccountLimits = await _get(`/api/account/${data.account._id}/limits`);
+            const limits: AccountLimits = await _get(`/api/accounts/${data.account._id}/limits`);
             logger.info(`account limits updated`);
             data.account.limits = limits;
           } catch(e) {
@@ -129,8 +130,10 @@
       }
     })()
     
-    return () => mounted = false
-  })
+    return {
+      destroy: () => mounted = false
+    }
+  }
 </script>
 
 <style>
@@ -222,9 +225,11 @@
 
 
   .meters {
+    --spacing: 1.5rem;
     display: flex;
     flex-direction: row;
     gap: var(--spacing);
+    margin-top: var(--spacing);
     align-items: stretch;
   }
 
@@ -269,13 +274,18 @@
     margin: 0 auto;
   }
 
-  @media screen and (max-width: 1160px) {
-    .meter {
-      font-size: 0.8rem;
-    }
+  @media screen and (max-width: 1460px) {
+    .meters {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }    
   }
 
-  @media screen and (max-width: 700px) {
+  @media screen and (max-width: 600px) {
+    .meters {
+      grid-template-columns: 1fr;
+    }
+
     .meters {
       flex-direction: column;
     }
@@ -339,74 +349,60 @@
     </div>
     
     <StatsMap bind:view kind={selector_state.kind} record_id={selector_state.record_id} bind:data={selector_state.data} />
+  </div>
 
-    <div class="meters" use:intersect={{ enter: () => limits_on_screen = true, leave: () => limits_on_screen = false}}>
-      <div class="meter">
-        <div class="meter-title">
-          Stations
-        </div>
-        <div class="meter-graph">
-          <CircularMeter used={data.account.limits.stations.used / data.account.limits.stations.total} />
-        </div>
-        <div class="meter-text">
-          <span class="used">{data.account.limits.stations.used}</span>
-          <span class="of">of</span>
-          <span class="avail">{data.account.limits.stations.total}</span>
-        </div>
+  <div class="meters" use:limits use:intersect={{ enter: () => limits_on_screen = true, leave: () => limits_on_screen = false}}>
+    <div class="meter">
+      <div class="meter-title">
+        Stations
       </div>
-      <div class="meter">
-        <div class="meter-title">
-          Transfer
-        </div>
-        <div class="meter-graph">
-          <CircularMeter used={data.account.limits.transfer.used / data.account.limits.transfer.total} />
-        </div>
-        <div class="meter-text">
-          <span class="used">{preety_bytes(data.account.limits.transfer.used)}</span>
-          <span class="of">of</span>
-          <span class="avail">{preety_bytes(data.account.limits.transfer.total)}</span>
-        </div>
+      <div class="meter-graph">
+        <CircularMeter used={data.account.limits.stations.used / data.account.limits.stations.total} />
       </div>
-      <div class="meter">
-        <div class="meter-title">
-          Listeners
-        </div>
-        <div class="meter-graph">
-          <CircularMeter used={data.account.limits.listeners.used / data.account.limits.listeners.total} />
-        </div>
-        <div class="meter-text">
-          <span class="used">{data.account.limits.listeners.used}</span>
-          <span class="of">of</span>
-          <span class="avail">{data.account.limits.listeners.total}</span>
-        </div>
-      </div>
-      <div class="meter">
-        <div class="meter-title">
-          Transfer
-        </div>
-        <div class="meter-graph">
-          <CircularMeter used={data.account.limits.transfer.used / data.account.limits.transfer.total} />
-        </div>
-        <div class="meter-text">
-          <span class="used">{preety_bytes(data.account.limits.transfer.used)}</span>
-          <span class="of">of</span>
-          <span class="avail">{preety_bytes(data.account.limits.transfer.total)}</span>
-        </div>
-      </div>
-      <div class="meter">
-        <div class="meter-title">
-          Storage
-        </div>
-        <div class="meter-graph">
-          <CircularMeter used={data.account.limits.storage.used / data.account.limits.storage.total} />
-        </div>
-        <div class="meter-text">
-          <span class="used">{preety_bytes(data.account.limits.storage.used)}</span>
-          <span class="of">of</span>
-          <span class="avail">{preety_bytes(data.account.limits.storage.total)}</span>
-        </div>
+      <div class="meter-text">
+        <span class="used">{data.account.limits.stations.used}</span>
+        <span class="of">of</span>
+        <span class="avail">{data.account.limits.stations.total}</span>
       </div>
     </div>
-
+    <div class="meter">
+      <div class="meter-title">
+        Listeners
+      </div>
+      <div class="meter-graph">
+        <CircularMeter used={data.account.limits.listeners.used / data.account.limits.listeners.total} />
+      </div>
+      <div class="meter-text">
+        <span class="used">{data.account.limits.listeners.used}</span>
+        <span class="of">of</span>
+        <span class="avail">{data.account.limits.listeners.total}</span>
+      </div>
+    </div>
+    <div class="meter">
+      <div class="meter-title">
+        Transfer
+      </div>
+      <div class="meter-graph">
+        <CircularMeter used={data.account.limits.transfer.used / data.account.limits.transfer.total} />
+      </div>
+      <div class="meter-text">
+        <span class="used">{preety_bytes(data.account.limits.transfer.used)}</span>
+        <span class="of">of</span>
+        <span class="avail">{preety_bytes(data.account.limits.transfer.total)}</span>
+      </div>
+    </div>
+    <div class="meter">
+      <div class="meter-title">
+        Storage
+      </div>
+      <div class="meter-graph">
+        <CircularMeter used={data.account.limits.storage.used / data.account.limits.storage.total} />
+      </div>
+      <div class="meter-text">
+        <span class="used">{preety_bytes(data.account.limits.storage.used)}</span>
+        <span class="of">of</span>
+        <span class="avail">{preety_bytes(data.account.limits.storage.total)}</span>
+      </div>
+    </div>
   </div>
 </Page>

@@ -11,6 +11,7 @@ pub mod get {
   use serde::{Deserialize, Serialize};
   use ts_rs::TS;
 
+  use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
   use crate::{error::ApiError, json::JsonHandler};
 
   #[derive(Debug, Clone)]
@@ -33,6 +34,7 @@ pub mod get {
 
   #[derive(Debug, Clone)]
   pub struct Input {
+    optional_access_token_scope: Option<AccessTokenScope>,
     query: Query,
   }
 
@@ -44,6 +46,8 @@ pub mod get {
 
   #[derive(Debug, thiserror::Error)]
   pub enum ParseError {
+    #[error("token: {0}")]
+    Token(#[from] GetAccessTokenScopeError),
     #[error("querystring: {0}")]
     QueryString(#[from] serde_querystring::de::Error),
   }
@@ -51,6 +55,7 @@ pub mod get {
   impl From<ParseError> for ApiError {
     fn from(e: ParseError) -> ApiError {
       match e {
+        ParseError::Token(e) => e.into(),
         ParseError::QueryString(e) => e.into(),
       }
     }
@@ -69,18 +74,30 @@ pub mod get {
         Some(qs) => serde_querystring::from_str(qs, serde_querystring::de::ParseMode::UrlEncoded)?,
       };
 
-      Ok(Self::Input { query })
+      let optional_access_token_scope = request_ext::get_optional_access_token_scope(&req).await?;
+
+      Ok(Self::Input {
+        optional_access_token_scope,
+        query,
+      })
     }
 
     async fn perform(&self, input: Input) -> Result<Output, Self::HandleError> {
-      let Self::Input { query } = input;
+      let Self::Input {
+        optional_access_token_scope,
+        query,
+      } = input;
 
       let Query { show } = query;
 
-      let filter = match show {
-        None => current_filter_doc! {},
-        Some(Show::All) => doc! {},
-        Some(Show::Active) => current_filter_doc! {},
+      let filter = match (optional_access_token_scope, show) {
+        (None | Some(AccessTokenScope::User(_)), _) => {
+          current_filter_doc! {
+            Plan::KEY_IS_USER_SELECTABLE: true,
+          }
+        }
+        (_, None | Some(Show::Active)) => current_filter_doc! {},
+        (_, Some(Show::All)) => doc! {},
       };
 
       let sort = doc! { Plan::KEY_CREATED_AT: 1 };
@@ -138,6 +155,10 @@ pub mod post {
 
     #[validate(range(min = 0.0))]
     pub price: f64,
+
+    #[modify(trim)]
+    #[validate(length(min = 1))]
+    pub color: String,
 
     pub stations: u64,
     pub listeners: u64,
@@ -217,6 +238,7 @@ pub mod post {
       let Payload {
         ref identifier,
         ref display_name,
+        ref color,
         is_user_selectable,
         price,
         stations,
@@ -251,6 +273,7 @@ pub mod post {
             transfer,
             storage,
           },
+          color: color.clone(),
           order,
           is_user_selectable,
           created_at: now,

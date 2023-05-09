@@ -16,6 +16,7 @@
   let db = {
     identifier: data.plan.identifier,
     display_name: data.plan.display_name,
+    color: data.plan.color,
     price: data.plan.price as number | null,
     stations: data.plan.limits.stations as number | null,
     listeners: data.plan.limits.listeners as number | null,
@@ -37,6 +38,7 @@
       identifier,
       display_name,
       price,
+      color,
       stations,
       listeners,
       transfer,
@@ -53,6 +55,7 @@
     const payload: import("$server/defs/api/plans/[plan]/PATCH/Payload").Payload = {
       identifier,
       display_name,
+      color,
       price,
       stations,
       listeners,

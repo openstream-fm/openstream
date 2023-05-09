@@ -4,6 +4,7 @@
   export let current: {
     identifier: string
     display_name: string
+    color: string,
     price: number | null
     stations: number | null
     listeners: number | null
@@ -14,6 +15,18 @@
   import TextField from "$lib/components/Form/TextField.svelte";
 	import Validator from "$share/formy/Validator.svelte";
 	import { _number, _string } from "$share/formy/validate";
+
+  import Color from "color";
+
+  const _color_validation = (value: string) => {
+    try {
+      const color = new Color(value);
+    } catch(e: any) {
+      return String(e?.message);
+    }
+    
+    return null;
+  }
 </script>
 
 <style>
@@ -35,6 +48,11 @@
 <div class="field">
   <NullNumberField label="Price" step={1} min={0} bind:value={current.price} />
   <Validator value={current.price} fn={_number({ min: 0, required: true })} />
+</div>
+
+<div class="field">
+  <TextField label="Color" trim bind:value={current.color} />
+  <Validator value={current.color} fn={_color_validation} />
 </div>
 
 <div class="field">

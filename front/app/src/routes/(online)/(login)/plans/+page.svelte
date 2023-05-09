@@ -3,8 +3,31 @@
 	import { ripple } from "$share/ripple";
 
   import { mdiCheckBold as featureCheckIcon } from "@mdi/js";
+	import FeatureI from "./feature-i.svelte";
+	import Page from "$lib/components/Page.svelte";
+	import Color from "color";
 
   export let data: import("./$types").PageData;
+
+  const aprox_listening_hours = (bytes: number): number => {
+    return Math.round(bytes / 16000 / 60 / 60 / 1_000) * 1_000;
+  }
+
+  const plan_color = (color: string): string => {
+    try {
+      return new Color(color).toString();
+    } catch(e) {
+      return "rgb(0, 116, 217)"
+    }
+  }
+
+  const plan_color_radial_center = (color: string): string => {
+    try {
+      return new Color(color).lighten(0.25).toString();
+    } catch(e) {
+      return "rgb(83, 151, 211)"
+    }
+  }
 </script>
 
 <style>
@@ -46,6 +69,7 @@
     align-self: center;
     border-radius: 0.5rem;
     box-shadow: var(--some-shadow);
+    overflow: hidden;
     margin-top: 3rem;
   }
 
@@ -56,34 +80,7 @@
     text-align: center;
     flex: 1;
     padding: 1rem 0;
-    background: 
-      /* linear-gradient(to bottom, var(--plan-bg), var(--plan-bg)), */
-      linear-gradient(to bottom, #fff, #fff);
-      /* var(--plan-bg), #fff; */
-  }
-
-  .plan:nth-child(1) {
-    --plan-color: rgb(255, 133, 27);
-    --plan-color-lite: rgb(255, 180, 113);
-    --plan-bg: rgba(255, 133, 27, 0.15);
-  }
-
-  .plan:nth-child(2) {
-    --plan-color: rgb(0, 116, 217);
-    --plan-color-lite: rgb(83, 151, 211);
-    --plan-bg: rgba(0, 116, 217, 0.15);
-  }
-
-  .plan:nth-child(3) {
-    --plan-color: rgb(177, 13, 201);
-    --plan-color-lite: rgb(225, 27, 255);
-    --plan-bg: rgba(176, 13, 201, 0.15);
-  } 
-
-  .plan:nth-child(4) {
-    --plan-color: rgb(255, 65, 54);
-    --plan-color-lite: rgb(255, 118, 111);
-    --plan-bg: rgba(255, 65, 54, 0.2);
+    background: #fff;
   }
 
   .plan-name {
@@ -112,11 +109,13 @@
   
   .plan-top-select {
     margin-top: 1.75rem;
+    display: flex;
+    flex-direction: column;
   }
 
   .plan-top-btn, .plan-bottom-btn {
     background:
-      radial-gradient(circle at center, var(--plan-color-lite) , var(--plan-color));
+      radial-gradient(circle at center, var(--plan-color-radial-center) , var(--plan-color));
     color: #fff;
     padding: 1rem 2.5rem;
     border-radius: 5rem;
@@ -125,6 +124,8 @@
     white-space: nowrap;
     --ripple-color: #fff;
     --ripple-opacity: 0.2;
+    display: flex;
+    align-self: center;
   }
 
 
@@ -141,10 +142,20 @@
   .feature {
     padding: 0.75rem 0.5rem;
     white-space: nowrap;
+    display: flex;
+    flex-direction: row;
   }
 
   .feature-n {
     font-weight: 700;
+    margin-inline-end: 0.4rem;
+  }
+
+  .feature-i {
+    color: #bbb;
+    font-size: 1rem;
+    margin-inline-start: 0.4rem;
+    align-self: center;
   }
   
   .feature-check {
@@ -170,6 +181,11 @@
     align-self: stretch;
   }
 
+  .plan-bottom-select {
+    display: flex;
+    flex-direction: column;
+  }
+
   .plan-bottom-name {
     font-weight: 700;
     font-size: 1.2rem;
@@ -182,8 +198,9 @@
   }
 
   .plan-bottom-btn {
-    margin-top: 0.75rem;
+    margin-top: 1rem;
     padding: 0.75rem 1rem;
+    align-self: center;
   }
 
   @media screen and (max-width: 1050px) {
@@ -195,6 +212,7 @@
       align-items: space-evenly;
       background: transparent;
       box-shadow: none;
+      overflow: visible;
     }
 
     .plan {
@@ -245,111 +263,155 @@
 
 </style>
 
-<div class="page">
-  <div class="top">
-    <h1>Going live in 3... 2... 1...</h1>
-    <h2>Start your radio station in less than 60 seconds.</h2>
-    <h3>You won't be billed until the end of your trial. And you can cancel anytime.</h3>
-  </div>
-  
-  <div class="plans">
-    {#each data.plans.items as plan (plan._id)}
-      <div class="plan">
-        <div class="plan-name">{plan.display_name}</div>
-        <div class="plan-price">
-          <div class="plan-price-n">
-            $ {plan.price}
-          </div>
-          <div class="plan-price-per">
-            per month
-          </div>
-        </div>
-
-        <div class="plan-top-select">
-          <button class="plan-top-btn ripple-container" use:ripple>
-            Start Trial
-          </button>
-        </div>
-
-        <div class="plan-features">
-          <div class="feature">
-            <span class="feature-n">
-              {plan.limits.stations}
-            </span>
-            <span class="feature-label">
-              {plan.limits.stations === 1 ? "Station" :  "Stations"}
-            </span>
-          </div>
-
-          <div class="feature">
-            <span class="feature-n">
-              {new Intl.NumberFormat().format(plan.limits.listeners)}
-            </span>
-            <span class="feature-label">
-              {plan.limits.listeners === 1 ? "Listener" :  "Listeners"}
-            </span>
-          </div>
-
-          <div class="feature">
-            <span class="feature-n">
-              {plan.limits.transfer / 1_000_000_000_000} TB
-            </span>
-            <span class="feature-label">
-              Bandwidth
-            </span>
-          </div>
-
-          <div class="feature">
-            <span class="feature-n">
-              {plan.limits.storage / 1_000_000_000} GB
-            </span>
-            <span class="feature-label">
-              Storage
-            </span>
-          </div>
-
-          <div class="feature">
-            <span class="feature-n">
-              Unlimited
-            </span>
-            <span class="feature-label">
-              DJs
-            </span>
-          </div>
-
-          <div class="feature feature-check">
-            <div class="feature-check-icon">
-              <Icon d={featureCheckIcon} />
+<Page compact>
+  <div class="page">
+    <div class="top">
+      <h1>Going live in 3... 2... 1...</h1>
+      <h2>Start your radio station in less than 60 seconds.</h2>
+      <h3>You won't be billed until the end of your trial. And you can cancel anytime.</h3>
+    </div>
+    
+    <div class="plans">
+      {#each data.plans.items as plan (plan._id)}
+        <div class="plan" style:--plan-color={plan_color(plan.color)} style:--plan-color-radial-center={plan_color_radial_center(plan.color)}>
+          <div class="plan-name">{plan.display_name}</div>
+          <div class="plan-price">
+            <div class="plan-price-n">
+              $ {plan.price}
             </div>
-            <div class="feature-label">
-              Auto DJ
+            <div class="plan-price-per">
+              per month
             </div>
           </div>
 
-          <div class="feature feature-check">
-            <div class="feature-check-icon">
-              <Icon d={featureCheckIcon} />
-            </div>
-            <div class="feature-label">
-              Advanced Stats
-            </div>
-          </div>
-        </div>
-
-        <div class="plan-bottom">
-          <div class="plan-bottom-name">
-            {plan.display_name}
-          </div>
-          <div class="plan-bottom-price">
-            $ {plan.price} / month  
-          </div>
-          <div class="plan-bottom-select">
-            <button class="plan-bottom-btn ripple-container" use:ripple>
+          <div class="plan-top-select">
+            <a href="/register/plan/{plan._id}" class="na plan-top-btn ripple-container" use:ripple>
               Start Trial
-            </button> 
-          </div>  
+            </a>
+          </div>
+
+          <div class="plan-features">
+            <div class="feature">
+              <span class="feature-n">
+                {plan.limits.stations}
+              </span>
+              <span class="feature-label">
+                {plan.limits.stations === 1 ? "Station" :  "Stations"}
+              </span>
+              <span class="feature-i">
+                {#if plan.limits.stations === 1}
+                  <FeatureI text={`You can only create one station with this plan`} />
+                {:else}
+                  <FeatureI text={`Up to ${plan.limits.stations} different stations`} />
+                {/if}
+              </span>
+            </div>
+
+            <div class="feature">
+              <span class="feature-n">
+                {new Intl.NumberFormat().format(plan.limits.listeners)}
+              </span>
+              <span class="feature-label">
+                Listeners
+              </span>
+              <span class="feature-i">
+                <FeatureI text={`Up to ${plan.limits.listeners} concurrent listeners`} />
+              </span>
+            </div>
+
+            <div class="feature">
+              <span class="feature-n">
+                {plan.limits.transfer / 1_000_000_000_000} TB
+              </span>
+              <span class="feature-label">
+                Bandwidth
+              </span>
+              <span class="feature-i">
+                <FeatureI text={`
+                  ${
+                    plan.limits.transfer / 1_000_000_000_000
+                  } TB of monthly transfer will give you around ${
+                    new Intl.NumberFormat().format(aprox_listening_hours(plan.limits.transfer))
+                  } listening hours`} />
+              </span>
+            </div>
+
+            <div class="feature">
+              <span class="feature-n">
+                {plan.limits.storage / 1_000_000_000} GB
+              </span>
+              <span class="feature-label">
+                Storage
+              </span>
+              <span class="feature-i">
+                <FeatureI text={`${plan.limits.storage / 1_000_000_000} GB of storage for music or old episodes`} />
+              </span>
+            </div>
+
+            <div class="feature">
+              <span class="feature-n">
+                Unlimited
+              </span>
+              <span class="feature-label">
+                DJs
+              </span>
+              <span class="feature-i">
+                <FeatureI text={`Add all the staff users that you want`} />
+              </span>
+            </div>
+
+            <div class="feature feature-check">
+              <div class="feature-check-icon">
+                <Icon d={featureCheckIcon} />
+              </div>
+              <div class="feature-label">
+                Auto DJ
+              </div>
+              <span class="feature-i">
+                <FeatureI text={`Broadcast from a playlist when you're not online`} />
+              </span>
+            </div>
+
+            <div class="feature feature-check">
+              <div class="feature-check-icon">
+                <Icon d={featureCheckIcon} />
+              </div>
+              <div class="feature-label">
+                Advanced Stats
+              </div>
+              <span class="feature-i">
+                <FeatureI text={`Advanced live and historical stats, see who's listening your stations`} />
+              </span>
+            </div>
+
+            <div class="feature feature-check">
+              <div class="feature-check-icon">
+                <Icon d={featureCheckIcon} />
+              </div>
+              <div class="feature-label">
+                Android App
+              </div>
+              <span class="feature-i">
+                <FeatureI text={`An Android application branded to your stations and available worldwide through Google Play`} />
+              </span>
+            </div>
+          </div>
+
+          <div class="plan-bottom">
+            <div class="plan-bottom-name">
+              {plan.display_name}
+            </div>
+            <div class="plan-bottom-price">
+              $ {plan.price} / month  
+            </div>
+            <div class="plan-bottom-select">
+              <a href="/register/plan/{plan._id}" class="na plan-bottom-btn ripple-container" use:ripple>
+                Start Trial
+              </a> 
+            </div>  
+          </div>
         </div>
-      </div>
-    {/each}
+      {/each}
+    </div>
   </div>
-</div>
+</Page>

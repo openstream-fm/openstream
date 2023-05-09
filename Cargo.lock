@@ -97,6 +97,7 @@ dependencies = [
  "bytes",
  "chrono",
  "config",
+ "const-str",
  "constants",
  "cookie",
  "crypt",
@@ -612,25 +613,25 @@ dependencies = [
 
 [[package]]
 name = "const-str"
-version = "0.5.3"
+version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5bc011a04793b8ce7bca0efd59e3697c2061760df6efbb8c895e8a81548db67"
+checksum = "2b62c6d3ea43cbe0bc5a081f276fd477e4291d168aacc9f9d98073325333c0d4"
 dependencies = [
  "const-str-proc-macro",
 ]
 
 [[package]]
 name = "const-str-proc-macro"
-version = "0.5.3"
+version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e81ac48bb3e2e96281e0efbb9968ddd143d3752ace7253bd0909a55343e969e6"
+checksum = "51a6bdde073d75ff29c639a6bfcee435483f73f9a7426249825e2542e089727c"
 dependencies = [
  "heck",
  "http 0.2.8",
  "proc-macro2",
  "quote",
  "regex",
- "syn 1.0.107",
+ "syn 2.0.13",
 ]
 
 [[package]]

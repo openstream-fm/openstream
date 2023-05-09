@@ -159,6 +159,7 @@ pub mod get {
 }
 
 pub mod post {
+  use db::account::{Account, Limit, Limits};
   use db::run_transaction;
   use db::station::{Station, StationFrequency, StationTypeOfContent};
   use db::station_picture::StationPicture;
@@ -358,6 +359,8 @@ pub mod post {
     InvalidNameSlug,
     #[error("Picture with id {0} not found")]
     PictureNotFound(String),
+    #[error("Stations limit")]
+    StationLimit,
   }
 
   impl From<HandleError> for ApiError {
@@ -373,6 +376,7 @@ pub mod post {
         HandleError::InvalidNameSlug => {
           ApiError::PayloadInvalid(String::from("Station name is invalid"))
         }
+        HandleError::StationLimit => ApiError::CreateStationAccountLimit,
       }
     }
   }
@@ -456,7 +460,7 @@ pub mod post {
 
       let station = Station {
         id: Station::uid(),
-        account_id,
+        account_id: account_id.clone(),
         picture_id,
 
         name,
@@ -508,6 +512,18 @@ pub mod post {
           }
         };
 
+        let account = match tx_try!(Account::get_by_id(&account_id).await) {
+          Some(account) => account,
+          None => return Err(HandleError::AccountNotFound(account_id))
+        };
+
+        if account.limits.stations.avail() == 0 {
+          return Err(HandleError::StationLimit);
+        }
+
+        const LIMIT_STATION: &str = const_str::concat!(Account::KEY_LIMITS, ".", Limits::KEY_STATIONS, ".", Limit::KEY_USED);
+        let account_update = doc!{ "$inc": { LIMIT_STATION: 1 } };
+        tx_try!(Account::update_by_id_with_session(&account_id, account_update, &mut session).await);
         tx_try!(Station::insert_with_session(&station, &mut session).await);
       });
 
