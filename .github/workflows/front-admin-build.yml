@@ -1,8 +1,8 @@
-name: front-studio-build
+name: front-admin-build
 
 on: 
   push:
-    branches-ignore: [ master ] 
+      branches: [ master, dev ]
   pull_request:
       types: [ opened, reopened ]
 
@@ -11,7 +11,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./front/app
+        working-directory: ./front/admin
 
     runs-on: ubuntu-latest
 

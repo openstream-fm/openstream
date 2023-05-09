@@ -1,20 +1,19 @@
-name: front-server-unit-tests
+name: front-studio-build
 
 on: 
   push:
-      branches: [ master, dev ]
+    branches: [ master, dev ]
   pull_request:
       types: [ opened, reopened ]
-      
+
 jobs:
   build:
 
-    runs-on: ubuntu-latest
-
     defaults:
       run:
-        working-directory: ./front/server
+        working-directory: ./front/app
 
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -28,4 +27,4 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm run ci
         working-directory: ./front
-      - run: npm test
+      - run: npm run build --if-present

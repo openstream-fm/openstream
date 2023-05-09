@@ -1,11 +1,11 @@
-name: front-server-unit-tests
+name: front-admin-typecheck
 
 on: 
   push:
       branches: [ master, dev ]
   pull_request:
       types: [ opened, reopened ]
-      
+
 jobs:
   build:
 
@@ -13,7 +13,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ./front/server
+        working-directory: ./front/admin
 
 
     strategy:
@@ -28,4 +28,4 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm run ci
         working-directory: ./front
-      - run: npm test
+      - run: npm run check
