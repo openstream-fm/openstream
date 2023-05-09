@@ -65,12 +65,15 @@ pub enum PublicErrorCode {
   TokenStationNotFound,
   TokenAdminNotFound,
   TokenOutOfScope,
+
   StationNotFound,
   AdminNotFound,
   UserNotFound,
   AccountNotFound,
   AudioFileNotFound,
   DeviceNotFound,
+  PlanNotFound,
+
   QueryStringInvalid,
   PayloadIo,
   PayloadJson,
@@ -105,4 +108,6 @@ pub enum PublicErrorCode {
   PlaylistStartNoFiles,
 
   RenderMail,
+
+  CreateStationAccountLimit,
 }

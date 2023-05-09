@@ -1,7 +1,6 @@
 
 .login-page-box {
   position: relative;
-  z-index: var(--z-login-front);
   background: rgba(255,255,255,0.95);
   backdrop-filter: blur(2px);
   box-shadow: 0 4px 20px 0 rgb(0 0 0 / 12%);

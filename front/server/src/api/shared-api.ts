@@ -49,6 +49,12 @@ export const shared_api = ({
       return await client.accounts.patch(ip(req), ua(req), get_token(req), req.params.account, req.body)
     }))
 
+  api.route("/accounts/:account/limits")
+    .get(json(async req => {
+      const { account: { limits } } = await client.accounts.get(ip(req), ua(req), get_token(req), req.params.account);
+      return limits;
+    }))
+
   api.route("/accounts/:account/members")
     .get(json(async req => {
       return await client.accounts.list_members(ip(req), ua(req), get_token(req), req.params.account)
@@ -129,12 +135,6 @@ export const shared_api = ({
   api.route("/stations/:station/reset-source-password")
     .post(json(async req => {
       return await client.stations.reset_source_password(ip(req), ua(req), get_token(req), req.params.station);
-    }))
-
-  api.route("/stations/:station/limits")
-    .get(json(async req => {
-      const { station: { limits } } = await client.stations.get(ip(req), ua(req), get_token(req), req.params.station);
-      return limits;
     }))
 
   api.route("/stations/:station/files")

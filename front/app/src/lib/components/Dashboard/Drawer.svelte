@@ -23,7 +23,8 @@
 	import { ripple } from "$share/ripple";
 	import { fade } from "svelte/transition";
 	import { browser } from "$app/environment";
-  import logo from "$share/img/logo.png";
+  // @ts-ignore
+  import logo from "$share/img/logo-trans-128.png?w=40&format=webp";
 
   import { player_state } from "../Player/player";
 

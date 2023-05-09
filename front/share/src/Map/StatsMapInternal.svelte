@@ -206,7 +206,7 @@
     }
   }
 
-  @container stats-map (width < 500px) {
+  @container stats-map (width < 600px) {
     .stats-map-display {
       flex-direction: column;
     }

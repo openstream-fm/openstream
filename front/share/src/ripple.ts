@@ -1,7 +1,7 @@
 const defaults = {
-  color: 'currentColor',
+  color: 'var(--ripple-color, currentColor)',
   class: '',
-  opacity: 0.065,
+  opacity: "var(--ripple-opacity, 0.065)",
   centered: false,
   spreadingDuration: '.4s',
   spreadingDelay: '0s',

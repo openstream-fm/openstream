@@ -81,8 +81,7 @@
 
     current = clone(start);
     
-    invalidate("resource:stations");
-    goto(`/accounts/${data.account._id}/stations/${station._id}`);
+    goto(`/accounts/${data.account._id}/stations/${station._id}`, { invalidateAll: true });
   });
 </script>
 

@@ -3,6 +3,7 @@ use crate::request_ext::{self, GetAccessTokenScopeError};
 
 use async_trait::async_trait;
 use db::station::Station;
+use mongodb::bson::doc;
 use prex::Request;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
@@ -10,6 +11,7 @@ use ts_rs::TS;
 pub mod post {
 
   use db::{
+    audio_file::AudioFile,
     deployment::Deployment,
     media_session::{MediaSession, MediaSessionKind},
     Model,
@@ -88,7 +90,8 @@ pub mod post {
 
       match MediaSession::get_current_for_station(&station.id).await? {
         None => {
-          if station.limits.storage.used == 0 {
+          let filter = doc! { AudioFile::KEY_STATION_ID: &station.id };
+          if !AudioFile::exists(filter).await? {
             return Err(HandleError::NoFiles);
           }
         }

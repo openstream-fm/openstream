@@ -77,6 +77,9 @@ pub enum ApiError {
   #[error("audio file not found: {0}")]
   AudioFileNotFound(String),
 
+  #[error("plan not found: {0}")]
+  PlanNotFound(String),
+
   #[error("payload io: {0}")]
   PayloadIo(hyper::Error),
 
@@ -154,6 +157,9 @@ pub enum ApiError {
 
   #[error("render mail: {0}")]
   RenderMail(mailer::error::RenderError),
+
+  #[error("create station account limit")]
+  CreateStationAccountLimit,
 }
 
 impl ApiError {
@@ -177,6 +183,7 @@ impl ApiError {
       AdminNotFound(_) => StatusCode::NOT_FOUND,
       DeviceNotFound(_) => StatusCode::NOT_FOUND,
       AccountNotFound(_) => StatusCode::NOT_FOUND,
+      PlanNotFound(_) => StatusCode::NOT_FOUND,
       UserNotFound(_) => StatusCode::NOT_FOUND,
       AudioFileNotFound(_) => StatusCode::NOT_FOUND,
       QueryString(_) => StatusCode::BAD_REQUEST,
@@ -216,6 +223,8 @@ impl ApiError {
       PlaylistStartNoFiles => StatusCode::BAD_REQUEST,
 
       RenderMail(_) => StatusCode::INTERNAL_SERVER_ERROR,
+
+      CreateStationAccountLimit => StatusCode::FAILED_DEPENDENCY,
     }
   }
 
@@ -236,6 +245,7 @@ impl ApiError {
       StationNotFound(id) => format!("Station with id {id} not found"),
       AdminNotFound(id) => format!("Admin with id {id} not found"),
       UserNotFound(id) => format!("User with id {id} not found"),
+      PlanNotFound(id) => format!("Plan with id {id} not found"),
       AccountNotFound(id) => format!("Account with id {id} not found"),
       DeviceNotFound(id) => format!("Device with id {id} not found"),
       AudioFileNotFound(id) => format!("Audio file with id {id} not found"),
@@ -274,6 +284,7 @@ impl ApiError {
       PlaylistStartIsLive => format!("Station is currenly live streaming"),
       PlaylistStartNoFiles => format!("Station playlist is empty"),
       RenderMail(_) => format!("There was an error rendering the email, try again later"),
+      CreateStationAccountLimit => format!("You reached your limit of stations for this account, upgrade your plan to add more stations"),
     }
   }
 
@@ -294,6 +305,7 @@ impl ApiError {
       StationNotFound(_) => PublicErrorCode::StationNotFound,
       AdminNotFound(_) => PublicErrorCode::AdminNotFound,
       UserNotFound(_) => PublicErrorCode::UserNotFound,
+      PlanNotFound(_) => PublicErrorCode::PlanNotFound,
       AccountNotFound(_) => PublicErrorCode::AccountNotFound,
       AudioFileNotFound(_) => PublicErrorCode::AudioFileNotFound,
       DeviceNotFound(_) => PublicErrorCode::DeviceNotFound,
@@ -330,6 +342,7 @@ impl ApiError {
       PlaylistStartIsLive => PublicErrorCode::PlaylistStartIsLive,
       PlaylistStartNoFiles => PublicErrorCode::PlaylistStartNoFiles,
       RenderMail(_) => PublicErrorCode::RenderMail,
+      CreateStationAccountLimit => PublicErrorCode::CreateStationAccountLimit,
     }
   }
 
@@ -388,7 +401,12 @@ impl<E: Into<ApiError>> From<UploadError<E>> for ApiError {
       UploadError::Mongo(e) => e.into(),
       UploadError::Empty => ApiError::UploadEmpty,
       UploadError::FfmpegExit { status, stderr } => ApiError::UploadFfmpegExit { status, stderr },
-      UploadError::StationNotFound(id) => ApiError::StationNotFound(id),
+      UploadError::StationNotFound(id) => {
+        ApiError::PayloadInvalid(format!("Station with id {id} not found"))
+      }
+      UploadError::AccountNotFound(id) => {
+        ApiError::PayloadInvalid(format!("Account with id {id} not found"))
+      }
       UploadError::FfmpegIo(e) => ApiError::UploadFfmpegIo(e),
       UploadError::FfmpegSpawn(e) => ApiError::UploadSpawn(e),
       UploadError::QuotaExceeded => ApiError::UploadQuotaExceeded,

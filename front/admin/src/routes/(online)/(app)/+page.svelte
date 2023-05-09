@@ -7,6 +7,7 @@
   $: users_subtitle = data.users.total === 1 ? `${data.users.total} user` : `${data.users.total} users`;
   $: accounts_subtitle = data.accounts.total === 1 ? `${data.accounts.total} account` : `${data.accounts.total} accounts`;
   $: stations_subtitle = data.stations.total === 1 ? `${data.stations.total} station` : `${data.stations.total} stations`;
+  $: plans_subtitle = data.plans.items.length === 1 ? `${data.plans.items.length} station` : `${data.plans.items.length} stations`;
 </script>
 
 <style>
@@ -88,6 +89,11 @@
     <a href="/stations" class="na ripple-container section" use:ripple>
       <div class="section-title">Stations</div>
       <div class="section-subtitle">{stations_subtitle}</div>
+    </a>
+
+    <a href="/plans" class="na ripple-container section" use:ripple>
+      <div class="section-title">Plans</div>
+      <div class="section-subtitle">{plans_subtitle}</div>
     </a>
 
   </div>

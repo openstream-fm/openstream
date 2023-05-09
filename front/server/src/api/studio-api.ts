@@ -97,6 +97,16 @@ export const studio_api = ({
     return await client.auth.user.recover(ip(req), ua(req), req.body);
   }))
 
+  api.route("/plans")
+    .get(json(async req => {
+      return await client.plans.list(ip(req), ua(req), null, { show: "active" });
+    }))
+
+  api.route("/plans/:plan")
+    .get(json(async req => {
+      return await client.plans.get(ip(req), ua(req), null, req.params.plan);
+    }))
+
   api.route("/users/me")
     .get(json(async req => {
       const { user } = await client.users.get(ip(req), ua(req), user_token(req), user_id(req))

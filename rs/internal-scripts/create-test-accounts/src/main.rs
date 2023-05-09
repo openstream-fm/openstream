@@ -73,7 +73,6 @@ async fn create_test_station(i: usize, base: Station) -> Result<(), anyhow::Erro
     playlist_is_randomly_shuffled: false,
     source_password: Station::random_source_password(),
 
-    limits: base.limits.clone(),
     system_metadata: base.system_metadata.clone(),
     user_metadata: base.user_metadata.clone(),
 

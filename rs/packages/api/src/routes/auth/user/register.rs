@@ -3,9 +3,10 @@ pub mod post {
 
   use async_trait::async_trait;
   use db::access_token::{AccessToken, GeneratedBy, Scope};
-  use db::account::{Account, PublicAccount};
+  use db::account::{Account, Limit, Limits, PublicAccount};
   use db::metadata::Metadata;
   use db::models::user_account_relation::{UserAccountRelation, UserAccountRelationKind};
+  use db::plan::Plan;
   use db::user::{PublicUser, User};
   use db::{run_transaction, Model};
   use prex::{request::ReadBodyJsonError, Request};
@@ -70,6 +71,8 @@ pub mod post {
     PasswordTooLong,
     #[error("device id invalid")]
     DeviceIdInvalid,
+    #[error("plan not found: {0}")]
+    PlanNotFound(String),
   }
 
   impl From<mongodb::error::Error> for HandleError {
@@ -119,6 +122,9 @@ pub mod post {
         HandleError::DeviceIdInvalid => {
           ApiError::PayloadInvalid(String::from("device_id is invalid"))
         }
+        HandleError::PlanNotFound(id) => {
+          ApiError::PayloadInvalid(format!("Plan with id {id} not found"))
+        }
       }
     }
   }
@@ -128,6 +134,7 @@ pub mod post {
   // #[serde(rename_all = "camelCase")]
   #[serde(deny_unknown_fields)]
   pub struct Payload {
+    plan_id: String,
     email: String,
     password: String,
     phone: Option<String>,
@@ -214,11 +221,12 @@ pub mod post {
         payload,
       } = input;
 
-      if !access_token_scope.has_full_access() {
+      if !access_token_scope.is_admin_or_global() {
         return Err(HandleError::TokenOutOfScope);
       }
 
       let Payload {
+        plan_id,
         email,
         password,
         phone,
@@ -304,6 +312,15 @@ pub mod post {
         }
       }
 
+      let plan = match Plan::get_by_id(&plan_id).await? {
+        Some(plan) => plan,
+        None => return Err(HandleError::PlanNotFound(plan_id)),
+      };
+
+      if plan.deleted_at.is_some() || !plan.is_user_selectable {
+        return Err(HandleError::PlanNotFound(plan_id));
+      }
+
       let password = crypt::hash(password);
 
       let now = DateTime::now();
@@ -321,8 +338,29 @@ pub mod post {
         updated_at: now,
       };
 
+      let limits = Limits {
+        stations: Limit {
+          total: plan.limits.stations,
+          used: 0,
+        },
+        listeners: Limit {
+          total: plan.limits.listeners,
+          used: 0,
+        },
+        transfer: Limit {
+          total: plan.limits.transfer,
+          used: 0,
+        },
+        storage: Limit {
+          total: plan.limits.storage,
+          used: 0,
+        },
+      };
+
       let account = Account {
         id: Account::uid(),
+        plan_id,
+        limits,
         name: account_name,
         user_metadata: account_user_metadata,
         system_metadata: account_system_metadata,

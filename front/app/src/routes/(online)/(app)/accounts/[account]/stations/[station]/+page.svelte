@@ -4,7 +4,6 @@
 	import { pause, player_state, play_station } from "$lib/components/Player/player";
 	import { default_logger } from "$share/logger";
 	import { get_now_playing_store } from "$lib/now-playing";
-	import type { StationLimits } from "$server/defs/StationLimits";
 	import CircularProgress from "$share/CircularProgress.svelte";
 	import Icon from "$share/Icon.svelte";
 	import { _get } from "$share/net.client";
@@ -38,81 +37,6 @@
     if($station_preview_state === "playing" || $station_preview_state === "loading") pause();
     else play_station({ _id: data.station._id, picture_id: data.station.picture_id, name: data.station.name })
   }
-
-  // const stats_num = (v: number): string => {
-  //   if(v < 1_000) return `${v}`;
-  //   if(v < 1_000_000) return `${(v / 1_000).toFixed(1)} K`;
-  //   if(v < 1_000_000_000) return `${(v / 1_000_000).toFixed(1)} M`;
-  //   return `${(v / 1_000_000_000).toFixed(1)} B`
-  // }
-
-  const units = [ "B", "KB", "MB", "GB", "TB" ];
-  
-  const to_fixed_2 = (v: number): number => Math.round(v * 100) / 100; 
-
-  const preety_bytes = (_v: number): string => {
-    
-    let v = _v;
-
-    for(const unit of units) {
-      if(v < 1000) {
-        return `${to_fixed_2(v)} ${unit}`;
-      } 
-      v = v / 1000;
-    }
-
-    return `${to_fixed_2(v)} PB`;
-  }
-
-  // const sessions_str = (n: number) => {
-  //   if(n === 1) return "session";
-  //   else return "sessions";
-  // }
-
-  // const listeners_str = (n: number) => {
-  //   if(n === 1) return "user";
-  //   else return "users";
-  // }
-
-  const LIMITS_UPDATE_INTERVAL = 5_000;
-  let limits_on_screen = true;
-
-  onMount(() => {
-    let mounted = true;
-    
-    (async () => {
-      let _prev_skip: boolean | null = null;
-      let last = Date.now();
-      while(true) {
-        if(!mounted) return;
-        await sleep(100)
-        const skip = document.visibilityState === "hidden" || limits_on_screen === false;
-        const prev_skip = _prev_skip;
-        _prev_skip = skip;
-        if(skip) {
-          if(skip !== prev_skip) {
-            logger.info(`pausing limits update (document: ${document.visibilityState}, on_screen: ${limits_on_screen})`);
-          }
-        } else {
-          if(skip !== prev_skip) {
-            logger.info(`(re)starting limits update (document: ${document.visibilityState}, on_screen: ${limits_on_screen})`);
-          }
-          if(Date.now() - last < LIMITS_UPDATE_INTERVAL) continue;
-          try {
-            const limits: StationLimits = await _get(`/api/stations/${data.station._id}/limits`);
-            logger.info(`station limits updated`);
-            data.station.limits = limits;
-          } catch(e) {
-            logger.warn(`error updating station limits: ${e}`);
-          } finally {
-            last = Date.now();
-          }
-        }
-      }
-    })()
-    
-    return () => mounted = false
-  })
 </script>
 
 <style>
@@ -122,62 +46,6 @@
     flex-direction: column;
     --spacing: 1.5rem;
     gap: 1.5rem;
-    container-type: inline-size;
-    container-name: page;
-  }
-
-  .meters {
-    display: flex;
-    flex-direction: row;
-    gap: var(--spacing);
-    align-items: stretch;
-  }
-
-  .meter {
-    background: #fff;
-    flex: 1;
-    padding: 2rem 1rem;
-    border-radius: 0.5rem;
-    text-align: center;
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,.1),0 10px 10px -5px rgba(0,0,0,.04);
-  }
-
-  .meter-title {
-    font-weight: 600;
-    font-size: 2em;
-  }
-
-  .meter-text {
-    color: #333;
-    font-size: 1.5em;
-  }
-
-  .used, .avail {
-    font-weight: 600;
-  }
-
-  .used {
-    color: var(--red);
-  }
-
-  .avail {
-    color: #333;
-  }
-
-  .of {
-    color: #999;
-    font-size: 0.8em;
-  }
-
-  .meter-graph {
-    max-width: 15rem;
-    margin: 0 auto;
-  }
-
-  @media screen and (max-width: 1160px) {
-    .meter {
-      font-size: 0.8rem;
-    }
   }
 
   .top {
@@ -294,76 +162,12 @@
     margin-top: 1.5rem;
   }
 
-  /* .top-box-stats {
-    align-items: stretch;
-    container-type: inline-size;
-    container-name: stats-box;
-  }
-
-  .stats-title {
-    font-size: 1.4rem;
-    font-weight: 600;
-  }
-
-  .stats-label {
-    color: #666;
-    font-size: 0.8rem;
-    text-align: left;
-  }
-
-  .stats-items {
-    margin-top: 0.5rem;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: space-around;
-  }
-
-  .stats-item {
-    display: block;
-    margin-top: 0.5rem;
-    line-height: 1.2rem;
-  }
-
-  .stats-value {
-    font-size: 0.95rem;
-    color: var(--green);
-    display: flex;
-    flex-direction: row;
-    gap: 1rem;
-  }
-
-  .ses, .lis {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .n {
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: var(--green);
-  }
-
-  @container stats-box (width < 150px) {
-    .stats-value {
-      font-size: 0.8rem;
-    }
-
-    .n {
-      font-size: 1.15rem;
-    }
-  }f */
-
   .top-boxes[data-air="off"] > .preview-out {
     visibility: hidden;
     order: 3;
   }
 
-  @container page (width < 700px) {
-    
+  @media screen and (max-width: 700px) {
     .top-boxes {
       flex-direction: column;
     }
@@ -379,21 +183,11 @@
     .top-boxes[data-air="off"] > .preview-out {
       display: none;
     }
-
-    .meters {
-      flex-direction: column;
-    }
-
-    .meter-graph {
-      max-width: 10rem;
-    }
   } 
 
   .top-box-broadcast {
     padding: 0;
     display: flex;
-    container-type: inline-size;
-    container-name: broadcast-btn;
   }
   
   .broadcast-btn {
@@ -541,48 +335,6 @@
 
     <div class="stats">
       <StatsMap kind="station" record_id={data.station._id} bind:data={data.stats} />
-    </div>
-
-    <div class="meters" use:intersect={{ enter: () => limits_on_screen = true, leave: () => limits_on_screen = false}}>
-      <div class="meter">
-        <div class="meter-title">
-          Listeners
-        </div>
-        <div class="meter-graph">
-          <CircularMeter used={data.station.limits.listeners.used / data.station.limits.listeners.total} />
-        </div>
-        <div class="meter-text">
-          <span class="used">{data.station.limits.listeners.used}</span>
-          <span class="of">of</span>
-          <span class="avail">{data.station.limits.listeners.total}</span>
-        </div>
-      </div>
-      <div class="meter">
-        <div class="meter-title">
-          Transfer
-        </div>
-        <div class="meter-graph">
-          <CircularMeter used={data.station.limits.transfer.used / data.station.limits.transfer.total} />
-        </div>
-        <div class="meter-text">
-          <span class="used">{preety_bytes(data.station.limits.transfer.used)}</span>
-          <span class="of">of</span>
-          <span class="avail">{preety_bytes(data.station.limits.transfer.total)}</span>
-        </div>
-      </div>
-      <div class="meter">
-        <div class="meter-title">
-          Storage
-        </div>
-        <div class="meter-graph">
-          <CircularMeter used={data.station.limits.storage.used / data.station.limits.storage.total} />
-        </div>
-        <div class="meter-text">
-          <span class="used">{preety_bytes(data.station.limits.storage.used)}</span>
-          <span class="of">of</span>
-          <span class="avail">{preety_bytes(data.station.limits.storage.total)}</span>
-        </div>
-      </div>
     </div>
   </div>
 </Page>

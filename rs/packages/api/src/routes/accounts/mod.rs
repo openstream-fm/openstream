@@ -164,7 +164,9 @@ pub mod get {
 
 pub mod post {
 
+  use db::account::{Limit, Limits};
   use db::models::user_account_relation::UserAccountRelationKind;
+  use db::plan::Plan;
   use db::run_transaction;
   use db::user::User;
   use serde_util::DateTime;
@@ -178,6 +180,7 @@ pub mod post {
   #[serde(deny_unknown_fields)]
   pub struct Payload {
     pub name: String,
+    pub plan_id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -222,6 +225,8 @@ pub mod post {
     #[error("token: {0}")]
     Token(#[from] GetAccessTokenScopeError),
     #[error("name missing")]
+    PlanNotFound(String),
+    #[error("name missing")]
     NameMissing,
     #[error("user id missing")]
     UserIdMissing,
@@ -234,6 +239,9 @@ pub mod post {
       match e {
         HandleError::Db(e) => ApiError::from(e),
         HandleError::Token(e) => ApiError::from(e),
+        HandleError::PlanNotFound(id) => {
+          ApiError::PayloadInvalid(format!("Plan with id {id} not found"))
+        }
         HandleError::NameMissing => ApiError::PayloadInvalid(String::from("Name is required")),
         HandleError::UserIdMissing => ApiError::PayloadInvalid(String::from("user_id is required")),
         HandleError::UserNotFound(id) => ApiError::UserNotFound(id),
@@ -268,6 +276,7 @@ pub mod post {
 
       let Payload {
         name,
+        plan_id,
         user_id,
         user_metadata,
         system_metadata,
@@ -277,6 +286,15 @@ pub mod post {
 
       if name.is_empty() {
         return Err(HandleError::NameMissing);
+      }
+
+      let plan = match Plan::get_by_id(&plan_id).await? {
+        Some(plan) => plan,
+        None => return Err(HandleError::PlanNotFound(plan_id)),
+      };
+
+      if access_token_scope.is_user() && !plan.is_user_selectable {
+        return Err(HandleError::PlanNotFound(plan_id));
       }
 
       // TODO: validate name length
@@ -300,11 +318,32 @@ pub mod post {
         AccessTokenScope::User(user) => user.id.clone(),
       };
 
+      let limits = Limits {
+        stations: Limit {
+          total: plan.limits.stations,
+          used: 0,
+        },
+        listeners: Limit {
+          total: plan.limits.listeners,
+          used: 0,
+        },
+        transfer: Limit {
+          total: plan.limits.transfer,
+          used: 0,
+        },
+        storage: Limit {
+          total: plan.limits.storage,
+          used: 0,
+        },
+      };
+
       let now = DateTime::now();
 
       let account = Account {
         id: Account::uid(),
+        plan_id,
         name,
+        limits,
         system_metadata,
         user_metadata,
         created_at: now,

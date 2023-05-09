@@ -5,11 +5,8 @@ use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
 
-use crate::{
-  run_transaction,
-  station::{Limit, Limits, Station},
-  Model,
-};
+use crate::account::{Account, Limit, Limits};
+use crate::{run_transaction, Model};
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
@@ -56,7 +53,7 @@ pub async fn checkpoint_now() -> Result<Option<TransferCheckpoint>, mongodb::err
     }
 
     const KEY_LIMITS_TRANSFER_USED: &str = const_str::concat!(
-      Station::KEY_LIMITS,
+      Account::KEY_LIMITS,
       ".",
       Limits::KEY_TRANSFER,
       ".",
@@ -69,7 +66,7 @@ pub async fn checkpoint_now() -> Result<Option<TransferCheckpoint>, mongodb::err
       }
     };
 
-    let update_result = tx_try!(Station::cl().update_many_with_session(doc!{}, update, None, &mut session).await);
+    let update_result = tx_try!(Account::cl().update_many_with_session(doc!{}, update, None, &mut session).await);
 
     let doc = TransferCheckpoint {
       id: TransferCheckpoint::uid(),

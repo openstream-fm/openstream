@@ -4,7 +4,6 @@ import type { DateTime } from "../DateTime";
 import type { Metadata } from "./Metadata";
 import type { OwnerDeploymentInfo } from "./OwnerDeploymentInfo";
 import type { StationFrequency } from "../StationFrequency";
-import type { StationLimits } from "../StationLimits";
 import type { StationTypeOfContent } from "./StationTypeOfContent";
 
 export interface Station {
@@ -32,7 +31,6 @@ export interface Station {
   user_metadata: Metadata;
   system_metadata: Metadata;
   owner_deployment_info: OwnerDeploymentInfo | null;
-  limits: StationLimits;
   playlist_is_randomly_shuffled: boolean;
   source_password: string;
   created_at: DateTime;

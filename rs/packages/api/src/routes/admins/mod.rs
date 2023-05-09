@@ -77,7 +77,7 @@ pub mod get {
     async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
       let access_token_scope = request_ext::get_access_token_scope(&req).await?;
 
-      if !access_token_scope.has_full_access() {
+      if !access_token_scope.is_admin_or_global() {
         return Err(GetAccessTokenScopeError::OutOfScope.into());
       }
 
