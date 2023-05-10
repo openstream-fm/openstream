@@ -6,17 +6,17 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+# ffmpeg = { path = "../ffmpeg" }
+# channels = { path = "../channels" }
 bytes = "1.2.1"
 static_init = "1.0.3"
 tokio = { version = "1.27.0", features = ["full"] }
-ffmpeg = { path = "../ffmpeg" }
 parking_lot = "0.12.1"
 hyper = { version = "0.14.20", features = ["full"] }
 prex = { path = "../prex" }
 stream-util = { path = "../stream-util" }
 tokio-stream = "0.1.10"
 regex_static = "0.1.1"
-channels = { path = "../channels" }
 constants = { version = "0.1.0", path = "../../config/constants" }
 log = "0.4.17"
 owo-colors = { version = "3.5.0", path = "../owo-colors" }
@@ -30,5 +30,12 @@ user-agent = { version = "0.1.0", path = "../user-agent" }
 proxy-protocol = { version = "0.1.0", path = "../proxy-protocol" }
 geoip = { version = "0.1.0", path = "../geoip" }
 rand = "0.8.5"
+socket2 = "0.5.2"
+thiserror = "1.0.40"
+mongodb = "2.4.0"
+serde-querystring = "0.2.1"
+serde = { version = "1.0.160", features = ["derive"] }
+lazy-regex = "2.5.0"
+serde-util = { version = "0.1.0", path = "../serde-util" }
 
 [features]

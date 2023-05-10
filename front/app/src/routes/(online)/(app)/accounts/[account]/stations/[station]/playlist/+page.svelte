@@ -162,14 +162,13 @@
   })
 
 
-  $: now_playing_file_id = $now_playing?.info.kind === "playlist" ? $now_playing.info.file._id : null; 
+  $: now_playing_file_id = $now_playing?.info.kind === "playlist" ? $now_playing.info.file_id : null; 
 
   $: station_id = data.station._id;
   const now_playing = get_now_playing_store(data.station._id, data.now_playing);
   $: if ($now_playing) data.now_playing = $now_playing.info;
 
   $: playlist_duration = getPlaylistDuration(data.files.items);
-
   const getPlaylistDuration = (files: AudioFile[]): number => {
     let d = 0;
     for(const item of files) {

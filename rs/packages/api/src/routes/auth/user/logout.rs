@@ -61,7 +61,7 @@ pub mod post {
         Scope::Global | Scope::Admin { .. } => {
           return Err(GetAccessTokenScopeError::OutOfScope.into());
         }
-        Scope::User { .. } => match &access_token.generated_by {
+        Scope::User { .. } | Scope::AdminAsUser { .. } => match &access_token.generated_by {
           GeneratedBy::Api { .. } | GeneratedBy::Cli { .. } => {
             return Err(GetAccessTokenScopeError::OutOfScope.into());
           }

@@ -6,18 +6,25 @@ use mongodb::bson::doc;
 
 use db::admin::Admin;
 use db::models::user_account_relation::UserAccountRelation;
-use db::PublicScope;
 use db::{
   access_token::{AccessToken, Scope},
   account::Account,
   user::User,
   Model,
 };
+use db::{current_filter_doc, PublicScope};
 use prex::Request;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_querystring::de::ParseMode;
 
 pub static X_ACCESS_TOKEN: &str = "x-access-token";
+
+#[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
+pub struct DelegateQuery {
+  #[serde(default, skip_serializing_if = "Option::is_none")]
+  #[ts(optional)]
+  as_user: Option<String>,
+}
 
 #[derive(Debug, Clone, thiserror::Error)]
 pub enum GetAccessTokenScopeError {
@@ -79,7 +86,7 @@ impl AccessTokenScope {
     }
   }
 
-  pub fn has_full_access(&self) -> bool {
+  pub fn is_admin_or_global(&self) -> bool {
     self.is_global() || self.is_admin()
   }
 
@@ -102,7 +109,7 @@ impl AccessTokenScope {
     match self {
       AccessTokenScope::Global | AccessTokenScope::Admin(_) => {}
       AccessTokenScope::User(user) => {
-        let filter = doc! { UserAccountRelation::KEY_USER_ID: &user.id, UserAccountRelation::KEY_ACCOUNT_ID: account_id };
+        let filter = current_filter_doc! { UserAccountRelation::KEY_USER_ID: &user.id, UserAccountRelation::KEY_ACCOUNT_ID: account_id };
         let exists = UserAccountRelation::exists(filter).await?;
         if !exists {
           return Err(GetAccessTokenScopeError::OutOfScope);
@@ -297,17 +304,41 @@ pub async fn internal_get_access_token_scope(
   media: bool,
 ) -> Result<AccessTokenScope, GetAccessTokenScopeError> {
   let doc = internal_get_access_token(req, media).await?;
-
-  let scope = get_scope_from_token(&doc).await?;
-
+  let scope = get_scope_from_token(req, &doc).await?;
   Ok(scope)
 }
 
 pub async fn get_scope_from_token(
+  req: &Request,
   token: &AccessToken,
 ) -> Result<AccessTokenScope, GetAccessTokenScopeError> {
+  macro_rules! delegate_if_needed {
+    ($base:expr) => {
+      match req.uri().query() {
+        None => return Ok($base),
+        Some(qs) => {
+          let DelegateQuery { as_user } =
+            match serde_querystring::from_str(qs, serde_querystring::de::ParseMode::UrlEncoded) {
+              Err(_) => return Ok($base),
+              Ok(qs) => qs,
+            };
+
+          let user_id = match as_user {
+            None => return Ok($base),
+            Some(user_id) => user_id,
+          };
+
+          match User::get_by_id(&user_id).await? {
+            None => return Err(GetAccessTokenScopeError::UserNotFound(user_id.to_string())),
+            Some(user) => return Ok(AccessTokenScope::User(user)),
+          }
+        }
+      }
+    };
+  }
+
   let scope = match &token.scope {
-    Scope::Global => AccessTokenScope::Global,
+    Scope::Global => delegate_if_needed!(AccessTokenScope::Global),
 
     Scope::Admin { admin_id } => match Admin::get_by_id(admin_id).await? {
       None => {
@@ -315,13 +346,15 @@ pub async fn get_scope_from_token(
           admin_id.to_string(),
         ))
       }
-      Some(admin) => AccessTokenScope::Admin(admin),
+      Some(admin) => delegate_if_needed!(AccessTokenScope::Admin(admin)),
     },
 
-    Scope::User { user_id } => match User::get_by_id(user_id).await? {
-      None => return Err(GetAccessTokenScopeError::UserNotFound(user_id.to_string())),
-      Some(user) => AccessTokenScope::User(user),
-    },
+    Scope::User { user_id } | Scope::AdminAsUser { user_id, .. } => {
+      match User::get_by_id(user_id).await? {
+        None => return Err(GetAccessTokenScopeError::UserNotFound(user_id.to_string())),
+        Some(user) => AccessTokenScope::User(user),
+      }
+    }
   };
 
   Ok(scope)
@@ -331,6 +364,19 @@ pub async fn get_access_token_scope(
   req: &Request,
 ) -> Result<AccessTokenScope, GetAccessTokenScopeError> {
   internal_get_access_token_scope(req, false).await
+}
+
+// TODO: this should be in reverse order
+pub async fn get_optional_access_token_scope(
+  req: &Request,
+) -> Result<Option<AccessTokenScope>, GetAccessTokenScopeError> {
+  match get_access_token_scope(req).await {
+    Ok(scope) => Ok(Some(scope)),
+    Err(e) => match e {
+      GetAccessTokenScopeError::Missing => Ok(None),
+      _ => Err(e),
+    },
+  }
 }
 
 pub async fn get_media_access_token_scope(

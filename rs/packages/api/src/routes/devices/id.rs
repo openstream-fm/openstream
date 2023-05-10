@@ -101,7 +101,9 @@ pub mod delete {
       match &access_token_scope {
         AccessTokenScope::Global => {}
         AccessTokenScope::Admin(admin) => match &token.scope {
-          Scope::Global => return Err(HandleError::DeviceNotFound(device_id)),
+          Scope::Global | Scope::AdminAsUser { .. } => {
+            return Err(HandleError::DeviceNotFound(device_id))
+          }
           Scope::Admin { admin_id } => {
             if admin_id != &admin.id {
               return Err(HandleError::DeviceNotFound(device_id));
@@ -111,7 +113,7 @@ pub mod delete {
         },
 
         AccessTokenScope::User(user) => match &token.scope {
-          Scope::Global | Scope::Admin { .. } => {
+          Scope::Global | Scope::Admin { .. } | Scope::AdminAsUser { .. } => {
             return Err(HandleError::DeviceNotFound(device_id))
           }
           Scope::User { user_id } => {

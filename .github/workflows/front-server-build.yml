@@ -2,12 +2,13 @@ name: front-server-build
 
 on: 
   push:
-    branches-ignore: [ master ] 
+      branches: [ master, dev ]
   pull_request:
       types: [ opened, reopened ]
 
 jobs:
-  build:
+  
+  front-server-build:
 
     defaults:
       run:

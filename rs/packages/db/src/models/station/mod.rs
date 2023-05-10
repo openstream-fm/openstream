@@ -3,6 +3,7 @@ use crate::error::ApplyPatchError;
 use crate::Model;
 use crate::{metadata::Metadata, PublicScope};
 use drop_tracer::Token;
+use geoip::CountryCode;
 use mongodb::bson::{doc, Bson};
 use mongodb::options::{FindOneAndUpdateOptions, ReturnDocument};
 use mongodb::IndexModel;
@@ -35,6 +36,9 @@ pub struct Station {
   #[modify(trim)]
   #[validate(length(min = "SLOGAN_MIN", max = "SLOGAN_MAX"), non_control_character)]
   pub slogan: Option<String>,
+
+  pub type_of_content: StationTypeOfContent,
+  pub country_code: CountryCode,
 
   #[modify(trim)]
   #[validate(length(min = "DESC_MIN", max = "DESC_MAX"))]
@@ -140,7 +144,6 @@ pub struct Station {
   pub owner_deployment_info: Option<OwnerDeploymentInfo>,
 
   // misc
-  pub limits: Limits,
   pub playlist_is_randomly_shuffled: bool,
 
   // auth
@@ -149,6 +152,50 @@ pub struct Station {
   pub created_at: DateTime,
   pub updated_at: DateTime,
   pub deleted_at: Option<DateTime>,
+}
+
+#[derive(
+  Debug,
+  Clone,
+  Copy,
+  Serialize,
+  Deserialize,
+  ts_rs::TS,
+  strum::AsRefStr,
+  strum::Display,
+  strum::EnumCount,
+  strum::EnumIter,
+  strum::EnumVariantNames,
+)]
+#[serde(rename_all = "lowercase")]
+#[strum(serialize_all = "lowercase")]
+#[ts(export, export_to = "../../../defs/db/")]
+#[macros::keys]
+pub enum StationTypeOfContent {
+  Comedy,
+  Educational,
+  General,
+  Music,
+  News,
+  Religious,
+  Sports,
+  Talk,
+}
+
+impl StationTypeOfContent {
+  pub fn display_name(&self) -> &'static str {
+    use StationTypeOfContent::*;
+    match self {
+      General => "General",
+      News => "News",
+      Talk => "Talk",
+      Music => "Music",
+      Educational => "Educational",
+      Sports => "Sports",
+      Religious => "Religious",
+      Comedy => "Comedy",
+    }
+  }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -201,6 +248,8 @@ pub struct UserPublicStation {
   pub slogan: Option<String>,
   pub description: Option<String>,
 
+  pub type_of_content: StationTypeOfContent,
+  pub country_code: CountryCode,
   // location and language
   // pub language_id: Option<String>,
   // pub region_id: Option<String>,
@@ -231,7 +280,6 @@ pub struct UserPublicStation {
   pub user_metadata: Metadata,
 
   // misc
-  pub limits: Limits,
   pub playlist_is_randomly_shuffled: bool,
 
   // auth
@@ -307,6 +355,9 @@ pub struct StationPatch {
   #[modify(trim)]
   #[validate(length(min = "DESC_MIN", max = "DESC_MAX"))]
   pub description: Option<Option<String>>,
+
+  pub type_of_content: Option<StationTypeOfContent>,
+  pub country_code: Option<CountryCode>,
 
   // location and language
   // pub language_id: Option<String>,
@@ -468,10 +519,9 @@ pub struct StationPatch {
   )]
   pub app_store_url: Option<Option<String>>,
 
-  #[ts(optional)]
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub limits: Option<StationPatchLimits>,
-
+  //#[ts(optional)]
+  //#[serde(skip_serializing_if = "Option::is_none")]
+  //pub limits: Option<StationPatchLimits>,
   #[ts(optional)]
   #[serde(skip_serializing_if = "Option::is_none")]
   pub user_metadata: Option<Metadata>,
@@ -479,19 +529,6 @@ pub struct StationPatch {
   #[ts(optional)]
   #[serde(skip_serializing_if = "Option::is_none")]
   pub system_metadata: Option<Metadata>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/ops/")]
-#[serde(rename_all = "snake_case")]
-#[serde(deny_unknown_fields)]
-pub struct StationPatchLimits {
-  #[serde(skip_serializing_if = "Option::is_none")]
-  storage: Option<u64>,
-  #[serde(skip_serializing_if = "Option::is_none")]
-  transfer: Option<u64>,
-  #[serde(skip_serializing_if = "Option::is_none")]
-  listeners: Option<u64>,
 }
 
 impl Station {
@@ -562,7 +599,7 @@ impl Station {
   ) -> Result<(), ApplyPatchError> {
     match scope {
       PublicScope::User => {
-        if patch.system_metadata.is_some() || patch.limits.is_some() {
+        if patch.system_metadata.is_some() {
           return Err(ApplyPatchError::out_of_scope(
             "Some of the specified fields are out of scope",
           ));
@@ -585,6 +622,8 @@ impl Station {
     apply!(name);
     apply!(slogan);
     apply!(description);
+    apply!(type_of_content);
+    apply!(country_code);
 
     apply!(email);
     apply!(whatsapp);
@@ -605,102 +644,9 @@ impl Station {
       self.user_metadata.merge(metadata);
     }
 
-    match scope {
-      PublicScope::User => {}
-      PublicScope::Admin => {
-        if let Some(metadata) = patch.system_metadata {
-          self.system_metadata.merge(metadata);
-        }
-
-        if let Some(limits) = patch.limits {
-          if let Some(storage) = limits.storage {
-            self.limits.storage.total = storage;
-          }
-
-          if let Some(transfer) = limits.transfer {
-            self.limits.transfer.total = transfer;
-          }
-
-          if let Some(listeners) = limits.listeners {
-            self.limits.listeners.total = listeners;
-          }
-        }
-      }
-    }
-
     self.updated_at = DateTime::now();
 
     Ok(())
-  }
-
-  // pub fn apply_admin_patch(&mut self, patch: StationPatch) -> Result<(), ApplyPatchError> {
-  //   if patch.name.is_none() && patch.user_metadata.is_none() && patch.system_metadata.is_none() {
-  //     return Err(ApplyPatchError::PatchEmpty);
-  //   }
-
-  //   if let Some(ref name) = patch.name {
-  //     let name = name.trim();
-  //     if name.is_empty() {
-  //       return Err(ApplyPatchError::invalid("name cannot be empty"));
-  //     }
-
-  //     self.name = name.into()
-  //   }
-
-  //   if let Some(metadata) = patch.user_metadata {
-  //     self.user_metadata.merge(metadata);
-  //   }
-
-  //   if let Some(metadata) = patch.system_metadata {
-  //     self.system_metadata.merge(metadata);
-  //   }
-
-  //   self.updated_at = DateTime::now();
-
-  //   Ok(())
-  // }
-
-  pub async fn increment_used_transfer(
-    id: &str,
-    size: usize,
-  ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
-    const KEY: &str = crate::key!(Station::KEY_LIMITS, Limits::KEY_TRANSFER, Limit::KEY_USED);
-
-    Self::cl()
-      .update_one(
-        doc! { Station::KEY_ID: id },
-        doc! { "$inc": { KEY: size as f64 } },
-        None,
-      )
-      .await
-  }
-
-  pub async fn increment_used_listeners(
-    id: &str,
-  ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
-    const KEY: &str = crate::key!(Station::KEY_LIMITS, Limits::KEY_LISTENERS, Limit::KEY_USED);
-
-    Self::cl()
-      .update_one(
-        doc! { Station::KEY_ID: id },
-        doc! { "$inc": { KEY: 1 } },
-        None,
-      )
-      .await
-  }
-
-  pub async fn decrement_used_listeners(
-    id: &str,
-  ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
-    const KEY: &str = crate::key!(Station::KEY_LIMITS, Limits::KEY_LISTENERS, Limit::KEY_USED);
-
-    Self::cl()
-      .update_one(
-        doc! { Station::KEY_ID: id },
-        doc! { "$inc": { KEY: -1 } },
-        None,
-      )
-      .await
   }
 }
 
@@ -710,7 +656,8 @@ impl From<Station> for UserPublicStation {
       id: station.id,
       account_id: station.account_id,
       picture_id: station.picture_id,
-
+      type_of_content: station.type_of_content,
+      country_code: station.country_code,
       //language_id: station.language_id,
       //region_id: station.region_id,
       frequencies: station.frequencies,
@@ -736,7 +683,6 @@ impl From<Station> for UserPublicStation {
       app_store_url: station.app_store_url,
       google_play_url: station.google_play_url,
 
-      limits: station.limits,
       playlist_is_randomly_shuffled: station.playlist_is_randomly_shuffled,
       source_password: station.source_password,
 
@@ -770,33 +716,6 @@ impl Station {
   }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/", rename = "StationLimits")]
-#[serde(rename_all = "snake_case")]
-#[macros::keys]
-pub struct Limits {
-  pub listeners: Limit,
-  pub transfer: Limit,
-  pub storage: Limit,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize, TS)]
-#[ts(export, export_to = "../../../defs/", rename = "StationLimit")]
-#[serde(rename_all = "snake_case")]
-#[macros::keys]
-pub struct Limit {
-  #[serde(with = "serde_util::as_f64")]
-  pub used: u64,
-  #[serde(with = "serde_util::as_f64")]
-  pub total: u64,
-}
-
-impl Limit {
-  pub fn avail(&self) -> u64 {
-    self.total.saturating_sub(self.used)
-  }
-}
-
 impl Model for Station {
   const UID_LEN: usize = 8;
   const CL_NAME: &'static str = "stations";
@@ -824,10 +743,10 @@ impl Model for Station {
 
 #[macro_export]
 macro_rules! storage_quota {
-  ($station_id:expr) => {
-    match $crate::station::Station::get_by_id($station_id).await? {
+  ($account_id:expr) => {
+    match $crate::account::Account::get_by_id($account_id).await? {
       None => None,
-      Some(station) => Some(station.limits.storage.avail()),
+      Some(account) => Some(account.limits.storage.avail()),
     }
   };
 }

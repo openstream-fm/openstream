@@ -23,7 +23,7 @@
 	import { goto } from "$app/navigation";
 
   const sign_out = action(async () => {
-    await _post("/api/logout", {});
+    await _post("/api/auth/user/logout", {});
     goto("/", { invalidateAll: true })
   })
 
@@ -280,7 +280,7 @@
               </a>
               <div class="station-list thin-scroll">
                 {#each accounts.items as item (item._id)}
-                  <a href="/accounts/{item._id}" class="na menu-account" class:current={item._id === account?._id} use:ripple on:click={() => menu_open = false}>
+                  <a href="/accounts/{item._id}" class="na menu-account ripple-container" class:current={item._id === account?._id} use:ripple on:click={() => menu_open = false}>
                     {item.name}
                   </a>
                 {/each}

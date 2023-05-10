@@ -1,0 +1,47 @@
+<style>
+  body {
+    margin: 0;
+  }
+
+  .base-body {
+    background: #eee;
+    padding: 30px 30px 60px 30px;
+    margin: 0;
+  }
+
+  .base-logo {
+    display: block;
+    width: 200px;
+    max-width: 100%;
+    margin: auto;
+  }
+
+  .base-logo > img {
+    width: 100%;
+    aspect-ratio: 223 / 63;
+  }
+
+  .base-block-content {
+    font-size: 20px;
+    font-family: sans-serif;
+    max-width: 800px;
+    margin: 32px auto 0 auto;
+    padding: 32px;
+    background: #fff;
+    border-radius: 12px;
+    box-sizing: border-box;
+  }
+</style>
+
+<div class="base-body">
+  
+  <div class="base-top">
+    <div class="base-logo">
+      <img alt="Openstream" src="https://mailer-static.openstream.fm/v1/top-logo.png" />
+    </div>
+  </div>
+
+  <div class="base-block-content">
+    {% block content %}{% endblock %}
+  </div>
+</div>

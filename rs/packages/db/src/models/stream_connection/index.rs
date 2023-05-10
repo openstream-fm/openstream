@@ -426,24 +426,24 @@ impl MemIndex {
         };
       }
 
-      match station_query {
+      match &station_query {
         StationQuery::All => {
           for item in lock.primary.values() {
             add_filtered!(item);
           }
         }
 
-        StationQuery::One(station_id) => {
-          if let Some(map) = lock.by_station_id.get(&station_id) {
+        StationQuery::One { hashed, .. } => {
+          if let Some(map) = lock.by_station_id.get(hashed) {
             for item in map.values() {
               add_filtered!(item)
             }
           }
         }
 
-        StationQuery::Some(set) => {
-          for station_id in set {
-            if let Some(map) = lock.by_station_id.get(&station_id) {
+        StationQuery::Some { hashed, .. } => {
+          for station_id in hashed {
+            if let Some(map) = lock.by_station_id.get(station_id) {
               for item in map.values() {
                 add_filtered!(item)
               }
@@ -463,7 +463,9 @@ impl MemIndex {
 
       log::info!(
         target: "stream_stats",
-        "stats get: {} items in {}ms",
+        "stats get, station({}) filter({}) => {} items in {}ms",
+        station_query,
+        filter,
         total,
         start.elapsed().as_millis()
       );
@@ -495,24 +497,24 @@ impl MemIndex {
         };
       }
 
-      match station_query {
+      match &station_query {
         StationQuery::All => {
           for conn in lock.primary.values() {
             add_filtered!(conn);
           }
         }
 
-        StationQuery::One(station_id) => {
-          if let Some(map) = lock.by_station_id.get(&station_id) {
+        StationQuery::One { hashed, .. } => {
+          if let Some(map) = lock.by_station_id.get(hashed) {
             for conn in map.values() {
               add_filtered!(conn)
             }
           }
         }
 
-        StationQuery::Some(set) => {
-          for station_id in set {
-            if let Some(map) = lock.by_station_id.get(&station_id) {
+        StationQuery::Some { hashed, .. } => {
+          for station_id in hashed {
+            if let Some(map) = lock.by_station_id.get(station_id) {
               for conn in map.values() {
                 add_filtered!(conn)
               }
@@ -523,7 +525,9 @@ impl MemIndex {
 
       log::info!(
         target: "stream_stats",
-        "stats get item: {} items in {}ms",
+        "stats get item, station({}) filter({}) => {} items in {}ms",
+        station_query,
+        filter,
         item.sessions,
         start.elapsed().as_millis()
       );
@@ -553,24 +557,24 @@ impl MemIndex {
         };
       }
 
-      match station_query {
+      match &station_query {
         StationQuery::All => {
           for conn in lock.primary.values() {
             add_filtered!(conn);
           }
         }
 
-        StationQuery::One(station_id) => {
-          if let Some(map) = lock.by_station_id.get(&station_id) {
+        StationQuery::One { hashed, .. } => {
+          if let Some(map) = lock.by_station_id.get(hashed) {
             for conn in map.values() {
               add_filtered!(conn)
             }
           }
         }
 
-        StationQuery::Some(set) => {
-          for station_id in set {
-            if let Some(map) = lock.by_station_id.get(&station_id) {
+        StationQuery::Some { hashed, .. } => {
+          for station_id in hashed {
+            if let Some(map) = lock.by_station_id.get(station_id) {
               for conn in map.values() {
                 add_filtered!(conn)
               }
@@ -583,7 +587,9 @@ impl MemIndex {
 
     log::info!(
       target: "stream_stats",
-      "stats count: {} items in {}ms",
+      "stats count, station({}) filter({}) => {} items in {}ms",
+      station_query,
+      filter,
       total,
       start.elapsed().as_millis()
     );
@@ -592,7 +598,7 @@ impl MemIndex {
   }
 }
 
-pub trait Filter {
+pub trait Filter: std::fmt::Display {
   fn filter(&self, item: &Item) -> bool;
 
   fn is_all(&self) -> bool {
@@ -615,10 +621,9 @@ impl Filter for AllFilter {
   }
 }
 
-impl<F: Fn(&Item) -> bool> Filter for F {
-  #[inline(always)]
-  fn filter(&self, item: &Item) -> bool {
-    (self)(item)
+impl std::fmt::Display for AllFilter {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    write!(f, "all")
   }
 }
 
@@ -632,55 +637,102 @@ impl Filter for IsOpenFilter {
   }
 }
 
+impl std::fmt::Display for IsOpenFilter {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    match self.0 {
+      true => write!(f, "is_open"),
+      false => write!(f, "is_closed"),
+    }
+  }
+}
+
 #[derive(Debug, Clone)]
-pub struct StationIdFilter(u64);
+pub struct StationIdFilter {
+  station_id: String,
+  hash: u64,
+}
 
 impl StationIdFilter {
   pub fn new(station_id: String) -> Self {
-    Self(hash(&station_id))
+    let hash = hash(&station_id);
+    Self { station_id, hash }
+  }
+}
+
+impl std::fmt::Display for StationIdFilter {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    write!(f, "station_id={}", self.station_id)
   }
 }
 
 impl Filter for StationIdFilter {
   #[inline(always)]
   fn filter(&self, item: &Item) -> bool {
-    item.station_id == self.0
+    item.station_id == self.hash
   }
 }
 
 #[derive(Debug, Clone)]
-pub struct StationIdSetFilter(HashSet<u64>);
+pub struct StationIdSetFilter {
+  station_ids: HashSet<String>,
+  hashes: HashSet<u64>,
+}
 
 impl StationIdSetFilter {
   pub fn new(set: HashSet<String>) -> Self {
-    let mapped = set.into_iter().map(|id| hash(&id)).collect();
-    Self(mapped)
+    let hashes = set.iter().map(|id| hash(&id)).collect();
+    Self {
+      station_ids: set,
+      hashes,
+    }
+  }
+}
+
+impl std::fmt::Display for StationIdSetFilter {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    write!(f, "station_id=in(")?;
+    for (i, station_id) in self.station_ids.iter().enumerate() {
+      if i == 0 {
+        write!(f, "{}", station_id)?;
+      } else {
+        write!(f, ",{}", station_id)?;
+      }
+    }
+
+    write!(f, ")")
   }
 }
 
 impl Filter for StationIdSetFilter {
   #[inline(always)]
   fn filter(&self, item: &Item) -> bool {
-    self.0.contains(&item.station_id)
+    self.hashes.contains(&item.station_id)
   }
 }
 
-impl<A: Filter, B: Filter> Filter for (A, B) {
+pub struct AndFilter<A: Filter, B: Filter>(pub A, pub B);
+
+impl<A: Filter, B: Filter> std::fmt::Display for AndFilter<A, B> {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    write!(f, "({} and {})", self.0, self.1)
+  }
+}
+
+impl<A: Filter, B: Filter> Filter for AndFilter<A, B> {
   #[inline(always)]
   fn filter(&self, item: &Item) -> bool {
     self.0.filter(item) && self.1.filter(item)
   }
 }
 
-impl<A: Filter, B: Filter, C: Filter> Filter for (A, B, C) {
-  #[inline(always)]
-  fn filter(&self, item: &Item) -> bool {
-    self.0.filter(item) && self.1.filter(item) && self.2.filter(item)
+#[derive(Debug, Clone)]
+pub struct OrFilter<A: Filter, B: Filter>(pub A, pub B);
+
+impl<A: Filter, B: Filter> std::fmt::Display for OrFilter<A, B> {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    write!(f, "({} or {})", self.0, self.1)
   }
 }
-
-#[derive(Debug, Clone)]
-pub struct OrFilter<A, B>(pub A, pub B);
 
 impl<A: Filter, B: Filter> Filter for OrFilter<A, B> {
   #[inline(always)]
@@ -690,29 +742,64 @@ impl<A: Filter, B: Filter> Filter for OrFilter<A, B> {
 }
 
 #[derive(Debug, Clone)]
-pub struct SinceFilter(u32);
+pub struct SinceFilter {
+  secs: u32,
+  ts: u32,
+}
 
 impl SinceFilter {
   pub fn new(duration: time::Duration) -> Self {
     let date = time::OffsetDateTime::now_utc() - duration;
     let ts = date.unix_timestamp() as u32;
-    Self(ts)
+    let secs = duration.whole_seconds() as u32;
+    Self { secs, ts }
+  }
+}
+
+impl std::fmt::Display for SinceFilter {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    const MINUTE: u32 = 60;
+    const HOUR: u32 = MINUTE * 60;
+    const DAY: u32 = HOUR * 24;
+
+    let d = self.secs / DAY;
+    let h = (self.secs % DAY) / HOUR;
+    let m = (self.secs % HOUR) / MINUTE;
+    let s = self.secs % MINUTE;
+
+    if d != 0 {
+      if s != 0 {
+        write!(f, "last {d} days, {h} hours, {m} mins, {s} secs")
+      } else if m != 0 {
+        write!(f, "last {d} days, {h} hours, {m} mins")
+      } else if h != 0 {
+        write!(f, "last {d} days, {h} hours")
+      } else {
+        write!(f, "last {d} days")
+      }
+    } else if h != 0 {
+      if s != 0 {
+        write!(f, "last {h} hours, {m} mins, {s}, secs")
+      } else if m != 0 {
+        write!(f, "last {h} hours, {m} mins")
+      } else {
+        write!(f, "last {h} hours")
+      }
+    } else if m != 0 {
+      if s != 0 {
+        write!(f, "last {m} mins, {s} secs")
+      } else {
+        write!(f, "last {m} mins")
+      }
+    } else {
+      write!(f, "last {s} secs")
+    }
   }
 }
 
 impl Filter for SinceFilter {
   fn filter(&self, item: &Item) -> bool {
-    item.created_at_secs >= self.0
-  }
-}
-
-#[derive(Debug, Clone)]
-pub struct ArgsFnFilter<A, F>(pub A, pub F);
-
-impl<A, F: Fn(&A, &Item) -> bool> Filter for ArgsFnFilter<A, F> {
-  #[inline(always)]
-  fn filter(&self, item: &Item) -> bool {
-    (self.1)(&self.0, item)
+    item.created_at_secs >= self.ts
   }
 }
 
@@ -788,10 +875,38 @@ impl<T> CountryCodeMap<T> {
   }
 }
 
+#[derive(Debug, Clone)]
 pub enum StationQuery {
   All,
-  One(u64),
-  Some(HashSet<u64>),
+  One {
+    station_id: String,
+    hashed: u64,
+  },
+  Some {
+    station_ids: HashSet<String>,
+    hashed: HashSet<u64>,
+  },
+}
+
+impl std::fmt::Display for StationQuery {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    match self {
+      StationQuery::All => write!(f, "all"),
+      StationQuery::One { station_id, .. } => write!(f, "eq={station_id}"),
+      StationQuery::Some { station_ids, .. } => {
+        write!(f, "in=")?;
+        for (i, station_id) in station_ids.iter().enumerate() {
+          if i == 0 {
+            write!(f, "{}", station_id)?;
+          } else {
+            write!(f, ",{}", station_id)?;
+          }
+        }
+
+        write!(f, ")")
+      }
+    }
+  }
 }
 
 impl StationQuery {
@@ -800,16 +915,21 @@ impl StationQuery {
   }
 
   pub fn one(station_id: String) -> Self {
-    Self::One(hash(&station_id))
+    Self::One {
+      hashed: hash(&station_id),
+      station_id,
+    }
   }
 
-  pub fn some<Iter: IntoIterator<Item = String>>(ids: Iter) -> Self {
-    let iter = ids.into_iter();
-    let mut set = HashSet::new();
-    for id in iter {
-      set.insert(hash(&id));
+  pub fn some(station_ids: HashSet<String>) -> Self {
+    let mut hashed = HashSet::new();
+    for id in station_ids.iter() {
+      hashed.insert(hash(id));
     }
-    Self::Some(set)
+    Self::Some {
+      station_ids,
+      hashed,
+    }
   }
 }
 

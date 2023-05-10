@@ -2,6 +2,7 @@
 import type { Metadata } from "../../../../../db/Metadata";
 
 export interface Payload {
+  plan_id: string;
   email: string;
   password: string;
   phone: string | null;

@@ -13,12 +13,8 @@
     "@mdi/js": "^7.1.96",
     "@sveltejs/kit": "^1.15.2",
     "@types/d3": "^7.4.0",
-    "@types/topojson-client": "^3.1.1",
     "d3": "^7.8.4",
+    "kleur": "^4.1.5",
     "svelte": "^3.55.0"
-  },
-  "dependencies": {
-    "topojson": "^3.0.2",
-    "topojson-client": "^3.1.0"
   }
 }

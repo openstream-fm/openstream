@@ -23,6 +23,7 @@ pub mod error;
 pub mod http;
 pub mod metadata;
 
+pub mod check;
 pub mod models;
 
 pub use models::access_token;
@@ -32,15 +33,19 @@ pub use models::audio_chunk;
 pub use models::audio_file;
 pub use models::audio_upload_operation;
 pub use models::config;
+pub use models::db_writable_test;
 pub use models::deployment;
 pub use models::event;
 pub use models::media_session;
+pub use models::plan;
 pub use models::play_history_item;
 pub use models::relay_session;
 pub use models::station;
 pub use models::station_picture;
 pub use models::station_picture_variant;
 pub use models::stream_connection;
+pub use models::token_user_email_confirmation;
+pub use models::token_user_recovery;
 pub use models::user;
 
 static CLIENT_AND_STORAGE_DB_NAME: OnceCell<(Client, Option<String>)> = OnceCell::new();
@@ -86,6 +91,7 @@ pub fn try_init(
 
 pub async fn ensure_collections() -> MongoResult<()> {
   config::Config::ensure_collection().await?;
+  db_writable_test::DbWritableTest::ensure_collection().await?;
   user::User::ensure_collection().await?;
   account::Account::ensure_collection().await?;
   station::Station::ensure_collection().await?;
@@ -104,6 +110,9 @@ pub async fn ensure_collections() -> MongoResult<()> {
   deployment::Deployment::ensure_collection().await?;
   relay_session::RelaySession::ensure_indexes().await?;
   user_account_relation::UserAccountRelation::ensure_collection().await?;
+  token_user_email_confirmation::TokenUserEmailConfirmation::ensure_collection().await?;
+  token_user_recovery::TokenUserRecovery::ensure_collection().await?;
+  plan::Plan::ensure_collection().await?;
 
   Ok(())
 }

@@ -26,7 +26,7 @@
       `;
   }
   
-  const clamp = (min: number, v: number, max: number): number => Math.min(min, Math.max(v, max));
+  const clamp = (min: number, v: number, max: number): number => Math.max(min, Math.min(v, max));
 
   $: d = describeArc(50, 50, 35, 90, clamp(0.001, used, 0.999) * 360 + 90);
 </script>

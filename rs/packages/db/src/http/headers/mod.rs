@@ -11,6 +11,13 @@ use ts_rs::TS;
 pub struct Headers(IndexMap<String, String>);
 
 impl Headers {
+  pub const REDACTED_VALUE: &str = "REDACTED";
+
+  #[inline]
+  pub fn is_sensible_key(key: &str) -> bool {
+    key.eq_ignore_ascii_case("x-access-token") || key.eq_ignore_ascii_case("cookie")
+  }
+
   #[inline]
   pub fn new() -> Self {
     Self(IndexMap::new())
@@ -75,7 +82,12 @@ impl Headers {
     let mut map = IndexMap::with_capacity(headers.keys_len());
     for (key, value) in headers.iter() {
       let key = key.as_str().to_lowercase();
-      let value = String::from_utf8_lossy(value.as_bytes()).to_string();
+      let value = if Self::is_sensible_key(&key) {
+        String::from(Self::REDACTED_VALUE)
+      } else {
+        String::from_utf8_lossy(value.as_bytes()).to_string()
+      };
+
       map.insert(key, value);
     }
 

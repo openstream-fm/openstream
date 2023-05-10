@@ -1,5 +1,5 @@
 use constants::TRANSFER_SAVE_INTERVAL_MILLIS;
-use db::station::Station;
+use db::account::Account;
 use log::*;
 use parking_lot::RwLock;
 use std::collections::BTreeMap;
@@ -62,7 +62,7 @@ impl TransferTracer {
 
     for (id, value) in now.iter() {
       debug!("saving transfer for station {id} increment: {value}");
-      let r = Station::increment_used_transfer(id, *value).await;
+      let r = Account::increment_used_transfer(id, *value).await;
       match r {
         Err(e) => warn!("error saving transfer for station {id}: {e}"),
         Ok(r) => debug!(

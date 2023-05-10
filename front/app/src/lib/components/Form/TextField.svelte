@@ -16,7 +16,7 @@
 
   export let btn: { icon: string, action: () => void } | null = null;
 	
-  let empty = (trim ? value.trim() : value) === "";
+  $: empty = (trim ? value.trim() : value) === "";
 
   import FieldContainer from "./FieldContainer.svelte";
 	import Input from "./Input.svelte";

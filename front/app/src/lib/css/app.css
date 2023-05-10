@@ -20,7 +20,7 @@
   --blue-rgb: 0, 116, 217;
   --blue: rgb(var(--blue-rgb));
   
-  --loading-color: var(--red);
+  --loading-color: var(--blue);
 
   --green: #75A633;
 
@@ -30,18 +30,23 @@
   --bg-gray-rgb: 244, 244, 244;
   --bg-gray: rgb(var(--bg-gray-rgb));
 
+  --z-login-bg: 100;
+  --z-login-front: 200; 
+
   --z-station-top: 800;
   --z-station-menu: 900;
   --z-top: 1000;
   --z-drawer-wide: 1100;
   --z-player: 1200;
   --z-user-menu: 1375;
+
   --z-drawer-fixed: 1400;
   --z-map-tooltip: 2000;
   --z-tooltip: 2100;
   --z-overlay: 3000;
+
   
-  --some-shadow: 0 4px 20px 0 rgb(0 0 0 / 5%);
+  --some-shadow: 0 4px 20px 0 rgb(0 0 0 / 20%);
 }
 
 html {
@@ -77,7 +82,7 @@ p, h1, h2, h3, h4, h5, h6 {
   margin: 0;
 }
 
-input, textarea, button {
+input, textarea, button, select {
   font: inherit;
 }
 
@@ -121,7 +126,7 @@ form {
   background: rgba(0, 0, 0, 0.8);
   z-index: var(--z-tooltip);
   border-radius: 0.25rem;
-  max-width: calc(100vw - 32px);
+  max-width: min(300px, calc(100vw - 32px));
 }
   
 .tooltip.visible {

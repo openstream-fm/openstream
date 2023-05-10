@@ -23,7 +23,6 @@ pub struct StreamConnectionLite {
   #[serde(with = "serde_util::ip")]
   pub ip: IpAddr,
   #[serde(rename = "c")]
-  #[serde(deserialize_with = "geoip::deserialize_option")]
   pub country_code: Option<CountryCode>,
   #[serde(rename = "d")]
   pub created_at: DateTime,

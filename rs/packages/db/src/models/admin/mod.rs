@@ -16,9 +16,10 @@ pub struct Admin {
   pub last_name: String,
   pub email: String,
   pub password: String,
+  pub system_metadata: Metadata,
   pub created_at: DateTime,
   pub updated_at: DateTime,
-  pub system_metadata: Metadata,
+  pub deleted_at: Option<DateTime>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]

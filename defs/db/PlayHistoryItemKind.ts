@@ -2,6 +2,5 @@
 
 export type PlayHistoryItemKind = { kind: "live" } | {
   kind: "playlist";
-  playlist_id: string;
   file_id: string;
 };

@@ -10,20 +10,23 @@ async-stream = "0.3.3"
 async-trait = "0.1.57"
 bytes = "1.3.0"
 chrono = "0.4.23"
-config = { version = "0.1.0", path = "../config" }
+const-str = "0.5.4"
 constants = { version = "0.1.0", path = "../../config/constants" }
 cookie = { version = "0.16.2", features = ["sha2", "secure", "signed", "base64"] }
 crypt = { version = "0.1.0", path = "../crypt" }
+css-inline = "0.8.5"
 db = { version = "0.1.0", path = "../db" }
 drop-tracer = { version = "0.1.0", path = "../drop-tracer" }
 futures = "0.3.25"
 futures-util = "0.3.25"
+geoip = { version = "0.1.0", path = "../geoip" }
 hex = "0.4.3"
 http = { version = "0.1.0", path = "../http" }
 http-range = "0.1.5"
 hyper = { version = "0.14.20", features = ["full"] }
 lazy-regex = "2.5.0"
 log = "0.4.17"
+mailer = { version = "0.1.0", path = "../mailer" }
 media-sessions = { version = "0.1.0", path = "../media-sessions" }
 mongodb = "2.4.0"
 owo-colors = { version = "3.5.0", path = "../owo-colors" }
@@ -39,7 +42,6 @@ shutdown = { version = "0.1.0", path = "../shutdown" }
 slugify = "0.1.0"
 socket2 = "0.4.7"
 static_init = "1.0.3"
-test-util = { version = "0.1.0", path = "../test-util" }
 thiserror = "1.0.38"
 time = "0.3.17"
 tokio = { version = "1.27.0", features = ["full"] }
@@ -50,3 +52,7 @@ url = "2.3.1"
 user-agent = { version = "0.1.0", path = "../user-agent" }
 validate = { version = "0.1.0", path = "../validate" }
 validify = "0.1.0"
+
+[dev-dependencies]
+test-util = { version = "0.1.0", path = "../test-util" }
+config = { version = "0.1.0", path = "../config" }

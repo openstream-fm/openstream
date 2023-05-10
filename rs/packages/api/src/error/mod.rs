@@ -5,6 +5,7 @@ use http_range::HttpRangeParseError;
 use hyper::header::{CONTENT_LENGTH, CONTENT_TYPE};
 use hyper::http::HeaderValue;
 use hyper::{Body, StatusCode};
+use mailer::error::RenderError;
 use prex::request::{ReadBodyBytesError, ReadBodyJsonError};
 use prex::*;
 use serde_json;
@@ -24,6 +25,9 @@ pub enum ApiError {
 
   #[error("resource not found")]
   ResourceNotFound,
+
+  #[error("bad request: {0}")]
+  BadRequestCustom(String),
 
   #[error("mongodb: {0}")]
   Db(#[from] mongodb::error::Error),
@@ -73,6 +77,9 @@ pub enum ApiError {
   #[error("audio file not found: {0}")]
   AudioFileNotFound(String),
 
+  #[error("plan not found: {0}")]
+  PlanNotFound(String),
+
   #[error("payload io: {0}")]
   PayloadIo(hyper::Error),
 
@@ -85,8 +92,11 @@ pub enum ApiError {
   #[error("payload invalid: {0}")]
   PayloadInvalid(String),
 
-  #[error("auth failed")]
-  AuthFailed,
+  #[error("user auth failed")]
+  UserAuthFailed,
+
+  #[error("admin auth failed")]
+  AdminAuthFailed,
 
   #[error("user email exists")]
   UserEmailExists,
@@ -144,6 +154,12 @@ pub enum ApiError {
 
   #[error("cannot start playlist (no files for account")]
   PlaylistStartNoFiles,
+
+  #[error("render mail: {0}")]
+  RenderMail(mailer::error::RenderError),
+
+  #[error("create station account limit")]
+  CreateStationAccountLimit,
 }
 
 impl ApiError {
@@ -154,6 +170,7 @@ impl ApiError {
       TooManyRequests => StatusCode::TOO_MANY_REQUESTS,
       ResourceNotFound => StatusCode::NOT_FOUND,
       Db(_) => StatusCode::INTERNAL_SERVER_ERROR,
+      BadRequestCustom(_) => StatusCode::BAD_REQUEST,
       // for Kind::Hyper(e) we assume that is a network error responsability of the client so we respond BAD_REQUEST
       Hyper(_) => StatusCode::BAD_REQUEST,
       TokenMissing => StatusCode::UNAUTHORIZED,
@@ -166,6 +183,7 @@ impl ApiError {
       AdminNotFound(_) => StatusCode::NOT_FOUND,
       DeviceNotFound(_) => StatusCode::NOT_FOUND,
       AccountNotFound(_) => StatusCode::NOT_FOUND,
+      PlanNotFound(_) => StatusCode::NOT_FOUND,
       UserNotFound(_) => StatusCode::NOT_FOUND,
       AudioFileNotFound(_) => StatusCode::NOT_FOUND,
       QueryString(_) => StatusCode::BAD_REQUEST,
@@ -174,7 +192,10 @@ impl ApiError {
       PayloadJson(_) => StatusCode::BAD_REQUEST,
       PayloadTooLarge(_) => StatusCode::BAD_REQUEST,
       PayloadInvalid(_) => StatusCode::BAD_REQUEST,
-      AuthFailed => StatusCode::BAD_REQUEST,
+
+      UserAuthFailed => StatusCode::BAD_REQUEST,
+      AdminAuthFailed => StatusCode::BAD_REQUEST,
+
       UserEmailExists => StatusCode::CONFLICT,
       AdminEmailExists => StatusCode::CONFLICT,
 
@@ -200,6 +221,10 @@ impl ApiError {
 
       PlaylistStartIsLive => StatusCode::BAD_REQUEST,
       PlaylistStartNoFiles => StatusCode::BAD_REQUEST,
+
+      RenderMail(_) => StatusCode::INTERNAL_SERVER_ERROR,
+
+      CreateStationAccountLimit => StatusCode::FAILED_DEPENDENCY,
     }
   }
 
@@ -208,17 +233,19 @@ impl ApiError {
     match self {
       TooManyRequests => format!("Too many requests"),
       ResourceNotFound => format!("Resource not found"),
+      BadRequestCustom(message) => message.clone(),
       Db(_) => format!("Internal server error"),
       Hyper(_) => format!("I/O request error"),
       TokenMissing => format!("Access token is required"),
       TokenMalformed => format!("Access token is malformed"),
       TokenNotFound => format!("Access token not found"),
-      TokenUserNotFound(id) => format!("User with id {id} has been deleted"),
-      TokenAdminNotFound(id) => format!("Admin with id {id} has been deleted"),
+      TokenUserNotFound(id) => format!("User with id {id} not found"),
+      TokenAdminNotFound(id) => format!("Admin with id {id} not found"),
       TokenOutOfScope => format!("Not enough permissions"),
       StationNotFound(id) => format!("Station with id {id} not found"),
       AdminNotFound(id) => format!("Admin with id {id} not found"),
       UserNotFound(id) => format!("User with id {id} not found"),
+      PlanNotFound(id) => format!("Plan with id {id} not found"),
       AccountNotFound(id) => format!("Account with id {id} not found"),
       DeviceNotFound(id) => format!("Device with id {id} not found"),
       AudioFileNotFound(id) => format!("Audio file with id {id} not found"),
@@ -228,7 +255,8 @@ impl ApiError {
       PayloadJson(e) => format!("Invalid JSON payload: {e}"),
       PayloadTooLarge(_) => format!("Payload size exceeded"),
       PayloadInvalid(e) => format!("{e}"),
-      AuthFailed => format!("There's no user with that email and password"),
+      UserAuthFailed => format!("There's no user with that email and password"),
+      AdminAuthFailed => format!("There's no admin with that email and password"),
       UserEmailExists => format!("User email already exists"),
       AdminEmailExists => format!("Admin email already exists"),
 
@@ -255,6 +283,8 @@ impl ApiError {
 
       PlaylistStartIsLive => format!("Station is currenly live streaming"),
       PlaylistStartNoFiles => format!("Station playlist is empty"),
+      RenderMail(_) => format!("There was an error rendering the email, try again later"),
+      CreateStationAccountLimit => format!("You reached your limit of stations for this account, upgrade your plan to add more stations"),
     }
   }
 
@@ -263,6 +293,7 @@ impl ApiError {
     match self {
       TooManyRequests => PublicErrorCode::TooManyRequests,
       ResourceNotFound => PublicErrorCode::ResourceNotFound,
+      BadRequestCustom(_) => PublicErrorCode::BadRequest,
       Db(_) => PublicErrorCode::InternalDb,
       Hyper(_) => PublicErrorCode::IoRequest,
       TokenMissing => PublicErrorCode::TokenMissing,
@@ -274,6 +305,7 @@ impl ApiError {
       StationNotFound(_) => PublicErrorCode::StationNotFound,
       AdminNotFound(_) => PublicErrorCode::AdminNotFound,
       UserNotFound(_) => PublicErrorCode::UserNotFound,
+      PlanNotFound(_) => PublicErrorCode::PlanNotFound,
       AccountNotFound(_) => PublicErrorCode::AccountNotFound,
       AudioFileNotFound(_) => PublicErrorCode::AudioFileNotFound,
       DeviceNotFound(_) => PublicErrorCode::DeviceNotFound,
@@ -283,7 +315,8 @@ impl ApiError {
       PayloadJson(_) => PublicErrorCode::PayloadJson,
       PayloadTooLarge(_) => PublicErrorCode::PayloadTooLarge,
       PayloadInvalid(_) => PublicErrorCode::PayloadInvalid,
-      AuthFailed => PublicErrorCode::AuthFailed,
+      UserAuthFailed => PublicErrorCode::UserAuthFailed,
+      AdminAuthFailed => PublicErrorCode::AdminAuthFailed,
       UserEmailExists => PublicErrorCode::UserEmailExists,
       AdminEmailExists => PublicErrorCode::AdminEmailExists,
 
@@ -308,6 +341,8 @@ impl ApiError {
 
       PlaylistStartIsLive => PublicErrorCode::PlaylistStartIsLive,
       PlaylistStartNoFiles => PublicErrorCode::PlaylistStartNoFiles,
+      RenderMail(_) => PublicErrorCode::RenderMail,
+      CreateStationAccountLimit => PublicErrorCode::CreateStationAccountLimit,
     }
   }
 
@@ -366,7 +401,12 @@ impl<E: Into<ApiError>> From<UploadError<E>> for ApiError {
       UploadError::Mongo(e) => e.into(),
       UploadError::Empty => ApiError::UploadEmpty,
       UploadError::FfmpegExit { status, stderr } => ApiError::UploadFfmpegExit { status, stderr },
-      UploadError::StationNotFound(id) => ApiError::StationNotFound(id),
+      UploadError::StationNotFound(id) => {
+        ApiError::PayloadInvalid(format!("Station with id {id} not found"))
+      }
+      UploadError::AccountNotFound(id) => {
+        ApiError::PayloadInvalid(format!("Account with id {id} not found"))
+      }
       UploadError::FfmpegIo(e) => ApiError::UploadFfmpegIo(e),
       UploadError::FfmpegSpawn(e) => ApiError::UploadSpawn(e),
       UploadError::QuotaExceeded => ApiError::UploadQuotaExceeded,
@@ -404,5 +444,11 @@ impl From<CreateStationPictureError> for ApiError {
       }
       AccountNotFound(_) => ApiError::QueryString2(format!("{e}")),
     }
+  }
+}
+
+impl From<RenderError> for ApiError {
+  fn from(e: RenderError) -> Self {
+    Self::RenderMail(e)
   }
 }

@@ -121,19 +121,36 @@ export const player_subtitle = derived([player_state, now_playing], ([state, now
   else if(state.type === "station") {
     if(now_playing == null) return null;
     else if(now_playing.kind === "none") return null;
-    else if(now_playing.kind === "live") return "Live streaming";
-    else if(now_playing.kind === "playlist") {
-      const artist = now_playing.file.metadata.artist;
-      const title = now_playing.file.metadata.title || now_playing.file.filename;
-      if(artist) {
+    else if(now_playing.kind === "live") {
+      const title = now_playing.title?.trim() || null;
+      const artist = now_playing.artist?.trim() || null;
+      if(title && artist){
         return `${title} - ${artist}`
+      } else if(title) {
+        return title
+      } else if(artist) {
+        return artist
       } else {
-        return title;
+        return "Live streaming";
       }
+    } else if(now_playing.kind === "playlist") {
+      const title = now_playing.title?.trim() || now_playing.filename.trim() || null;
+      const artist = now_playing.artist;
+      if(title && artist) {
+        return `${title} - ${artist}`
+      } else if(title) {
+        return title;
+      } else if(artist) {
+        return artist;
+      } else {
+        return "Playlist"
+      }
+    } else {
+       return assert_never(now_playing)
     }
-    else return assert_never(now_playing)
+  } else {
+    return assert_never(state)
   }
-  else return assert_never(state)
 })
 
 export const player_playing_audio_file_id = derived(player_state, (state): string | null => {

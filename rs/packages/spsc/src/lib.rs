@@ -1,3 +1,4 @@
+use futures_util::Stream;
 use parking_lot::Mutex;
 use pin_project::pin_project;
 use std::error::Error;
@@ -6,7 +7,6 @@ use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
 use std::task::{Context, Poll, Waker};
-use tokio_stream::Stream;
 
 pub fn channel<T>() -> (Sender<T>, Receiver<T>) {
   let state = Arc::new(Mutex::new(State {

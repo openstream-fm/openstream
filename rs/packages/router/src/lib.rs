@@ -65,10 +65,18 @@ impl RouterServer {
         socket.set_only_v6(true)?;
       }
 
-      // socket.set_reuse_address(true)?;
+      socket.set_nonblocking(true)?;
+      socket.set_reuse_address(true)?;
       // socket.set_reuse_port(true)?;
 
-      socket.bind(&addr.into())?;
+      match socket.bind(&addr.into()) {
+        Ok(()) => {}
+        Err(e) => {
+          error!("error binding to addr {} => {}", addr, e);
+          return Err(e.into());
+        }
+      };
+
       socket.listen(1024)?;
 
       let tcp = socket.into();

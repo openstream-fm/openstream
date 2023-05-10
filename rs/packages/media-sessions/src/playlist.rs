@@ -2,6 +2,8 @@ use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::time::Instant;
 
 use constants::{PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY, STREAM_BURST_LENGTH, STREAM_CHUNK_SIZE};
+use db::media_session::MediaSessionNowPlaying;
+use db::play_history_item::{self, PlayHistoryItem};
 use db::{audio_chunk::AudioChunk, audio_file::AudioFile, Model};
 use drop_tracer::{DropTracer, Token};
 use log::*;
@@ -64,15 +66,24 @@ pub fn run_playlist_session(
         transfer: AtomicU64::new(0),
       }));
 
+      let now_playing = match &start_file.metadata.title {
+        None => None,
+        Some(title) => Some(MediaSessionNowPlaying {
+          title: title.clone(),
+          artist: start_file.metadata.artist.clone(),
+        })
+      };
+
+      let media_session_doc_id = db::media_session::MediaSession::uid();
+
       let media_session_doc = {
         use db::media_session::*;
         let media_session_doc = MediaSession {
-          id: MediaSession::uid(),
+          id: media_session_doc_id.clone(),
           station_id: station_id.to_string(),
-          deployment_id,
-          created_at: DateTime::now(),
-          updated_at: DateTime::now(),
+          deployment_id: deployment_id.clone(),
           transfer_bytes: 0,
+          now_playing,
           kind: MediaSessionKind::Playlist {
             resumed_from: resume_playlist_id,
             last_audio_chunk_date: DateTime::now(),
@@ -84,13 +95,13 @@ pub fn run_playlist_session(
           state: MediaSessionState::Open,
           closed_at: None,
           duration_ms: None,
+          created_at: DateTime::now(),
+          updated_at: DateTime::now(),
         };
 
         MediaSession::insert(&media_session_doc).await?;
         media_session_doc
       };
-
-      let media_session_doc_id = media_session_doc.id.clone();
 
       let dropper = MediaSessionDropper {
         id: media_session_doc.id,
@@ -151,6 +162,34 @@ pub fn run_playlist_session(
         );
 
         {
+          let title = current_file.metadata.title.clone().unwrap_or_else(|| current_file.filename.clone());
+
+          let now = DateTime::now();
+          let play_history_item = PlayHistoryItem {
+            id: PlayHistoryItem::uid(),
+            deployment_id: deployment_id.clone(),
+            title: title.clone(),
+            artist: current_file.metadata.artist.clone(),
+            kind: play_history_item::Kind::Playlist { file_id: current_file.id.clone() },
+            station_id: station_id.to_string(),
+            created_at: now,
+          };
+
+          let now_playing = MediaSessionNowPlaying {
+            title,
+            artist: current_file.metadata.artist.clone(),
+          };
+
+          let update = doc! {
+            "$set": {
+              db::media_session::MediaSession::KEY_NOW_PLAYING: now_playing,
+              db::media_session::MediaSession::KEY_UPDATED_AT: now,
+            }
+          };
+
+          db::media_session::MediaSession::update_by_id(&media_session_doc_id, update).await?;
+          PlayHistoryItem::insert(play_history_item).await?;
+
           use db::media_session::MediaSession;
           MediaSession::set_file_chunk_part(
             &media_session_doc_id,

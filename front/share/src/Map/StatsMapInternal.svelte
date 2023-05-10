@@ -1,5 +1,6 @@
 <script lang="ts" context="module">
   const logger = default_logger.scoped("stats-map");
+  import type { View } from "./StatsMap.svelte";
 </script>
 
 <script lang="ts">
@@ -7,14 +8,16 @@
   export let data: Stats | null = null;
   export let kind: "account" | "station";
   export let record_id: string;
-  export let selected_view: "now" | "last_24h" | "last_7d" | "last_30d" = "now"; 
-  
+  export let view: View = "now"; 
+  export let in_screen = true;
+
   import { default_logger } from "$share/logger";
   import { _get } from "$share/net.client";
   import { sleep } from "$share/util";
   import { onMount } from "svelte";
   import Map from "./Map.svelte";
   import { ripple } from "$share/ripple";
+  import { intersect } from "$share/actions";
 
   let view_ids = ["now", "last_24h", "last_7d", "last_30d"] as const;
   let selector_titles = {
@@ -25,7 +28,7 @@
   } as const;
 
   type Stats = import("$server/defs/stream-connection-stats/Stats").Stats;
-  type StatsItem = import("$server/defs/stream-connection-stats/StatsItem").StatsItem;
+  //type StatsItem = import("$server/defs/stream-connection-stats/StatsItem").StatsItem;
 
   onMount(() => {
     let mounted = true;
@@ -39,16 +42,16 @@
         await sleep(250);
         if(!mounted) break;
         if(data == null) continue;
-        if(document.visibilityState === "hidden") {
+        if(document.visibilityState === "hidden" || in_screen === false) {
           if(!paused) {
             paused = true;
-            logger.info(`pausing stream stats auto update for ${kind} ${record_id} (document is ${document.visibilityState})`)
+            logger.info(`pausing stream stats auto update for ${kind} ${record_id} (document: ${document.visibilityState}, element in screen: ${in_screen})`)
           }
           continue;
         } else {
           if(paused) {
             paused = false;
-            logger.info(`re-starting stream stats auto update for ${kind} ${record_id} (document is ${document.visibilityState})`)
+            logger.info(`(re)starting stream stats auto update for ${kind} ${record_id} (document: ${document.visibilityState}, element in screen ${in_screen})`)
           } 
         };
         if(Date.now() - last < 10_000) continue;
@@ -203,7 +206,7 @@
     }
   }
 
-  @container stats-map (width < 500px) {
+  @container stats-map (width < 600px) {
     .stats-map-display {
       flex-direction: column;
     }
@@ -223,7 +226,7 @@
   }
 </style>
 
-<div class="stats-map">
+<div class="stats-map" use:intersect={{ enter: () => in_screen = true, leave: () => in_screen = false }}>
   <div class="stats-map-display">
     <div class="view-selector">
       {#if data != null}
@@ -231,10 +234,10 @@
         {@const data_non_null = data}
         {#each view_ids as view_id}
           {@const stats = data_non_null[view_id]}
-          {@const selected = view_id === selected_view}
+          {@const selected = view_id === view}
           {@const sessions = stats.sessions}
           {@const countries = Object.keys(stats.country_sessions).length}
-          <button class="view-btn ripple-container" class:selected use:ripple on:click={() => selected_view = view_id}>
+          <button class="view-btn ripple-container" class:selected use:ripple on:click={() => view = view_id}>
             <div class="view-title">
               {selector_titles[view_id]}
             </div>
@@ -254,7 +257,7 @@
     </div>
     <div class="map-out">
       {#if data != null}
-        <Map stats={data[selected_view]} />
+        <Map stats={data[view]} />
       {/if}
     </div>
   </div>

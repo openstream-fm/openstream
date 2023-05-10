@@ -22,6 +22,10 @@ const defaultConfig: Config = {
     enabled: true,
     port: 3000,
   },
+  admin: {
+    enabled: true,
+    port: 4000,
+  },
   source_port: {
     local: 8000,
     test: 8001,
@@ -52,6 +56,10 @@ cookie_name = "test_cookie"
 enabled = true
 port = 3000
 
+[admin]
+enabled = true
+port = 4000
+
 [source_port]
 local = 8000
 test = 8001
@@ -72,6 +80,8 @@ test("merge_env should merge environment variables with config", (t) => {
     OPENSTREAM_FRONT_SESSION_COOKIE_NAME: "test_cookie_env",
     OPENSTREAM_FRONT_STUDIO_ENABLED: "false",
     OPENSTREAM_FRONT_STUDIO_PORT: "4000",
+    OPENSTREAM_FRONT_ADMIN_ENABLED: "false",
+    OPENSTREAM_FRONT_ADMIN_PORT: "5000",
     OPENSTREAM_FRONT_SOURCE_PORT_LOCAL: "8000",
     OPENSTREAM_FRONT_SOURCE_PORT_TEST: "8001",
     OPENSTREAM_FRONT_SOURCE_PORT_S1: "8100",
@@ -92,6 +102,10 @@ test("merge_env should merge environment variables with config", (t) => {
     studio: {
       enabled: false,
       port: 4000,
+    },
+    admin: {
+      enabled: false,
+      port: 5000,
     },
     source_port: {
       local: 8000,
@@ -142,6 +156,8 @@ test("load_from_string should load config from JSON string with missing properti
     OPENSTREAM_FRONT_SESSION_COOKIE_NAME: "test_cookie",
     OPENSTREAM_FRONT_STUDIO_ENABLED: "true",
     OPENSTREAM_FRONT_STUDIO_PORT: "3000",
+    OPENSTREAM_FRONT_ADMIN_ENABLED: "true",
+    OPENSTREAM_FRONT_ADMIN_PORT: "4000",
     OPENSTREAM_FRONT_SOURCE_PORT_LOCAL: "8000",
     OPENSTREAM_FRONT_SOURCE_PORT_TEST: "8001",
     OPENSTREAM_FRONT_SOURCE_PORT_S1: "8100",
@@ -168,6 +184,8 @@ max_age_days = 30
     OPENSTREAM_FRONT_SESSION_COOKIE_NAME: "test_cookie",
     OPENSTREAM_FRONT_STUDIO_ENABLED: "true",
     OPENSTREAM_FRONT_STUDIO_PORT: "3000",
+    OPENSTREAM_FRONT_ADMIN_ENABLED: "true",
+    OPENSTREAM_FRONT_ADMIN_PORT: "4000",
     OPENSTREAM_FRONT_SOURCE_PORT_LOCAL: "8000",
     OPENSTREAM_FRONT_SOURCE_PORT_TEST: "8001",
     OPENSTREAM_FRONT_SOURCE_PORT_S1: "8100",

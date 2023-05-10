@@ -47,6 +47,7 @@ pub async fn run_live_session<E: std::error::Error + Send + Sync + 'static>(
       updated_at: now,
       transfer_bytes: 0,
       kind: MediaSessionKind::Live { request },
+      now_playing: None,
       state: MediaSessionState::Open,
       closed_at: None,
       duration_ms: None,

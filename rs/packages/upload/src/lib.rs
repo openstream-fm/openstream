@@ -4,6 +4,7 @@ use std::process::ExitStatus;
 
 use bytes::Bytes;
 use constants::{AUDIO_FILE_BYTERATE, AUDIO_FILE_CHUNK_SIZE};
+use db::account::Account;
 use db::audio_chunk::AudioChunk;
 use db::audio_file::{AudioFile, Metadata};
 use db::audio_upload_operation::{AudioUploadOperation, State};
@@ -51,6 +52,8 @@ pub enum UploadError<E> {
   FfmpegIo(std::io::Error),
   #[error("station not found: {0}")]
   StationNotFound(String),
+  #[error("account not found: {0}")]
+  AccountNotFound(String),
   #[error("quota exceeded")]
   QuotaExceeded,
   #[error("file empty")]
@@ -73,8 +76,18 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
   filename: String,
   data: S,
 ) -> Result<AudioFile, UploadError<E>> {
+  let station = match Station::get_by_id(&station_id).await? {
+    Some(station) => station,
+    None => return Err(UploadError::StationNotFound(station_id)),
+  };
+
+  let account = match Account::get_by_id(&station.account_id).await? {
+    Some(account) => account,
+    None => return Err(UploadError::AccountNotFound(station_id)),
+  };
+
   if let Some(len) = estimated_len {
-    check_quota!(&station_id, len);
+    check_quota!(&account.id, len);
   }
 
   tokio::pin!(data);
@@ -160,7 +173,7 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
         let len = bytes.len();
         file_len += len as u64;
 
-        check_quota!(&station_id, file_len);
+        check_quota!(&account.id, file_len);
 
         let duration_ms = bytes.len() as f64 / AUDIO_FILE_BYTERATE as f64 * 1000.0;
 
@@ -230,18 +243,23 @@ async fn upload_audio_file_internal<E: Error, S: Stream<Item = Result<Bytes, E>>
 
   run_transaction!(session => {
 
-    let mut station = match tx_try!(Station::get_by_id_with_session(&file.station_id, &mut session).await) {
+    let station = match tx_try!(Station::get_by_id_with_session(&file.station_id, &mut session).await) {
       None => return Err(UploadError::StationNotFound(file.station_id)),
       Some(station) => station,
     };
 
-    if station.limits.storage.avail() < file.len {
+    let mut account = match tx_try!(Account::get_by_id_with_session(&station.account_id, &mut session).await) {
+      None => return Err(UploadError::AccountNotFound(station.account_id)),
+      Some(account) => account,
+    };
+
+    if account.limits.storage.avail() < file.len {
       return Err(UploadError::QuotaExceeded);
     }
 
-    station.limits.storage.used += file.len;
+    account.limits.storage.used += file.len;
 
-    tx_try!(Station::replace_with_session(&station.id, &station, &mut session).await);
+    tx_try!(Account::replace_with_session(&account.id, &account, &mut session).await);
     tx_try!(AudioFile::insert_with_session(&file, &mut session).await);
     trace!("audio file uploaded station_id={}, audio_file_id={}", station.id, file.id);
   });

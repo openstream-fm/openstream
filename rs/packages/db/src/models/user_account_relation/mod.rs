@@ -20,9 +20,11 @@ pub struct UserAccountRelation {
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
+#[serde(rename_all = "lowercase")]
+#[macros::keys]
 pub enum UserAccountRelationKind {
-  #[serde(rename = "owner")]
   Owner,
+  Staff,
 }
 
 impl UserAccountRelationKind {

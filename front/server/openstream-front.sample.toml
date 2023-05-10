@@ -33,13 +33,25 @@ cookie_name = "openstream-front-tid"
 [studio]
 # boolean (required)
 # enable app web interface or not
-# env.OPENSTREAM_FRONT_APP_ENABLED
+# env.OPENSTREAM_FRONT_STUDIO_ENABLED
 enabled=true
 
 # number (required)
 # port to bind the admin interface to
-# env.OPENSTREAM_FRONT_APP_PORT
+# env.OPENSTREAM_FRONT_STUDIO_PORT
 port = 18965
+
+[admin]
+# boolean (required)
+# enable app web interface or not
+# env.OPENSTREAM_FRONT_ADMIN_ENABLED
+enabled=true
+
+# number (required)
+# port to bind the admin interface to
+# env.OPENSTREAM_FRONT_ADMIN_PORT
+port = 18865
+
 
 # mapping for [source] servers public ports
 [source_port]

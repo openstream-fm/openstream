@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %} 
+  <style>
+    .title {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    .content {
+      margin-top: 45px;
+    }
+
+    .accept {
+      display: inline-block;
+      color: #fff;
+      background: rgb(0, 116, 217);
+      padding: 14px 18px;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: 700;
+    }
+  </style>
+
+
+  <h1 class="title">Validate your email at Openstream</h1>
+
+  <div class="content">
+    <p class="text">Hello, <b>{{ first_name }}.</b></p>
+    <p class="text">
+      To validate your email at <b>Openstream</b> click below:
+    </p>
+
+    <div class="accept-out">
+      <a class="accept" href="{{ validation_url|safe }}" target="_blank">Validate your email</a>
+    </div>
+
+    <br />
+
+    <p>
+      If you didn't register at Openstream, just ignore this message.
+    </p>
+
+    <br />
+  
+    <p class="text">
+      Have a nice day! <br />
+      The Openstream team.
+    </p>
+  </div>
+
+{% endblock %}

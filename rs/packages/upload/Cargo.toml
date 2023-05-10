@@ -14,15 +14,15 @@ db = { version = "0.1.0", path = "../db" }
 ffmpeg = { version = "0.1.0", path = "../ffmpeg" }
 futures-util = "0.3.25"
 hex = "0.4.3"
-is_ci = "1.1.1"
+# is_ci = "1.1.1"
 log = "0.4.17"
-logger = { version = "0.1.0", path = "../logger" }
+# logger = { version = "0.1.0", path = "../logger" }
 md-5 = "0.10.5"
 mongodb = "2.4.0"
 serde-util = { version = "0.1.0", path = "../serde-util" }
 sha2 = "0.10.6"
 stream-util = { version = "0.1.0", path = "../stream-util" }
-test-util = { version = "0.1.0", path = "../test-util" }
+# test-util = { version = "0.1.0", path = "../test-util" }
 thiserror = "1.0.38"
 tokio = { version = "1.27.0", features = ["full"] }
 tokio-stream = "0.1.11"

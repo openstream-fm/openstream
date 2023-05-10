@@ -3,6 +3,7 @@ use crate::request_ext::{self, GetAccessTokenScopeError};
 
 use async_trait::async_trait;
 use db::station::Station;
+use mongodb::bson::doc;
 use prex::Request;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
@@ -11,7 +12,7 @@ pub mod get {
 
   use db::{
     audio_file::AudioFile,
-    media_session::{MediaSession, MediaSessionKind},
+    media_session::{MediaSession, MediaSessionKind, MediaSessionNowPlaying},
     Model,
   };
 
@@ -34,9 +35,17 @@ pub mod get {
     #[serde(rename = "none")]
     None { start_on_connect: bool },
     #[serde(rename = "live")]
-    Live,
+    Live {
+      title: Option<String>,
+      artist: Option<String>,
+    },
     #[serde(rename = "playlist")]
-    Playilist { file: AudioFile },
+    Playilist {
+      file_id: String,
+      filename: String,
+      title: Option<String>,
+      artist: Option<String>,
+    },
   }
 
   #[async_trait]
@@ -57,19 +66,41 @@ pub mod get {
       let Self::Input { station } = input;
 
       let out = match MediaSession::get_current_for_station(&station.id).await? {
-        None => Output::None {
-          start_on_connect: station.limits.storage.used != 0,
-        },
+        None => {
+          let filter = doc! { AudioFile::KEY_STATION_ID: &station.id };
+          let exists = AudioFile::exists(filter).await?;
+          Output::None {
+            start_on_connect: exists,
+          }
+        }
         Some(media_session) => match media_session.kind {
-          MediaSessionKind::Live { .. } => Output::Live,
+          MediaSessionKind::Live { .. } => match media_session.now_playing {
+            None => Output::Live {
+              title: None,
+              artist: None,
+            },
+            Some(MediaSessionNowPlaying { title, artist }) => Output::Live {
+              title: Some(title),
+              artist,
+            },
+          },
           MediaSessionKind::Playlist {
             last_audio_file_id, ..
           } => match AudioFile::get_by_id(&last_audio_file_id).await? {
             // this would never happen
-            None => Output::None {
-              start_on_connect: station.limits.storage.used != 0,
+            None => {
+              let filter = doc! { AudioFile::KEY_STATION_ID: &station.id };
+              let exists = AudioFile::exists(filter).await?;
+              Output::None {
+                start_on_connect: exists,
+              }
+            }
+            Some(file) => Output::Playilist {
+              file_id: file.id,
+              filename: file.filename,
+              title: file.metadata.title,
+              artist: file.metadata.artist,
             },
-            Some(file) => Output::Playilist { file },
           },
         },
       };

@@ -2,12 +2,13 @@ name: front-server-unit-tests
 
 on: 
   push:
-    branches-ignore: [ master ] 
+      branches: [ master, dev ]
   pull_request:
       types: [ opened, reopened ]
       
 jobs:
-  build:
+  
+  front-server-unit-tests:
 
     runs-on: ubuntu-latest
 

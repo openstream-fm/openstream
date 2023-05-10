@@ -2,7 +2,6 @@
 	import Page from "$lib/components/Page.svelte";
 	import { ripple } from "$share/ripple";
   export let data: import("./$types").PageData;
-
   $: current_account_stations = data.stations.items.filter(item => item.account_id === data.account._id);
 </script>
 
@@ -79,6 +78,14 @@
 
   .no-items-message {
     font-size: 1.1rem;
+    text-align: center;
+    line-height: 1.5rem;
+  }
+
+  @media screen and (max-width: 460px) {
+    .no-items-message {
+      font-size: 1rem;
+    }
   }
 
   .no-items-create {
@@ -117,7 +124,7 @@
 <Page>
   <div class="page">
     <div class="page-title">Select a station</div>
-    {#if data.stations.items.length}
+    {#if current_account_stations.length}
       <div class="list-box">
         {#each current_account_stations as station (station._id)}
           <a href="/accounts/{station.account_id}/stations/{station._id}" class="list-item na ripple-container" use:ripple>
@@ -140,15 +147,14 @@
       </a> 
       
     {:else}
-      <div class="list-box">
-        <div class="no-items">
-          <div class="no-items-message">
-            This account doesn't have stations yet
-          </div>
-          <a href="/accounts/{data.account._id}/stations/create-station" class="na no-items-create ripple-container" use:ripple>
-            Create a station
-          </a>
+      <div class="no-items">
+        <div class="no-items-message">
+          This account doesn't have stations yet.<br>
+          To start broadcasting, create a new station.
         </div>
+        <a href="/accounts/{data.account._id}/stations/create-station" class="na no-items-create ripple-container" use:ripple>
+          Create a station
+        </a>
       </div>
     {/if}
   </div>

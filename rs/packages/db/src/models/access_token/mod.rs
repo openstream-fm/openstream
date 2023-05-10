@@ -35,6 +35,7 @@ use tokio::sync::OnceCell;
 pub enum Scope {
   Global,
   Admin { admin_id: String },
+  AdminAsUser { admin_id: String, user_id: String },
   User { user_id: String },
 }
 

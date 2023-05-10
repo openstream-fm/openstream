@@ -15,7 +15,7 @@ use db::metadata::Metadata;
 use db::models::user_account_relation::UserAccountRelation;
 use db::station::PublicStation;
 use db::station::{validation::*, Station};
-use db::{Model, Paged, PublicScope, Singleton};
+use db::{Model, Paged, PublicScope};
 use mongodb::bson::doc;
 use prex::request::ReadBodyJsonError;
 use prex::Request;
@@ -159,11 +159,11 @@ pub mod get {
 }
 
 pub mod post {
-
-  use db::config::Config;
+  use db::account::{Account, Limit, Limits};
   use db::run_transaction;
-  use db::station::{Limit, Limits, Station, StationFrequency};
+  use db::station::{Station, StationFrequency, StationTypeOfContent};
   use db::station_picture::StationPicture;
+  use geoip::CountryCode;
   use serde_util::DateTime;
   use ts_rs::TS;
   use validate::url::patterns::*;
@@ -194,6 +194,9 @@ pub mod post {
     #[modify(trim)]
     #[validate(length(min = "DESC_MIN", max = "DESC_MAX"))]
     pub description: Option<String>,
+
+    pub type_of_content: StationTypeOfContent,
+    pub country_code: CountryCode,
 
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim, lowercase)]
@@ -291,10 +294,6 @@ pub mod post {
 
     #[ts(optional)]
     //#[serde(skip_serializing_if = "Option::is_none")]
-    pub limits: Option<PayloadLimits>,
-
-    #[ts(optional)]
-    //#[serde(skip_serializing_if = "Option::is_none")]
     pub user_metadata: Option<Metadata>,
 
     #[ts(optional)]
@@ -360,6 +359,8 @@ pub mod post {
     InvalidNameSlug,
     #[error("Picture with id {0} not found")]
     PictureNotFound(String),
+    #[error("Stations limit")]
+    StationLimit,
   }
 
   impl From<HandleError> for ApiError {
@@ -375,6 +376,7 @@ pub mod post {
         HandleError::InvalidNameSlug => {
           ApiError::PayloadInvalid(String::from("Station name is invalid"))
         }
+        HandleError::StationLimit => ApiError::CreateStationAccountLimit,
       }
     }
   }
@@ -414,6 +416,9 @@ pub mod post {
         slogan,
         description,
 
+        type_of_content,
+        country_code,
+
         email,
         phone,
         whatsapp,
@@ -430,14 +435,11 @@ pub mod post {
 
         frequencies,
 
-        limits: payload_limits,
         user_metadata,
         system_metadata,
       } = payload;
 
       access_token_scope.grant_account_scope(&account_id).await?;
-
-      let config = <Config as Singleton>::get().await?;
 
       let system_metadata = match &access_token_scope {
         AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
@@ -445,40 +447,6 @@ pub mod post {
         }
 
         AccessTokenScope::User(_) => Default::default(),
-      };
-
-      let limits = match &access_token_scope {
-        AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
-          let payload_limits = payload_limits.unwrap_or_default();
-          Limits {
-            listeners: Limit {
-              used: 0,
-              total: payload_limits.listeners.unwrap_or(config.limits.listeners),
-            },
-            transfer: Limit {
-              used: 0,
-              total: payload_limits.transfer.unwrap_or(config.limits.transfer),
-            },
-            storage: Limit {
-              used: 0,
-              total: payload_limits.storage.unwrap_or(config.limits.storage),
-            },
-          }
-        }
-        AccessTokenScope::User(_) => Limits {
-          listeners: Limit {
-            used: 0,
-            total: config.limits.listeners,
-          },
-          transfer: Limit {
-            used: 0,
-            total: config.limits.transfer,
-          },
-          storage: Limit {
-            used: 0,
-            total: config.limits.storage,
-          },
-        },
       };
 
       let user_metadata = user_metadata.unwrap_or_default();
@@ -492,13 +460,15 @@ pub mod post {
 
       let station = Station {
         id: Station::uid(),
-        account_id,
+        account_id: account_id.clone(),
         picture_id,
 
         name,
         slug,
         slogan,
         description,
+        type_of_content,
+        country_code,
 
         email,
         phone,
@@ -516,7 +486,6 @@ pub mod post {
 
         frequencies: frequencies.unwrap_or_default(),
 
-        limits,
         source_password: Station::random_source_password(),
         playlist_is_randomly_shuffled: false,
         owner_deployment_info: None,
@@ -543,6 +512,18 @@ pub mod post {
           }
         };
 
+        let account = match tx_try!(Account::get_by_id(&account_id).await) {
+          Some(account) => account,
+          None => return Err(HandleError::AccountNotFound(account_id))
+        };
+
+        if account.limits.stations.avail() == 0 {
+          return Err(HandleError::StationLimit);
+        }
+
+        const LIMIT_STATION: &str = const_str::concat!(Account::KEY_LIMITS, ".", Limits::KEY_STATIONS, ".", Limit::KEY_USED);
+        let account_update = doc!{ "$inc": { LIMIT_STATION: 1 } };
+        tx_try!(Account::update_by_id_with_session(&account_id, account_update, &mut session).await);
         tx_try!(Station::insert_with_session(&station, &mut session).await);
       });
 

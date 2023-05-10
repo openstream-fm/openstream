@@ -39,7 +39,7 @@ pub mod get {
 
     async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
       let access_token_scope = request_ext::get_access_token_scope(&req).await?;
-      if !access_token_scope.is_global() {
+      if !access_token_scope.is_admin_or_global() {
         return Err(GetAccessTokenScopeError::OutOfScope);
       };
       Ok(Input {})
@@ -88,7 +88,7 @@ pub mod now {
 
       async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
         let access_token_scope = request_ext::get_access_token_scope(&req).await?;
-        if !access_token_scope.is_global() {
+        if !access_token_scope.is_admin_or_global() {
           return Err(GetAccessTokenScopeError::OutOfScope);
         };
         Ok(Input {})
@@ -135,7 +135,7 @@ pub mod now {
 
         async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
           let access_token_scope = request_ext::get_access_token_scope(&req).await?;
-          if !access_token_scope.is_global() {
+          if !access_token_scope.is_admin_or_global() {
             return Err(GetAccessTokenScopeError::OutOfScope);
           };
           Ok(Input {})
@@ -229,7 +229,7 @@ pub mod since {
         let duration: time::Duration = num * unit;
 
         let access_token_scope = request_ext::get_access_token_scope(&req).await?;
-        if !access_token_scope.is_global() {
+        if !access_token_scope.is_admin_or_global() {
           return Err(ParseError::Token(GetAccessTokenScopeError::OutOfScope));
         };
         Ok(Input { duration })
@@ -319,7 +319,7 @@ pub mod since {
           let duration: time::Duration = num * unit;
 
           let access_token_scope = request_ext::get_access_token_scope(&req).await?;
-          if !access_token_scope.is_global() {
+          if !access_token_scope.is_admin_or_global() {
             return Err(ParseError::Token(GetAccessTokenScopeError::OutOfScope));
           };
           Ok(Input { duration })

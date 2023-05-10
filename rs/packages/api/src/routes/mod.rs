@@ -19,6 +19,7 @@ pub mod stations;
 pub mod users;
 
 pub mod devices;
+pub mod plans;
 pub mod runtime;
 pub mod station_pictures;
 pub mod stream_stats;
@@ -35,10 +36,6 @@ pub fn router(
   app.at("/me").get(me::get::Endpoint {}.into_handler());
 
   app
-    .at("/auth/user/register")
-    .post(auth::user::register::post::Endpoint {}.into_handler());
-
-  app
     .at("/auth/user/login")
     .post(auth::user::login::post::Endpoint {}.into_handler());
 
@@ -47,15 +44,20 @@ pub fn router(
     .post(auth::user::logout::post::Endpoint {}.into_handler());
 
   app
+    .at("/auth/user/register")
+    .post(auth::user::register::post::Endpoint {}.into_handler());
+
+  app
+    .at("/auth/user/recover")
+    .post(auth::user::recover::post::Endpoint {}.into_handler());
+
+  app
     .at("/auth/admin/login")
     .post(auth::admin::login::post::Endpoint {}.into_handler());
 
-  app.at("/stream-stats").get(
-    stream_stats::get::Endpoint {
-      index: stream_connections_index.clone(),
-    }
-    .into_handler(),
-  );
+  app
+    .at("/auth/admin/logout")
+    .post(auth::admin::logout::post::Endpoint {}.into_handler());
 
   app.at("/runtime/source-password-updated/:station").post(
     runtime::source_password_updated::station_id::post::Endpoint {
@@ -69,6 +71,13 @@ pub fn router(
       media_sessions: media_sessions.clone(),
       drop_tracer: drop_tracer.clone(),
       shutdown: shutdown.clone(),
+    }
+    .into_handler(),
+  );
+
+  app.at("/stream-stats").get(
+    stream_stats::get::Endpoint {
+      index: stream_connections_index.clone(),
     }
     .into_handler(),
   );
@@ -106,6 +115,17 @@ pub fn router(
     );
 
   app
+    .at("/plans")
+    .get(plans::get::Endpoint {}.into_handler())
+    .post(plans::post::Endpoint {}.into_handler());
+
+  app
+    .at("/plans/:plan")
+    .get(plans::id::get::Endpoint {}.into_handler())
+    .patch(plans::id::patch::Endpoint {}.into_handler())
+    .delete(plans::id::delete::Endpoint {}.into_handler());
+
+  app
     .at("/users")
     .get(users::get::Endpoint {}.into_handler())
     .post(users::post::Endpoint {}.into_handler());
@@ -124,6 +144,10 @@ pub fn router(
     .at("/accounts/:account")
     .get(accounts::id::get::Endpoint {}.into_handler())
     .patch(accounts::id::patch::Endpoint {}.into_handler());
+
+  app
+    .at("/accounts/:account/members")
+    .get(accounts::members::get::Endpoint {}.into_handler());
 
   app.at("/accounts/:account/stream-stats").get(
     accounts::stream_stats::get::Endpoint {

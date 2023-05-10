@@ -52,6 +52,8 @@ pub enum PublicErrorCode {
   ResourceNotFound,
   TooManyRequests,
 
+  BadRequest,
+
   InternalDb,
   InternalSerialize,
 
@@ -63,18 +65,23 @@ pub enum PublicErrorCode {
   TokenStationNotFound,
   TokenAdminNotFound,
   TokenOutOfScope,
+
   StationNotFound,
   AdminNotFound,
   UserNotFound,
   AccountNotFound,
   AudioFileNotFound,
   DeviceNotFound,
+  PlanNotFound,
+
   QueryStringInvalid,
   PayloadIo,
   PayloadJson,
   PayloadTooLarge,
   PayloadInvalid,
-  AuthFailed,
+
+  UserAuthFailed,
+  AdminAuthFailed,
 
   UserEmailExists,
   AdminEmailExists,
@@ -99,4 +106,8 @@ pub enum PublicErrorCode {
 
   PlaylistStartIsLive,
   PlaylistStartNoFiles,
+
+  RenderMail,
+
+  CreateStationAccountLimit,
 }

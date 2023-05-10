@@ -2,6 +2,8 @@ mod error;
 mod handler;
 mod http;
 
+use crate::handler::{metadata, method_not_allowed, not_found, source, status};
+use crate::http::read_request_head;
 use drop_tracer::DropTracer;
 use error::HandlerError;
 use http::RequestHead;
@@ -10,11 +12,9 @@ use log::*;
 use media_sessions::MediaSessionMap;
 use owo_colors::*;
 use shutdown::Shutdown;
+use socket2::{Domain, Protocol, Socket, Type};
 use std::net::SocketAddr;
 use tokio::net::{TcpListener, TcpStream};
-
-use crate::handler::{method_not_allowed, not_found, source, status};
-use crate::http::read_request_head;
 
 pub async fn start(
   deployment_id: String,
@@ -25,7 +25,34 @@ pub async fn start(
 ) -> Result<(), std::io::Error> {
   let local_addr = addr.into();
 
-  let listener = TcpListener::bind(local_addr).await?;
+  let domain = match local_addr {
+    SocketAddr::V4(_) => Domain::IPV4,
+    SocketAddr::V6(_) => Domain::IPV6,
+  };
+
+  let socket = Socket::new(domain, Type::STREAM, Some(Protocol::TCP))?;
+
+  if local_addr.is_ipv6() {
+    socket.set_only_v6(true)?;
+  }
+
+  socket.set_nonblocking(true)?;
+  socket.set_reuse_address(true)?;
+  // socket.set_reuse_port(true)?;
+
+  match socket.bind(&local_addr.into()) {
+    Ok(()) => {}
+    Err(e) => {
+      error!("error binding to addr {} => {}", local_addr, e);
+      return Err(e);
+    }
+  };
+
+  socket.listen(1024)?;
+
+  let std: std::net::TcpListener = socket.into();
+
+  let listener = TcpListener::from_std(std)?;
 
   info!("source server bound to {}", local_addr.yellow());
 
@@ -45,10 +72,6 @@ pub async fn start(
           drop_tracer.clone(),
           shutdown.clone(),
         ));
-
-        if shutdown.is_closed() {
-          return Ok(())
-        }
       },
 
       _ = shutdown.signal() => {
@@ -89,6 +112,12 @@ pub async fn handle_connection(
   match (&head.method, head.uri.path()) {
     (&Method::GET, "/status") => status(socket, head).await,
     (_, "/status") => method_not_allowed(socket, head, HeaderValue::from_static("GET")).await,
+    (&Method::GET, "/admin/metadata") => {
+      metadata(socket, remote_addr, local_addr, head, deployment_id.clone()).await
+    }
+    (_, "/admin/metadata") => {
+      method_not_allowed(socket, head, HeaderValue::from_static("GET")).await
+    }
     _ => {
       if let Some(station_id) = is_source_client_uri(&head) {
         if head.method == Method::PUT || head.method.as_str().eq_ignore_ascii_case("SOURCE") {
@@ -115,7 +144,7 @@ pub async fn handle_connection(
 }
 
 fn is_source_client_uri(head: &RequestHead) -> Option<String> {
-  let re = regex_static::static_regex!("^/?([^/]{1,20})/source/?$");
+  let re = regex_static::static_regex!("^/?([a-zA-Z0-9]{1,20})/source/?$");
   if let Some(caps) = re.captures(head.uri.path()) {
     let id = caps.get(1).unwrap().as_str();
     Some(id.to_string())

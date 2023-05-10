@@ -13,12 +13,17 @@
 	import { prevent_unload } from "$share/prevent-unload";
 	import StationProfile from "$lib/components/StationProfile.svelte";
 	import Formy from "$share/formy/Formy.svelte";
+	import { onMount } from "svelte";
+	import Dialog from "$share/Dialog.svelte";
 
   let start = {
     name: null as string | null,
     slogan: null as string | null,
     description: null as string | null,
-    
+    country_code: "" as import("$server/defs/CountryCode").CountryCode | "",
+    type_of_content: "" as import("$server/defs/db/StationTypeOfContent").StationTypeOfContent | "",
+
+
     email: null as string | null,
     phone: null as string | null,
     whatsapp: null as string | null,
@@ -52,9 +57,17 @@
     const name = current.name;
     if(name == null) throw new Error("Station name is required");
 
+    const type_of_content = current.type_of_content;
+    if(type_of_content === "") throw new Error("Type of content is required");
+
+    const country_code = current.country_code;
+    if(country_code === "") throw new Error("Country is required");
+
     const payload: import("$server/defs/api/stations/POST/Payload").Payload = {
       ...current,
       name,
+      type_of_content,
+      country_code,
       account_id: data.account._id,
       picture_id,
       frequencies: null,
@@ -68,10 +81,8 @@
 
     current = clone(start);
     
-    invalidate("resource:stations");
-    goto(`/accounts/${data.account._id}/stations/${station._id}`);
+    goto(`/accounts/${data.account._id}/stations/${station._id}`, { invalidateAll: true });
   });
-  
 </script>
 
 <style>

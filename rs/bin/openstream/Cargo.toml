@@ -4,29 +4,29 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+# source = { path = "../../packages/source" }
+# channels = { version = "0.1.0", path = "../../packages/channels" }
+# ip = { version = "0.1.0", path = "../../packages/ip" }
+# router = { version = "0.1.0", path = "../../packages/router" }
+# rust_ipify = "1.1.0"
 tokio = { version = "1.27.0", features = ["full"] }
-source = { path = "../../packages/source" }
 source-alt = { path = "../../packages/source-alt" }
 stream = { path = "../../packages/stream" }
 logger = { path = "../../packages/logger" }
 log = "0.4.17"
 dotenv = "0.15.0"
-channels = { version = "0.1.0", path = "../../packages/channels" }
 owo-colors = { version = "3.5.0", path = "../../packages/owo-colors" }
 config = { version = "0.1.0", path = "../../packages/config" }
 db = { version = "0.1.0", path = "../../packages/db" }
 mongodb = { version = "2.4.0", features = [ "zstd-compression" ] }
-rust_ipify = "1.1.0"
 drop-tracer = { version = "0.1.0", path = "../../packages/drop-tracer" }
 shutdown = { version = "0.1.0", path = "../../packages/shutdown" }
-ip = { version = "0.1.0", path = "../../packages/ip" }
 which = "4.3.0"
 clap = { version = "4.0.26", features = ["derive"] }
 futures = "0.3.25"
 api = { version = "0.1.0", path = "../../packages/api" }
 chrono = "0.4.23"
 dialoguer = "0.10.2"
-router = { version = "0.1.0", path = "../../packages/router" }
 defer-lite = "1.0.0"
 anyhow = "1.0.66"
 serde-util = { version = "0.1.0", path = "../../packages/serde-util" }
@@ -37,3 +37,4 @@ local-ip-address = "0.5.0"
 crypt = { version = "0.1.0", path = "../../packages/crypt" }
 thiserror = "1.0.40"
 hyper = "0.14.26"
+validate = { version = "0.1.0", path = "../../packages/validate" }

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import TopUser from "$lib/components/Dashboard/TopUser.svelte";
+	import SimpleLogo from "$lib/components/SimpleLogo.svelte";
 	import { ripple } from "$share/ripple";
 	import { fly } from "svelte/transition";
   export let data: import("./$types").PageData;
@@ -15,10 +16,8 @@
     padding: 1.5rem;
   }
 
-  .title {
-    color: var(--red);
+  .logo {
     font-size: min(6vw, 2rem);
-    font-weight: 600;
   }
 
   .user-btn {
@@ -124,8 +123,8 @@
 
 <div class="layout" in:fly|local={{ x: -25, duration: 200 }}>
   <div class="top">
-    <div class="title">
-      openstream
+    <div class="logo">
+      <SimpleLogo />
     </div>
 
     <div class="user-btn">
