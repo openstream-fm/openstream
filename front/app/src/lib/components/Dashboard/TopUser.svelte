@@ -170,7 +170,7 @@
     gap: 0.75rem;
   }
   
-  .menu-station.current, .menu-account {
+  .menu-station.current, .menu-account.current {
     background: #f6f6f6;
   }
 
