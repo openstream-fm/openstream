@@ -247,9 +247,9 @@
   </div>
   <div class="menu-holder" use:click_out={() => menu_open = false}>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div class="pic ripple-container" use:ripple on:click={() => menu_open = !menu_open} use:ripple>
+    <button class="pic ripple-container" use:ripple on:click={() => menu_open = !menu_open} use:ripple>
       {user.first_name.charAt(0).toUpperCase()}
-    </div>
+    </button>
     <div class="menu-position-out">
       <div class="menu-position-in">
         {#if menu_open}

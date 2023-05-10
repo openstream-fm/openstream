@@ -112,7 +112,9 @@
     position: sticky;
     top: 0;
     height: 100vh;
-    transition: height 350ms bezier(0.85, 0, 0.15, 1); /* expoInOut: same as player */
+    /*transition: height 350ms cubic-bezier(0.85, 0, 0.15, 1); /* expoInOut: same as player */
+    display: flex;
+    flex-direction: column;
   }
 
   .player-open .inner {
