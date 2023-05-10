@@ -11,7 +11,7 @@ env:
 
 jobs:
 
-  backend-integration-tests:
+  build:
 
     runs-on: ubuntu-latest
 

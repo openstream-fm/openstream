@@ -8,7 +8,7 @@ on:
 
 jobs:
   
-  front-studio-typecheck:
+  build:
 
     runs-on: ubuntu-latest
 
