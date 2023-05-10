@@ -206,7 +206,7 @@
     margin-inline-end: 0.5rem;
     text-align: left;
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1.05rem;
   }
 
   .account-switch-btn-icon {
@@ -248,12 +248,22 @@
     font-weight: 600;
   }
 
+  .account-switch-menu-item.see-all {
+    color: #333;
+  }
+
   .account-switch-menu-item:hover {
     background: rgba(0,0,0,0.05);
   }
 
   .account-switch-menu-item.current {
     background: rgba(var(--blue-rgb), 0.1);
+  }
+
+  .account-switch-menu-sep {
+    height: 2px;
+    background: #ddd;
+    margin: 0.25rem 0.5rem;
   }
 
   .links {
@@ -353,6 +363,7 @@
                 </span>
                 </a>
               {/each}
+              <div class="account-switch-menu-sep" />
               <a 
               href="/accounts"
               class="na account-switch-menu-item see-all ripple-container"
