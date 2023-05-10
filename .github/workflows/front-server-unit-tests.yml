@@ -8,7 +8,7 @@ on:
       
 jobs:
   
-  front-server-unit-tests:
+  build:
 
     runs-on: ubuntu-latest
 

@@ -11,7 +11,7 @@ env:
 
 jobs:
 
-  backend-build:
+  build:
 
     runs-on: ubuntu-latest
 
