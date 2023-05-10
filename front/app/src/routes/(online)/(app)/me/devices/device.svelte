@@ -22,6 +22,7 @@
   import icon_ios from "$share/img/os-icons/ios.svg";
 
   import { browser } from "$app/environment";
+	import Page from "$lib/components/Page.svelte";
 
 
   $: data = get_data(device);
@@ -137,25 +138,27 @@
   }
 </style>
 
-<div class="device" class:current={device.is_current}>
-  <div class="icon">
-    <div class="icon-bg" style="background-image: url({ icon })" />
-    <!--<Icon d={icon} />-->
-    {#if os_icon}
-      <div class="os-icon" style="background-image: url({ os_icon })" />
+<Page compact>
+  <div class="device" class:current={device.is_current}>
+    <div class="icon">
+      <div class="icon-bg" style="background-image: url({ icon })" />
+      <!--<Icon d={icon} />-->
+      {#if os_icon}
+        <div class="os-icon" style="background-image: url({ os_icon })" />
+      {/if}
+    </div>
+    <div class="info">
+      {#each data as item}
+        <div class="info-item">
+          <span class="info-label">{item.label}:</span>
+          <span class="info-value">{item.value}</span>
+        </div>
+      {/each}
+    </div>
+    {#if on_remove}
+      <button class="disconnect ripple-container" use:ripple use:tooltip={"Disconnect"} aria-label="Disconnect" on:click={on_remove}>
+        <Icon d={mdiTrashCanOutline} />
+      </button>
     {/if}
   </div>
-  <div class="info">
-    {#each data as item}
-      <div class="info-item">
-        <span class="info-label">{item.label}:</span>
-        <span class="info-value">{item.value}</span>
-      </div>
-    {/each}
-  </div>
-  {#if on_remove}
-    <button class="disconnect ripple-container" use:ripple use:tooltip={"Disconnect"} aria-label="Disconnect" on:click={on_remove}>
-      <Icon d={mdiTrashCanOutline} />
-    </button>
-  {/if}
-</div>
+</Page>

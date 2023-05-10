@@ -1,15 +1,13 @@
 <script lang="ts">
   export let data: import("./$types").PageData;
 
-  import TopUser from "$lib/components/Dashboard/TopUser.svelte";
-	import TextField from "$lib/components/Form/TextField.svelte";
+  import TextField from "$lib/components/Form/TextField.svelte";
 	import NullTextField from "$lib/components/Form/Nullable/NullTextField.svelte";
 	import { ripple } from "$share/ripple";
 	import { clone, diff, equals } from "$server/util/collections";
 	import { _patch, action } from "$share/net.client";
 	import { _message } from "$share/notify";
-	import { fly } from "svelte/transition";
-  import { invalidate } from "$app/navigation";
+	import { invalidate } from "$app/navigation";
 	import Email from "$lib/components/Form/Email.svelte";
 	import Password from "$lib/components/Form/Password.svelte";
 	import { mdiAccountOutline, mdiDevices, mdiPhoneOutline } from "@mdi/js";
@@ -22,7 +20,7 @@
     _string,
     _phone,
   } from "$share/formy/validate";
-	import { tooltip } from "$share/tooltip";
+  import Page from "$lib/components/Page.svelte";
 
   let profile_db = {
     first_name: data.user.first_name,
@@ -78,35 +76,6 @@
 </script>
 
 <style>
-
-  .top {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.25rem 1.5rem;
-    background: #fff;
-    box-shadow: var(--some-shadow);
-  }
-
-  .title {
-    color: var(--red);
-    font-size: min(6vw, 2rem);
-    font-weight: 600;
-  }
-
-  .user-btn {
-    margin-inline-end: -1rem;
-  }
-
-  .layout {
-    flex: 1;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    background: var(--bg-gray);
-  }
-
   .page {
     display: flex;
     flex-grow: 1;
@@ -267,18 +236,8 @@
   <title>{data.user.first_name} {data.user.last_name}</title>
 </svelte:head>
 
-<div class="layout" in:fly|local={{ x: -25, duration: 200 }}>
-  <div class="top">
-    <div class="title">
-      openstream
-    </div>
-
-    <div class="user-btn">
-      <TopUser />
-    </div>
-  </div>
-  <div class="page">
-    
+<Page compact>
+  <div class="page"> 
     <div class="page-top">
       <div class="page-user-logo">
         {data.user.first_name.slice(0, 1)}
@@ -406,4 +365,4 @@
       </div>
     </div>
   </div>
-</div>
+</Page>
