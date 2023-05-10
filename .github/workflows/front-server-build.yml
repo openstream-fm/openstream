@@ -8,7 +8,7 @@ on:
 
 jobs:
   
-  front-server-build:
+  build:
 
     defaults:
       run:

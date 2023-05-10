@@ -8,7 +8,7 @@ on:
 
 jobs:
   
-  front-studio-build:
+  build:
 
     defaults:
       run:
