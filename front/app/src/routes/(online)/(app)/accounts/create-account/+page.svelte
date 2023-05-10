@@ -1,36 +1,10 @@
 <script lang="ts">
-	import TopUser from "$lib/components/Dashboard/TopUser.svelte";
-	// import { ripple } from "$share/ripple";
+	export let data: import("./$types").PageData;
+  import PlanSelector from "$lib/components/PlanSelector/PlanSelector.svelte";
 	import { fly } from "svelte/transition";
 </script>
 
 <style>
-
-  .top {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.5rem;
-  }
-
-  .title {
-    color: var(--red);
-    font-size: min(6vw, 2rem);
-    font-weight: 600;
-  }
-
-  .user-btn {
-    margin-inline-end: -1rem;
-  }
-
-  .layout {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background: var(--bg-gray);
-  }
-
   .page {
     display: flex;
     flex-grow: 1;
@@ -39,30 +13,29 @@
   }
 
   .page-title {
-    margin-top: 2rem;
+    margin-top: 3rem;
     font-size: 2rem;
     font-weight: 600;
+    text-align: center;
+    padding: 0 2rem;
+  }
+
+  .plans {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 5rem;
+    margin-bottom: 6rem;
   }
 </style>
 
 <svelte:head>
-  <title>Create new account</title>
+  <title>Select a plan</title>
 </svelte:head>
 
-<div class="layout" in:fly|local={{ x: -25, duration: 200 }}>
-  <div class="top">
-    <div class="title">
-      openstream
-    </div>
-
-    <div class="user-btn">
-      <TopUser />
-    </div>
-  </div>
-  <div class="page">
-    <div class="page-title">Create account</div>
-    <div class="box">
-
-    </div>
+<div class="page" in:fly|local={{ x: -25, duration: 300 }}>
+  <div class="page-title">Select a plan for your new account</div>
+  <div class="plans">
+    <PlanSelector plans={data.plans.items} target_url={plan => `/accounts/create-account/plan/${plan._id}`} select_btn_label="Select" />
   </div>
 </div>

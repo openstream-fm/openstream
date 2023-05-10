@@ -201,7 +201,7 @@
 
 
 <svelte:head>
-  <title>Plan {data.plan.display_name}</title>
+  <title>{data.plan.display_name}</title>
 </svelte:head>
 
 <Page>

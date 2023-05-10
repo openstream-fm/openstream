@@ -102,6 +102,10 @@
     gap: 0.5rem;
   }
 
+  .plan-feature > b {
+    font-weight: 700;
+  }
+
   .plan-back {
     margin-top: 1rem;
     font-size: 0.9rem;
@@ -130,16 +134,16 @@
       <div class="plan-price">$ {data.plan.price} / month</div>
       <div class="plan-features">
         <div class="plan-feature">
-          {data.plan.limits.stations} {data.plan.limits.stations === 1 ? "station" : "stations"}
+          <b>{data.plan.limits.stations}</b> {data.plan.limits.stations === 1 ? "station" : "stations"}
         </div>
         <div class="plan-feature">
-          {data.plan.limits.listeners} Listeners
+          <b>{new Intl.NumberFormat().format(data.plan.limits.listeners)}</b> Listeners
         </div>
         <div class="plan-feature">
-          {data.plan.limits.transfer / 1_000_000_000_000} TB Bandwidth
+          <b>{data.plan.limits.transfer / 1_000_000_000_000} TB</b> Bandwidth
         </div>
         <div class="plan-feature">
-          {data.plan.limits.storage / 1_000_000_000} GB Storage
+          <b>{data.plan.limits.storage / 1_000_000_000} GB</b> Storage
         </div>
       </div>
 
@@ -182,7 +186,7 @@
         <Password label="Confirm your password" autocomplete="new-password" bind:value={confirm_password} />
         <Validator value={{ password, confirm_password }} fn={_confirmation_password()} />
       </div>
-      <button use:ripple class="ripple-container login-page-button">
+      <button type="submit" class="ripple-container login-page-button" use:ripple>
         Sign up
       </button>
     </div>

@@ -17,16 +17,19 @@
 		mdiAccountMultipleOutline,
 		mdiPoll,
 		mdiClose,
+		mdiChevronDown,
+		mdiUploadNetworkOutline,
   } from "@mdi/js";
 	import { onMount } from "svelte";
 	import Icon from "$share/Icon.svelte";
 	import { ripple } from "$share/ripple";
-	import { fade } from "svelte/transition";
+	import { fade, fly } from "svelte/transition";
 	import { browser } from "$app/environment";
   // @ts-ignore
   import logo from "$share/img/logo-trans-128.png?w=40&format=webp";
 
   import { player_state } from "../Player/player";
+	import { click_out } from "$share/actions";
 
   $: if(browser) {
     document.documentElement.classList[fixed_open ? "add" : "remove"](HTML_OPEN_CLASSNAME);
@@ -45,6 +48,32 @@
       document.documentElement.classList.remove(HTML_OPEN_CLASSNAME);
     }
   })
+
+  $: accounts = $page.data.accounts.items;
+  $: account = $page.data.account;
+
+  let account_switch_open = false;
+  const account_switch_toggle = () => {
+    account_switch_open = !account_switch_open;
+  }
+
+  const account_switch_close = () => {
+    account_switch_open = false;
+  }
+
+  const account_switch_click_out = () => {
+    setTimeout(account_switch_close, 2);
+  }
+
+  const account_swtich_target = (src: string, target: string, url: URL) => {
+    if(src === target) return `${url.pathname}${url.search}`;
+    const targets = ["stations", "members", "analytics"];
+    for(const item of targets) {
+      if(url.pathname.startsWith(`/accounts/${src}/${item}`)) return `/accounts/${target}/${item}`;
+    }
+    return `/accounts/${target}`;
+  }
+
 </script>
 
 <style>
@@ -94,10 +123,9 @@
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    font-size: 1.5rem;
-    width: 2.5rem;
-    height: 2.5rem;
-    margin-inline-end: 0.5rem;
+    width: 2rem;
+    height: 2rem;
+    margin-inline-end: 0.75rem;
   }
 
   .logo-text {
@@ -150,6 +178,7 @@
       width: 2rem;
       height: 2rem;
       font-size: 1.35rem;
+      margin-inline-end: 0.6rem;
     }
 
     .logo-text {
@@ -160,6 +189,100 @@
       margin-inline-start: calc(var(--drawer-width) * -1);
       box-shadow: none;
     }
+  }
+
+  .account-switch {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0 0.5rem 0.5rem 0.5rem;
+  }
+
+  .account-switch-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    position: relative;
+  }
+
+  .account-switch-anchor {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .account-switch-btn {
+    flex: 1;
+    padding: 1rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border-radius: 0.25rem;
+    transition: background-color 200ms ease;
+  }
+
+  .account-switch.open .account-switch-btn, .account-switch-btn:hover {
+    background: rgba(0,0,0,0.05);
+  }
+
+  .account-switch-btn-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-inline-end: 0.5rem;
+    text-align: left;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .account-switch-btn-icon {
+    display: flex;
+    flex: none;
+    font-size: 1.25rem;
+  }
+
+  .account-switch-menu {
+    width: calc(var(--drawer-width) - 1rem);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 15rem;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    box-shadow: var(--some-shadow);
+    background: #fff;
+    position: relative;
+    z-index: 1;
+  }
+
+  .account-switch-menu-item {
+    padding: 1rem;
+    border-radius: 0.25rem;
+    transition: background-color 200ms ease;
+    flex: none;
+  }
+
+  .account-switch-menu-item:not(.see-all) {
+    font-weight: 600;
+  }
+
+  .account-switch-menu-item:hover {
+    background: rgba(0,0,0,0.05);
+  }
+
+  .account-switch-menu-item.current {
+    background: rgba(var(--blue-rgb), 0.1);
+  }
+
+  .links {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 </style>
 
@@ -182,12 +305,50 @@
         </div>
       </div>
     </div>
+  
+    <div class="account-switch" class:open={account_switch_open}>
+      <div class="account-switch-inner">
+        <button class="account-switch-btn ripple-container" on:click={account_switch_toggle} use:ripple>
+          <div class="account-switch-btn-name">
+            {account.name}
+          </div>
+          <div class="account-switch-btn-icon">
+            <Icon d={mdiChevronDown} />
+          </div>
+        </button>
+        <div class="account-switch-anchor">
+          {#if account_switch_open}
+            <div class="account-switch-menu thin-scroll" transition:fly|local={{ y: -15, duration: 200 }} use:click_out={account_switch_click_out}>
+              {#each accounts as item (item._id)}
+                <a 
+                  href={account_swtich_target(account._id, item._id, $page.url)}
+                  class="na account-switch-menu-item ripple-container"
+                  on:click={account_switch_close}
+                  class:current={item._id === account._id}
+                  use:ripple
+        >
+                  {item.name}
+                </a>
+              {/each}
+              <a 
+              href="/accounts"
+              class="na account-switch-menu-item see-all ripple-container"
+              use:ripple
+              on:click={account_switch_close}
+            >
+              See all accounts
+            </a>
+            </div>
+          {/if}
+        </div>
+      </div>
+    </div>
 
-    <div class="links">
-      <DrawerItem href="/accounts/{$page.data.account?._id}" label="Account" icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
-      <DrawerItem href="/accounts/{$page.data.account?._id}/stations" label="Stations" icon={mdiRadioTower} on_click={close_drawer_fixed} />
-      <DrawerItem href="/accounts/{$page.data.account?._id}/members" label="Members" icon={mdiAccountMultipleOutline} on_click={close_drawer_fixed} />
-      <DrawerItem href="/accounts/{$page.data.account?._id}/analytics" label="Analytics" icon={mdiPoll} on_click={close_drawer_fixed} />
+    <div class="links super-thin-scroll">
+      <DrawerItem href="/accounts/{account._id}" label="Dashboard" icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
+      <DrawerItem href="/accounts/{account._id}/stations" label="Stations" icon={mdiRadioTower} on_click={close_drawer_fixed} />
+      <DrawerItem href="/accounts/{account._id}/members" label="Members" icon={mdiAccountMultipleOutline} on_click={close_drawer_fixed} />
+      <DrawerItem href="/accounts/{account._id}/analytics" label="Analytics" icon={mdiPoll} on_click={close_drawer_fixed} />
     </div>
   </div>
 </div>
