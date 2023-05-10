@@ -137,11 +137,19 @@
     position: sticky;
     top: 0;
     height: 100vh;
-    transition: height 350ms bezier(0.85, 0, 0.15, 1); /* expoInOut: same as player */
+    /*transition: height 350ms cubic-bezier(0.85, 0, 0.15, 1); /* expoInOut: same as player */
+    display: flex;
+    flex-direction: column;
   }
 
   .player-open .inner {
     height: calc(100vh - var(--player-h));
+  }
+
+  .links {
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
   }
 
   .drawer-overlay {
@@ -154,43 +162,6 @@
     background: rgba(0,0,0,0.5);
     z-index: calc(var(--z-drawer-fixed) - 1);
   }
-
-  @media screen and (max-width: 900px) {
-
-    .drawer {
-      position: fixed;
-      z-index: var(--z-drawer-fixed);
-    }
-
-    .inner {
-      height: 100vh !important;
-    }
-
-    .drawer-overlay {
-      display: block;
-    }
-
-    .toggle {
-      display: flex;
-    }
-
-    .logo-icon {
-      width: 2rem;
-      height: 2rem;
-      font-size: 1.35rem;
-      margin-inline-end: 0.6rem;
-    }
-
-    .logo-text {
-      font-size: 1.35rem;
-    }
-
-    .drawer:not(.fixed-open) {
-      margin-inline-start: calc(var(--drawer-width) * -1);
-      box-shadow: none;
-    }
-  }
-
   .account-switch {
     display: flex;
     flex-direction: column;
@@ -250,7 +221,7 @@
     flex-direction: column;
     overflow-y: auto;
     overflow-x: hidden;
-    max-height: 15rem;
+    max-height: calc(100vh - 9rem);
     padding: 0.25rem;
     border-radius: 0.25rem;
     box-shadow: var(--some-shadow);
@@ -284,6 +255,49 @@
     overflow-y: auto;
     overflow-x: hidden;
   }
+
+  @media screen and (max-width: 900px) {
+
+    .drawer {
+      position: fixed;
+      z-index: var(--z-drawer-fixed);
+    }
+
+    .inner {
+      height: 100vh !important;
+    }
+
+    .drawer-overlay {
+      display: block;
+    }
+
+    .toggle {
+      display: flex;
+    }
+
+    .logo-icon {
+      width: 2rem;
+      height: 2rem;
+      font-size: 1.35rem;
+      margin-inline-end: 0.6rem;
+    }
+
+    .logo-text {
+      font-size: 1.35rem;
+    }
+
+    .drawer:not(.fixed-open) {
+      margin-inline-start: calc(var(--drawer-width) * -1);
+      box-shadow: none;
+    }
+  }
+
+  @media not screen and (max-width: 900px) {
+    .player-open .account-switch-menu {
+      max-height: calc(100vh - 13.5rem);
+    }
+  }
+
 </style>
 
 {#if fixed_open}
@@ -344,7 +358,7 @@
       </div>
     </div>
 
-    <div class="links super-thin-scroll">
+    <div class="links thin-scroll">
       <DrawerItem href="/accounts/{account._id}" label="Dashboard" icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
       <DrawerItem href="/accounts/{account._id}/stations" label="Stations" icon={mdiRadioTower} on_click={close_drawer_fixed} />
       <DrawerItem href="/accounts/{account._id}/members" label="Members" icon={mdiAccountMultipleOutline} on_click={close_drawer_fixed} />

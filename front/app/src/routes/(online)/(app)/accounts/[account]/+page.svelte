@@ -470,7 +470,7 @@
 </Page>
 
 {#if edit_open}
-  <Dialog width="500px" on_close={() => edit_open = false} title="Edit account's name">
+  <Dialog width="500px" on_close={() => edit_open = false} title="Edit your account's name">
     <Formy action={edit} let:submit>
       <form novalidate class="edit-dialog" on:submit={submit}>
         <div class="edit-dialog-fields">
