@@ -138,7 +138,7 @@ pub mod patch {
     type HandleError = HandleError;
 
     async fn parse(&self, mut req: Request) -> Result<Self::Input, Self::ParseError> {
-      let station_id = req.param("station").unwrap();
+      let station_id = req.param("account").unwrap();
 
       let access_token_scope = request_ext::get_access_token_scope(&req).await?;
 

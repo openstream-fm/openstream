@@ -5,7 +5,7 @@
 	import StatsMap from "$share/Map/StatsMap.svelte";
 	import type { Stats } from "$share/Map/StatsMap.svelte";
 	import { click_out, intersect } from "$share/actions";
-	import { _get, action } from "$share/net.client";
+	import { _get, _patch, action } from "$share/net.client";
 	import { ripple } from "$share/ripple";
 	import { fly } from "svelte/transition";
 
@@ -22,6 +22,14 @@
 	import { sleep } from "$share/util";
 	import type { AccountLimits } from "$server/defs/AccountLimits";
 	import CircularMeter from "$lib/components/CircularMeter/CircularMeter.svelte";
+	import { tooltip } from "$share/tooltip";
+	import Icon from "$share/Icon.svelte";
+	import { mdiCircleEditOutline, mdiFileEditOutline } from "@mdi/js";
+	import Dialog from "$share/Dialog.svelte";
+	import Formy from "$share/formy/Formy.svelte";
+	import TextField from "$lib/components/Form/TextField.svelte";
+	import Validator from "$share/formy/Validator.svelte";
+	import { _string } from "$share/formy/validate";
   let view: View = "now";
 
   let _token = 0;
@@ -134,13 +142,46 @@
       destroy: () => mounted = false
     }
   }
+
+  let edit_open = false;
+  let current_account_name = data.account.name;
+  const edit = action(async () => {
+    let payload: import("$server/defs/api/accounts/[account]/PATCH/Payload").Payload = {
+      name: current_account_name,
+    };
+    await _patch(`/api/accounts/${data.account._id}`, payload);
+    data.account.name = current_account_name;
+    edit_open = false;
+})
 </script>
 
 <style>
 
+  .title {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
   h1 {
     font-weight: 600;
   }
+
+  .edit-btn {
+    flex: none;
+    font-size: 1.5rem;
+    border-radius: 50%;
+    padding: 0.75rem;
+    display: flex;
+    margin-inline-start: 0.5rem;
+    transition: background-color 200ms ease;
+  }
+
+  .edit-btn:hover {
+    background: rgba(0,0,0,0.05);
+  }
+
+
 
   .stats {
     margin-top: 2rem;
@@ -294,6 +335,21 @@
       max-width: 10rem;
     }
   } 
+
+  .edit-dialog-btn-out {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-top: 2rem;
+  }
+
+  .edit-dialog-btn {
+    color: #fff;
+    background: var(--blue);
+    font-weight: 600;
+    padding: 0.75rem;
+    box-shadow: var(--some-shadow);
+  }
 </style>
 
 <svelte:head>
@@ -301,7 +357,13 @@
 </svelte:head>
 
 <Page>
-  <h1>{data.account.name}</h1>
+  
+  <div class="title">
+    <h1>{data.account.name}</h1>
+    <button class="edit-btn ripple-container" use:ripple use:tooltip={"Edit"} on:click={() => edit_open = true}>
+      <Icon d={mdiCircleEditOutline} />
+    </button>
+  </div>
 
   <div class="stats">
     <div class="stats-selector-out">
@@ -406,3 +468,23 @@
     </div>
   </div>
 </Page>
+
+{#if edit_open}
+  <Dialog width="500px" on_close={() => edit_open = false} title="Edit account's name">
+    <Formy action={edit} let:submit>
+      <form novalidate class="edit-dialog" on:submit={submit}>
+        <div class="edit-dialog-fields">
+          <div class="edit-dialog-field">
+            <TextField label="Account name" maxlength={50} trim bind:value={current_account_name} />
+            <Validator value={current_account_name} fn={_string({ required: true, maxlen: 50 })} />
+          </div>
+        </div>
+        <div class="edit-dialog-btn-out">
+          <button type="submit" class="edit-dialog-btn ripple-container" use:ripple>
+            Save
+          </button>
+        </div>
+      </form>
+    </Formy>
+  </Dialog>
+{/if}

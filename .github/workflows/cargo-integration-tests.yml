@@ -1,8 +1,8 @@
 name: backend-integration-tests
 
 on: 
-  push:
-      branches: [ master, dev ]
+  #push:
+  #    branches: [ master, dev ]
   pull_request:
       types: [ opened, reopened ]
 
