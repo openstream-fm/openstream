@@ -58,32 +58,23 @@
 	<title>Devices</title>
 </svelte:head>
 
-<div class="layout" in:fly|local={{ x: -25, duration: 200 }}>
-	<div class="top">
-		<div class="title">openstream</div>
-
-		<div class="user-btn">
-			<TopUser />
-		</div>
+<div class="page">
+	<div class="page-title">Connected devices</div>
+	<div class="note">
+		The same device may appear more than once in this list. Devices will be disconnected after 7
+		days without usage.
 	</div>
-	<div class="page">
-		<div class="page-title">Connected devices</div>
-		<div class="note">
-			The same device may appear more than once in this list. Devices will be disconnected after 7
-			days without usage.
-		</div>
-		<div class="list">
-			{#if current != null}
-				<div class="device-wrap" aria-current>
-					<Device device={current} />
-				</div>
-			{/if}
-			{#each devices as device (device._id)}
-				<div class="device-wrap" transition:slide|local={{ duration: 400 }}>
-					<Device {device} on_remove={() => (disconnect_item = device)} />
-				</div>
-			{/each}
-		</div>
+	<div class="list">
+		{#if current != null}
+			<div class="device-wrap" aria-current>
+				<Device device={current} />
+			</div>
+		{/if}
+		{#each devices as device (device._id)}
+			<div class="device-wrap" transition:slide|local={{ duration: 400 }}>
+				<Device {device} on_remove={() => (disconnect_item = device)} />
+			</div>
+		{/each}
 	</div>
 </div>
 
