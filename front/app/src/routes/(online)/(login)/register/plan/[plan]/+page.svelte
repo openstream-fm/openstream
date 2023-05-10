@@ -167,7 +167,7 @@
         <TextField label="A name for your account" trim icon={mdiAccountOutline} autocomplete="off" bind:value={account_name} />
         <div class="org-explain">
           <!-- If you don't belong to an organization, just fill the field with a name for your new account  -->
-          If you are creating an account for an organization you can fill this field with the organization's name 
+          If you are creating an account for an organization, you can fill this field with the organization's name 
         </div>
         <Validator value={account_name} fn={_string({ required: true, maxlen: 50 })} />
       </div>
