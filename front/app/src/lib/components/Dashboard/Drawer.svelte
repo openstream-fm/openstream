@@ -212,7 +212,7 @@
   .account-switch-btn-icon {
     display: flex;
     flex: none;
-    font-size: 1.25rem;
+    font-size: 1rem;
   }
 
   .account-switch-menu {
@@ -344,7 +344,8 @@
             {account.name}
           </div>
           <div class="account-switch-btn-icon">
-            <Icon d={mdiChevronDown} />
+            <!-- <Icon d={mdiChevronDown} /> -->
+            ▼
           </div>
         </button>
         <div class="account-switch-anchor">

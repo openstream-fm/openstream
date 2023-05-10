@@ -24,7 +24,7 @@
 	import CircularMeter from "$lib/components/CircularMeter/CircularMeter.svelte";
 	import { tooltip } from "$share/tooltip";
 	import Icon from "$share/Icon.svelte";
-	import { mdiCircleEditOutline, mdiFileEditOutline } from "@mdi/js";
+	import { mdiChevronDown, mdiCircleEditOutline, mdiFileEditOutline, mdiPlay } from "@mdi/js";
 	import Dialog from "$share/Dialog.svelte";
 	import Formy from "$share/formy/Formy.svelte";
 	import TextField from "$lib/components/Form/TextField.svelte";
@@ -217,7 +217,13 @@
   }
 
   .stats-selector-btn-text {
-    margin-inline-end: 0.75rem;
+    margin-inline-end: 0.35rem;
+  }
+
+  .stats-selector-btn-chevron {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .stats-selector-item.current {
@@ -236,8 +242,8 @@
     background-size: contain;
     background-repeat: no-repeat;
     flex: none;
-    margin-inline-end: 1rem;
     margin-inline-start: -0.5rem;
+    margin-inline-end: 0.75rem;
   }
 
   .stats-selector-anchor {
@@ -375,14 +381,17 @@
               style:background-image="url({data.config.storage_public_url}/station-pictures/webp/64/{selector_state.station.picture_id}.webp)"
             />
           {/if}
-          <div class="stats-selector-btn-text">
+          <span class="stats-selector-btn-text">
             {#if selector_state.station}
               {selector_state.station.name}
             {:else}
               All stations
             {/if}
-          </div>
-          ▼
+          </span>
+          <span class="stats-selector-btn-chevron">
+            ▼
+            <!-- <Icon d={mdiPlay} /> -->
+          </span>
         </button>
         <div class="stats-selector-anchor">
           {#if selector_open}
