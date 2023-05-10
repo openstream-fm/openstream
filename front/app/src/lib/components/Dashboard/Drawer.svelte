@@ -216,7 +216,8 @@
   }
 
   .account-switch-menu {
-    width: calc(var(--drawer-width) - 1rem);
+    min-width: calc(var(--drawer-width) - 1rem);
+    max-width: calc(100vw - 2rem);
     display: flex;
     flex-direction: column;
     overflow-y: auto;
@@ -235,6 +236,12 @@
     border-radius: 0.25rem;
     transition: background-color 200ms ease;
     flex: none;
+  }
+
+  .account-switch-menu-item-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .account-switch-menu-item:not(.see-all) {
@@ -340,8 +347,10 @@
                   on:click={account_switch_close}
                   class:current={item._id === account._id}
                   use:ripple
-        >
+                >
+                <span class="account-switch-menu-item-text">
                   {item.name}
+                </span>
                 </a>
               {/each}
               <a 
@@ -350,7 +359,9 @@
               use:ripple
               on:click={account_switch_close}
             >
-              See all accounts
+              <span class="account-switch-menu-item-text">
+                See all accounts
+              </span>
             </a>
             </div>
           {/if}
