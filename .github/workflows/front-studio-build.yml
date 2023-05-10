@@ -1,8 +1,8 @@
 name: front-studio-build
 
 on: 
-  push:
-    branches: [ master, dev ]
+  #push:
+  #    branches: [ master, dev ]
   pull_request:
       types: [ opened, reopened ]
 
