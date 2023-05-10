@@ -207,7 +207,7 @@
 <Page>
   <div class="page">
     
-    <h1>{data.plan.display_name}</h1>
+    <h1>Plan {data.plan.display_name}</h1>
     
     <Formy action={save} let:submit>
       <form novalidate class="box" on:submit={submit}>

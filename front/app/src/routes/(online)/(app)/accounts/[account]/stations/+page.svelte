@@ -124,7 +124,7 @@
 <Page>
   <div class="page">
     <div class="page-title">Select a station</div>
-    {#if data.stations.items.length}
+    {#if current_account_stations.length}
       <div class="list-box">
         {#each current_account_stations as station (station._id)}
           <a href="/accounts/{station.account_id}/stations/{station._id}" class="list-item na ripple-container" use:ripple>

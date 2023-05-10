@@ -1,4 +1,6 @@
 <script lang="ts">
+  export let data: import("./$types").LayoutData;
+
   import { fly } from "svelte/transition";
   import Top from "$lib/components/Dashboard/Top.svelte";
 	import Drawer from "$lib/components/Dashboard/Drawer.svelte";
@@ -40,9 +42,11 @@
     <Drawer fixed_open={drawer_fixed_open} {close_drawer_fixed} {open_drawer_fixed} />
     <div class="content">
       <Top {drawer_fixed_open} {close_drawer_fixed} {open_drawer_fixed} />
-      <div class="page">
-        <slot />
-      </div>
+      {#key data.account._id}
+        <div class="page">
+          <slot />
+        </div>
+      {/key}
     </div>
   </div>
 </div>
