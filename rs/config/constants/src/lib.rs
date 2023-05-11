@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 /// stream kbps
 pub const STREAM_KBITRATE: usize = 128;
 
@@ -25,13 +23,13 @@ pub const TRANSFER_SAVE_INTERVAL_MILLIS: u64 = 5_000;
 pub const STREAM_IP_CONNECTIONS_LIMIT: u64 = 8;
 
 /// delay to shutdown a playlist media session when it run out of listeners
-pub const PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY: Duration = Duration::from_secs(10);
+pub const PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY_SECS: u64 = 10;
 
 /// delay to shutdown a relay session when it run out of listeners
-pub const RELAY_NO_LISTENERS_SHUTDOWN_DELAY: Duration = Duration::from_secs(5);
+pub const RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS: u64 = 10;
 
 /// limit of authotization, or other sensible api endpoints requests from the same ip
 pub const API_IP_LIMIT: usize = 10;
 
 /// limit restart interval of API_IP_LIMIT
-pub const API_IP_LIMIT_DURATION: Duration = Duration::from_secs(60);
+pub const API_IP_LIMIT_DURATION_SECS: u64 = 60;
