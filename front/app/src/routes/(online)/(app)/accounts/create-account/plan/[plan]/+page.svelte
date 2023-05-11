@@ -125,14 +125,14 @@
 </style>
 
 <svelte:head>
-  <title>Create an account</title>
+  <title>Create a broadcaster account</title>
 </svelte:head>
 
 <div class="page" in:fly|local={{ y: -25, duration: 200 }}>
   <Formy action={send} let:submit>
     <form novalidate on:submit={submit} class="login-page-box">
       <div class="login-page-title">
-        Create an account
+        Create a broadcaster account
       </div>
 
       <div class="plan" style:--bg-color={bg_color} style:--color={color.toString()}>
