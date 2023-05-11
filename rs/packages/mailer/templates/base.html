@@ -3,6 +3,10 @@
     margin: 0;
   }
 
+  .base-title {
+    display: none;
+  }
+
   .base-body {
     background: #eee;
     padding: 30px 30px 60px 30px;
@@ -33,12 +37,18 @@
   }
 </style>
 
+<p class="base-title">
+  {% block title %}{% endblock %}
+  <br />
+  <br />
+</p>
+
 <div class="base-body">
   
   <div class="base-top">
-    <div class="base-logo">
+    <a href="https://studio.openstream.fm" target="_blank" class="base-logo">
       <img alt="Openstream" src="https://mailer-static.openstream.fm/v1/top-logo.png" />
-    </div>
+    </a>
   </div>
 
   <div class="base-block-content">

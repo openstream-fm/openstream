@@ -7,7 +7,6 @@
 </script>
 
 <style>
-
   .top {
     display: flex;
     flex-direction: row;
@@ -77,17 +76,6 @@
     text-overflow: ellipsis;
   }
 
-  .no-stations {
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .no-stations-message {
-    font-size: 1.1rem;
-  }
-
   .no-items-create {
     background: var(--blue);
     color: #fff;
@@ -115,6 +103,40 @@
     font-size: 1.1rem;
     border-radius: 0.5rem;
   }
+
+
+
+  .no-items {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .no-items-message {
+    font-size: 1.1rem;
+    text-align: center;
+    line-height: 1.5rem;
+  }
+
+  @media screen and (max-width: 460px) {
+    .no-items-message {
+      font-size: 1rem;
+    }
+  }
+
+  .no-items-create {
+    background: var(--blue);
+    color: #fff;
+    cursor: pointer;
+    user-select: none;
+    padding: 0.75rem 1rem;
+    border-radius: 0.25rem;
+    margin-top: 2rem;
+    box-shadow: 0 4px 8px 0 rgb(0 0 0 / 12%), 0 2px 4px 0 rgb(0 0 0 / 8%);
+    font-weight: 500;
+  }
+
 </style>
 
 <svelte:head>
@@ -150,15 +172,14 @@
         create a new account
       </a> 
     {:else}
-      <div class="list-box">
-        <div class="no-stations">
-          <div class="no-stations-message">
-            You don't have an account yet
-          </div>
-          <a href="/accounts/create-account" class="na no-items-create ripple-container" use:ripple>
-            Create an account
-          </a>
+      <div class="no-items">
+        <div class="no-items-message">
+          You don't have a broadcaster account yet.<br>
+          To start broadcasting, sign up for a broadcaster account.
         </div>
+        <a href="/accounts/create-account" class="na no-items-create ripple-container" use:ripple>
+          Create my broadcaster account
+        </a>
       </div>
     {/if}
   </div>
