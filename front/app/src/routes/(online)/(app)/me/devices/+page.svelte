@@ -81,31 +81,6 @@
 {/if}
 
 <style>
-	.top {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		justify-content: space-between;
-		padding: 1.5rem;
-	}
-
-	.title {
-		color: var(--red);
-		font-size: min(6vw, 2rem);
-		font-weight: 600;
-	}
-
-	.user-btn {
-		margin-inline-end: -1rem;
-	}
-
-	.layout {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		background: var(--bg-gray);
-	}
-
 	.page {
 		display: flex;
 		flex-grow: 1;

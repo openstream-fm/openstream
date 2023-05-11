@@ -2,7 +2,7 @@ use db::Model;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Instant;
 
-use constants::RELAY_NO_LISTENERS_SHUTDOWN_DELAY;
+use constants::RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS;
 use drop_tracer::{DropTracer, Token};
 use log::*;
 
@@ -94,7 +94,7 @@ pub fn run_relay_session(
 
               Err(SendError::NoListeners(_)) => {
                 if let Some(since) = no_listeners_since {
-                  if since.elapsed() > RELAY_NO_LISTENERS_SHUTDOWN_DELAY {
+                  if since.elapsed().as_secs() > RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS {
                     break 'root;
                   }
                 } else {

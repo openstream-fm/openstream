@@ -10,12 +10,12 @@ static IP_LIMIT_MAP: RwLock<BTreeMap<IpAddr, usize>> = RwLock::new(BTreeMap::new
 #[cfg(test)]
 pub const LIMIT: usize = 60;
 #[cfg(test)]
-pub const LIMIT_DURATION: Duration = Duration::from_millis(100);
+pub const LIMIT_DURATION_MS: u64 = 100;
 
 #[cfg(not(test))]
 pub const LIMIT: usize = constants::API_IP_LIMIT;
 #[cfg(not(test))]
-pub const LIMIT_DURATION: Duration = constants::API_IP_LIMIT_DURATION;
+pub const LIMIT_DURATION_MS: u64 = constants::API_IP_LIMIT_DURATION_SECS * 1000;
 
 pub fn get(ip: IpAddr) -> usize {
   let map = IP_LIMIT_MAP.read();
@@ -29,7 +29,7 @@ pub fn should_reject(ip: IpAddr) -> bool {
 pub fn hit(ip: IpAddr) -> usize {
   let v = increment(ip);
   let _handle = tokio::spawn(async move {
-    tokio::time::sleep(LIMIT_DURATION).await;
+    tokio::time::sleep(Duration::from_millis(LIMIT_DURATION_MS)).await;
     decrement(ip);
   });
 
@@ -85,7 +85,7 @@ async fn hit_count_and_reset() {
 
   assert!(should_reject(ip));
 
-  tokio::time::sleep(LIMIT_DURATION + Duration::from_millis(10)).await;
+  tokio::time::sleep(Duration::from_millis(LIMIT_DURATION_MS + 10)).await;
 
   assert_eq!(get(ip), 0);
 

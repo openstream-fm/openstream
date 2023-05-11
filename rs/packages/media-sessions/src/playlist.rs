@@ -1,7 +1,7 @@
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::time::Instant;
 
-use constants::{PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY, STREAM_BURST_LENGTH, STREAM_CHUNK_SIZE};
+use constants::{PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY_SECS, STREAM_BURST_LENGTH, STREAM_CHUNK_SIZE};
 use db::media_session::MediaSessionNowPlaying;
 use db::play_history_item::{self, PlayHistoryItem};
 use db::{audio_chunk::AudioChunk, audio_file::AudioFile, Model};
@@ -292,7 +292,7 @@ pub fn run_playlist_session(
                 // check if shutdown delay is elapsed
                 Err(SendError::NoListeners(_)) => match no_listeners_since {
                   Some(instant) => {
-                    if instant.elapsed() > PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY {
+                    if instant.elapsed().as_secs() > PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY_SECS {
                       info!(
                         "shutting down playlist for station {} (no listeners shutdown delay elapsed)",
                           station_id
