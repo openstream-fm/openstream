@@ -4,6 +4,7 @@ import { get_now_playing_store, type NowPlaying } from "$lib/now-playing";
 import { _get } from "$share/net.client";
 import { derived, get, writable } from "svelte/store";
 import { page } from "$app/stores";
+import { equals } from "$server/util/collections";
 
 export type PlayerState = PlayerState.Closed | PlayerState.Station | PlayerState.AudioFile;
 
@@ -251,11 +252,24 @@ if (hasMediaSession) {
         picture_id = $player_state.station.picture_id;
         if ($now_playing) {
           if ($now_playing.kind === "live") {
-            title = $now_playing.title || $player_state.station.name;
-            artist = $now_playing.artist || undefined;
+            if($now_playing.title && $now_playing.artist) {
+              title = `${$now_playing.title} - ${$now_playing.artist}`;
+              artist = $player_state.station.name;
+            } else if($now_playing.title) {
+              title = $now_playing.title;
+              artist = $player_state.station.name;
+            } else {
+              title = $player_state.station.name;
+              artist = "Live Streaming";
+            }
           } else if ($now_playing.kind === "playlist") {
-            title = $now_playing.title || $now_playing.filename;
-            artist = $now_playing.artist || undefined;
+            if($now_playing.artist) {
+              title = `${$now_playing.title || $now_playing.filename} - ${$now_playing.artist}`;
+              artist = $player_state.station.name;
+            } else {
+              title = `${$now_playing.title || $now_playing.filename}`;
+              artist = $player_state.station.name;
+            }
           } else if ($now_playing.kind === "none") {
             title = $player_state.station.name;
             artist = undefined;
@@ -274,19 +288,29 @@ if (hasMediaSession) {
         return assert_never($player_state)
       }
 
+      const storage_url = get(page).data.config.storage_public_url;
+
       const artwork = [
-        { src: `${get(page).data.config.storage_public_url}/station-pictures/png/512/${picture_id}.png`, sizes: "512x512", type: "image/png" },
+        { src: `${storage_url}/station-pictures/png/192/${picture_id}.png`, sizes: "192x192", type: "image/png" },
+        { src: `${storage_url}/station-pictures/png/512/${picture_id}.png`, sizes: "512x512", type: "image/png" },
       ]
 
-      const metadata = new MediaMetadata({
+      const prev_metadata = {
+        title: navigator.mediaSession.metadata?.artist || undefined,
+        artist: navigator.mediaSession.metadata?.album || undefined,
+        artwork: navigator.mediaSession.metadata?.artwork || undefined,
+      }
+
+      const new_metadata = {
         title,
         artist,
-        artwork,
-      })
+        artwork
+      }
       
-      navigator.mediaSession.metadata = metadata;
-
-      logger.info("set mediaSession metadata", metadata);
+      if(!equals(prev_metadata, new_metadata)) {
+        navigator.mediaSession.metadata = new MediaMetadata(new_metadata);
+        logger.info("set mediaSession metadata", new_metadata);
+      }
     }
   }).subscribe(() => { })
 
