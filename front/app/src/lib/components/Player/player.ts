@@ -11,6 +11,8 @@ export type AudioState = "playing" | "loading" | "paused";
 
 const logger = default_logger.scoped("player");
 
+const hasMediaSession = browser && ("mediaSession" in navigator) && typeof MediaMetadata !== "undefined";
+
 export namespace PlayerState {
   export interface Base {
     type: string
@@ -214,6 +216,80 @@ derived([player_state, now_playing], ([$player_state, $now_playing]) => {
   }
 }).subscribe(() => {})
 
+// media session
+hasMediaSession && derived([player_state, now_playing], ([$player_state, $now_playing]) => {
+  
+  if($player_state.type === "closed") return;
+  navigator.mediaSession.metadata = null;
+  navigator.mediaSession.playbackState = "none";
+
+  let title: string | undefined;
+  let artist: string | undefined;
+  let picture_id: string;
+
+  if($player_state.type === "station") {
+    picture_id = $player_state.station.picture_id;
+    if($now_playing) {
+      if($now_playing.kind === "live") {
+        title = $now_playing.title || $player_state.station.name;
+        artist = $now_playing.artist || undefined;
+      } else if($now_playing.kind === "playlist") {
+        title = $now_playing.title || $now_playing.filename;
+        artist = $now_playing.artist || undefined;
+      } else if($now_playing.kind === "none") {
+        title = $player_state.station.name;
+        artist = undefined;
+      } else {
+        return assert_never($now_playing);
+      }
+    } else {
+      title = $player_state.station.name;
+      artist = undefined;
+    }
+  } else if($player_state.type === "track") {
+    picture_id = $player_state.picture_id;
+    title = $player_state.file.metadata.title || $player_state.file.filename;
+    artist = $player_state.file.metadata.artist || undefined;
+  } else {
+    return assert_never($player_state)
+  }
+
+  const artwork = [
+    { src: `${get(page).data.config.storage_public_url}/station-pictures/png/512/${picture_id}.png`, sizes: "512x512", type: "image/png" },
+  ]
+
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title,
+    artist,
+    artwork,
+  })
+
+  navigator.mediaSession.setActionHandler("pause", () => {
+    pause()
+  })
+
+  navigator.mediaSession.setActionHandler("play", () => {
+    const $player_state = get(player_state);
+    if($player_state.type === "closed") return;
+    else if($player_state.type === "station") {
+      play_station($player_state.station);
+    } else if($player_state.type === "track") {
+      resume();
+    } else {
+      assert_never($player_state);
+    }
+  })
+}).subscribe(() => {})
+
+hasMediaSession && player_audio_state.subscribe($player_audio_state => {
+  if($player_audio_state === "paused") {
+    navigator.mediaSession.playbackState = "paused";
+  } else if($player_audio_state === "playing" || $player_audio_state === "loading") {
+    navigator.mediaSession.playbackState = "playing"
+  } else {
+    return assert_never($player_audio_state);
+  }
+})
 
 export const play_track = (file: import("$server/defs/db/AudioFile").AudioFile, picture_id: string) => {
   if(!browser) throw new Error("player.play_track called in ssr context");
