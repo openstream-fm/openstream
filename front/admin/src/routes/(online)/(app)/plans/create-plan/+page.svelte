@@ -10,6 +10,7 @@
 
   let db = {
     identifier: "",
+    slug: "",
     display_name: "",
     color: "",
     price: null as number | null,
@@ -30,6 +31,7 @@
     try {
       const {
         identifier,
+        slug,
         display_name,
         price,
         color,
@@ -49,6 +51,7 @@
       const payload: import("$api/plans/POST/Payload").Payload = {
         identifier,
         display_name,
+        slug,
         color,
         price,
         stations,

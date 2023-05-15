@@ -36,6 +36,6 @@
 <div class="page" in:fly|local={{ x: -25, duration: 300 }}>
   <div class="page-title">Select a plan for your new account</div>
   <div class="plans">
-    <PlanSelector plans={data.plans.items} target_url={plan => `/accounts/create-account/plan/${plan._id}`} select_btn_label="Select" />
+    <PlanSelector plans={data.plans.items} target_url={plan => `/accounts/create-account/plan/${plan.slug}`} select_btn_label="Select" />
   </div>
 </div>

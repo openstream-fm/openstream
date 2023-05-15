@@ -130,6 +130,10 @@ pub fn router(
     .post(plans::post::Endpoint {}.into_handler());
 
   app
+    .at("/plans/by-slug/:slug")
+    .get(plans::by_slug::slug::get::Endpoint {}.into_handler());
+
+  app
     .at("/plans/:plan")
     .get(plans::id::get::Endpoint {}.into_handler())
     .patch(plans::id::patch::Endpoint {}.into_handler())

@@ -1,6 +1,10 @@
 use crate::Model;
 use futures_util::TryStreamExt;
-use mongodb::{bson::doc, options::FindOptions, IndexModel};
+use mongodb::{
+  bson::doc,
+  options::{FindOptions, IndexOptions},
+  IndexModel,
+};
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
@@ -15,6 +19,7 @@ pub struct Plan {
   #[serde(rename = "_id")]
   pub id: String,
   pub identifier: String,
+  pub slug: String,
   pub display_name: String,
   pub price: f64,
   pub limits: PlanLimits,
@@ -37,11 +42,18 @@ impl Model for Plan {
     let created_at = IndexModel::builder()
       .keys(doc! { Self::KEY_CREATED_AT: 1 })
       .build();
+
+    let slug_options = IndexOptions::builder().unique(true).build();
+    let slug = IndexModel::builder()
+      .keys(doc! { Self::KEY_SLUG: 1 })
+      .options(slug_options)
+      .build();
+
     let deleted_at = IndexModel::builder()
       .keys(doc! { Self::KEY_DELETED_AT: 1 })
       .build();
 
-    vec![order, created_at, deleted_at]
+    vec![slug, order, created_at, deleted_at]
   }
 }
 

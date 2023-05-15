@@ -115,6 +115,11 @@ export const studio_api = ({
       return await client.plans.get(ip(req), ua(req), null, req.params.plan);
     }))
 
+  api.route("/plans/by-slug/:slug")
+    .get(json(async req => {
+      return await client.plans.get_by_slug(ip(req), ua(req), null, req.params.slug);
+    }))
+
   api.route("/users/me")
     .get(json(async req => {
       const { user } = await client.users.get(ip(req), ua(req), user_token(req), user_id(req))
