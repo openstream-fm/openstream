@@ -87,7 +87,7 @@
     </div>
     
     <div class="plans">
-      <PlanSelector plans={data.plans.items} target_url={plan => `/register/plan/${plan._id}`} select_btn_label="Start Trial" />
+      <PlanSelector plans={data.plans.items} show_trial target_url={plan => `/register/plan/${plan._id}`} select_btn_label="Start Trial" />
     </div>
   </div>
 </Page>

@@ -2,6 +2,7 @@
 	export let plans: Plan[];
   export let target_url: (plan: Plan) => string;
   export let select_btn_label: string;
+  export let show_trial: boolean = false;
 
   import type { Plan } from "$server/defs/db/Plan";
 
@@ -329,6 +330,19 @@
                 <PlanFeatureTip text={`An Android application branded to your stations and available worldwide through Google Play`} />
               </span>
             </div>
+
+            {#if show_trial}
+              <div class="feature feature-check">
+                <div class="feature-check-icon">
+                  <Icon d={featureCheckIcon} />
+                </div>
+                <div class="feature-n">30 day</div>
+                <div class="feature-label">free trial</div>
+                <span class="tip">
+                  <PlanFeatureTip text={`You won't be charged until your trial ends, and you can cancel any time`} />
+                </span>
+              </div>
+            {/if}
           </div>
 
           <div class="plan-bottom">
