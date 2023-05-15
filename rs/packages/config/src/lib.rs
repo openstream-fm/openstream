@@ -24,6 +24,7 @@ impl Config {
 #[serde(deny_unknown_fields)]
 pub struct Smtp {
   pub hostname: String,
+  pub port: u16,
   pub username: String,
   pub password: String,
 }

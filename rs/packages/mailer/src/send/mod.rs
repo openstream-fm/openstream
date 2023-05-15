@@ -24,6 +24,7 @@ pub struct Address {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Mailer {
   pub hostname: String,
+  pub port: u16,
   pub username: String,
   pub password: String,
 }
@@ -47,14 +48,12 @@ impl Mailer {
       .from(from)
       .to(to)
       .subject(&email.subject)
-      .multipart(MultiPart::alternative_plain_html(
-        email.text.clone(),
-        email.html.clone(),
-      ))?;
+      .multipart(MultiPart::alternative_plain_html(email.text, email.html))?;
 
     let creds = Credentials::new(self.username.clone(), self.password.clone());
 
-    let transport = AsyncSmtpTransport::<Tokio1Executor>::relay(&self.hostname)?
+    let transport = AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(&self.hostname)?
+      .port(self.port)
       .credentials(creds)
       .build::<Tokio1Executor>();
 

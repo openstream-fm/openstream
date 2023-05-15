@@ -45,6 +45,8 @@
   "smtp": {
     // string (required)
     "hostname": "",
+    // u16 (required)
+    "port": 587,
     // string (required)
     "username": "",
     // string (required)

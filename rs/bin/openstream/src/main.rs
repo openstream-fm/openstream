@@ -375,6 +375,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
 
   let mailer = mailer::send::Mailer {
     hostname: smtp.hostname.clone(),
+    port: smtp.port,
     password: smtp.password.clone(),
     username: smtp.username.clone(),
   };
@@ -384,8 +385,6 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   let media_sessions = MediaSessionMap::new(deployment.id.clone(), drop_tracer.clone());
 
   let futs = futures::stream::FuturesUnordered::new();
-
-
 
   if let Some(source_config) = source {
     // let source = SourceServer::new(
