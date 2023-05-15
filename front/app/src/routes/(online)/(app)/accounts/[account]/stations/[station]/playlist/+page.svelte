@@ -289,7 +289,7 @@
     next();
 
     try {
-      const _new_file: import("$server/defs/api/stations/[station]/files/POST/Output").Output = await _request(`/api/stations/${station_id}/files?filename=${encodeURIComponent(item.file.name)}`, {
+      const _new_file: import("$api/stations/[station]/files/POST/Output").Output = await _request(`/api/stations/${station_id}/files?filename=${encodeURIComponent(item.file.name)}`, {
         method: "POST",
         headers: {
           "content-length": String(item.file.size),
@@ -486,7 +486,7 @@
 
   const edit_save = action(async () => {
     if(audio_item_to_edit == null) return;
-    const payload: import("$server/defs/api/stations/[station]/files/[file]/metadata/PATCH/Payload").Payload = {
+    const payload: import("$api/stations/[station]/files/[file]/metadata/PATCH/Payload").Payload = {
       title: edit_current_title.trim() || null,
       artist: edit_current_artist.trim() || null,
       album: edit_current_album.trim() || null,
@@ -558,12 +558,12 @@
 
     try {
       if(from_i < to_i) {
-        const payload: import("$server/defs/api/stations/[station]/files/[file]/order/move-after/POST/Payload").Payload = {
+        const payload: import("$api/stations/[station]/files/[file]/order/move-after/POST/Payload").Payload = {
          anchor_file_id: anchor._id
         };
         await _post(`/api/stations/${station_id}/files/${file._id}/order/move-after`, payload);
       } else {
-        const payload: import("$server/defs/api/stations/[station]/files/[file]/order/move-before/POST/Payload").Payload = {
+        const payload: import("$api/stations/[station]/files/[file]/order/move-before/POST/Payload").Payload = {
            anchor_file_id: anchor._id
         }
         await _post(`/api/stations/${station_id}/files/${file._id}/order/move-before`, payload);
@@ -582,7 +582,7 @@
   //   if(from == null || to == null) return;
   //   if(from._id === to._id) return;
 
-  //   const payload: import("$server/defs/api/stations/[station]/files/[file]/order/swap/POST/Payload").Payload = {
+  //   const payload: import("$api/stations/[station]/files/[file]/order/swap/POST/Payload").Payload = {
   //     other_file_id: to._id
   //   };
 

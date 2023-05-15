@@ -12,7 +12,7 @@
     margin: var(--spacing);
   }
 
-  :global(.field-container:focus-within) .label {
+  :global(.field-container:not(.disabled):not(.readonly):focus-within) .label {
     color: var(--blue);
   }
 

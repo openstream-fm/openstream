@@ -26,7 +26,7 @@
   let confirm_password = "";
 
   const register = action(async () => {
-    const payload: Omit<import("$server/defs/api/auth/user/register/POST/Payload").Payload, "device_id"> = {
+    const payload: Omit<import("$api/auth/user/register/POST/Payload").Payload, "device_id"> = {
       plan_id: data.plan._id,
       first_name,
       last_name,
@@ -36,7 +36,7 @@
       password,
     };
     
-    const { account } = await _post<import("$server/defs/api/auth/user/register/POST/Output").Output>("/api/auth/user/register", payload);
+    const { account } = await _post<import("$api/auth/user/register/POST/Output").Output>("/api/auth/user/register", payload);
     await goto(`/accounts/${account._id}/welcome`, { invalidateAll: true });
   })
 

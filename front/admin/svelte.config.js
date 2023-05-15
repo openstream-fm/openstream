@@ -30,6 +30,8 @@ const config = {
 			"$server": "../server/src",
 			"$share": "../share/src",
 			"$static": "../static/admin/static",
+			"$api": "../server/src/defs/api",
+			"$defs": "../server/src/defs",
 		},
 
 		version: {

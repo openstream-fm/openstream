@@ -10,7 +10,7 @@ pub fn can_parse_default_config_toml() {
 #[test]
 pub fn can_parse_default_config_json() {
   crate::parse(
-    include_str!("../../../../../openstream.sample.json"),
+    include_str!("../../../../../openstream.sample.jsonc"),
     crate::ConfigFileFormat::Json,
   )
   .unwrap();
@@ -25,7 +25,7 @@ pub fn toml_and_json_default_config_are_equal() {
   .unwrap();
 
   let json = crate::parse(
-    include_str!("../../../../../openstream.sample.json"),
+    include_str!("../../../../../openstream.sample.jsonc"),
     crate::ConfigFileFormat::Json,
   )
   .unwrap();

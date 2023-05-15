@@ -1,9 +1,9 @@
 <script lang="ts">
-  let user: import("$server/defs/api/users/[user]/GET/Output").Output["user"];
-  let accounts: import("$server/defs/api/accounts/GET/Output").Output; 
-  let account: import("$server/defs/api/accounts/[account]/GET/Output").Output["account"] | null; 
-  let stations: import("$server/defs/api/stations/GET/Output").Output | null;
-  let station: import("$server/defs/api/stations/[station]/GET/Output").Output["station"] | null;
+  let user: import("$api/users/[user]/GET/Output").Output["user"];
+  let accounts: import("$api/accounts/GET/Output").Output; 
+  let account: import("$api/accounts/[account]/GET/Output").Output["account"] | null; 
+  let stations: import("$api/stations/GET/Output").Output | null;
+  let station: import("$api/stations/[station]/GET/Output").Output["station"] | null;
   
   import { page } from "$app/stores";
 

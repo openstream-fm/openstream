@@ -63,8 +63,8 @@
 
         const url = kind === "account" ? `/api/accounts/${record_id}/stream-stats/now` : `/api/stations/${record_id}/stream-stats/now`;
         let output:
-          import("$server/defs/api/stations/[station]/stream-stats/now/GET/Output").Output | 
-          import("$server/defs/api/stations/[station]/stream-stats/now/GET/Output").Output;
+          import("$api/stations/[station]/stream-stats/now/GET/Output").Output | 
+          import("$api/stations/[station]/stream-stats/now/GET/Output").Output;
         
         try {
           output = await _get(url);
@@ -88,8 +88,8 @@
       if(data == null) {
         const url = kind === "station" ? `/api/stations/${record_id}/stream-stats` : `/api/accounts/${record_id}/stream-stats`;
         let output:
-          import("$server/defs/api/stations/[station]/stream-stats/GET/Output").Output | 
-          import("$server/defs/api/accounts/[account]/stream-stats/GET/Output").Output;
+          import("$api/stations/[station]/stream-stats/GET/Output").Output | 
+          import("$api/accounts/[account]/stream-stats/GET/Output").Output;
         try { 
           output = await _get(url);
         } catch(e: any) {

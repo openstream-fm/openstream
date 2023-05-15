@@ -74,6 +74,10 @@
 
 </style>
 
+<svelte:head>
+  <title>Plans and Pricing</title>
+</svelte:head>
+
 <Page compact>
   <div class="page">
     <div class="top">

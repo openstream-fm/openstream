@@ -15,6 +15,7 @@
   $: btn = {
     action,
     icon: visible ? mdiEyeOff : mdiEye,
+    tabindex: -1,
   }
 
   $: type = visible ? "text" : "password";

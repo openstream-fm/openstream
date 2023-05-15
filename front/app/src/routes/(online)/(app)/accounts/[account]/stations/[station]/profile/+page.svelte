@@ -64,7 +64,7 @@
     const country_code = dif.country_code;
     if(country_code === "") throw new Error("Country is required");
 
-    const payload: import("$server/defs/api/stations/[station]/PATCH/Payload").Payload = {
+    const payload: import("$api/stations/[station]/PATCH/Payload").Payload = {
       ...dif,
       name,
       type_of_content: type_of_content ?? null,
@@ -72,7 +72,7 @@
       picture_id,
     }
 
-    await _patch<import("$server/defs/api/stations/[station]/PATCH/Output").Output>(`/api/stations/${data.station._id}`, payload);
+    await _patch<import("$api/stations/[station]/PATCH/Output").Output>(`/api/stations/${data.station._id}`, payload);
     
     db = clone(current);
 
@@ -125,7 +125,6 @@
     appearance: none;
     border: 0;
     margin: 0;
-    outline: 0;
     cursor: pointer;
     user-select: none;
     align-self: flex-end;

@@ -6,6 +6,7 @@ use hyper::header::{CONTENT_LENGTH, CONTENT_TYPE};
 use hyper::http::HeaderValue;
 use hyper::{Body, StatusCode};
 use mailer::error::RenderError;
+use mailer::send::SendError;
 use prex::request::{ReadBodyBytesError, ReadBodyJsonError};
 use prex::*;
 use serde_json;
@@ -20,6 +21,9 @@ pub mod public;
 
 #[derive(Debug, thiserror::Error)]
 pub enum ApiError {
+  #[error("internal: {0}")]
+  Internal(String),
+
   #[error("too many requests")]
   TooManyRequests,
 
@@ -158,6 +162,9 @@ pub enum ApiError {
   #[error("render mail: {0}")]
   RenderMail(mailer::error::RenderError),
 
+  #[error("render mail: {0}")]
+  SendMail(mailer::send::SendError),
+
   #[error("create station account limit")]
   CreateStationAccountLimit,
 }
@@ -167,6 +174,7 @@ impl ApiError {
     use ApiError::*;
 
     match self {
+      Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
       TooManyRequests => StatusCode::TOO_MANY_REQUESTS,
       ResourceNotFound => StatusCode::NOT_FOUND,
       Db(_) => StatusCode::INTERNAL_SERVER_ERROR,
@@ -223,6 +231,7 @@ impl ApiError {
       PlaylistStartNoFiles => StatusCode::BAD_REQUEST,
 
       RenderMail(_) => StatusCode::INTERNAL_SERVER_ERROR,
+      SendMail(_) => StatusCode::INTERNAL_SERVER_ERROR,
 
       CreateStationAccountLimit => StatusCode::FAILED_DEPENDENCY,
     }
@@ -231,6 +240,7 @@ impl ApiError {
   pub fn message(&self) -> String {
     use ApiError::*;
     match self {
+      Internal(message) => message.clone(),
       TooManyRequests => format!("Too many requests"),
       ResourceNotFound => format!("Resource not found"),
       BadRequestCustom(message) => message.clone(),
@@ -283,7 +293,10 @@ impl ApiError {
 
       PlaylistStartIsLive => format!("Station is currenly live streaming"),
       PlaylistStartNoFiles => format!("Station playlist is empty"),
+      
       RenderMail(_) => format!("There was an error rendering the email, try again later"),
+      SendMail(_) => format!("There was an error sending the email, try again later"),
+      
       CreateStationAccountLimit => format!("You reached your limit of stations for this account, upgrade your plan to add more stations"),
     }
   }
@@ -291,6 +304,7 @@ impl ApiError {
   pub fn code(&self) -> PublicErrorCode {
     use ApiError::*;
     match self {
+      Internal(_) => PublicErrorCode::Internal,
       TooManyRequests => PublicErrorCode::TooManyRequests,
       ResourceNotFound => PublicErrorCode::ResourceNotFound,
       BadRequestCustom(_) => PublicErrorCode::BadRequest,
@@ -341,7 +355,10 @@ impl ApiError {
 
       PlaylistStartIsLive => PublicErrorCode::PlaylistStartIsLive,
       PlaylistStartNoFiles => PublicErrorCode::PlaylistStartNoFiles,
+      
       RenderMail(_) => PublicErrorCode::RenderMail,
+      SendMail(_) => PublicErrorCode::SendMail,
+      
       CreateStationAccountLimit => PublicErrorCode::CreateStationAccountLimit,
     }
   }
@@ -450,5 +467,11 @@ impl From<CreateStationPictureError> for ApiError {
 impl From<RenderError> for ApiError {
   fn from(e: RenderError) -> Self {
     Self::RenderMail(e)
+  }
+}
+
+impl From<SendError> for ApiError {
+  fn from(e: SendError) -> Self {
+    Self::SendMail(e)
   }
 }

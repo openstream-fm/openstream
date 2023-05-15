@@ -1,6 +1,7 @@
 use db::station_picture::StationPicture;
 use db::stream_connection::index::MemIndex;
 use drop_tracer::DropTracer;
+use mailer::send::Mailer;
 use media_sessions::MediaSessionMap;
 use prex::router::builder::Builder;
 use prex::Request;
@@ -30,6 +31,7 @@ pub fn router(
   shutdown: Shutdown,
   drop_tracer: DropTracer,
   stream_connections_index: MemIndex,
+  mailer: Mailer,
 ) -> Builder {
   let mut app = prex::prex();
 
@@ -49,7 +51,15 @@ pub fn router(
 
   app
     .at("/auth/user/recover")
-    .post(auth::user::recover::post::Endpoint {}.into_handler());
+    .post(auth::user::recover::post::Endpoint { mailer }.into_handler());
+
+  app
+    .at("/auth/user/recovery-token/:token")
+    .get(auth::user::recovery_token::token::get::Endpoint {}.into_handler());
+
+  app
+    .at("/auth/user/recovery-token/:token/set-password")
+    .post(auth::user::recovery_token::token::set_password::post::Endpoint {}.into_handler());
 
   app
     .at("/auth/admin/login")

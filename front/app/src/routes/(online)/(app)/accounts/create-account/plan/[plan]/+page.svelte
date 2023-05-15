@@ -23,12 +23,12 @@
     sending = true;
 
     try {
-      const payload: import("$server/defs/api/accounts/POST/Payload").Payload = {
+      const payload: import("$api/accounts/POST/Payload").Payload = {
         plan_id: data.plan._id,
         name: account_name,
       };
       
-      const { account } = await _post<import("$server/defs/api/accounts/POST/Output").Output>("/api/accounts", payload);
+      const { account } = await _post<import("$api/accounts/POST/Output").Output>("/api/accounts", payload);
       goto(`/accounts/${account._id}`, { invalidateAll: true });
       sending = true;
     } catch(e) {

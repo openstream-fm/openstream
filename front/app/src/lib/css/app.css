@@ -30,6 +30,8 @@
   --bg-gray-rgb: 244, 244, 244;
   --bg-gray: rgb(var(--bg-gray-rgb));
 
+  --link-blue: #6CA8E0;
+
   --z-login-bg: 100;
   --z-login-front: 200; 
 
@@ -100,7 +102,6 @@ form {
   margin: 0;
   padding: 0;
   border: 0;
-  outline: 0;
 }
 
 .na {

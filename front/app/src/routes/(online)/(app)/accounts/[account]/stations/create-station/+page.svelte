@@ -63,7 +63,7 @@
     const country_code = current.country_code;
     if(country_code === "") throw new Error("Country is required");
 
-    const payload: import("$server/defs/api/stations/POST/Payload").Payload = {
+    const payload: import("$api/stations/POST/Payload").Payload = {
       ...current,
       name,
       type_of_content,
@@ -75,7 +75,7 @@
 
     const {
       station
-    } = await _post<import("$server/defs/api/stations/POST/Output").Output>(`/api/stations`, payload);
+    } = await _post<import("$api/stations/POST/Output").Output>(`/api/stations`, payload);
 
     _message("New station created");
 
@@ -126,7 +126,6 @@
     appearance: none;
     border: 0;
     margin: 0;
-    outline: 0;
     cursor: pointer;
     user-select: none;
     align-self: flex-end;

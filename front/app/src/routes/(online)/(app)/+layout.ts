@@ -18,8 +18,8 @@ export const load = (async ({ fetch, url, parent, depends }) => {
       accounts,
       stations,
    ] = await Promise.all([
-      load_get<import("$server/defs/api/accounts/GET/Output").Output>(`/api/accounts?limit=10000`, { fetch, url }),
-      load_get<import("$server/defs/api/stations/GET/Output").Output>(`/api/stations?limit=10000`, { fetch, url }),
+      load_get<import("$api/accounts/GET/Output").Output>(`/api/accounts?limit=10000`, { fetch, url }),
+      load_get<import("$api/stations/GET/Output").Output>(`/api/stations?limit=10000`, { fetch, url }),
    ])
 
 

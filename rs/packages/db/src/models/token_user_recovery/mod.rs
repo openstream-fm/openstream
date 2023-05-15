@@ -28,14 +28,14 @@ impl TokenUserRecovery {
     uid::uid(Self::RANDOM_KEY_LEN)
   }
 
-  pub fn is_valid_now(&self) -> bool {
+  pub fn is_expired(&self) -> bool {
     let now = DateTime::now().inner();
 
     let until = self
       .created_at
       .saturating_add(Duration::SECOND * Self::VALIDITY_SECONDS);
 
-    now < until
+    now > until
   }
 }
 

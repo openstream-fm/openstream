@@ -97,6 +97,14 @@ export const studio_api = ({
     return await client.auth.user.recover(ip(req), ua(req), req.body);
   }))
 
+  api.get("/auth/user/recovery-token/:token", json(async req => {
+    return await client.auth.user.recovery_token.get(ip(req), ua(req), req.params.token);
+  }))
+
+  api.post("/auth/user/recovery-token/:token/set-password", json(async req => {
+    return await client.auth.user.recovery_token.set_password(ip(req), ua(req), req.params.token, req.body);
+  }))
+
   api.route("/plans")
     .get(json(async req => {
       return await client.plans.list(ip(req), ua(req), null, { show: "active" });
