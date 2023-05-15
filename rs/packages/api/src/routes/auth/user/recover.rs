@@ -1,5 +1,6 @@
 pub mod post {
   use async_trait::async_trait;
+  use db::sent_email::{SentEmail, SentEmailAddress, SentEmailKind};
   use db::token_user_recovery::TokenUserRecovery;
   use db::user::User;
   use db::Model;
@@ -111,19 +112,22 @@ pub mod post {
         Some(user) => user,
       };
 
-      let id = TokenUserRecovery::uid();
-      let key = TokenUserRecovery::random_key();
+      let recovery_token_id = TokenUserRecovery::uid();
+      let recovery_token_key = TokenUserRecovery::random_key();
       let user_recovery_token = TokenUserRecovery {
-        id: id.clone(),
-        hash: crypt::sha256(&key),
-        user_id: user.id,
+        id: recovery_token_id.clone(),
+        hash: crypt::sha256(&recovery_token_key),
+        user_id: user.id.clone(),
         created_at: DateTime::now(),
         used_at: None,
       };
 
       TokenUserRecovery::insert(user_recovery_token).await?;
 
-      let recovery_url = format!("https://studio.openstream.fm/user-recovery/{}-{}", id, key);
+      let recovery_url = format!(
+        "https://studio.openstream.fm/user-recovery/{}-{}",
+        recovery_token_id, recovery_token_key
+      );
 
       let template = mailer::templates::UserRecovery {
         first_name: user.first_name.clone(),
@@ -133,26 +137,55 @@ pub mod post {
 
       let render = mailer::render::render(template)?;
 
+      let from_name = String::from("Openstream");
+      let to_name = format!("{} {}", user.first_name, user.last_name);
+      let subject = String::from("Recover your account at Openstream");
+
+      let sent_email = SentEmail {
+        id: SentEmail::uid(),
+
+        from: SentEmailAddress {
+          name: Some(from_name.clone()),
+          email: self.mailer.username.clone(),
+        },
+
+        to: SentEmailAddress {
+          name: Some(to_name.clone()),
+          email: user.email.clone(),
+        },
+
+        reply_to: None,
+
+        subject: subject.clone(),
+
+        text: render.storable.text,
+        html: render.storable.html,
+
+        kind: SentEmailKind::UserRecovery {
+          user_id: user.id.clone(),
+          token_id: recovery_token_id,
+        },
+
+        created_at: DateTime::now(),
+      };
+
+      SentEmail::insert(sent_email).await?;
+
       let email = Email {
         from: Address {
-          name: Some(String::from("Openstream")),
+          name: Some(from_name),
           email: self.mailer.username.clone(),
         },
         to: Address {
-          name: Some(format!("{} {}", user.first_name, user.last_name)),
+          name: Some(to_name),
           email: user.email,
         },
         html: render.sendable.html,
         text: render.sendable.text,
-        subject: String::from("Recover your user at Openstream"),
+        subject,
       };
 
       self.mailer.send(email).await?;
-
-      // println!(
-      //   "== mailer recovery url: {}",
-      //   recovery_url.replace("studio.", "studio.local.")
-      // );
 
       let out = Output(EmptyStruct(()));
 

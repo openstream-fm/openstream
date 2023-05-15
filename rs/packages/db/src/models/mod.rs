@@ -22,3 +22,5 @@ pub mod token_user_recovery;
 pub mod transfer_checkpoint;
 pub mod user;
 pub mod user_account_relation;
+
+pub mod sent_email;
