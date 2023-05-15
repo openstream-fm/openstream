@@ -137,7 +137,7 @@ pub mod post {
 
       let render = mailer::render::render(template)?;
 
-      let from_name = String::from("Openstrema");
+      let from_name = String::from("Openstream");
       let to_name = format!("{} {}", user.first_name, user.last_name);
       let subject = String::from("Recover your account at Openstream");
 
