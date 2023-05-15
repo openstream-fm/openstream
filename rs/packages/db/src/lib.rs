@@ -40,6 +40,7 @@ pub use models::media_session;
 pub use models::plan;
 pub use models::play_history_item;
 pub use models::relay_session;
+pub use models::sent_email;
 pub use models::station;
 pub use models::station_picture;
 pub use models::station_picture_variant;
@@ -113,6 +114,7 @@ pub async fn ensure_collections() -> MongoResult<()> {
   token_user_email_confirmation::TokenUserEmailConfirmation::ensure_collection().await?;
   token_user_recovery::TokenUserRecovery::ensure_collection().await?;
   plan::Plan::ensure_collection().await?;
+  sent_email::SentEmail::ensure_collection().await?;
 
   Ok(())
 }
