@@ -15,6 +15,7 @@
 
   let db = {
     identifier: data.plan.identifier,
+    slug: data.plan.slug,
     display_name: data.plan.display_name,
     color: data.plan.color,
     price: data.plan.price as number | null,
@@ -36,6 +37,7 @@
 
     const {
       identifier,
+      slug,
       display_name,
       price,
       color,
@@ -54,6 +56,7 @@
     
     const payload: import("$api/plans/[plan]/PATCH/Payload").Payload = {
       identifier,
+      slug,
       display_name,
       color,
       price,

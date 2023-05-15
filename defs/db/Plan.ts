@@ -5,6 +5,7 @@ import type { PlanLimits } from "./PlanLimits";
 export interface Plan {
   _id: string;
   identifier: string;
+  slug: string;
   display_name: string;
   price: number;
   limits: PlanLimits;

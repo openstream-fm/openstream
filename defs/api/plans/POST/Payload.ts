@@ -2,6 +2,7 @@
 
 export interface Payload {
   identifier: string;
+  slug: string;
   display_name: string;
   is_user_selectable: boolean;
   price: number;

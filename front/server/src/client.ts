@@ -258,6 +258,10 @@ export class Plans {
     return await this.client.get(ip, ua, token, `/plans/${plan_id}`);
   }
 
+  async get_by_slug(ip: string | null, ua: string | null, token: string | null, plan_slug: string): Promise<import("$api/plans/by-slug/[slug]/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/plans/by-slug/${plan_slug}`);
+  }
+
   async post(ip: string | null, ua: string | null, token: string, payload: import("$api/plans/POST/Payload").Payload): Promise<import("$api/plans/POST/Output").Output> {
     return await this.client.post(ip, ua, token, `/plans`, payload);
   }
