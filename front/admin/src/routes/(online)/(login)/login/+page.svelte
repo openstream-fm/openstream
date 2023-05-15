@@ -14,7 +14,7 @@
   let password = "";
 
   const login = action(async () => {
-    const payload: Omit<import("$server/defs/api/auth/admin/login/POST/Payload").Payload, "device_id"> = { email, password };
+    const payload: Omit<import("$api/auth/admin/login/POST/Payload").Payload, "device_id"> = { email, password };
     await _post("/api/auth/admin/login", payload);
     const target = decodeURIComponent(location.hash.replace(/^#/, "")) || "/";
     goto(target, { invalidateAll: true });

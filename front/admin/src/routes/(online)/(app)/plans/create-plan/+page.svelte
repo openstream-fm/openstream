@@ -46,7 +46,7 @@
       if(transfer === null) throw new Error("Transfer is required");
       if(storage === null) throw new Error("Storage is required");
       
-      const payload: import("$server/defs/api/plans/POST/Payload").Payload = {
+      const payload: import("$api/plans/POST/Payload").Payload = {
         identifier,
         display_name,
         color,

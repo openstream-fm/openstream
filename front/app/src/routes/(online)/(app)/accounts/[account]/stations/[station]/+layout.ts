@@ -13,7 +13,7 @@ export const load = (async ({ fetch, url, parent, depends, params }) => {
     return { station, current_page }
   } 
 
-  const helper: import("$server/defs/api/stations/[station]/GET/Output").Output = await load_get(`/api/stations/${params.station}`, { fetch, url });
+  const helper: import("$api/stations/[station]/GET/Output").Output = await load_get(`/api/stations/${params.station}`, { fetch, url });
   
   return {
     station: helper.station,

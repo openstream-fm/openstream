@@ -35,7 +35,7 @@
     loading = true;
 
     try {
-      const query: import("$server/defs/api/station-pictures/POST/Query").Query = {
+      const query: import("$api/station-pictures/POST/Query").Query = {
         account_id,
         content_type: file.type,
         filename: file.name,
@@ -69,7 +69,7 @@
         throw new Error(String(json.error.message))
       }
 
-      let picture = json as import("$server/defs/api/station-pictures/POST/Output").Output;
+      let picture = json as import("$api/station-pictures/POST/Output").Output;
       picture_id = picture._id;
 
     } catch(e: any) {

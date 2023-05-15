@@ -39,7 +39,7 @@
     if(station?._id === selector_state.station?._id) return;
     const token = ++_token;
     if(station) {
-      const { stats }: import("$server/defs/api/stations/[station]/stream-stats/GET/Output").Output =
+      const { stats }: import("$api/stations/[station]/stream-stats/GET/Output").Output =
         await _get(`/api/stations/${station._id}/stream-stats`);
       if(token === _token) {
         selector_state = {
@@ -50,7 +50,7 @@
         }
       }
     } else {
-      const { stats }: import("$server/defs/api/accounts/[account]/stream-stats/GET/Output").Output =
+      const { stats }: import("$api/accounts/[account]/stream-stats/GET/Output").Output =
         await _get(`/api/accounts/${data.account._id}/stream-stats`);
       if(token === _token) {
         selector_state = {
@@ -146,7 +146,7 @@
   let edit_open = false;
   let current_account_name = data.account.name;
   const edit = action(async () => {
-    let payload: import("$server/defs/api/accounts/[account]/PATCH/Payload").Payload = {
+    let payload: import("$api/accounts/[account]/PATCH/Payload").Payload = {
       name: current_account_name,
     };
     await _patch(`/api/accounts/${data.account._id}`, payload);

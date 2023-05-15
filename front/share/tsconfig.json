@@ -102,6 +102,8 @@
     "paths": {
       "$server/*": [ "../server/src/*" ],
       "$share/*": [ "./src/*" ],
+      "$defs/*": ["../server/src/defs/*"],
+			"$api/*": ["../server/src/defs/api/*"],
     }
   }
 }

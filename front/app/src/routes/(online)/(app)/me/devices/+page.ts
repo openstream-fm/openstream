@@ -6,7 +6,7 @@ export const load = (async ({ fetch, url, depends }) => {
    depends("api:devices")
 
    // TODO: implement pagination
-   const devices = await load_get<import("$server/defs/api/devices/GET/Output").Output>(`/api/devices?limit=10000`, { fetch, url });
+   const devices = await load_get<import("$api/devices/GET/Output").Output>(`/api/devices?limit=10000`, { fetch, url });
    
    return { devices }
 

@@ -12,6 +12,7 @@ use futures::stream::FuturesUnordered;
 use futures::TryStreamExt;
 use hyper::Server;
 use log::*;
+use mailer::send::Mailer;
 use media_sessions::MediaSessionMap;
 use serde::{Deserialize, Serialize};
 use shutdown::Shutdown;
@@ -27,6 +28,7 @@ pub struct ApiServer {
   drop_tracer: DropTracer,
   media_sessions: MediaSessionMap,
   stream_connections_index: MemIndex,
+  mailer: Mailer,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -50,6 +52,7 @@ impl ApiServer {
     drop_tracer: DropTracer,
     media_sessions: MediaSessionMap,
     stream_connections_index: MemIndex,
+    mailer: Mailer,
   ) -> Self {
     Self {
       deployment_id,
@@ -58,6 +61,7 @@ impl ApiServer {
       drop_tracer,
       media_sessions,
       stream_connections_index,
+      mailer,
     }
   }
 
@@ -75,6 +79,7 @@ impl ApiServer {
       self.shutdown.clone(),
       self.drop_tracer.clone(),
       self.stream_connections_index.clone(),
+      self.mailer.clone(),
     ));
 
     let app = app.build().expect("prex app build api");

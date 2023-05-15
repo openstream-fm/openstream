@@ -39,5 +39,15 @@
     // string(SocketAddr)[] (required)
     // socket addrs to bind the api server to
     "addrs": [ "0.0.0.0:10900" ]
+  },
+
+  // smtp related settings for mail delivery
+  "smtp": {
+    // string (required)
+    "hostname": "",
+    // string (required)
+    "username": "",
+    // string (required)
+    "password": ""
   }
 }

@@ -23,7 +23,7 @@
   import Label from "./Label.svelte";
 </script>
 
-<FieldContainer {disabled} {icon} {btn}>
+<FieldContainer {disabled} {readonly} {icon} {btn}>
   <Input
     type={type}
     {autocomplete}

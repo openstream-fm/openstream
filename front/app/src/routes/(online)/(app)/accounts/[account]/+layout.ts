@@ -6,14 +6,14 @@ export const load = (async ({ fetch, url, parent, depends, params }) => {
 
   const { accounts } = await parent();
   
-  let account: import("$server/defs/api/accounts/[account]/GET/Output").Output["account"];
+  let account: import("$api/accounts/[account]/GET/Output").Output["account"];
 
   let item = accounts.items.find(item => item._id === params.account);
 
   if(item != null) {
     account = item;
   } else {
-    const res: import("$server/defs/api/accounts/[account]/GET/Output").Output = await load_get(`/api/accounts/${params.account}`, { fetch, url });
+    const res: import("$api/accounts/[account]/GET/Output").Output = await load_get(`/api/accounts/${params.account}`, { fetch, url });
     account = res.account;
   }
 

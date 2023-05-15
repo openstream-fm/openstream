@@ -7,7 +7,7 @@
 	import { clone, diff, equals } from "$server/util/collections";
 	import { _patch, action } from "$share/net.client";
 	import { _message } from "$share/notify";
-	import { invalidate } from "$app/navigation";
+	import { goto, invalidate } from "$app/navigation";
 	import Email from "$lib/components/Form/Email.svelte";
 	import Password from "$lib/components/Form/Password.svelte";
 	import { mdiAccountOutline, mdiDevices, mdiPhoneOutline } from "@mdi/js";
@@ -21,6 +21,9 @@
     _phone,
   } from "$share/formy/validate";
   import Page from "$lib/components/Page.svelte";
+	import { tick } from "svelte";
+
+  let show_change_password = true;
 
   let profile_db = {
     first_name: data.user.first_name,
@@ -40,7 +43,7 @@
     
     const dif = diff(profile_db, profile_current);
     // TODO: remove this partial
-    const payload: Partial<import("$server/defs/api/users/[user]/PATCH/Payload").Payload> = dif;
+    const payload: Partial<import("$api/users/[user]/PATCH/Payload").Payload> = dif;
     await _patch(`/api/users/${data.user._id}`, payload);
     profile_db = clone(profile_current);
     _message("Profile updated");
@@ -54,7 +57,7 @@
     if(new_password === "") throw new Error("New password is required");
     if(new_password !== confirm_new_password) throw new Error("Confirmation password doesn't match");
     // TODO: remove this partial
-    const payload: Partial<import("$server/defs/api/users/[user]/PATCH/Payload").Payload> = {
+    const payload: Partial<import("$api/users/[user]/PATCH/Payload").Payload> = {
       password: new_password,
     };
 
@@ -62,6 +65,13 @@
     new_password = "";
     confirm_new_password = "";
     _message("Password updated");
+
+    show_change_password = false;
+    tick().then(() => {
+      show_change_password = true;
+    })
+    // TODO: force chrome prompt to update password
+    // goto(`?password-updated=${Date.now()}`)
   })
 
   // let new_email = "";
@@ -175,7 +185,6 @@
     appearance: none;
     border: 0;
     margin: 0;
-    outline: 0;
     cursor: pointer;
     user-select: none;
     align-self: flex-end;
@@ -229,6 +238,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .hidden-field {
+    display: none;
   }
 </style>
 
@@ -329,26 +342,31 @@
       </div>
     </form> -->
 
-    <Formy action={change_password} let:submit>
-      <form novalidate class="section section-password" on:submit={submit}>
-        <div class="section-title">Change your password</div>
-        <div class="fields">
-          <div class="field">
-            <Password label="New password" autocomplete="new-password" bind:value={new_password} />
-            <Validator value={new_password} fn={_new_password({ minlen: 8, maxlen: 50 })} />
+    {#if show_change_password}
+      <Formy action={change_password} let:submit>
+        <form novalidate class="section section-password" on:submit={submit}>
+          <div class="hidden-field" hidden>
+            <input type="email" readonly value={data.user.email} />
           </div>
-          <div class="field">
-            <Password label="Confirm password" autocomplete="new-password" bind:value={confirm_new_password} />
-            <Validator value={{password: new_password, confirm_password: confirm_new_password }} fn={_confirmation_password()} />
+          <div class="section-title">Change your password</div>
+          <div class="fields">
+            <div class="field">
+              <Password label="New password" autocomplete="new-password" bind:value={new_password} />
+              <Validator value={new_password} fn={_new_password({ minlen: 8, maxlen: 50 })} />
+            </div>
+            <div class="field">
+              <Password label="Confirm password" autocomplete="new-password" bind:value={confirm_new_password} />
+              <Validator value={{password: new_password, confirm_password: confirm_new_password }} fn={_confirmation_password()} />
+            </div>
           </div>
-        </div>
-        <div class="submit-wrap">
-          <button class="submit ripple-container" type="submit" use:ripple> 
-            Save
-          </button>
-        </div>
-      </form>
-    </Formy>
+          <div class="submit-wrap">
+            <button class="submit ripple-container" type="submit" use:ripple> 
+              Save
+            </button>
+          </div>
+        </form>
+      </Formy>
+    {/if}
 
     <div class="more">
       <div class="more-title">

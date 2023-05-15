@@ -11,12 +11,21 @@ pub struct Config {
   // pub router: Option<Router>,
   pub api: Option<Api>,
   pub storage: Option<Storage>,
+  pub smtp: Smtp,
 }
 
 impl Config {
   pub fn has_interfaces(&self) -> bool {
     self.stream.is_some() || self.source.is_some() || self.api.is_some() || self.storage.is_some()
   }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct Smtp {
+  pub hostname: String,
+  pub username: String,
+  pub password: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]

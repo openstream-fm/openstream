@@ -25,7 +25,7 @@
   let reset_password_open = false;
 
   const reset_password = action(async () => {
-    const { new_password }: import("$server/defs/api/stations/[station]/reset-source-password/POST/Output").Output =
+    const { new_password }: import("$api/stations/[station]/reset-source-password/POST/Output").Output =
       await _post(`/api/stations/${data.station._id}/reset-source-password`, undefined);
     
     data.station.source_password = new_password;
