@@ -22,14 +22,13 @@ export class Client {
 
   logger: Logger;
 
+  me: Me;
   auth: Auth;
   plans: Plans;
   admins: Admins;
   users: Users;
   accounts: Accounts;
   stations: Stations;
-  devices: Devices;
-
 
   constructor(base_url: string, { logger, fetch = node_fetch }: { logger: Logger, fetch?: typeof node_fetch }) {
     this.base_url = base_url.trim().replace(/\/+$/g, "")
@@ -37,13 +36,13 @@ export class Client {
 
     this.node_fetch = fetch;
 
+    this.me = new Me(this);
     this.auth = new Auth(this);
     this.plans = new Plans(this);
     this.admins = new Admins(this);
     this.users = new Users(this);
     this.accounts = new Accounts(this);
     this.stations = new Stations(this);
-    this.devices = new Devices(this);
   }
 
   async fetch(_url: string, init: RequestInit = {}): Promise<Response> {
@@ -145,10 +144,6 @@ export class Client {
     })
   }
 
-  async me(ip: string | null, ua: string | null, token: string): Promise<import("$api/me/Output").Output> {
-    return await this.get(ip, ua, token, "/me");
-  }
-
   async get_stream_stats(ip: string | null, ua: string | null, token: string): Promise<import("$api/stream-stats/GET/Output").Output> {
     return await this.get(ip, ua, token, `/stream-stats`);
   }
@@ -167,6 +162,35 @@ export class Client {
 
   async get_stream_stats_item_since_count(ip: string | null, ua: string | null, token: string, num: number | string, unit: string): Promise<import("$api/stream-stats/last-[num][unit]/count/GET/Output").Output> {
     return await this.get(ip, ua, token, `/stream-stats/last-${num}${unit}/count`);
+  }
+}
+
+export class Me {
+  client: Client;
+  devices: MeDevices;
+  constructor(client: Client) {
+    this.client = client;
+    this.devices = new MeDevices(client);
+  }
+
+  async me(ip: string | null, ua: string | null, token: string): Promise<import("$api/me/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/me`);
+  }
+}
+
+export class MeDevices {
+  client: Client;
+
+  constructor(client: Client) {
+    this.client = client;
+  }
+
+  async list(ip: string | null, ua: string | null, token: string, query: import("$api/me/devices/GET/Query").Query): Promise<import("$api/me/devices/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/me/devices${qss(query)}`);
+  }
+
+  async delete(ip: string | null, ua: string | null, token: string, id: string): Promise<import("$api/me/devices/[device]/DELETE/Output").Output> {
+    return await this.client.delete(ip, ua, token, `/me/devices/${id}`);
   }
 }
 
@@ -324,22 +348,6 @@ export class Accounts {
 
   async get_stream_stats_item_since_count(ip: string | null, ua: string | null, token: string, account_id: string, num: number | string, unit: string): Promise<import("$api/accounts/[account]/stream-stats/last-[num][unit]/count/GET/Output").Output> {
     return await this.client.get(ip, ua, token, `/accounts/${account_id}/stream-stats/last-${num}${unit}/count`);
-  }
-}
-
-export class Devices {
-  client: Client;
-
-  constructor(client: Client) {
-    this.client = client;
-  }
-
-  async list(ip: string | null, ua: string | null, token: string, query: import("$api/devices/GET/Query").Query): Promise<import("$api/devices/GET/Output").Output> {
-    return await this.client.get(ip, ua, token, `/devices${qss(query)}`);
-  }
-
-  async delete(ip: string | null, ua: string | null, token: string, id: string): Promise<import("$api/devices/[device]/DELETE/Output").Output> {
-    return await this.client.delete(ip, ua, token, `/devices/${id}`);
   }
 }
 

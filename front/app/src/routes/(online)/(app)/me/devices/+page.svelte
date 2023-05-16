@@ -3,7 +3,6 @@
 
 	type Item = import('./$types').PageData['devices']['items'][number];
 
-	import TopUser from '$lib/components/Dashboard/TopUser.svelte';
 	import Device from './device.svelte';
 	import { ripple } from '$share/ripple';
 	import { fly, slide } from 'svelte/transition';
@@ -23,7 +22,7 @@
 
 	const disconnect = action(async () => {
 		if (disconnect_item == null) return;
-		await _delete(`/api/devices/${disconnect_item._id}`);
+		await _delete(`/api/me/devices/${disconnect_item._id}`);
 		_message('Device disconnected');
 		disconnect_item = null;
 		invalidate('resource:devices');

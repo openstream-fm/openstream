@@ -26,7 +26,7 @@ pub mod delete {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../../defs/api/devices/[device]/DELETE/")]
+  #[ts(export, export_to = "../../../defs/api/me/devices/[device]/DELETE/")]
   pub struct Output(EmptyStruct);
 
   #[derive(Debug, thiserror::Error)]
