@@ -13,5 +13,6 @@ export interface Payload {
   user_system_metadata?: Metadata;
   account_user_metadata?: Metadata;
   account_system_metadata?: Metadata;
+  email_verification_code: string;
   device_id: string;
 }

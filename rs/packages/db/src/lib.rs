@@ -35,6 +35,7 @@ pub use models::audio_upload_operation;
 pub use models::config;
 pub use models::db_writable_test;
 pub use models::deployment;
+pub use models::email_verification_code;
 pub use models::event;
 pub use models::media_session;
 pub use models::plan;
@@ -115,6 +116,7 @@ pub async fn ensure_collections() -> MongoResult<()> {
   token_user_recovery::TokenUserRecovery::ensure_collection().await?;
   plan::Plan::ensure_collection().await?;
   sent_email::SentEmail::ensure_collection().await?;
+  email_verification_code::EmailVerificationCode::ensure_collection().await?;
 
   Ok(())
 }

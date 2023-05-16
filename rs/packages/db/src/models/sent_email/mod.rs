@@ -39,4 +39,7 @@ pub struct SentEmailAddress {
 pub enum SentEmailKind {
   #[serde(rename = "user-recovery")]
   UserRecovery { user_id: String, token_id: String },
+
+  #[serde(rename = "email-verification-code")]
+  EmailVerificationCode { email: String, code_id: String },
 }

@@ -7,7 +7,7 @@ static MAIL_REGEX: Lazy<Regex> = lazy_regex!(
 );
 
 pub fn is_valid_email(address: &str) -> bool {
-  MAIL_REGEX.is_match(address)
+  !MAIL_REGEX.is_match(address)
 }
 
 pub trait ValidateEmail: Sized {

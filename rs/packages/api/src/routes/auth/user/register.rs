@@ -4,11 +4,13 @@ pub mod post {
   use async_trait::async_trait;
   use db::access_token::{AccessToken, GeneratedBy, Scope};
   use db::account::{Account, Limit, Limits, PublicAccount};
+  use db::email_verification_code::EmailVerificationCode;
   use db::metadata::Metadata;
   use db::models::user_account_relation::{UserAccountRelation, UserAccountRelationKind};
   use db::plan::Plan;
   use db::user::{PublicUser, User};
   use db::{run_transaction, Model};
+  use mongodb::bson::doc;
   use prex::{request::ReadBodyJsonError, Request};
   use serde::{Deserialize, Serialize};
   use serde_util::DateTime;
@@ -73,6 +75,10 @@ pub mod post {
     DeviceIdInvalid,
     #[error("plan not found: {0}")]
     PlanNotFound(String),
+    #[error("email verification code mismatch")]
+    EmailCodeMismatch,
+    #[error("email verification code expired")]
+    EmailCodeExpired,
   }
 
   impl From<mongodb::error::Error> for HandleError {
@@ -125,6 +131,12 @@ pub mod post {
         HandleError::PlanNotFound(id) => {
           ApiError::PayloadInvalid(format!("Plan with id {id} not found"))
         }
+        HandleError::EmailCodeMismatch => {
+          ApiError::BadRequestCustom("Email verification code doesn't match".into())
+        }
+        HandleError::EmailCodeExpired => {
+          ApiError::BadRequestCustom("Email verification code has expired".into())
+        }
       }
     }
   }
@@ -154,29 +166,16 @@ pub mod post {
     #[serde(skip_serializing_if = "Option::is_none")]
     account_system_metadata: Option<Metadata>,
 
+    email_verification_code: String,
+
     device_id: String,
   }
-
-  // #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
-  // #[ts(export, export_to = "../../../defs/api/auth/user/register/POST/")]
-  // // #[serde(rename_all = "camelCase")]
-  // #[serde(deny_unknown_fields)]
-  // pub struct PayloadLimits {
-  //   #[serde(skip_serializing_if = "Option::is_none")]
-  //   listeners: Option<u64>,
-
-  //   #[serde(skip_serializing_if = "Option::is_none")]
-  //   transfer: Option<u64>,
-
-  //   #[serde(skip_serializing_if = "Option::is_none")]
-  //   storage: Option<u64>,
-  // }
 
   #[derive(Debug, Clone)]
   pub struct Input {
     pub ip: IpAddr,
     pub user_agent: UserAgent,
-    pub access_token_scope: AccessTokenScope,
+    pub access_token_scope: Option<AccessTokenScope>,
     pub payload: Payload,
   }
 
@@ -203,7 +202,7 @@ pub mod post {
     async fn parse(&self, mut req: Request) -> Result<Input, ParseError> {
       let ip = req.isomorphic_ip();
       let user_agent = req.parse_ua();
-      let access_token_scope = request_ext::get_access_token_scope(&req).await?;
+      let access_token_scope = request_ext::get_optional_access_token_scope(&req).await?;
       let payload: Payload = req.read_body_json(10_000).await?;
       Ok(Input {
         ip,
@@ -221,10 +220,6 @@ pub mod post {
         payload,
       } = input;
 
-      if !access_token_scope.is_admin_or_global() {
-        return Err(HandleError::TokenOutOfScope);
-      }
-
       let Payload {
         plan_id,
         email,
@@ -237,6 +232,7 @@ pub mod post {
         account_system_metadata,
         user_user_metadata,
         user_system_metadata,
+        email_verification_code,
         device_id,
       } = payload;
 
@@ -269,6 +265,24 @@ pub mod post {
       if !is_valid_email(&email) {
         return Err(HandleError::EmailInvalid);
       }
+
+      let verification_code_document = {
+        let hash = crypt::sha256(&email_verification_code);
+        let filter = doc! {
+          EmailVerificationCode::KEY_EMAIL: &email,
+          EmailVerificationCode::KEY_HASH: hash,
+        };
+
+        match EmailVerificationCode::get(filter).await? {
+          None => return Err(HandleError::EmailCodeMismatch),
+          Some(doc) => {
+            if doc.is_expired() {
+              return Err(HandleError::EmailCodeExpired);
+            }
+            doc
+          }
+        }
+      };
 
       if first_name.is_empty() {
         return Err(HandleError::FirstNameEmpty);
@@ -407,11 +421,17 @@ pub mod post {
         tx_try!(Account::insert_with_session(&account, &mut session).await);
         tx_try!(UserAccountRelation::insert_with_session(&relation, &mut session).await);
         tx_try!(AccessToken::insert_with_session(&token, &mut session).await);
+        tx_try!(EmailVerificationCode::update_by_id_with_session(&verification_code_document.id, doc! { "$set": { EmailVerificationCode::KEY_USED_AT: now } }, &mut session).await)
       });
 
+      let public_scope = match access_token_scope {
+        Some(token) => token.as_public_scope(),
+        None => db::PublicScope::User,
+      };
+
       let out = Output {
-        user: user.into_public(access_token_scope.as_public_scope()),
-        account: account.into_public(access_token_scope.as_public_scope()),
+        user: user.into_public(public_scope),
+        account: account.into_public(public_scope),
         token: format!("{}-{}", token.id, key),
         media_key: format!("{}-{}", token.id, media_key),
       };

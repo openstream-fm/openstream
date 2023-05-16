@@ -30,7 +30,7 @@ pub async fn main() -> Result<(), anyhow::Error> {
     <ul>
       <li><a href="/account-invitation">Account invitation</a></li>
       <li><a href="/user-recovery">User recovery</a></li>
-      <li><a href="/email-validation">Email validation</a></li>
+      <li><a href="/email-verification">Email verification</a></li>
       <li><a href="/no-reply-autoreply">No reply autoreply</a></li>
     <ul>
 </body>
@@ -54,8 +54,8 @@ pub async fn main() -> Result<(), anyhow::Error> {
     .get(TemplateHandler(UserRecovery::sample()));
 
   app
-    .at("/email-validation")
-    .get(TemplateHandler(EmailValidation::sample()));
+    .at("/email-verification")
+    .get(TemplateHandler(EmailVerification::sample()));
 
   app
     .at("/no-reply-autoreply")

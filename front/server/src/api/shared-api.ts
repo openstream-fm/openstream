@@ -19,6 +19,11 @@ export const shared_api = ({
 }) => {
   const api = Router();
 
+  api.route("/auth/email-verification/send-code")
+    .post(json(async req => {
+      return await client.auth.send_email_verification_code(ip(req), ua(req), req.body);
+    }))
+
   api.route("/users")
     .get(json(async req => {
       return await client.users.list(ip(req), ua(req), get_token(req), req.query);
