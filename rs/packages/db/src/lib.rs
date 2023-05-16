@@ -650,6 +650,31 @@ macro_rules! current_filter_doc {
   }
 }
 
+#[macro_export]
+macro_rules! deleted_filter_doc {
+  () => {
+    ::mongodb::bson::doc!{ $crate::KEY_DELETED_AT: { "$ne": ::mongodb::bson::Bson::Null } }
+  };
+
+  ($filter:ident) => {
+    ::mongodb::bson::doc!{
+      "$and": [
+        { $crate::KEY_DELETED_AT: { "$ne" ::mongodb::bson::Bson::Null } },
+        filter,
+      ]
+    }
+  };
+
+  ($($tt:tt)*) => {
+    ::mongodb::bson::doc! {
+      "$and": [
+        { $crate::KEY_DELETED_AT: { "$ne" ::mongodb::bson::Bson::Null } },
+        { $($tt)* },
+      ]
+    }
+  }
+}
+
 // const KEY_ORDER_BOUNDS_NEXT: &str = "next";
 // const KEY_ORDER_BOUNDS_PREV: &str = "prev";
 

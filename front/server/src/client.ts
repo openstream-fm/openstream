@@ -373,6 +373,10 @@ export class Stations {
     return await this.client.get(ip, ua, token, `/stations/${id}`);
   }
 
+  async delete(ip: string | null, ua: string | null, token: string, id: string): Promise<import("$api/stations/[station]/DELETE/Output").Output> {
+    return await this.client.delete(ip, ua, token, `/stations/${id}`);
+  }
+
   async post(ip: string | null, ua: string | null, token: string, payload: import("$api/stations/POST/Payload").Payload): Promise<import("$api/stations/POST/Output").Output> {
     return await this.client.post(ip, ua, token, `/stations`, payload);
   }

@@ -66,6 +66,128 @@ pub mod get {
   }
 }
 
+pub mod delete {
+
+  use db::account::{Account, Limit, Limits};
+  use db::audio_file::AudioFile;
+  use db::{run_transaction, Model};
+  use serde_util::DateTime;
+  // use futures_util::TryStreamExt;
+  use serde_util::empty_struct::EmptyStruct;
+
+  use crate::error::ApiError;
+
+  use super::*;
+
+  #[derive(Debug, Clone)]
+  pub struct Endpoint {}
+
+  #[derive(Debug, Clone)]
+  pub struct Input {
+    station_id: String,
+  }
+
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../../defs/api/stations/[station]/DELETE/")]
+  // #[serde(rename_all = "camelCase")]
+  pub struct Output(EmptyStruct);
+
+  #[derive(Debug, thiserror::Error)]
+  pub enum HandleError {
+    #[error("db: {0}")]
+    Db(#[from] mongodb::error::Error),
+    #[error("station not found: {0}")]
+    NotFound(String),
+    #[error("account not found: {0}")]
+    AccountNotFound(String),
+    #[error("station already deleted: {0}")]
+    AlreadyDeleted(String),
+  }
+
+  impl From<HandleError> for ApiError {
+    fn from(e: HandleError) -> Self {
+      match e {
+        HandleError::Db(e) => e.into(),
+        HandleError::AlreadyDeleted(id) => ApiError::StationNotFound(id),
+        HandleError::NotFound(id) => ApiError::StationNotFound(id),
+        HandleError::AccountNotFound(id) => ApiError::AccountNotFound(id),
+      }
+    }
+  }
+
+  #[async_trait]
+  impl JsonHandler for Endpoint {
+    type Input = Input;
+    type Output = Output;
+    type ParseError = GetAccessTokenScopeError;
+    type HandleError = HandleError;
+
+    async fn parse(&self, req: Request) -> Result<Input, Self::ParseError> {
+      let station_id = req.param("station").unwrap();
+      let access_token = request_ext::get_access_token_scope(&req).await?;
+      let station = access_token.grant_station_owner_scope(station_id).await?;
+      Ok(Input {
+        station_id: station.id,
+      })
+    }
+
+    async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
+      let Input { station_id } = input;
+
+      run_transaction!(session => {
+
+        let station = match tx_try!(Station::get_by_id_with_session(&station_id, &mut session).await) {
+          None => return Err(HandleError::NotFound(station_id)),
+          Some(station) => station,
+        };
+
+        if station.deleted_at.is_some() {
+          return Err(HandleError::AlreadyDeleted(station.id));
+        }
+
+        let mut storage_used: u64 = 0;
+
+        let files_filter = doc! { AudioFile::KEY_STATION_ID: &station.id };
+
+        let mut cursor = tx_try!(AudioFile::cl().find_with_session(files_filter, None, &mut session).await);
+
+        while let Some(item) = tx_try!(cursor.next(&mut session).await.transpose()) {
+          storage_used += item.len;
+         // TODO:
+         // should we delete files or create a background job that fully delete station files
+         // when the station is finally deleted?
+         // tx_try!(AudioFile::delete_by_id_with_session(&item.id, &mut session).await);
+        };
+
+        const KEY_STATIONS_USED: &str = db::key!(Account::KEY_LIMITS, Limits::KEY_STATIONS, Limit::KEY_USED);
+        const KEY_STORAGE_USED: &str = db::key!(Account::KEY_LIMITS, Limits::KEY_STORAGE, Limit::KEY_USED);
+
+        let now = DateTime::now();
+
+        let account_update = doc!{
+          "$set": {
+            Account::KEY_UPDATED_AT: now,
+          },
+          "$inc": {
+            KEY_STATIONS_USED: -1.0,
+            KEY_STORAGE_USED: storage_used as f64 * -1.0
+          }
+        };
+
+        tx_try!(Station::set_deleted_by_id_with_session(&station.id, &mut session).await);
+        let result = tx_try!(Account::update_by_id_with_session(&station.account_id, account_update, &mut session).await);
+
+        if result.matched_count != 1 {
+          return Err(HandleError::AccountNotFound(station.account_id));
+        }
+      });
+
+      Ok(Output(EmptyStruct(())))
+    }
+  }
+}
+
 pub mod patch {
 
   use crate::error::ApiError;

@@ -4,7 +4,7 @@ export const load = (async ({ fetch, url, parent, depends, params }) => {
 
   depends("api:stations/:id");
 
-  let current_page: null | "dashboard" | "profile" | "playlist" | "broadcast" = null;
+  let current_page: null | "dashboard" | "profile" | "playlist" | "broadcast" | "settings" = null;
   
   const { stations } = await parent();
   const station = stations.items.find(item => item._id === params.station);
