@@ -1,4 +1,4 @@
-import type { Config } from "../config";
+import type { Config, HostConfig } from "../config";
 import { Router, json as json_body_parser } from "express";
 import { ApiError, json_catch_handler } from "../error";
 import type { Logger } from "../logger";
@@ -12,6 +12,7 @@ import { StatusCodes } from "http-status-codes";
 import { user_media_key } from "../media_key";
 import { ua } from "../ua";
 import { shared_api } from "./shared-api";
+import { host } from "../host";
 
 export type PublicConfig = {
   storage_public_url: string
@@ -20,27 +21,12 @@ export type PublicConfig = {
   source_public_port: number
 }
 
-export const public_config = (host: string, source_port_map: Config["source_port"]): PublicConfig => {
-  let port: number;
-  if(host === "studio.openstream.fm") {
-    port = source_port_map.default;
-  } else if (host === "studio.test.openstream.fm") {
-    port = source_port_map.test;
-  } else if (host === "studio.s1.openstream.fm") {
-    port = source_port_map.s1;
-  } else if (host === "studio.s2.openstream.fm") {
-    port = source_port_map.s2;
-  } else if (host === "studio.local.openstream.fm") {
-    port = source_port_map.local;
-  } else {
-    port = source_port_map.default;
-  }
-
+export const public_config = (hosts: HostConfig & { id: string }): PublicConfig => {
   const config: PublicConfig = {
-    storage_public_url: `https://${host.replace("studio.", "storage.")}`,
-    stream_public_url: `https://${host.replace("studio.", "stream.")}`,
-    source_public_host: `${host.replace("studio.", "source.")}`,
-    source_public_port: port,
+    storage_public_url: `https://${hosts.storage.host}`,
+    stream_public_url: `https://${hosts.stream.host}`,
+    source_public_host: hosts.source.host,
+    source_public_port: hosts.source.port,
   }
 
   return config;
@@ -68,7 +54,8 @@ export const studio_api = ({
   })
 
   api.get("/config", json(async (req) => {
-    return public_config(req.hostname || "studio.openstream.fm", config.source_port);
+    const hosts = host("studio", config.hosts, req);
+    return public_config(hosts);
   }))
 
   api.post("/auth/user/login", json(async (req, res) => {
