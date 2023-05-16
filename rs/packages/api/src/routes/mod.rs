@@ -225,6 +225,7 @@ pub fn router(
   app
     .at("/stations/:station")
     .get(stations::id::get::Endpoint {}.into_handler())
+    .delete(stations::id::delete::Endpoint {}.into_handler())
     .patch(stations::id::patch::Endpoint {}.into_handler());
 
   app.at("/stations/:station/stream-stats").get(

@@ -114,6 +114,9 @@ export const shared_api = ({
     .get(json(async req => {
       return await client.stations.get(ip(req), ua(req), get_token(req), req.params.station);
     }))
+    .delete(json(async req => {
+      return await client.stations.delete(ip(req), ua(req), get_token(req), req.params.station);
+    }))
     .patch(json(async req => {
       return await client.stations.patch(ip(req), ua(req), get_token(req), req.params.station, req.body);
     }))

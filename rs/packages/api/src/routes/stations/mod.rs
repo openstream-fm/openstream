@@ -24,6 +24,8 @@ use ts_rs::TS;
 
 pub mod get {
 
+  use db::{current_filter_doc, deleted_filter_doc};
+
   use super::*;
 
   #[derive(Debug, Clone)]
@@ -51,6 +53,18 @@ pub mod get {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     account_id: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    active: Option<QueryActive>,
+  }
+
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export, export_to = "../../../defs/api/stations/GET/")]
+  #[serde(rename_all = "kebab-case")]
+  pub enum QueryActive {
+    Deleted,
+    Active,
+    All,
   }
 
   #[derive(Debug, Clone)]
@@ -111,6 +125,7 @@ pub mod get {
         skip,
         limit,
         account_id,
+        active,
       } = query;
 
       let skip = skip.unwrap_or_else(default_skip);
@@ -121,14 +136,23 @@ pub mod get {
         Some(account_id) => doc! { Station::KEY_ACCOUNT_ID: account_id },
       };
 
+      let query_active_filter = match active.unwrap_or(QueryActive::Active) {
+        QueryActive::Active => current_filter_doc! {},
+        QueryActive::Deleted => deleted_filter_doc! {},
+        QueryActive::All => doc! {},
+      };
+
       let sort = doc! { Station::KEY_CREATED_AT: 1 };
 
       let page = match access_token_scope {
-        AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
-          Station::paged(Some(query_account_filter), Some(sort), skip, limit)
-            .await?
-            .map(|item| item.into_public(PublicScope::Admin))
-        }
+        AccessTokenScope::Global | AccessTokenScope::Admin(_) => Station::paged(
+          doc! { "$and": [ query_active_filter, query_account_filter ] },
+          sort,
+          skip,
+          limit,
+        )
+        .await?
+        .map(|item| item.into_public(PublicScope::Admin)),
 
         AccessTokenScope::User(user) => {
           let filter = doc! { UserAccountRelation::KEY_USER_ID: &user.id };
@@ -145,9 +169,9 @@ pub mod get {
             }));
           }
 
-          let filter = doc! { "$and": [ query_account_filter, { Station::KEY_ACCOUNT_ID: { "$in": account_ids } } ] };
+          let filter = doc! { "$and": [ query_active_filter, query_account_filter, { Station::KEY_ACCOUNT_ID: { "$in": account_ids } } ] };
 
-          Station::paged(filter, Some(sort), skip, limit)
+          Station::paged(filter, sort, skip, limit)
             .await?
             .map(|item| item.into_public(PublicScope::User))
         }

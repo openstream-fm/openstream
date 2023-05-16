@@ -314,18 +314,32 @@
         </a>
 
         <a
-        href="/accounts/{data.station.account_id}/stations/{data.station._id}/broadcast"
-        class="station-action"
-        class:current={current_page === "broadcast"}
-        on:click={event => scroll_into_view(event.currentTarget)}
-      >
-        <span class="action-name ripple-container">
-          Broadcast
-        </span>
-        {#if current_page === "broadcast"}
-          <div class="current-action-line" in:current_enter|local out:current_leave|local />
-        {/if}
-      </a>
+          href="/accounts/{data.station.account_id}/stations/{data.station._id}/broadcast"
+          class="station-action"
+          class:current={current_page === "broadcast"}
+          on:click={event => scroll_into_view(event.currentTarget)}
+        >
+          <span class="action-name ripple-container">
+            Broadcast
+          </span>
+          {#if current_page === "broadcast"}
+            <div class="current-action-line" in:current_enter|local out:current_leave|local />
+          {/if}
+        </a>
+
+        <a
+          href="/accounts/{data.station.account_id}/stations/{data.station._id}/settings"
+          class="station-action"
+          class:current={current_page === "settings"}
+          on:click={event => scroll_into_view(event.currentTarget)}
+        >
+          <span class="action-name ripple-container">
+            Settings
+          </span>
+          {#if current_page === "settings"}
+            <div class="current-action-line" in:current_enter|local out:current_leave|local />
+          {/if}
+        </a>
       </div>
     </div>
   </div>
