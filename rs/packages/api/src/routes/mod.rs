@@ -1,3 +1,16 @@
+pub mod me;
+
+pub mod accounts;
+pub mod admins;
+pub mod auth;
+pub mod stations;
+pub mod users;
+
+pub mod plans;
+pub mod runtime;
+pub mod station_pictures;
+pub mod stream_stats;
+
 use db::station_picture::StationPicture;
 use db::stream_connection::index::MemIndex;
 use drop_tracer::DropTracer;
@@ -12,19 +25,6 @@ use crate::json::JsonHandler;
 
 use async_trait::async_trait;
 
-pub mod accounts;
-pub mod admins;
-pub mod auth;
-pub mod me;
-pub mod stations;
-pub mod users;
-
-pub mod devices;
-pub mod plans;
-pub mod runtime;
-pub mod station_pictures;
-pub mod stream_stats;
-
 pub fn router(
   deployment_id: String,
   media_sessions: MediaSessionMap,
@@ -36,6 +36,14 @@ pub fn router(
   let mut app = prex::prex();
 
   app.at("/me").get(me::get::Endpoint {}.into_handler());
+
+  app
+    .at("/me/devices")
+    .get(me::devices::get::Endpoint {}.into_handler());
+
+  app
+    .at("/me/devices/:device")
+    .delete(me::devices::id::delete::Endpoint {}.into_handler());
 
   app.at("/auth/email-verification/send-code").post(
     auth::email_verification::send_code::post::Endpoint {
@@ -334,14 +342,6 @@ pub fn router(
     }
     .into_handler(),
   );
-
-  app
-    .at("/devices")
-    .get(devices::get::Endpoint {}.into_handler());
-
-  app
-    .at("/devices/:device")
-    .delete(devices::id::delete::Endpoint {}.into_handler());
 
   app
     .at("/station-pictures")

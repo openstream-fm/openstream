@@ -19,6 +19,17 @@ export const shared_api = ({
 }) => {
   const api = Router();
 
+  api.route("/me/devices")
+    .get(json(async req => {
+      return await client.me.devices.list(ip(req), ua(req), get_token(req), req.query as any);
+    }))
+
+  api.route("/me/devices/:device")
+    .delete(json(async req => {
+      return await client.me.devices.delete(ip(req), ua(req), get_token(req), req.params.device);
+    }))
+
+
   api.route("/auth/email-verification/send-code")
     .post(json(async req => {
       return await client.auth.send_email_verification_code(ip(req), ua(req), req.body);
@@ -258,16 +269,6 @@ export const shared_api = ({
         next(e)
       }
     })
-
-  api.route("/devices")
-    .get(json(async req => {
-      return await client.devices.list(ip(req), ua(req), get_token(req), req.query as any);
-    }))
-
-  api.route("/devices/:device")
-    .delete(json(async req => {
-      return await client.devices.delete(ip(req), ua(req), get_token(req), req.params.device);
-    }))
 
   api.route("/station-pictures")
     .post(json(async req => {

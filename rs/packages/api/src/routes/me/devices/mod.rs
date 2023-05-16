@@ -51,7 +51,7 @@ pub mod get {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
-  #[ts(export, export_to = "../../../defs/api/devices/GET/")]
+  #[ts(export, export_to = "../../../defs/api/me/devices/GET/")]
   struct Query {
     #[serde(skip_serializing_if = "Option::is_none")]
     skip: Option<u64>,
@@ -74,7 +74,7 @@ pub mod get {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../../defs/api/devices/GET/")]
+  #[ts(export, export_to = "../../../defs/api/me/devices/GET/")]
   pub struct Output(Paged<Device>);
 
   #[derive(Debug, thiserror::Error)]

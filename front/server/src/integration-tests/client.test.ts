@@ -50,6 +50,6 @@ test.todo("client integration tests");
 
 // test("integration - devices.list", async t => {
 //   const output = await client.devices.list(ip, ua, token, { limit: 1, skip: 1 });
-//   assert_validate(t, validateEquals<import("$api/devices/GET/Output").Output>(output));
+//   assert_validate(t, validateEquals<import("$api/me/devices/GET/Output").Output>(output));
 // })
 
