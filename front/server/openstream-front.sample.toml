@@ -52,16 +52,48 @@ enabled=true
 # env.OPENSTREAM_FRONT_ADMIN_PORT
 port = 18865
 
+# hostnames configuration 
+[hosts.default]
+site = { host = "openstream.fm" }
+studio = { host = "studio.openstream.fm" }
+admin = { host = "admin.openstream.fm" }
+api = { host = "api.openstream.fm" }
+storage = { host = "storage.openstream.fm" }
+stream = { host = "stream.openstream.fm" }
+source = { host = "source.openstream.fm", port = 8000 }
+    
+[hosts.local]
+site = { host = "local.openstream.fm" }
+studio = { host = "studio.local.openstream.fm" }
+admin = { host = "admin.local.openstream.fm" }
+api = { host = "api.local.openstream.fm" }
+storage = { host = "storage.local.openstream.fm" }
+stream = { host = "stream.local.openstream.fm" }
+source = { host = "source.local.openstream.fm", port = 8000 }
 
-# mapping for [source] servers public ports
-[source_port]
-# source.local.openstream.fm
-local = 8000
-# source.test.openstream.fm
-test = 8001
-# source.s1.openstream.fm
-s1 = 8100
-# source.s2.openstream.fm
-s2 = 8200
-# source.openstream.fm
-default = 8000
+[hosts.s1]
+site = { host = "s1.openstream.fm" }
+studio = { host = "studio.s1.openstream.fm" }
+admin = { host = "admin.s1.openstream.fm" }
+api = { host = "api.s1.openstream.fm" }
+storage = { host = "storage.s1.openstream.fm" }
+stream = { host = "stream.s1.openstream.fm" }
+source = { host = "source.s1.openstream.fm", port = 8100 }
+
+[hosts.s2]
+site = { host = "s2.openstream.fm" }
+studio = { host = "studio.s2.openstream.fm" }
+admin = { host = "admin.s2.openstream.fm" }
+api = { host = "api.s2.openstream.fm" }
+storage = { host = "storage.s2.openstream.fm" }
+stream = { host = "stream.s2.openstream.fm" }
+source = { host = "source.s2.openstream.fm", port = 8200 }
+
+[hosts.test]
+site = { host = "test.openstream.fm" }
+studio = { host = "studio.test.openstream.fm" }
+admin = { host = "admin.test.openstream.fm" }
+api = { host = "api.test.openstream.fm" }
+storage = { host = "storage.test.openstream.fm" }
+stream = { host = "stream.test.openstream.fm" }
+source = { host = "source.test.openstream.fm", port = 8001 }

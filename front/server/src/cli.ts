@@ -36,7 +36,7 @@ const createConfig = (opts: { output: string }) => {
   const logger = new ConsoleLogger(LogLevel.INFO);
   logger.info("> Creating config file in " + color.yellow(opts.output));
 
-  let ext = opts.output.endsWith(".json") ? "json" : "toml";
+  let ext = opts.output.endsWith(".json") ? "jsonc" : "toml";
   let sample = path.resolve(__dirname, `../openstream-front.sample.${ext}`)
 
   const dest = path.resolve(process.cwd(), opts.output);

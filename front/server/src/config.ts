@@ -1,4 +1,4 @@
-import { assertEquals } from "typia";
+import typia, { assertEquals } from "typia";
 import toml from "toml"
 import { readFileSync } from "fs";
 import { color } from "./color"
@@ -31,13 +31,17 @@ export type Config = {
     port: number    
   }
 
-  source_port: {
-    local: number
-    s1: number
-    s2: number
-    test: number
-    default: number
-  }
+  hosts: Record<string, HostConfig | void> & { default: HostConfig }
+}
+
+export type HostConfig = {
+  site: { host: string }
+  studio: { host: string }
+  admin: { host: string }
+  api: { host: string }
+  storage: { host: string }
+  stream: { host: string }
+  source: { host: string, port: number }
 }
 
 /**
@@ -57,6 +61,21 @@ export const merge_env = (partial: PartialDeep<Config>, { logger, env = process.
   const map_prop = (property_path: string): string => {
     return `OPENSTREAM_FRONT_${property_path.replaceAll(".", "_").toUpperCase()}`;
   }
+
+    /**
+   * override config option with enviromental variable if set
+   * property is expected to be a number
+   * */
+    const hosts = (property_path: string) => {
+      const key = map_prop(property_path);
+      const s = env[key]?.trim();
+      if(s != null) {
+        logger?.info(`using env ${color.yellow(key)} as ${color.yellow(`$config.${property_path}`)}`);
+        const raw_value = JSON.parse(s);
+        const v = typia.assertEquals<Config["hosts"]>(raw_value);
+        dot.setProperty(config, property_path, v);
+      }
+    }
 
   /**
    * override config option with enviromental variable if set
@@ -125,11 +144,7 @@ export const merge_env = (partial: PartialDeep<Config>, { logger, env = process.
   bool("admin.enabled");
   num("admin.port");
   
-  num("source_port.local");
-  num("source_port.test");
-  num("source_port.s1");
-  num("source_port.s2");
-  num("source_port.default");
+  hosts("hosts");
 
   return config;
 }
@@ -164,7 +179,7 @@ export const load = (filename: string | null, { logger: _logger, env = process.e
     logger.info("loading config only from env varianbles");
   } else {
     logger.info(`loading config from ${color.yellow(filename)}`);
-    if(filename.endsWith(".json")) format = "json";
+    if(filename.endsWith(".json") || filename.endsWith(".jsonc")) format = "json";
     // read formatted config string from file
     source = readFileSync(filename, "utf8");
   }
