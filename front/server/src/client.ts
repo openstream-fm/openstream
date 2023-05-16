@@ -179,6 +179,10 @@ export class Auth {
     this.user = new AuthUser(client);
     this.admin = new AuthAdmin(client);
   }
+
+  async send_email_verification_code(ip: string | null, ua: string | null, payload: import("$api/auth/email-verification/send-code/POST/Payload").Payload): Promise<import("$api/auth/email-verification/send-code/POST/Output").Output> {
+    return await this.client.post(ip, ua, null, `/auth/email-verification/send-code`, payload)
+  }
 }
 
 export class AuthAdmin {
@@ -217,7 +221,7 @@ export class AuthUser {
     return await this.client.post(ip, ua, token, "/auth/user/logout", void 0);
   }
 
-  async register(ip: string | null, ua: string | null, token: string, payload: import("$api/auth/user/register/POST/Payload").Payload): Promise<import("$api/auth/user/register/POST/Output").Output> {
+  async register(ip: string | null, ua: string | null, token: string | null, payload: import("$api/auth/user/register/POST/Payload").Payload): Promise<import("$api/auth/user/register/POST/Output").Output> {
     return await this.client.post(ip, ua, token, "/auth/user/register", payload)
   }
 

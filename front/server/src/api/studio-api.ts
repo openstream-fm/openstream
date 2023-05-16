@@ -88,7 +88,7 @@ export const studio_api = ({
 
   api.post("/auth/user/register", json(async (req, res) => {
     const sess = req.cookie_session;
-    const { account, user, token, media_key } = await client.auth.user.register(ip(req), ua(req), config.openstream.token, { ...req.body, device_id: sess.device_id });
+    const { account, user, token, media_key } = await client.auth.user.register(ip(req), ua(req), null, { ...req.body, device_id: sess.device_id });
     res.set_session({ ...sess, user: { _id: user._id, token, media_key }});
     return { user, account }
   }))

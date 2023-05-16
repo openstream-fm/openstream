@@ -3,4 +3,7 @@
 export type SentEmailKind = {
   kind: "user-recovery";
   data: { user_id: string; token_id: string };
+} | {
+  kind: "email-verification-code";
+  data: { email: string; code_id: string };
 };

@@ -62,29 +62,23 @@ impl Sample for UserRecovery {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Template)]
-#[template(path = "email-validation.html")]
-pub struct EmailValidation {
-  first_name: String,
-  last_name: String,
-  validation_url: String,
+#[template(path = "email-verification.html")]
+pub struct EmailVerification {
+  pub code: String,
 }
 
-impl Redactable for EmailValidation {
+impl Redactable for EmailVerification {
   fn into_redacted(self) -> Self {
     Self {
-      first_name: self.first_name,
-      last_name: self.last_name,
-      validation_url: String::from("https://studio.openstream.fm/email-validation/:redacted"),
+      code: String::from("REDACT"),
     }
   }
 }
 
-impl Sample for EmailValidation {
+impl Sample for EmailVerification {
   fn sample() -> Self {
     Self {
-      first_name: String::from("Name"),
-      last_name: String::from("Lastname"),
-      validation_url: String::from("https://studio.openstream.fm/email-validation/:token"),
+      code: String::from("XXXXXX"),
     }
   }
 }

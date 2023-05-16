@@ -37,6 +37,13 @@ pub fn router(
 
   app.at("/me").get(me::get::Endpoint {}.into_handler());
 
+  app.at("/auth/email-verification/send-code").post(
+    auth::email_verification::send_code::post::Endpoint {
+      mailer: mailer.clone(),
+    }
+    .into_handler(),
+  );
+
   app
     .at("/auth/user/login")
     .post(auth::user::login::post::Endpoint {}.into_handler());

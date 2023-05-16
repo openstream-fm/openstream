@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-  Validate your email at Openstream.
+  Your email verification code for Openstream.
 {% endblock %}
 
 
@@ -16,6 +16,12 @@
       margin-top: 45px;
     }
 
+    .code {
+      font-size: 3rem;
+      letter-spacing: 0.2em;
+      font-weight: 900;
+    }
+
     .accept {
       display: inline-block;
       color: #fff;
@@ -28,26 +34,25 @@
   </style>
 
 
-  <h1 class="title">Validate your email at Openstream</h1>
+  <h1 class="title">Your email verification code</h1>
 
   <div class="content">
-    <p class="text">Hello, <b>{{ first_name }}.</b></p>
+    <p class="text">Hello.</p>
     <p class="text">
-      To validate your email at <b>Openstream</b> click below:
+      This is your email verification code for Openstream:
     </p>
 
-    <div class="accept-out">
-      <a class="accept" href="{{ validation_url|safe }}" target="_blank">Validate your email</a>
-    </div>
+    <p class="code">
+      {{ code }}
+    </p>
 
-    <br />
-
-    <p>
-      If you didn't register at Openstream, just ignore this message.
+    <p class="text">
+      Please do not share this code with anyone.
     </p>
 
     <br />
-  
+    <br />
+
     <p class="text">
       Have a nice day! <br />
       The Openstream team.
