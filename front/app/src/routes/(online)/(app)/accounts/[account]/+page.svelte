@@ -18,18 +18,21 @@
 
   import type { View } from "$share/Map/StatsMap.svelte";
 	import { default_logger } from "$share/logger";
-	import { onMount } from "svelte";
 	import { sleep } from "$share/util";
 	import type { AccountLimits } from "$server/defs/AccountLimits";
 	import CircularMeter from "$lib/components/CircularMeter/CircularMeter.svelte";
 	import { tooltip } from "$share/tooltip";
 	import Icon from "$share/Icon.svelte";
-	import { mdiChevronDown, mdiCircleEditOutline, mdiFileEditOutline, mdiPlay } from "@mdi/js";
+	import { mdiCircleEditOutline } from "@mdi/js";
 	import Dialog from "$share/Dialog.svelte";
 	import Formy from "$share/formy/Formy.svelte";
 	import TextField from "$lib/components/Form/TextField.svelte";
 	import Validator from "$share/formy/Validator.svelte";
 	import { _string } from "$share/formy/validate";
+	import AccountStationItem from "./account-station-item.svelte";
+  
+  $: current_account_stations = data.stations.items.filter(item => item.account_id === data.account._id);
+
   let view: View = "now";
 
   let _token = 0;
@@ -356,6 +359,17 @@
     padding: 0.75rem;
     box-shadow: var(--some-shadow);
   }
+
+  .stations {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1rem;
+  }
+  
+  .station {
+    background: #ddd;
+  }
 </style>
 
 <svelte:head>
@@ -370,6 +384,16 @@
       <Icon d={mdiCircleEditOutline} />
     </button>
   </div>
+
+  {#if current_account_stations.length}
+    <div class="stations">
+      {#each current_account_stations as station (station._id)}
+        <div class="station">
+          <AccountStationItem {station} now_playing={data.now_playing_record[station._id]} />
+        </div>
+      {/each}
+    </div>
+  {/if}
 
   <div class="stats">
     <div class="stats-selector-out">
