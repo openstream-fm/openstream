@@ -154,12 +154,12 @@
 </style>
 
 <svelte:head>
-  <title>{data.station.name} Settings</title>
+  <title>Settings</title>
 </svelte:head>
 
 <Page>
   <div class="page">
-    <div class="page-title">{data.station.name} Settings</div>
+    <div class="page-title">Settings</div>
 
     <h2>Actions</h2>
 
