@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/stores";
+	import { locale } from "$lib/locale";
 	import { get_now_playing_store } from "$lib/now-playing";
 	import { intersect } from "$share/actions";
 	import { ripple } from "$share/ripple";
@@ -102,23 +103,23 @@
       {#if now_playing}
         <div class="now-playing-state">
           {#if on_air}
-            ON AIR
+            {$locale.pages["account.dashboard"].station_item.on_air}
           {:else}
-            OFF AIR
+            {$locale.pages["account.dashboard"].station_item.off_air}
           {/if}
         </div>
         {#if now_playing.kind === "none"}
           {#if now_playing.start_on_connect}
             <div class="now-playing-sub">
-              Playlist
+              {$locale.pages["account.dashboard"].station_item.playlist}
             </div>
           {/if}
         {:else}
           <div class="now-playing-sub">
             {#if now_playing.kind === "live"}
-              Live
+              {$locale.pages["account.dashboard"].station_item.live}
             {:else}
-              Playlist
+              {$locale.pages["account.dashboard"].station_item.playlist}
             {/if}
           </div>
         {/if}

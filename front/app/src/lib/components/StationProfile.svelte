@@ -33,6 +33,7 @@
 	import type { CountryCode } from '$server/defs/CountryCode';
 	import TypeOfContentField from './Form/TypeOfContentField.svelte';
 	import type { StationTypeOfContent } from '$server/defs/db/StationTypeOfContent';
+	import { locale } from '$lib/locale';
 
 	export let account_id: string;
 	export let current: {
@@ -86,7 +87,7 @@
 
 
 <div class="section section-logo">
-	<div class="section-title">Logo *</div>
+	<div class="section-title">{$locale.station_profile.titles.logo} *</div>
 	<div class="fields">
 		<div class="field">
 			<StationPictureField required {account_id} bind:picture_id={current.picture_id} />
@@ -95,19 +96,19 @@
 </div>
 
 <div class="section">
-	<div class="section-title">Profile information</div>
+	<div class="section-title">{$locale.station_profile.titles.profile_info}</div>
 	<div class="fields">
 		<div class="field">
-			<NullTextField label="Name *" trim bind:value={current.name} />
+			<NullTextField label="{$locale.station_profile.labels.name} *" trim bind:value={current.name} />
 			<Validator value={current.name} fn={_string({ required: true, minlen: 3, maxlen: 40 })} />
 		</div>
 		<div class="field">
-			<NullTextField label="Slogan" trim bind:value={current.slogan} />
+			<NullTextField label={$locale.station_profile.labels.slogan} trim bind:value={current.slogan} />
 			<Validator value={current.slogan} fn={_string({ maxlen: 50 })} />
 		</div>
 		<div class="field">
 			<NullTextField
-				label="Description"
+				label={$locale.station_profile.labels.description}
 				multiline
 				minrows={15}
 				maxrows={50}
@@ -118,14 +119,14 @@
 		</div>
 		<div class="field">
 			<CountryField
-				label="Country *"
+				label="{$locale.station_profile.labels.country} *"
 				bind:value={current.country_code}
 			/>
 			<Validator value={current.country_code} fn={_string({ required: true })} />
 		</div>
 		<div class="field">
 			<TypeOfContentField
-				label="Type of content *"
+				label="{$locale.station_profile.labels.type_of_content} *"
 				bind:value={current.type_of_content}
 			/>
 			<Validator value={current.type_of_content} fn={_string({ required: true })} />
@@ -136,16 +137,16 @@
 </div>
 
 <div class="section">
-	<div class="section-title">Contact information</div>
+	<div class="section-title">{$locale.station_profile.titles.contact_info}</div>
 	<div class="fields">
 		<div class="field">
-			<NullEmail label="Email" maxlength={40} bind:value={current.email} />
+			<NullEmail label={$locale.station_profile.labels.email} maxlength={40} bind:value={current.email} />
 			<Validator value={current.email} fn={_email()} />
 		</div>
 		<div class="field">
 			<NullTextField
 				type="tel"
-				label="Full phone number"
+				label={$locale.station_profile.labels.phone}
 				trim
 				icon={mdiPhoneOutline}
 				maxlength={40}
@@ -156,7 +157,7 @@
 		<div class="field">
 			<NullTextField
 				type="tel"
-				label="Full WhatsApp number"
+				label={$locale.station_profile.labels.whatsapp}
 				trim
 				icon={mdiWhatsapp}
 				maxlength={40}
@@ -167,7 +168,7 @@
 		<div class="field">
 			<NullTextField
 				type="url"
-				label="Website URL"
+				label={$locale.station_profile.labels.website}
 				trim
 				icon={mdiWeb}
 				maxlength={150}
@@ -179,12 +180,12 @@
 </div>
 
 <div class="section">
-	<div class="section-title">Social links</div>
+	<div class="section-title">{$locale.station_profile.titles.social}</div>
 	<div class="fields">
 		<div class="field">
 			<NullTextField
 				type="url"
-				label="Twitter URL"
+				label={$locale.station_profile.labels.twitter}
 				maxlength={150}
 				trim
 				icon={mdiTwitter}
@@ -195,7 +196,7 @@
 		<div class="field">
 			<NullTextField
 				type="url"
-				label="Facebook URL"
+				label={$locale.station_profile.labels.facebook}
 				trim
 				icon={mdiFacebook}
 				maxlength={150}
@@ -206,7 +207,7 @@
 		<div class="field">
 			<NullTextField
 				type="url"
-				label="Instagram URL"
+				label={$locale.station_profile.labels.instagram}
 				trim
 				icon={mdiInstagram}
 				maxlength={150}
@@ -217,7 +218,7 @@
 		<div class="field">
 			<NullTextField
 				type="url"
-				label="Youtube URL"
+				label={$locale.station_profile.labels.youtube}
 				trim
 				maxlength={150}
 				icon={mdiYoutube}
@@ -228,7 +229,7 @@
 		<div class="field">
 			<NullTextField
 				type="url"
-				label="Twitch URL"
+				label={$locale.station_profile.labels.twitch}
 				trim
 				maxlength={150}
 				icon={mdiTwitch}
@@ -240,12 +241,12 @@
 </div>
 
 <div class="section">
-	<div class="section-title">App links</div>
+	<div class="section-title">{$locale.station_profile.titles.apps}</div>
 	<div class="fields">
 		<div class="field">
 			<NullTextField
 				type="url"
-				label="Google Play URL"
+				label={$locale.station_profile.labels.google_play}
 				trim
 				icon={mdiGooglePlay}
         maxlength={150}
@@ -256,7 +257,7 @@
 		<div class="field">
 			<NullTextField
 				type="url"
-				label="App Store URL"
+				label={$locale.station_profile.labels.app_store}
 				trim
 				icon={mdiApple}
 				maxlength={150}

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { locale } from "$lib/locale";
+
   // @ts-ignore
   import logo from "$share/img/logo-trans-128.png?w=32&format=webp";
 </script>
@@ -32,7 +34,7 @@
     <div class="logo">
       <div class="logo-icon" style:background-image="url({ logo })" />
       <div class="logo-text">
-        openstream
+        {$locale.logo_text}
       </div>
     </div>
 

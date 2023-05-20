@@ -2,6 +2,7 @@
 	import { afterNavigate } from "$app/navigation";
   export let data: import("./$types").LayoutData;
   import { page } from "$app/stores";
+	import { locale } from "$lib/locale";
 	import { click_out } from "$share/actions";
 	import { ripple } from "$share/ripple";
 	import { crossfade, fade, fly } from "svelte/transition";
@@ -278,7 +279,7 @@
           on:click={event => scroll_into_view(event.currentTarget)}
         >
           <span class="action-name ripple-container">
-            Dashboard
+            {$locale.station_nav.dashboard}
           </span>
           {#if current_page === "dashboard"}
             <div class="current-action-line" in:current_enter|loal out:current_leave|local />
@@ -292,7 +293,7 @@
           on:click={event => scroll_into_view(event.currentTarget)}
         >
           <span class="action-name ripple-container">
-            Profile
+            {$locale.station_nav.profile}
           </span>
           {#if current_page === "profile"}
             <div class="current-action-line" in:current_enter|local out:current_leave|local />
@@ -306,7 +307,7 @@
           on:click={event => scroll_into_view(event.currentTarget)}
         >
           <span class="action-name ripple-container">
-            Playlist
+            {$locale.station_nav.playlist}
           </span>
           {#if current_page === "playlist"}
             <div class="current-action-line" in:current_enter|local out:current_leave|local />
@@ -320,7 +321,7 @@
           on:click={event => scroll_into_view(event.currentTarget)}
         >
           <span class="action-name ripple-container">
-            Broadcast
+            {$locale.station_nav.broadcast}
           </span>
           {#if current_page === "broadcast"}
             <div class="current-action-line" in:current_enter|local out:current_leave|local />
@@ -334,7 +335,7 @@
           on:click={event => scroll_into_view(event.currentTarget)}
         >
           <span class="action-name ripple-container">
-            Settings
+            {$locale.station_nav.settings}
           </span>
           {#if current_page === "settings"}
             <div class="current-action-line" in:current_enter|local out:current_leave|local />

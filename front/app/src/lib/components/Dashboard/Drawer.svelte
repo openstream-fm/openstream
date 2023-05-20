@@ -16,9 +16,6 @@
   	mdiMenu,
 		mdiAccountMultipleOutline,
 		mdiPoll,
-		mdiClose,
-		mdiChevronDown,
-		mdiUploadNetworkOutline,
   } from "@mdi/js";
 	import { onMount } from "svelte";
 	import Icon from "$share/Icon.svelte";
@@ -30,6 +27,7 @@
 
   import { player_state } from "../Player/player";
 	import { click_out } from "$share/actions";
+	import { locale } from "$lib/locale";
 
   $: if(browser) {
     document.documentElement.classList[fixed_open ? "add" : "remove"](HTML_OPEN_CLASSNAME);
@@ -332,7 +330,7 @@
         <div class="logo-icon" style="background-image: url({logo})">
         </div>
         <div class="logo-text">
-          openstream
+          {$locale.logo_text}
         </div>
       </div>
     </div>
@@ -372,7 +370,7 @@
               on:click={account_switch_close}
             >
               <span class="account-switch-menu-item-text">
-                See all accounts
+                {$locale.drawer.account_selector.see_all_accounts}
               </span>
             </a>
             </div>
@@ -382,10 +380,10 @@
     </div>
 
     <div class="links thin-scroll">
-      <DrawerItem href="/accounts/{account._id}" label="Dashboard" icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
-      <DrawerItem href="/accounts/{account._id}/stations" label="Stations" icon={mdiRadioTower} on_click={close_drawer_fixed} />
-      <DrawerItem href="/accounts/{account._id}/members" label="Members" icon={mdiAccountMultipleOutline} on_click={close_drawer_fixed} />
-      <DrawerItem href="/accounts/{account._id}/analytics" label="Analytics" icon={mdiPoll} on_click={close_drawer_fixed} />
+      <DrawerItem href="/accounts/{account._id}" label={$locale.drawer.dashboard} icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
+      <DrawerItem href="/accounts/{account._id}/stations" label={$locale.drawer.stations} icon={mdiRadioTower} on_click={close_drawer_fixed} />
+      <DrawerItem href="/accounts/{account._id}/members" label={$locale.drawer.members} icon={mdiAccountMultipleOutline} on_click={close_drawer_fixed} />
+      <DrawerItem href="/accounts/{account._id}/analytics" label={$locale.drawer.analytics} icon={mdiPoll} on_click={close_drawer_fixed} />
     </div>
   </div>
 </div>

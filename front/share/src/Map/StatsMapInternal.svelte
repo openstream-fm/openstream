@@ -10,6 +10,7 @@
   export let record_id: string;
   export let view: View = "now"; 
   export let in_screen = true;
+  export let locale: import("$server/locale/locale").Locale["stats_map"];
 
   import { default_logger } from "$share/logger";
   import { _get } from "$share/net.client";
@@ -21,10 +22,10 @@
 
   let view_ids = ["now", "last_24h", "last_7d", "last_30d"] as const;
   let selector_titles = {
-    "now": "Now",
-    "last_24h": "24 hours",
-    "last_7d": "7 days",
-    "last_30d": "30 days",
+    "now": locale.now,
+    "last_24h": locale["24_hours"],
+    "last_7d": locale["7_days"],
+    "last_30d": locale["30_days"],
   } as const;
 
   type Stats = import("$server/defs/stream-connection-stats/Stats").Stats;
@@ -244,11 +245,11 @@
             <div class="counters">
               <div class="counter">
                 <span class="counter-num">{sessions}</span>
-                <span class="counter-label">{sessions === 1 ? "listener" : "listeners"}</span>
+                <span class="counter-label">{sessions === 1 ? locale.listener : locale.listeners}</span>
               </div>
               <div class="counter">
                 <span class="counter-num">{countries}</span>
-                <span class="counter-label">{countries === 1 ? "country" : "countries"}</span>
+                <span class="counter-label">{countries === 1 ? locale.country : locale.countries}</span>
               </div>
             </div>
           </button>

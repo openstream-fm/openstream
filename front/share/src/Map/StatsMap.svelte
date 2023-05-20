@@ -10,8 +10,9 @@
   export let record_id: string;
   export let data: Stats | null = null;
   export let view: View = "now";
+  export let locale: import("$server/locale/locale").Locale["stats_map"];
 </script>
 
 {#key `${kind}-${record_id}`}
-  <StatsMapInternal {kind} {record_id} bind:data bind:view />
+  <StatsMapInternal {kind} {record_id} {locale} bind:data bind:view />
 {/key}

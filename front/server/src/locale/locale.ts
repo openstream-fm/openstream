@@ -1,0 +1,1 @@
+export type Locale = typeof import("./en").default;
