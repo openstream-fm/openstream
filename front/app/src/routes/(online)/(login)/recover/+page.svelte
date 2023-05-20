@@ -12,6 +12,7 @@
 	import { _progress } from "$share/notify";
 	import CircularProgress from "$share/CircularProgress.svelte";
   import "$share/LoginDashboard/login-page.css";
+	import { locale } from "$lib/locale";
 
   let email = "";
   let sent_to: string | null = null;
@@ -63,7 +64,7 @@
     margin-inline-end: 0.75rem;
   }
 
-  .sent-message > b {
+  .sent-message > :global(b) {
     word-break: break-all;
   }
 
@@ -88,19 +89,19 @@
 </style>
 
 <svelte:head>
-  <title>Recover your account</title>
+  <title>{$locale.pages.recover.head.title}</title>
 </svelte:head>
 
 
 <div class="login-page-box" in:form>
-  <div class="login-page-title">Recover</div>
+  <div class="login-page-title">{$locale.pages.recover.title}</div>
   {#if sent_to != null}
     <div class="sent" in:slide|local={{ duration: 300 }}>
       <div class="sent-icon">
         <Icon d={mdiCheck} />
       </div>
       <div class="sent-message">
-        We sent you an email to <b>{sent_to}</b> with further instructions 
+        {@html $locale.pages.recover.sent_message_html.replace("@email", sent_to) }
       </div>
     </div>
   {/if}
@@ -109,8 +110,12 @@
       <div class="login-page-field field-box">
         <Email label="Email" bind:value={email} />
         <Validator value={email} fn={_email({ required: true })} />
-        <span class="comment login-page-comment">We'll send you an e-mail for you to recover access</span>
-        <a class="na back" href="/login">Back to login</a>
+        <span class="comment login-page-comment">
+          {$locale.pages.recover.comment}
+        </span>
+        <a class="na back" href="/login">
+          {$locale.pages.recover.links.login}
+        </a>
       </div>
       <button use:ripple class="ripple-container login-page-button" class:sending>
         {#if sending}
@@ -118,7 +123,7 @@
             <CircularProgress />
           </div>
         {/if}
-        Send
+        {$locale.pages.recover.submit}
       </button>
     </form>
   </Formy>

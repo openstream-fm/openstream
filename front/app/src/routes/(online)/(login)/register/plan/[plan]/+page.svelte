@@ -17,6 +17,7 @@
 	import Color from "color";
 	import { fly, scale } from "svelte/transition";
 	import CircularProgress from "$share/CircularProgress.svelte";
+	import { locale } from "$lib/locale";
 
   let first_name = "";
   let last_name = "";
@@ -169,7 +170,7 @@
     width: min(80%, 500px);
   }
 
-  .code-message > b {
+  .code-message > :global(b) {
     word-break: break-all;
   }
 
@@ -206,35 +207,53 @@
 </style>
 
 <svelte:head>
-  <title>Sign up</title>
+  <title>{$locale.pages.register.head.title}</title>
 </svelte:head>
 
 <div class="login-page-box" in:form>
   
   {#if view === "data"}
-    <div class="login-page-title" in:fly|local={{ duration: 250, x: -25 }}>Start your trial</div>
+    <div class="login-page-title" in:fly|local={{ duration: 250, x: -25 }}>
+      {$locale.pages.register.title}
+    </div>
 
     <div class="plan" style:--bg-color={bg_color} style:--color={color.toString()} in:fly|local={{ duration: 250, x: -25 }}>
-      <div class="plan-pretitle">Selected plan</div>
-      <div class="plan-title">{data.plan.display_name}</div>
-      <div class="plan-price">$ {data.plan.price} / month</div>
+      <div class="plan-pretitle">
+        {$locale.pages.register.plan.selected_plan}
+      </div>
+      <div class="plan-title">
+        {data.plan.display_name}
+      </div>
+      <div class="plan-price">
+        {$locale.pages.register.plan.$_n_price_per_month.replace("@n", String(data.plan.price))}
+      </div>
       <div class="plan-features">
         <div class="plan-feature">
-          <b>{data.plan.limits.stations}</b> {data.plan.limits.stations === 1 ? "station" : "stations"}
+          <b>{data.plan.limits.stations}</b>
+          {
+            data.plan.limits.stations === 1 ? 
+            $locale.pages.register.plan.limits.station : 
+            $locale.pages.register.plan.limits.stations
+          }
         </div>
         <div class="plan-feature">
-          <b>{new Intl.NumberFormat().format(data.plan.limits.listeners)}</b> Listeners
+          <b>
+            {new Intl.NumberFormat().format(data.plan.limits.listeners)}
+          </b>
+          {$locale.pages.register.plan.limits.listeners}
         </div>
         <div class="plan-feature">
-          <b>{data.plan.limits.transfer / 1_000_000_000_000} TB</b> Bandwidth
+          <b>{data.plan.limits.transfer / 1_000_000_000_000} TB</b> 
+          {$locale.pages.register.plan.limits.transfer}
         </div>
         <div class="plan-feature">
-          <b>{data.plan.limits.storage / 1_000_000_000} GB</b> Storage
+          <b>{data.plan.limits.storage / 1_000_000_000} GB</b>
+          {$locale.pages.register.plan.limits.storage}
         </div>
       </div>
 
       <a href="/plans" class="na plan-back ripple-container" use:ripple>
-        Back to plans and pricing
+        {$locale.pages.register.plan.links.plans}
       </a>
     </div>
   {/if}
@@ -242,39 +261,73 @@
   {#if view === "data"}
     <Formy action={submit_data} let:submit>
       <form novalidate on:submit={submit} class="view view-data" in:fly|local={{ duration: 250, x: -25 }}>
-        <h2>Tell us about yourself</h2>
+        <h2>{$locale.pages.register.form.title}</h2>
 
         <div class="login-page-fields">
           <div class="login-page-field">
-            <TextField label="Your first name" trim icon={mdiAccountOutline} autocomplete="given-name" bind:value={first_name} />
+            <TextField
+             label={$locale.pages.register.form.fields.first_name}
+             trim
+             icon={mdiAccountOutline}
+             autocomplete="given-name"
+             bind:value={first_name}
+            />
             <Validator value={first_name} fn={_string({ required: true, maxlen: 50 })} />
           </div>
           <div class="login-page-field">
-            <TextField label="Your last name" trim icon={mdiAccountOutline} autocomplete="family-name" bind:value={last_name} />
+            <TextField
+              label={$locale.pages.register.form.fields.last_name}
+              trim
+              icon={mdiAccountOutline}
+              autocomplete="family-name"
+              bind:value={last_name}
+            />
             <Validator value={last_name} fn={_string({ required: true, maxlen: 50 })} />
           </div>
           <div class="login-page-field">
-            <TextField label="A name for your account" trim icon={mdiAccountOutline} autocomplete="off" bind:value={account_name} />
+            <TextField
+              label={$locale.pages.register.form.fields.account_name}
+              trim
+              icon={mdiAccountOutline}
+              autocomplete="off"
+              bind:value={account_name}
+            />
             <div class="org-explain">
-              <!-- If you don't belong to an organization, just fill the field with a name for your new account  -->
-              If you are creating an account for an organization, you can fill this field with the organization's name 
+              {$locale.pages.register.form.account_name_comment}
             </div>
             <Validator value={account_name} fn={_string({ required: true, maxlen: 50 })} />
           </div>
           <div class="login-page-field">
-            <TextField type="tel" label="Your phone number" icon={mdiPhoneOutline} autocomplete="tel" bind:value={phone} />
+            <TextField
+              type="tel"
+              label={$locale.pages.register.form.fields.phone}
+              icon={mdiPhoneOutline}
+              autocomplete="tel"
+              bind:value={phone}
+            />
             <Validator value={phone} fn={_phone({ required: true })} />
           </div>
           <div class="login-page-field">
-            <Email label="Your email" bind:value={email} />
+            <Email
+              label={$locale.pages.register.form.fields.email}
+              bind:value={email}
+            />
             <Validator value={email} fn={_email({ required: true })} /> 
           </div>
           <div class="login-page-field">
-            <Password label="Your password" autocomplete="new-password" bind:value={password} />
+            <Password
+              label={$locale.pages.register.form.fields.password}
+              autocomplete="new-password"
+              bind:value={password}
+            />
             <Validator value={password} fn={_new_password({ minlen: 8, maxlen: 50 })} />
           </div>
           <div class="login-page-field">
-            <Password label="Confirm your password" autocomplete="new-password" bind:value={confirm_password} />
+            <Password
+              label={$locale.pages.register.form.fields.confirm_password}
+              autocomplete="new-password"
+              bind:value={confirm_password}
+            />
             <Validator value={{ password, confirm_password }} fn={_confirmation_password()} />
           </div>
           <button type="submit" class="ripple-container login-page-button" class:sending={sending_data} use:ripple>
@@ -283,7 +336,7 @@
                 <CircularProgress />
               </div>
             {/if}
-            Next
+            {$locale.pages.register.form.next}
           </button>
         </div>
       </form>
@@ -291,7 +344,9 @@
   {:else if view === "code"}
     <Formy action={submit_code} let:submit>  
       <form novalidate on:submit={submit} class="view view-code" in:fly|local={{ duration: 250, x: -25 }}>
-        <h2>Enter the verification code</h2>
+        <h2>
+          {$locale.pages.register.verification.title}
+        </h2>
         
         <div class="code-fields">
           <input type="text" class="code-input" bind:value={email_verification_code} placeholder="XXXXXX" maxlength={6}>
@@ -299,11 +354,11 @@
         </div>
      
         <div class="code-message">
-          We sent you a verification code to <b>{email}</b>
+          {@html $locale.pages.register.verification.message_html.replace("@email", email)}
         </div>
 
         <button class="back-to-data ripple-container" use:ripple on:click={back_to_data}>
-          Back to form  
+          {$locale.pages.register.verification.back}
         </button>
 
         <button type="submit" class="ripple-container login-page-button code-submit-btn" class:sending={sending_code} use:ripple>
@@ -312,14 +367,14 @@
               <CircularProgress />
             </div>
           {/if}
-          Submit
+          {$locale.pages.register.verification.submit}
         </button>
       </form>
     </Formy>
   {/if}
  
   <div class="login-page-switch-box">
-    <span class="login-page-comment">Already have an account?</span>
-    <a class="na login-page-link sign-in" href="/login">Sign in</a>
+    <span class="login-page-comment">{$locale.pages.register.links.login_comment}</span>
+    <a class="na login-page-link sign-in" href="/login">{$locale.pages.register.links.login_link}</a>
   </div>
 </div>

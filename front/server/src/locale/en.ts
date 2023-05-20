@@ -87,6 +87,46 @@
     }
   },
 
+  "plan_selector": {
+    "price": {
+      "per_month": "per month",
+      "$_n_per_month": "$ @n / month",
+    },
+
+    "unlimited": "Unlimited",
+
+    "trial": {
+      "30_day": "30 day",
+      "free_trial": "Free Trial",
+      "tooltip": "You won't be charged until your trial ends, and you can cancel any time"
+    },
+
+    "features": {
+      "station": "Station",
+      "stations": "Stations",  
+      "listeners": "Listeners",
+      "transfer": "Bandwidth",
+      "storage": "Storage",
+      "staff": "Staff users",
+      "auto_dj": "Auto DJ",
+      "stats": "Advanced Stats",
+      "android_app": "Android App",
+    },
+
+    "tooltips": {
+      "one_station": "You can only create one station with this plan",
+      "n_stations": "Up to @n different stations",
+      "listeners": "Up to @n concurrent listeners",
+      "transfer": "@tb of monthly transfer will give you around @hours listening hours",
+      "storage": "@gb GB of storage for music or old episodes",
+      "staff": "Add all the staff users that you want",
+      "auto_dj": "Broadcast from a playlist when you're not online",
+      "stats": "Advanced live and historical stats, see who's listening your stations",              
+      "android_app": "An Android application branded to your stations and available worldwide through Google Play",
+
+    }
+  },
+
   "pages": {
     
     "error": {
@@ -102,6 +142,93 @@
       }
     },
 
+    "login": {
+      "head": {
+        "title": "Sign in",
+      },
+      "title": "Sign in",
+      "fields": {
+        "email": "Email",
+        "password": "Password",
+      },
+      "links": {
+        "forgot": "Forgot you password?",
+        "new_user": "New user?", 
+        "sign_up": "Sign up",
+      },
+      "submit": "Sign in"
+    },
+
+    "recover": {
+      "head": {
+        "title": "Recover your account",
+      },
+      "title": "Recover",
+      "comment": "We'll send you an e-mail for you to recover access",
+      "sent_message_html": "We sent you an email to <b>@email</b> with further instructions",
+      "links": {
+        "login": "Back to login",
+      },
+      "submit": "Send",
+    },
+
+    "plans": {
+      "head": {
+        "title": "Plans and Pricing",
+      },
+      "title_1": "Going live in 3... 2... 1...",
+      "title_2": "Start your radio station in less than 60 seconds.",
+      "title_3": "You won't be billed until the end of your trial. And you can cancel anytime.",
+      "plan_selector": {
+        "select_btn_label": "Start Trial",
+      }
+    },
+
+    "register": {
+      "head": {
+        "title": "Sign up",
+      },
+      "title": "Start your trial",
+      "plan": {
+        "selected_plan": "Selected plan",
+        "$_n_price_per_month": "$ @n / month",
+        "limits": {
+          "station": "Station",
+          "stations": "Stations",
+          "listeners": "Listeners",
+          "transfer": "Bandwidth",
+          "storage": "Storage",
+        },
+        "links": {
+          "plans": "Back to plans and pricing"
+        }
+      },
+      "form": {
+        "title": "Tell us about yourself",
+        "account_name_comment": "If you are creating an account for an organization, you can fill this field with the organization's name", 
+        "fields": {
+          "first_name": "Your first name",
+          "last_name": "Your last name",
+          "account_name": "A name for your account",
+          "phone": "Your phone number",
+          "email": "Your email",
+          "password": "Your password",
+          "confirm_password": "Confirm your password",
+        },
+        "next": "Next",
+      },
+      "verification": {
+        "title": "Enter the verification code",
+        "message_html": "We sent you a verification code to <b>@email</b>",
+        "back": "Back to form",
+        "submit": "Submit",
+      },
+      "links": {
+        "login_comment": "Already have an account?",
+        "login_link": "Sign in",
+      }
+    },
+    
     "accounts": {
       "head": {
         "title": "Accounts",
