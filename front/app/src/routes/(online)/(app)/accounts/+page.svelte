@@ -141,7 +141,7 @@
 </style>
 
 <svelte:head>
-  <title>{$locale.pages.accounts.head_title}</title>
+  <title>{$locale.pages.accounts.head.title}</title>
 </svelte:head>
 
 <div class="layout" in:fly={{ x: -25, duration: 200 }}>

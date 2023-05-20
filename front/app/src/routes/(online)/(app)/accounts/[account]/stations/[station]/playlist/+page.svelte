@@ -804,6 +804,7 @@
   }
 
   import { cubicOut } from "svelte/easing";
+	import { locale } from "$lib/locale";
   const shuffle_btn_transition = (element: HTMLElement, options = {}) => {
     const easing = cubicOut;
     const duration = 200;
@@ -1376,7 +1377,7 @@
 </style>
 
 <svelte:head>
-  <title>Playlist</title>
+  <title>{$locale.pages["station.playlist"].head.title}</title>
 </svelte:head>
 
 <svelte:window on:pointermove={on_pointer_move} />
@@ -1384,12 +1385,11 @@
 <Page>
   {@const all_selected = $selected_ids.length !== 0 && $selected_ids.length !== data.files.items.length}
   
-  <h1>Playlist</h1>
+  <h1>{$locale.pages["station.playlist"].title}</h1>
 
   <div class="upload-message-box">
     <p class="upload-message">
-      Create a playlist of music or old episodes to keep your station up 24x7.<br />
-      When connection is lost or you are not broadcasting, <b>Playlist</b> will automatically take over.
+      {@html $locale.pages["station.playlist"].explain_html}
     <p>
   </div>
 
@@ -1397,7 +1397,7 @@
    
     <div class="upload-empty-out">
       <button class="browse-btn ripple-container" use:ripple on:click={open_file_input}>
-        Upload files
+        {$locale.pages["station.playlist"].upload_files}
       </button>
     </div>
   
@@ -1406,11 +1406,11 @@
     <div class="upload-box">
       <div class="upload-top">
         <div class="upload-box-title">
-          Upload
+          {$locale.pages["station.playlist"].upload}
         </div>
 
         <button class="browse-btn ripple-container" use:ripple on:click={open_file_input}>
-          Browse
+          {$locale.pages["station.playlist"].browse}
         </button>
       </div>
 
@@ -1422,15 +1422,31 @@
               <div class="upload-item-size">{upload_size(item.file.size)}</div>
               <div class="upload-icon">
                 {#if item.state === "done"}
-                  <div class="upload-icon-done" aria-label="Uploaded successfully" use:tooltip={"Uploaded successfully"} in:fade|local={{ duration: 200 }}>
+                  <div
+                    class="upload-icon-done"
+                    aria-label={$locale.pages["station.playlist"].uploading.success}
+                    use:tooltip={$locale.pages["station.playlist"].uploading.success}
+                    in:fade|local={{ duration: 200 }}
+                  >
                     <Icon d={mdiCheck} />
                   </div>
                 {:else if item.state === "waiting"}
-                  <div class="upload-icon-waiting" aria-label="Waiting" use:tooltip={"Waiting..."}  in:fade|local={{ duration: 200 }}>
+                  <div
+                    class="upload-icon-waiting"
+                    aria-label={$locale.pages["station.playlist"].uploading.waiting}
+                    use:tooltip={$locale.pages["station.playlist"].uploading.waiting}
+                    in:fade|local={{ duration: 200 }}
+                  >
                     <Icon d={mdiTimerPauseOutline} />
                   </div>
                 {:else if item.state === "uploading"}
-                  <div class="upload-icon-uploading" aria-current={true} aria-label="In progress" use:tooltip={"In progress..."}  in:fade|local={{ duration: 200 }}>
+                  <div
+                    class="upload-icon-uploading"
+                    aria-current={true}
+                    aria-label={$locale.pages["station.playlist"].uploading.in_progress}
+                    use:tooltip={$locale.pages["station.playlist"].uploading.in_progress}
+                    in:fade|local={{ duration: 200 }}
+                  >
                     <CircularProgress />
                   </div>
                 {:else if item.state === "error"}
@@ -1446,7 +1462,13 @@
                 {/if}
               </div>
               {#if item.state === "error"}
-                <button class="upload-error-retry ripple-container" aria-label="Retry" use:tooltip={"Retry"} use:ripple on:click={() => retry(item)} >
+                <button
+                  class="upload-error-retry ripple-container"
+                  aria-label={$locale.pages["station.playlist"].uploading.retry}
+                  use:tooltip={$locale.pages["station.playlist"].uploading.retry}
+                  use:ripple
+                  on:click={() => retry(item)}
+                >
                  <Icon d={mdiAutorenew} />
                 </button>
                {/if}
@@ -1455,7 +1477,7 @@
         </div>
         <div class="uploading-clear-out">
           <button class="uploading-clear ripple-container" use:ripple on:click={clear}>
-            Clear done items
+            {$locale.pages["station.playlist"].uploading.clear_done}
           </button>
         </div>
       {/if}
@@ -1464,8 +1486,8 @@
     <div class="playlist-box">
       <div class="playlist-top">
         <div class="playlist-top-title">
-          Tracks
-          <span class="count">{data.files.total} {data.files.total === 1 ? "track" : "tracks"} - {total_duration(playlist_duration)}</span>
+          {$locale.pages["station.playlist"].tracks_title}
+          <span class="count">{data.files.total} {data.files.total === 1 ? $locale.pages["station.playlist"].track : $locale.pages["station.playlist"].tracks} - {total_duration(playlist_duration)}</span>
         </div>
         <!-- no shuffle for less than 2 files -->
         {#if show_restart || data.files.total >= 2}
@@ -1473,8 +1495,8 @@
             {#if show_restart}
               <button
                 class="shuffle-btn ripple-container"
-                aria-label="Restart playlist"
-                use:tooltip={"Restart playlist"}
+                aria-label={$locale.pages["station.playlist"].actions.restart_playlist}
+                use:tooltip={$locale.pages["station.playlist"].actions.restart_playlist}
                 use:ripple
                 on:click={() => restart_open = true}
                 transition:shuffle_btn_transition|local
@@ -1489,8 +1511,8 @@
               {#if data.playlist_is_randomly_shuffled}
                 <button
                   class="shuffle-btn ripple-container"
-                  aria-label="Unshuffle playlist"
-                  use:tooltip={"Unshuffle playlist"}
+                  aria-label={$locale.pages["station.playlist"].actions.unshuffle_playlist}
+                  use:tooltip={$locale.pages["station.playlist"].actions.unshuffle_playlist}
                   use:ripple
                   on:click={() => unshuffle_open = true}
                   transition:shuffle_btn_transition|local
@@ -1503,8 +1525,8 @@
 
               <button
                 class="shuffle-btn ripple-container"
-                aria-label="Shuffle playlist"
-                use:tooltip={"Shuffle playlist"}
+                aria-label={$locale.pages["station.playlist"].actions.shuffle_playlist}
+                use:tooltip={$locale.pages["station.playlist"].actions.shuffle_playlist}
                 use:ripple
                 on:click={() => shuffle_open = true}
                 transition:shuffle_btn_transition|local
@@ -1524,15 +1546,15 @@
             <div class="delete-btn-icon selected-action-icon">
               <Icon d={mdiTrashCanOutline} />
             </div>
-            Delete selected
+            {$locale.pages["station.playlist"].selection.delete_selected}
           </button>
 
           <div class="selection-count">
             <div class="selection-count-text">
               {#if $selected_ids.length === 1}
-                1 track selected
+                {$locale.pages["station.playlist"].selection.one_track_selected}
               {:else}
-                {$selected_ids.length} tracks selected
+                {$locale.pages["station.playlist"].selection.n_tracks_selected.replace("@n", String($selected_ids.length))}  
               {/if}
             </div>
             <div class="selection-count-icon">
@@ -1564,7 +1586,7 @@
                     <button
                         class="select-all-btn ripple-container"
                         class:check={all_selected}
-                        aria-label={all_selected ? "Unselect all" : "Select all"}
+                        aria-label={all_selected ? $locale.pages["station.playlist"].selection.unselect_all : $locale.pages["station.playlist"].selection.select_all}
                         use:ripple
                         on:click={toggle_selection_all}
                       >
@@ -1582,22 +1604,22 @@
                 <th class="btn-cell"></th>
                 <th class="cell-title">
                   <div>
-                    Title
+                    {$locale.pages["station.playlist"].columns.title}
                   </div>
                 </th>
                 <th>
                   <div>
-                    Artist
+                    {$locale.pages["station.playlist"].columns.artist}
                   </div>
                 </th>
                 <th>
                   <div>
-                    Album
+                    {$locale.pages["station.playlist"].columns.album}
                   </div>
                 </th>
                 <th>
                   <div class="title-cell-duration">
-                    Duration
+                    {$locale.pages["station.playlist"].columns.duration}
                   </div>
                 </th>
                 <!--
@@ -1720,65 +1742,12 @@
                       {track_duration(file.duration_ms)}
                     </div>
                   </td>
-                  <!--
-                  <td class="btn-cell">
-                    <button
-                      class="file-btn file-btn-move ripple-container"
-                      class:file-btn-hidden={!can_move_up}
-                      use:ripple
-                      use:tooltip={"Move to first"}
-                      aria-hidden={!can_move_up}
-                      aria-label="Move to first"
-                      on:click={() => move_to_first(i)}
-                    >
-                      <Icon d={mdiChevronDoubleUp} />
-                    </button>
-                  </td>
-                  <td class="btn-cell">
-                    <button
-                      class="file-btn file-btn-move ripple-container"
-                      class:file-btn-hidden={!can_move_up}
-                      use:ripple
-                      use:tooltip={"Move upwards"}
-                      aria-hidden={!can_move_up}
-                      aria-label="Move upwards"
-                      on:click={() => move_up(i)}
-                    >
-                      <Icon d={mdiChevronUp} />
-                    </button>
-                  </td>
-                  <td class="btn-cell">
-                    <button
-                      class="file-btn file-btn-move ripple-container"
-                      class:file-btn-hidden={!can_move_down}
-                      use:ripple
-                      use:tooltip={"Move downwards"}
-                      aria-hidden={!can_move_down}
-                      aria-label="Move downwards"
-                      on:click={() => move_down(i)}
-                    >
-                      <Icon d={mdiChevronDown} />
-                    </button>
-                  </td>
-                  <td class="btn-cell">
-                    <button
-                      class="file-btn file-btn-move ripple-container"
-                      class:file-btn-hidden={!can_move_down}
-                      use:ripple
-                      use:tooltip={"Move to last"}
-                      aria-hidden={!can_move_down}
-                      aria-label="Move to last"
-                      on:click={() => move_to_last(i)}
-                    >
-                      <Icon d={mdiChevronDoubleDown} />
-                    </button>
-                  </td>
-                  -->
                   <td class="btn-cell">
                     <button
                       class="file-btn file-btn-edit ripple-container"
                       use:ripple
-                      use:tooltip={"Edit"}
+                      aria-label={$locale.pages["station.playlist"].actions.edit}
+                      use:tooltip={$locale.pages["station.playlist"].actions.edit}
                       on:click={() => open_edit_item(file)}
                     >
                       <Icon d={mdiCircleEditOutline} />
@@ -1788,7 +1757,8 @@
                     <button
                       class="file-btn file-btn-del ripple-container"
                       use:ripple
-                      use:tooltip={"Delete"}
+                      aria-label={$locale.pages["station.playlist"].actions.delete}
+                      use:tooltip={$locale.pages["station.playlist"].actions.delete}
                       on:click={() => audio_item_to_delete = file}
                     >
                       <Icon d={mdiTrashCanOutline} />
@@ -1808,160 +1778,160 @@
 
 {#if audio_item_to_delete != null}
   <Dialog
-    title="Delete track {audio_item_to_delete.metadata.title || audio_item_to_delete.filename}"
+    title={$locale.pages["station.playlist"].dialogs.delete_track.title.replace("@name", audio_item_to_delete.metadata.title || audio_item_to_delete.filename) }
     width="400px"
     on_close={() => audio_item_to_delete = null}
   >
     <div class="delete-dialog">
       <div class="delete-dialog-text">
-        This action is permanent.
+        {$locale.dialogs.delete.default_message}
       </div>
       <div class="delete-dialog-btns">
 
         <button class="delete-dialog-btn-cancel ripple-container" use:ripple on:click={() => audio_item_to_delete = null}>
-          Cancel
+          {$locale.dialogs.delete.cancel}
         </button>
         
         <button class="delete-dialog-btn-delete ripple-container" use:ripple on:click={del_selected}>
           <div class="delete-dialog-btn-icon">
             <Icon d={mdiTrashCanOutline} />
           </div>
-          Delete
+          {$locale.dialogs.delete.delete}
         </button>
       </div>
     </div>
   </Dialog>
 {:else if $selected_ids.length && delete_selection_open}
   <Dialog
-    title="Delete {$selected_ids.length} {$selected_ids.length === 1 ? "track" : "tracks"}"
+    title={$locale.pages["station.playlist"].dialogs.delete_tracks.title.replace("@n", String($selected_ids.length))}
     width="400px"
     on_close={() => delete_selection_open = false}
   >
     <div class="delete-dialog">
       <div class="delete-dialog-text">
-        This action is permanent.
+        {$locale.dialogs.delete.cancel}
       </div>
       <div class="delete-dialog-btns">
 
         <button class="delete-dialog-btn-cancel ripple-container" use:ripple on:click={() => delete_selection_open = false}>
-          Cancel
+          {$locale.dialogs.delete.cancel}
         </button>
         
         <button class="delete-dialog-btn-delete ripple-container" use:ripple on:click={del_selection_all}>
           <div class="delete-dialog-btn-icon">
             <Icon d={mdiTrashCanOutline} />
           </div>
-          Delete
+          {$locale.dialogs.delete.delete}
         </button>
       </div>
     </div>
   </Dialog>
 {:else if audio_item_to_edit}
   <Dialog
-    title="Edit track {audio_item_to_edit.metadata.title || audio_item_to_edit.filename}"
+    title={$locale.pages["station.playlist"].dialogs.edit_track.title.replace("@name", audio_item_to_edit.metadata.title || audio_item_to_edit.filename)}
     width="400px"
     on_close={() => audio_item_to_edit = null}  
   >
     <div class="edit-dialog">
       <div class="edit-dialog-fields">
         <div class="edit-dialog-field">
-          <TextField label="Title" bind:value={edit_current_title} />
+          <TextField label={$locale.pages["station.playlist"].dialogs.edit_track.fields.title} bind:value={edit_current_title} />
         </div>
         <div class="edit-dialog-field">
-          <TextField label="Artist" bind:value={edit_current_artist} />
+          <TextField label={$locale.pages["station.playlist"].dialogs.edit_track.fields.artist} bind:value={edit_current_artist} />
         </div>
         <div class="edit-dialog-field">
-          <TextField label="Album" bind:value={edit_current_album} />
+          <TextField label={$locale.pages["station.playlist"].dialogs.edit_track.fields.album} bind:value={edit_current_album} />
         </div>
       </div>
       <div class="edit-dialog-btns">
         <button class="edit-dialog-btn-cancel ripple-container" use:ripple on:click={() => audio_item_to_edit = null}>
-          Cancel
+          {$locale.pages["station.playlist"].dialogs.edit_track.cancel}
         </button>
 
         <button class="edit-dialog-btn-save ripple-container" use:ripple on:click={edit_save}>
           <div class="edit-dialog-btn-icon">
             <Icon d={mdiContentSaveOutline} />
           </div>
-          Save
+          {$locale.pages["station.playlist"].dialogs.edit_track.save}
         </button>
       </div>
     </div>
   </Dialog>
 {:else if shuffle_open}
   <Dialog
-    title="Shuffle playlist"
+    title={$locale.pages["station.playlist"].dialogs.shuffle_playlist.title}
     width="400px"
     on_close={() => shuffle_open = false}  
     >
     <div class="edit-dialog">
 
       <div class="delete-dialog-text">
-        Are you sure you want to randomly shuffle the entire playlist?
+        {$locale.pages["station.playlist"].dialogs.shuffle_playlist.message}
       </div>
 
       <div class="edit-dialog-btns">
         <button class="edit-dialog-btn-cancel ripple-container" use:ripple on:click={() => shuffle_open = false}>
-          Cancel
+          {$locale.pages["station.playlist"].dialogs.shuffle_playlist.cancel}
         </button>
 
         <button class="shuffle-dialog-btn edit-dialog-btn-save ripple-container" use:ripple on:click={shuffle}>
           <div class="edit-dialog-btn-icon">
             <Icon d={mdiShuffleVariant} />
           </div>
-          Shuffle
+          {$locale.pages["station.playlist"].dialogs.shuffle_playlist.submit}
         </button>
       </div>
     </div>
   </Dialog>
 {:else if unshuffle_open}
     <Dialog
-      title="Unshuffle playlist"
+      title={$locale.pages["station.playlist"].dialogs.unshuffle_playlist.title}
       width="400px"
       on_close={() => shuffle_open = false}  
     >
     <div class="edit-dialog">
 
       <div class="delete-dialog-text">
-        Are you sure you want to unshuffle the entire playlist?
+        {$locale.pages["station.playlist"].dialogs.unshuffle_playlist.message}
       </div>
 
       <div class="edit-dialog-btns">
         <button class="edit-dialog-btn-cancel ripple-container" use:ripple on:click={() => unshuffle_open = false}>
-          Cancel
+          {$locale.pages["station.playlist"].dialogs.unshuffle_playlist.cancel}
         </button>
 
         <button class="shuffle-dialog-btn edit-dialog-btn-save ripple-container" use:ripple on:click={unshuffle}>
           <div class="edit-dialog-btn-icon">
             <Icon d={mdiShuffleDisabled} />
           </div>
-          Unshuffle
+          {$locale.pages["station.playlist"].dialogs.unshuffle_playlist.submit}
         </button>
       </div>
     </div>
   </Dialog>
 {:else if restart_open}
   <Dialog
-    title="Restart playlist"
+    title={$locale.pages["station.playlist"].dialogs.restart_playlist.title}
     width="400px"
     on_close={() => restart_open = false}  
   >
   <div class="edit-dialog">
 
     <div class="delete-dialog-text">
-      Are you sure you want to restart the playlist?
+      {$locale.pages["station.playlist"].dialogs.restart_playlist.message}
     </div>
 
     <div class="edit-dialog-btns">
       <button class="edit-dialog-btn-cancel ripple-container" use:ripple on:click={() => restart_open = false}>
-        Cancel
+        {$locale.pages["station.playlist"].dialogs.restart_playlist.cancel}
       </button>
 
       <button class="shuffle-dialog-btn edit-dialog-btn-save ripple-container" use:ripple on:click={restart}>
         <div class="edit-dialog-btn-icon">
           <Icon d={mdiRestart} />
         </div>
-        Restart
+        {$locale.pages["station.playlist"].dialogs.restart_playlist.submit}
       </button>
     </div>
   </div>

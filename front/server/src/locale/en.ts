@@ -35,6 +35,14 @@
     "storage": "Storage",
   },
 
+  "dialogs": {
+    "delete": {
+      "default_message": "This action is permanent.",
+      "cancel": "Cancel",
+      "delete": "Delete"
+    }
+  },
+
   "station_nav": {
     "dashboard": "Dashboard",
     "profile": "Profile",
@@ -86,14 +94,18 @@
       "home": "Take me to home",
       "default_message": "An error ocurred",
       "offline": {
-        "head_title": "Offline",
+        "head": {
+          "title": "Offline",
+        },
         "title": "Seems that you are offline",
         "text": "You need internet access to use @app_name",
       }
     },
 
     "accounts": {
-      "head_title": "Accounts",
+      "head": {
+        "title": "Accounts",
+      },
       "title": "Select an account",
       "create_new_account": "create a new account",
       "or": "or",
@@ -124,7 +136,9 @@
     },
 
     "stations": {
-      "head_title": "Stations",
+      "head": {
+        "title": "Stations",
+      },
       "title": "Select a station",
       "create_new_station": "create a new station",
       "or": "or",
@@ -134,11 +148,6 @@
 
     "stations.create_station": {
       "create_a_stations": "Create a station",
-    },
-
-    "station.profile": {
-      "title": "Profile",
-      "submit": "Save",
     },
 
     "station.dashboard": {
@@ -152,13 +161,26 @@
       "aria_play": "Play",
     },
 
+    "station.profile": {
+      "head": {
+        "title": "Station Profile",
+      },
+      "title": "Profile",
+      "submit": "Save",
+    },
+
     "station.playlist": {
+      "head": {
+        "title": "Playlist",
+      },
       "title": "Playlist",
       "explain_html": "Create a playlist of music or old episodes to keep your station up 24x7.<br /> When connection is lost or you are not broadcasting, <b>Playlist</b> will automatically take over.",
       "upload": "Upload",
       "browse": "Browse",
-      "track": "Track",
-      "tracks": "Tracks",
+      "upload_files": "Upload files",
+      "tracks_title": "Tracks",
+      "track": "track",
+      "tracks": "tracks",
       "actions": {
         "restart_playlist": "Restart playlist",
         "shuffle_playlist": "Shuffle playlist",
@@ -174,9 +196,54 @@
         "duration": "Duration",
       },
       "selection": {
-        "track_selected": "Track selected",
-        "tracks_selected": "Tracks selected",
+        "one_track_selected": "1 track selected",
+        "n_tracks_selected": "@n tracks selected",
         "delete_selected": "Delete selected",
+        "select_all": "Select all",
+        "unselect_all": "Unselect all",
+      },
+      "uploading": {
+        "success": "Uploaded successfully",
+        "waiting": "Waiting",
+        "in_progress": "In progress...",
+        "retry": "Retry",
+        "clear_done": "Clear done items",
+      },
+      "dialogs": {
+        "delete_track": {
+          "title": "Delete track @name" 
+        },
+        "delete_tracks": {
+          "title": "Delete @n tracks",
+        },
+        "edit_track": {
+          "title": "Edit track @name",
+          "fields": {
+            "title": "Title",
+            "artist": "Artist",
+            "album": "Album",
+          },
+          "cancel": "Cancel",
+          "save": "Save",
+        },
+        "shuffle_playlist": {
+          "title": "Shuffle playlist",
+          "message": "Are you sure you want to randomly shuffle the entire playlist?",
+          "cancel": "Cancel",
+          "submit": "Shuffle",
+        },
+        "unshuffle_playlist": {
+          "title": "Unshuffle playlist",
+          "message": "Are you sure you want to unshuffle the entire playlist?",
+          "cancel": "Cancel",
+          "submit": "Unshuffle",
+        },
+        "restart_playlist": {
+          "title": "Restart playlist",
+          "message": "Are you sure you want to restart the playlist?",
+          "cancel": "Cancel",
+          "submit": "Restart",
+        }
       }
     }
   },

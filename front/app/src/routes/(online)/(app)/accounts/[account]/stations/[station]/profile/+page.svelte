@@ -11,6 +11,7 @@
 	import { prevent_unload } from "$share/prevent-unload";
 	import StationProfile from "$lib/components/StationProfile.svelte";
   import Formy from "$share/formy/Formy.svelte";
+	import { locale } from "$lib/locale";
 
   let db = {
     name: data.station.name,
@@ -137,12 +138,12 @@
 </style>
 
 <svelte:head>
-  <title>Station Profile</title>
+  <title>{$locale.pages["station.profile"].head.title}</title>
 </svelte:head>
 
 <Page>
   <div class="page">
-    <div class="page-title">Station Profile</div>
+    <div class="page-title">{$locale.pages["station.profile"].title}</div>
     <Formy action={send} let:submit>
       <form novalidate class="create-box" on:submit={submit}>
         
@@ -150,7 +151,7 @@
         
         <div class="submit-wrap">
           <button class="submit ripple-container" use:ripple type="submit">
-            Save
+            {$locale.pages["station.profile"].submit}
           </button>
         </div>
       </form>

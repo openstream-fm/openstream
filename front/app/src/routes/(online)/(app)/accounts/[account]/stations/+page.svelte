@@ -119,7 +119,7 @@
 </style>
 
 <svelte:head>
-  <title>{$locale.pages["stations"].head_title}</title>
+  <title>{$locale.pages["stations"].head.title}</title>
 </svelte:head>
 
 <Page>

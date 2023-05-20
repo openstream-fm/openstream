@@ -10,7 +10,7 @@
 	$: status = error.status || 500;
 	$: message = error?.message || $locale.pages.error.default_message;
 	$: code = error?.code || "CLIENT_PAGE_MISSING_CODE";
-	$: title = online ? `${status} ${message}` : $locale.pages.error.offline.head_title;
+	$: title = online ? `${status} ${message}` : $locale.pages.error.offline.head.title;
 </script>
 
 <style>
