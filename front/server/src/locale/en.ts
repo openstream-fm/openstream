@@ -59,6 +59,9 @@
       "social": "Social links",
       "apps": "App links",
     },
+    "validation": {
+      "logo_required": "The logo is required",
+    },
     "upload_image": "Upload Image",
     "picture_requirement_labels": {
       "format": "Image formats accepted:",
@@ -228,6 +231,27 @@
         "login_link": "Sign in",
       }
     },
+
+    "user_recovery": {
+      "head_page_title": {
+        "expired": "Link has expired",
+        "used": "Link already used",
+        "not_found": "Link not found",
+        "ok": "Reset your password",
+      },
+      "fields": {
+        "email": "Email",
+        "password": "New password",
+        "confirm_password": "Confirm password",
+      },
+      "error": {
+        "used_message_html": "The link you used to access this page is expired.<br /> Create a new link from the @user_recovery_page",
+        "expired_message_html": "The link you used to access this page doesn't has expired.<br /> Create a new link from the @user_recovery_page",
+        "not_found_message_html": "The link you used to access this page doesn't exist anymore.<br /> Create a new link from the @user_recovery_page",
+        "user_recovery_page": "user recovery page",
+      },
+      "submit": "Send",
+    },
     
     "accounts": {
       "head": {
@@ -370,6 +394,34 @@
           "message": "Are you sure you want to restart the playlist?",
           "cancel": "Cancel",
           "submit": "Restart",
+        }
+      }
+    },
+
+    "me.devices": {
+      "head": {
+        "title": "Devices",
+      },
+      "title": "Connected devices",
+      "note": "The same device may appear more than once in this list. Devices will be disconnected after 7 days without usage.",
+      "dialogs": {
+        "disconnect": {
+          "title": "Disconnect device",
+          "message": "This action is permanent",
+          "cancel": "Cancel",
+          "submit": "Disconnect",
+        }
+      },
+
+      "device": {
+        "browser": "Browser",
+        "os": "System",
+        "ip": "IP",
+        "last_used": "Last used",
+        "connected": "Connected",
+        "unkown": "Unknown",
+        "tooltips": {
+          "disconnect": "Disconnect",
         }
       }
     }

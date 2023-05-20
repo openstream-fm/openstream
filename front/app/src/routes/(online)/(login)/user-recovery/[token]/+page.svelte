@@ -3,7 +3,7 @@
   import Page from "$lib/components/Page.svelte";
 	import Formy from "$share/formy/Formy.svelte";
 	import { _post, action } from "$share/net.client";
-  import { goto, invalidate } from "$app/navigation";
+  import { goto } from "$app/navigation";
 	import Password from "$lib/components/Form/Password.svelte";
 	import Validator from "$share/formy/Validator.svelte";
 	import { _confirmation_password, _new_password } from "$share/formy/validate";
@@ -11,6 +11,7 @@
 	import Email from "$lib/components/Form/Email.svelte";
   import { _message } from "$share/notify";
   import { default_logger } from "$share/logger";
+	import { locale } from "$lib/locale";
 
   const logger = default_logger.scoped("recovery");
 
@@ -57,7 +58,16 @@
     }
   })
 
-  $: title = data.result.kind === "found" ? data.result.expired ? "Link has expired" : (data.result.already_used ? "Link already used" : "Reset your password") : "Link not found"  
+  $: title = 
+    data.result.kind === "found" ?
+      data.result.expired ? $locale.pages.user_recovery.head_page_title.expired : 
+        data.result.already_used ? $locale.pages.user_recovery.head_page_title.used : 
+      $locale.pages.user_recovery.head_page_title.ok :
+    $locale.pages.user_recovery.head_page_title.not_found;
+
+  const error_message = (base: string, link: string): string => {
+    return base.replace("@user_recovery_page", `<a class="na" href="recover">${link}</a>`)
+  }
 </script>
 
 <style>
@@ -112,7 +122,7 @@
     line-height: 2rem;
   }
 
-  .error a {
+  .error :global(a) {
     color: var(--blue);
   }
 </style>
@@ -132,21 +142,33 @@
             <form class="box" on:submit={submit}>
               <div class="fields">
                 <div class="field">
-                  <Email label="Email" readonly value={data.result.user_email} />
+                  <Email
+                    label={$locale.pages.user_recovery.fields.email}
+                    readonly
+                    value={data.result.user_email}
+                  />
                 </div>
                 <div class="field">
-                  <Password label="New password" autocomplete="new-password" bind:value={new_password} />
+                  <Password
+                    label={$locale.pages.user_recovery.fields.password}
+                    autocomplete="new-password"
+                    bind:value={new_password}
+                  />
                   <Validator value={new_password} fn={_new_password({ minlen: 8, maxlen: 100 })} />
                 </div>
                 <div class="field">
-                  <Password label="Confirm password" autocomplete="new-password" bind:value={confirm_password} />
+                  <Password
+                    label={$locale.pages.user_recovery.fields.confirm_password}
+                    autocomplete="new-password"
+                    bind:value={confirm_password}
+                  />
                   <Validator value={{ password: new_password,  confirm_password }} fn={_confirmation_password()} />
                 </div>
               </div>
 
               <div class="send-out">
                 <button type="submit" class="send ripple-container" use:ripple>
-                  Send
+                  {$locale.pages.user_recovery.submit}
                 </button> 
               </div>
             </form>
@@ -154,24 +176,30 @@
         {:else}
           <div class="error">
             <div class="error-message">
-              The link you used to access this page has already been used.<br />
-              Create a new link from the <a href="/recover" class="na">user recovery page</a> 
+              {@html error_message(
+                $locale.pages.user_recovery.error.used_message_html,
+                $locale.pages.user_recovery.error.user_recovery_page
+              )}
             </div>
           </div>
         {/if}
       {:else}
         <div class="error">
           <div class="error-message">
-            The link you used to access this page is expired.<br />
-            Create a new link from the <a href="/recover" class="na">user recovery page</a> 
+            {@html error_message(
+              $locale.pages.user_recovery.error.expired_message_html,
+              $locale.pages.user_recovery.error.user_recovery_page
+            )}
           </div>
         </div>
       {/if}
     {:else}
       <div class="error">
         <div class="error-message">
-          The link you used to access this page doesn't exist anymore.<br />
-          Create a new link from the <a href="/recover" class="na">user recovery page</a> 
+          {@html error_message(
+            $locale.pages.user_recovery.error.not_found_message_html,
+            $locale.pages.user_recovery.error.user_recovery_page
+          )}
         </div>
       </div>
     {/if}
