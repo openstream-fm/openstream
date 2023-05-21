@@ -30,6 +30,7 @@
 	import Validator from "$share/formy/Validator.svelte";
 	import { _string } from "$share/formy/validate";
 	import AccountStationItem from "./account-station-item.svelte";
+	import { locale } from "$lib/locale";
   
   $: current_account_stations = data.stations.items.filter(item => item.account_id === data.account._id);
 
@@ -380,7 +381,7 @@
   
   <div class="title">
     <h1>{data.account.name}</h1>
-    <button class="edit-btn ripple-container" use:ripple use:tooltip={"Edit"} on:click={() => edit_open = true}>
+    <button class="edit-btn ripple-container" use:ripple use:tooltip={$locale.pages["account.dashboard"].edit.tooltip} on:click={() => edit_open = true}>
       <Icon d={mdiCircleEditOutline} />
     </button>
   </div>
@@ -409,7 +410,7 @@
             {#if selector_state.station}
               {selector_state.station.name}
             {:else}
-              All stations
+              {$locale.pages["account.dashboard"].stats_map.all_stations}
             {/if}
           </span>
           <span class="stats-selector-btn-chevron">
@@ -426,7 +427,7 @@
             >
               <button class="stats-selector-item" class:current={selector_state.station == null} on:click={() => select(null)}>
                 <div class="stats-selector-name">
-                  All stations
+                  {$locale.pages["account.dashboard"].stats_map.all_stations}
                 </div>
               </button>
               {#each account_stations as station (station._id)}
@@ -443,59 +444,59 @@
       </div>
     </div>
     
-    <StatsMap bind:view kind={selector_state.kind} record_id={selector_state.record_id} bind:data={selector_state.data} />
+    <StatsMap bind:view kind={selector_state.kind} record_id={selector_state.record_id} locale={$locale.stats_map} bind:data={selector_state.data} />
   </div>
 
   <div class="meters" use:limits use:intersect={{ enter: () => limits_on_screen = true, leave: () => limits_on_screen = false}}>
     <div class="meter">
       <div class="meter-title">
-        Stations
+        {$locale.limits.stations}
       </div>
       <div class="meter-graph">
         <CircularMeter used={data.account.limits.stations.used / data.account.limits.stations.total} />
       </div>
       <div class="meter-text">
         <span class="used">{data.account.limits.stations.used}</span>
-        <span class="of">of</span>
+        <span class="of">{$locale.limits.of}</span>
         <span class="avail">{data.account.limits.stations.total}</span>
       </div>
     </div>
     <div class="meter">
       <div class="meter-title">
-        Listeners
+        {$locale.limits.listeners}
       </div>
       <div class="meter-graph">
         <CircularMeter used={data.account.limits.listeners.used / data.account.limits.listeners.total} />
       </div>
       <div class="meter-text">
         <span class="used">{data.account.limits.listeners.used}</span>
-        <span class="of">of</span>
+        <span class="of">{$locale.limits.of}</span>
         <span class="avail">{data.account.limits.listeners.total}</span>
       </div>
     </div>
     <div class="meter">
       <div class="meter-title">
-        Transfer
+        {$locale.limits.transfer}
       </div>
       <div class="meter-graph">
         <CircularMeter used={data.account.limits.transfer.used / data.account.limits.transfer.total} />
       </div>
       <div class="meter-text">
         <span class="used">{preety_bytes(data.account.limits.transfer.used)}</span>
-        <span class="of">of</span>
+        <span class="of">{$locale.limits.of}</span>
         <span class="avail">{preety_bytes(data.account.limits.transfer.total)}</span>
       </div>
     </div>
     <div class="meter">
       <div class="meter-title">
-        Storage
+        {$locale.limits.storage}
       </div>
       <div class="meter-graph">
         <CircularMeter used={data.account.limits.storage.used / data.account.limits.storage.total} />
       </div>
       <div class="meter-text">
         <span class="used">{preety_bytes(data.account.limits.storage.used)}</span>
-        <span class="of">of</span>
+        <span class="of">{$locale.limits.of}</span>
         <span class="avail">{preety_bytes(data.account.limits.storage.total)}</span>
       </div>
     </div>
@@ -503,18 +504,18 @@
 </Page>
 
 {#if edit_open}
-  <Dialog width="500px" on_close={() => edit_open = false} title="Edit your account name">
+  <Dialog width="500px" on_close={() => edit_open = false} title={$locale.pages["account.dashboard"].edit.dialog.title}>
     <Formy action={edit} let:submit>
       <form novalidate class="edit-dialog" on:submit={submit}>
         <div class="edit-dialog-fields">
           <div class="edit-dialog-field">
-            <TextField label="Account name" maxlength={50} trim bind:value={current_account_name} />
+            <TextField label={$locale.pages["account.dashboard"].edit.dialog.field_label} maxlength={50} trim bind:value={current_account_name} />
             <Validator value={current_account_name} fn={_string({ required: true, maxlen: 50 })} />
           </div>
         </div>
         <div class="edit-dialog-btn-out">
           <button type="submit" class="edit-dialog-btn ripple-container" use:ripple>
-            Save
+            {$locale.pages["account.dashboard"].edit.dialog.save}
           </button>
         </div>
       </form>

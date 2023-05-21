@@ -1,0 +1,1 @@
+export type StudioLocale = typeof import("./studio.en").default;

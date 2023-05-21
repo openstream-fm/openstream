@@ -21,6 +21,7 @@
 	import Icon from "$share/Icon.svelte";
 	import { mdiAccountCircleOutline, mdiAccountMultipleOutline, mdiCastAudioVariant, mdiLogout } from "@mdi/js";
 	import { goto } from "$app/navigation";
+	import { locale } from "$lib/locale";
 
   const sign_out = action(async () => {
     await _post("/api/auth/user/logout", {});
@@ -268,7 +269,7 @@
                 <div class="menu-icon">
                   <Icon d={mdiAccountCircleOutline} />
                 </div>
-                Profile
+                {$locale.user_menu.profile}
               </a>
             </div>
             <div class="menu-section">
@@ -276,7 +277,7 @@
                 <div class="menu-icon">
                   <Icon d={mdiAccountMultipleOutline} />
                 </div>
-                Accounts
+                {$locale.user_menu.accounts}
               </a>
               <div class="station-list thin-scroll">
                 {#each accounts.items as item (item._id)}
@@ -294,14 +295,14 @@
                     <div class="menu-icon">
                       <Icon d={mdiCastAudioVariant} />
                     </div>
-                    Stations
+                    {$locale.user_menu.stations}
                   </a>
                 {:else}
                   <div class="menu-section-link not-link">
                     <div class="menu-icon">
                       <Icon d={mdiCastAudioVariant} />
                     </div>
-                    Stations
+                    {$locale.user_menu.stations}
                   </div>
                 {/if}
                 <div class="station-list thin-scroll">
@@ -320,7 +321,7 @@
                 <div class="menu-icon">
                   <Icon d={mdiLogout} />
                 </div>
-                Sign out
+                {$locale.user_menu.sign_out}
               </div>
             </div>
           </div>

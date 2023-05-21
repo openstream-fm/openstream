@@ -13,6 +13,7 @@
 	import FeatureI from "./PlanFeatureTip.svelte";
 	import Color from "color";
 	import PlanFeatureTip from "./PlanFeatureTip.svelte";
+	import { locale } from "$lib/locale";
 
   const aprox_listening_hours = (bytes: number): number => {
     return Math.round(bytes / 16000 / 60 / 60 / 1_000) * 1_000;
@@ -215,7 +216,7 @@
               $ {plan.price}
             </div>
             <div class="plan-price-per">
-              per month
+              {$locale.plan_selector.price.per_month}
             </div>
           </div>
 
@@ -231,13 +232,13 @@
                 {plan.limits.stations}
               </span>
               <span class="feature-label">
-                {plan.limits.stations === 1 ? "Station" :  "Stations"}
+                {plan.limits.stations === 1 ? $locale.plan_selector.features.station : $locale.plan_selector.features.stations}
               </span>
               <span class="tip">
                 {#if plan.limits.stations === 1}
-                  <PlanFeatureTip text={`You can only create one station with this plan`} />
+                  <PlanFeatureTip text={$locale.plan_selector.tooltips.one_station} />
                 {:else}
-                  <PlanFeatureTip text={`Up to ${plan.limits.stations} different stations`} />
+                  <PlanFeatureTip text={$locale.plan_selector.tooltips.n_stations.replace("@n", String(plan.limits.stations))} />
                 {/if}
               </span>
             </div>
@@ -247,10 +248,10 @@
                 {new Intl.NumberFormat().format(plan.limits.listeners)}
               </span>
               <span class="feature-label">
-                Listeners
+                {$locale.plan_selector.features.listeners}
               </span>
               <span class="tip">
-                <PlanFeatureTip text={`Up to ${plan.limits.listeners} concurrent listeners`} />
+                <PlanFeatureTip text={$locale.plan_selector.tooltips.listeners.replace("@n", String(plan.limits.listeners))} />
               </span>
             </div>
 
@@ -259,15 +260,14 @@
                 {plan.limits.transfer / 1_000_000_000_000} TB
               </span>
               <span class="feature-label">
-                Bandwidth
+                {$locale.plan_selector.features.transfer}
               </span>
               <span class="tip">
-                <FeatureI text={`
-                  ${
-                    plan.limits.transfer / 1_000_000_000_000
-                  } TB of monthly transfer will give you around ${
-                    new Intl.NumberFormat().format(aprox_listening_hours(plan.limits.transfer))
-                  } listening hours`} />
+                <FeatureI text={
+                  $locale.plan_selector.tooltips.transfer
+                    .replace("@tb", String(plan.limits.transfer / 1_000_000_000_000))
+                    .replace("@hours",    new Intl.NumberFormat().format(aprox_listening_hours(plan.limits.transfer)))
+                } />
               </span>
             </div>
 
@@ -276,34 +276,24 @@
                 {plan.limits.storage / 1_000_000_000} GB
               </span>
               <span class="feature-label">
-                Storage
+                {$locale.plan_selector.features.storage}
               </span>
               <span class="tip">
-                <PlanFeatureTip text={`${plan.limits.storage / 1_000_000_000} GB of storage for music or old episodes`} />
+                <PlanFeatureTip text={
+                  $locale.plan_selector.tooltips.storage.replace("@gb", String(plan.limits.storage / 1_000_000_000))
+                } />
               </span>
             </div>
 
             <div class="feature">
               <span class="feature-n">
-                Unlimited
+                {$locale.plan_selector.unlimited}
               </span>
               <span class="feature-label">
-                DJs
+                {$locale.plan_selector.features.staff}
               </span>
               <span class="tip">
-                <PlanFeatureTip text={`Add all the staff users that you want`} />
-              </span>
-            </div>
-
-            <div class="feature feature-check">
-              <div class="feature-check-icon">
-                <Icon d={featureCheckIcon} />
-              </div>
-              <div class="feature-label">
-                Auto DJ
-              </div>
-              <span class="tip">
-                <PlanFeatureTip text={`Broadcast from a playlist when you're not online`} />
+                <PlanFeatureTip text={$locale.plan_selector.tooltips.staff} />
               </span>
             </div>
 
@@ -312,10 +302,10 @@
                 <Icon d={featureCheckIcon} />
               </div>
               <div class="feature-label">
-                Advanced Stats
+                {$locale.plan_selector.features.auto_dj}
               </div>
               <span class="tip">
-                <PlanFeatureTip text={`Advanced live and historical stats, see who's listening your stations`} />
+                <PlanFeatureTip text={$locale.plan_selector.tooltips.auto_dj} />
               </span>
             </div>
 
@@ -324,10 +314,22 @@
                 <Icon d={featureCheckIcon} />
               </div>
               <div class="feature-label">
-                Android App
+                {$locale.plan_selector.features.stats}
               </div>
               <span class="tip">
-                <PlanFeatureTip text={`An Android application branded to your stations and available worldwide through Google Play`} />
+                <PlanFeatureTip text={$locale.plan_selector.tooltips.stats} />
+              </span>
+            </div>
+
+            <div class="feature feature-check">
+              <div class="feature-check-icon">
+                <Icon d={featureCheckIcon} />
+              </div>
+              <div class="feature-label">
+                {$locale.plan_selector.features.android_app}
+              </div>
+              <span class="tip">
+                <PlanFeatureTip text={$locale.plan_selector.tooltips.android_app} />
               </span>
             </div>
 
@@ -336,10 +338,10 @@
                 <div class="feature-check-icon">
                   <Icon d={featureCheckIcon} />
                 </div>
-                <div class="feature-n">30 day</div>
-                <div class="feature-label">free trial</div>
+                <div class="feature-n">{$locale.plan_selector.trial["30_day"]}</div>
+                <div class="feature-label">{$locale.plan_selector.trial.free_trial}</div>
                 <span class="tip">
-                  <PlanFeatureTip text={`You won't be charged until your trial ends, and you can cancel any time`} />
+                  <PlanFeatureTip text={$locale.plan_selector.trial.tooltip} />
                 </span>
               </div>
             {/if}
@@ -350,7 +352,7 @@
               {plan.display_name}
             </div>
             <div class="plan-bottom-price">
-              $ {plan.price} / month  
+              {$locale.plan_selector.price.$_n_per_month.replace("@n", String(plan.price))}
             </div>
             <div class="plan-bottom-select">
               <a href={target_url(plan)} class="na plan-bottom-btn ripple-container" use:ripple>

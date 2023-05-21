@@ -5,7 +5,7 @@
 
 	import Device from './device.svelte';
 	import { ripple } from '$share/ripple';
-	import { fly, slide } from 'svelte/transition';
+	import { slide } from 'svelte/transition';
 	import { _delete, action } from '$share/net.client';
 	import { mdiTrashCanOutline } from '@mdi/js';
 	import Icon from '$share/Icon.svelte';
@@ -13,6 +13,7 @@
 	import { _message } from '$share/notify';
 	import { invalidate } from '$app/navigation';
 	import Page from '$lib/components/Page.svelte';
+	import { locale } from '$lib/locale';
 
 	$: current = data.devices.items.find(item => item.is_current);
 
@@ -23,61 +24,12 @@
 	const disconnect = action(async () => {
 		if (disconnect_item == null) return;
 		await _delete(`/api/me/devices/${disconnect_item._id}`);
-		_message('Device disconnected');
+		_message($locale.pages['me.devices'].notifier.device_disconnected);
 		disconnect_item = null;
 		invalidate('resource:devices');
 	});
 </script>
 
-<svelte:head>
-	<title>Devices</title>
-</svelte:head>
-
-<Page compact>
-	<div class="page">
-		<div class="page-title">Connected devices</div>
-		<div class="note">
-			The same device may appear more than once in this list. Devices will be disconnected after 7
-			days without usage.
-		</div>
-		<div class="list">
-			{#if current != null}
-				<div class="device-wrap" aria-current>
-					<Device device={current} />
-				</div>
-			{/if}
-			{#each devices as device (device._id)}
-				<div class="device-wrap" transition:slide|local={{ duration: 400 }}>
-					<Device {device} on_remove={() => (disconnect_item = device)} />
-				</div>
-			{/each}
-		</div>
-	</div>
-</Page>
-
-{#if disconnect_item != null}
-	<Dialog title="Disconnect device" width="400px" on_close={() => (disconnect_item = null)}>
-		<div class="delete-dialog">
-			<div class="delete-dialog-text">This action is permanent.</div>
-			<div class="delete-dialog-btns">
-				<button
-					class="delete-dialog-btn-cancel ripple-container"
-					use:ripple
-					on:click={() => (disconnect_item = null)}
-				>
-					Cancel
-				</button>
-
-				<button class="delete-dialog-btn-delete ripple-container" use:ripple on:click={disconnect}>
-					<div class="delete-dialog-btn-icon">
-						<Icon d={mdiTrashCanOutline} />
-					</div>
-					Disconnect
-				</button>
-			</div>
-		</div>
-	</Dialog>
-{/if}
 
 <style>
 	.page {
@@ -159,3 +111,57 @@
 		font-size: 1.2rem;
 	}
 </style>
+
+
+<svelte:head>
+	<title>{$locale.pages['me.devices'].head.title}</title>
+</svelte:head>
+
+<Page compact>
+	<div class="page">
+		<div class="page-title">
+			{$locale.pages['me.devices'].title}
+		</div>
+		<div class="note">
+			{$locale.pages['me.devices'].note}
+		</div>
+		<div class="list">
+			{#if current != null}
+				<div class="device-wrap" aria-current>
+					<Device device={current} />
+				</div>
+			{/if}
+			{#each devices as device (device._id)}
+				<div class="device-wrap" transition:slide|local={{ duration: 400 }}>
+					<Device {device} on_remove={() => (disconnect_item = device)} />
+				</div>
+			{/each}
+		</div>
+	</div>
+</Page>
+
+{#if disconnect_item != null}
+	<Dialog title={$locale.pages['me.devices'].dialogs.disconnect.title} width="400px" on_close={() => (disconnect_item = null)}>
+		<div class="delete-dialog">
+			<div class="delete-dialog-text">
+				{$locale.pages['me.devices'].dialogs.disconnect.message}
+			</div>
+			<div class="delete-dialog-btns">
+				<button
+					class="delete-dialog-btn-cancel ripple-container"
+					use:ripple
+					on:click={() => (disconnect_item = null)}
+				>
+					{$locale.pages['me.devices'].dialogs.disconnect.cancel}
+				</button>
+
+				<button class="delete-dialog-btn-delete ripple-container" use:ripple on:click={disconnect}>
+					<div class="delete-dialog-btn-icon">
+						<Icon d={mdiTrashCanOutline} />
+					</div>
+					{$locale.pages['me.devices'].dialogs.disconnect.submit}
+				</button>
+			</div>
+		</div>
+	</Dialog>
+{/if}

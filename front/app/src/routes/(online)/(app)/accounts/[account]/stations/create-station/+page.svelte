@@ -5,16 +5,15 @@
 	import { _post, action } from "$share/net.client";
 	import { _message } from "$share/notify";
 
-  import { goto, invalidate } from "$app/navigation";
+  import { goto } from "$app/navigation";
 
 	import { ripple } from "$share/ripple";
 	
-  import { clone, diff, equals } from "$server/util/collections";
+  import { clone, equals } from "$server/util/collections";
 	import { prevent_unload } from "$share/prevent-unload";
 	import StationProfile from "$lib/components/StationProfile.svelte";
 	import Formy from "$share/formy/Formy.svelte";
-	import { onMount } from "svelte";
-	import Dialog from "$share/Dialog.svelte";
+  import { locale } from "$lib/locale";
 
   let start = {
     name: null as string | null,
@@ -77,7 +76,7 @@
       station
     } = await _post<import("$api/stations/POST/Output").Output>(`/api/stations`, payload);
 
-    _message("New station created");
+    _message($locale.pages["stations.create_station"].notifier.station_created);
 
     current = clone(start);
     

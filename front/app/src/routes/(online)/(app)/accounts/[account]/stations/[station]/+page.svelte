@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CircularMeter from "$lib/components/CircularMeter/CircularMeter.svelte";
   import Page from "$lib/components/Page.svelte";
 	import { pause, player_state, play_station } from "$lib/components/Player/player";
 	import { default_logger } from "$share/logger";
@@ -9,11 +8,9 @@
 	import { _get } from "$share/net.client";
 	import { ripple } from "$share/ripple";
   import { mdiMicrophoneOutline, mdiPause, mdiPlay } from "@mdi/js";
-	import { onMount } from "svelte";
 	import { derived } from "svelte/store";
   import StatsMap from "$share/Map/StatsMap.svelte";
-	import { sleep } from "$share/util";
-	import { intersect } from "$share/actions";
+	import { locale } from "$lib/locale";
 
   export let data: import("./$types").PageData;
 
@@ -217,12 +214,6 @@
 
 <Page>
 
-  <!-- <div class="broadcast-btn-out"> 
-    <button class="broadcast-btn ripple-container" use:ripple>
-      Broadcast Settings
-    </button>
-  </div> -->
-
   <div class="page">
     <div class="top">
       <div class="top-boxes" data-air={on_air ? "on" : "off"}>
@@ -233,17 +224,17 @@
             </div>
             <div class="air-title">
               {#if on_air}
-                <span class="on-air">ON AIR</span>
+                <span class="on-air">{$locale.pages["station.dashboard"].on_air}</span>
               {:else}
-                <span class="off-air">OFF AIR</span>
+                <span class="off-air">{$locale.pages["station.dashboard"].off_air}</span>
               {/if}
             </div>
             {#if on_air}
               <div class="air-subtitle">
                 {#if data.now_playing.kind === "playlist" || data.now_playing.kind === "none"}
-                  Playlist
+                  {$locale.pages["station.dashboard"].playlist}
                 {:else if data.now_playing.kind === "live"}
-                  Live
+                  {$locale.pages["station.dashboard"].live}
                 {/if}
               </div>
             {/if}
@@ -256,7 +247,7 @@
               use:ripple class="preview-btn ripple-container"
               data-state={$station_preview_state}
               on:click={toggle_play}
-              aria-label={$station_preview_state === "playing" ? "Pause" : "Play"}
+              aria-label={$station_preview_state === "playing" ? $locale.pages["station.dashboard"].aria_pause : $locale.pages["station.dashboard"].aria_play}
             >
               {#if $station_preview_state === "playing"}
                 <Icon d={mdiPause} />
@@ -269,64 +260,14 @@
             </button>
 
             <div class="preview-title">
-              Preview
+              {$locale.pages["station.dashboard"].preview}
             </div>
           </div>
         </div>
-        
-        <!-- 
-        <div class="top-box top-box-stats">
-          <div class="stats-title">
-            Stats
-          </div>
-          <div class="stats-items">
-            <div class="stats-item">
-              <div class="stats-label">24 hours</div>
-              <div class="stats-value">
-                <div class="lis" use:tooltip={`${f(data.dashboard_stats.listeners_24h)} ${listeners_str(data.dashboard_stats.listeners_24h)}`}>
-                  <span class="n">{stats_num(data.dashboard_stats.listeners_24h)}</span> {listeners_str(data.dashboard_stats.listeners_24h)}
-                </div>
-                <div class="ses" use:tooltip={`${f(data.dashboard_stats.sessions_24h)} ${sessions_str(data.dashboard_stats.sessions_24h)}`}>
-                  <span class="n">{stats_num(data.dashboard_stats.sessions_24h)}</span> {sessions_str(data.dashboard_stats.sessions_24h)}
-                </div>
-              </div>
-            </div>
-            <div class="stats-item">
-              <div class="stats-label">7 days</div>
-              <div class="stats-value">
-                <div class="lis" use:tooltip={`${f(data.dashboard_stats.listeners_7d)} ${listeners_str(data.dashboard_stats.listeners_7d)}`}>
-                  <span class="n">{stats_num(data.dashboard_stats.listeners_7d)}</span> {listeners_str(data.dashboard_stats.listeners_7d)}
-                </div>
-                <div class="ses" use:tooltip={`${f(data.dashboard_stats.sessions_7d)} ${sessions_str(data.dashboard_stats.sessions_7d)}`}>
-                  <span class="n">{stats_num(data.dashboard_stats.sessions_7d)}</span> {sessions_str(data.dashboard_stats.sessions_7d)}
-                </div>
-              </div>
-            </div>
-            <div class="stats-item">
-              <div class="stats-label">30 days</div>
-              <div class="stats-value">
-                <div class="lis" use:tooltip={`${f(data.dashboard_stats.listeners_30d)} ${listeners_str(data.dashboard_stats.listeners_30d)}`}>
-                  <span class="n">{stats_num(data.dashboard_stats.listeners_30d)}</span> {listeners_str(data.dashboard_stats.listeners_30d)}
-                </div>
-                <div class="ses" use:tooltip={`${f(data.dashboard_stats.sessions_30d)} ${sessions_str(data.dashboard_stats.sessions_30d)}`}>
-                  <span class="n">{stats_num(data.dashboard_stats.sessions_30d)}</span> {sessions_str(data.dashboard_stats.sessions_30d)}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        -->
+
         <div class="top-box top-box-broadcast">
           <a class="na broadcast-btn ripple-container" href="/accounts/{data.account._id}/stations/{data.station._id}/broadcast" use:ripple>
-            Broadcast
-            <!-- <span class="broadcast-btn-text-narrow">
-              Broadcast
-              <br />
-              Settings
-            </span>
-            <span class="broadcast-btn-text-wide">
-              Broadcast Settings
-            </span> -->
+            {$locale.pages["station.dashboard"].broadcast}
           </a>
         </div>
 
@@ -334,7 +275,7 @@
     </div>
 
     <div class="stats">
-      <StatsMap kind="station" record_id={data.station._id} bind:data={data.stats} />
+      <StatsMap kind="station" record_id={data.station._id} locale={$locale.stats_map} bind:data={data.stats} />
     </div>
   </div>
 </Page>

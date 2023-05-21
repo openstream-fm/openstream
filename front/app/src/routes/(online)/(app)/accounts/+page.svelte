@@ -1,6 +1,7 @@
 <script lang="ts">
 	import TopUser from "$lib/components/Dashboard/TopUser.svelte";
 	import SimpleLogo from "$lib/components/SimpleLogo.svelte";
+	import { locale } from "$lib/locale";
 	import { ripple } from "$share/ripple";
 	import { fly } from "svelte/transition";
   export let data: import("./$types").PageData;
@@ -140,7 +141,7 @@
 </style>
 
 <svelte:head>
-  <title>Accounts</title>
+  <title>{$locale.pages.accounts.head.title}</title>
 </svelte:head>
 
 <div class="layout" in:fly={{ x: -25, duration: 200 }}>
@@ -154,7 +155,7 @@
     </div>
   </div>
   <div class="page">
-    <div class="page-title">Select an account</div>
+    <div class="page-title">{$locale.pages.accounts.title}</div>
     {#if data.accounts.items.length}
       <div class="list-box">
         {#each data.accounts.items as account (account._id)}
@@ -166,19 +167,18 @@
         {/each}
       </div>
 
-      <div class="or">or</div>
+      <div class="or">{$locale.pages.accounts.or}</div>
 
       <a class="create ripple-container" href="/accounts/create-account" use:ripple>
-        create a new account
+        {$locale.pages.accounts.create_new_account}
       </a> 
     {:else}
       <div class="no-items">
         <div class="no-items-message">
-          You don't have a broadcaster account yet.<br>
-          To start broadcasting, sign up for a broadcaster account.
+          {@html $locale.pages.accounts.no_items_message_html}
         </div>
         <a href="/accounts/create-account" class="na no-items-create ripple-container" use:ripple>
-          Create my broadcaster account
+          {$locale.pages.accounts.no_items_create}
         </a>
       </div>
     {/if}
