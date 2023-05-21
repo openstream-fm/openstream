@@ -21,6 +21,7 @@ const locale = {
     "auto": "Auto detect",
     "en": "English",
     "es": "Español (Spanish)",
+    "pt": "Portugues (Portuguese)"
   },
 
   "drawer": {
