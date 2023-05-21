@@ -2,7 +2,7 @@
   export let disabled: boolean = false;
   export let readonly: boolean = false;
   export let icon: string | null = null;
-  export let btn: { icon: string, action: () => void, tabindex?: number | undefined } | null = null;
+  export let btn: { icon: string, action: () => void, label: string, tabindex?: number | undefined } | null = null;
 	import Icon from "$share/Icon.svelte";
 	import { ripple } from "$share/ripple";
 
@@ -115,7 +115,13 @@
       <!-- <button class="btn" on:pointerdown|capture|preventDefault={btn_pointerdown} on:click|preventDefault={btn_click}>
         <Icon d={btn.icon} />
       </button> -->
-      <button class="btn ripple-container" use:ripple on:click|preventDefault={() => btn?.action()} tabindex={btn.tabindex}>
+      <button
+        class="btn ripple-container"
+        use:ripple
+        on:click|preventDefault={() => btn?.action()}
+        tabindex={btn.tabindex}
+        aria-label={btn.label}
+      >
         <Icon d={btn.icon} />
       </button>
     </div>

@@ -14,7 +14,7 @@
   export let minrows: number | undefined = void 0;
   export let maxrows: number | undefined = void 0;
 
-  export let btn: { icon: string, action: () => void } | null = null;
+  export let btn: { icon: string, label: string, action: () => void } | null = null;
 	
   $: empty = (trim ? value.trim() : value) === "";
 

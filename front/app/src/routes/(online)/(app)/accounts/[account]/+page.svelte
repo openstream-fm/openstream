@@ -1,7 +1,6 @@
 <script lang="ts">
   export let data: import("./$types").PageData;
   import Page from "$lib/components/Page.svelte";
-	import type { Station } from "$server/defs/db/Station";
 	import StatsMap from "$share/Map/StatsMap.svelte";
 	import type { Stats } from "$share/Map/StatsMap.svelte";
 	import { click_out, intersect } from "$share/actions";
@@ -105,7 +104,7 @@
   const LIMITS_UPDATE_INTERVAL = 5_000;
   let limits_on_screen = true;
 
-  const limits = (node: HTMLElement) => {
+  const limits = (_node: HTMLElement) => {
     
     const logger = default_logger.scoped("limits");
 

@@ -16,6 +16,7 @@
   const copy = (value: string) => {
     return {
       icon: mdiContentCopy,
+      label: $locale.copy_to_clipboard,
       action: () => {
         _copy(value);
         _message($locale.pages['station.broadcast'].notifier.copied_to_clipboard);

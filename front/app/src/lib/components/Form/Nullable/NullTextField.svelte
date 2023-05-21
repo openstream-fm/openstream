@@ -14,7 +14,7 @@
   export let maxlength: number | undefined = void 0;
 
   export let icon: string | null | undefined = void 0;
-  export let btn: { icon: string, action: () => void } | null = null;
+  export let btn: { icon: string, label: string, action: () => void } | null = null;
 	
   export let on_change: ((v: string | null) => void) | null = null;
 
