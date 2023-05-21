@@ -142,45 +142,6 @@
     background-color: #f6f6f6;
   }
 
-  .menu-station, .menu-account {
-    display: block;
-    padding: 0.75rem 1rem 0.75rem 0.75rem;
-    transition: background-color 150ms ease;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.75rem;
-  }
-  
-  .menu-station.current, .menu-account {
-    background: #f6f6f6;
-  }
-
-  .menu-station:hover, .menu-account:hover {
-    background: #e8e8e8;
-  }
-
-  .menu-account {
-    padding-inline-start: 2.75rem;
-  }
-
-  .station-pic {
-    border-radius: 0.25rem;
-    width: 1.25rem;
-    height: 1.25rem;
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
-  }
-
-  .station-name {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    flex: 1;
-  }
-
   .menu-head {
     padding: 0;
     margin: 0;
