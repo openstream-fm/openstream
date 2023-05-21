@@ -7,7 +7,7 @@
 	import { click_out } from "$share/actions";
 	import { action, _post } from "$share/net.client";
 	import Icon from "$share/Icon.svelte";
-	import { mdiAccountCircleOutline, mdiAccountMultipleOutline, mdiCastAudioVariant, mdiLogout } from "@mdi/js";
+	import { mdiAccountCircleOutline, mdiLogout } from "@mdi/js";
 	import { goto } from "$app/navigation";
 
   const sign_out = action(async () => {
