@@ -8,6 +8,7 @@ export interface AdminPublicUser {
   last_name: string;
   email: string;
   phone: string | null;
+  language: string | null;
   created_at: DateTime;
   updated_at: DateTime;
   user_metadata: Metadata;

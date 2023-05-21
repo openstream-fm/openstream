@@ -282,26 +282,26 @@
 
 {#if reset_password_open}
   <Dialog
-    title="Reset mount password"
+    title={$locale.pages['station.broadcast'].dialogs.reset_password.title}
     width="400px"
     on_close={() => reset_password_open = false}  
     >
     <div class="reset-dialog">
 
     <div class="reset-dialog-text">
-      Are you sure you want to reset the mountpoint password?
+      {$locale.pages['station.broadcast'].dialogs.reset_password.message}
     </div>
 
     <div class="reset-dialog-btns">
       <button class="reset-dialog-btn-cancel ripple-container" use:ripple on:click={() => reset_password_open = false}>
-        Cancel
+        {$locale.pages['station.broadcast'].dialogs.reset_password.cancel}
       </button>
 
       <button class="reset-dialog-btn ripple-container" use:ripple on:click={reset_password}>
         <div class="reset-dialog-btn-icon">
           <Icon d={mdiLockReset} />
         </div>
-        Reset password
+        {$locale.pages['station.broadcast'].dialogs.reset_password.submit}
       </button>
     </div>
     </div>

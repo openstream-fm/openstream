@@ -22,10 +22,12 @@
 	import { mdiAccountCircleOutline, mdiAccountMultipleOutline, mdiCastAudioVariant, mdiLogout } from "@mdi/js";
 	import { goto } from "$app/navigation";
 	import { locale } from "$lib/locale";
+	import { invalidateSiblings } from "$lib/invalidate";
 
   const sign_out = action(async () => {
     await _post("/api/auth/user/logout", {});
     goto("/", { invalidateAll: true })
+    invalidateSiblings();
   })
 
   let menu_open = false;

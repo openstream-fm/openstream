@@ -13,6 +13,8 @@ import { user_media_key } from "../media_key";
 import { ua } from "../ua";
 import { shared_api } from "./shared-api";
 import { host } from "../host";
+import { StudioLocale, studio_locales } from "../locale/studio/studio.locale";
+import acceptLanguageParser from "accept-language-parser";
 
 export type PublicConfig = {
   storage_public_url: string
@@ -30,6 +32,11 @@ export const public_config = (hosts: HostConfig & { id: string }): PublicConfig 
   }
 
   return config;
+}
+
+export type LocalePayload = {
+  lang: string
+  locale: StudioLocale
 }
 
 export const studio_api = ({
@@ -53,16 +60,57 @@ export const studio_api = ({
     res.json({ ok: true })
   })
 
-  api.get("/config", json(async (req) => {
+  api.get("/config", json(async req => {
     const hosts = host("studio", config.hosts, req);
     return public_config(hosts);
+  }))
+
+  api.get("/locale", json(async (req): Promise<LocalePayload> => {
+    let langs: ReturnType<typeof acceptLanguageParser.parse> | null = null;
+    if(req.cookie_session.user) {
+      try {
+        const { user } = await client.users.get(ip(req), ua(req), user_token(req), req.cookie_session.user._id);
+        if(user.language != null) {
+          langs = acceptLanguageParser.parse(user.language);
+        }
+      } catch(e) { }
+    }
+
+    if(langs == null) {
+      const header = req.header("accept-language");
+      if(header != null) {
+        try {
+          langs = acceptLanguageParser.parse(header);
+        } catch(e) { }
+      }
+    }
+
+    if(langs != null) {
+      for(const lang of langs) {
+        for(const [code, locale] of Object.entries(studio_locales)) {
+          if(code.toLowerCase() === lang.code.toLowerCase()) {
+            return { lang: code, locale };
+          }
+        }
+      }
+    }
+
+    return { lang: "en", locale: studio_locales.en };
+
   }))
 
   api.post("/auth/user/login", json(async (req, res) => {
     const sess = req.cookie_session;
     const r = await client.auth.user.login(ip(req), ua(req), { ...req.body, device_id: sess.device_id });
     const data = req.cookie_session;
-    res.set_session({ ...data, user: { _id: r.user._id, token: r.token, media_key: r.media_key  } });
+    res.set_session({
+      ...data,
+      user: {
+        _id: r.user._id,
+        token: r.token,
+        media_key: r.media_key
+      }
+    });
     return { user: r.user, media_key: r.media_key }
   }))
 
@@ -110,7 +158,7 @@ export const studio_api = ({
   api.route("/users/me")
     .get(json(async req => {
       const { user } = await client.users.get(ip(req), ua(req), user_token(req), user_id(req))
-      return { user,  media_key: user_media_key(req) };
+      return { user, media_key: user_media_key(req) };
     }))
 
   api.use(shared_api({

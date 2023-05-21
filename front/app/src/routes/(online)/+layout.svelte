@@ -5,6 +5,7 @@
 	import { default_logger } from "$share/logger";
 	import { goto } from "$app/navigation";
   import Loading from "$share/Loading.svelte";
+	import { invalidateSiblings } from "$lib/invalidate";
 
   export let data: import("./$types").LayoutData;
 
@@ -25,6 +26,7 @@
       logger.info("intertab user_id changed", { user_id, new_value, old_value })
       if(new_value !== user_id) {
         goto("/", { invalidateAll: true })
+        invalidateSiblings();
       }
     })
   })

@@ -13,6 +13,7 @@
   const sign_out = action(async () => {
     await _post("/api/auth/admin/logout", {});
     goto("/", { invalidateAll: true })
+    
   })
 
   let menu_open = false;
