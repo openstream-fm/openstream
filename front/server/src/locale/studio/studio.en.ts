@@ -13,6 +13,10 @@ const locale = {
   "validate": validate,
   "stats_map": stats_map,
 
+  "copy_to_clipboard": "Copy to clipboard",
+  "show_password": "Show password",
+  "hide_password": "Hide password",
+
   "drawer": {
     "account_selector": {
       "see_all_accounts": "See all accounts",

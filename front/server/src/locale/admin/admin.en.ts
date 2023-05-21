@@ -10,6 +10,9 @@ const locale = {
   // @notranslate
   "app_name": "Openstream Admin",
 
+  "show_password": "Show password",
+  "hide_password": "Hide password",
+
   "validate": validate,
   "stats_map": stats_map,
 }

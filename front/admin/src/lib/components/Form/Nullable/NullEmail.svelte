@@ -5,7 +5,7 @@
   export let disabled: boolean = false;
   export let readonly: boolean = false;
   export let on_change: ((v: string | null) => void) | null = null; 
-  export let btn: { icon: string, action: () => void } | null = null;
+  export let btn: { icon: string, label: string, tabindex?: number, action: () => void } | null = null;
 	export let maxlength: number | undefined = void 0;
 
   import { mdiEmailOutline } from "@mdi/js";

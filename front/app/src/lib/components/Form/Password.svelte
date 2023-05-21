@@ -9,12 +9,14 @@
 
   import { mdiEye, mdiEyeOff, mdiLockOutline } from "@mdi/js";
 	import TextField from "./TextField.svelte";
+	import { locale } from "$lib/locale";
   export let icon: string | null = mdiLockOutline; 
 
   const action = () => visible = !visible;
   $: btn = {
     action,
     icon: visible ? mdiEyeOff : mdiEye,
+    label: visible ? $locale.hide_password : $locale.show_password,
     tabindex: -1,
   }
 

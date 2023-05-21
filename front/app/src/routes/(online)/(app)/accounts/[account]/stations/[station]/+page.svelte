@@ -1,7 +1,6 @@
 <script lang="ts">
   import Page from "$lib/components/Page.svelte";
 	import { pause, player_state, play_station } from "$lib/components/Player/player";
-	import { default_logger } from "$share/logger";
 	import { get_now_playing_store } from "$lib/now-playing";
 	import CircularProgress from "$share/CircularProgress.svelte";
 	import Icon from "$share/Icon.svelte";
@@ -13,8 +12,6 @@
 	import { locale } from "$lib/locale";
 
   export let data: import("./$types").PageData;
-
-  const logger = default_logger.scoped("dashboard");
 
   const now_playing = get_now_playing_store(data.station._id, data.now_playing);
   $: if($now_playing) data.now_playing = $now_playing.info;

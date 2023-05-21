@@ -12,6 +12,11 @@ const locale: import("./studio.locale").StudioLocale = {
   "validate": validate,
   "stats_map": stats_map,
 
+  "copy_to_clipboard": "Copiar al portapapeles",
+  "show_password": "Mostrar contraseña",
+  "hide_password": "Ocultar contraseña",
+
+
   "drawer": {
     "account_selector": {
       "see_all_accounts": "Ver todas las cuentas",

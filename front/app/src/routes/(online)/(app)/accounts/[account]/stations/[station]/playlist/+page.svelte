@@ -1,7 +1,7 @@
 <script lang="ts">
   export let data: import("./$types").PageData;
 
-  import { beforeNavigate, invalidate } from "$app/navigation";
+  import { invalidate } from "$app/navigation";
 	import Page from "$lib/components/Page.svelte";
 	import { ripple } from "$share/ripple";
 	import { action, ClientError, _delete, _get, _post, _put, _request } from "$share/net.client";
@@ -141,7 +141,7 @@
 
   let restart_open = false;
   $: show_restart = get_show_restart($now_playing);
-  const get_show_restart = (...args: any[]) => {
+  const get_show_restart = (..._args: any[]) => {
     if($now_playing == null) return false;
     if($now_playing.info.kind === "live") return false;
     if($now_playing.info.kind === "playlist") return true;
@@ -331,7 +331,7 @@
   }
 
   $: on_files(files);
-  const on_files = (...args: any[]) => {
+  const on_files = (..._args: any[]) => {
     if(!files) return;
     const _files = files;
     files = undefined;
@@ -344,10 +344,10 @@
     }
   }
 
-  let deleting = false;
+  let _deleting = false;
 
   const delete_file = action(async (file_id: string) => {
-    deleting = true;
+    _deleting = true;
 
     try {
       await _delete(`/api/stations/${station_id}/files/${file_id}`);
@@ -357,11 +357,11 @@
       _message($locale.pages["station.playlist"].notifier.track_deleted);
       if($player_playing_audio_file_id === file_id) close();
     } catch(e) {
-      sleep(300).then(() => deleting = false);
+      sleep(300).then(() => _deleting = false);
       throw e;
     }
     
-    await sleep(300).then(() => deleting = false);
+    await sleep(300).then(() => _deleting = false);
   })
 
   const del_selected = async () => {
@@ -386,7 +386,7 @@
 
   const del_selection_all = action(async () => {
     
-    deleting = true;
+    _deleting = true;
 
     try {
 
@@ -398,7 +398,6 @@
       //const message = writable(text(0));
       const { resolve, reject } = _progress($locale.pages["station.playlist"].notifier.deleting_n_tracks.replace("@n", String(ids.length)));
       try {
-        let i = 0;
         for(const id of ids) {
           //await sleep(100);
           //message.set(text(i));
@@ -406,7 +405,6 @@
           if($player_playing_audio_file_id && ids.includes($player_playing_audio_file_id)) close();
           data.files.items = data.files.items.filter(item => item._id !== id);
           data.files.total = data.files.items.length;
-          i++;
         }
       } catch(e: any) {
         invalidate("api:stations/:id/limits");
@@ -422,11 +420,11 @@
       $selected_ids = [];
   
     } catch(e) {
-      sleep(300).then(() => deleting = false)
+      sleep(300).then(() => _deleting = false)
       throw e;
     }
 
-    sleep(300).then(() => deleting = false)
+    sleep(300).then(() => _deleting = false)
   })
 
   import { expoOut } from "svelte/easing";
@@ -435,7 +433,7 @@
 	import { get_now_playing_store } from "$lib/now-playing";
 	import { sleep } from "$share/util";
 
-  const file_item_out = (node: HTMLElement, { duration = 250 } = {}) => {
+  const file_item_out = (_node: HTMLElement, { duration = 250 } = {}) => {
     return {
       css: (t: number, u: number) => {
         return `opacity: ${t}; transform: translateY(-${20 * u}px)`;
@@ -695,7 +693,7 @@
     }
   }
 
-  const dragging_tag_in = (element: HTMLElement, options = {}) => {
+  const dragging_tag_in = (element: HTMLElement, _options = {}) => {
     return () => {
       if(!drag_tag_source_element?.animate) return scale(element, { duration: DRAG_TAG_IN_DURATION });
 
@@ -748,7 +746,7 @@
     }
   }
 
-  const dragging_tag_out = (element: HTMLElement, options = {}) => {
+  const dragging_tag_out = (element: HTMLElement, _options = {}) => {
     return () => {
       if(!drag_tag_target_element?.animate) return scale(element, { duration: DRAG_TAG_OUT_DURATION });
      
@@ -805,7 +803,7 @@
 
   import { cubicOut } from "svelte/easing";
 	import { locale } from "$lib/locale";
-  const shuffle_btn_transition = (element: HTMLElement, options = {}) => {
+  const shuffle_btn_transition = (element: HTMLElement, _options = {}) => {
     const easing = cubicOut;
     const duration = 200;
     return () => {

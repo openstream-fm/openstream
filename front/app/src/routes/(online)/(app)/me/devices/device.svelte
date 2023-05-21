@@ -27,7 +27,7 @@
 
 
   $: data = get_data(device);
-  const get_data = (...args: any[]): Array<{ label: string, value: string }> => {
+  const get_data = (..._args: any[]): Array<{ label: string, value: string }> => {
     const data: Array<{ label: string, value: string }> = [];
         
     if(device.ua.name) {
@@ -73,7 +73,7 @@
   }
 
   $: icon = get_icon(device);
-  const get_icon = (...args: any[]) => {
+  const get_icon = (..._args: any[]) => {
     const v = device.ua.name?.toLowerCase();
     if(v === "chrome") return icon_chrome;
     if(v === "firefox") return icon_firefox;
@@ -84,7 +84,7 @@
   }
 
   $: os_icon = get_os_icon(device);
-  const get_os_icon = (...args: any[]) => {
+  const get_os_icon = (..._args: any[]) => {
     const v = device.ua.os?.toLowerCase();
     if(v?.includes("linux")) return icon_linux;
     if(v?.includes("windows")) return icon_windows;
