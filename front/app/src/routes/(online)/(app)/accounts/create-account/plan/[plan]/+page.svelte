@@ -13,6 +13,7 @@
 	import Color from "color";
 	import { fly } from "svelte/transition";
   import "$share/LoginDashboard/login-page.css";
+	import { invalidateSiblings } from "$lib/invalidate";
 	
   let account_name = "";
   let sending = false;
@@ -30,6 +31,7 @@
       
       const { account } = await _post<import("$api/accounts/POST/Output").Output>("/api/accounts", payload);
       goto(`/accounts/${account._id}`, { invalidateAll: true });
+      invalidateSiblings();
       sending = true;
     } catch(e) {
       sending = false;

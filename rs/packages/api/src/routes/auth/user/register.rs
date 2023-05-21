@@ -71,6 +71,8 @@ pub mod post {
     AccountNameTooLong,
     #[error("password too long")]
     PasswordTooLong,
+    #[error("language too long")]
+    LanguageTooLong,
     #[error("device id invalid")]
     DeviceIdInvalid,
     #[error("plan not found: {0}")]
@@ -109,6 +111,9 @@ pub mod post {
         HandleError::EmailExists => ApiError::UserEmailExists,
         HandleError::FirstNameTooLong => {
           ApiError::PayloadInvalid(String::from("First name must be of 50 characters or less"))
+        }
+        HandleError::LanguageTooLong => {
+          ApiError::PayloadInvalid(String::from("Language must be of 10 characters or less"))
         }
         HandleError::LastNameTooLong => {
           ApiError::PayloadInvalid(String::from("Last name must be of 50 characters or less"))
@@ -150,6 +155,10 @@ pub mod post {
     email: String,
     password: String,
     phone: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    language: Option<String>,
+
     first_name: String,
     last_name: String,
     account_name: String,
@@ -225,6 +234,7 @@ pub mod post {
         email,
         password,
         phone,
+        language,
         first_name,
         last_name,
         account_name,
@@ -250,6 +260,14 @@ pub mod post {
         Some(phone) => match phone.trim() {
           "" => None,
           phone => Some(phone.to_string()),
+        },
+      };
+
+      let language = match language {
+        None => None,
+        Some(lang) => match lang.trim() {
+          "" => None,
+          lang => Some(lang.to_string()),
         },
       };
 
@@ -326,6 +344,12 @@ pub mod post {
         }
       }
 
+      if let Some(ref lang) = language {
+        if lang.len() > 10 {
+          return Err(HandleError::LanguageTooLong);
+        }
+      }
+
       let plan = match Plan::get_by_id(&plan_id).await? {
         Some(plan) => plan,
         None => return Err(HandleError::PlanNotFound(plan_id)),
@@ -346,6 +370,7 @@ pub mod post {
         first_name,
         last_name,
         password: Some(password),
+        language: None,
         user_metadata: user_user_metadata,
         system_metadata: user_system_metadata,
         created_at: now,

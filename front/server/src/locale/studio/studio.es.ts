@@ -12,6 +12,12 @@ const locale: import("./studio.locale").StudioLocale = {
   "validate": validate,
   "stats_map": stats_map,
 
+  "language": {
+    "auto": "Auto detectar",
+    "en": "Inglés (English)",
+    "es": "Español (Spanish)",
+  },
+
   "copy_to_clipboard": "Copiar al portapapeles",
   "show_password": "Mostrar contraseña",
   "hide_password": "Ocultar contraseña",
@@ -47,7 +53,7 @@ const locale: import("./studio.locale").StudioLocale = {
     "dashboard": "Dashboard",
     "profile": "Perfil",
     "playlist": "Playlist",
-    "broadcast": "Emitir",
+    "broadcast": "Transmitir",
     "settings": "Configuración",
   },
 
@@ -106,7 +112,7 @@ const locale: import("./studio.locale").StudioLocale = {
 
     "features": {
       "station": "Estación",
-      "stations": "Estaciones",  
+      "stations": "Estaciones",
       "listeners": "Oyentes",
       "transfer": "Transferencia",
       "storage": "Almacenamiento",
@@ -124,13 +130,13 @@ const locale: import("./studio.locale").StudioLocale = {
       "storage": "@gb GB de almacenamiento para música o episodios antiguos",
       "staff": "Puedes agregar usuarios para todo tu equipo sin límite",
       "auto_dj": "Emite desde una playlist cuando estés sin conexión",
-      "stats": "Estadísticas históricas y en vivo, sabé quien está escuchando tus estaciones",              
+      "stats": "Estadísticas históricas y en vivo, sabé quien está escuchando tus estaciones",
       "android_app": "Una aplicación para Android con tu marca y tus estaciones, disponible en todo el mundo a través de Google Play",
     }
   },
 
   "pages": {
-    
+
     "error": {
       "retry": "Reintentar",
       "home": "Ir al inicio",
@@ -155,7 +161,7 @@ const locale: import("./studio.locale").StudioLocale = {
       },
       "links": {
         "forgot": "Olvidaste tu contraseña?",
-        "new_user": "Usuario nuevo?", 
+        "new_user": "Usuario nuevo?",
         "sign_up": "Regístrate",
       },
       "submit": "Ingresar"
@@ -207,7 +213,7 @@ const locale: import("./studio.locale").StudioLocale = {
       },
       "form": {
         "title": "Cuéntanos sobre ti",
-        "account_name_comment": "Si estás creando una cuenta para una organización, puedes llenar este campo con el nombre de la organización", 
+        "account_name_comment": "Si estás creando una cuenta para una organización, puedes llenar este campo con el nombre de la organización",
         "fields": {
           "first_name": "Tu nombre",
           "last_name": "Tu apellido",
@@ -254,7 +260,7 @@ const locale: import("./studio.locale").StudioLocale = {
         "password_updated": "Contraseña actualizada",
       }
     },
-    
+
     "accounts": {
       "head": {
         "title": "Cuentas",
@@ -380,7 +386,7 @@ const locale: import("./studio.locale").StudioLocale = {
       },
       "dialogs": {
         "delete_track": {
-          "title": "Eliminar pista @name" 
+          "title": "Eliminar pista @name"
         },
         "delete_tracks": {
           "title": "Eliminar @n pistas",
@@ -414,7 +420,7 @@ const locale: import("./studio.locale").StudioLocale = {
           "submit": "Reiniciar",
         }
       },
-      "upload_prevent_unload_message": "Salir de esta página cancelará las subidas pendientes. ¿Quieres salir de todas maneras?", 
+      "upload_prevent_unload_message": "Salir de esta página cancelará las subidas pendientes. ¿Quieres salir de todas maneras?",
       "notifier": {
         "playlist_restarted": "Playlist reiniciada",
         "track_deleted": "Pista eliminada",
@@ -443,11 +449,19 @@ const locale: import("./studio.locale").StudioLocale = {
       "password_reset": "Resetear",
       "links": {
         "title": "URLs de transmisión",
-        "main": "Principal",
+        "main": "PRINCIPAL",
       },
       "notifier": {
         "copied_to_clipboard": "Copiado al portapapeles",
         "mount_password_reset": "Contraseña reseteada",
+      },
+      "dialogs": {
+        "reset_password": {
+          "title": "Resetar la contraseña del punto de montaje",
+          "message": "¿Estás seguro que deseas resetear la contraseña del punto de montaje?",
+          "cancel": "Cacelar",
+          "submit": "Resetear contraseña",
+        }
       }
     },
 
@@ -486,6 +500,7 @@ const locale: import("./studio.locale").StudioLocale = {
         "phone": "Tu teléfono",
         "new_password": "Nueva contraseña",
         "confirm_password": "Confirmar contraseña",
+        "language": "Idioma preferido",
       },
       "submit": {
         "profile": "Guardar",
@@ -519,7 +534,7 @@ const locale: import("./studio.locale").StudioLocale = {
           "submit": "Desconectar",
         },
       },
-      
+
       "notifier": {
         "device_disconnected": "Dispositivo desconectado",
       },

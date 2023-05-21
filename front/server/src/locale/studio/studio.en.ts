@@ -17,6 +17,12 @@ const locale = {
   "show_password": "Show password",
   "hide_password": "Hide password",
 
+  "language": {
+    "auto": "Auto detect",
+    "en": "English",
+    "es": "Español (Spanish)",
+  },
+
   "drawer": {
     "account_selector": {
       "see_all_accounts": "See all accounts",
@@ -444,7 +450,15 @@ const locale = {
       "password_reset": "Reset",
       "links": {
         "title": "Stream URLs",
-        "main": "Main",
+        "main": "MAIN",
+      },
+      "dialogs": {
+        "reset_password": {
+          "title": "Reset mount password",
+          "message": "Are you sure you want to reset the mountpoint password?",
+          "cancel": "Cancel",
+          "submit": "Reset password",
+        }
       },
       "notifier": {
         "copied_to_clipboard": "Copied to clipboard",
@@ -487,6 +501,7 @@ const locale = {
         "phone": "Your phone number",
         "new_password": "New password",
         "confirm_password": "Confirm password",
+        "language": "Preferred language",
       },
       "submit": {
         "profile": "Save",

@@ -18,6 +18,7 @@
 	import { fly, scale } from "svelte/transition";
 	import CircularProgress from "$share/CircularProgress.svelte";
 	import { locale } from "$lib/locale";
+	import { invalidateSiblings } from "$lib/invalidate";
 
   let first_name = "";
   let last_name = "";
@@ -73,6 +74,7 @@
       const { account } = await _post<import("$api/auth/user/register/POST/Output").Output>("/api/auth/user/register", payload);
       sending_code = false;
       goto(`/accounts/${account._id}/welcome`, { invalidateAll: true });
+      invalidateSiblings();
     } catch(e) {
       sending_code = false;
       throw e;

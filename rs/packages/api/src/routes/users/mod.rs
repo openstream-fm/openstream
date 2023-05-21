@@ -142,6 +142,8 @@ pub mod post {
     password: String,
     first_name: String,
     last_name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    language: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     user_metadata: Option<Metadata>,
@@ -208,6 +210,8 @@ pub mod post {
     PhoneTooLong,
     #[error("password too long")]
     PasswordTooLong,
+    #[error("language too long")]
+    LanguageTooLong,
   }
 
   impl From<HandleError> for ApiError {
@@ -235,6 +239,9 @@ pub mod post {
         }
         HandleError::PhoneTooLong => {
           ApiError::PayloadInvalid(String::from("Phone must be of 20 characters or less"))
+        }
+        HandleError::LanguageTooLong => {
+          ApiError::PayloadInvalid(String::from("Language must be of 10 characters or less"))
         }
         HandleError::EmailTooLong => {
           ApiError::PayloadInvalid(String::from("Email must be of 40 characters or less"))
@@ -279,6 +286,7 @@ pub mod post {
         password,
         first_name,
         last_name,
+        language,
         user_metadata,
         system_metadata,
       } = payload;
@@ -295,6 +303,14 @@ pub mod post {
         Some(phone) => match phone.trim() {
           "" => None,
           phone => Some(phone.to_string()),
+        },
+      };
+
+      let language = match language {
+        None => None,
+        Some(lang) => match lang.trim() {
+          "" => None,
+          lang => Some(lang.to_string()),
         },
       };
 
@@ -340,6 +356,12 @@ pub mod post {
         }
       }
 
+      if let Some(ref lang) = language {
+        if lang.len() > 10 {
+          return Err(HandleError::LanguageTooLong);
+        }
+      }
+
       let password = crypt::hash(&password);
 
       let user = run_transaction!(session => {
@@ -358,6 +380,7 @@ pub mod post {
           password: Some(password.clone()),
           first_name: first_name.clone(),
           last_name: last_name.clone(),
+          language: language.clone(),
           user_metadata: user_metadata.clone(),
           system_metadata: system_metadata.clone(),
           created_at: now,
