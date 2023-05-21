@@ -35,7 +35,8 @@
       data.user.language === "en" ? "en" :
       data.user.language === "es" ? "es" :
       data.user.language === "pt" ? "pt" :
-      "auto" as "en" | "es" | "pt" | "auto",
+      data.user.language === "fr" ? "fr" :
+      "auto" as "en" | "es" | "pt" | "fr" | "auto",
   };
 
   $: language_options = [
@@ -43,6 +44,7 @@
     { label: $locale.language.en, value: "en" as "en" },
     { label: $locale.language.es, value: "es" as "es" },
     { label: $locale.language.pt, value: "pt" as "pt" },
+    { label: $locale.language.fr, value: "fr" as "fr" },
   ];
 
   let profile_current = clone(profile_db);

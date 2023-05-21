@@ -16,9 +16,10 @@ const locale: import("./studio.locale").StudioLocale = {
 
   "language": {
     "auto": "Auto detectar",
-    "en": "Inglés (English)",
-    "es": "Español (Spanish)",
-    "pt": "Portugués (Portuguese)",
+    "en": "English (Inglés)",
+    "es": "Español",
+    "pt": "Português (Portugués)",
+    "fr": "Française (Francés)",
   },
 
   "copy_to_clipboard": "Copiar al portapapeles",
