@@ -1,0 +1,1 @@
+export type ValidateLocale = typeof import("./validate.en").default;

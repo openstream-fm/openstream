@@ -151,7 +151,7 @@
   const restart = action(async () => {
     restart_open = false;
     await _post(`/api/stations/${station_id}/restart-playlist`, undefined);
-    _message("Palylist restarted");
+    _message($locale.pages["station.playlist"].notifier.playlist_restarted);
     if($player_state.type === "station") {
       const station = $player_state.station;
       if(station._id === station_id && $player_state.audio_state !== "paused") {
@@ -250,7 +250,7 @@
 
   prevent_unload(() => {
     if(uploading.some(item => item.state === "waiting" || item.state === "uploading")) {
-      return "Leaving this page will cancel pending uploads. Do you want to leave anyway?";
+      return $locale.pages["station.playlist"].upload_prevent_unload_message;
     } else {
       return null;
     }
@@ -354,7 +354,7 @@
       unselect(file_id);
       invalidate("api:stations/:id/limits");
       invalidate("api:stations/:id/files");
-      _message("Track deleted");
+      _message($locale.pages["station.playlist"].notifier.track_deleted);
       if($player_playing_audio_file_id === file_id) close();
     } catch(e) {
       sleep(300).then(() => deleting = false);
@@ -396,7 +396,7 @@
       if(ids.length === 1) return delete_file(ids[0]);
       //const text = (i: number) => `Deleting ${ids.length} tracks... ${i} tracks deleted`;
       //const message = writable(text(0));
-      const { resolve, reject } = _progress(`Deleting ${ids.length} tracks...`);
+      const { resolve, reject } = _progress($locale.pages["station.playlist"].notifier.deleting_n_tracks.replace("@n", String(ids.length)));
       try {
         let i = 0;
         for(const id of ids) {
@@ -418,7 +418,7 @@
 
       invalidate("api:stations/:id/limits");
       invalidate("api:stations/:id/files");
-      resolve(`${ids.length} tracks deleted`);
+      resolve($locale.pages["station.playlist"].notifier.n_tracks_deleted.replace("@n", String(ids.length)));
       $selected_ids = [];
   
     } catch(e) {
@@ -618,7 +618,7 @@
     unshuffle_open = false;
     try {
       await _post(`/api/stations/${station_id}/files/unshuffle`, undefined);
-      _message("Playlist unshuffled");
+      _message($locale.pages["station.playlist"].notifier.playlist_unshuffled);
     } catch(e) {
       invalidate("api:stations/:id/files").then(() => {
         play_shuffle_animation();
@@ -637,7 +637,7 @@
     shuffle_open = false;
     try {
       await _post(`/api/stations/${station_id}/files/shuffle`, undefined);
-      _message("Playlist shuffled");
+      _message($locale.pages["station.playlist"].notifier.playlist_shuffled);
     } catch(e) {
       invalidate("api:stations/:id/files").then(() => {
         play_shuffle_animation();
@@ -869,7 +869,7 @@
     margin-top: 1.5rem;
   }
 
-  .upload-message > b {
+  .upload-message > :global(b) {
     font-weight: 900;
   }
 

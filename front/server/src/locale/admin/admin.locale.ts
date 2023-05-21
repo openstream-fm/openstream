@@ -1,0 +1,1 @@
+export type AdminLocale = typeof import("./admin.en").default;

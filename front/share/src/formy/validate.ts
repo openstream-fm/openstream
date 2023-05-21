@@ -1,3 +1,6 @@
+import { locale } from "$share/locale";
+import { get } from "svelte/store";
+
 export const EMAIL = /^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/i
 export const TWITTER = /^https:\/\/twitter\.com\/.+/;
 export const FACEBOOK = /^https:\/\/www\.facebook\.com\/.+/;
@@ -27,7 +30,7 @@ export const _number = ({
   return (v: number | null | undefined) => {
     if(v == null) {
       if(required) {
-        return "This field is required";
+        return get(locale).validate.required;
       }
     } else {
       if(typeof v !== "number") {
@@ -35,15 +38,15 @@ export const _number = ({
       }
 
       if(Number.isNaN(v)) {
-        return `This field must a valid number`;
+        return get(locale).validate.number;
       }
 
       if(min != null && v < min) {
-        return `This field must be ${min} or greater`
+        return get(locale).validate.min.replace("@min", String(min));
       }
 
       if(max != null && v > max) {
-        return `This field must be ${max} or less`
+        return get(locale).validate.max.replace("@max", String(max));
       }
     }
 
@@ -63,7 +66,7 @@ export const _string = ({
   return (v: string | null | undefined) => {
     if(is_empty_string(v)) {
       if(required) {
-        return "This field is required"
+        return get(locale).validate.required;
     
       }
     } else {
@@ -72,11 +75,11 @@ export const _string = ({
       }
 
       if(minlen != null && v.length < minlen) {
-        return `This field must have ${minlen} characters or more`
+        return get(locale).validate.minlen.replace("@minlen", String(minlen))
       }
   
       if(maxlen != null && v.length > maxlen) {
-        return `This field must have ${maxlen} characters or less`
+        return get(locale).validate.minlen.replace("@maxlen", String(maxlen))
       } 
     }
     
@@ -92,7 +95,7 @@ export const _email = ({
   return (v: string | null | undefined) => {
     if(is_empty_string(v)) {
       if(required) {
-        return "This field is required";
+        return get(locale).validate.required;
       } 
     } else {
       if(typeof v !== "string") {
@@ -100,7 +103,7 @@ export const _email = ({
       }
       
       if(!is_valid_email(v)) {
-        return "This field must be a valid email address";
+        return get(locale).validate.email;
       }
     }   
 
@@ -120,7 +123,7 @@ export const _new_password = ({
   return (v: string | null | undefined) => {
     if(is_empty_string(v)) {
       if(required) {
-        return "This field is required"
+        return get(locale).validate.required;
       }  
     } else {
       if(typeof v !== "string") {
@@ -128,11 +131,11 @@ export const _new_password = ({
       }
 
       if(v.length < minlen) {
-        return `New password must have ${minlen} characters or more`
+        return get(locale).validate.new_password.minlen.replace("@minlen", String(minlen));
       }
 
       if(v.length > maxlen) {
-        return `New password must have ${minlen} characters or less`
+        return get(locale).validate.new_password.maxlen.replace("@maxlen", String(maxlen));
       }
     }
 
@@ -149,7 +152,7 @@ export const _confirmation_password = ({
     
     if(is_empty_string(confirm_password)) {
       if(required) {
-        return "Cofirmation password is required"
+        return get(locale).validate.required;
       }
     } else {
       
@@ -158,7 +161,7 @@ export const _confirmation_password = ({
       }
 
       if(password !== confirm_password) {
-        return "Confirmation password does not match"
+        return get(locale).validate.confirmation_password;
       }
     }
     
@@ -176,7 +179,7 @@ export const _phone = ({
   return (v: string | null | undefined) => {
     if(is_empty_string(v)) {
       if(required) {
-        return "This field is required"
+        return get(locale).validate.required;
       }
     } else {
       if(typeof v !== "string") {
@@ -186,9 +189,9 @@ export const _phone = ({
       const helper = v.replace(/[\+\(\)\.\-\ \+]/g, "");
       if(!/[0-9]+/.test(helper) || helper.length < 9 || helper.length > 40) {
         if(whatsapp) {
-          return `This field must be a valid international WhatsApp number`;
+          return get(locale).validate.phone.whatsapp;
         } else {
-          return `This field must be a valid international phone number`;
+          return get(locale).validate.phone.tel;
         }
       }
     }
@@ -207,7 +210,7 @@ export const _url = ({
   return (v: string | null | undefined) => {
     if(is_empty_string(v)) {
       if(required) {
-        return `This field is required`;
+        return get(locale).validate.required;
       }
     } else {
       if(typeof v !== "string") {
@@ -218,15 +221,15 @@ export const _url = ({
       try {
         url = new URL(v);
       } catch(e) {
-        return "This field must be a valid URL"
+        return get(locale).validate.url.valid;
       }
 
       if(url.protocol !== "https:" && url.protocol !== "http:") {
-        return "This field must start with http:// or https://";
+        return get(locale).validate.url.protocol;
       }
 
       if(maxlen != null && v.length > maxlen) {
-        return `This field must have ${maxlen} characters or less`;
+        return get(locale).validate.maxlen.replace("@maxlen", String(maxlen));
       }
     }
     
@@ -241,14 +244,14 @@ export const pattern = ({
   maxlen = null
 }: {
   regex: RegExp,
-  message: string,
+  message: () => string,
   required?: boolean,
   maxlen?: number | null,
 }) => {
   return (v: string | null | undefined) => {
     if(is_empty_string(v)) {
       if(required) {
-        return `This field is required`
+        return get(locale).validate.required;
       }
     } else {
       if(typeof v !== "string") {
@@ -256,23 +259,19 @@ export const pattern = ({
       }
 
       if(!regex.test(v)) {
-        return message;
+        return message();
       }
 
       if(maxlen != null && v.length > maxlen) {
-        `This field must have ${maxlen} characters or less`;
+        get(locale).validate.maxlen.replace("@maxlen", String(maxlen));
       }
     }
     
-    if((v != null && v !== "") && !regex.test(v)) {
-      return message;
-    }
-
     return null;
   }
 }
 
-const Pattern = (regex: RegExp, message: string) => {
+const Pattern = (regex: RegExp, message: () => string) => {
   return ({
     required = false,
     maxlen = null,
@@ -284,10 +283,10 @@ const Pattern = (regex: RegExp, message: string) => {
   }
 }
 
-export const _twitter_url = Pattern(TWITTER, "This field must be a valid Twitter URL, navigate to your Twitter page and copy the entire URL from there");
-export const _facebook_url = Pattern(FACEBOOK, "This field must be a valid Facebook URL, navigate to your Facebook page and copy the entire URL from there");
-export const _instagram_url = Pattern(INSTAGRAM, "This field must be a valid Instagram URL, navigate to your Instagram page and copy the entire URL from there");
-export const _youtube_url = Pattern(YOUTUBE, "This field must be a valid Youtube URL, navigate to your Youtube page and copy the entire URL from there");
-export const _twitch_url = Pattern(TWITCH, "This field must be a valid Twitch URL, navigate to your Twitch page and copy the entire URL from there");
-export const _google_play_url = Pattern(GOOGLE_PLAY, "This field must be a valid Google Play URL, navigate to your app's page at Google Play and copy the entire URL from there");
-export const _app_store_url = Pattern(APP_STORE, "This field must be a valid App Store URL, navigate to your app's page at App Store and copy the entire URL from there");
+export const _twitter_url = Pattern(TWITTER, () => get(locale).validate.twitter_url);
+export const _facebook_url = Pattern(FACEBOOK, () => get(locale).validate.facebook_url);
+export const _instagram_url = Pattern(INSTAGRAM, () => get(locale).validate.instagram_url);
+export const _youtube_url = Pattern(YOUTUBE, () => get(locale).validate.youtube_url);
+export const _twitch_url = Pattern(TWITCH, () => get(locale).validate.twitch_url);
+export const _google_play_url = Pattern(GOOGLE_PLAY, () => get(locale).validate.google_play_url);
+export const _app_store_url = Pattern(APP_STORE, () => get(locale).validate.app_store_url);

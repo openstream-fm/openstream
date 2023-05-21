@@ -24,7 +24,7 @@
 	const disconnect = action(async () => {
 		if (disconnect_item == null) return;
 		await _delete(`/api/me/devices/${disconnect_item._id}`);
-		_message('Device disconnected');
+		_message($locale.pages['me.devices'].notifier.device_disconnected);
 		disconnect_item = null;
 		invalidate('resource:devices');
 	});

@@ -47,7 +47,7 @@
   const send = action(async () => {
     
     if(!can_save) {
-      _message("No changes to save");
+      _message($locale.pages["station.profile"].notifier.no_changes);
       return;
     }
 
@@ -77,7 +77,7 @@
     
     db = clone(current);
 
-    _message("Station updated");
+    _message($locale.pages["station.profile"].notifier.station_updated);
 
     invalidate("resource:stations");
   });

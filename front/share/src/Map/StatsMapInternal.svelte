@@ -10,7 +10,7 @@
   export let record_id: string;
   export let view: View = "now"; 
   export let in_screen = true;
-  export let locale: import("$server/locale/locale").Locale["stats_map"];
+  export let locale: import("$server/locale/share/stats-map/stats-map.locale").StatsMapLocale;
 
   import { default_logger } from "$share/logger";
   import { _get } from "$share/net.client";

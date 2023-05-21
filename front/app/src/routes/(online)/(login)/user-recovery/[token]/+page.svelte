@@ -42,7 +42,7 @@
       new_password = "";
       confirm_password = "";
 
-      _message("Password updated");
+      _message($locale.pages.user_recovery.notifier.password_updated);
 
       await _post("/api/auth/user/login", login_payload).catch(e => {
         logger.error("error on login after token password set")

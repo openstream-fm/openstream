@@ -7,7 +7,7 @@
 	import { clone, diff, equals } from "$server/util/collections";
 	import { _patch, action } from "$share/net.client";
 	import { _message } from "$share/notify";
-	import { goto, invalidate } from "$app/navigation";
+	import { invalidate } from "$app/navigation";
 	import Email from "$lib/components/Form/Email.svelte";
 	import Password from "$lib/components/Form/Password.svelte";
 	import { mdiAccountOutline, mdiDevices, mdiPhoneOutline } from "@mdi/js";
@@ -22,6 +22,7 @@
   } from "$share/formy/validate";
   import Page from "$lib/components/Page.svelte";
 	import { tick } from "svelte";
+	import { locale } from "$lib/locale";
 
   let show_change_password = true;
 
@@ -37,7 +38,7 @@
 
   const save_profile = action(async () => {
     if(!can_save_profile) {
-      _message("No changes to save");
+      _message($locale.pages.me.notifier.no_changes);
       return;
     };
     
@@ -46,7 +47,7 @@
     const payload: Partial<import("$api/users/[user]/PATCH/Payload").Payload> = dif;
     await _patch(`/api/users/${data.user._id}`, payload);
     profile_db = clone(profile_current);
-    _message("Profile updated");
+    _message($locale.pages.me.notifier.profile_updated);
     invalidate("resource:users"); 
   });
 
@@ -64,14 +65,13 @@
     await _patch(`/api/users/${data.user._id}`, payload);
     new_password = "";
     confirm_new_password = "";
-    _message("Password updated");
+    _message($locale.pages.me.notifier.password_updated);
 
+    // force chrome prompt to update password 
     show_change_password = false;
     tick().then(() => {
       show_change_password = true;
     })
-    // TODO: force chrome prompt to update password
-    // goto(`?password-updated=${Date.now()}`)
   })
 
   // let new_email = "";
@@ -267,14 +267,18 @@
 
     <Formy action={save_profile} let:submit>
       <form novalidate class="section section-profile" on:submit={submit}>
-        <div class="section-title">Profile</div>
+        <div class="section-title">{$locale.pages.me.title}</div>
         <div class="fields">
           <div class="field">
-            <Email label="Your email" disabled value={data.user.email} />
+            <Email
+              label={$locale.pages.me.fields.email}
+              disabled
+              value={data.user.email}
+            />
           </div>
           <div class="field">
             <TextField
-              label="Your first name"
+              label={$locale.pages.me.fields.first_name}
               icon={mdiAccountOutline}
               trim
               maxlength={50}
@@ -284,7 +288,7 @@
           </div>
           <div class="field">
             <TextField
-              label="Your last name"
+              label={$locale.pages.me.fields.last_name}
               icon={mdiAccountOutline}
               trim
               bind:value={profile_current.last_name}
@@ -295,7 +299,7 @@
           <div class="field">
             <NullTextField
               type="tel"
-              label="Your phone number"
+              label={$locale.pages.me.fields.phone}
               icon={mdiPhoneOutline}
               trim
               bind:value={profile_current.phone}
@@ -305,18 +309,8 @@
           </div>
         </div>
         <div class="submit-wrap">
-          <!--
-            <button
-            class="submit ripple-container"
-            type="submit"
-            use:ripple={{ opacity: !can_save_profile ? 0 : void 0 }}
-            class:disabled={!can_save_profile}
-            aria-disabled={!can_save_profile}
-            use:tooltip={can_save_profile ? null : "No changes to save"}
-          >
-          -->
           <button class="submit ripple-container" type="submit" use:ripple>
-            Save
+            {$locale.pages.me.submit.profile}
           </button>
         </div>
       </form>
@@ -348,20 +342,20 @@
           <div class="hidden-field" hidden>
             <input type="email" readonly value={data.user.email} />
           </div>
-          <div class="section-title">Change your password</div>
+          <div class="section-title">{$locale.pages.me.change_password.title}</div>
           <div class="fields">
             <div class="field">
-              <Password label="New password" autocomplete="new-password" bind:value={new_password} />
+              <Password label={$locale.pages.me.fields.new_password} autocomplete="new-password" bind:value={new_password} />
               <Validator value={new_password} fn={_new_password({ minlen: 8, maxlen: 50 })} />
             </div>
             <div class="field">
-              <Password label="Confirm password" autocomplete="new-password" bind:value={confirm_new_password} />
+              <Password label={$locale.pages.me.fields.confirm_password} autocomplete="new-password" bind:value={confirm_new_password} />
               <Validator value={{password: new_password, confirm_password: confirm_new_password }} fn={_confirmation_password()} />
             </div>
           </div>
           <div class="submit-wrap">
             <button class="submit ripple-container" type="submit" use:ripple> 
-              Save
+              {$locale.pages.me.submit.password}
             </button>
           </div>
         </form>
@@ -370,7 +364,7 @@
 
     <div class="more">
       <div class="more-title">
-        More
+        {$locale.pages.me.more.title}
       </div>
 
       <div class="more-content">
@@ -378,7 +372,9 @@
           <div class="more-link-icon">
             <Icon d={mdiDevices} />
           </div>
-          <span class="more-link-text">Connected devices</span>
+          <span class="more-link-text">
+            {$locale.pages.me.more.connected_devices}
+          </span>
         </a>
       </div>
     </div>

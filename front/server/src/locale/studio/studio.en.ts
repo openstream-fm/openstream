@@ -1,10 +1,17 @@
-  const locale = {
+import stats_map from "../share/stats-map/stats-map.en"
+import validate from "../share/validate/validate.en";
+
+
+const locale = {
 
   // @notranslate
   "logo_text": "openstream",
 
   // @notranslate
   "app_name": "Openstream Studio",
+
+  "validate": validate,
+  "stats_map": stats_map,
 
   "drawer": {
     "account_selector": {
@@ -14,17 +21,6 @@
     "stations": "Stations",
     "members": "Members",
     "analytics": "Analytics",
-  },
-
-  "stats_map": {
-    "now": "Now",
-    "24_hours": "24 hours",
-    "7_days": "7 days",
-    "30_days": "30 days",
-    "listener": "listener",
-    "listeners": "listeners",
-    "country": "country",
-    "countries": "countries",  
   },
 
   "limits": {
@@ -120,7 +116,7 @@
       "one_station": "You can only create one station with this plan",
       "n_stations": "Up to @n different stations",
       "listeners": "Up to @n concurrent listeners",
-      "transfer": "@tb of monthly transfer will give you around @hours listening hours",
+      "transfer": "@tb TB of monthly transfer will give you around @hours listening hours",
       "storage": "@gb GB of storage for music or old episodes",
       "staff": "Add all the staff users that you want",
       "auto_dj": "Broadcast from a playlist when you're not online",
@@ -251,6 +247,9 @@
         "user_recovery_page": "user recovery page",
       },
       "submit": "Send",
+      "notifier": {
+        "password_updated": "Password updated",
+      }
     },
     
     "accounts": {
@@ -262,6 +261,14 @@
       "or": "or",
       "no_items_message_html": "You don't have a broadcaster account yet.<br/>To start broadcasting, sign up for a broadcaster account.",
       "no_items_create": "Create my broadcaster account",
+    },
+
+    "accounts.create_account": {
+      "head": {
+        "title": "Select a plan",
+      },
+      "title": "Select a plan for your nwe account",
+      "select": "Select",
     },
 
     "account.dashboard": {
@@ -299,6 +306,9 @@
 
     "stations.create_station": {
       "create_a_stations": "Create a station",
+      "notifier": {
+        "station_created": "New station created",
+      }
     },
 
     "station.dashboard": {
@@ -318,6 +328,11 @@
       },
       "title": "Profile",
       "submit": "Save",
+      "notifier": {
+        "no_changes": "No changes to save",
+        "station_updated": "Station updated",
+
+      }
     },
 
     "station.playlist": {
@@ -395,6 +410,95 @@
           "cancel": "Cancel",
           "submit": "Restart",
         }
+      },
+      "upload_prevent_unload_message": "Leaving this page will cancel pending uploads. Do you want to leave anyway?", 
+      "notifier": {
+        "playlist_restarted": "Playlist restarted",
+        "track_deleted": "Track deleted",
+        "deleting_n_tracks": "Deleting @n tracks",
+        "n_tracks_deleted": "@n tracks deleted",
+        "playlist_unshuffled": "Playlist unshuffled",
+        "playlist_shuffled": "Playlist shuffled",
+      }
+    },
+
+    "station.broadcast": {
+      "head": {
+        "title": "Broadcast",
+      },
+      "title": "Broadcast",
+      "icecast_settings": "Icecast Settings",
+      "fields": {
+        "address": "Address",
+        "port": "Port",
+        "mountpoint": "Mountpoint",
+        "username": "Username",
+        "password": "Password",
+        "encoding": "Encoding",
+      },
+      "encoding_or": "or",
+      "password_reset": "Reset",
+      "links": {
+        "title": "Stream URLs",
+        "main": "Main",
+      },
+      "notifier": {
+        "copied_to_clipboard": "Copied to clipboard",
+        "mount_password_reset": "Mountpoint password reset",
+      }
+    },
+
+    "station.settings": {
+      "head": {
+        "title": "Settings",
+      },
+      "title": "Settings",
+      "actions": {
+        "title": "Actions",
+        "delete_station": "Delete station",
+      },
+      "validate": {
+        "station_name": "The station name doesn't match",
+      },
+      "notifier": {
+        "station_deleted": "Station deleted",
+      },
+      "dialogs": {
+        "delete_station": {
+          "title": "Delete station @name",
+          "message_html": "Deletion of a station is a permanent action, you won't be able to access the station's data again, so be sure of what you are doing.<br /><br />If you really want to delete the station @name type the name of the station in the following box: <b>@name</b><br />",
+          "field_label": "Station name",
+          "cancel": "Cancel",
+          "submit": "Delete",
+        }
+      }
+    },
+
+    "me": {
+      "title": "Profile",
+      "fields": {
+        "email": "Your email",
+        "first_name": "Your first name",
+        "last_name": "Your last name",
+        "phone": "Your phone number",
+        "new_password": "New password",
+        "confirm_password": "Confirm password",
+      },
+      "submit": {
+        "profile": "Save",
+        "password": "Save",
+      },
+      "change_password": {
+        "title": "Change your password",
+      },
+      "more": {
+        "title": "More",
+        "connected_devices": "Connected devices",
+      },
+      "notifier": {
+        "no_changes": "No changes to save",
+        "profile_updated": "Profile updated",
+        "password_updated": "Password updated",
       }
     },
 
@@ -410,7 +514,11 @@
           "message": "This action is permanent",
           "cancel": "Cancel",
           "submit": "Disconnect",
-        }
+        },
+      },
+      
+      "notifier": {
+        "device_disconnected": "Device disconnected",
       },
 
       "device": {
