@@ -443,7 +443,14 @@
       </div>
     </div>
     
-    <StatsMap bind:view kind={selector_state.kind} record_id={selector_state.record_id} locale={$locale.stats_map} bind:data={selector_state.data} />
+    <StatsMap
+      bind:view
+      kind={selector_state.kind}
+      record_id={selector_state.record_id}
+      locale={$locale.stats_map}
+      country_names={$locale.countries}
+      bind:data={selector_state.data}
+    />
   </div>
 
   <div class="meters" use:limits use:intersect={{ enter: () => limits_on_screen = true, leave: () => limits_on_screen = false}}>

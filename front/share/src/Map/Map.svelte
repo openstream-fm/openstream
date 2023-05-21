@@ -1,6 +1,7 @@
 <script lang="ts">
   export let stats: Stats;
   export let show_ips = false;
+  export let country_names: Record<string, string | undefined>;
 
   // TODO: remove this type and use Analytics type when available from backend defs
   type Stats = {
@@ -167,7 +168,7 @@
 </div>
 
 {#if tooltip_item != null}
-  {@const name = tooltip_item.properties.name}
+  {@const name = country_names[tooltip_item.properties.iso2] || tooltip_item.properties.name}
   <div
     class="map-tooltip"
     class:to-left={tooltip_to_left}
