@@ -16,6 +16,7 @@ const locale: import("./studio.locale").StudioLocale = {
     "auto": "Auto detectar",
     "en": "Inglés (English)",
     "es": "Español (Spanish)",
+    "pt": "Portugués (Portuguese)",
   },
 
   "copy_to_clipboard": "Copiar al portapapeles",
@@ -27,7 +28,7 @@ const locale: import("./studio.locale").StudioLocale = {
     "account_selector": {
       "see_all_accounts": "Ver todas las cuentas",
     },
-    "dashboard": "Dashboard",
+    "dashboard": "Panel",
     "stations": "Estaciones",
     "members": "Miembros",
     "analytics": "Analítica",
@@ -50,7 +51,7 @@ const locale: import("./studio.locale").StudioLocale = {
   },
 
   "station_nav": {
-    "dashboard": "Dashboard",
+    "dashboard": "Panel",
     "profile": "Perfil",
     "playlist": "Playlist",
     "broadcast": "Transmitir",
@@ -295,7 +296,7 @@ const locale: import("./studio.locale").StudioLocale = {
       },
 
       "station_item": {
-        "on_air": "EN EL AIRE",
+        "on_air": "AL AIRE",
         "off_air": "FUERA DEL AIRE",
         "playlist": "Playlist",
         "live": "En vivo",
@@ -321,7 +322,7 @@ const locale: import("./studio.locale").StudioLocale = {
     },
 
     "station.dashboard": {
-      "on_air": "EN EL AIRE",
+      "on_air": "AL AIRE",
       "off_air": "FUERA DEL AIRE",
       "playlist": "Playlist",
       "live": "En vivo",

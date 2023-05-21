@@ -31,13 +31,18 @@
     first_name: data.user.first_name,
     last_name: data.user.last_name,
     phone: data.user.phone,
-    language: data.user.language === "en" ? "en" : data.user.language === "es" ? "es" : "auto" as "en" | "es" | "auto",
+    language: 
+      data.user.language === "en" ? "en" :
+      data.user.language === "es" ? "es" :
+      data.user.language === "pt" ? "pt" :
+      "auto" as "en" | "es" | "pt" | "auto",
   };
 
   $: language_options = [
     { label: $locale.language.auto, value: "auto" as "auto" },
     { label: $locale.language.en, value: "en" as "en" },
     { label: $locale.language.es, value: "es" as "es" },
+    { label: $locale.language.pt, value: "pt" as "pt" },
   ];
 
   let profile_current = clone(profile_db);
