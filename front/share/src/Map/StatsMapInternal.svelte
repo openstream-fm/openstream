@@ -11,6 +11,7 @@
   export let view: View = "now"; 
   export let in_screen = true;
   export let locale: import("$server/locale/share/stats-map/stats-map.locale").StatsMapLocale;
+  export let country_names: Record<string, string | undefined>;
 
   import { default_logger } from "$share/logger";
   import { _get } from "$share/net.client";
@@ -258,7 +259,7 @@
     </div>
     <div class="map-out">
       {#if data != null}
-        <Map stats={data[view]} />
+        <Map stats={data[view]} {country_names} />
       {/if}
     </div>
   </div>

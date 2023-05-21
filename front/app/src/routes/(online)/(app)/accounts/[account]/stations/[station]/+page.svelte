@@ -272,7 +272,13 @@
     </div>
 
     <div class="stats">
-      <StatsMap kind="station" record_id={data.station._id} locale={$locale.stats_map} bind:data={data.stats} />
+      <StatsMap
+        kind="station"
+        record_id={data.station._id}
+        locale={$locale.stats_map}
+        country_names={$locale.countries}
+        bind:data={data.stats}
+      />
     </div>
   </div>
 </Page>

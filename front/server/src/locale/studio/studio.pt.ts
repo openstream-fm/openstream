@@ -1,5 +1,6 @@
 import stats_map from "../share/stats-map/stats-map.pt";
 import validate from "../share/validate/validate.pt";
+import countries from "../share/countries/countries.pt";
 
 const locale: import("./studio.locale").StudioLocale = {
 
@@ -9,6 +10,7 @@ const locale: import("./studio.locale").StudioLocale = {
   // @notranslate
   "app_name": "Openstream Studio",
 
+  "countries": countries,
   "validate": validate,
   "stats_map": stats_map,
 

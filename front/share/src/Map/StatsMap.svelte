@@ -11,8 +11,16 @@
   export let data: Stats | null = null;
   export let view: View = "now";
   export let locale: import("$server/locale/share/stats-map/stats-map.locale").StatsMapLocale;
+  export let country_names: Record<string, string | undefined>;
 </script>
 
 {#key `${kind}-${record_id}`}
-  <StatsMapInternal {kind} {record_id} {locale} bind:data bind:view />
+  <StatsMapInternal
+    {kind}
+    {record_id}
+    {locale}
+    {country_names}
+    bind:data
+    bind:view
+  />
 {/key}
