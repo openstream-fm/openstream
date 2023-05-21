@@ -13,7 +13,8 @@ import { user_media_key } from "../media_key";
 import { ua } from "../ua";
 import { shared_api } from "./shared-api";
 import { host } from "../host";
-import { StudioLocale, studio_locales } from "../locale/studio/studio.locale";
+import { studio_locales } from "../locale/studio/studio.locale";
+import type { StudioLocale } from "../locale/studio/studio.locale";
 import acceptLanguageParser from "accept-language-parser";
 
 export type PublicConfig = {
