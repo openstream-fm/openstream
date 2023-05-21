@@ -9,6 +9,7 @@
 		"test": "playwright test",
 		"sync": "npx @sveltejs/kit sync",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --threshold error --ignore '../server/**/*'",
+		"check:warn": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --threshold warning --ignore '../server/**/*'",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --plugin-search-dir . --check . && eslint .",
 		"format": "prettier --plugin-search-dir . --write ."
