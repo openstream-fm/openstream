@@ -24,7 +24,7 @@
 	const disconnect = action(async () => {
 		if (disconnect_item == null) return;
 		await _delete(`/api/me/devices/${disconnect_item._id}`);
-		_message($locale.pages['me.devices'].notifier.device_disconnected);
+		_message($locale.pages['me/devices'].notifier.device_disconnected);
 		disconnect_item = null;
 		invalidate('resource:devices');
 	});
@@ -114,16 +114,16 @@
 
 
 <svelte:head>
-	<title>{$locale.pages['me.devices'].head.title}</title>
+	<title>{$locale.pages['me/devices'].head.title}</title>
 </svelte:head>
 
 <Page compact>
 	<div class="page">
 		<div class="page-title">
-			{$locale.pages['me.devices'].title}
+			{$locale.pages['me/devices'].title}
 		</div>
 		<div class="note">
-			{$locale.pages['me.devices'].note}
+			{$locale.pages['me/devices'].note}
 		</div>
 		<div class="list">
 			{#if current != null}
@@ -141,10 +141,10 @@
 </Page>
 
 {#if disconnect_item != null}
-	<Dialog title={$locale.pages['me.devices'].dialogs.disconnect.title} width="400px" on_close={() => (disconnect_item = null)}>
+	<Dialog title={$locale.pages['me/devices'].dialogs.disconnect.title} width="400px" on_close={() => (disconnect_item = null)}>
 		<div class="delete-dialog">
 			<div class="delete-dialog-text">
-				{$locale.pages['me.devices'].dialogs.disconnect.message}
+				{$locale.pages['me/devices'].dialogs.disconnect.message}
 			</div>
 			<div class="delete-dialog-btns">
 				<button
@@ -152,14 +152,14 @@
 					use:ripple
 					on:click={() => (disconnect_item = null)}
 				>
-					{$locale.pages['me.devices'].dialogs.disconnect.cancel}
+					{$locale.pages['me/devices'].dialogs.disconnect.cancel}
 				</button>
 
 				<button class="delete-dialog-btn-delete ripple-container" use:ripple on:click={disconnect}>
 					<div class="delete-dialog-btn-icon">
 						<Icon d={mdiTrashCanOutline} />
 					</div>
-					{$locale.pages['me.devices'].dialogs.disconnect.submit}
+					{$locale.pages['me/devices'].dialogs.disconnect.submit}
 				</button>
 			</div>
 		</div>

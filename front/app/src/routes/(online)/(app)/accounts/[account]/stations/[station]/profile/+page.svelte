@@ -46,7 +46,7 @@
   const send = action(async () => {
     
     if(!can_save) {
-      _message($locale.pages["station.profile"].notifier.no_changes);
+      _message($locale.pages["station/profile"].notifier.no_changes);
       return;
     }
 
@@ -76,7 +76,7 @@
     
     db = clone(current);
 
-    _message($locale.pages["station.profile"].notifier.station_updated);
+    _message($locale.pages["station/profile"].notifier.station_updated);
 
     invalidate("resource:stations");
   });
@@ -137,12 +137,12 @@
 </style>
 
 <svelte:head>
-  <title>{$locale.pages["station.profile"].head.title}</title>
+  <title>{$locale.pages["station/profile"].head.title}</title>
 </svelte:head>
 
 <Page>
   <div class="page">
-    <div class="page-title">{$locale.pages["station.profile"].title}</div>
+    <div class="page-title">{$locale.pages["station/profile"].title}</div>
     <Formy action={send} let:submit>
       <form novalidate class="create-box" on:submit={submit}>
         
@@ -150,7 +150,7 @@
         
         <div class="submit-wrap">
           <button class="submit ripple-container" use:ripple type="submit">
-            {$locale.pages["station.profile"].submit}
+            {$locale.pages["station/profile"].submit}
           </button>
         </div>
       </form>

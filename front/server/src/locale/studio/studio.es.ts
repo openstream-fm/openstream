@@ -276,7 +276,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "no_items_create": "Crear mi cuenta de emisor",
     },
 
-    "accounts.create_account": {
+    "accounts/create_account": {
       "head": {
         "title": "Elige un plan",
       },
@@ -284,7 +284,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "select": "Seleccionar",
     },
 
-    "accounts.create_account.plan": {
+    "accounts/create_account/plan": {
       "head": {
         "title": "Crear una cuenta de emisor",
       },
@@ -309,7 +309,7 @@ const locale: import("./studio.locale").StudioLocale = {
       }
     },
 
-    "account.dashboard": {
+    "account/dashboard": {
       "edit": {
         "tooltip": "Editar",
         "dialog": {
@@ -349,7 +349,7 @@ const locale: import("./studio.locale").StudioLocale = {
       }
     },
 
-    "station.dashboard": {
+    "station/dashboard": {
       "on_air": "AL AIRE",
       "off_air": "FUERA DEL AIRE",
       "playlist": "Playlist",
@@ -360,7 +360,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "aria_play": "Reproducir",
     },
 
-    "station.profile": {
+    "station/profile": {
       "head": {
         "title": "Perfil",
       },
@@ -373,7 +373,7 @@ const locale: import("./studio.locale").StudioLocale = {
       }
     },
 
-    "station.playlist": {
+    "station/playlist": {
       "head": {
         "title": "Playlist",
       },
@@ -460,7 +460,7 @@ const locale: import("./studio.locale").StudioLocale = {
       }
     },
 
-    "station.broadcast": {
+    "station/broadcast": {
       "head": {
         "title": "Transmitir",
       },
@@ -494,7 +494,7 @@ const locale: import("./studio.locale").StudioLocale = {
       }
     },
 
-    "station.settings": {
+    "station/settings": {
       "head": {
         "title": "Configuración",
       },
@@ -549,7 +549,7 @@ const locale: import("./studio.locale").StudioLocale = {
       }
     },
 
-    "me.devices": {
+    "me/devices": {
       "head": {
         "title": "Dispositivos",
       },

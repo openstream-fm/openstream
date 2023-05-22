@@ -276,7 +276,7 @@ const locale = {
       "no_items_create": "Create my broadcaster account",
     },
 
-    "accounts.create_account": {
+    "accounts/create_account": {
       "head": {
         "title": "Select a plan",
       },
@@ -284,7 +284,7 @@ const locale = {
       "select": "Select",
     },
 
-    "accounts.create_account.plan": {
+    "accounts/create_account/plan": {
       "head": {
         "title": "Create a broadcaster account",
       },
@@ -309,7 +309,7 @@ const locale = {
       }
     },
 
-    "account.dashboard": {
+    "account/dashboard": {
       "edit": {
         "tooltip": "Edit",
         "dialog": {
@@ -349,7 +349,7 @@ const locale = {
       }
     },
 
-    "station.dashboard": {
+    "station/dashboard": {
       "on_air": "ON AIR",
       "off_air": "OFF AIR",
       "playlist": "Playlist",
@@ -360,7 +360,7 @@ const locale = {
       "aria_play": "Play",
     },
 
-    "station.profile": {
+    "station/profile": {
       "head": {
         "title": "Station Profile",
       },
@@ -373,7 +373,7 @@ const locale = {
       }
     },
 
-    "station.playlist": {
+    "station/playlist": {
       "head": {
         "title": "Playlist",
       },
@@ -460,7 +460,7 @@ const locale = {
       }
     },
 
-    "station.broadcast": {
+    "station/broadcast": {
       "head": {
         "title": "Broadcast",
       },
@@ -494,7 +494,7 @@ const locale = {
       }
     },
 
-    "station.settings": {
+    "station/settings": {
       "head": {
         "title": "Settings",
       },
@@ -549,7 +549,7 @@ const locale = {
       }
     },
 
-    "me.devices": {
+    "me/devices": {
       "head": {
         "title": "Devices",
       },

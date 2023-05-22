@@ -277,7 +277,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "no_items_create": "Créer mon compte émetteur",
     },
 
-    "accounts.create_account": {
+    "accounts/create_account": {
       "head": {
         "title": "Choisissez un plan",
       },
@@ -285,7 +285,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "select": "Sélectionner",
     },
 
-    "accounts.create_account.plan": {
+    "accounts/create_account/plan": {
       "head": {
         "title": "Créer un compte émetteur",
       },
@@ -310,7 +310,7 @@ const locale: import("./studio.locale").StudioLocale = {
       }
     },
 
-    "account.dashboard": {
+    "account/dashboard": {
       "edit": {
         "tooltip": "Modifier",
         "dialog": {
@@ -350,7 +350,7 @@ const locale: import("./studio.locale").StudioLocale = {
       }
     },
 
-    "station.dashboard": {
+    "station/dashboard": {
       "on_air": "EN DIRECT",
       "off_air": "HORS ANTENNE",
       "playlist": "Playlist",
@@ -361,7 +361,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "aria_play": "Lecture",
     },
 
-    "station.profile": {
+    "station/profile": {
       "head": {
         "title": "Profil",
       },
@@ -374,7 +374,7 @@ const locale: import("./studio.locale").StudioLocale = {
       }
     },
 
-    "station.playlist": {
+    "station/playlist": {
       "head": {
         "title": "Playlist",
       },
@@ -461,7 +461,7 @@ const locale: import("./studio.locale").StudioLocale = {
       }
     },
 
-    "station.broadcast": {
+    "station/broadcast": {
       "head": {
         "title": "Diffuser",
       },
@@ -495,7 +495,7 @@ const locale: import("./studio.locale").StudioLocale = {
       }
     },
 
-    "station.settings": {
+    "station/settings": {
       "head": {
         "title": "Paramètres",
       },
@@ -550,7 +550,7 @@ const locale: import("./studio.locale").StudioLocale = {
       }
     },
 
-    "me.devices": {
+    "me/devices": {
       "head": {
         "title": "Appareils",
       },

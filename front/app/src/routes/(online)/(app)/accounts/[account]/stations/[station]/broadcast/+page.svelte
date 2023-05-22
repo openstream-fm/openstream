@@ -19,7 +19,7 @@
       label: $locale.copy_to_clipboard,
       action: () => {
         _copy(value);
-        _message($locale.pages['station.broadcast'].notifier.copied_to_clipboard);
+        _message($locale.pages["station/broadcast"].notifier.copied_to_clipboard);
       }
     }
   }
@@ -32,7 +32,7 @@
     
     data.station.source_password = new_password;
     reset_password_open = false;
-    _message($locale.pages['station.broadcast'].notifier.mount_password_reset);
+    _message($locale.pages["station/broadcast"].notifier.mount_password_reset);
     invalidate("resource:stations");
   })
 
@@ -160,20 +160,20 @@
 </style>
 
 <svelte:head>
-	<title>{$locale.pages['station.broadcast'].head.title}</title>
+	<title>{$locale.pages["station/broadcast"].head.title}</title>
 </svelte:head>
 
 <Page>
 	<div class="page">
-		<div class="page-title">{$locale.pages['station.broadcast'].title}</div>
+		<div class="page-title">{$locale.pages["station/broadcast"].title}</div>
 
 		<div class="settings">
 			<div class="side start">
-				<div class="side-title">{$locale.pages['station.broadcast'].icecast_settings}</div>
+				<div class="side-title">{$locale.pages["station/broadcast"].icecast_settings}</div>
 				<div class="ice-settings">
           <div class="ice-field">
             <TextField
-              label={$locale.pages["station.broadcast"].fields.address}
+              label={$locale.pages["station/broadcast"].fields.address}
               value={data.config.source_public_host}
               btn={copy(data.config.source_public_host)}
               readonly
@@ -181,7 +181,7 @@
           </div>
           <div class="ice-field">
             <TextField
-              label={$locale.pages["station.broadcast"].fields.port}
+              label={$locale.pages["station/broadcast"].fields.port}
               value="{`${data.config.source_public_port}`}"
               btn={copy(`${data.config.source_public_port}`)}
               readonly
@@ -189,7 +189,7 @@
           </div>
           <div class="ice-field">
             <TextField
-              label={$locale.pages["station.broadcast"].fields.mountpoint}
+              label={$locale.pages["station/broadcast"].fields.mountpoint}
               value="{data.station._id}/source"
               btn={copy(`${data.station._id}/source`)}
               readonly
@@ -197,7 +197,7 @@
           </div>
           <div class="ice-field">
             <TextField
-              label={$locale.pages["station.broadcast"].fields.username}
+              label={$locale.pages["station/broadcast"].fields.username}
               value="source"
               btn={copy("source")}
               readonly
@@ -207,22 +207,22 @@
             <div class="ice-pass-out">
               <div class="ice-pass">
                 <TextField 
-                  label={$locale.pages["station.broadcast"].fields.password}
+                  label={$locale.pages["station/broadcast"].fields.password}
                   value={data.station.source_password}
                   btn={copy(data.station.source_password)}
                   readonly
                 />
               </div>
               <button class="ice-pass-reset-btn ripple-container" use:ripple on:click={() => reset_password_open = true}>
-                {$locale.pages["station.broadcast"].password_reset}
+                {$locale.pages["station/broadcast"].password_reset}
               </button>
             </div>
           </div>
           <div class="ice-field">
             <div class="ice-pass-wrap">
               <TextField
-                label={$locale.pages["station.broadcast"].fields.encoding} 
-                value="MP3 {$locale.pages["station.broadcast"].encoding_or} AAC"
+                label={$locale.pages["station/broadcast"].fields.encoding} 
+                value="MP3 {$locale.pages["station/broadcast"].encoding_or} AAC"
                 readonly
               />
             </div>
@@ -231,13 +231,13 @@
 			</div>
 			<div class="side end">
 				<div class="side-title">
-          {$locale.pages['station.broadcast'].links.title}
+          {$locale.pages["station/broadcast"].links.title}
         </div>
 				<div class="side-content">
 					<div class="urls">
 						<div class="url">
 							<div class="url-title">
-                {$locale.pages['station.broadcast'].links.main}
+                {$locale.pages["station/broadcast"].links.main}
               </div>
 							<div class="url-field">
 								<TextField
@@ -282,26 +282,26 @@
 
 {#if reset_password_open}
   <Dialog
-    title={$locale.pages['station.broadcast'].dialogs.reset_password.title}
+    title={$locale.pages["station/broadcast"].dialogs.reset_password.title}
     width="400px"
     on_close={() => reset_password_open = false}  
     >
     <div class="reset-dialog">
 
     <div class="reset-dialog-text">
-      {$locale.pages['station.broadcast'].dialogs.reset_password.message}
+      {$locale.pages["station/broadcast"].dialogs.reset_password.message}
     </div>
 
     <div class="reset-dialog-btns">
       <button class="reset-dialog-btn-cancel ripple-container" use:ripple on:click={() => reset_password_open = false}>
-        {$locale.pages['station.broadcast'].dialogs.reset_password.cancel}
+        {$locale.pages["station/broadcast"].dialogs.reset_password.cancel}
       </button>
 
       <button class="reset-dialog-btn ripple-container" use:ripple on:click={reset_password}>
         <div class="reset-dialog-btn-icon">
           <Icon d={mdiLockReset} />
         </div>
-        {$locale.pages['station.broadcast'].dialogs.reset_password.submit}
+        {$locale.pages["station/broadcast"].dialogs.reset_password.submit}
       </button>
     </div>
     </div>
