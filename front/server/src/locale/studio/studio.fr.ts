@@ -26,7 +26,8 @@ const locale: import("./studio.locale").StudioLocale = {
     "es-AR": "Español de Argentina (Espagnol argentin)",
     "pt": "Portugyês (Portugais)",
     "de": "Deutsche (Allemande)",
-    "fr": "Française"
+    "fr": "Française",
+    "it": "Italiano (Italien)",
   },
 
   "copy_to_clipboard": "Copier dans le presse-papiers",

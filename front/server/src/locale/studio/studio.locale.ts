@@ -6,5 +6,6 @@ import es_AR from "./studio.es-AR";
 import pt from "./studio.pt";
 import de from "./studio.de";
 import fr from "./studio.fr";
+import it from "./studio.it";
 
-export const studio_locales = { en, es, es_AR, pt, de, fr };
+export const studio_locales = { en, es, es_AR, pt, de, fr, it };

@@ -26,6 +26,7 @@ const locale: import("./studio.locale").StudioLocale = {
     "pt": "Português",
     "de": "Deutsche (Alemão)",
     "fr": "Française (Francês)",
+    "it": "Italiano (Italiano)",
   },
 
   "copy_to_clipboard": "Copiar para a área de transferência",
