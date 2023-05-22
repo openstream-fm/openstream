@@ -276,7 +276,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "no_items_create": "Criar minha conta de transmissão",
     },
 
-    "accounts.create_account": {
+    "accounts/create_account": {
       "head": {
         "title": "Escolha um plano",
       },
@@ -284,7 +284,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "select": "Selecionar",
     },
 
-    "accounts.create_account.plan": {
+    "accounts/create_account/plan": {
       "head": {
         "title": "Criar uma conta de transmissor",
       },
@@ -309,7 +309,7 @@ const locale: import("./studio.locale").StudioLocale = {
       }
     },
     
-    "account.dashboard": {
+    "account/dashboard": {
       "edit": {
         "tooltip": "Editar",
         "dialog": {
@@ -349,7 +349,7 @@ const locale: import("./studio.locale").StudioLocale = {
       }
     },
 
-    "station.dashboard": {
+    "station/dashboard": {
       "on_air": "NO AR",
       "off_air": "FORA DO AR",
       "playlist": "Playlist",
@@ -360,7 +360,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "aria_play": "Reproduzir",
     },
 
-    "station.profile": {
+    "station/profile": {
       "head": {
         "title": "Perfil",
       },
@@ -373,7 +373,7 @@ const locale: import("./studio.locale").StudioLocale = {
       }
     },
 
-    "station.playlist": {
+    "station/playlist": {
       "head": {
         "title": "Playlist",
       },
@@ -460,7 +460,7 @@ const locale: import("./studio.locale").StudioLocale = {
       }
     },
 
-    "station.broadcast": {
+    "station/broadcast": {
       "head": {
         "title": "Transmitir",
       },
@@ -494,7 +494,7 @@ const locale: import("./studio.locale").StudioLocale = {
       }
     },
 
-    "station.settings": {
+    "station/settings": {
       "head": {
         "title": "Configurações",
       },
@@ -549,7 +549,7 @@ const locale: import("./studio.locale").StudioLocale = {
       }
     },
 
-    "me.devices": {
+    "me/devices": {
       "head": {
         "title": "Dispositivos",
       },

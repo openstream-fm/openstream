@@ -23,7 +23,7 @@
 
   const _station_name_validate = (v: string | null | undefined) => {
     if(v?.trim() !== data.station.name.trim()) {
-      return $locale.pages["station.settings"].validate.station_name; 
+      return $locale.pages["station/settings"].validate.station_name; 
     } else {
       return null;
     }
@@ -36,7 +36,7 @@
     try {
       await _delete<import("$api/stations/[station]/DELETE/Output").Output>(`/api/stations/${data.station._id}`);
       deleting = false;
-      _message($locale.pages["station.settings"].notifier.station_deleted);
+      _message($locale.pages["station/settings"].notifier.station_deleted);
       goto(`/accounts/${data.station.account_id}/stations`, { invalidateAll: true });
       invalidateSiblings();
     } catch(e) {
@@ -150,21 +150,21 @@
 </style>
 
 <svelte:head>
-  <title>{$locale.pages["station.settings"].head.title}</title>
+  <title>{$locale.pages["station/settings"].head.title}</title>
 </svelte:head>
 
 <Page>
   <div class="page">
-    <div class="page-title">{$locale.pages["station.settings"].title}</div>
+    <div class="page-title">{$locale.pages["station/settings"].title}</div>
 
-    <h2>{$locale.pages["station.settings"].actions.title}</h2>
+    <h2>{$locale.pages["station/settings"].actions.title}</h2>
 
     <div class="actions">
       <button class="action action-delete" on:click={() => delete_open = true}>
         <div class="action-icon">
           <Icon d={mdiTrashCanOutline} />
         </div>
-        {$locale.pages["station.settings"].actions.delete_station}
+        {$locale.pages["station/settings"].actions.delete_station}
       </button>
     </div>
   </div>
@@ -174,17 +174,17 @@
   <Dialog
     width="500px"
     on_close={() => delete_open = false}
-    title={$locale.pages["station.settings"].dialogs.delete_station.title.replace("@name", data.station.name)}
+    title={$locale.pages["station/settings"].dialogs.delete_station.title.replace("@name", data.station.name)}
   >
     <Formy action={del} let:submit>
       <form novalidate on:submit={submit} class="delete-dialog">
         <div class="delete-dialog-content">
-          {@html $locale.pages["station.settings"].dialogs.delete_station.message_html.replaceAll("@name", data.station.name)}
+          {@html $locale.pages["station/settings"].dialogs.delete_station.message_html.replaceAll("@name", data.station.name)}
         </div>
         
         <div class="delete-dialog-field">
           <TextField
-            label={$locale.pages["station.settings"].dialogs.delete_station.field_label}
+            label={$locale.pages["station/settings"].dialogs.delete_station.field_label}
             trim
             bind:value={delete_name_input_value}
           />
@@ -197,14 +197,14 @@
             use:ripple
             on:click={() => (delete_open = false)}
           >
-            {$locale.pages["station.settings"].dialogs.delete_station.cancel}
+            {$locale.pages["station/settings"].dialogs.delete_station.cancel}
           </button>
 
           <button class="delete-dialog-btn-delete ripple-container" class:disabled={!delete_name_is_match} use:ripple>
             <div class="delete-dialog-btn-icon">
               <Icon d={mdiTrashCanOutline} />
             </div>
-            {$locale.pages["station.settings"].dialogs.delete_station.submit}
+            {$locale.pages["station/settings"].dialogs.delete_station.submit}
           </button>
         </div>
       </form>

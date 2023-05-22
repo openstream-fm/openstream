@@ -103,23 +103,23 @@
       {#if now_playing}
         <div class="now-playing-state">
           {#if on_air}
-            {$locale.pages["account.dashboard"].station_item.on_air}
+            {$locale.pages["account/dashboard"].station_item.on_air}
           {:else}
-            {$locale.pages["account.dashboard"].station_item.off_air}
+            {$locale.pages["account/dashboard"].station_item.off_air}
           {/if}
         </div>
         {#if now_playing.kind === "none"}
           {#if now_playing.start_on_connect}
             <div class="now-playing-sub">
-              {$locale.pages["account.dashboard"].station_item.playlist}
+              {$locale.pages["account/dashboard"].station_item.playlist}
             </div>
           {/if}
         {:else}
           <div class="now-playing-sub">
             {#if now_playing.kind === "live"}
-              {$locale.pages["account.dashboard"].station_item.live}
+              {$locale.pages["account/dashboard"].station_item.live}
             {:else}
-              {$locale.pages["account.dashboard"].station_item.playlist}
+              {$locale.pages["account/dashboard"].station_item.playlist}
             {/if}
           </div>
         {/if}

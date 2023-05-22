@@ -380,7 +380,7 @@
   
   <div class="title">
     <h1>{data.account.name}</h1>
-    <button class="edit-btn ripple-container" use:ripple use:tooltip={$locale.pages["account.dashboard"].edit.tooltip} on:click={() => edit_open = true}>
+    <button class="edit-btn ripple-container" use:ripple use:tooltip={$locale.pages["account/dashboard"].edit.tooltip} on:click={() => edit_open = true}>
       <Icon d={mdiCircleEditOutline} />
     </button>
   </div>
@@ -409,7 +409,7 @@
             {#if selector_state.station}
               {selector_state.station.name}
             {:else}
-              {$locale.pages["account.dashboard"].stats_map.all_stations}
+              {$locale.pages["account/dashboard"].stats_map.all_stations}
             {/if}
           </span>
           <span class="stats-selector-btn-chevron">
@@ -426,7 +426,7 @@
             >
               <button class="stats-selector-item" class:current={selector_state.station == null} on:click={() => select(null)}>
                 <div class="stats-selector-name">
-                  {$locale.pages["account.dashboard"].stats_map.all_stations}
+                  {$locale.pages["account/dashboard"].stats_map.all_stations}
                 </div>
               </button>
               {#each account_stations as station (station._id)}
@@ -510,18 +510,18 @@
 </Page>
 
 {#if edit_open}
-  <Dialog width="500px" on_close={() => edit_open = false} title={$locale.pages["account.dashboard"].edit.dialog.title}>
+  <Dialog width="500px" on_close={() => edit_open = false} title={$locale.pages["account/dashboard"].edit.dialog.title}>
     <Formy action={edit} let:submit>
       <form novalidate class="edit-dialog" on:submit={submit}>
         <div class="edit-dialog-fields">
           <div class="edit-dialog-field">
-            <TextField label={$locale.pages["account.dashboard"].edit.dialog.field_label} maxlength={50} trim bind:value={current_account_name} />
+            <TextField label={$locale.pages["account/dashboard"].edit.dialog.field_label} maxlength={50} trim bind:value={current_account_name} />
             <Validator value={current_account_name} fn={_string({ required: true, maxlen: 50 })} />
           </div>
         </div>
         <div class="edit-dialog-btn-out">
           <button type="submit" class="edit-dialog-btn ripple-container" use:ripple>
-            {$locale.pages["account.dashboard"].edit.dialog.save}
+            {$locale.pages["account/dashboard"].edit.dialog.save}
           </button>
         </div>
       </form>

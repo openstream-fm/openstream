@@ -32,40 +32,40 @@
         
     if(device.ua.name) {
       data.push({ 
-        label: $locale.pages["me.devices"].device.browser,
+        label: $locale.pages["me/devices"].device.browser,
         value: device.ua.name
       })
     } else {
       data.push({
-        label: $locale.pages["me.devices"].device.browser,
-        value: $locale.pages["me.devices"].device.unkown,
+        label: $locale.pages["me/devices"].device.browser,
+        value: $locale.pages["me/devices"].device.unkown,
       });
     }
 
     if(device.ua.os) {
       data.push({
-        label: $locale.pages["me.devices"].device.os,
+        label: $locale.pages["me/devices"].device.os,
         value: device.ua.os
       })
     } else {
       data.push({
-        label: $locale.pages["me.devices"].device.os,
-        value: $locale.pages["me.devices"].device.unkown
+        label: $locale.pages["me/devices"].device.os,
+        value: $locale.pages["me/devices"].device.unkown
       });
     }
 
     data.push({
-      label: $locale.pages["me.devices"].device.ip,
+      label: $locale.pages["me/devices"].device.ip,
       value: device.ip
     });
 
     data.push({
-      label: $locale.pages["me.devices"].device.connected,
+      label: $locale.pages["me/devices"].device.connected,
       value: browser ? new Date(device.created_at).toLocaleString() : ""
     })
 
     data.push({
-      label: $locale.pages["me.devices"].device.last_used,
+      label: $locale.pages["me/devices"].device.last_used,
       value: browser ? new Date(device.last_used_at || device.created_at).toLocaleString() : "" 
     })
     
@@ -182,8 +182,8 @@
       <button 
         class="disconnect ripple-container"
         use:ripple
-        use:tooltip={$locale.pages["me.devices"].device.tooltips.disconnect}
-        aria-label={$locale.pages["me.devices"].device.tooltips.disconnect}
+        use:tooltip={$locale.pages["me/devices"].device.tooltips.disconnect}
+        aria-label={$locale.pages["me/devices"].device.tooltips.disconnect}
         on:click={on_remove}
       >
         <Icon d={mdiTrashCanOutline} />

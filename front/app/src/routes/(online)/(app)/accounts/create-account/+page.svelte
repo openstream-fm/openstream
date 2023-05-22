@@ -31,16 +31,16 @@
 </style>
 
 <svelte:head>
-  <title>{$locale.pages["accounts.create_account"].head.title}</title>
+  <title>{$locale.pages["accounts/create_account"].head.title}</title>
 </svelte:head>
 
 <div class="page" in:fly|local={{ x: -25, duration: 300 }}>
-  <div class="page-title">{$locale.pages["accounts.create_account"].title}</div>
+  <div class="page-title">{$locale.pages["accounts/create_account"].title}</div>
   <div class="plans">
     <PlanSelector
       plans={data.plans.items}
       target_url={plan => `/accounts/create-account/plan/${plan.slug}`}
-      select_btn_label={$locale.pages["accounts.create_account"].select}
+      select_btn_label={$locale.pages["accounts/create_account"].select}
     />
   </div>
 </div>

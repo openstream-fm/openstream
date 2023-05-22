@@ -128,78 +128,78 @@
 </style>
 
 <svelte:head>
-  <title>{$locale.pages["accounts.create_account.plan"].head.title}</title>
+  <title>{$locale.pages["accounts/create_account/plan"].head.title}</title>
 </svelte:head>
 
 <div class="page" in:fly|local={{ y: -25, duration: 200 }}>
   <Formy action={send} let:submit>
     <form novalidate on:submit={submit} class="login-page-box">
       <div class="login-page-title">
-        {$locale.pages["accounts.create_account.plan"].title}
+        {$locale.pages["accounts/create_account/plan"].title}
       </div>
 
       <div class="plan" style:--bg-color={bg_color} style:--color={color.toString()}>
         <div class="plan-pretitle">
-          {$locale.pages["accounts.create_account.plan"].plan.title}
+          {$locale.pages["accounts/create_account/plan"].plan.title}
         </div>
         <div class="plan-title">
           {data.plan.display_name}
         </div>
         <div class="plan-price">
-          {$locale.pages["accounts.create_account.plan"].plan.$_n_per_month.replace("@n", String(data.plan.price))}
+          {$locale.pages["accounts/create_account/plan"].plan.$_n_per_month.replace("@n", String(data.plan.price))}
         </div>
         <div class="plan-features">
           <div class="plan-feature">
             <b>{data.plan.limits.stations}</b>
             {
               data.plan.limits.stations === 1 ? 
-              $locale.pages["accounts.create_account.plan"].plan.station :
-              $locale.pages["accounts.create_account.plan"].plan.stations
+              $locale.pages["accounts/create_account/plan"].plan.station :
+              $locale.pages["accounts/create_account/plan"].plan.stations
             }
           </div>
           <div class="plan-feature">
             <b>
               {new Intl.NumberFormat().format(data.plan.limits.listeners)}
             </b>
-            {$locale.pages["accounts.create_account.plan"].plan.listeners}
+            {$locale.pages["accounts/create_account/plan"].plan.listeners}
           </div>
           <div class="plan-feature">
             <b>
               {data.plan.limits.transfer / 1_000_000_000_000} TB
             </b>
-            {$locale.pages["accounts.create_account.plan"].plan.transfer}
+            {$locale.pages["accounts/create_account/plan"].plan.transfer}
           </div>
           <div class="plan-feature">
             <b>
               {data.plan.limits.storage / 1_000_000_000} GB
             </b>
-            {$locale.pages["accounts.create_account.plan"].plan.storage}
+            {$locale.pages["accounts/create_account/plan"].plan.storage}
           </div>
         </div>
 
         <a href="/accounts/create-account" class="na plan-back ripple-container" use:ripple>
-          {$locale.pages["accounts.create_account.plan"].plan.back}
+          {$locale.pages["accounts/create_account/plan"].plan.back}
         </a>
       </div>
 
-      <h2>{$locale.pages["accounts.create_account.plan"].form.title}</h2>
+      <h2>{$locale.pages["accounts/create_account/plan"].form.title}</h2>
       
       <div class="login-page-fields">
         <div class="login-page-field">
           <TextField
-            label={$locale.pages["accounts.create_account.plan"].form.fields.account_name} 
+            label={$locale.pages["accounts/create_account/plan"].form.fields.account_name} 
             trim
             icon={mdiAccountOutline}
             autocomplete="off"
             bind:value={account_name}
           />
           <div class="org-explain">
-            {$locale.pages["accounts.create_account.plan"].form.fields.account_name_message}
+            {$locale.pages["accounts/create_account/plan"].form.fields.account_name_message}
           </div>
           <Validator value={account_name} fn={_string({ required: true, maxlen: 50 })} />
         </div>
         <button type="submit" class="ripple-container login-page-button" use:ripple>
-          {$locale.pages["accounts.create_account.plan"].form.submit}
+          {$locale.pages["accounts/create_account/plan"].form.submit}
         </button>
       </div>
     </form>

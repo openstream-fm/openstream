@@ -221,17 +221,17 @@
             </div>
             <div class="air-title">
               {#if on_air}
-                <span class="on-air">{$locale.pages["station.dashboard"].on_air}</span>
+                <span class="on-air">{$locale.pages["station/dashboard"].on_air}</span>
               {:else}
-                <span class="off-air">{$locale.pages["station.dashboard"].off_air}</span>
+                <span class="off-air">{$locale.pages["station/dashboard"].off_air}</span>
               {/if}
             </div>
             {#if on_air}
               <div class="air-subtitle">
                 {#if data.now_playing.kind === "playlist" || data.now_playing.kind === "none"}
-                  {$locale.pages["station.dashboard"].playlist}
+                  {$locale.pages["station/dashboard"].playlist}
                 {:else if data.now_playing.kind === "live"}
-                  {$locale.pages["station.dashboard"].live}
+                  {$locale.pages["station/dashboard"].live}
                 {/if}
               </div>
             {/if}
@@ -244,7 +244,7 @@
               use:ripple class="preview-btn ripple-container"
               data-state={$station_preview_state}
               on:click={toggle_play}
-              aria-label={$station_preview_state === "playing" ? $locale.pages["station.dashboard"].aria_pause : $locale.pages["station.dashboard"].aria_play}
+              aria-label={$station_preview_state === "playing" ? $locale.pages["station/dashboard"].aria_pause : $locale.pages["station/dashboard"].aria_play}
             >
               {#if $station_preview_state === "playing"}
                 <Icon d={mdiPause} />
@@ -257,14 +257,14 @@
             </button>
 
             <div class="preview-title">
-              {$locale.pages["station.dashboard"].preview}
+              {$locale.pages["station/dashboard"].preview}
             </div>
           </div>
         </div>
 
         <div class="top-box top-box-broadcast">
           <a class="na broadcast-btn ripple-container" href="/accounts/{data.account._id}/stations/{data.station._id}/broadcast" use:ripple>
-            {$locale.pages["station.dashboard"].broadcast}
+            {$locale.pages["station/dashboard"].broadcast}
           </a>
         </div>
 

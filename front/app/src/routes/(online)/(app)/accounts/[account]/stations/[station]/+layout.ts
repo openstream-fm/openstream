@@ -13,7 +13,7 @@ export const load = (async ({ fetch, url, parent, depends, params }) => {
 
   if(station != null) {
     if(station.account_id !== account._id) {
-      throw new error(404, {
+      throw error(404, {
         status: 404,
         code: "CLIENT_STATION_ACCOUNT_MISMATCH",
         message: `Station with id ${station._id} doesn't belong to this account`,
@@ -25,10 +25,10 @@ export const load = (async ({ fetch, url, parent, depends, params }) => {
   const helper: import("$api/stations/[station]/GET/Output").Output = await load_get(`/api/stations/${params.station}`, { fetch, url });
   
   if(helper.station.account_id !== account._id) {
-    throw new error(404, {
+    throw error(404, {
       status: 404,
       code: "CLIENT_STATION_ACCOUNT_MISMATCH",
-      message: `Station with id ${station._id} doesn't belong to this account`,
+      message: `Station with id ${helper.station._id} doesn't belong to this account`,
     })
   }
 
