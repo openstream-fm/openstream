@@ -2,7 +2,8 @@
   export let stats: Stats;
   export let show_ips = false;
   export let country_names: Record<string, string | undefined>;
-
+  export let locale: import("$server/locale/share/stats-map/stats-map.locale").StatsMapLocale;
+  
   // TODO: remove this type and use Analytics type when available from backend defs
   type Stats = {
     sessions: number,
@@ -51,12 +52,12 @@
     return stats.country_sessions[tooltip_item.properties.iso2] || 0;
   }
 
-  $: tooltip_ips = get_tooltip_ips(stats, tooltip_item);
-  const get_tooltip_ips = (...args: any[]): number => {
-    if(!show_ips) return 0;
-    if(tooltip_item == null) return 0;
-    return stats.country_ips?.[tooltip_item.properties.iso2] || 0;
-  }
+  // $: tooltip_ips = get_tooltip_ips(stats, tooltip_item);
+  // const get_tooltip_ips = (...args: any[]): number => {
+  //   if(!show_ips) return 0;
+  //   if(tooltip_item == null) return 0;
+  //   return stats.country_ips?.[tooltip_item.properties.iso2] || 0;
+  // }
 
   const get_fill = (stats: Stats, item: Item) => {
     const max = Math.max(0, ...Object.values(stats.country_sessions).map(Number));
@@ -181,12 +182,14 @@
       {name}
     </div>
     <div class="map-tooltip-count">
-      {tooltip_sessions} {tooltip_sessions === 1 ? "listener" : "listeners"}
+      {tooltip_sessions} {tooltip_sessions === 1 ? locale.listener : locale.listeners}
     </div>
+    <!--
     {#if show_ips}
       <div class="map-tooltip-count">
         {tooltip_ips} {tooltip_ips === 1 ? "unique IP" : "unique IPs"}
       </div>
     {/if}
+    -->
   </div>
 {/if}

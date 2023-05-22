@@ -14,6 +14,7 @@
 	import { fly } from "svelte/transition";
   import "$share/LoginDashboard/login-page.css";
 	import { invalidateSiblings } from "$lib/invalidate";
+	import { locale } from "$lib/locale";
 	
   let account_name = "";
   let sending = false;
@@ -127,52 +128,78 @@
 </style>
 
 <svelte:head>
-  <title>Create a broadcaster account</title>
+  <title>{$locale.pages["accounts.create_account.plan"].head.title}</title>
 </svelte:head>
 
 <div class="page" in:fly|local={{ y: -25, duration: 200 }}>
   <Formy action={send} let:submit>
     <form novalidate on:submit={submit} class="login-page-box">
       <div class="login-page-title">
-        Create a broadcaster account
+        {$locale.pages["accounts.create_account.plan"].title}
       </div>
 
       <div class="plan" style:--bg-color={bg_color} style:--color={color.toString()}>
-        <div class="plan-pretitle">Selected plan</div>
-        <div class="plan-title">{data.plan.display_name}</div>
-        <div class="plan-price">$ {data.plan.price} / month</div>
+        <div class="plan-pretitle">
+          {$locale.pages["accounts.create_account.plan"].plan.title}
+        </div>
+        <div class="plan-title">
+          {data.plan.display_name}
+        </div>
+        <div class="plan-price">
+          {$locale.pages["accounts.create_account.plan"].plan.$_n_per_month.replace("@n", String(data.plan.price))}
+        </div>
         <div class="plan-features">
           <div class="plan-feature">
-            <b>{data.plan.limits.stations}</b> {data.plan.limits.stations === 1 ? "station" : "stations"}
+            <b>{data.plan.limits.stations}</b>
+            {
+              data.plan.limits.stations === 1 ? 
+              $locale.pages["accounts.create_account.plan"].plan.station :
+              $locale.pages["accounts.create_account.plan"].plan.stations
+            }
           </div>
           <div class="plan-feature">
-            <b>{new Intl.NumberFormat().format(data.plan.limits.listeners)}</b> Listeners
+            <b>
+              {new Intl.NumberFormat().format(data.plan.limits.listeners)}
+            </b>
+            {$locale.pages["accounts.create_account.plan"].plan.listeners}
           </div>
           <div class="plan-feature">
-            <b>{data.plan.limits.transfer / 1_000_000_000_000} TB</b> Bandwidth
+            <b>
+              {data.plan.limits.transfer / 1_000_000_000_000} TB
+            </b>
+            {$locale.pages["accounts.create_account.plan"].plan.transfer}
           </div>
           <div class="plan-feature">
-            <b>{data.plan.limits.storage / 1_000_000_000} GB</b> Storage
+            <b>
+              {data.plan.limits.storage / 1_000_000_000} GB
+            </b>
+            {$locale.pages["accounts.create_account.plan"].plan.storage}
           </div>
         </div>
 
         <a href="/accounts/create-account" class="na plan-back ripple-container" use:ripple>
-          Back to plans and pricing
+          {$locale.pages["accounts.create_account.plan"].plan.back}
         </a>
       </div>
 
-      <h2>Tell us about the new account</h2>
-
+      <h2>{$locale.pages["accounts.create_account.plan"].form.title}</h2>
+      
       <div class="login-page-fields">
         <div class="login-page-field">
-          <TextField label="A name for your new account" trim icon={mdiAccountOutline} autocomplete="off" bind:value={account_name} />
+          <TextField
+            label={$locale.pages["accounts.create_account.plan"].form.fields.account_name} 
+            trim
+            icon={mdiAccountOutline}
+            autocomplete="off"
+            bind:value={account_name}
+          />
           <div class="org-explain">
-            If you are creating an account for an organization, you can fill this field with the organization's name 
+            {$locale.pages["accounts.create_account.plan"].form.fields.account_name_message}
           </div>
           <Validator value={account_name} fn={_string({ required: true, maxlen: 50 })} />
         </div>
         <button type="submit" class="ripple-container login-page-button" use:ripple>
-          Create
+          {$locale.pages["accounts.create_account.plan"].form.submit}
         </button>
       </div>
     </form>

@@ -115,7 +115,7 @@ const locale = {
 
     "features": {
       "station": "Station",
-      "stations": "Stations",  
+      "stations": "Stations",
       "listeners": "Listeners",
       "transfer": "Bandwidth",
       "storage": "Storage",
@@ -133,14 +133,14 @@ const locale = {
       "storage": "@gb GB of storage for music or old episodes",
       "staff": "Add all the staff users that you want",
       "auto_dj": "Broadcast from a playlist when you're not online",
-      "stats": "Advanced live and historical stats, see who's listening your stations",              
+      "stats": "Advanced live and historical stats, see who's listening your stations",
       "android_app": "An Android application branded to your stations and available worldwide through Google Play",
 
     }
   },
 
   "pages": {
-    
+
     "error": {
       "retry": "Retry",
       "home": "Take me to home",
@@ -165,7 +165,7 @@ const locale = {
       },
       "links": {
         "forgot": "Forgot you password?",
-        "new_user": "New user?", 
+        "new_user": "New user?",
         "sign_up": "Sign up",
       },
       "submit": "Sign in"
@@ -217,7 +217,7 @@ const locale = {
       },
       "form": {
         "title": "Tell us about yourself",
-        "account_name_comment": "If you are creating an account for an organization, you can fill this field with the organization's name", 
+        "account_name_comment": "If you are creating an account for an organization, you can fill this field with the organization's name",
         "fields": {
           "first_name": "Your first name",
           "last_name": "Your last name",
@@ -264,7 +264,7 @@ const locale = {
         "password_updated": "Password updated",
       }
     },
-    
+
     "accounts": {
       "head": {
         "title": "Accounts",
@@ -282,6 +282,31 @@ const locale = {
       },
       "title": "Select a plan for your nwe account",
       "select": "Select",
+    },
+
+    "accounts.create_account.plan": {
+      "head": {
+        "title": "Create a broadcaster account",
+      },
+      "title": "Create a broadcaster account",
+      "plan": {
+        "title": "Selected plan",
+        "$_n_per_month": "$ @n / month",
+        "station": "Station",
+        "stations": "Stations",
+        "listeners": "Listeners",
+        "transfer": "Bandwidth",
+        "storage": "Storage",
+        "back": "Back to plans and pricing",
+      },
+      "form": {
+        "title": "Tell us about the new account",
+        "fields": {
+          "account_name":"A name for your new account",
+          "account_name_message": "If you are creating an account for an organization, you can fill this field with the organization's name"
+        },
+        "submit": "Create",
+      }
     },
 
     "account.dashboard": {
@@ -390,7 +415,7 @@ const locale = {
       },
       "dialogs": {
         "delete_track": {
-          "title": "Delete track @name" 
+          "title": "Delete track @name"
         },
         "delete_tracks": {
           "title": "Delete @n tracks",
@@ -424,7 +449,7 @@ const locale = {
           "submit": "Restart",
         }
       },
-      "upload_prevent_unload_message": "Leaving this page will cancel pending uploads. Do you want to leave anyway?", 
+      "upload_prevent_unload_message": "Leaving this page will cancel pending uploads. Do you want to leave anyway?",
       "notifier": {
         "playlist_restarted": "Playlist restarted",
         "track_deleted": "Track deleted",
@@ -538,7 +563,7 @@ const locale = {
           "submit": "Disconnect",
         },
       },
-      
+
       "notifier": {
         "device_disconnected": "Device disconnected",
       },

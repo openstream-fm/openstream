@@ -259,7 +259,7 @@
     </div>
     <div class="map-out">
       {#if data != null}
-        <Map stats={data[view]} {country_names} />
+        <Map stats={data[view]} {country_names} {locale} />
       {/if}
     </div>
   </div>

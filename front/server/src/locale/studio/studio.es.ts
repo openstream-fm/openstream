@@ -284,6 +284,31 @@ const locale: import("./studio.locale").StudioLocale = {
       "select": "Seleccionar",
     },
 
+    "accounts.create_account.plan": {
+      "head": {
+        "title": "Crear una cuenta de emisor",
+      },
+      "title": "Crear una cuenta de emisor",
+      "plan": {
+        "title": "Plan seleccionado",
+        "$_n_per_month": "$ @n / month",
+        "station": "Estación",
+        "stations": "Estaciones",
+        "listeners": "Oyentes",
+        "transfer": "Transferencia",
+        "storage": "Almacenamiento",
+        "back": "Volver a planes y precios",
+      },
+      "form": {
+        "title": "Cuentanos de la nueva cuenta",
+        "fields": {
+          "account_name":"Un nombre para tu cuenta",
+          "account_name_message": "Si estás creando una cuenta para una organización, puedes llenar este campo con el nombre de la organización",
+        },
+        "submit": "Crear",
+      }
+    },
+
     "account.dashboard": {
       "edit": {
         "tooltip": "Editar",
