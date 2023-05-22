@@ -19,7 +19,6 @@ declare namespace App {
 
   interface PageData {
     config: import("$server/config").Config["public"]
-    lang: string,
     locale: import("$server/locale/studio/studio.locale").StudioLocale,
     user?: import("$server/api/me/GET/Output").Output["user"] | null
     accounts?: import("$server/api/accounts/GET/Output").Output | null 

@@ -2,24 +2,30 @@
 import stats_map from "../share/stats-map/stats-map.fr";
 import validate from "../share/validate/validate.fr";
 import countries from "../share/countries/countries.fr";
+import type_of_content from "../share/type-of-content/type-of-content.fr";
 
 const locale: import("./studio.locale").StudioLocale = {
+  "lang": "fr",
+  "region": null,
 
   // @notranslate
-  "logo_text": "openstream",
+  "logo_text": "nuva",
 
   // @notranslate
-  "app_name": "Openstream Studio",
+  "app_name": "Nuva Studio",
 
+  "station_type_of_content": type_of_content,
   "countries": countries,
   "validate": validate,
   "stats_map": stats_map,
 
   "language": {
     "auto": "Détection automatique",
-    "en": "Anglais (English)",
-    "es": "Espagnol (Spanish)",
-    "pt": "Portugais (Portuguese)",
+    "en": "English (Anglais)",
+    "es": "Español (Espagnol)",
+    "es-AR": "Español de Argentina (Espagnol argentin)",
+    "pt": "Portugyês (Portugais)",
+    "de": "Deutsche (Allemande)",
     "fr": "Française"
   },
 
@@ -325,8 +331,8 @@ const locale: import("./studio.locale").StudioLocale = {
       },
 
       "station_item": {
-        "on_air": "EN DIRECT",
-        "off_air": "HORS ANTENNE",
+        "on_air": "ON",
+        "off_air": "OFF",
         "playlist": "Playlist",
         "live": "En direct",
       }
@@ -343,16 +349,20 @@ const locale: import("./studio.locale").StudioLocale = {
       "no_items_create": "Créer une station",
     },
 
-    "stations.create_station": {
-      "create_a_stations": "Créer une station",
+    "stations/create_station": {
+      "head": {
+        "title": "Créer une station"
+      },
+      "title": "Créer une station",
+      "submit": "Créer la station",
       "notifier": {
         "station_created": "Nouvelle station créée",
       }
     },
 
     "station/dashboard": {
-      "on_air": "EN DIRECT",
-      "off_air": "HORS ANTENNE",
+      "on_air": "ON",
+      "off_air": "OFF",
       "playlist": "Playlist",
       "live": "En direct",
       "preview": "Aperçu",

@@ -77,7 +77,7 @@
       station
     } = await _post<import("$api/stations/POST/Output").Output>(`/api/stations`, payload);
 
-    _message($locale.pages["stations.create_station"].notifier.station_created);
+    _message($locale.pages["stations/create_station"].notifier.station_created);
 
     current = clone(start);
     
@@ -135,12 +135,16 @@
 </style>
 
 <svelte:head>
-  <title>Crete new station</title>
+  <title>
+    {$locale.pages["stations/create_station"].head.title}
+  </title>
 </svelte:head>
 
 <Page>
   <div class="page">
-    <div class="page-title">Create a station</div>
+    <div class="page-title">
+      {$locale.pages["stations/create_station"].title}
+    </div>
     <Formy action={send} let:submit>
       <form novalidate class="create-box" on:submit={submit}>
 
@@ -148,7 +152,7 @@
 
         <div class="submit-wrap">
           <button class="submit ripple-container" use:ripple type="submit">
-            Create station
+            {$locale.pages["stations/create_station"].submit}
           </button>
         </div>
       </form>

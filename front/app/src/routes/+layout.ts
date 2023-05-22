@@ -9,13 +9,13 @@ export const load = (async ({ depends, fetch, url }) => {
   const [
     config,
     maybe_user,
-    { locale, lang },
+    { locale },
   ] = await Promise.all([
     load_get<import("$server/api/studio-api").PublicConfig>("/api/config", { fetch, url }),
     load_get_me({ fetch, url }),
     load_get<import("$server/api/studio-api").LocalePayload>("/api/locale", { fetch, url }),
   ])
 
-  return { config, locale, lang,  maybe_user };
+  return { config, locale, maybe_user };
 
 }) satisfies import("./$types").LayoutLoad;

@@ -120,6 +120,7 @@
 		<div class="field">
 			<CountryField
 				label="{$locale.station_profile.labels.country} *"
+				country_names={$locale.countries}
 				bind:value={current.country_code}
 			/>
 			<Validator value={current.country_code} fn={_string({ required: true })} />
@@ -127,6 +128,7 @@
 		<div class="field">
 			<TypeOfContentField
 				label="{$locale.station_profile.labels.type_of_content} *"
+				locale_names={$locale.station_type_of_content}
 				bind:value={current.type_of_content}
 			/>
 			<Validator value={current.type_of_content} fn={_string({ required: true })} />

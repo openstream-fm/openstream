@@ -31,20 +31,14 @@
     first_name: data.user.first_name,
     last_name: data.user.last_name,
     phone: data.user.phone,
-    language: 
-      data.user.language === "en" ? "en" :
-      data.user.language === "es" ? "es" :
-      data.user.language === "pt" ? "pt" :
-      data.user.language === "fr" ? "fr" :
-      "auto" as "en" | "es" | "pt" | "fr" | "auto",
+    language: ["en", "es", "es-AR", "pt", "de", "fr"].includes(data.user.language || "") ? (data.user.language as string) : "auto", 
   };
 
   $: language_options = [
-    { label: $locale.language.auto, value: "auto" as "auto" },
-    { label: $locale.language.en, value: "en" as "en" },
-    { label: $locale.language.es, value: "es" as "es" },
-    { label: $locale.language.pt, value: "pt" as "pt" },
-    { label: $locale.language.fr, value: "fr" as "fr" },
+    { label: $locale.language.auto, value: "auto" },
+    ...Object.entries($locale.language).filter(([code, value]) => code !== "auto").map(([code, name]) => {
+      return { label: name, value: code };
+    }).sort((a, b) => a.label.localeCompare(b.label) ),
   ];
 
   let profile_current = clone(profile_db);

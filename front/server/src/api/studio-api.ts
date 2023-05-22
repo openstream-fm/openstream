@@ -36,7 +36,6 @@ export const public_config = (hosts: HostConfig & { id: string }): PublicConfig 
 }
 
 export type LocalePayload = {
-  lang: string
   locale: StudioLocale
 }
 
@@ -88,15 +87,23 @@ export const studio_api = ({
 
     if(langs != null) {
       for(const lang of langs) {
-        for(const [code, locale] of Object.entries(studio_locales)) {
-          if(code.toLowerCase() === lang.code.toLowerCase()) {
-            return { lang: code, locale };
+        for(const [_, locale] of Object.entries(studio_locales)) {
+          if(lang.code.toLowerCase() == locale.lang.toLowerCase() && lang.region?.toLowerCase() == locale.region?.toLowerCase()) {
+            return { locale };
+          }
+        }
+      }
+
+      for(const lang of langs) {
+        for(const [_, locale] of Object.entries(studio_locales)) {
+          if(locale.lang.toLowerCase() === lang.code.toLowerCase()) {
+            return { locale };
           }
         }
       }
     }
 
-    return { lang: "en", locale: studio_locales.en };
+    return { locale: studio_locales.en };
 
   }))
 
