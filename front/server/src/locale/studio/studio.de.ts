@@ -32,6 +32,7 @@ const locale = {
     "pt": "Potuguês (Portugiesisch)",
     "de": "Deutsch",
     "fr": "Française (Französisch)",
+    "it": "Italiano (Italienisch)",
   },
 
   "drawer": {

@@ -27,11 +27,13 @@
 
   let show_change_password = true;
 
+  const language = Object.keys($locale.language).filter(item => item !== "auto").includes(data.user.language || "") ? data.user.language : "";
+
   let profile_db = {
     first_name: data.user.first_name,
     last_name: data.user.last_name,
     phone: data.user.phone,
-    language: ["en", "es", "es-AR", "pt", "de", "fr"].includes(data.user.language || "") ? (data.user.language as string) : "auto", 
+    language
   };
 
   $: language_options = [
