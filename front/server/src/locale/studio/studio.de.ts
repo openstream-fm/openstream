@@ -33,8 +33,8 @@ const locale = {
     "de": "Deutsch",
     "fr": "Française (Französisch)",
     "it": "Italiano (Italienisch)",
-    "zh": "简体中文 (Vereinfachtes Chinesisch)"
-    
+    "zh": "简体中文 (Vereinfachtes Chinesisch)",
+    "ar": "عربي (Araber)",
   },
 
   "drawer": {
