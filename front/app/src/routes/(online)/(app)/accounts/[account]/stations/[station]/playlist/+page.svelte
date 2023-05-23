@@ -11,7 +11,7 @@
   import CircularProgress from "$share/CircularProgress.svelte";
 	import { add } from "$share/actions";
 	import { tooltip } from "$share/tooltip";
-  import { fade, fly, scale, slide } from "svelte/transition";
+  import { fade, scale, slide } from "svelte/transition";
 	import { _message, _progress } from "$share/notify";
   import Dialog from "$share/Dialog.svelte";
   import { close, player_playing_audio_file_id, player_audio_state, resume, pause, play_track, player_state, play_station } from "$lib/components/Player/player";
@@ -803,6 +803,7 @@
 
   import { cubicOut } from "svelte/easing";
 	import { locale } from "$lib/locale";
+	import { logical_fly } from "$share/transition";
   const shuffle_btn_transition = (element: HTMLElement, _options = {}) => {
     const easing = cubicOut;
     const duration = 200;
@@ -1630,7 +1631,7 @@
                 <th class="btn-cell"></th>
               </tr>
             </thead>
-            <tbody in:fly|local={{ duration: 300, x: -50 }}>  
+            <tbody in:logical_fly|local={{ duration: 300, x: -50 }}>  
               {#each data.files.items as file, i (file._id)}
                 {@const selected = $selected_ids.includes(file._id)}
                 {@const player_playing = $player_playing_audio_file_id === file._id && $player_audio_state !== "paused"}

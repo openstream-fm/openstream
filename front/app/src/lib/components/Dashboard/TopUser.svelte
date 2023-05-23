@@ -13,8 +13,6 @@
   $: stations = $page.data.stations || null;
   $: station = $page.data.station || null;
 
-
-  import { fly } from "svelte/transition";
 	import { ripple } from "$share/ripple";
 	import { click_out } from "$share/actions";
 	import { action, _post } from "$share/net.client";
@@ -23,6 +21,7 @@
 	import { goto } from "$app/navigation";
 	import { locale } from "$lib/locale";
 	import { invalidateSiblings } from "$lib/invalidate";
+	import { logical_fly } from "$share/transition";
 
   const sign_out = action(async () => {
     await _post("/api/auth/user/logout", {});
@@ -254,7 +253,7 @@
     <div class="menu-position-out">
       <div class="menu-position-in">
         {#if menu_open}
-          <div class="menu thin-scroll" transition:fly|local={{ y: -25, x: 10, duration: 200 }}>
+          <div class="menu thin-scroll" transition:logical_fly|local={{ y: -25, x: 10, duration: 200 }}>
             <div class="menu-head menu-section">
               <div class="menu-head-icon">
                 <Icon d={mdiAccountCircleOutline} />

@@ -15,10 +15,11 @@
 	import { goto } from "$app/navigation";
 	import { form } from "../../../transitions";
 	import Color from "color";
-	import { fly, scale } from "svelte/transition";
+	import { scale } from "svelte/transition";
 	import CircularProgress from "$share/CircularProgress.svelte";
 	import { locale } from "$lib/locale";
 	import { invalidateSiblings } from "$lib/invalidate";
+	import { logical_fly } from "$share/transition";
 
   let first_name = "";
   let last_name = "";
@@ -215,11 +216,11 @@
 <div class="login-page-box" in:form>
   
   {#if view === "data"}
-    <div class="login-page-title" in:fly|local={{ duration: 250, x: -25 }}>
+    <div class="login-page-title" in:logical_fly|local={{ duration: 250, x: -25 }}>
       {$locale.pages.register.title}
     </div>
 
-    <div class="plan" style:--bg-color={bg_color} style:--color={color.toString()} in:fly|local={{ duration: 250, x: -25 }}>
+    <div class="plan" style:--bg-color={bg_color} style:--color={color.toString()} in:logical_fly|local={{ duration: 250, x: -25 }}>
       <div class="plan-pretitle">
         {$locale.pages.register.plan.selected_plan}
       </div>
@@ -262,7 +263,7 @@
 
   {#if view === "data"}
     <Formy action={submit_data} let:submit>
-      <form novalidate on:submit={submit} class="view view-data" in:fly|local={{ duration: 250, x: -25 }}>
+      <form novalidate on:submit={submit} class="view view-data" in:logical_fly|local={{ duration: 250, x: -25 }}>
         <h2>{$locale.pages.register.form.title}</h2>
 
         <div class="login-page-fields">
@@ -345,7 +346,7 @@
     </Formy>
   {:else if view === "code"}
     <Formy action={submit_code} let:submit>  
-      <form novalidate on:submit={submit} class="view view-code" in:fly|local={{ duration: 250, x: -25 }}>
+      <form novalidate on:submit={submit} class="view view-code" in:logical_fly|local={{ duration: 250, x: -25 }}>
         <h2>
           {$locale.pages.register.verification.title}
         </h2>

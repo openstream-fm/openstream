@@ -2,9 +2,9 @@
 	import Player from "$lib/components/Player/Player.svelte";
   import { close } from "$lib/components/Player/player";
   import { onMount } from "svelte";
-  import { fly } from "svelte/transition";
   import Top from "$lib/components/Dashboard/Top.svelte";
 	import Drawer from "$lib/components/Dashboard/Drawer.svelte";
+	import { logical_fly } from "$share/transition";
   
   onMount(() => {
     return () => close()
@@ -58,7 +58,7 @@
 
 <div class="player-layout">
   <div class="player-layout-dashboard">
-    <div class="dashboard" in:fly={{ duration: 300, x: -25 }}>
+    <div class="dashboard" in:logical_fly={{ duration: 300, x: -25 }}>
       <div class="start">
         <Drawer fixed_open={drawer_fixed_open} {close_drawer_fixed} {open_drawer_fixed} />
         <div class="content">

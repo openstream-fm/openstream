@@ -2,7 +2,7 @@
 	export let data: import("./$types").PageData;
   import PlanSelector from "$lib/components/PlanSelector/PlanSelector.svelte";
 	import { locale } from "$lib/locale";
-	import { fly } from "svelte/transition";
+	import { logical_fly } from "$share/transition";
 </script>
 
 <style>
@@ -35,7 +35,7 @@
   <title>{$locale.pages["accounts/create_account"].head.title}</title>
 </svelte:head>
 
-<div class="page" in:fly|local={{ x: -25, duration: 300 }}>
+<div class="page" in:logical_fly|local={{ x: -25, duration: 300 }}>
   <div class="page-title">{$locale.pages["accounts/create_account"].title}</div>
   <div class="plans">
     <PlanSelector

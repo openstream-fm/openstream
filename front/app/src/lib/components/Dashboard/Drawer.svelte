@@ -20,7 +20,7 @@
 	import { onMount } from "svelte";
 	import Icon from "$share/Icon.svelte";
 	import { ripple } from "$share/ripple";
-	import { fade, fly } from "svelte/transition";
+	import { fade } from "svelte/transition";
 	import { browser } from "$app/environment";
   // @ts-ignore
   import logo from "$share/img/logo-trans-128.png?w=40&format=webp";
@@ -28,6 +28,7 @@
   import { player_state } from "../Player/player";
 	import { click_out } from "$share/actions";
 	import { locale } from "$lib/locale";
+	import { logical_fly } from "$share/transition";
 
   $: if(browser) {
     document.documentElement.classList[fixed_open ? "add" : "remove"](HTML_OPEN_CLASSNAME);
@@ -342,7 +343,7 @@
         </button>
         <div class="account-switch-anchor">
           {#if account_switch_open}
-            <div class="account-switch-menu thin-scroll" transition:fly|local={{ y: -15, duration: 200 }} use:click_out={account_switch_click_out}>
+            <div class="account-switch-menu thin-scroll" transition:logical_fly|local={{ y: -15, duration: 200 }} use:click_out={account_switch_click_out}>
               {#each accounts as item (item._id)}
                 <a 
                   href={account_swtich_target(account._id, item._id, $page.url)}
