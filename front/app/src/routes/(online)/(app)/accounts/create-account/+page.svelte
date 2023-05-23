@@ -23,10 +23,11 @@
 
   .plans {
     display: flex;
+    width: 100%;
     flex-direction: column;
     align-items: center;
     margin-top: 5rem;
-    margin-bottom: 6rem;
+    padding-bottom: 6rem;
   }
 </style>
 

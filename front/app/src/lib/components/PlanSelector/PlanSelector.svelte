@@ -46,6 +46,9 @@
     border-radius: 0.5rem;
     box-shadow: var(--some-shadow);
     overflow: hidden;
+    max-width: 95%;
+    padding: 0 1rem;
+    background: #fff;
   }
 
   .plan {
@@ -54,6 +57,7 @@
     align-items: center;
     text-align: center;
     flex: 1;
+    min-width: 0;
     padding: 1rem 0;
     background: #fff;
   }
@@ -111,22 +115,42 @@
     align-items: center;
     font-size: 1.1rem;
     margin-top: 1.25rem;
-    padding: 0 3rem;
+    padding: 0 2rem;
+    min-width: 10rem;
+    max-width: 100%;
   }
 
   .feature {
-    padding: 0.75rem 0.5rem;
-    white-space: nowrap;
     display: flex;
+    flex: 1;
     flex-direction: row;
+    align-items: center;
+    padding: 0.75rem 0.5rem;
+    max-width: 100%;
+  }
+
+  .feature-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .feature-ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
 
   .feature-n {
+    display: inline;
     font-weight: 700;
-    margin-inline-end: 0.4rem;
   }
 
   .tip {
+    flex: none;
+    display: flex;
     color: #bbb;
     font-size: 1rem;
     margin-inline-start: 0.4rem;
@@ -178,13 +202,12 @@
     align-self: center;
   }
 
-  @media screen and (max-width: 1050px) {
+  @media screen and (max-width: 1250px) {
     .plans {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 3rem;
-      padding: 0 5%;
-      align-items: space-evenly;
+      gap: 2rem;
+      padding: 0 2%;
       background: transparent;
       box-shadow: none;
       overflow: visible;
@@ -194,13 +217,17 @@
       border-radius: 0.5rem;
       box-shadow: var(--some-shadow);
     }
+    
+    .plan {
+      width: 20rem;
+    }
 
     .plan-features {
-      padding-inline: 4rem;
+      padding-inline: 1.5rem;
     }
   }
 
-  @media screen and (max-width: 560px) {
+  @media screen and (max-width: 700px) {
     .plans {
       grid-template-columns: 1fr;
     }
@@ -228,12 +255,16 @@
 
           <div class="plan-features">
             <div class="feature">
-              <span class="feature-n">
-                {plan.limits.stations}
-              </span>
-              <span class="feature-label">
-                {plan.limits.stations === 1 ? $locale.plan_selector.features.station : $locale.plan_selector.features.stations}
-              </span>
+              <div class="feature-text">
+                <span class="feature-ellipsis">
+                  <span class="feature-n">
+                    {plan.limits.stations}
+                  </span>
+                  <span class="feature-label">
+                    {plan.limits.stations === 1 ? $locale.plan_selector.features.station : $locale.plan_selector.features.stations}
+                  </span>
+                </span>
+              </div>
               <span class="tip">
                 {#if plan.limits.stations === 1}
                   <PlanFeatureTip text={$locale.plan_selector.tooltips.one_station} />
@@ -244,24 +275,32 @@
             </div>
 
             <div class="feature">
-              <span class="feature-n">
-                {new Intl.NumberFormat().format(plan.limits.listeners)}
-              </span>
-              <span class="feature-label">
-                {$locale.plan_selector.features.listeners}
-              </span>
+              <div class="feature-text">
+                <span class="feature-ellipsis">
+                  <span class="feature-n">
+                    {new Intl.NumberFormat().format(plan.limits.listeners)}
+                  </span>
+                  <span class="feature-label">
+                    {$locale.plan_selector.features.listeners}
+                  </span>
+                </span>
+              </div>
               <span class="tip">
                 <PlanFeatureTip text={$locale.plan_selector.tooltips.listeners.replace("@n", String(plan.limits.listeners))} />
               </span>
             </div>
 
             <div class="feature">
-              <span class="feature-n">
-                {plan.limits.transfer / 1_000_000_000_000} TB
-              </span>
-              <span class="feature-label">
-                {$locale.plan_selector.features.transfer}
-              </span>
+              <div class="feature-text">
+                <span class="feature-ellipsis">
+                  <span class="feature-n">
+                    {plan.limits.transfer / 1_000_000_000_000} TB
+                  </span>
+                  <span class="feature-label">
+                    {$locale.plan_selector.features.transfer}
+                  </span>
+                </span>
+              </div>
               <span class="tip">
                 <FeatureI text={
                   $locale.plan_selector.tooltips.transfer
@@ -272,12 +311,16 @@
             </div>
 
             <div class="feature">
-              <span class="feature-n">
-                {plan.limits.storage / 1_000_000_000} GB
-              </span>
-              <span class="feature-label">
-                {$locale.plan_selector.features.storage}
-              </span>
+              <div class="feature-text">
+                <span class="feature-ellipsis">
+                  <span class="feature-n">
+                    {plan.limits.storage / 1_000_000_000} GB
+                  </span>
+                  <span class="feature-label">
+                    {$locale.plan_selector.features.storage}
+                  </span>
+                </span>
+              </div>
               <span class="tip">
                 <PlanFeatureTip text={
                   $locale.plan_selector.tooltips.storage.replace("@gb", String(plan.limits.storage / 1_000_000_000))
@@ -286,12 +329,16 @@
             </div>
 
             <div class="feature">
-              <span class="feature-n">
-                {$locale.plan_selector.unlimited}
-              </span>
-              <span class="feature-label">
-                {$locale.plan_selector.features.staff}
-              </span>
+              <div class="feature-text">
+                <span class="feature-ellipsis">
+                  <span class="feature-n">
+                    {$locale.plan_selector.unlimited}
+                  </span>
+                  <span class="feature-label">
+                    {$locale.plan_selector.features.staff}
+                  </span>
+                </span>
+              </div>
               <span class="tip">
                 <PlanFeatureTip text={$locale.plan_selector.tooltips.staff} />
               </span>
@@ -301,8 +348,12 @@
               <div class="feature-check-icon">
                 <Icon d={featureCheckIcon} />
               </div>
-              <div class="feature-label">
-                {$locale.plan_selector.features.auto_dj}
+              <div class="feature-text">
+                <span class="feature-ellipsis">
+                  <span class="feature-label">
+                    {$locale.plan_selector.features.auto_dj}
+                  </span>
+                </span>
               </div>
               <span class="tip">
                 <PlanFeatureTip text={$locale.plan_selector.tooltips.auto_dj} />
@@ -313,8 +364,12 @@
               <div class="feature-check-icon">
                 <Icon d={featureCheckIcon} />
               </div>
-              <div class="feature-label">
-                {$locale.plan_selector.features.stats}
+              <div class="feature-text">
+                <span class="feature-ellipsis">
+                  <span class="feature-label">
+                    {$locale.plan_selector.features.stats}
+                  </span>
+                </span>
               </div>
               <span class="tip">
                 <PlanFeatureTip text={$locale.plan_selector.tooltips.stats} />
@@ -325,8 +380,12 @@
               <div class="feature-check-icon">
                 <Icon d={featureCheckIcon} />
               </div>
-              <div class="feature-label">
-                {$locale.plan_selector.features.android_app}
+              <div class="feature-text">
+                <span class="feature-ellipsis">
+                  <span class="feature-label">
+                    {$locale.plan_selector.features.android_app}
+                  </span>
+                </span>
               </div>
               <span class="tip">
                 <PlanFeatureTip text={$locale.plan_selector.tooltips.android_app} />
@@ -335,11 +394,16 @@
 
             {#if show_trial}
               <div class="feature feature-check">
+                
                 <div class="feature-check-icon">
                   <Icon d={featureCheckIcon} />
                 </div>
-                <div class="feature-n">{$locale.plan_selector.trial["30_day"]}</div>
-                <div class="feature-label">{$locale.plan_selector.trial.free_trial}</div>
+                <div class="feature-text">
+                  <span class="feature-ellipsis">
+                    <span class="feature-n">{$locale.plan_selector.trial["30_day"]}</span>
+                    <span class="feature-label">{$locale.plan_selector.trial.free_trial}</span>
+                  </span>
+                </div>
                 <span class="tip">
                   <PlanFeatureTip text={$locale.plan_selector.trial.tooltip} />
                 </span>
