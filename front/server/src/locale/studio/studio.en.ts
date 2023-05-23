@@ -288,7 +288,7 @@ const locale = {
       "head": {
         "title": "Select a plan",
       },
-      "title": "Select a plan for your nwe account",
+      "title": "Select a plan for your new account",
       "select": "Select",
     },
 
