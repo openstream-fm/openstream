@@ -76,7 +76,7 @@ const locale: import("./countries.locale").CountriesLocale = {
   EU: "Unione Europea",
   SZ: "Eswatini",
   ET: "Etiopia",
-  FK: "Isole Falkland",
+  FK: "Isole Malvinas",
   FO: "Isole Fær Øer",
   FJ: "Figi",
   FI: "Finlandia",
