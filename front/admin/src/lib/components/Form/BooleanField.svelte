@@ -47,8 +47,8 @@
 
   .icon {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset-block-start: 0;
+    inset-inline-start: 0;
     font-size: 1.5rem;
     display: flex;
     transition: color 200ms ease;

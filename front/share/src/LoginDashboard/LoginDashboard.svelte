@@ -27,8 +27,8 @@
     position: absolute;
     z-index: var(--z-login-bg);
     pointer-events: none;
-    top: 0;
-    left: 0;
+    inset-block-start: 0;
+    inset-inline-start: 0;
     width: 100vw;
     height: 100vh;
     background-size: cover;
@@ -41,8 +41,8 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    top: 2rem;
-    left: 2rem;
+    inset-block-start: 2rem;
+    inset-inline-start: 2rem;
   }
 
   .logo-icon {

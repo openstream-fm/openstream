@@ -65,7 +65,7 @@ export const studio_api = ({
     return public_config(hosts);
   }))
 
-  api.get("/locale", json(async (req): Promise<LocalePayload> => {
+  api.get("/locale", json(async (req, res): Promise<LocalePayload> => {
     let langs: ReturnType<typeof acceptLanguageParser.parse> | null = null;
     if(req.cookie_session.user) {
       try {
@@ -85,26 +85,38 @@ export const studio_api = ({
       }
     }
 
-    if(langs != null) {
+    let locale: StudioLocale | null = null;
+
+    locale: if(langs != null) {
       for(const lang of langs) {
-        for(const locale of studio_locales) {
-          if(lang.code.toLowerCase() == locale.lang.toLowerCase() && lang.region?.toLowerCase() == locale.region?.toLowerCase()) {
-            return { locale };
+        for(const item of studio_locales) {
+          if(lang.code.toLowerCase() == item.lang.toLowerCase() && lang.region?.toLowerCase() == item.region?.toLowerCase()) {
+            locale = item;
+            break locale;
           }
         }
       }
 
       for(const lang of langs) {
-        for(const locale of studio_locales) {
-          if(locale.lang.toLowerCase() === lang.code.toLowerCase()) {
-            return { locale };
+        for(const item of studio_locales) {
+          if(item.lang.toLowerCase() === lang.code.toLowerCase()) {
+            locale = item;
+            break locale;
           }
         }
       }
     }
 
-    return { locale: default_studio_locale };
+    if(locale == null) locale = default_studio_locale;
 
+    const dir = locale.lang === "ar" ? "rtl" : "ltr";
+    const lang = locale.region ? `${locale.lang}-${locale.region}` : locale.lang;
+    
+    res.vary("accept-language");
+    res.header("x-locale-lang", lang);
+    res.header("x-locale-dir", dir);
+
+    return { locale };
   }))
 
   api.post("/auth/user/login", json(async (req, res) => {

@@ -153,10 +153,7 @@
   .drawer-overlay {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background: rgba(0,0,0,0.5);
     z-index: calc(var(--z-drawer-fixed) - 1);
   }
@@ -176,10 +173,7 @@
 
   .account-switch-anchor {
     position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 0;
-    height: 0;
+    inset: 0;
   }
 
   .account-switch-btn {
@@ -202,7 +196,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     margin-inline-end: 0.5rem;
-    text-align: left;
+    text-align: start;
     font-weight: 700;
     font-size: 1.05rem;
   }

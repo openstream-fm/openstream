@@ -135,7 +135,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    text-align: left;
+    text-align: start;
     gap: 0.1rem;
   }
 

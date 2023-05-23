@@ -27,13 +27,13 @@
 	}
 
 	.online h1 {
-		text-align: left;
+		text-align: start;
 		font-size: 7rem;
 		filter: drop-shadow(var(--red) 0.025em 0.025em 0);
 	}
 
 	.online h2 {
-		text-align: left;
+		text-align: start;
 		margin-top: 1rem;
 		font-size: 2.5rem;
 	}

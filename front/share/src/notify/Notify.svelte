@@ -126,8 +126,8 @@
   .messenger {
     position: fixed;
     z-index: 99999999999;
-    bottom: 0.5em;
-    left: 0.5em;
+    inset-block-end: 0.5em;
+    inset-inline-start: 0.5em;
     display: flex;
     flex-direction: column-reverse;
     align-items: flex-start;

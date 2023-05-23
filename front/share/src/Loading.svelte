@@ -54,9 +54,8 @@
     background-color: var(--loading-color);
     position: fixed;
     z-index: 10000000;
-    top: 0;
-    left: 0;
-    opacity: 0;
+    inset-block-start: 0;
+    inset-inline-start: 0;
     height: 2px;
     pointer-events: none;
     transition: opacity 300ms ease 200ms;

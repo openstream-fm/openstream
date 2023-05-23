@@ -16,8 +16,8 @@
 
   .logo {
     position: absolute;
-    top: 2rem;
-    left: 2rem;
+    inset-block-start: 2rem;
+    inset-inline-start: 2rem;
     font-size: 2rem;
     font-weight: 600;
     color: var(--red);

@@ -1,12 +1,10 @@
 <script lang="ts">
-  export let data: import("./$types").LayoutData;
+	import { browser } from "$app/environment";
   import "$lib/css/app.css";
+	import { lang, dir } from "$lib/locale";
 
-  $: meta_lang = data.locale.region ? `${data.locale.lang}-${data.locale.region}` : data.locale.lang;
+  $: browser && (document.documentElement.lang = $lang);
+  $: browser && (document.documentElement.dir = $dir);
 </script>
-
-<svelte:head>
-  <meta http-equiv="content-language" content={meta_lang} /> 
-</svelte:head>
 
 <slot />

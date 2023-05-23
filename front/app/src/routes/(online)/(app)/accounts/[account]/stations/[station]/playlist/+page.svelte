@@ -955,7 +955,7 @@
 
 
   th {
-    text-align: left;
+    text-align: start;
     font-weight: 500;
     font-size: 1rem;
   }
