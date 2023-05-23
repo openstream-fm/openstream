@@ -135,10 +135,7 @@
 
   .station-selector-anchor {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 0;
-    height: 0;
+    inset: 0;
     overflow: visible;
   }
 
@@ -212,12 +209,9 @@
 
   .current-action-line {
     position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    left: 0;
+    inset: 0;
     /* border-bottom: 1px solid var(--blue); */
-    border-radius: 0.25rem 0.25rem;
+    border-radius: 0.25rem;
     pointer-events: none;
     background: rgba(var(--blue-rgb), 0.1);
   }

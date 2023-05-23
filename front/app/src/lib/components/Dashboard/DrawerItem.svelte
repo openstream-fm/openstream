@@ -50,10 +50,10 @@
 
   .current-line {
     position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
+    inset-inline-start: 0;
+    inset-block-start: 0;
+    inset-block-end: 0;
+    inline-size: 3px;
     background: var(--red);
   }
 

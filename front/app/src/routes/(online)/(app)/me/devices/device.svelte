@@ -137,8 +137,8 @@
     background-position: center;
     background-repeat: no-repeat;
     filter: drop-shadow(rgba(0,0,0,0.25) 0 0 5px);
-    right: 0;
-    bottom: 0;
+    inset-inline-end: 0;
+    inset-block-end: 0;
   }
 
   .info {

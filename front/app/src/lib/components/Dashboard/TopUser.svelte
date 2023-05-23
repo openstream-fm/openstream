@@ -96,10 +96,8 @@
 
   .menu-position-out {
     position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 0;
-    height: 0;
+    inset-block-end: 0;
+    inset-inline-end: 0;
   }
 
   .menu-position-in {
@@ -108,8 +106,8 @@
 
   .menu {
     position: absolute;
-    top: 0;
-    right: 0;
+    inset-block-start: 0;
+    inset-inline-end: 0;
     background: #fff;
     width: min(calc(100vw - 3rem), 21rem);
     box-shadow: 0 5px 25px 0 rgb(0 0 0 / 10%);

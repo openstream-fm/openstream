@@ -111,6 +111,8 @@ export const studio_api = ({
 
     const dir = locale.lang === "ar" ? "rtl" : "ltr";
     const lang = locale.region ? `${locale.lang}-${locale.region}` : locale.lang;
+    
+    res.vary("accept-language");
     res.header("x-locale-lang", lang);
     res.header("x-locale-dir", dir);
 
