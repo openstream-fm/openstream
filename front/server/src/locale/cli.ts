@@ -6,7 +6,7 @@ import util from "util";
 import readline from "readline/promises";
 import type { Readable } from "stream";
 
-import { default_logger } from "../../logger";
+import { default_logger } from "../logger";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -33,8 +33,37 @@ while(true) {
   if(name !== "") break;
 }
 
+const kinds = ["studio", "countries", "stats-map", "validate", "type-of-content"];
+let kind: string;
+
 while(true) {
-  const n = (await rl.question(`Generate ${name} (${iso}) locale, continue? y/n `)).trim().toLowerCase();
+  const s = (await rl.question(`select a kind (${kinds.join(", ")}) `)).trim();
+  if(kinds.includes(s)) {
+    kind = s;
+    break;
+  }
+}
+
+let base: string;
+while(true) {
+  const s = (await rl.question(`select a base en/es `)).trim();
+  if(s === "es" || s === "en") {
+    base = s;
+    break;
+  }
+}
+
+
+const dir = kind === "studio" ? "studio" : `share/${kind}`;
+const src = `${__dirname}/${dir}/${kind}.${base}.ts`;
+const target = `${__dirname}/${dir}/${kind}.${iso}.ts`;
+
+while(true) {
+  const n = (await rl.question(`\
+Generate ${name} (${iso}) ${kind} locale from base ${base}
+source = ${src}
+target = ${target}
+continue? y/n `)).trim().toLowerCase();
   if(n === "y") break;
   if(n === "n") {
     console.log("Aborting");
@@ -44,12 +73,12 @@ while(true) {
 
 const request_message = `\
 Generate a localization file in typescript format for the language ${name} (ISO code: ${iso}), based on the \
-file provided in Spanish.
+file provided in ${base === "es" ? "Spanish" : "Englishº"}.
 Keep variables starting with "@" as is.
 The context of the translation is a user interface for a radio broadcasting application.
 
-/// file: countries.es.ts
-${fs.readFileSync(`${__dirname}/studio.es.ts`, "utf8")}`;
+/// file: ${kind}.${base}.ts
+${fs.readFileSync(src, "utf8")}`;
 
 const logger = default_logger.scoped("locale-gen");
 
@@ -128,8 +157,10 @@ request: while(true) {
       content,
     })
 
-    logger.info("last lines context");
-    logger.info(content);
+    messages.push({
+      role: "user",
+      content: "Continue from the previous message",
+    })
   }
 
   const stream = createChatCompletion({
@@ -150,14 +181,13 @@ request: while(true) {
     logger.warn(`stream error: ${e}`)
     logger.error(e);
     while(true) {
-      const r = (await rl.question("Continue? y/n")).trim();
+      const r = (await rl.question("Continue? y/n ")).trim();
       if(r === "n") break request;
       if(r === "y") continue request;      
     }
   }
 }
 
-const target = `${__dirname}/generated.${iso}.${Date.now()}.ts`;
 logger.info(`writing file to ${target}`);
 
 fs.writeFileSync(target, buf);
