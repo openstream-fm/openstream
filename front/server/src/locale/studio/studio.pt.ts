@@ -1,15 +1,19 @@
 import stats_map from "../share/stats-map/stats-map.pt";
 import validate from "../share/validate/validate.pt";
 import countries from "../share/countries/countries.pt";
+import type_of_content from "../share/type-of-content/type-of-content.pt";
 
 const locale: import("./studio.locale").StudioLocale = {
+  "lang": "pt",
+  "region": null,
 
   // @notranslate
-  "logo_text": "openstream",
+  "logo_text": "nuva",
 
   // @notranslate
-  "app_name": "Openstream Studio",
+  "app_name": "Nuva Studio",
 
+  "station_type_of_content": type_of_content,
   "countries": countries,
   "validate": validate,
   "stats_map": stats_map,
@@ -18,8 +22,11 @@ const locale: import("./studio.locale").StudioLocale = {
     "auto": "Detecção automática",
     "en": "English (Inglês)",
     "es": "Español (Espanhol)",
+    "es-AR": "Español de Argentina (Espanhol da Argentina)",
     "pt": "Português",
+    "de": "Deutsche (Alemão)",
     "fr": "Française (Francês)",
+    "it": "Italiano (Italiano)",
   },
 
   "copy_to_clipboard": "Copiar para a área de transferência",
@@ -324,8 +331,8 @@ const locale: import("./studio.locale").StudioLocale = {
       },
 
       "station_item": {
-        "on_air": "NO AR",
-        "off_air": "FORA DO AR",
+        "on_air": "ON",
+        "off_air": "OFF",
         "playlist": "Playlist",
         "live": "Ao vivo",
       }
@@ -342,16 +349,20 @@ const locale: import("./studio.locale").StudioLocale = {
       "no_items_create": "Criar uma estação",
     },
 
-    "stations.create_station": {
-      "create_a_stations": "Criar uma estação",
+    "stations/create_station": {
+      "head": {
+        "title": "Criar uma estação"
+      },
+      "title": "Criar uma estação",
+      "submit": "Criar estação",
       "notifier": {
         "station_created": "Nova estação criada",
       }
     },
 
     "station/dashboard": {
-      "on_air": "NO AR",
-      "off_air": "FORA DO AR",
+      "on_air": "ON",
+      "off_air": "OFF",
       "playlist": "Playlist",
       "live": "Ao vivo",
       "preview": "Visualizar",

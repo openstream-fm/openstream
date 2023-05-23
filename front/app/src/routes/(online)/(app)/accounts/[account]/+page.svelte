@@ -295,6 +295,9 @@
   .meter-title {
     font-weight: 600;
     font-size: 2em;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .meter-text {

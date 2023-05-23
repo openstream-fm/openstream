@@ -1,15 +1,20 @@
 import stats_map from "../share/stats-map/stats-map.en"
 import validate from "../share/validate/validate.en";
 import countries from "../share/countries/countries.en";
+import type_of_content from "../share/type-of-content/type-of-content.en";
 
 const locale = {
 
-  // @notranslate
-  "logo_text": "openstream",
+  "lang": "en",
+  "region": null as string | null,
 
   // @notranslate
-  "app_name": "Openstream Studio",
+  "logo_text": "nuva",
 
+  // @notranslate
+  "app_name": "Nuva Studio",
+
+  "station_type_of_content": type_of_content,
   "countries": countries,
   "validate": validate,
   "stats_map": stats_map,
@@ -22,8 +27,11 @@ const locale = {
     "auto": "Auto detect",
     "en": "English",
     "es": "Español (Spanish)",
-    "pt": "Portugues (Portuguese)",
+    "es-AR": "Español de Argentina (Argentinian Spanish)" ,
+    "pt": "Português (Portuguese)",
+    "de": "Deutsche (German)",
     "fr": "Française (French)",
+    "it": "Italiano (Italian)",
   },
 
   "drawer": {
@@ -342,8 +350,12 @@ const locale = {
       "no_items_create": "Create a station",
     },
 
-    "stations.create_station": {
-      "create_a_stations": "Create a station",
+    "stations/create_station": {
+      "head": {
+        "title": "Create a station"
+      },
+      "title": "Create a station",
+      "submit": "Create station",
       "notifier": {
         "station_created": "New station created",
       }

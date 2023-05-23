@@ -7,7 +7,3 @@ import { page } from "$app/stores";
 export const locale: Readable<StudioLocale> = derived(page, $page => {
   return $page.data.locale
 })
-
-export const lang: Readable<String> = derived(page, $page => {
-  return $page.data.lang
-})

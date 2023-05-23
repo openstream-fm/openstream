@@ -4,10 +4,10 @@ import validate from "../share/validate/validate.es";
 const locale: import("./admin.locale").AdminLocale = {
 
   // @notranslate
-  "logo_text": "openstream",
+  "logo_text": "nuva",
 
   // @notranslate
-  "app_name": "Openstream Admin",
+  "app_name": "Nuva Admin",
 
   "show_password": "Mostrar contraseña",
   "hide_password": "Ocultar contraseña",

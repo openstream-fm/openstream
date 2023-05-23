@@ -13,7 +13,7 @@ import { user_media_key } from "../media_key";
 import { ua } from "../ua";
 import { shared_api } from "./shared-api";
 import { host } from "../host";
-import { studio_locales } from "../locale/studio/studio.locale";
+import { default_studio_locale, studio_locales } from "../locale/studio/studio.locale";
 import type { StudioLocale } from "../locale/studio/studio.locale";
 import acceptLanguageParser from "accept-language-parser";
 
@@ -36,7 +36,6 @@ export const public_config = (hosts: HostConfig & { id: string }): PublicConfig 
 }
 
 export type LocalePayload = {
-  lang: string
   locale: StudioLocale
 }
 
@@ -88,15 +87,23 @@ export const studio_api = ({
 
     if(langs != null) {
       for(const lang of langs) {
-        for(const [code, locale] of Object.entries(studio_locales)) {
-          if(code.toLowerCase() === lang.code.toLowerCase()) {
-            return { lang: code, locale };
+        for(const locale of studio_locales) {
+          if(lang.code.toLowerCase() == locale.lang.toLowerCase() && lang.region?.toLowerCase() == locale.region?.toLowerCase()) {
+            return { locale };
+          }
+        }
+      }
+
+      for(const lang of langs) {
+        for(const locale of studio_locales) {
+          if(locale.lang.toLowerCase() === lang.code.toLowerCase()) {
+            return { locale };
           }
         }
       }
     }
 
-    return { lang: "en", locale: studio_locales.en };
+    return { locale: default_studio_locale };
 
   }))
 

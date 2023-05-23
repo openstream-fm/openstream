@@ -3,6 +3,7 @@
   import bg from "$share/img/login-bg.jpg?w=1920&format=webp&withoutEnlargement";
   // @ts-ignore
   import logo from "$share/img/logo-trans-128.png?w=36&format=webp";
+  import { locale } from "$share/locale";
 </script>
 
 
@@ -79,7 +80,7 @@
   <div class="bg" style:background-image="url({ bg })" />
   <div class="logo">
     <div class="logo-icon" style:background-image="url({ logo })" />
-    <div class="logo-text">openstream</div>
+    <div class="logo-text">{$locale.logo_text}</div>
   </div>
   <div class="content">
     <slot />
