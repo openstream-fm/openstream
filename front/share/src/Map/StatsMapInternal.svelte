@@ -160,7 +160,7 @@
     padding: var(--spacing) calc(var(--spacing) * 2) var(--spacing) var(--spacing);
     display: flex;
     flex-direction: column;
-    text-align: left;
+    text-align: start;
     align-items: flex-start;
     transition: background-color 300ms ease;
     background-color: transparent;

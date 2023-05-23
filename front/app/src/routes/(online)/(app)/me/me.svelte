@@ -147,13 +147,13 @@
   .page-title {
     font-weight: 600;
     font-size: 1.5em;
-    text-align: left;
+    text-align: start;
   }
 
   .page-subtitle {
     font-size: max(1rem, 1.1em);
     margin-top: 0.25rem;
-    text-align: left;
+    text-align: start;
   }
 
   @media screen and (max-width: 500px) {
