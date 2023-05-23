@@ -30,6 +30,7 @@ const locale: import("./studio.locale").StudioLocale = {
     "fr": "Française (法语)",
     "it": "Italiano (意大利语)",
     "zh": "简体中文",
+    "ar": "عربي (阿拉伯)",
   },
 
   "copy_to_clipboard": "复制到剪贴板",

@@ -32,7 +32,8 @@ const locale = {
     "de": "Deutsche (German)",
     "fr": "Française (French)",
     "it": "Italiano (Italian)",
-    "zh": "简体中文 (Simplified Chinese)"
+    "zh": "简体中文 (Simplified Chinese)",
+    "ar": "عربي (Arabic)",
   },
 
   "drawer": {
