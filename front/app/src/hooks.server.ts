@@ -52,6 +52,9 @@ export const handle: Handle = async ({ event, resolve }) => {
   if(ok) server_logger.debug(message);
   else server_logger.warn(message);
 
+  const vary = (res.headers.get("vary") || "").split(",");
+  res.headers.set("vary", [...new Set([...vary, "accept-language"])].join(","))
+
   return res;
 }
 
