@@ -109,7 +109,8 @@
     border: var(--blue) 1px solid;
     background: #fff;
     padding: 0 1rem;
-    border-radius: 0 0.5rem 0.5rem 0;
+    border-start-end-radius: 0.5rem;
+    border-end-end-radius: 0.5rem;
   }
 
 
