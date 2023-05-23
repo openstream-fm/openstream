@@ -251,7 +251,10 @@
 
   .stats-selector-anchor {
     position: absolute;
-    inset: 0;
+    inset-block-end: 0;
+    inset-inline-start: 0;
+    width: 0;
+    height: 0;
     z-index: 1;
   }
 
