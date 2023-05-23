@@ -3,7 +3,7 @@
 	import SimpleLogo from "$lib/components/SimpleLogo.svelte";
 	import { locale } from "$lib/locale";
 	import { ripple } from "$share/ripple";
-	import { fly } from "svelte/transition";
+	import { logical_fly } from "$share/transition";
   export let data: import("./$types").PageData;
 </script>
 
@@ -144,7 +144,7 @@
   <title>{$locale.pages.accounts.head.title}</title>
 </svelte:head>
 
-<div class="layout" in:fly={{ x: -25, duration: 200 }}>
+<div class="layout" in:logical_fly={{ x: -25, duration: 200 }}>
   <div class="top">
     <div class="logo">
       <SimpleLogo />

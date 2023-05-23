@@ -5,7 +5,8 @@
 	import { locale } from "$lib/locale";
 	import { click_out } from "$share/actions";
 	import { ripple } from "$share/ripple";
-	import { crossfade, fade, fly } from "svelte/transition";
+	import { logical_fly } from "$share/transition";
+	import { crossfade, fade } from "svelte/transition";
   
   $: current_page = $page.data.current_page;
   $: account_stations = data.stations.items.filter(item => item.account_id === data.account._id);
@@ -243,7 +244,7 @@
               class="station-selector-menu"
               style:--scroll-y="{scroll_y}px"
               use:click_out={selector_menu_click_out}
-              transition:fly|local={{ duration: 200, y: -10 }}
+              transition:logical_fly|local={{ duration: 200, y: -10 }}
             >
               {#each account_stations as station (station._id)}
                 <a

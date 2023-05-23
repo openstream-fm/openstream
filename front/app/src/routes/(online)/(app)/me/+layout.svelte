@@ -1,10 +1,7 @@
 <script lang="ts">
 	import TopUser from "$lib/components/Dashboard/TopUser.svelte";
 	import SimpleLogo from "$lib/components/SimpleLogo.svelte";
-
-
-	import { fly } from "svelte/transition";
-
+	import { logical_fly } from "$share/transition";
 </script>
 <style>
   .layout {
@@ -38,7 +35,7 @@
 
 </style>
 
-<div class="layout" in:fly|local={{ x: -25, duration: 200 }}>
+<div class="layout" in:logical_fly|local={{ x: -25, duration: 200 }}>
   <div class="top">
     <div class="logo">
       <SimpleLogo />

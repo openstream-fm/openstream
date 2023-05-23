@@ -11,10 +11,10 @@
 	import Formy from "$share/formy/Formy.svelte";
   import { goto } from "$app/navigation";
 	import Color from "color";
-	import { fly } from "svelte/transition";
   import "$share/LoginDashboard/login-page.css";
 	import { invalidateSiblings } from "$lib/invalidate";
 	import { locale } from "$lib/locale";
+	import { logical_fly } from "$share/transition";
 	
   let account_name = "";
   let sending = false;
@@ -131,7 +131,7 @@
   <title>{$locale.pages["accounts/create_account/plan"].head.title}</title>
 </svelte:head>
 
-<div class="page" in:fly|local={{ y: -25, duration: 200 }}>
+<div class="page" in:logical_fly|local={{ y: -25, duration: 200 }}>
   <Formy action={send} let:submit>
     <form novalidate on:submit={submit} class="login-page-box">
       <div class="login-page-title">

@@ -2,13 +2,13 @@
   $: admin = $page.data.admin || null;
   
   import { page } from "$app/stores";
-  import { fly } from "svelte/transition";
-	import { ripple } from "$share/ripple";
+  import { ripple } from "$share/ripple";
 	import { click_out } from "$share/actions";
 	import { action, _post } from "$share/net.client";
 	import Icon from "$share/Icon.svelte";
 	import { mdiAccountCircleOutline, mdiLogout } from "@mdi/js";
 	import { goto } from "$app/navigation";
+	import { logical_fly } from "$share/transition";
 
   const sign_out = action(async () => {
     await _post("/api/auth/admin/logout", {});
@@ -196,7 +196,7 @@
     <div class="menu-position-out">
       <div class="menu-position-in">
         {#if menu_open}
-          <div class="menu thin-scroll" transition:fly|local={{ y: -25, x: 10, duration: 200 }}>
+          <div class="menu thin-scroll" transition:logical_fly|local={{ y: -25, x: 10, duration: 200 }}>
             <div class="menu-head menu-section">
               <div class="menu-head-icon">
                 <Icon d={mdiAccountCircleOutline} />

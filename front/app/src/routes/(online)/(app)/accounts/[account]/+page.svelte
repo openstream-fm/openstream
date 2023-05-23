@@ -6,8 +6,7 @@
 	import { click_out, intersect } from "$share/actions";
 	import { _get, _patch, action } from "$share/net.client";
 	import { ripple } from "$share/ripple";
-	import { fly } from "svelte/transition";
-
+  
   let selector_state: { kind: "account" | "station", record_id: string, data: Stats, station: typeof data.stations.items[number] | null } = {
     kind: "account",
     record_id: data.account._id,
@@ -30,6 +29,7 @@
 	import { _string } from "$share/formy/validate";
 	import AccountStationItem from "./account-station-item.svelte";
 	import { locale } from "$lib/locale";
+	import { logical_fly } from "$share/transition";
   
   $: current_account_stations = data.stations.items.filter(item => item.account_id === data.account._id);
 
@@ -422,7 +422,7 @@
             <div 
               class="stats-selector-menu"
               use:click_out={selector_menu_click_out}
-              transition:fly|local={{ duration: 125, y: -10 }}
+              transition:logical_fly|local={{ duration: 125, y: -10 }}
             >
               <button class="stats-selector-item" class:current={selector_state.station == null} on:click={() => select(null)}>
                 <div class="stats-selector-name">
