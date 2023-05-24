@@ -240,10 +240,16 @@ const locale: import("./studio.locale").StudioLocale = {
         },
         "next": "Avanti",
       },
+      "pay": {
+        "title": "Dettagli del pagamento",
+        "message": "Non verrai addebitato fino alla fine del tuo periodo di prova di 30 giorni e puoi cancellare in qualsiasi momento."
+      },
+
+      "back": "Torna al passo precedente",
+
       "verification": {
         "title": "Inserisci il codice di verifica",
         "message_html": "Ti abbiamo inviato un codice di verifica a <b>@email</b>",
-        "back": "Torna al modulo",
         "submit": "Invia",
       },
       "links": {
@@ -317,6 +323,11 @@ const locale: import("./studio.locale").StudioLocale = {
           "account_name_message": "Se stai creando un account per un'organizzazione, puoi compilare questo campo con il nome dell'organizzazione",
         },
         "submit": "Crea",
+        "next": "Avanti",
+        "pay": {
+          "title": "Dettagli del pagamento",
+        },
+        "back": "Torna al passo precedente",
       }
     },
 
