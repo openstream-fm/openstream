@@ -371,7 +371,7 @@
     <Formy action={change_password} let:submit>
       <form novalidate class="section section-password" on:submit={submit}>
         <div class="hidden-field" hidden>
-          <input type="email" readonly value={data.user.email} />
+          <input type="email" readonly autocomplete="username" value={data.user.email} />
         </div>
         <div class="section-title">{$locale.pages.me.change_password.title}</div>
         <div class="fields">
