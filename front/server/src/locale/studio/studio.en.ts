@@ -239,10 +239,17 @@ const locale = {
         },
         "next": "Next",
       },
+      
+      "pay": {
+        "title": "Payment details",
+        "message": "You wont be charged until your 30 day trial ends and you can cancel anytime."
+      },
+
+      "back": "Back to the previous step",
+
       "verification": {
         "title": "Enter the verification code",
         "message_html": "We sent you a verification code to <b>@email</b>",
-        "back": "Back to form",
         "submit": "Submit",
       },
       "links": {
@@ -316,6 +323,11 @@ const locale = {
           "account_name_message": "If you are creating an account for an organization, you can fill this field with the organization's name"
         },
         "submit": "Create",
+        "next": "Next",
+        "pay": {
+          "title": "Payment details",
+        },
+        "back": "Back to the previous step",
       }
     },
 

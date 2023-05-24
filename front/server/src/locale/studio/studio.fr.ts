@@ -239,10 +239,16 @@ const locale: import("./studio.locale").StudioLocale = {
         },
         "next": "Suivant",
       },
+      "pay": {
+        "title": "Détails du paiement",
+        "message": "Vous ne serez pas facturé avant la fin de votre essai de 30 jours et vous pouvez annuler à tout moment."
+      },
+      
+      "back": "Revenez à l'étape précédente",
+
       "verification": {
         "title": "Entrez le code de vérification",
         "message_html": "Nous avons envoyé un code de vérification à <b>@email</b>",
-        "back": "Retour au formulaire",
         "submit": "Envoyer",
       },
       "links": {
@@ -316,6 +322,11 @@ const locale: import("./studio.locale").StudioLocale = {
           "account_name_message": "Si vous créez un compte pour une organisation, vous pouvez remplir ce champ avec le nom de l'organisation",
         },
         "submit": "Créer",
+        "next": "Suivant",
+        "pay": {
+          "title": "Détails du paiement",
+        },
+        "back": "Retour à l'étape précédente",
       }
     },
 

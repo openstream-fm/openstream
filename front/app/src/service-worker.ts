@@ -75,13 +75,3 @@ registerRoute(
   })
 )
 
-registerRoute(
-  ({ request }) => request.destination === "document",
-  new NetworkOnly(),  
-)
-
-registerRoute(
-  ({ url }) => url.origin === self.origin && (url.pathname === "/api" || url.pathname.startsWith("/api/")),
-  new NetworkOnly(),  
-)
-

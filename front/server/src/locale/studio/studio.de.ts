@@ -240,12 +240,19 @@ const locale = {
         },
         "next": "Weiter",
       },
+      "pay": {
+        "title": "Zahlungsdetails",
+        "message": "Sie werden erst nach Ablauf Ihrer 30-tägigen Testversion in Rechnung gestellt, und Sie können jederzeit kündigen."
+      },
+
+      "back": "Gehen Sie zurück zum vorherigen Schritt",
+
       "verification": {
         "title": "Geben Sie den Bestätigungscode ein",
         "message_html": "Wir haben Ihnen einen Bestätigungscode an <b>@email</b> gesendet",
-        "back": "Zurück zum Formular",
         "submit": "Absenden",
       },
+
       "links": {
         "login_comment": "Haben Sie bereits ein Konto?",
         "login_link": "Anmelden",
@@ -317,6 +324,11 @@ const locale = {
           "account_name_message": "Wenn Sie ein Konto für eine Organisation erstellen, können Sie dieses Feld mit dem Namen der Organisation ausfüllen"
         },
         "submit": "Erstellen",
+        "next": "Weiter",
+        "pay": {
+          "title": "Zahlungsdetails",
+        },
+        "back": "Zurück zum vorherigen Schritt",
       }
     },
 

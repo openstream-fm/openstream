@@ -240,10 +240,16 @@ const locale: import("./studio.locale").StudioLocale = {
         },
         "next": "下一步",
       },
+      "pay": {
+        "title": "付款详情",
+        "message": "您在30天试用期结束之前不会被收费，并且您可以随时取消。"
+      },
+
+      "back": "返回到上一步",
+      
       "verification": {
         "title": "输入验证码",
         "message_html": "我们已向 <b>@email</b> 发送了验证码",
-        "back": "返回表单",
         "submit": "提交",
       },
       "links": {
@@ -317,6 +323,11 @@ const locale: import("./studio.locale").StudioLocale = {
           "account_name_message": "如果您为组织创建帐户，可以用组织名称填写此字段",
         },
         "submit": "创建",
+        "next": "下一步",
+        "pay": {
+          "title": "付款详情",
+        },
+        "back": "返回上一步",
       }
     },
 
