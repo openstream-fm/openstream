@@ -8,8 +8,20 @@ on:
     branches: [ master, dev ]
 
 jobs:
+
+  skip_check:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v5
+  
   
   front-studio-build:
+
+    needs: skip_check
+    if: needs.skip_check.outputs.should_skip != 'true'
 
     defaults:
       run:
@@ -22,8 +34,6 @@ jobs:
         node-version: [18.x]
 
     steps:
-      - name: Skip Duplicate Actions
-        uses: fkirc/skip-duplicate-actions@v5.3.0
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
