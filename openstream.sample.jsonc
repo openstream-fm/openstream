@@ -1,5 +1,5 @@
-// this file can contain comments
-// you can mark it as "JSON with Comments" if you are using VSCode 
+/// this file can contain comments
+/// you can mark it as "JSON with Comments" if you are using VSCode 
 {
   // mongodb related settings
   "mongodb": {
