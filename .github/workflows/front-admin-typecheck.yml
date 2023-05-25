@@ -9,7 +9,7 @@ on:
 
 jobs:
   
-  build:
+  front-admin-typecheck:
 
     runs-on: ubuntu-latest
 
