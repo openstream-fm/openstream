@@ -25,6 +25,11 @@
 	import { lang, locale } from '$lib/locale';
 	import { invalidateSiblings } from '$lib/invalidate';
 	import { logical_fly } from '$share/transition';
+	import Dropin from "$share/braintree/Dropin.svelte";
+
+	let dropin: Dropin;
+	let payment_nonce: string | null = null;
+	let payment_device_data: string | null = null;
 
 	let first_name = '';
 	let last_name = '';
@@ -34,24 +39,7 @@
 	let password = '';
 	let confirm_password = '';
 
-	const dropin_locales: Partial<Record<string, string>> = {
-		en: 'en_US',
-		'es-AR': 'es_ES',
-		es: 'es_ES',
-		pt: 'pt_BR',
-		fr: 'fr_FR',
-		it: 'it_IT',
-		de: 'de_DE',
-		ar: 'ar_EG',
-		zh: 'zh_CN'
-	};
-
-	$: dropin_locale = dropin_locales[$lang] || undefined;
-
 	let email_verification_code = '';
-
-	let payment_nonce: string | null = null;
-	let dropin: any | null = null;
 
 	let animations = false;
 	let view: 'data' | 'code' | 'pay' = 'data';
@@ -87,8 +75,6 @@
 		if (sending_pay) return;
 		sending_pay = true;
 		try {
-			if (dropin == null) throw new Error('Payment datails error: collector not created');
-
 			try {
 				const payment_result = await dropin.requestPaymentMethod();
 				console.log('payment result', payment_result);
@@ -96,6 +82,7 @@
 					throw new Error('Payment internal error: invalid response');
 				} else {
 					payment_nonce = payment_result.nonce;
+					payment_device_data = payment_result.deviceData || null;
 				}
 			} catch (e) {
 				sending_pay = false;
@@ -163,33 +150,6 @@
 
 	import { form } from '../../../transitions';
 	import { tick } from 'svelte';
-
-	const braintree_hydrate = (node: HTMLElement) => {
-		const fn = async () => {
-			// @ts-ignore
-			dropin = await window.braintree.dropin.create({
-				authorization: 'sandbox_d58xyrp3_xbw6cq92jcgfmzdh',
-				container: node,
-				locale: dropin_locale,
-				card: {
-					clearFieldsAfterTokenization: false
-				}
-			});
-		};
-
-		// @ts-ignore
-		if (window.braintree?.dropin == null) {
-			const s = document.createElement('script');
-			s.src = 'https://js.braintreegateway.com/web/dropin/1.37.0/js/dropin.min.js';
-			document.head.appendChild(s);
-			s.onload = fn;
-			s.onerror = (e) => {
-				console.warn('error loading braintree dropin:', e);
-			};
-		} else {
-			fn();
-		}
-	};
 </script>
 
 <style>
@@ -292,7 +252,7 @@
 	.code-message {
 		margin-top: 2rem;
 		text-align: center;
-		width: min(80%, 500px);
+		width: min(90%, 500px);
 	}
 
 	.code-message > :global(b) {
@@ -327,13 +287,13 @@
 
 	.back-to {
 		margin-top: 1rem;
-		font-size: 0.95rem;
-    color: #444;
+		font-size: 0.9rem;
+		color: #444;
 	}
 
-  .back-to:hover {
-    text-decoration: underline;
-  }
+	.back-to:hover {
+		text-decoration: underline;
+	}
 
 	.payment-message {
 		text-align: center;
@@ -344,33 +304,11 @@
 		font-size: 0.9rem;
 		color: #444;
 	}
-
-	.braintree-dropin-out {
+	
+	.dropin-out {
 		min-height: 10rem;
 		padding: 0 2.5rem;
 		width: 100%;
-	}
-  
-	.braintree-dropin-out :global(*) {
-		font-family: inherit !important;
-	}
-
-	.braintree-dropin :global(.braintree-sheet__header-label) {
-		display: none !important;
-	}
-
-	.braintree-dropin :global(.braintree-sheet__content--form) {
-		padding: 1.5rem 1rem;
-	}
-
-	.braintree-dropin :global(.braintree-form__flexible-fields),
-	.braintree-dropin :global(.braintree-form__field-group:not(:first-child)) {
-		margin-block-start: 1.5rem !important;
-	}
-
-	.braintree-dropin :global(.braintree-form__field-group),
-	.braintree-dropin :global(.braintree-form__flexible-fields) {
-		margin-block-end: 0;
 	}
 </style>
 
@@ -534,8 +472,8 @@
 				{$locale.pages.register.pay.message}
 			</div>
 
-			<div class="braintree-dropin-out">
-				<div class="braintree-dropin" use:braintree_hydrate />
+			<div class="dropin-out">
+				<Dropin authorization="sandbox_d58xyrp3_xbw6cq92jcgfmzdh" bind:this={dropin} lang={$lang} />
 			</div>
 
 			<button class="back-to ripple-container" use:ripple on:click|preventDefault={back_to_data}>
@@ -606,8 +544,11 @@
 	</Formy>
 
 	<div class="login-page-switch-box">
-		<span class="login-page-comment">{$locale.pages.register.links.login_comment}</span>
-		<a class="na login-page-link sign-in" href="/login">{$locale.pages.register.links.login_link}</a
-		>
+		<span class="login-page-comment">
+			{$locale.pages.register.links.login_comment}
+		</span>
+		<a class="na login-page-link sign-in" href="/login">
+			{$locale.pages.register.links.login_link}
+		</a>
 	</div>
 </div>

@@ -47,7 +47,7 @@
 	}
 
 	.note {
-		width: min(80%, 400px);
+		width: min(90%, 400px);
 		text-align: center;
 		margin-top: 1rem;
 		color: #333;

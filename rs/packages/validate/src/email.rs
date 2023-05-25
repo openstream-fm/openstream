@@ -3,8 +3,9 @@ use lazy_regex::{lazy_regex, Lazy, Regex};
 use crate::error::ValidationError;
 
 static MAIL_REGEX: Lazy<Regex> = lazy_regex!(
-  r"^[a-z0-9]([a-z0-9\-_\.]+)?@[a-z0-9][a-z0-9_\-\.]+[a-z0-9]\.[a-z0-9\-_\.]{2,}[a-z0-9]$"
+  r"^[a-z0-9]([a-z0-9_\-\.\+]+)?@[a-z0-9]([a-z0-9_\-\.]*[a-z0-9])?\.[a-z0-9_\-\.]*[a-z0-9]$"
 );
+// r"^[a-z0-9]([a-z0-9\-_\.]+)?@[a-z0-9][a-z0-9_\-\.]+[a-z0-9]\.[a-z0-9\-_\.]{2,}[a-z0-9]$"
 
 pub fn is_valid_email(address: &str) -> bool {
   !MAIL_REGEX.is_match(address)
