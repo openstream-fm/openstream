@@ -23,7 +23,7 @@
 
   .list-box {
     margin-top: 3.5rem;
-    width: min(80%, 500px);
+    width: min(90%, 500px);
     background: #fff;
     box-shadow: 0 0 15px 0 rgb(0 0 0 / 10%);
     border-radius: 0.5rem;
