@@ -1,14 +1,35 @@
 name: front-studio-typecheck
 
 on: 
-  #push:
-  #    branches: [ master, dev ]
-  pull_request:
-      types: [ opened, reopened ]
+  push:
+    paths:
+      - "./defs"
+      - "./defs-patches"
+      - "./front"
+    branches: [ master, dev ]
+  
+  pull_request_target:
+    paths:
+      - "./defs"
+      - "./defs-patches"
+      - "./front"
+    branches: [ master, dev ]
 
 jobs:
   
-  build:
+  skip_check:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v5
+
+
+  front-studio-typecheck:
+
+    needs: skip_check
+    if: needs.skip_check.outputs.should_skip != 'true'
 
     runs-on: ubuntu-latest
 

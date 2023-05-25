@@ -35,21 +35,21 @@ test.todo("client integration tests");
 
 // test("integration - users.list", async t => {
 //   const output = await client.users.list(ip, ua, token, { limit: 1, skip: 1 });
-//   assert_validate(t, validateEquals<import("../defs/api/users/GET/Output").Output>(output));
+//   assert_validate(t, validateEquals<import("$api/users/GET/Output").Output>(output));
 // })
 
 // test("integration - accounts.list", async t => {
 //   const output = await client.accounts.list(ip, ua, token, { limit: 1, skip: 1 });
-//   assert_validate(t, validateEquals<import("../defs/api/accounts/GET/Output").Output>(output));
+//   assert_validate(t, validateEquals<import("$api/accounts/GET/Output").Output>(output));
 // })
 
 // test("integration - stations.list", async t => {
 //   const output = await client.stations.list(ip, ua, token, { limit: 1, skip: 1 });
-//   assert_validate(t, validateEquals<import("../defs/api/stations/GET/Output").Output>(output));
+//   assert_validate(t, validateEquals<import("$api/stations/GET/Output").Output>(output));
 // })
 
 // test("integration - devices.list", async t => {
 //   const output = await client.devices.list(ip, ua, token, { limit: 1, skip: 1 });
-//   assert_validate(t, validateEquals<import("../defs/api/devices/GET/Output").Output>(output));
+//   assert_validate(t, validateEquals<import("$api/me/devices/GET/Output").Output>(output));
 // })
 

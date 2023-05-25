@@ -6,9 +6,10 @@
 		"dev": "APP_API_PORT=18965 vite dev --port 3100 --host",
 		"build": "PROTOCOL_HEADER=x-forwarded-proto ADDRESS_HEADER=x-real-ip APP_API_PORT=18965 vite build",
 		"preview": "vite preview",
+		"sync": "npx @sveltejs/kit sync",
 		"test": "playwright test",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --threshold error --ignore '../server/**/*'",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"check:warn": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --threshold warning --ignore '../server/**/*'",
 		"lint": "prettier --plugin-search-dir . --check . && eslint .",
 		"format": "prettier --plugin-search-dir . --write ."
 	},

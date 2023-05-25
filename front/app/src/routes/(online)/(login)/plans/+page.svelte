@@ -2,6 +2,7 @@
   export let data: import("./$types").PageData;
   import PlanSelector from '$lib/components/PlanSelector/PlanSelector.svelte';
 	import Page from "$lib/components/Page.svelte";
+	import { locale } from '$lib/locale';
 </script>
 
 <style>
@@ -74,16 +75,25 @@
 
 </style>
 
+<svelte:head>
+  <title>{$locale.pages.plans.head.title}</title>
+</svelte:head>
+
 <Page compact>
   <div class="page">
     <div class="top">
-      <h1>Going live in 3... 2... 1...</h1>
-      <h2>Start your radio station in less than 60 seconds.</h2>
-      <h3>You won't be billed until the end of your trial. And you can cancel anytime.</h3>
+      <h1>{$locale.pages.plans.title_1}</h1>
+      <h2>{$locale.pages.plans.title_2}</h2>
+      <h3>{$locale.pages.plans.title_3}</h3>
     </div>
     
     <div class="plans">
-      <PlanSelector plans={data.plans.items} target_url={plan => `/register/plan/${plan._id}`} select_btn_label="Start Trial" />
+      <PlanSelector 
+        plans={data.plans.items}
+        show_trial
+        target_url={plan => `/register/plan/${plan.slug}`}
+        select_btn_label={$locale.pages.plans.plan_selector.select_btn_label}
+      />
     </div>
   </div>
 </Page>

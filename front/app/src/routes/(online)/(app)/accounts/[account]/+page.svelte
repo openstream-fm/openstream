@@ -1,14 +1,12 @@
 <script lang="ts">
   export let data: import("./$types").PageData;
   import Page from "$lib/components/Page.svelte";
-	import type { Station } from "$server/defs/db/Station";
 	import StatsMap from "$share/Map/StatsMap.svelte";
 	import type { Stats } from "$share/Map/StatsMap.svelte";
 	import { click_out, intersect } from "$share/actions";
 	import { _get, _patch, action } from "$share/net.client";
 	import { ripple } from "$share/ripple";
-	import { fly } from "svelte/transition";
-
+  
   let selector_state: { kind: "account" | "station", record_id: string, data: Stats, station: typeof data.stations.items[number] | null } = {
     kind: "account",
     record_id: data.account._id,
@@ -18,18 +16,23 @@
 
   import type { View } from "$share/Map/StatsMap.svelte";
 	import { default_logger } from "$share/logger";
-	import { onMount } from "svelte";
 	import { sleep } from "$share/util";
 	import type { AccountLimits } from "$server/defs/AccountLimits";
 	import CircularMeter from "$lib/components/CircularMeter/CircularMeter.svelte";
 	import { tooltip } from "$share/tooltip";
 	import Icon from "$share/Icon.svelte";
-	import { mdiCircleEditOutline, mdiFileEditOutline } from "@mdi/js";
+	import { mdiCircleEditOutline } from "@mdi/js";
 	import Dialog from "$share/Dialog.svelte";
 	import Formy from "$share/formy/Formy.svelte";
 	import TextField from "$lib/components/Form/TextField.svelte";
 	import Validator from "$share/formy/Validator.svelte";
 	import { _string } from "$share/formy/validate";
+	import AccountStationItem from "./account-station-item.svelte";
+	import { locale } from "$lib/locale";
+	import { logical_fly } from "$share/transition";
+  
+  $: current_account_stations = data.stations.items.filter(item => item.account_id === data.account._id);
+
   let view: View = "now";
 
   let _token = 0;
@@ -39,7 +42,7 @@
     if(station?._id === selector_state.station?._id) return;
     const token = ++_token;
     if(station) {
-      const { stats }: import("$server/defs/api/stations/[station]/stream-stats/GET/Output").Output =
+      const { stats }: import("$api/stations/[station]/stream-stats/GET/Output").Output =
         await _get(`/api/stations/${station._id}/stream-stats`);
       if(token === _token) {
         selector_state = {
@@ -50,7 +53,7 @@
         }
       }
     } else {
-      const { stats }: import("$server/defs/api/accounts/[account]/stream-stats/GET/Output").Output =
+      const { stats }: import("$api/accounts/[account]/stream-stats/GET/Output").Output =
         await _get(`/api/accounts/${data.account._id}/stream-stats`);
       if(token === _token) {
         selector_state = {
@@ -101,7 +104,7 @@
   const LIMITS_UPDATE_INTERVAL = 5_000;
   let limits_on_screen = true;
 
-  const limits = (node: HTMLElement) => {
+  const limits = (_node: HTMLElement) => {
     
     const logger = default_logger.scoped("limits");
 
@@ -146,7 +149,7 @@
   let edit_open = false;
   let current_account_name = data.account.name;
   const edit = action(async () => {
-    let payload: import("$server/defs/api/accounts/[account]/PATCH/Payload").Payload = {
+    let payload: import("$api/accounts/[account]/PATCH/Payload").Payload = {
       name: current_account_name,
     };
     await _patch(`/api/accounts/${data.account._id}`, payload);
@@ -217,7 +220,13 @@
   }
 
   .stats-selector-btn-text {
-    margin-inline-end: 0.75rem;
+    margin-inline-end: 0.35rem;
+  }
+
+  .stats-selector-btn-chevron {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .stats-selector-item.current {
@@ -236,14 +245,14 @@
     background-size: contain;
     background-repeat: no-repeat;
     flex: none;
-    margin-inline-end: 1rem;
     margin-inline-start: -0.5rem;
+    margin-inline-end: 0.75rem;
   }
 
   .stats-selector-anchor {
     position: absolute;
-    left: 0;
-    bottom: 0;
+    inset-block-end: 0;
+    inset-inline-start: 0;
     width: 0;
     height: 0;
     z-index: 1;
@@ -286,6 +295,9 @@
   .meter-title {
     font-weight: 600;
     font-size: 2em;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .meter-text {
@@ -350,6 +362,17 @@
     padding: 0.75rem;
     box-shadow: var(--some-shadow);
   }
+
+  .stations {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1rem;
+  }
+  
+  .station {
+    background: #ddd;
+  }
 </style>
 
 <svelte:head>
@@ -360,10 +383,20 @@
   
   <div class="title">
     <h1>{data.account.name}</h1>
-    <button class="edit-btn ripple-container" use:ripple use:tooltip={"Edit"} on:click={() => edit_open = true}>
+    <button class="edit-btn ripple-container" use:ripple use:tooltip={$locale.pages["account/dashboard"].edit.tooltip} on:click={() => edit_open = true}>
       <Icon d={mdiCircleEditOutline} />
     </button>
   </div>
+
+  {#if current_account_stations.length}
+    <div class="stations">
+      {#each current_account_stations as station (station._id)}
+        <div class="station">
+          <AccountStationItem {station} now_playing={data.now_playing_record[station._id]} />
+        </div>
+      {/each}
+    </div>
+  {/if}
 
   <div class="stats">
     <div class="stats-selector-out">
@@ -375,25 +408,28 @@
               style:background-image="url({data.config.storage_public_url}/station-pictures/webp/64/{selector_state.station.picture_id}.webp)"
             />
           {/if}
-          <div class="stats-selector-btn-text">
+          <span class="stats-selector-btn-text">
             {#if selector_state.station}
               {selector_state.station.name}
             {:else}
-              All stations
+              {$locale.pages["account/dashboard"].stats_map.all_stations}
             {/if}
-          </div>
-          ▼
+          </span>
+          <span class="stats-selector-btn-chevron">
+            ▼
+            <!-- <Icon d={mdiPlay} /> -->
+          </span>
         </button>
         <div class="stats-selector-anchor">
           {#if selector_open}
             <div 
               class="stats-selector-menu"
               use:click_out={selector_menu_click_out}
-              transition:fly|local={{ duration: 125, y: -10 }}
+              transition:logical_fly|local={{ duration: 125, y: -10 }}
             >
               <button class="stats-selector-item" class:current={selector_state.station == null} on:click={() => select(null)}>
                 <div class="stats-selector-name">
-                  All stations
+                  {$locale.pages["account/dashboard"].stats_map.all_stations}
                 </div>
               </button>
               {#each account_stations as station (station._id)}
@@ -410,59 +446,66 @@
       </div>
     </div>
     
-    <StatsMap bind:view kind={selector_state.kind} record_id={selector_state.record_id} bind:data={selector_state.data} />
+    <StatsMap
+      bind:view
+      kind={selector_state.kind}
+      record_id={selector_state.record_id}
+      locale={$locale.stats_map}
+      country_names={$locale.countries}
+      bind:data={selector_state.data}
+    />
   </div>
 
   <div class="meters" use:limits use:intersect={{ enter: () => limits_on_screen = true, leave: () => limits_on_screen = false}}>
     <div class="meter">
       <div class="meter-title">
-        Stations
+        {$locale.limits.stations}
       </div>
       <div class="meter-graph">
         <CircularMeter used={data.account.limits.stations.used / data.account.limits.stations.total} />
       </div>
       <div class="meter-text">
         <span class="used">{data.account.limits.stations.used}</span>
-        <span class="of">of</span>
+        <span class="of">{$locale.limits.of}</span>
         <span class="avail">{data.account.limits.stations.total}</span>
       </div>
     </div>
     <div class="meter">
       <div class="meter-title">
-        Listeners
+        {$locale.limits.listeners}
       </div>
       <div class="meter-graph">
         <CircularMeter used={data.account.limits.listeners.used / data.account.limits.listeners.total} />
       </div>
       <div class="meter-text">
         <span class="used">{data.account.limits.listeners.used}</span>
-        <span class="of">of</span>
+        <span class="of">{$locale.limits.of}</span>
         <span class="avail">{data.account.limits.listeners.total}</span>
       </div>
     </div>
     <div class="meter">
       <div class="meter-title">
-        Transfer
+        {$locale.limits.transfer}
       </div>
       <div class="meter-graph">
         <CircularMeter used={data.account.limits.transfer.used / data.account.limits.transfer.total} />
       </div>
       <div class="meter-text">
         <span class="used">{preety_bytes(data.account.limits.transfer.used)}</span>
-        <span class="of">of</span>
+        <span class="of">{$locale.limits.of}</span>
         <span class="avail">{preety_bytes(data.account.limits.transfer.total)}</span>
       </div>
     </div>
     <div class="meter">
       <div class="meter-title">
-        Storage
+        {$locale.limits.storage}
       </div>
       <div class="meter-graph">
         <CircularMeter used={data.account.limits.storage.used / data.account.limits.storage.total} />
       </div>
       <div class="meter-text">
         <span class="used">{preety_bytes(data.account.limits.storage.used)}</span>
-        <span class="of">of</span>
+        <span class="of">{$locale.limits.of}</span>
         <span class="avail">{preety_bytes(data.account.limits.storage.total)}</span>
       </div>
     </div>
@@ -470,18 +513,18 @@
 </Page>
 
 {#if edit_open}
-  <Dialog width="500px" on_close={() => edit_open = false} title="Edit your account name">
+  <Dialog width="500px" on_close={() => edit_open = false} title={$locale.pages["account/dashboard"].edit.dialog.title}>
     <Formy action={edit} let:submit>
       <form novalidate class="edit-dialog" on:submit={submit}>
         <div class="edit-dialog-fields">
           <div class="edit-dialog-field">
-            <TextField label="Account name" maxlength={50} trim bind:value={current_account_name} />
+            <TextField label={$locale.pages["account/dashboard"].edit.dialog.field_label} maxlength={50} trim bind:value={current_account_name} />
             <Validator value={current_account_name} fn={_string({ required: true, maxlen: 50 })} />
           </div>
         </div>
         <div class="edit-dialog-btn-out">
           <button type="submit" class="edit-dialog-btn ripple-container" use:ripple>
-            Save
+            {$locale.pages["account/dashboard"].edit.dialog.save}
           </button>
         </div>
       </form>

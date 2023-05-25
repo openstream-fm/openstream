@@ -370,15 +370,21 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     ref source,
     ref api,
     ref storage,
+    ref smtp,
   } = config.as_ref();
+
+  let mailer = mailer::send::Mailer {
+    hostname: smtp.hostname.clone(),
+    port: smtp.port,
+    password: smtp.password.clone(),
+    username: smtp.username.clone(),
+  };
 
   let shutdown = Shutdown::new();
   let drop_tracer = DropTracer::new("main");
   let media_sessions = MediaSessionMap::new(deployment.id.clone(), drop_tracer.clone());
 
   let futs = futures::stream::FuturesUnordered::new();
-
-
 
   if let Some(source_config) = source {
     // let source = SourceServer::new(
@@ -432,6 +438,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
       drop_tracer.clone(),
       media_sessions.clone(),
       stream_connections_index,
+      mailer,
     );
     let fut = api.start()?;
     futs.push(async move {
@@ -837,7 +844,7 @@ fn create_config(CreateConfig { output }: CreateConfig) -> Result<(), anyhow::Er
   }
 
   let contents = if output.ends_with(".json") {
-    include_str!("../../../../openstream.sample.json")
+    include_str!("../../../../openstream.sample.jsonc")
   } else {
     include_str!("../../../../openstream.sample.toml")
   };

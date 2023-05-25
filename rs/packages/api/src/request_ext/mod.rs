@@ -5,7 +5,7 @@ use db::station::Station;
 use mongodb::bson::doc;
 
 use db::admin::Admin;
-use db::models::user_account_relation::UserAccountRelation;
+use db::models::user_account_relation::{UserAccountRelation, UserAccountRelationKind};
 use db::{
   access_token::{AccessToken, Scope},
   account::Account,
@@ -128,6 +128,36 @@ impl AccessTokenScope {
     }
   }
 
+  pub async fn grant_account_owner_scope(
+    &self,
+    account_id: &str,
+  ) -> Result<Account, GetAccessTokenScopeError> {
+    match self {
+      AccessTokenScope::Global | AccessTokenScope::Admin(_) => {}
+      AccessTokenScope::User(user) => {
+        let filter = current_filter_doc! {
+          UserAccountRelation::KEY_USER_ID: &user.id,
+          UserAccountRelation::KEY_ACCOUNT_ID: account_id,
+          UserAccountRelation::KEY_KIND: UserAccountRelationKind::KEY_ENUM_VARIANT_OWNER,
+        };
+        let exists = UserAccountRelation::exists(filter).await?;
+        if !exists {
+          return Err(GetAccessTokenScopeError::OutOfScope);
+        }
+      }
+    }
+
+    let account = Account::get_by_id(account_id).await?;
+
+    match account {
+      None => Err(GetAccessTokenScopeError::AccountNotFound(
+        account_id.to_string(),
+      )),
+
+      Some(account) => Ok(account),
+    }
+  }
+
   pub async fn grant_station_scope(
     &self,
     station_id: &str,
@@ -142,6 +172,24 @@ impl AccessTokenScope {
     };
 
     self.grant_account_scope(&station.account_id).await?;
+
+    Ok(station)
+  }
+
+  pub async fn grant_station_owner_scope(
+    &self,
+    station_id: &str,
+  ) -> Result<Station, GetAccessTokenScopeError> {
+    let station = match Station::get_by_id(station_id).await? {
+      None => {
+        return Err(GetAccessTokenScopeError::StationNotFound(
+          station_id.to_string(),
+        ))
+      }
+      Some(station) => station,
+    };
+
+    self.grant_account_owner_scope(&station.account_id).await?;
 
     Ok(station)
   }

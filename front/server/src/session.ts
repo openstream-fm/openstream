@@ -5,6 +5,7 @@ import { is } from "typia";
 import type { Config } from "./config";
 import crypto from "crypto";
 import type { Logger } from "./logger";
+import { host } from "./host";
 
 export const random_device_id = () => {
   let buf = "";
@@ -101,10 +102,11 @@ export const session = (mode: "studio" | "admin", config: Config, _logger: Logge
   
   router.use((req: Request, res: Response, next: NextFunction) => {
 
-    const host = (req.hostname || "openstream.fm").replace(`${mode}.`, "");
+    const hosts = host(mode, config.hosts, req);
+
     const domain = "openstream.fm";
 
-    const cookie_name = `${config.session.cookie_name}-${host}`;
+    const cookie_name = `${config.session.cookie_name}-${hosts.id}`;
 
     req.cookie_session = get_cookie_session(req, cookie_name, key, logger);
     res.set_session = (data: SessionData) => {

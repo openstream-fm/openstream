@@ -2,9 +2,11 @@
 	import { afterNavigate } from "$app/navigation";
   export let data: import("./$types").LayoutData;
   import { page } from "$app/stores";
+	import { locale } from "$lib/locale";
 	import { click_out } from "$share/actions";
 	import { ripple } from "$share/ripple";
-	import { crossfade, fade, fly } from "svelte/transition";
+	import { logical_fly } from "$share/transition";
+	import { crossfade, fade } from "svelte/transition";
   
   $: current_page = $page.data.current_page;
   $: account_stations = data.stations.items.filter(item => item.account_id === data.account._id);
@@ -27,11 +29,11 @@
 
   const [_enter, _leave] = crossfade({ duration: 300, fallback: (node) => fade(node, { duration: 200 }) });
 
-  const current_enter = (node: HTMLElement, params = {}) => {
+  const current_enter = (node: HTMLElement, _params = {}) => {
     return _enter(node, { key: null })
   }
 
-  const current_leave = (node: HTMLElement, params = {}) => {
+  const current_leave = (node: HTMLElement, _params = {}) => {
     return _leave(node, { key: null })
   }
 
@@ -134,8 +136,8 @@
 
   .station-selector-anchor {
     position: absolute;
-    bottom: 0;
-    left: 0;
+    inset-block-end: 0;
+    inset-inline-start: 0;
     width: 0;
     height: 0;
     overflow: visible;
@@ -211,12 +213,9 @@
 
   .current-action-line {
     position: absolute;
-    top: 0;
-    bottom: 0;
-    right: 0;
-    left: 0;
+    inset: 0;
     /* border-bottom: 1px solid var(--blue); */
-    border-radius: 0.25rem 0.25rem;
+    border-radius: 0.25rem;
     pointer-events: none;
     background: rgba(var(--blue-rgb), 0.1);
   }
@@ -248,7 +247,7 @@
               class="station-selector-menu"
               style:--scroll-y="{scroll_y}px"
               use:click_out={selector_menu_click_out}
-              transition:fly|local={{ duration: 200, y: -10 }}
+              transition:logical_fly|local={{ duration: 200, y: -10 }}
             >
               {#each account_stations as station (station._id)}
                 <a
@@ -278,7 +277,7 @@
           on:click={event => scroll_into_view(event.currentTarget)}
         >
           <span class="action-name ripple-container">
-            Dashboard
+            {$locale.station_nav.dashboard}
           </span>
           {#if current_page === "dashboard"}
             <div class="current-action-line" in:current_enter|loal out:current_leave|local />
@@ -292,7 +291,7 @@
           on:click={event => scroll_into_view(event.currentTarget)}
         >
           <span class="action-name ripple-container">
-            Profile
+            {$locale.station_nav.profile}
           </span>
           {#if current_page === "profile"}
             <div class="current-action-line" in:current_enter|local out:current_leave|local />
@@ -306,7 +305,7 @@
           on:click={event => scroll_into_view(event.currentTarget)}
         >
           <span class="action-name ripple-container">
-            Playlist
+            {$locale.station_nav.playlist}
           </span>
           {#if current_page === "playlist"}
             <div class="current-action-line" in:current_enter|local out:current_leave|local />
@@ -314,18 +313,32 @@
         </a>
 
         <a
-        href="/accounts/{data.station.account_id}/stations/{data.station._id}/broadcast"
-        class="station-action"
-        class:current={current_page === "broadcast"}
-        on:click={event => scroll_into_view(event.currentTarget)}
-      >
-        <span class="action-name ripple-container">
-          Broadcast
-        </span>
-        {#if current_page === "broadcast"}
-          <div class="current-action-line" in:current_enter|local out:current_leave|local />
-        {/if}
-      </a>
+          href="/accounts/{data.station.account_id}/stations/{data.station._id}/broadcast"
+          class="station-action"
+          class:current={current_page === "broadcast"}
+          on:click={event => scroll_into_view(event.currentTarget)}
+        >
+          <span class="action-name ripple-container">
+            {$locale.station_nav.broadcast}
+          </span>
+          {#if current_page === "broadcast"}
+            <div class="current-action-line" in:current_enter|local out:current_leave|local />
+          {/if}
+        </a>
+
+        <a
+          href="/accounts/{data.station.account_id}/stations/{data.station._id}/settings"
+          class="station-action"
+          class:current={current_page === "settings"}
+          on:click={event => scroll_into_view(event.currentTarget)}
+        >
+          <span class="action-name ripple-container">
+            {$locale.station_nav.settings}
+          </span>
+          {#if current_page === "settings"}
+            <div class="current-action-line" in:current_enter|local out:current_leave|local />
+          {/if}
+        </a>
       </div>
     </div>
   </div>

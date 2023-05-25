@@ -26,12 +26,16 @@ const defaultConfig: Config = {
     enabled: true,
     port: 4000,
   },
-  source_port: {
-    local: 8000,
-    test: 8001,
-    s1: 8100,
-    s2: 8200,
-    default: 8000,
+  hosts: {
+    default: {
+      admin: { host: "admin.openstream.fm" },
+      api: { host: "api.openstream.fm" },
+      site: { host: "openstream.fm" },
+      source: { host: "source.openstream.fm", port: 8000 },
+      storage: { host: "storage.openstream.fm" },
+      stream: { host: "stream.openstream.fm" },
+      studio: { host: "studio.openstream.fm" }
+    }
   }
 };
 
@@ -60,12 +64,14 @@ port = 3000
 enabled = true
 port = 4000
 
-[source_port]
-local = 8000
-test = 8001
-s1 = 8100
-s2 = 8200
-default = 8000
+[hosts.default]
+admin = { host = "admin.openstream.fm" }
+api = { host = "api.openstream.fm" }
+site = { host = "openstream.fm" }
+source = { host = "source.openstream.fm", port = 8000 }
+storage = { host = "storage.openstream.fm" }
+stream = { host = "stream.openstream.fm" }
+studio = { host = "studio.openstream.fm" }
 `;
   const config = load_from_string(tomlString, "toml");
   t.deepEqual(config, defaultConfig);
@@ -87,6 +93,17 @@ test("merge_env should merge environment variables with config", (t) => {
     OPENSTREAM_FRONT_SOURCE_PORT_S1: "8100",
     OPENSTREAM_FRONT_SOURCE_PORT_S2: "8200",
     OPENSTREAM_FRONT_SOURCE_PORT_DEFAULT: "8000",
+    OPENSTREAM_FRONT_HOSTS: JSON.stringify({
+      "default": {
+        "admin": { "host": "admin.openstream.fm" },
+        "api": { "host": "api.openstream.fm" },
+        "site": { "host": "openstream.fm" },
+        "source": { "host": "source.openstream.fm", port: 8000 },
+        "storage": { "host": "storage.openstream.fm" },
+        "stream": { "host": "stream.openstream.fm" },
+        "studio": { "host": "studio.openstream.fm" }
+      }
+    }, null, 2)
   };
 
   const expectedConfig: Config = {
@@ -107,12 +124,16 @@ test("merge_env should merge environment variables with config", (t) => {
       enabled: false,
       port: 5000,
     },
-    source_port: {
-      local: 8000,
-      test: 8001,
-      s1: 8100,
-      s2: 8200,
-      default: 8000,
+    hosts: {
+      default: {
+        admin: { host: "admin.openstream.fm" },
+        api: { host: "api.openstream.fm" },
+        site: { host: "openstream.fm" },
+        source: { host: "source.openstream.fm", port: 8000 },
+        storage: { host: "storage.openstream.fm" },
+        stream: { host: "stream.openstream.fm" },
+        studio: { host: "studio.openstream.fm" }
+      }
     }
   };
 
@@ -158,11 +179,17 @@ test("load_from_string should load config from JSON string with missing properti
     OPENSTREAM_FRONT_STUDIO_PORT: "3000",
     OPENSTREAM_FRONT_ADMIN_ENABLED: "true",
     OPENSTREAM_FRONT_ADMIN_PORT: "4000",
-    OPENSTREAM_FRONT_SOURCE_PORT_LOCAL: "8000",
-    OPENSTREAM_FRONT_SOURCE_PORT_TEST: "8001",
-    OPENSTREAM_FRONT_SOURCE_PORT_S1: "8100",
-    OPENSTREAM_FRONT_SOURCE_PORT_S2: "8200",
-    OPENSTREAM_FRONT_SOURCE_PORT_DEFAULT: "8000",
+    OPENSTREAM_FRONT_HOSTS: JSON.stringify({
+      "default": {
+        "admin": { "host": "admin.openstream.fm" },
+        "api": { "host": "api.openstream.fm" },
+        "site": { "host": "openstream.fm" },
+        "source": { "host": "source.openstream.fm", port: 8000 },
+        "storage": { "host": "storage.openstream.fm" },
+        "stream": { "host": "stream.openstream.fm" },
+        "studio": { "host": "studio.openstream.fm" }
+      }
+    })
   };
 
   const config = load_from_string(partialJsonString, "json", { env });
@@ -186,11 +213,17 @@ max_age_days = 30
     OPENSTREAM_FRONT_STUDIO_PORT: "3000",
     OPENSTREAM_FRONT_ADMIN_ENABLED: "true",
     OPENSTREAM_FRONT_ADMIN_PORT: "4000",
-    OPENSTREAM_FRONT_SOURCE_PORT_LOCAL: "8000",
-    OPENSTREAM_FRONT_SOURCE_PORT_TEST: "8001",
-    OPENSTREAM_FRONT_SOURCE_PORT_S1: "8100",
-    OPENSTREAM_FRONT_SOURCE_PORT_S2: "8200",
-    OPENSTREAM_FRONT_SOURCE_PORT_DEFAULT: "8000",
+    OPENSTREAM_FRONT_HOSTS: JSON.stringify({
+      "default": {
+        "admin": { "host": "admin.openstream.fm" },
+        "api": { "host": "api.openstream.fm" },
+        "site": { "host": "openstream.fm" },
+        "source": { "host": "source.openstream.fm", port: 8000 },
+        "storage": { "host": "storage.openstream.fm" },
+        "stream": { "host": "stream.openstream.fm" },
+        "studio": { "host": "studio.openstream.fm" }
+      }
+    })
   };
 
   const config = load_from_string(partialTomlString, "toml", { env });
@@ -209,6 +242,15 @@ test("load_from_string should throw error for invalid TOML string", (t) => {
 api_base_url = "https://api.openstream.com"
 token = "test_token"
 invalid_key = "invalid_value"
+
+[hosts.default]
+site = { host = "openstream.fm" }
+admin = { host = "admin.openstream.fm" }
+api = { host = "api.openstream.fm" }
+source = { host = "source.openstream.fm", port = 8000 }
+storage = { host = "storage.openstream.fm" }
+stream = { host = "stream.openstream.fm" }
+studio = { host = "studio.openstream.fm" }
 `;
 
   t.throws(() => load_from_string(invalidTomlString, "toml"));
@@ -248,6 +290,15 @@ cookie_name = "test_cookie"
 [studio]
 enabled = true
 port = 3000
+
+[hosts.default]
+site = { host = "openstream.fm" }
+admin = { host = "admin.openstream.fm" }
+api = { host = "api.openstream.fm" }
+source = { host = "source.openstream.fm", port = 8000 }
+storage = { host = "storage.openstream.fm" }
+stream = { host = "stream.openstream.fm" }
+studio = { host = "studio.openstream.fm" }
 `;
 
   t.throws(() => load_from_string(invalidTomlString, "toml"));
@@ -267,7 +318,7 @@ test("load - json - can load default config file", t => {
 
 test("config - toml and json default config files are identical", t => {
   const toml = load(path.resolve(__dirname + "../../openstream-front.sample.toml"), { logger: new ConsoleLogger(LogLevel.SILENT), env: {} });
-  const json = load(path.resolve(__dirname + "../../openstream-front.sample.json"), { logger: new ConsoleLogger(LogLevel.SILENT), env: {} });
+  const json = load(path.resolve(__dirname + "../../openstream-front.sample.jsonc"), { logger: new ConsoleLogger(LogLevel.SILENT), env: {} });
   // remove symbols (CommentJSON)
   t.deepEqual(toml, { ...json });
 })

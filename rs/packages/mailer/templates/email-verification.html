@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Your email verification code for Openstream.
+{% endblock %}
+
+
+{% block content %} 
+  <style>
+    .title {
+      margin: 0;
+      font-size: 30px;
+    }
+
+    .content {
+      margin-top: 45px;
+    }
+
+    .code {
+      font-size: 3rem;
+      letter-spacing: 0.2em;
+      font-weight: 900;
+    }
+
+    .accept {
+      display: inline-block;
+      color: #fff;
+      background: rgb(0, 116, 217);
+      padding: 14px 18px;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: 700;
+    }
+  </style>
+
+
+  <h1 class="title">Your email verification code</h1>
+
+  <div class="content">
+    <p class="text">Hello.</p>
+    <p class="text">
+      This is your email verification code for Openstream:
+    </p>
+
+    <p class="code">
+      {{ code }}
+    </p>
+
+    <p class="text">
+      Please do not share this code with anyone.
+    </p>
+
+    <br />
+    <br />
+
+    <p class="text">
+      Have a nice day! <br />
+      The Openstream team.
+    </p>
+  </div>
+
+{% endblock %}

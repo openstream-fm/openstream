@@ -15,6 +15,7 @@
 
   let db = {
     identifier: data.plan.identifier,
+    slug: data.plan.slug,
     display_name: data.plan.display_name,
     color: data.plan.color,
     price: data.plan.price as number | null,
@@ -36,6 +37,7 @@
 
     const {
       identifier,
+      slug,
       display_name,
       price,
       color,
@@ -52,8 +54,9 @@
     if(transfer === null) throw new Error("Transfer is required");
     if(storage === null) throw new Error("Storage is required");
     
-    const payload: import("$server/defs/api/plans/[plan]/PATCH/Payload").Payload = {
+    const payload: import("$api/plans/[plan]/PATCH/Payload").Payload = {
       identifier,
+      slug,
       display_name,
       color,
       price,

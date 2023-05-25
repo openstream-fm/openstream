@@ -12,6 +12,7 @@
 	import { browser } from '$app/environment';
 	import { _error } from '$share/notify';
 	import Validator from '$share/formy/Validator.svelte';
+	import { locale } from '$lib/locale';
 
 	let error_message: string | null;
 	let loading: boolean = false;
@@ -35,7 +36,7 @@
     loading = true;
 
     try {
-      const query: import("$server/defs/api/station-pictures/POST/Query").Query = {
+      const query: import("$api/station-pictures/POST/Query").Query = {
         account_id,
         content_type: file.type,
         filename: file.name,
@@ -69,7 +70,7 @@
         throw new Error(String(json.error.message))
       }
 
-      let picture = json as import("$server/defs/api/station-pictures/POST/Output").Output;
+      let picture = json as import("$api/station-pictures/POST/Output").Output;
       picture_id = picture._id;
 
     } catch(e: any) {
@@ -193,21 +194,35 @@
 	<div class="end">
     <div class="btn-out">
       <label class="ripple-container" use:ripple>
-        Upload Image
+        {$locale.station_profile.upload_image}
         <input type="file" accept="image/*" bind:files />
       </label>
     </div>
 
-    <div class="info-line">Image formats accepted: .jpg .jpeg .png .webp .gif</div>
-		<div class="info-line">Minimum image size: 512x512px</div>
-		<div class="info-line">Maximum file size: 2MB</div>
-		<div class="info-line">Image must be square</div>
+    <div class="info-line">
+      {$locale.station_profile.picture_requirement_labels.format}
+      .jpg .jpeg .png .webp .gif
+    </div>
+		<div class="info-line">
+      {$locale.station_profile.picture_requirement_labels.size} 512x512px
+    </div>
+		<div class="info-line">
+      {$locale.station_profile.picture_requirement_labels.file_size} 2MB
+    </div>
+		<div class="info-line">
+      {$locale.station_profile.picture_requirement_labels.square}
+    </div>
     {#if error_message != null}
 			<div class="error-message">{error_message}</div>
 		{/if}
 		{#if required}
       <div class="validation">
-        <Validator value={picture_id} fn={v => v == null ? "The logo is required" : null} />
+        <Validator value={picture_id} fn={
+          v => v == null ?
+            $locale.station_profile.validation.logo_required :
+            null
+          }
+        />
       </div>
     {/if}
 	</div>

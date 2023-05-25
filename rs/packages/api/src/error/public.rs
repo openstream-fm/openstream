@@ -49,6 +49,8 @@ impl From<ApiError> for PublicError {
 #[ts(export, export_to = "../../../defs/error/")]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum PublicErrorCode {
+  Internal,
+
   ResourceNotFound,
   TooManyRequests,
 
@@ -108,6 +110,7 @@ pub enum PublicErrorCode {
   PlaylistStartNoFiles,
 
   RenderMail,
+  SendMail,
 
   CreateStationAccountLimit,
 }

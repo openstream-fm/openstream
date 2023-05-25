@@ -3,6 +3,7 @@ use crate::request_ext::{self, GetAccessTokenScopeError};
 
 use async_trait::async_trait;
 use db::Model;
+use mongodb::bson::doc;
 use prex::Request;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
@@ -195,6 +196,11 @@ pub mod patch {
     #[ts(optional)]
     #[modify(trim)]
     #[validate(length(min = 1))]
+    slug: Option<String>,
+
+    #[ts(optional)]
+    #[modify(trim)]
+    #[validate(length(min = 1))]
     display_name: Option<String>,
 
     #[ts(optional)]
@@ -251,6 +257,8 @@ pub mod patch {
     Db(#[from] mongodb::error::Error),
     #[error("admin not found: {0}")]
     PlanNotFound(String),
+    #[error("slug exists")]
+    SlugExists,
     #[error("validfy payload: {0}")]
     Validify(#[from] ValidationErrors),
   }
@@ -260,6 +268,7 @@ pub mod patch {
       match e {
         HandleError::Db(e) => e.into(),
         HandleError::PlanNotFound(id) => ApiError::PlanNotFound(id),
+        HandleError::SlugExists => ApiError::BadRequestCustom("The slug already exists".into()),
         HandleError::Validify(errors) => ApiError::PayloadInvalid(format!("{}", errors)),
       }
     }
@@ -294,6 +303,7 @@ pub mod patch {
       let Payload {
         display_name,
         identifier,
+        slug,
         color,
         price,
         stations,
@@ -303,7 +313,17 @@ pub mod patch {
         is_user_selectable,
       } = payload;
 
+      let slug = slug.map(|s| s.trim().to_lowercase());
+
       let plan = run_transaction!(session => {
+
+        if let Some(ref slug) = slug {
+          let exists_filter = doc!{ Plan::KEY_ID: { "$ne": &plan_id }, Plan::KEY_SLUG: &slug };
+          if tx_try!(Plan::exists_with_session(exists_filter, &mut session).await) {
+            return Err(HandleError::SlugExists);
+          }
+        }
+
         let mut plan = match tx_try!(Plan::get_by_id_with_session(&plan_id, &mut session).await) {
           Some(plan) => plan,
           None => return Err(HandleError::PlanNotFound(plan_id)),
@@ -311,6 +331,10 @@ pub mod patch {
 
         if let Some(ref identifier) = identifier {
           plan.identifier = identifier.clone();
+        }
+
+        if let Some(ref slug) = slug {
+          plan.slug = slug.clone();
         }
 
         if let Some(ref display_name) = display_name {

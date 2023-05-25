@@ -1,6 +1,6 @@
 <script lang="ts">
   export let compact: boolean = false;
-  import { fly } from "svelte/transition";
+  import { logical_fly } from "$share/transition";
 </script>
 
 <style>
@@ -15,6 +15,6 @@
   }
 </style>
 
-<div class="page" class:compact in:fly={{ duration: 250, x: -25 }}>
+<div class="page" class:compact in:logical_fly={{ duration: 250, x: -25 }}>
   <slot />
 </div>

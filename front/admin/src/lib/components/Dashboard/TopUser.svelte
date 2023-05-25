@@ -2,17 +2,18 @@
   $: admin = $page.data.admin || null;
   
   import { page } from "$app/stores";
-  import { fly } from "svelte/transition";
-	import { ripple } from "$share/ripple";
+  import { ripple } from "$share/ripple";
 	import { click_out } from "$share/actions";
 	import { action, _post } from "$share/net.client";
 	import Icon from "$share/Icon.svelte";
-	import { mdiAccountCircleOutline, mdiAccountMultipleOutline, mdiCastAudioVariant, mdiLogout } from "@mdi/js";
+	import { mdiAccountCircleOutline, mdiLogout } from "@mdi/js";
 	import { goto } from "$app/navigation";
+	import { logical_fly } from "$share/transition";
 
   const sign_out = action(async () => {
     await _post("/api/auth/admin/logout", {});
     goto("/", { invalidateAll: true })
+    
   })
 
   let menu_open = false;
@@ -81,10 +82,10 @@
 
   .menu-position-out {
     position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 0;
-    height: 0;
+    inset-block-end: 0;
+    inset-inline-end: 0;
+    inline-size: 0;
+    block-size: 0;
   }
 
   .menu-position-in {
@@ -93,8 +94,8 @@
 
   .menu {
     position: absolute;
-    top: 0;
-    right: 0;
+    inset-block-start: 0;
+    inset-inline-end: 0;
     background: #fff;
     width: min(calc(100vw - 3rem), 21rem);
     box-shadow: 0 5px 25px 0 rgb(0 0 0 / 10%);
@@ -140,45 +141,6 @@
 
   .menu-section-link:not(.not-link):hover {
     background-color: #f6f6f6;
-  }
-
-  .menu-station, .menu-account {
-    display: block;
-    padding: 0.75rem 1rem 0.75rem 0.75rem;
-    transition: background-color 150ms ease;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 0.75rem;
-  }
-  
-  .menu-station.current, .menu-account {
-    background: #f6f6f6;
-  }
-
-  .menu-station:hover, .menu-account:hover {
-    background: #e8e8e8;
-  }
-
-  .menu-account {
-    padding-inline-start: 2.75rem;
-  }
-
-  .station-pic {
-    border-radius: 0.25rem;
-    width: 1.25rem;
-    height: 1.25rem;
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
-  }
-
-  .station-name {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    flex: 1;
   }
 
   .menu-head {
@@ -234,7 +196,7 @@
     <div class="menu-position-out">
       <div class="menu-position-in">
         {#if menu_open}
-          <div class="menu thin-scroll" transition:fly|local={{ y: -25, x: 10, duration: 200 }}>
+          <div class="menu thin-scroll" transition:logical_fly|local={{ y: -25, x: 10, duration: 200 }}>
             <div class="menu-head menu-section">
               <div class="menu-head-icon">
                 <Icon d={mdiAccountCircleOutline} />

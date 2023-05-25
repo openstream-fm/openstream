@@ -1,3 +1,4 @@
+pub mod by_slug;
 pub mod id;
 
 pub mod get {
@@ -147,6 +148,10 @@ pub mod post {
     #[validate(length(min = 1))]
     pub identifier: String,
 
+    #[modify(trim, lowercase)]
+    #[validate(length(min = 1))]
+    pub slug: String,
+
     #[modify(trim)]
     #[validate(length(min = 1))]
     pub display_name: String,
@@ -196,6 +201,8 @@ pub mod post {
   pub enum HandleError {
     #[error("mongodb: {0}")]
     Db(#[from] mongodb::error::Error),
+    #[error("slug exists")]
+    SlugExists,
     #[error("validify: {0}")]
     Validify(#[from] ValidationErrors),
   }
@@ -204,6 +211,7 @@ pub mod post {
     fn from(e: HandleError) -> ApiError {
       match e {
         HandleError::Db(e) => e.into(),
+        HandleError::SlugExists => ApiError::BadRequestCustom("The slug is already taken".into()),
         HandleError::Validify(errors) => ApiError::PayloadInvalid(format!("{}", errors)),
       }
     }
@@ -237,6 +245,7 @@ pub mod post {
 
       let Payload {
         ref identifier,
+        ref slug,
         ref display_name,
         ref color,
         is_user_selectable,
@@ -262,9 +271,14 @@ pub mod post {
           }
         };
 
+        if tx_try!(Plan::exists_with_session(doc! { Plan::KEY_SLUG: &slug }, &mut session).await) {
+          return Err(HandleError::SlugExists);
+        }
+
         let plan = Plan {
           id: Plan::uid(),
           identifier: identifier.clone(),
+          slug: slug.clone(),
           display_name: display_name.clone(),
           price,
           limits: PlanLimits {

@@ -10,6 +10,8 @@
   export let record_id: string;
   export let view: View = "now"; 
   export let in_screen = true;
+  export let locale: import("$server/locale/share/stats-map/stats-map.locale").StatsMapLocale;
+  export let country_names: Record<string, string | undefined>;
 
   import { default_logger } from "$share/logger";
   import { _get } from "$share/net.client";
@@ -21,10 +23,10 @@
 
   let view_ids = ["now", "last_24h", "last_7d", "last_30d"] as const;
   let selector_titles = {
-    "now": "Now",
-    "last_24h": "24 hours",
-    "last_7d": "7 days",
-    "last_30d": "30 days",
+    "now": locale.now,
+    "last_24h": locale["24_hours"],
+    "last_7d": locale["7_days"],
+    "last_30d": locale["30_days"],
   } as const;
 
   type Stats = import("$server/defs/stream-connection-stats/Stats").Stats;
@@ -63,8 +65,8 @@
 
         const url = kind === "account" ? `/api/accounts/${record_id}/stream-stats/now` : `/api/stations/${record_id}/stream-stats/now`;
         let output:
-          import("$server/defs/api/stations/[station]/stream-stats/now/GET/Output").Output | 
-          import("$server/defs/api/stations/[station]/stream-stats/now/GET/Output").Output;
+          import("$api/stations/[station]/stream-stats/now/GET/Output").Output | 
+          import("$api/stations/[station]/stream-stats/now/GET/Output").Output;
         
         try {
           output = await _get(url);
@@ -88,8 +90,8 @@
       if(data == null) {
         const url = kind === "station" ? `/api/stations/${record_id}/stream-stats` : `/api/accounts/${record_id}/stream-stats`;
         let output:
-          import("$server/defs/api/stations/[station]/stream-stats/GET/Output").Output | 
-          import("$server/defs/api/accounts/[account]/stream-stats/GET/Output").Output;
+          import("$api/stations/[station]/stream-stats/GET/Output").Output | 
+          import("$api/accounts/[account]/stream-stats/GET/Output").Output;
         try { 
           output = await _get(url);
         } catch(e: any) {
@@ -158,7 +160,7 @@
     padding: var(--spacing) calc(var(--spacing) * 2) var(--spacing) var(--spacing);
     display: flex;
     flex-direction: column;
-    text-align: left;
+    text-align: start;
     align-items: flex-start;
     transition: background-color 300ms ease;
     background-color: transparent;
@@ -244,11 +246,11 @@
             <div class="counters">
               <div class="counter">
                 <span class="counter-num">{sessions}</span>
-                <span class="counter-label">{sessions === 1 ? "listener" : "listeners"}</span>
+                <span class="counter-label">{sessions === 1 ? locale.listener : locale.listeners}</span>
               </div>
               <div class="counter">
                 <span class="counter-num">{countries}</span>
-                <span class="counter-label">{countries === 1 ? "country" : "countries"}</span>
+                <span class="counter-label">{countries === 1 ? locale.country : locale.countries}</span>
               </div>
             </div>
           </button>
@@ -257,7 +259,7 @@
     </div>
     <div class="map-out">
       {#if data != null}
-        <Map stats={data[view]} />
+        <Map stats={data[view]} {country_names} {locale} />
       {/if}
     </div>
   </div>

@@ -19,6 +19,22 @@ export const shared_api = ({
 }) => {
   const api = Router();
 
+  api.route("/me/devices")
+    .get(json(async req => {
+      return await client.me.devices.list(ip(req), ua(req), get_token(req), req.query as any);
+    }))
+
+  api.route("/me/devices/:device")
+    .delete(json(async req => {
+      return await client.me.devices.delete(ip(req), ua(req), get_token(req), req.params.device);
+    }))
+
+
+  api.route("/auth/email-verification/send-code")
+    .post(json(async req => {
+      return await client.auth.send_email_verification_code(ip(req), ua(req), req.body);
+    }))
+
   api.route("/users")
     .get(json(async req => {
       return await client.users.list(ip(req), ua(req), get_token(req), req.query);
@@ -97,6 +113,9 @@ export const shared_api = ({
   api.route("/stations/:station")
     .get(json(async req => {
       return await client.stations.get(ip(req), ua(req), get_token(req), req.params.station);
+    }))
+    .delete(json(async req => {
+      return await client.stations.delete(ip(req), ua(req), get_token(req), req.params.station);
     }))
     .patch(json(async req => {
       return await client.stations.patch(ip(req), ua(req), get_token(req), req.params.station, req.body);
@@ -253,16 +272,6 @@ export const shared_api = ({
         next(e)
       }
     })
-
-  api.route("/devices")
-    .get(json(async req => {
-      return await client.devices.list(ip(req), ua(req), get_token(req), req.query as any);
-    }))
-
-  api.route("/devices/:device")
-    .delete(json(async req => {
-      return await client.devices.delete(ip(req), ua(req), get_token(req), req.params.device);
-    }))
 
   api.route("/station-pictures")
     .post(json(async req => {

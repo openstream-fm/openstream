@@ -1,17 +1,40 @@
 name: backend-build
 
 on: 
-  #push:
-  #    branches: [ master, dev ]
-  pull_request:
-      types: [ opened, reopened ]
+  push:
+    paths:
+      - "./rs"
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
+      - "./openstream.sample.toml"
+      - "./openstream.sample.jsonc"  
+    branches: [ master, dev ]
+  
+  pull_request_target:
+    paths:
+      - "./rs"
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
+      - "./openstream.sample.toml"
+      - "./openstream.sample.jsonc"  
+    branches: [ master, dev ]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
 
-  build:
+  skip_check:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v5
+
+  backend-build:
+    needs: skip_check
+    if: needs.skip_check.outputs.should_skip != 'true'
 
     runs-on: ubuntu-latest
 

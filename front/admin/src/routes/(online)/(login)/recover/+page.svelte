@@ -21,7 +21,7 @@
     if(sending) return;
     sending = true;
     try {
-      // const payload: import("$server/defs/api/auth/user/recover/POST/Payload").Payload = {
+      // const payload: import("$api/auth/user/recover/POST/Payload").Payload = {
       //   email,
       // };
       // TODO: implement and add types

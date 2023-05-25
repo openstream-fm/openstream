@@ -8,6 +8,7 @@ export interface User {
   last_name: string;
   email: string;
   phone: string | null;
+  language: string | null;
   password: string | null;
   created_at: DateTime;
   updated_at: DateTime;

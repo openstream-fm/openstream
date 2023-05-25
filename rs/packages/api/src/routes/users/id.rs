@@ -80,6 +80,12 @@ pub mod patch {
       deserialize_with = "serde_util::map_some"
     )]
     phone: Option<Option<String>>,
+    #[serde(
+      default,
+      skip_serializing_if = "Option::is_none",
+      deserialize_with = "serde_util::map_some"
+    )]
+    language: Option<Option<String>>,
     password: Option<String>,
   }
 
@@ -166,6 +172,7 @@ pub mod patch {
         last_name,
         phone,
         password,
+        language,
       } = payload;
 
       if let Some(first_name) = &first_name {
@@ -188,6 +195,14 @@ pub mod patch {
         if phone.len() > 30 {
           return Err(HandleError::Payload(
             "Phone must be of 30 characters or less".into(),
+          ));
+        }
+      };
+
+      if let Some(Some(language)) = &language {
+        if language.len() > 10 {
+          return Err(HandleError::Payload(
+            "Language must be of 10 characters or less".into(),
           ));
         }
       };
@@ -219,7 +234,19 @@ pub mod patch {
           }
 
           if let Some(opt_phone) = &phone {
-            up_user.phone = opt_phone.clone();
+            up_user.phone = match opt_phone.as_ref().map(|v| v.trim())  {
+              None => None,
+              Some("") => None,
+              Some(v) => Some(v.to_string()),
+            };
+          }
+
+          if let Some(opt_language) = &language {
+            up_user.language = match opt_language.as_ref().map(|v| v.trim()) {
+              None => None,
+              Some("") => None,
+              Some(v) => Some(v.to_string()),
+            }
           }
 
           if let Some(password_hash) = &password_hash {

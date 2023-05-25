@@ -12,7 +12,6 @@
   const toggle_drawer = () => drawer_fixed_open ? close_drawer_fixed() : open_drawer_fixed();
 
   import TopUser from "./TopUser.svelte";
-	import { fly } from "svelte/transition";
 </script>
 
 <style>

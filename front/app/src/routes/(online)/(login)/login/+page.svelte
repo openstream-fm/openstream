@@ -9,15 +9,18 @@
 	import Validator from "$share/formy/Validator.svelte";
 	import { _string } from "$share/formy/validate";
   import "$share/LoginDashboard/login-page.css";
+	import { locale } from "$lib/locale";
+	import { invalidateSiblings } from "$lib/invalidate";
 
   let email = "";
   let password = "";
 
   const login = action(async () => {
-    const payload: Omit<import("$server/defs/api/auth/user/login/POST/Payload").Payload, "device_id"> = { email, password };
+    const payload: Omit<import("$api/auth/user/login/POST/Payload").Payload, "device_id"> = { email, password };
     await _post("/api/auth/user/login", payload);
     const target = decodeURIComponent(location.hash.replace(/^#/, "")) || "/";
     goto(target, { invalidateAll: true });
+    invalidateSiblings();
   })
 </script>
 
@@ -35,31 +38,33 @@
 </style>
 
 <svelte:head>
-  <title>Sign in</title>
+  <title>{$locale.pages.login.head.title}</title>
 </svelte:head>
 
 <div class="login-page-box" in:form>
-  <div class="login-page-title">Sign in</div>
+  <div class="login-page-title">{$locale.pages.login.title}</div>
   <Formy action={login} let:submit>
     <form novalidate class="login-page-fields" on:submit={submit}>
       <div class="login-page-field">
-        <Email label="Email" bind:value={email} />
+        <Email label={$locale.pages.login.fields.email} bind:value={email} />
         <Validator value={email} fn={_string({ required: true })} />
       </div>
       <div class="login-page-field password-box">
-        <Password label="Password" bind:value={password} />
+        <Password label={$locale.pages.login.fields.password} bind:value={password} />
         <Validator value={password} fn={_string({ required: true })} />
-        <a class="na login-page-link recover" href="/recover">Forgot your password?</a>
+        <a class="na login-page-link recover" href="/recover">
+          {$locale.pages.login.links.forgot}
+        </a>
       </div>
       <button type="submit" use:ripple class="ripple-container login-page-button">
-        Sign in
+        {$locale.pages.login.submit}
       </button>
     </form>
   </Formy>
 
   <div class="login-page-switch-box">
-    <span class="login-page-comment">New user?</span>
-    <a class="na login-page-link sign-up" href="/plans">Sign up</a>
+    <span class="login-page-comment">{$locale.pages.login.links.new_user}</span>
+    <a class="na login-page-link sign-up" href="/plans">{$locale.pages.login.links.sign_up}</a>
   </div>
   
 </div>

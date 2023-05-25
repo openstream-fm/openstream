@@ -1,0 +1,1 @@
+export type StatsMapLocale = typeof import("./stats-map.en").default;

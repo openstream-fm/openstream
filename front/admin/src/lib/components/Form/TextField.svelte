@@ -14,7 +14,7 @@
   export let minrows: number | undefined = void 0;
   export let maxrows: number | undefined = void 0;
 
-  export let btn: { icon: string, action: () => void } | null = null;
+  export let btn: { icon: string, label: string, tabindex?: number, action: () => void } | null = null;
 	
   let empty = (trim ? value.trim() : value) === "";
 
@@ -23,7 +23,7 @@
   import Label from "./Label.svelte";
 </script>
 
-<FieldContainer {disabled} {icon} {btn}>
+<FieldContainer {disabled} {readonly} {icon} {btn}>
   <Input
     type={type}
     {autocomplete}

@@ -37,3 +37,15 @@ addrs = [ "0.0.0.0:10700" ]
 # string(SocketAddr)[] (required)
 # socket addrs to bind the api server to
 addrs = [ "0.0.0.0:10900" ]
+
+
+# smtp related settings for mail submission
+[smtp]
+# string (required)
+hostname = ""
+# u16 (required)
+port = 587
+# string (required)
+username = ""
+# string (required)
+password = ""

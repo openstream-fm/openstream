@@ -1,6 +1,6 @@
 <script lang="ts" context="module">
 	import type { StationTypeOfContent } from "$server/defs/db/StationTypeOfContent";
-  const record: Record<StationTypeOfContent, string> = {
+  const default_type_names: Record<StationTypeOfContent, string> = {
     general: "General",
     talk: "Talk",
     news: "News",
@@ -10,8 +10,6 @@
     educational: "Educational",
     religious: "Religious",
   }
-
-  const required_options = Object.entries(record).map(([ value, label ]) => { return { label, value } });
 </script>
 
 <script lang="ts">
@@ -21,6 +19,14 @@
   export let autocomplete: string | undefined = void 0;
   export let disabled: boolean = false;
   export let on_change: ((v: string) => void) | null =  null; 
+  export let locale_names: Record<StationTypeOfContent, string>;  
+
+  $: required_options = Object.entries(default_type_names).map(([value, name]) => {
+    return {
+      value,
+      label: locale_names[value as StationTypeOfContent] || name,
+    }
+  })
 
   $: empty = value === "";
   $: options = value === "" ? [{label: "", value: ""}, ...required_options] : required_options;

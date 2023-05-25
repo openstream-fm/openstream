@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Page from "$lib/components/Page.svelte";
+	import { locale } from "$lib/locale";
 	import { ripple } from "$share/ripple";
   export let data: import("./$types").PageData;
   $: current_account_stations = data.stations.items.filter(item => item.account_id === data.account._id);
@@ -22,7 +23,7 @@
 
   .list-box {
     margin-top: 3.5rem;
-    width: min(80%, 500px);
+    width: min(90%, 500px);
     background: #fff;
     box-shadow: 0 0 15px 0 rgb(0 0 0 / 10%);
     border-radius: 0.5rem;
@@ -118,12 +119,12 @@
 </style>
 
 <svelte:head>
-  <title>Select station</title>
+  <title>{$locale.pages["stations"].head.title}</title>
 </svelte:head>
 
 <Page>
   <div class="page">
-    <div class="page-title">Select a station</div>
+    <div class="page-title">{$locale.pages["stations"].title}</div>
     {#if current_account_stations.length}
       <div class="list-box">
         {#each current_account_stations as station (station._id)}
@@ -140,20 +141,19 @@
       </div>
 
 
-      <div class="or">or</div>
+      <div class="or">{$locale.pages.stations.or}</div>
 
       <a class="create ripple-container" href="/accounts/{data.account._id}/stations/create-station" use:ripple>
-        create a new station
+        {$locale.pages.stations.create_new_station}
       </a> 
       
     {:else}
       <div class="no-items">
         <div class="no-items-message">
-          This account doesn't have stations yet.<br>
-          To start broadcasting, create a new station.
+          {@html $locale.pages.stations.no_items_message_html}
         </div>
         <a href="/accounts/{data.account._id}/stations/create-station" class="na no-items-create ripple-container" use:ripple>
-          Create a station
+          {$locale.pages.stations.no_items_create}
         </a>
       </div>
     {/if}

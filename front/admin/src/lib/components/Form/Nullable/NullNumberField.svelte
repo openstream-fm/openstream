@@ -9,7 +9,7 @@
   export let step: number | undefined = void 0;
   export let icon: string | null = null;
   export let on_change: ((v: number | null) => void) | null =  null; 
-  export let btn: { icon: string, action: () => void } | null = null;
+  export let btn: { icon: string, label: string, tabindex?: number, action: () => void } | null = null;
 
   let empty = Number.isNaN(value);
   
@@ -52,7 +52,7 @@
   import Label from "../Label.svelte";
 </script>
 
-<FieldContainer {disabled} {icon} {btn}>
+<FieldContainer {disabled} {readonly} {icon} {btn}>
   <Input
     type="number"
     {autocomplete}

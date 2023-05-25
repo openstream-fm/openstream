@@ -10,6 +10,7 @@
 
   let db = {
     identifier: "",
+    slug: "",
     display_name: "",
     color: "",
     price: null as number | null,
@@ -30,6 +31,7 @@
     try {
       const {
         identifier,
+        slug,
         display_name,
         price,
         color,
@@ -46,9 +48,10 @@
       if(transfer === null) throw new Error("Transfer is required");
       if(storage === null) throw new Error("Storage is required");
       
-      const payload: import("$server/defs/api/plans/POST/Payload").Payload = {
+      const payload: import("$api/plans/POST/Payload").Payload = {
         identifier,
         display_name,
+        slug,
         color,
         price,
         stations,

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html %html_attrs%>
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" href="/icons/32.png" />
-		<link rel="apple-touch-icon" href="/icons/192.png">
+		<link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
 		<meta name="viewport" content="width=device-width,initial-scale=1" />
 		<link rel="manifest" href="/manifest.json" crossorigin="use-credentials">
 		<meta name="theme-color" content="#ff4136">
@@ -13,11 +13,8 @@
 		<div id="app">%sveltekit.body%</div>
 		<script>
 			if ('serviceWorker' in navigator) {
-				addEventListener('load', function () {
-					navigator.serviceWorker.register('/service-worker.js', {
-						// TODO: use type module only in dev
-						type: "module"
-					});
+				addEventListener('load', () => {
+					navigator.serviceWorker.register('/service-worker.js')
 				});
 			}
 		</script>

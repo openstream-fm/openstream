@@ -3,6 +3,7 @@
   import bg from "$share/img/login-bg.jpg?w=1920&format=webp&withoutEnlargement";
   // @ts-ignore
   import logo from "$share/img/logo-trans-128.png?w=36&format=webp";
+  import { locale } from "$share/locale";
 </script>
 
 
@@ -26,8 +27,8 @@
     position: absolute;
     z-index: var(--z-login-bg);
     pointer-events: none;
-    top: 0;
-    left: 0;
+    inset-block-start: 0;
+    inset-inline-start: 0;
     width: 100vw;
     height: 100vh;
     background-size: cover;
@@ -40,8 +41,8 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    top: 2rem;
-    left: 2rem;
+    inset-block-start: 2rem;
+    inset-inline-start: 2rem;
   }
 
   .logo-icon {
@@ -79,7 +80,7 @@
   <div class="bg" style:background-image="url({ bg })" />
   <div class="logo">
     <div class="logo-icon" style:background-image="url({ logo })" />
-    <div class="logo-text">openstream</div>
+    <div class="logo-text">{$locale.logo_text}</div>
   </div>
   <div class="content">
     <slot />

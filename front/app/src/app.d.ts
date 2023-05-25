@@ -7,6 +7,8 @@ declare namespace App {
   interface Locals {
     ip: string,
     protocol: "http" | "https",
+    lang?: string
+    dir?: string
     // set_cookie: Set<string>,
     // cookie: Set<string>
   }
@@ -19,6 +21,7 @@ declare namespace App {
 
   interface PageData {
     config: import("$server/config").Config["public"]
+    locale: import("$server/locale/studio/studio.locale").StudioLocale,
     user?: import("$server/api/me/GET/Output").Output["user"] | null
     accounts?: import("$server/api/accounts/GET/Output").Output | null 
     account?: import("$server/api/accounts/[account]/GET/Output").Output["account"] | null

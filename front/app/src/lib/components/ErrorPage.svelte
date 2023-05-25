@@ -2,14 +2,15 @@
 	import { page } from '$app/stores';
 	export let error: App.Error = $page.error!;
 	import Page from '$lib/components/Page.svelte';
+	import { locale } from '$lib/locale';
 	import { ripple } from '$share/ripple';
 
 	let online = true;
 
 	$: status = error.status || 500;
-	$: message = error?.message || "An error ocurred";
+	$: message = error?.message || $locale.pages.error.default_message;
 	$: code = error?.code || "CLIENT_PAGE_MISSING_CODE";
-	$: title = online ? `${status} ${message}` : "Offline";
+	$: title = online ? `${status} ${message}` : $locale.pages.error.offline.head.title;
 </script>
 
 <style>
@@ -26,13 +27,13 @@
 	}
 
 	.online h1 {
-		text-align: left;
+		text-align: start;
 		font-size: 7rem;
 		filter: drop-shadow(var(--red) 0.025em 0.025em 0);
 	}
 
 	.online h2 {
-		text-align: left;
+		text-align: start;
 		margin-top: 1rem;
 		font-size: 2.5rem;
 	}
@@ -110,24 +111,26 @@
 				<div class="btns">
 					{#if error.status !== 404}
 						<button on:click={() => location.reload()} use:ripple class="ripple-container btn retry">
-							Retry
+							{$locale.pages.error.retry}
 						</button>
 					{/if}
 					{#if $page.url.pathname !== "/"}
-						<a href="/" use:ripple class="ripple-container btn home">Take me to home</a>
+						<a href="/" use:ripple class="ripple-container btn home">
+							{$locale.pages.error.home}
+						</a>
 					{/if}
 				</div>
 			</div>
 		{:else}
 			<div class="offline">	
-				<h1>Seems that you are offline</h1>    
+				<h1>{$locale.pages.error.offline.title}</h1>    
 					
-				<p>You need internet access to use openstream studio</p>
+				<p>{$locale.pages.error.offline.text.replace("@app_name", $locale.app_name)}</p>
 				
 				<div class="btns">
 					<!-- svelte-ignore a11y-invalid-attribute -->
 					<a class="na btn ripple-container" use:ripple href="javascript:location.reload()">
-						Retry
+						{$locale.pages.error.retry}
 					</a>
 				</div>
 			</div>

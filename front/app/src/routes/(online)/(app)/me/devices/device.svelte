@@ -23,34 +23,57 @@
 
   import { browser } from "$app/environment";
 	import Page from "$lib/components/Page.svelte";
+	import { locale } from "$lib/locale";
 
 
   $: data = get_data(device);
-  const get_data = (...args: any[]): Array<{ label: string, value: string }> => {
+  const get_data = (..._args: any[]): Array<{ label: string, value: string }> => {
     const data: Array<{ label: string, value: string }> = [];
         
     if(device.ua.name) {
-      data.push({ label: "Browser", value: device.ua.name })
+      data.push({ 
+        label: $locale.pages["me/devices"].device.browser,
+        value: device.ua.name
+      })
     } else {
-      data.push({ label: "Browser", value: "Unknown" });
+      data.push({
+        label: $locale.pages["me/devices"].device.browser,
+        value: $locale.pages["me/devices"].device.unkown,
+      });
     }
 
     if(device.ua.os) {
-      data.push({ label: "System", value: device.ua.os })
+      data.push({
+        label: $locale.pages["me/devices"].device.os,
+        value: device.ua.os
+      })
     } else {
-      data.push({ label: "System", value: "Unknown" });
+      data.push({
+        label: $locale.pages["me/devices"].device.os,
+        value: $locale.pages["me/devices"].device.unkown
+      });
     }
 
-    data.push({ label: "IP", value: device.ip });
+    data.push({
+      label: $locale.pages["me/devices"].device.ip,
+      value: device.ip
+    });
 
-    data.push({ label: "Last used", value: browser ? new Date(device.last_used_at || device.created_at).toLocaleString() : "" })
-    data.push({ label: "Connected", value: browser ? new Date(device.created_at).toLocaleString() : "" })
+    data.push({
+      label: $locale.pages["me/devices"].device.connected,
+      value: browser ? new Date(device.created_at).toLocaleString() : ""
+    })
 
+    data.push({
+      label: $locale.pages["me/devices"].device.last_used,
+      value: browser ? new Date(device.last_used_at || device.created_at).toLocaleString() : "" 
+    })
+    
     return data;
   }
 
   $: icon = get_icon(device);
-  const get_icon = (...args: any[]) => {
+  const get_icon = (..._args: any[]) => {
     const v = device.ua.name?.toLowerCase();
     if(v === "chrome") return icon_chrome;
     if(v === "firefox") return icon_firefox;
@@ -61,7 +84,7 @@
   }
 
   $: os_icon = get_os_icon(device);
-  const get_os_icon = (...args: any[]) => {
+  const get_os_icon = (..._args: any[]) => {
     const v = device.ua.os?.toLowerCase();
     if(v?.includes("linux")) return icon_linux;
     if(v?.includes("windows")) return icon_windows;
@@ -114,8 +137,8 @@
     background-position: center;
     background-repeat: no-repeat;
     filter: drop-shadow(rgba(0,0,0,0.25) 0 0 5px);
-    right: 0;
-    bottom: 0;
+    inset-inline-end: 0;
+    inset-block-end: 0;
   }
 
   .info {
@@ -156,7 +179,13 @@
       {/each}
     </div>
     {#if on_remove}
-      <button class="disconnect ripple-container" use:ripple use:tooltip={"Disconnect"} aria-label="Disconnect" on:click={on_remove}>
+      <button 
+        class="disconnect ripple-container"
+        use:ripple
+        use:tooltip={$locale.pages["me/devices"].device.tooltips.disconnect}
+        aria-label={$locale.pages["me/devices"].device.tooltips.disconnect}
+        on:click={on_remove}
+      >
         <Icon d={mdiTrashCanOutline} />
       </button>
     {/if}

@@ -120,6 +120,7 @@ dependencies = [
  "parking_lot 0.12.1",
  "prex",
  "rand 0.8.5",
+ "random-string",
  "serde",
  "serde-querystring 0.1.0",
  "serde-util",
@@ -1026,6 +1027,7 @@ dependencies = [
  "parking_lot 0.12.1",
  "prex",
  "rand 0.8.5",
+ "random-string",
  "rayon",
  "ril",
  "serde",
@@ -1255,6 +1257,22 @@ name = "either"
 version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "90e5c1c8368803113bf0c9584fc495a58b86dc8a29edbf8fe877d21d9507e797"
+
+[[package]]
+name = "email-encoding"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dbfb21b9878cf7a348dcb8559109aabc0ec40d69924bd706fa5149846c4fef75"
+dependencies = [
+ "base64 0.21.0",
+ "memchr",
+]
+
+[[package]]
+name = "email_address"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e2153bd83ebc09db15bcbdc3e2194d901804952e3dc96967e1cd3b0c5c32d112"
 
 [[package]]
 name = "encode_unicode"
@@ -1931,7 +1949,7 @@ dependencies = [
  "hyper",
  "rustls 0.20.7",
  "tokio",
- "tokio-rustls",
+ "tokio-rustls 0.23.4",
 ]
 
 [[package]]
@@ -2262,6 +2280,35 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
+name = "lettre"
+version = "0.10.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "76bd09637ae3ec7bd605b8e135e757980b3968430ff2b1a4a94fb7769e50166d"
+dependencies = [
+ "async-trait",
+ "base64 0.21.0",
+ "email-encoding",
+ "email_address",
+ "fastrand",
+ "futures-io",
+ "futures-util",
+ "httpdate",
+ "idna 0.3.0",
+ "mime",
+ "native-tls",
+ "nom",
+ "once_cell",
+ "quoted_printable",
+ "rustls 0.21.1",
+ "rustls-pemfile",
+ "socket2 0.4.9",
+ "tokio",
+ "tokio-native-tls",
+ "tokio-rustls 0.24.0",
+ "webpki-roots 0.23.0",
+]
+
+[[package]]
 name = "lexical"
 version = "6.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2475,6 +2522,7 @@ dependencies = [
  "css-inline",
  "html2text",
  "hyper",
+ "lettre",
  "nanohtml2text",
  "prex",
  "serde",
@@ -2708,7 +2756,7 @@ dependencies = [
  "take_mut",
  "thiserror",
  "tokio",
- "tokio-rustls",
+ "tokio-rustls 0.23.4",
  "tokio-util",
  "trust-dns-proto",
  "trust-dns-resolver",
@@ -2944,6 +2992,7 @@ dependencies = [
  "local-ip-address",
  "log",
  "logger",
+ "mailer",
  "media-sessions",
  "mongodb",
  "owo-colors",
@@ -3405,6 +3454,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "quoted_printable"
+version = "0.4.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5a3866219251662ec3b26fc217e3e05bf9c4f84325234dfb96bf0bf840889e49"
+
+[[package]]
 name = "rand"
 version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3672,7 +3727,7 @@ dependencies = [
  "serde_urlencoded",
  "tokio",
  "tokio-native-tls",
- "tokio-rustls",
+ "tokio-rustls 0.23.4",
  "tokio-util",
  "tower-service",
  "url",
@@ -4945,6 +5000,16 @@ dependencies = [
  "rustls 0.20.7",
  "tokio",
  "webpki",
+]
+
+[[package]]
+name = "tokio-rustls"
+version = "0.24.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e0d409377ff5b1e3ca6437aa86c1eb7d40c134bfec254e44c830defa92669db5"
+dependencies = [
+ "rustls 0.21.1",
+ "tokio",
 ]
 
 [[package]]

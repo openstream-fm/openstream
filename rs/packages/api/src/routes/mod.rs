@@ -1,6 +1,20 @@
+pub mod me;
+
+pub mod accounts;
+pub mod admins;
+pub mod auth;
+pub mod stations;
+pub mod users;
+
+pub mod plans;
+pub mod runtime;
+pub mod station_pictures;
+pub mod stream_stats;
+
 use db::station_picture::StationPicture;
 use db::stream_connection::index::MemIndex;
 use drop_tracer::DropTracer;
+use mailer::send::Mailer;
 use media_sessions::MediaSessionMap;
 use prex::router::builder::Builder;
 use prex::Request;
@@ -11,29 +25,32 @@ use crate::json::JsonHandler;
 
 use async_trait::async_trait;
 
-pub mod accounts;
-pub mod admins;
-pub mod auth;
-pub mod me;
-pub mod stations;
-pub mod users;
-
-pub mod devices;
-pub mod plans;
-pub mod runtime;
-pub mod station_pictures;
-pub mod stream_stats;
-
 pub fn router(
   deployment_id: String,
   media_sessions: MediaSessionMap,
   shutdown: Shutdown,
   drop_tracer: DropTracer,
   stream_connections_index: MemIndex,
+  mailer: Mailer,
 ) -> Builder {
   let mut app = prex::prex();
 
   app.at("/me").get(me::get::Endpoint {}.into_handler());
+
+  app
+    .at("/me/devices")
+    .get(me::devices::get::Endpoint {}.into_handler());
+
+  app
+    .at("/me/devices/:device")
+    .delete(me::devices::id::delete::Endpoint {}.into_handler());
+
+  app.at("/auth/email-verification/send-code").post(
+    auth::email_verification::send_code::post::Endpoint {
+      mailer: mailer.clone(),
+    }
+    .into_handler(),
+  );
 
   app
     .at("/auth/user/login")
@@ -49,7 +66,15 @@ pub fn router(
 
   app
     .at("/auth/user/recover")
-    .post(auth::user::recover::post::Endpoint {}.into_handler());
+    .post(auth::user::recover::post::Endpoint { mailer }.into_handler());
+
+  app
+    .at("/auth/user/recovery-token/:token")
+    .get(auth::user::recovery_token::token::get::Endpoint {}.into_handler());
+
+  app
+    .at("/auth/user/recovery-token/:token/set-password")
+    .post(auth::user::recovery_token::token::set_password::post::Endpoint {}.into_handler());
 
   app
     .at("/auth/admin/login")
@@ -118,6 +143,10 @@ pub fn router(
     .at("/plans")
     .get(plans::get::Endpoint {}.into_handler())
     .post(plans::post::Endpoint {}.into_handler());
+
+  app
+    .at("/plans/by-slug/:slug")
+    .get(plans::by_slug::slug::get::Endpoint {}.into_handler());
 
   app
     .at("/plans/:plan")
@@ -196,6 +225,7 @@ pub fn router(
   app
     .at("/stations/:station")
     .get(stations::id::get::Endpoint {}.into_handler())
+    .delete(stations::id::delete::Endpoint {}.into_handler())
     .patch(stations::id::patch::Endpoint {}.into_handler());
 
   app.at("/stations/:station/stream-stats").get(
@@ -313,14 +343,6 @@ pub fn router(
     }
     .into_handler(),
   );
-
-  app
-    .at("/devices")
-    .get(devices::get::Endpoint {}.into_handler());
-
-  app
-    .at("/devices/:device")
-    .delete(devices::id::delete::Endpoint {}.into_handler());
 
   app
     .at("/station-pictures")

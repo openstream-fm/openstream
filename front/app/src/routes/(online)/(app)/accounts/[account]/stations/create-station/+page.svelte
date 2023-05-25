@@ -5,16 +5,16 @@
 	import { _post, action } from "$share/net.client";
 	import { _message } from "$share/notify";
 
-  import { goto, invalidate } from "$app/navigation";
+  import { goto } from "$app/navigation";
 
 	import { ripple } from "$share/ripple";
 	
-  import { clone, diff, equals } from "$server/util/collections";
+  import { clone, equals } from "$server/util/collections";
 	import { prevent_unload } from "$share/prevent-unload";
 	import StationProfile from "$lib/components/StationProfile.svelte";
 	import Formy from "$share/formy/Formy.svelte";
-	import { onMount } from "svelte";
-	import Dialog from "$share/Dialog.svelte";
+  import { locale } from "$lib/locale";
+	import { invalidateSiblings } from "$lib/invalidate";
 
   let start = {
     name: null as string | null,
@@ -63,7 +63,7 @@
     const country_code = current.country_code;
     if(country_code === "") throw new Error("Country is required");
 
-    const payload: import("$server/defs/api/stations/POST/Payload").Payload = {
+    const payload: import("$api/stations/POST/Payload").Payload = {
       ...current,
       name,
       type_of_content,
@@ -75,13 +75,14 @@
 
     const {
       station
-    } = await _post<import("$server/defs/api/stations/POST/Output").Output>(`/api/stations`, payload);
+    } = await _post<import("$api/stations/POST/Output").Output>(`/api/stations`, payload);
 
-    _message("New station created");
+    _message($locale.pages["stations/create_station"].notifier.station_created);
 
     current = clone(start);
     
     goto(`/accounts/${data.account._id}/stations/${station._id}`, { invalidateAll: true });
+    invalidateSiblings();
   });
 </script>
 
@@ -126,7 +127,6 @@
     appearance: none;
     border: 0;
     margin: 0;
-    outline: 0;
     cursor: pointer;
     user-select: none;
     align-self: flex-end;
@@ -135,12 +135,16 @@
 </style>
 
 <svelte:head>
-  <title>Crete new station</title>
+  <title>
+    {$locale.pages["stations/create_station"].head.title}
+  </title>
 </svelte:head>
 
 <Page>
   <div class="page">
-    <div class="page-title">Create a station</div>
+    <div class="page-title">
+      {$locale.pages["stations/create_station"].title}
+    </div>
     <Formy action={send} let:submit>
       <form novalidate class="create-box" on:submit={submit}>
 
@@ -148,7 +152,7 @@
 
         <div class="submit-wrap">
           <button class="submit ripple-container" use:ripple type="submit">
-            Create station
+            {$locale.pages["stations/create_station"].submit}
           </button>
         </div>
       </form>

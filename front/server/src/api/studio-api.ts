@@ -1,4 +1,4 @@
-import type { Config } from "../config";
+import type { Config, HostConfig } from "../config";
 import { Router, json as json_body_parser } from "express";
 import { ApiError, json_catch_handler } from "../error";
 import type { Logger } from "../logger";
@@ -12,6 +12,10 @@ import { StatusCodes } from "http-status-codes";
 import { user_media_key } from "../media_key";
 import { ua } from "../ua";
 import { shared_api } from "./shared-api";
+import { host } from "../host";
+import { default_studio_locale, studio_locales } from "../locale/studio/studio.locale";
+import type { StudioLocale } from "../locale/studio/studio.locale";
+import acceptLanguageParser from "accept-language-parser";
 
 export type PublicConfig = {
   storage_public_url: string
@@ -20,30 +24,19 @@ export type PublicConfig = {
   source_public_port: number
 }
 
-export const public_config = (host: string, source_port_map: Config["source_port"]): PublicConfig => {
-  let port: number;
-  if(host === "studio.openstream.fm") {
-    port = source_port_map.default;
-  } else if (host === "studio.test.openstream.fm") {
-    port = source_port_map.test;
-  } else if (host === "studio.s1.openstream.fm") {
-    port = source_port_map.s1;
-  } else if (host === "studio.s2.openstream.fm") {
-    port = source_port_map.s2;
-  } else if (host === "studio.local.openstream.fm") {
-    port = source_port_map.local;
-  } else {
-    port = source_port_map.default;
-  }
-
+export const public_config = (hosts: HostConfig & { id: string }): PublicConfig => {
   const config: PublicConfig = {
-    storage_public_url: `https://${host.replace("studio.", "storage.")}`,
-    stream_public_url: `https://${host.replace("studio.", "stream.")}`,
-    source_public_host: `${host.replace("studio.", "source.")}`,
-    source_public_port: port,
+    storage_public_url: `https://${hosts.storage.host}`,
+    stream_public_url: `https://${hosts.stream.host}`,
+    source_public_host: hosts.source.host,
+    source_public_port: hosts.source.port,
   }
 
   return config;
+}
+
+export type LocalePayload = {
+  locale: StudioLocale
 }
 
 export const studio_api = ({
@@ -67,15 +60,77 @@ export const studio_api = ({
     res.json({ ok: true })
   })
 
-  api.get("/config", json(async (req) => {
-    return public_config(req.hostname || "studio.openstream.fm", config.source_port);
+  api.get("/config", json(async req => {
+    const hosts = host("studio", config.hosts, req);
+    return public_config(hosts);
+  }))
+
+  api.get("/locale", json(async (req, res): Promise<LocalePayload> => {
+    let langs: ReturnType<typeof acceptLanguageParser.parse> | null = null;
+    if(req.cookie_session.user) {
+      try {
+        const { user } = await client.users.get(ip(req), ua(req), user_token(req), req.cookie_session.user._id);
+        if(user.language != null) {
+          langs = acceptLanguageParser.parse(user.language);
+        }
+      } catch(e) { }
+    }
+
+    if(langs == null) {
+      const header = req.header("accept-language");
+      if(header != null) {
+        try {
+          langs = acceptLanguageParser.parse(header);
+        } catch(e) { }
+      }
+    }
+
+    let locale: StudioLocale | null = null;
+
+    locale: if(langs != null) {
+      for(const lang of langs) {
+        for(const item of studio_locales) {
+          if(lang.code.toLowerCase() == item.lang.toLowerCase() && lang.region?.toLowerCase() == item.region?.toLowerCase()) {
+            locale = item;
+            break locale;
+          }
+        }
+      }
+
+      for(const lang of langs) {
+        for(const item of studio_locales) {
+          if(item.lang.toLowerCase() === lang.code.toLowerCase()) {
+            locale = item;
+            break locale;
+          }
+        }
+      }
+    }
+
+    if(locale == null) locale = default_studio_locale;
+
+    const dir = locale.lang === "ar" ? "rtl" : "ltr";
+    const lang = locale.region ? `${locale.lang}-${locale.region}` : locale.lang;
+    
+    res.vary("accept-language");
+    res.header("x-locale-lang", lang);
+    res.header("x-locale-dir", dir);
+
+    return { locale };
   }))
 
   api.post("/auth/user/login", json(async (req, res) => {
     const sess = req.cookie_session;
     const r = await client.auth.user.login(ip(req), ua(req), { ...req.body, device_id: sess.device_id });
     const data = req.cookie_session;
-    res.set_session({ ...data, user: { _id: r.user._id, token: r.token, media_key: r.media_key  } });
+    res.set_session({
+      ...data,
+      user: {
+        _id: r.user._id,
+        token: r.token,
+        media_key: r.media_key
+      }
+    });
     return { user: r.user, media_key: r.media_key }
   }))
 
@@ -88,13 +143,21 @@ export const studio_api = ({
 
   api.post("/auth/user/register", json(async (req, res) => {
     const sess = req.cookie_session;
-    const { account, user, token, media_key } = await client.auth.user.register(ip(req), ua(req), config.openstream.token, { ...req.body, device_id: sess.device_id });
+    const { account, user, token, media_key } = await client.auth.user.register(ip(req), ua(req), null, { ...req.body, device_id: sess.device_id });
     res.set_session({ ...sess, user: { _id: user._id, token, media_key }});
     return { user, account }
   }))
 
   api.post("/auth/user/recover", json(async (req, res) => {
     return await client.auth.user.recover(ip(req), ua(req), req.body);
+  }))
+
+  api.get("/auth/user/recovery-token/:token", json(async req => {
+    return await client.auth.user.recovery_token.get(ip(req), ua(req), req.params.token);
+  }))
+
+  api.post("/auth/user/recovery-token/:token/set-password", json(async req => {
+    return await client.auth.user.recovery_token.set_password(ip(req), ua(req), req.params.token, req.body);
   }))
 
   api.route("/plans")
@@ -107,10 +170,15 @@ export const studio_api = ({
       return await client.plans.get(ip(req), ua(req), null, req.params.plan);
     }))
 
+  api.route("/plans/by-slug/:slug")
+    .get(json(async req => {
+      return await client.plans.get_by_slug(ip(req), ua(req), null, req.params.slug);
+    }))
+
   api.route("/users/me")
     .get(json(async req => {
       const { user } = await client.users.get(ip(req), ua(req), user_token(req), user_id(req))
-      return { user,  media_key: user_media_key(req) };
+      return { user, media_key: user_media_key(req) };
     }))
 
   api.use(shared_api({

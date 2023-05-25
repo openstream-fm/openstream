@@ -2,6 +2,7 @@
   import LoginDashboard from "$share/LoginDashboard/LoginDashboard.svelte";
 	import Page from "$lib/components/Page.svelte";
 	import { ripple } from "$share/ripple";
+	import { locale } from "$lib/locale";
 </script>
 
 <style>
@@ -39,14 +40,14 @@
 
 <LoginDashboard>
   <Page>
-    <h1>Seems that you are offline</h1>    
+    <h1>{$locale.pages.error.offline.title}</h1>    
     
-    <p>You need internet access to use openstream studio</p>
+    <p>{$locale.pages.error.offline.text.replace("@app_name", $locale.app_name)}</p>
     
     <div class="btns">
       <!-- svelte-ignore a11y-invalid-attribute -->
       <a class="na retry ripple-container" use:ripple href="javascript:location.reload()">
-        Retry
+        {$locale.pages.error.retry}
       </a>
     </div>
   </Page>

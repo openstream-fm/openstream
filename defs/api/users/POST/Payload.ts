@@ -7,6 +7,7 @@ export interface Payload {
   password: string;
   first_name: string;
   last_name: string;
+  language?: string;
   user_metadata?: Metadata;
   system_metadata?: Metadata;
 }

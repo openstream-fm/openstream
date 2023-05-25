@@ -3,6 +3,7 @@
 export interface Payload {
   price?: number;
   identifier?: string;
+  slug?: string;
   display_name?: string;
   color?: string;
   stations?: number;

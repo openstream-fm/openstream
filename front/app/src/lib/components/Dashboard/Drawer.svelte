@@ -16,20 +16,19 @@
   	mdiMenu,
 		mdiAccountMultipleOutline,
 		mdiPoll,
-		mdiClose,
-		mdiChevronDown,
-		mdiUploadNetworkOutline,
   } from "@mdi/js";
 	import { onMount } from "svelte";
 	import Icon from "$share/Icon.svelte";
 	import { ripple } from "$share/ripple";
-	import { fade, fly } from "svelte/transition";
+	import { fade } from "svelte/transition";
 	import { browser } from "$app/environment";
   // @ts-ignore
   import logo from "$share/img/logo-trans-128.png?w=40&format=webp";
 
   import { player_state } from "../Player/player";
 	import { click_out } from "$share/actions";
+	import { locale } from "$lib/locale";
+	import { logical_fly } from "$share/transition";
 
   $: if(browser) {
     document.documentElement.classList[fixed_open ? "add" : "remove"](HTML_OPEN_CLASSNAME);
@@ -155,10 +154,7 @@
   .drawer-overlay {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background: rgba(0,0,0,0.5);
     z-index: calc(var(--z-drawer-fixed) - 1);
   }
@@ -178,8 +174,8 @@
 
   .account-switch-anchor {
     position: absolute;
-    left: 0;
-    bottom: 0;
+    inset-inline-start: 0;
+    inset-block-end: 0;
     width: 0;
     height: 0;
   }
@@ -204,15 +200,15 @@
     overflow: hidden;
     text-overflow: ellipsis;
     margin-inline-end: 0.5rem;
-    text-align: left;
+    text-align: start;
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1.05rem;
   }
 
   .account-switch-btn-icon {
     display: flex;
     flex: none;
-    font-size: 1.25rem;
+    font-size: 1rem;
   }
 
   .account-switch-menu {
@@ -248,12 +244,22 @@
     font-weight: 600;
   }
 
+  .account-switch-menu-item.see-all {
+    color: #333;
+  }
+
   .account-switch-menu-item:hover {
     background: rgba(0,0,0,0.05);
   }
 
   .account-switch-menu-item.current {
     background: rgba(var(--blue-rgb), 0.1);
+  }
+
+  .account-switch-menu-sep {
+    height: 2px;
+    background: #ddd;
+    margin: 0.25rem 0.5rem;
   }
 
   .links {
@@ -322,7 +328,7 @@
         <div class="logo-icon" style="background-image: url({logo})">
         </div>
         <div class="logo-text">
-          openstream
+          {$locale.logo_text}
         </div>
       </div>
     </div>
@@ -334,12 +340,13 @@
             {account.name}
           </div>
           <div class="account-switch-btn-icon">
-            <Icon d={mdiChevronDown} />
+            <!-- <Icon d={mdiChevronDown} /> -->
+            ▼
           </div>
         </button>
         <div class="account-switch-anchor">
           {#if account_switch_open}
-            <div class="account-switch-menu thin-scroll" transition:fly|local={{ y: -15, duration: 200 }} use:click_out={account_switch_click_out}>
+            <div class="account-switch-menu thin-scroll" transition:logical_fly|local={{ y: -15, duration: 200 }} use:click_out={account_switch_click_out}>
               {#each accounts as item (item._id)}
                 <a 
                   href={account_swtich_target(account._id, item._id, $page.url)}
@@ -353,6 +360,7 @@
                 </span>
                 </a>
               {/each}
+              <div class="account-switch-menu-sep" />
               <a 
               href="/accounts"
               class="na account-switch-menu-item see-all ripple-container"
@@ -360,7 +368,7 @@
               on:click={account_switch_close}
             >
               <span class="account-switch-menu-item-text">
-                See all accounts
+                {$locale.drawer.account_selector.see_all_accounts}
               </span>
             </a>
             </div>
@@ -370,10 +378,10 @@
     </div>
 
     <div class="links thin-scroll">
-      <DrawerItem href="/accounts/{account._id}" label="Dashboard" icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
-      <DrawerItem href="/accounts/{account._id}/stations" label="Stations" icon={mdiRadioTower} on_click={close_drawer_fixed} />
-      <DrawerItem href="/accounts/{account._id}/members" label="Members" icon={mdiAccountMultipleOutline} on_click={close_drawer_fixed} />
-      <DrawerItem href="/accounts/{account._id}/analytics" label="Analytics" icon={mdiPoll} on_click={close_drawer_fixed} />
+      <DrawerItem href="/accounts/{account._id}" label={$locale.drawer.dashboard} icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
+      <DrawerItem href="/accounts/{account._id}/stations" label={$locale.drawer.stations} icon={mdiRadioTower} on_click={close_drawer_fixed} />
+      <DrawerItem href="/accounts/{account._id}/members" label={$locale.drawer.members} icon={mdiAccountMultipleOutline} on_click={close_drawer_fixed} />
+      <DrawerItem href="/accounts/{account._id}/analytics" label={$locale.drawer.analytics} icon={mdiPoll} on_click={close_drawer_fixed} />
     </div>
   </div>
 </div>

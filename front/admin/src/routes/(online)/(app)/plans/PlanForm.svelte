@@ -3,6 +3,7 @@
 	import NullNumberField from "$lib/components/Form/Nullable/NullNumberField.svelte";
   export let current: {
     identifier: string
+    slug: string
     display_name: string
     color: string,
     price: number | null
@@ -19,6 +20,11 @@
   import Color from "color";
 
   const _color_validation = (value: string) => {
+    
+    if(value === "") {
+      return "Color is required";
+    }
+
     try {
       const color = new Color(value);
     } catch(e: any) {
@@ -38,6 +44,11 @@
 <div class="field">
   <TextField label="Identifier" trim bind:value={current.identifier} />
   <Validator value={current.identifier} fn={_string({ required: true })} />
+</div>
+
+<div class="field">
+  <TextField label="Slug" trim bind:value={current.slug} />
+  <Validator value={current.slug} fn={_string({ required: true })} />
 </div>
 
 <div class="field">

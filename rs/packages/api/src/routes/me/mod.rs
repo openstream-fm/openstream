@@ -1,3 +1,5 @@
+pub mod devices;
+
 use crate::{
   json::JsonHandler,
   me::Me,
@@ -18,7 +20,7 @@ pub mod get {
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../../defs/api/me/")]
+  #[ts(export, export_to = "../../../defs/api/me/GET/")]
   pub struct Output(pub Me);
 
   #[derive(Debug, Clone)]

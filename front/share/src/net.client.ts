@@ -1,7 +1,12 @@
 import type { ErrorCode } from "$server/types";
 import { _error } from "./notify";
 
-export type ClientErrorCode = ErrorCode | "CLIENT_FETCH" | "CLIENT_JSON" | "CLIENT_MISSING_CODE" | "CLIENT_PAGE_NOT_FOUND";
+export type ClientErrorCode = ErrorCode |
+  "CLIENT_FETCH" |
+  "CLIENT_JSON" |
+  "CLIENT_MISSING_CODE" |
+  "CLIENT_PAGE_NOT_FOUND" | 
+  "CLIENT_STATION_ACCOUNT_MISMATCH";
 
 export class ClientError extends Error {
 

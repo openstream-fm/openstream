@@ -6,6 +6,7 @@ export interface Payload {
   email: string;
   password: string;
   phone: string | null;
+  language?: string;
   first_name: string;
   last_name: string;
   account_name: string;
@@ -13,5 +14,6 @@ export interface Payload {
   user_system_metadata?: Metadata;
   account_user_metadata?: Metadata;
   account_system_metadata?: Metadata;
+  email_verification_code: string;
   device_id: string;
 }

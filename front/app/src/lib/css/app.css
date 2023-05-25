@@ -30,6 +30,8 @@
   --bg-gray-rgb: 244, 244, 244;
   --bg-gray: rgb(var(--bg-gray-rgb));
 
+  --link-blue: #6CA8E0;
+
   --z-login-bg: 100;
   --z-login-front: 200; 
 
@@ -100,7 +102,6 @@ form {
   margin: 0;
   padding: 0;
   border: 0;
-  outline: 0;
 }
 
 .na {
@@ -138,10 +139,7 @@ form {
 .overlay {
   position: fixed;
   z-index: var(--z-overlay);
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background: rgba(0,0,0,0.5);
   display: flex;
   overflow-x: hidden;

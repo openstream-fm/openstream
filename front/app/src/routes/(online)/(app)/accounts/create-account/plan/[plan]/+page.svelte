@@ -11,30 +11,78 @@
 	import Formy from "$share/formy/Formy.svelte";
   import { goto } from "$app/navigation";
 	import Color from "color";
-	import { fly } from "svelte/transition";
   import "$share/LoginDashboard/login-page.css";
-	
+	import { invalidateSiblings } from "$lib/invalidate";
+	import { lang, locale } from "$lib/locale";
+	import { logical_fly } from "$share/transition";
+	import { tick } from "svelte";
+  import Dropin from "$share/braintree/Dropin.svelte";
+  
   let account_name = "";
-  let sending = false;
+  // let sending_data = false;
 
-  const send = action(async () => {
+  let payment_nonce: string | null = null;
+  let payment_device_data: string | null = null;
+
+  let dropin: Dropin;
+
+  let animations = false;
+
+  let view: "data" | "pay" = "data";
+  
+  const send_data = action(async () => {
+    animations = false;
+    view = "pay";
+    tick().then(() => {
+      animations = true;
+    })
+  })
+
+  const back_to_data = () => {
+    animations = false;
+    view = "data";
+    tick().then(() => {
+      animations = true;
+    }) 
+  }
+  
+  let sending_pay = false;
+  
+  const send_pay = action(async () => {
     
-    if(sending) return;
-    sending = true;
+    if (sending_pay) return;
+		sending_pay = true;
 
-    try {
-      const payload: import("$server/defs/api/accounts/POST/Payload").Payload = {
+		try {
+			try {
+				const payment_result = await dropin.requestPaymentMethod();
+				if (typeof payment_result?.nonce !== 'string') {
+					throw new Error('Payment internal error: invalid response');
+				} else {
+					payment_nonce = payment_result.nonce;
+          payment_device_data = payment_result.deviceData || null;
+				}
+			} catch (e) {
+				sending_pay = false;
+				// we dont log a notifier message here as it automatically shows the error in the UI
+				return;
+			}
+
+			const payload: import("$api/accounts/POST/Payload").Payload = {
         plan_id: data.plan._id,
         name: account_name,
       };
-      
-      const { account } = await _post<import("$server/defs/api/accounts/POST/Output").Output>("/api/accounts", payload);
+
+      const { account } = await _post<import("$api/accounts/POST/Output").Output>("/api/accounts", payload);
+
+      sending_pay = false;
+
       goto(`/accounts/${account._id}`, { invalidateAll: true });
-      sending = true;
-    } catch(e) {
-      sending = false;
-      throw e;
-    }
+      invalidateSiblings();
+		} catch (e) {
+			sending_pay = false;
+			throw e;
+		}
   })
 
   let color: Color;
@@ -48,12 +96,40 @@
 </script>
 
 <style>
-
   .page {
     display: flex;
     flex-direction: column;
     padding: 4rem 0 6rem 0;
   }
+
+  .view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .view:not(.active) {
+		display: none;
+	}
+
+	.animations {
+		animation-name: view-enter;
+		animation-duration: 200ms;
+		animation-timing-function: ease;
+		animation-fill-mode: forwards;
+	}
+
+	@keyframes view-enter {
+		0% {
+			opacity: 0;
+			transform: translateX(-25px);
+		}
+
+		100% {
+			opacity: 1;
+			transform: none;
+		}
+	}
 
   h2 {
     font-weight: 600;
@@ -61,6 +137,10 @@
     text-align: center;
     margin: 4rem 0 3rem 0;
     padding: 0 1.5rem;
+  }
+
+  .view-pay h2 {
+    margin-bottom: 1rem;
   }
 
   .org-explain {
@@ -119,60 +199,137 @@
     transition: background-color 200ms ease;
   }
 
+  .login-page-button {
+		margin: 2rem 3rem 0 0;
+	}
+
   .plan-back:hover {
     background: rgba(0,0,0,0.05); 
   }
+
+  .back-to {
+		margin-top: 1rem;
+		font-size: 0.9rem;
+    color: #444;
+	}
+
+  .back-to:hover {
+    text-decoration: underline;
+  }
+
+  .dropin-out {
+		min-height: 10rem;
+		padding: 0 2.5rem;
+		width: 100%;
+	}
 </style>
 
 <svelte:head>
-  <title>Create an account</title>
+  <title>{$locale.pages["accounts/create_account/plan"].head.title}</title>
 </svelte:head>
 
-<div class="page" in:fly|local={{ y: -25, duration: 200 }}>
-  <Formy action={send} let:submit>
-    <form novalidate on:submit={submit} class="login-page-box">
-      <div class="login-page-title">
-        Create an account
-      </div>
+<div class="page" in:logical_fly|local={{ y: -25, duration: 200 }}>
+  <div class="login-page-box">
+    <div class="login-page-title">
+      {$locale.pages["accounts/create_account/plan"].title}
+    </div>
 
-      <div class="plan" style:--bg-color={bg_color} style:--color={color.toString()}>
-        <div class="plan-pretitle">Selected plan</div>
-        <div class="plan-title">{data.plan.display_name}</div>
-        <div class="plan-price">$ {data.plan.price} / month</div>
-        <div class="plan-features">
-          <div class="plan-feature">
-            <b>{data.plan.limits.stations}</b> {data.plan.limits.stations === 1 ? "station" : "stations"}
-          </div>
-          <div class="plan-feature">
-            <b>{new Intl.NumberFormat().format(data.plan.limits.listeners)}</b> Listeners
-          </div>
-          <div class="plan-feature">
-            <b>{data.plan.limits.transfer / 1_000_000_000_000} TB</b> Bandwidth
-          </div>
-          <div class="plan-feature">
-            <b>{data.plan.limits.storage / 1_000_000_000} GB</b> Storage
-          </div>
+    <div class="plan" style:--bg-color={bg_color} style:--color={color.toString()}>
+      <div class="plan-pretitle">
+        {$locale.pages["accounts/create_account/plan"].plan.title}
+      </div>
+      <div class="plan-title">
+        {data.plan.display_name}
+      </div>
+      <div class="plan-price">
+        {$locale.pages["accounts/create_account/plan"].plan.$_n_per_month.replace("@n", String(data.plan.price))}
+      </div>
+      <div class="plan-features">
+        <div class="plan-feature">
+          <b>{data.plan.limits.stations}</b>
+          {
+            data.plan.limits.stations === 1 ? 
+            $locale.pages["accounts/create_account/plan"].plan.station :
+            $locale.pages["accounts/create_account/plan"].plan.stations
+          }
         </div>
-
-        <a href="/accounts/create-account" class="na plan-back ripple-container" use:ripple>
-          Back to plans and pricing
-        </a>
+        <div class="plan-feature">
+          <b>
+            {new Intl.NumberFormat().format(data.plan.limits.listeners)}
+          </b>
+          {$locale.pages["accounts/create_account/plan"].plan.listeners}
+        </div>
+        <div class="plan-feature">
+          <b>
+            {data.plan.limits.transfer / 1_000_000_000_000} TB
+          </b>
+          {$locale.pages["accounts/create_account/plan"].plan.transfer}
+        </div>
+        <div class="plan-feature">
+          <b>
+            {data.plan.limits.storage / 1_000_000_000} GB
+          </b>
+          {$locale.pages["accounts/create_account/plan"].plan.storage}
+        </div>
       </div>
 
-      <h2>Tell us about the new account</h2>
+      <a href="/accounts/create-account" class="na plan-back ripple-container" use:ripple>
+        {$locale.pages["accounts/create_account/plan"].plan.back}
+      </a>
+    </div>
 
-      <div class="login-page-fields">
-        <div class="login-page-field">
-          <TextField label="A name for your new account" trim icon={mdiAccountOutline} autocomplete="off" bind:value={account_name} />
-          <div class="org-explain">
-            If you are creating an account for an organization, you can fill this field with the organization's name 
+    <Formy action={send_data} let:submit>
+      <form
+        class="view view-data"
+        class:animations
+        class:active={view === "data"}
+        on:submit={submit}
+      >
+        <h2>{$locale.pages["accounts/create_account/plan"].form.title}</h2>
+        
+        <div class="login-page-fields">
+          <div class="login-page-field">
+            <TextField
+              label={$locale.pages["accounts/create_account/plan"].form.fields.account_name} 
+              trim
+              icon={mdiAccountOutline}
+              autocomplete="off"
+              bind:value={account_name}
+            />
+            <div class="org-explain">
+              {$locale.pages["accounts/create_account/plan"].form.fields.account_name_message}
+            </div>
+            <Validator value={account_name} fn={_string({ required: true, maxlen: 50 })} />
           </div>
-          <Validator value={account_name} fn={_string({ required: true, maxlen: 50 })} />
         </div>
         <button type="submit" class="ripple-container login-page-button" use:ripple>
-          Create
+          {$locale.pages["accounts/create_account/plan"].form.next}
         </button>
-      </div>
-    </form>
-  </Formy>
+      </form>
+    </Formy>
+
+    <Formy action={send_pay} let:submit>
+      <form
+        novalidate
+        class="view view-pay"
+        class:animations
+        class:active={view === "pay"}
+        on:submit={submit}
+      >
+        <h2>{$locale.pages["accounts/create_account/plan"].form.pay.title}</h2>
+
+        <div class="dropin-out">
+          <Dropin authorization="sandbox_d58xyrp3_xbw6cq92jcgfmzdh" bind:this={dropin} lang={$lang} />
+        </div>
+
+        <button class="back-to" on:click|preventDefault={() => back_to_data()}>
+          {$locale.pages["accounts/create_account/plan"].form.back}
+        </button>
+
+        <button type="submit" class="ripple-container login-page-button" use:ripple>
+          {$locale.pages["accounts/create_account/plan"].form.submit}
+        </button>
+      </form>
+    </Formy>
+  </div>
 </div>

@@ -38,7 +38,20 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   event.locals.protocol = proto;
 
-  const res = await resolve(event);
+  let buffer = "";
+  const res = await resolve(event, {
+    transformPageChunk: ({ html, done }) => {
+      buffer += html;
+      if(done) {
+        let attrs = "";
+        if(event.locals.lang) attrs += `lang="${event.locals.lang}"`;
+        if(event.locals.dir) attrs += ` dir="${event.locals.dir}"`;
+        return buffer.replace("%html_attrs%", attrs);
+      } else {
+        return undefined;
+      }
+    }
+  });
 
   // for(const cookie of event.locals.set_cookie) {
   //   res.headers.append("set-cookie", cookie);
@@ -51,6 +64,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   if(ok) server_logger.debug(message);
   else server_logger.warn(message);
+
+  const vary = (res.headers.get("vary") || "").split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+  res.headers.set("vary", [...new Set([...vary, "accept-language"])].join(","))
 
   return res;
 }
@@ -93,6 +109,12 @@ export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
       // mode: "same-origin"
     });
 
+    const lang = res.headers.get("x-locale-lang");
+    if(lang != null) event.locals.lang = lang;
+
+    const dir = res.headers.get("x-locale-dir");
+    if(dir != null) event.locals.dir = dir;
+    
     // const set_cookie = res.headers.get("set-cookie");
     // if(set_cookie) {
     //   event.locals.set_cookie.add(set_cookie);

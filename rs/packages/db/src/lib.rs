@@ -35,11 +35,13 @@ pub use models::audio_upload_operation;
 pub use models::config;
 pub use models::db_writable_test;
 pub use models::deployment;
+pub use models::email_verification_code;
 pub use models::event;
 pub use models::media_session;
 pub use models::plan;
 pub use models::play_history_item;
 pub use models::relay_session;
+pub use models::sent_email;
 pub use models::station;
 pub use models::station_picture;
 pub use models::station_picture_variant;
@@ -113,6 +115,8 @@ pub async fn ensure_collections() -> MongoResult<()> {
   token_user_email_confirmation::TokenUserEmailConfirmation::ensure_collection().await?;
   token_user_recovery::TokenUserRecovery::ensure_collection().await?;
   plan::Plan::ensure_collection().await?;
+  sent_email::SentEmail::ensure_collection().await?;
+  email_verification_code::EmailVerificationCode::ensure_collection().await?;
 
   Ok(())
 }
@@ -640,6 +644,31 @@ macro_rules! current_filter_doc {
     ::mongodb::bson::doc! {
       "$and": [
         { $crate::KEY_DELETED_AT: ::mongodb::bson::Bson::Null },
+        { $($tt)* },
+      ]
+    }
+  }
+}
+
+#[macro_export]
+macro_rules! deleted_filter_doc {
+  () => {
+    ::mongodb::bson::doc!{ $crate::KEY_DELETED_AT: { "$ne": ::mongodb::bson::Bson::Null } }
+  };
+
+  ($filter:ident) => {
+    ::mongodb::bson::doc!{
+      "$and": [
+        { $crate::KEY_DELETED_AT: { "$ne" ::mongodb::bson::Bson::Null } },
+        filter,
+      ]
+    }
+  };
+
+  ($($tt:tt)*) => {
+    ::mongodb::bson::doc! {
+      "$and": [
+        { $crate::KEY_DELETED_AT: { "$ne" ::mongodb::bson::Bson::Null } },
         { $($tt)* },
       ]
     }

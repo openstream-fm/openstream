@@ -1,5 +1,7 @@
 pub mod error;
+pub mod redactable;
 pub mod render;
+pub mod sample;
 pub mod templates;
 
 use std::net::SocketAddr;
@@ -8,6 +10,8 @@ use anyhow::Context;
 use askama::Template;
 use hyper::{header::CONTENT_TYPE, http::HeaderValue, Body, StatusCode};
 use prex::Response;
+use redactable::Redactable;
+use sample::Sample;
 use templates::*;
 
 #[tokio::main]
@@ -26,7 +30,7 @@ pub async fn main() -> Result<(), anyhow::Error> {
     <ul>
       <li><a href="/account-invitation">Account invitation</a></li>
       <li><a href="/user-recovery">User recovery</a></li>
-      <li><a href="/email-validation">Email validation</a></li>
+      <li><a href="/email-verification">Email verification</a></li>
       <li><a href="/no-reply-autoreply">No reply autoreply</a></li>
     <ul>
 </body>
@@ -43,19 +47,19 @@ pub async fn main() -> Result<(), anyhow::Error> {
 
   app
     .at("/account-invitation")
-    .get(TemplateHandler(AccountInvitation::default()));
+    .get(TemplateHandler(AccountInvitation::sample()));
 
   app
     .at("/user-recovery")
-    .get(TemplateHandler(UserRecovery::default()));
+    .get(TemplateHandler(UserRecovery::sample()));
 
   app
-    .at("/email-validation")
-    .get(TemplateHandler(EmailValidation::default()));
+    .at("/email-verification")
+    .get(TemplateHandler(EmailVerification::sample()));
 
   app
     .at("/no-reply-autoreply")
-    .get(TemplateHandler(NoReplyAutoreply::default()));
+    .get(TemplateHandler(NoReplyAutoreply::sample()));
 
   let app = app.build().context("prex build")?;
 
@@ -75,9 +79,11 @@ pub async fn main() -> Result<(), anyhow::Error> {
 pub struct TemplateHandler<T: std::fmt::Display + Send + Sync + 'static>(pub T);
 
 #[async_trait::async_trait]
-impl<T: Template + Send + Sync + 'static> prex::handler::Handler for TemplateHandler<T> {
+impl<T: Template + Redactable + Clone + Send + Sync + 'static> prex::handler::Handler
+  for TemplateHandler<T>
+{
   async fn call(&self, _: prex::Request, _: prex::Next) -> prex::Response {
-    let render = render::render(&self.0).unwrap();
+    let render = render::render(self.0.clone()).unwrap();
 
     let html = format!(
       r#"<!doctype html>
@@ -92,9 +98,15 @@ impl<T: Template + Send + Sync + 'static> prex::handler::Handler for TemplateHan
   </div>
   <hr />
   <div class="text" style="white-space:pre-wrap">{}</div>
+  <hr />
+  <div class="page-content">
+  {}
+  </div>
+  <hr />
+  <div class="text" style="white-space:pre-wrap">{}</div>
 </body>
 </html>"#,
-      render.html, render.text
+      render.sendable.html, render.sendable.text, render.storable.html, render.storable.text,
     );
 
     let mut res = Response::new(StatusCode::OK);

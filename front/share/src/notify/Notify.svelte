@@ -6,7 +6,6 @@
 </script>
 
 <script lang="ts">
-  import { fly } from "svelte/transition";
   import { flip } from "svelte/animate";
   import { ripple } from "$share/ripple";
 
@@ -18,6 +17,7 @@
   } from "@mdi/js";
   import Icon from "$share/Icon.svelte";
   import CircularProgress from "$share/CircularProgress.svelte";
+  import { logical_fly } from "$share/transition";
 
   const icons = {
     success: successIcon,
@@ -126,8 +126,8 @@
   .messenger {
     position: fixed;
     z-index: 99999999999;
-    bottom: 0.5em;
-    left: 0.5em;
+    inset-block-end: 0.5em;
+    inset-inline-start: 0.5em;
     display: flex;
     flex-direction: column-reverse;
     align-items: flex-start;
@@ -222,7 +222,7 @@
   {#each messages as message (message.id)}
 
     <div
-      transition:fly={{ x: -200, duration: 250 }}
+      transition:logical_fly={{ x: -200, duration: 250 }}
       animate:flip={{ duration: 200 }}
       class="message {message.variant} {message.variant === "progress" ? "normal" : ""}" 
     >

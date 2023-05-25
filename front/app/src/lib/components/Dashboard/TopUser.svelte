@@ -1,9 +1,9 @@
 <script lang="ts">
-  let user: import("$server/defs/api/users/[user]/GET/Output").Output["user"];
-  let accounts: import("$server/defs/api/accounts/GET/Output").Output; 
-  let account: import("$server/defs/api/accounts/[account]/GET/Output").Output["account"] | null; 
-  let stations: import("$server/defs/api/stations/GET/Output").Output | null;
-  let station: import("$server/defs/api/stations/[station]/GET/Output").Output["station"] | null;
+  let user: import("$api/users/[user]/GET/Output").Output["user"];
+  let accounts: import("$api/accounts/GET/Output").Output; 
+  let account: import("$api/accounts/[account]/GET/Output").Output["account"] | null; 
+  let stations: import("$api/stations/GET/Output").Output | null;
+  let station: import("$api/stations/[station]/GET/Output").Output["station"] | null;
   
   import { page } from "$app/stores";
 
@@ -13,18 +13,20 @@
   $: stations = $page.data.stations || null;
   $: station = $page.data.station || null;
 
-
-  import { fly } from "svelte/transition";
 	import { ripple } from "$share/ripple";
 	import { click_out } from "$share/actions";
 	import { action, _post } from "$share/net.client";
 	import Icon from "$share/Icon.svelte";
 	import { mdiAccountCircleOutline, mdiAccountMultipleOutline, mdiCastAudioVariant, mdiLogout } from "@mdi/js";
 	import { goto } from "$app/navigation";
+	import { locale } from "$lib/locale";
+	import { invalidateSiblings } from "$lib/invalidate";
+	import { logical_fly } from "$share/transition";
 
   const sign_out = action(async () => {
     await _post("/api/auth/user/logout", {});
     goto("/", { invalidateAll: true })
+    invalidateSiblings();
   })
 
   let menu_open = false;
@@ -93,10 +95,8 @@
 
   .menu-position-out {
     position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 0;
-    height: 0;
+    inset-block-end: 0;
+    inset-inline-end: 0;
   }
 
   .menu-position-in {
@@ -105,8 +105,8 @@
 
   .menu {
     position: absolute;
-    top: 0;
-    right: 0;
+    inset-block-start: 0;
+    inset-inline-end: 0;
     background: #fff;
     width: min(calc(100vw - 3rem), 21rem);
     box-shadow: 0 5px 25px 0 rgb(0 0 0 / 10%);
@@ -253,7 +253,7 @@
     <div class="menu-position-out">
       <div class="menu-position-in">
         {#if menu_open}
-          <div class="menu thin-scroll" transition:fly|local={{ y: -25, x: 10, duration: 200 }}>
+          <div class="menu thin-scroll" transition:logical_fly|local={{ y: -25, x: 10, duration: 200 }}>
             <div class="menu-head menu-section">
               <div class="menu-head-icon">
                 <Icon d={mdiAccountCircleOutline} />
@@ -268,7 +268,7 @@
                 <div class="menu-icon">
                   <Icon d={mdiAccountCircleOutline} />
                 </div>
-                Profile
+                {$locale.user_menu.profile}
               </a>
             </div>
             <div class="menu-section">
@@ -276,7 +276,7 @@
                 <div class="menu-icon">
                   <Icon d={mdiAccountMultipleOutline} />
                 </div>
-                Accounts
+                {$locale.user_menu.accounts}
               </a>
               <div class="station-list thin-scroll">
                 {#each accounts.items as item (item._id)}
@@ -294,19 +294,19 @@
                     <div class="menu-icon">
                       <Icon d={mdiCastAudioVariant} />
                     </div>
-                    Stations
+                    {$locale.user_menu.stations}
                   </a>
                 {:else}
                   <div class="menu-section-link not-link">
                     <div class="menu-icon">
                       <Icon d={mdiCastAudioVariant} />
                     </div>
-                    Stations
+                    {$locale.user_menu.stations}
                   </div>
                 {/if}
                 <div class="station-list thin-scroll">
                   {#each stations.items as item (item._id)}
-                    <a href="/accounts/{item.account_id}/stations/{item._id}" class="na menu-station" class:current={item._id === station?._id} use:ripple on:click={() => menu_open = false}>
+                    <a href="/accounts/{item.account_id}/stations/{item._id}" class="na menu-station ripple-container" class:current={item._id === station?._id} use:ripple on:click={() => menu_open = false}>
                       <div class="station-pic" style="background-image: url({$page.data.config.storage_public_url}/station-pictures/webp/32/{item.picture_id}.webp)" />
                       <span class="station-name">{item.name}</span>
                     </a>
@@ -320,7 +320,7 @@
                 <div class="menu-icon">
                   <Icon d={mdiLogout} />
                 </div>
-                Sign out
+                {$locale.user_menu.sign_out}
               </div>
             </div>
           </div>
