@@ -3,20 +3,20 @@ name: backend-build
 on: 
   push:
     paths:
-      - "./rs"
-      - "**/Cargo.toml"
-      - "**/Cargo.lock"
-      - "./openstream.sample.toml"
-      - "./openstream.sample.jsonc"  
+      - "rs/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "openstream.sample.toml"
+      - "openstream.sample.jsonc"
     branches: [ master, dev ]
   
   pull_request:
     paths:
-      - "./rs"
-      - "**/Cargo.toml"
-      - "**/Cargo.lock"
-      - "./openstream.sample.toml"
-      - "./openstream.sample.jsonc"  
+      - "rs/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "openstream.sample.toml"
+      - "openstream.sample.jsonc"
     branches: [ master, dev ]
 
 env:
