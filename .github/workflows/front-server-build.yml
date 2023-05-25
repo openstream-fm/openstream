@@ -2,10 +2,18 @@ name: front-server-build
 
 on: 
   push:
+    paths:
+      - "./defs"
+      - "./defs-patches"
+      - "./front"
     branches: [ master, dev ]
   
   pull_request_target:
-      branches: [ master, dev ]
+    paths:
+      - "./defs"
+      - "./defs-patches"
+      - "./front"
+    branches: [ master, dev ]
 
 jobs:
 
