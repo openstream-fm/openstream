@@ -6,7 +6,7 @@ use ts_rs::TS;
 use crate::Model;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../db/")]
+#[ts(export, export_to = "../../../defs/db/")]
 #[macros::keys]
 pub struct EmailVerificationCode {
   #[serde(rename = "_id")]
