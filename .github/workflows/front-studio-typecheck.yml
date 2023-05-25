@@ -9,7 +9,7 @@ on:
 
 jobs:
   
-  build:
+  front-studio-typecheck:
 
     runs-on: ubuntu-latest
 

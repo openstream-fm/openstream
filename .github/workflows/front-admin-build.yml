@@ -9,7 +9,7 @@ on:
 
 jobs:
   
-  build:
+  front-admin-build:
 
     defaults:
       run:
