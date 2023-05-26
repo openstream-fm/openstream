@@ -28,7 +28,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
    
       - run: npm ci
-      - run: npm run release
+      - run: npm run script:release
       
       - name: Build
         run: echo ${{ github.sha }} > release.txt
