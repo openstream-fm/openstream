@@ -32,13 +32,8 @@ jobs:
       - run: npm run script:release
         working-directory: ./scripts
     
-      - name: Build
-        run: echo ${{ github.sha }} > release.txt
-      - name: Test
-        run: cat release.txt
       - name: Release
         uses: softprops/action-gh-release@v1
         with: 
           files: |
             release.txt
-            release.tar.gz

@@ -24,7 +24,7 @@ if(fs.existsSync(target)) {
   await $`rm ${target}`;
 }
 
-$`cargo build --bin openstream --color always`;
+await $`cargo build --bin openstream --color always`;
 
 await within(async () => {
   cd(frontdir.src);
