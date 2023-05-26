@@ -16,7 +16,6 @@ export type Config = {
 
   session: {
     secret: string
-    // domain: string
     max_age_days: number
     cookie_name: string,
   }
@@ -176,7 +175,7 @@ export const load = (filename: string | null, { logger: _logger, env = process.e
   let format: "toml" | "json" = "toml";
 
   if(filename == null) {
-    logger.info("loading config only from env varianbles");
+    logger.info("loading config only from env variables");
   } else {
     logger.info(`loading config from ${color.yellow(filename)}`);
     if(filename.endsWith(".json") || filename.endsWith(".jsonc")) format = "json";
