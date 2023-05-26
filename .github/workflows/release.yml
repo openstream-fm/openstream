@@ -41,4 +41,4 @@ jobs:
         uses: softprops/action-gh-release@v1
         with: 
           files: |
-            release.tar.fz
+            release.tar.gz
