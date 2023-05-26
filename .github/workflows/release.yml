@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+
+  release:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    defaults:
+      run:
+        working-directory: ./scripts
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+   
+      - run: npm ci
+      - run: npm run release
+      
+      - name: Build
+        run: echo ${{ github.sha }} > release.txt
+      - name: Test
+        run: cat release.txt
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with: 
+          files: |
+            release.txt
+            release.tar.gz

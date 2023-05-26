@@ -3,3 +3,5 @@
 openstream.toml
 openstream-2.toml
 node_modules/
+/release.tar.gz
+/release-tmp
