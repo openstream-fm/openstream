@@ -1,5 +1,6 @@
 /// this file can contain comments
 /// you can mark it as "JSON with Comments" if you are using VSCode 
+/// also, in VSCode, the .jsonc file extension does the trick
 {
   // mongodb related settings
   "mongodb": {
@@ -13,7 +14,7 @@
     "storage_db_name": "openstream_storage"
   },
 
-  // the [stream] server is where end users will be redirected from [router] servers to listen to the streams
+  // the [stream] server is where end users will connect to listen to the stations
   "stream": {
     // string(SocketAddr)[] (required)
     // socket addrs to bind the stream server to
@@ -34,7 +35,7 @@
     "addrs": [ "0.0.0.0:10700" ]
   },
 
-  // the [storage] server is the interface to access user's files
+  // the [storage] server is the interface to access user's files like stored audio tracks and images
   "storage": {
     // string(SocketAddr)[] (required)
     // socket addrs to bind the api server to
@@ -42,6 +43,7 @@
   },
 
   // smtp related settings for mail delivery
+  // smtp server must use StartTLS on the specified port
   "smtp": {
     // string (required)
     "hostname": "",

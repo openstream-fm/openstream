@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+
+  release:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      
+      - uses: actions/checkout@v3
+      
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-all-crates: ""
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+   
+      - run: npm ci
+        working-directory: ./scripts
+
+      - run: npm run build
+        working-directory: ./scripts
+
+      - run: npm run script:release
+        working-directory: ./scripts
+    
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with: 
+          files: |
+            release.tar.gz

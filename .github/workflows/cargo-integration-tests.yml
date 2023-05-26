@@ -39,9 +39,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
     - uses: actions/checkout@v3
+
     - uses: Swatinem/rust-cache@v2
-      # with:
+      with:
+        cache-all-crates: ""
+    # with:
         # The prefix cache key, this can be changed to start a new cache manually.
         # default: "v0-rust"
         # prefix-key: ""
