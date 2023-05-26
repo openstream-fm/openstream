@@ -15,10 +15,6 @@ jobs:
       matrix:
         node-version: [18.x]
 
-    defaults:
-      run:
-        working-directory: ./scripts
-
     steps:
       - uses: actions/checkout@v3
       - uses: Swatinem/rust-cache@v2
@@ -28,8 +24,14 @@ jobs:
           node-version: ${{ matrix.node-version }}
    
       - run: npm ci
+        working-directory: ./scripts
+
+      - run: npm run build
+        working-directory: ./scripts
+
       - run: npm run script:release
-      
+        working-directory: ./scripts
+    
       - name: Build
         run: echo ${{ github.sha }} > release.txt
       - name: Test
