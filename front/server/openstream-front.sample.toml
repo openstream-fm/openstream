@@ -29,7 +29,7 @@ max_age_days = 7
 cookie_name = "openstream-front-tid"
 
 
-
+# studio configuration (optional), if not provided no studio interface will be created
 [studio]
 # boolean (required)
 # enable app web interface or not
@@ -41,6 +41,7 @@ enabled=true
 # env.OPENSTREAM_FRONT_STUDIO_PORT
 port = 18965
 
+# admin configuration (optional), if not provided no admin interface will be created
 [admin]
 # boolean (required)
 # enable app web interface or not
@@ -51,6 +52,43 @@ enabled=true
 # port to bind the admin interface to
 # env.OPENSTREAM_FRONT_ADMIN_PORT
 port = 18865
+
+# payments configuration (optional), if not provided no payments interface will be created
+[payments]
+# boolean (required)
+# enable app web interface or not
+# env.OPENSTREAM_FRONT_PAYMENTS_ENABLED
+enabled=false
+
+# number (required)
+# port to bind the admin interface to
+# env.OPENSTREAM_FRONT_PAYMENTS_PORT
+port = 17100
+
+# string (required)
+# x-access-token header will be checked in each request, and it must match this value
+# env.OPENSTREAM_FRONT_PAYMENTS_ACCESS_TOKEN
+access_token = ""
+
+# braintree credentials (required)
+[payments.credentials]
+# braintree environment (required) can be "sandbox" or "production"
+# env.OPENSTREAM_FRONT_PAYMENTS_ENVIRONMENT
+environment = "sandbox"
+
+# braintree merchant id (required)
+# env.OPENSTREAM_FRONT_PAYMENTS_MERCHANT_ID
+merchant_id = ""
+
+# braintree public key (required)
+# env.OPENSTREAM_FRONT_PAYMENTS_CREDENTIALS_PUBLIC_KEY 
+public_key = ""
+
+# braintree private key (required)
+# env.OPENSTREAM_FRONT_PAYMENTS_CREDENTIALS_PRIVATE_KEY 
+private_key = ""
+
+
 
 # hostnames configuration 
 [hosts.default]

@@ -11,13 +11,14 @@ import { kit } from "./kit";
 
 import { fileURLToPath } from "url";
 import { admin_api } from "./api/admin-api";
+import { payments_api } from "./payments/payments";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const start = async ({ config, logger }: { config: Config, logger: Logger }) => {
 
   process.title = "openstream-front";
 
-  if(config.studio.enabled) {
+  if(config.studio?.enabled) {
 
     let app = express();
 
@@ -37,7 +38,7 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
     });
   }
 
-  if(config.admin.enabled) {
+  if(config.admin?.enabled) {
 
     let app = express();
 
@@ -54,6 +55,17 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
 
     app.listen(config.admin.port, () => {
       logger.scoped("start").info(`admin server bound to port ${color.yellow(config.admin!.port)}`);
+    });
+  }
+
+  if(config.payments?.enabled) {
+
+    let app = express();
+
+    app.use(payments_api({ config: config.payments, logger }))
+
+    app.listen(config.payments.port, () => {
+      logger.scoped("start").info(`payments server bound to port ${color.yellow(config.admin!.port)}`);
     });
   }
 }

@@ -56,6 +56,43 @@
     "port": 18865
   },
 
+  // payments configuration (optional), if not provided no payments interface will be created
+  "payments": { 
+    // boolean (required)
+    // enable app web interface or not
+    // env.OPENSTREAM_FRONT_PAYMENTS_ENABLED
+    "enabled": false,
+
+    // number (required)
+    // port to bind the admin interface to
+    // env.OPENSTREAM_FRONT_PAYMENTS_PORT
+    "port": 17100,
+
+    // string (required)
+    // x-access-token header will be checked in each request, and it must match this value
+    // env.OPENSTREAM_FRONT_PAYMENTS_ACCESS_TOKEN
+    "access_token": "",
+
+    // braintree credentials (required)
+    "credentials": {
+      // braintree environment (required) can be "sandbox" or "production"
+      // env.OPENSTREAM_FRONT_PAYMENTS_ENVIRONMENT
+      "environment": "sandbox",
+      
+      // braintree merchant id (required)
+      // env.OPENSTREAM_FRONT_PAYMENTS_MERCHANT_ID
+      "merchant_id": "",
+
+      // braintree public key (required)
+      // env.OPENSTREAM_FRONT_PAYMENTS_CREDENTIALS_PUBLIC_KEY 
+      "public_key": "",
+
+      // braintree private key (required)
+      // env.OPENSTREAM_FRONT_PAYMENTS_CREDENTIALS_PRIVATE_KEY 
+      "private_key": ""
+    }
+  },
+
   "hosts": {
     "default": {
       "site": { "host": "openstream.fm" },
@@ -106,7 +143,6 @@
       "storage": { "host": "storage.test.openstream.fm" },
       "stream": { "host": "stream.test.openstream.fm" },
       "source": { "host": "source.test.openstream.fm", "port": 8001 }
-    },
-
+    }
   }
 }

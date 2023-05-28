@@ -20,14 +20,26 @@ export type Config = {
     cookie_name: string,
   }
 
-  studio: {
+  studio?: {
     enabled: boolean
     port: number    
   }
 
-  admin: {
+  admin?: {
     enabled: boolean
     port: number    
+  }
+
+  payments?: {
+    enabled: boolean
+    port: number
+    access_token: string
+    credentials: {
+      environment: "sandbox" | "production"
+      merchant_id: string
+      public_key: string
+      private_key: string
+    }
   }
 
   hosts: Record<string, HostConfig | void> & { default: HostConfig }
@@ -142,6 +154,14 @@ export const merge_env = (partial: PartialDeep<Config>, { logger, env = process.
 
   bool("admin.enabled");
   num("admin.port");
+  
+  bool("payments.enabled");
+  num("payments.port");
+  str("payments.access_token");
+  str("payments.credentials.environment");
+  str("payments.credentials.merchant_id");
+  str("payments.credentials.public_key");
+  str("payments.credentials.private_key");
   
   hosts("hosts");
 

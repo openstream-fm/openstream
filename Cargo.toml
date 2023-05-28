@@ -56,6 +56,8 @@ members = [
     "rs/packages/geoip",
 
     "rs/packages/mailer",
+
+    "rs/packages/payments",
 ]
 
 [patch.crates-io]
