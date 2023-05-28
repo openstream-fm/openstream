@@ -564,14 +564,6 @@ pub trait Singleton: Model + Default + Clone {
   }
 }
 
-// #[macro_export]
-// macro_rules! fetch_and_update {
-//   ($Model:ident, $id:expr, $err:expr, $session:expr, $apply:expr) => {
-//     let id = $id;
-//     $Model::get_with_session($id)
-//   };
-// }
-
 #[macro_export]
 macro_rules! fetch_and_patch {
   ($Model:ident, $name:ident, $id:expr, $err:expr, $session:ident, $apply:expr) => {{
