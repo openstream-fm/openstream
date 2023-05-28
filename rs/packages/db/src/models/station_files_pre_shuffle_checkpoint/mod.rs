@@ -6,6 +6,8 @@ use ts_rs::TS;
 use crate::models::station::Station;
 use crate::Model;
 
+crate::register!(StationFilesPreShuffleCheckpoint);
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(
   export,

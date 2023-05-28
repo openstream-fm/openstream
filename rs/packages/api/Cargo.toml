@@ -31,6 +31,7 @@ media-sessions = { version = "0.1.0", path = "../media-sessions" }
 mongodb = "2.4.0"
 owo-colors = { version = "3.5.0", path = "../owo-colors" }
 parking_lot = "0.12.1"
+payments = { version = "0.1.0", path = "../payments" }
 prex = { version = "0.1.0", path = "../prex" }
 rand = "0.8.5"
 random-string = "1.0.0"

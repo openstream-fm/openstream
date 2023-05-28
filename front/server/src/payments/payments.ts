@@ -3,6 +3,7 @@ import { Config } from "../config";
 import { Logger } from "../logger";
 import { BraintreePaymentsClient } from "./braintree-payments-client";
 import { add_all } from "../defs/payments/api/router";
+import body_parser from "body-parser";
 import { access_token_error, catch_handler, not_found_handler, validate_rethrow } from "./error";
 
 export const access_token_auth = (access_token: string): RequestHandler => { 
@@ -28,6 +29,8 @@ export const payments_api = ({ config, logger: _logger }: { config: Exclude<Conf
   const api = Router();
 
   api.use(access_token_auth(access_token));
+
+  api.use(body_parser.json());
 
   add_all(api, client, validate_rethrow);
 

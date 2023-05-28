@@ -12,6 +12,8 @@ use ts_rs::TS;
 
 use crate::{db, Model};
 
+crate::register!(Event);
+
 static WATCHER: Mutex<Option<Watcher>> = Mutex::const_new(None);
 
 struct Watcher {

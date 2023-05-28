@@ -4,6 +4,8 @@ use ts_rs::TS;
 
 use crate::Model;
 
+crate::register!(SentEmail);
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/", rename = "SentEmailBase")]
 pub struct SentEmail {

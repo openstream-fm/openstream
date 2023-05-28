@@ -371,7 +371,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     ref api,
     ref storage,
     ref smtp,
-    payments: _payments,
+    ref payments,
   } = config.as_ref();
 
   let mailer = mailer::send::Mailer {
@@ -431,7 +431,10 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   }
 
   if let Some(api_config) = api {
+    
+    let payments_client = payments::client::PaymentsClient::new(payments.base_url.clone(), payments.access_token.clone());
     let stream_connections_index = db::stream_connection::index::MemIndex::new().await;
+
     let api = ApiServer::new(
       deployment.id.clone(),
       api_config.addrs.clone(),
@@ -439,6 +442,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
       drop_tracer.clone(),
       media_sessions.clone(),
       stream_connections_index,
+      payments_client,
       mailer,
     );
     let fut = api.start()?;

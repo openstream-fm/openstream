@@ -34,9 +34,14 @@ export const operation_rethrow = (e: any): never => {
   throw new PaymentsClientError(String(e?.message), { kind: "provider", provider_error_type: String(e?.type || "") || null }, e);
 }
 
-export const validate_rethrow = (e: any): never => {
-  throw new PaymentsClientError(String(e?.message), { kind: "payload" }, e);
-} 
+export const validate_rethrow = <T>(fn: () => T): T => {
+  try {
+    return fn()
+  } catch(e: any) {
+    throw new PaymentsClientError(String(e?.message), { kind: "payload" }, e);
+  }
+}
+
 
 export const not_found_handler = () => {
   throw new PaymentsClientError("resource not found", { kind: "resource-not-found" });

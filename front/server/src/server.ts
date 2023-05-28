@@ -65,7 +65,7 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
     app.use(payments_api({ config: config.payments, logger }))
 
     app.listen(config.payments.port, () => {
-      logger.scoped("start").info(`payments server bound to port ${color.yellow(config.admin!.port)}`);
+      logger.scoped("start").info(`payments server bound to port ${color.yellow(config.payments!.port)}`);
     });
   }
 }

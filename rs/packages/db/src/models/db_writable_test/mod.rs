@@ -4,6 +4,8 @@ use mongodb::bson::doc;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
+crate::register!(DbWritableTest);
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS, Singleton)]
 #[singleton(collection = "db_writable_test")]
 #[ts(export, export_to = "../../../defs/db/")]

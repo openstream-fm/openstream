@@ -81,6 +81,11 @@ pub mod post {
     EmailCodeMismatch,
     #[error("email verification code expired")]
     EmailCodeExpired,
+
+    #[error("payments_ensure_method: {0}")]
+    PaymentsEnsureCustomer(#[source] payments::error::PerformError),
+    #[error("payments_save_payment_method: {0}")]
+    PaymentSavePaymentMethod(#[source] payments::error::PerformError),
   }
 
   impl From<mongodb::error::Error> for HandleError {
@@ -142,6 +147,9 @@ pub mod post {
         HandleError::EmailCodeExpired => {
           ApiError::BadRequestCustom("Email verification code has expired".into())
         }
+        HandleError::PaymentsEnsureCustomer(e) | HandleError::PaymentSavePaymentMethod(e) => {
+          e.into()
+        }
       }
     }
   }
@@ -178,6 +186,10 @@ pub mod post {
     email_verification_code: String,
 
     device_id: String,
+
+    payment_method_nonce: String,
+
+    payment_device_data: Option<String>,
   }
 
   #[derive(Debug, Clone)]
@@ -199,7 +211,9 @@ pub mod post {
   }
 
   #[derive(Debug, Clone)]
-  pub struct Endpoint {}
+  pub struct Endpoint {
+    pub payments_client: payments::PaymentsClient,
+  }
 
   #[async_trait]
   impl JsonHandler for Endpoint {
@@ -244,6 +258,8 @@ pub mod post {
         user_system_metadata,
         email_verification_code,
         device_id,
+        payment_method_nonce,
+        payment_device_data,
       } = payload;
 
       if !AccessToken::is_device_id_valid(&device_id) {
@@ -359,12 +375,54 @@ pub mod post {
         return Err(HandleError::PlanNotFound(plan_id));
       }
 
+      let email_exists = User::email_exists(&email).await?;
+      if email_exists {
+        return Err(HandleError::EmailExists);
+      }
+
+      let user_id = User::uid();
+
+      let customer_id = {
+        let query = payments::query::ensure_customer::EnsureCustomer {
+          customer_id: user_id.clone(),
+          first_name: first_name.clone(),
+          last_name: last_name.clone(),
+          email: email.clone(),
+        };
+
+        let res = self
+          .payments_client
+          .perform(query)
+          .await
+          .map_err(HandleError::PaymentsEnsureCustomer)?;
+
+        res.customer_id
+      };
+
+      let payment_method = {
+        let query = payments::query::save_payment_method::SavePaymentMethod {
+          customer_id,
+          payment_method_nonce,
+          device_data: payment_device_data,
+        };
+
+        let payment_method = self
+          .payments_client
+          .perform(query)
+          .await
+          .map_err(HandleError::PaymentSavePaymentMethod)?;
+
+        payment_method
+      };
+
+      log::info!("payment method created: {payment_method:?}");
+
       let password = crypt::hash(password);
 
       let now = DateTime::now();
 
       let user = User {
-        id: User::uid(),
+        id: user_id,
         email,
         phone,
         first_name,

@@ -6,6 +6,8 @@ use ts_rs::TS;
 
 use crate::Model;
 
+crate::register!(PlayHistoryItem);
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(
   export,

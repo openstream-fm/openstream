@@ -6,6 +6,8 @@ pub mod request_ext;
 pub mod routes;
 pub mod storage;
 
+use payments::client::PaymentsClient;
+
 use db::stream_connection::index::MemIndex;
 use drop_tracer::DropTracer;
 use futures::stream::FuturesUnordered;
@@ -28,6 +30,7 @@ pub struct ApiServer {
   drop_tracer: DropTracer,
   media_sessions: MediaSessionMap,
   stream_connections_index: MemIndex,
+  payments_client: PaymentsClient,
   mailer: Mailer,
 }
 
@@ -52,6 +55,7 @@ impl ApiServer {
     drop_tracer: DropTracer,
     media_sessions: MediaSessionMap,
     stream_connections_index: MemIndex,
+    payments_client: PaymentsClient,
     mailer: Mailer,
   ) -> Self {
     Self {
@@ -61,6 +65,7 @@ impl ApiServer {
       drop_tracer,
       media_sessions,
       stream_connections_index,
+      payments_client,
       mailer,
     }
   }
@@ -79,6 +84,7 @@ impl ApiServer {
       self.shutdown.clone(),
       self.drop_tracer.clone(),
       self.stream_connections_index.clone(),
+      self.payments_client.clone(),
       self.mailer.clone(),
     ));
 

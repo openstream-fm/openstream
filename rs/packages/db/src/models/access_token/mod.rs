@@ -27,6 +27,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::OnceCell;
 
+crate::register!(AccessToken);
+
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
 #[ts(export, export_to = "../../../defs/db/", rename = "AccessTokenScope")]
 #[serde(rename_all = "snake_case")]

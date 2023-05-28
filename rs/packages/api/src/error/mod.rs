@@ -167,6 +167,9 @@ pub enum ApiError {
 
   #[error("create station account limit")]
   CreateStationAccountLimit,
+
+  #[error("payments perform: {0}")]
+  PaymentsPerform(payments::error::PerformError),
 }
 
 impl ApiError {
@@ -234,6 +237,8 @@ impl ApiError {
       SendMail(_) => StatusCode::INTERNAL_SERVER_ERROR,
 
       CreateStationAccountLimit => StatusCode::FAILED_DEPENDENCY,
+
+      PaymentsPerform(_) => StatusCode::SERVICE_UNAVAILABLE,
     }
   }
 
@@ -298,6 +303,8 @@ impl ApiError {
       SendMail(_) => format!("There was an error sending the email, try again later"),
       
       CreateStationAccountLimit => format!("You reached your limit of stations for this account, upgrade your plan to add more stations"),
+      
+      PaymentsPerform(_) => format!("An error ocurred when processing payment information, try again later"),
     }
   }
 
@@ -360,6 +367,9 @@ impl ApiError {
       SendMail(_) => PublicErrorCode::SendMail,
       
       CreateStationAccountLimit => PublicErrorCode::CreateStationAccountLimit,
+      
+      PaymentsPerform(_) => PublicErrorCode::PaymentsPerform,
+    
     }
   }
 
@@ -473,5 +483,11 @@ impl From<RenderError> for ApiError {
 impl From<SendError> for ApiError {
   fn from(e: SendError) -> Self {
     Self::SendMail(e)
+  }
+}
+
+impl From<payments::error::PerformError> for ApiError {
+  fn from(e: payments::error::PerformError) -> Self {
+    ApiError::PaymentsPerform(e)
   }
 }

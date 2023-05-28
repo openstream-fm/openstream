@@ -11,6 +11,8 @@ pub mod index;
 pub mod lite;
 pub mod stats;
 
+crate::register!(StreamConnection);
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]

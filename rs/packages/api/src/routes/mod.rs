@@ -23,6 +23,8 @@ use shutdown::Shutdown;
 use crate::error::ApiError;
 use crate::json::JsonHandler;
 
+use payments::client::PaymentsClient;
+
 use async_trait::async_trait;
 
 pub fn router(
@@ -31,6 +33,7 @@ pub fn router(
   shutdown: Shutdown,
   drop_tracer: DropTracer,
   stream_connections_index: MemIndex,
+  payments_client: PaymentsClient,
   mailer: Mailer,
 ) -> Builder {
   let mut app = prex::prex();
@@ -60,9 +63,12 @@ pub fn router(
     .at("/auth/user/logout")
     .post(auth::user::logout::post::Endpoint {}.into_handler());
 
-  app
-    .at("/auth/user/register")
-    .post(auth::user::register::post::Endpoint {}.into_handler());
+  app.at("/auth/user/register").post(
+    auth::user::register::post::Endpoint {
+      payments_client: payments_client.clone(),
+    }
+    .into_handler(),
+  );
 
   app
     .at("/auth/user/recover")

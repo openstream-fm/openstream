@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
 
+crate::register!(MediaSession);
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[ts(rename = "MediaSessionBase")]

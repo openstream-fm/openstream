@@ -113,4 +113,6 @@ pub enum PublicErrorCode {
   SendMail,
 
   CreateStationAccountLimit,
+
+  PaymentsPerform,
 }

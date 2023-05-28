@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
 
+crate::register!(Admin);
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]

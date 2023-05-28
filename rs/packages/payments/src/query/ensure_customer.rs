@@ -5,16 +5,16 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "snake_case")]
 #[ts(rename = "Query")]
 pub struct EnsureCustomer {
-  customer_id: String,
-  email: String,
-  first_name: String,
-  last_name: String,
+  pub customer_id: String,
+  pub email: String,
+  pub first_name: String,
+  pub last_name: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
 #[ts(rename = "Response")]
 pub struct EnsureCustomerResponse {
-  customer_id: String,
+  pub customer_id: String,
 }
 
 impl Query for EnsureCustomer {
