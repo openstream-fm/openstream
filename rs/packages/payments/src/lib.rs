@@ -73,6 +73,7 @@ mod test {
   use super::Query;
   use crate::query::ensure_customer::EnsureCustomer;
   use crate::query::generate_client_token::GenerateClientToken;
+  use crate::query::save_payment_method::SavePaymentMethod;
   use ts_rs::TS;
 
   fn interface_endpoint_import<T: Query>() -> String {
@@ -174,8 +175,9 @@ mod test {
   #[test]
   fn export_client_interface() {
     export_client!(
-      EnsureCustomer
       GenerateClientToken
+      EnsureCustomer
+      SavePaymentMethod
     );
   }
 

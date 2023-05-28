@@ -13,8 +13,8 @@ pub struct EnsureCustomer {
 
 #[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
 #[ts(rename = "Response")]
-pub enum EnsureCustomerResponse {
-  Ok,
+pub struct EnsureCustomerResponse {
+  customer_id: String,
 }
 
 impl Query for EnsureCustomer {

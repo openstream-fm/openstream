@@ -5,13 +5,13 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "snake_case")]
 #[ts(rename = "Query")]
 pub struct GenerateClientToken {
-  client_id: String,
+  customer_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
 #[ts(rename = "Response")]
 pub struct GenerateClientTokenResponse {
-  token: String,
+  client_token: String,
 }
 
 impl Query for GenerateClientToken {

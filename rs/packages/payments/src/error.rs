@@ -4,10 +4,10 @@ use serde::{Deserialize, Serialize};
 #[ts(rename = "PaymentsErrorBase")]
 #[error("{:?}: {}", kind, message)]
 pub struct PaymentsError {
+  pub message: String,
   #[ts(skip)]
   #[serde(flatten)]
   pub kind: PaymentsErrorKind,
-  pub message: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
@@ -15,6 +15,7 @@ pub struct PaymentsError {
 pub enum PaymentsErrorKind {
   Provider,
   Payload,
+  ResourceNotFound,
   Unknown,
 }
 
