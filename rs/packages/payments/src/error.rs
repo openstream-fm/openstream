@@ -11,15 +11,36 @@ pub struct PaymentsError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
-#[serde(rename_all = "kebab-case", tag = "kind", content = "meta")]
+#[serde(rename_all = "kebab-case", tag = "kind")]
 pub enum PaymentsErrorKind {
-  Provider,
+  Provider { provider_error_type: Option<String> },
   Payload,
+  AccessTokenNotPresent,
+  AccessTokenMismatch,
   ResourceNotFound,
   Unknown,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
 pub struct PaymentsErrorPayload {
-  error: PaymentsError,
+  pub error: PaymentsError,
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum PerformError {
+  #[error("fetch: {0}")]
+  Fetch(#[source] reqwest::Error),
+
+  #[error("get_error_payload: status={status} {source}")]
+  GetErrorPayload {
+    status: u16,
+    #[source]
+    source: reqwest::Error,
+  },
+
+  #[error("get_payload: {0}")]
+  GetPayload(#[source] reqwest::Error),
+
+  #[error("endpoint: {0}")]
+  Endpoint(#[from] PaymentsError),
 }

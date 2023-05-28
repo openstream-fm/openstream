@@ -2,8 +2,9 @@ import type { Request, Response, NextFunction } from "express";
 import type { PaymentsErrorKind } from "../defs/payments/api/PaymentsErrorKind";
 import { PaymentsErrorPayload } from "../defs/payments/api/PaymentsErrorPayload";
 import { Logger } from "../logger";
+import { StatusCodes } from "http-status-codes";
 
-
+export const ERROR_STATUS_CODE = StatusCodes.IM_A_TEAPOT;
 export class PaymentsClientError extends Error {
   
   kind: PaymentsErrorKind;
@@ -27,20 +28,23 @@ export class PaymentsClientError extends Error {
       }
     }
   }
-
-  
 }
 
 export const operation_rethrow = (e: any): never => {
-  throw new PaymentsClientError(String(e?.message), { kind: "provider" }, e);
+  throw new PaymentsClientError(String(e?.message), { kind: "provider", provider_error_type: String(e?.type || "") || null }, e);
 }
 
 export const validate_rethrow = (e: any): never => {
   throw new PaymentsClientError(String(e?.message), { kind: "payload" }, e);
 } 
 
-export const not_found_catch = () => {
+export const not_found_handler = () => {
   throw new PaymentsClientError("resource not found", { kind: "resource-not-found" });
+}
+
+export const access_token_error = (kind: "access-token-not-present" | "access-token-mismatch"): PaymentsClientError => {
+  const message = kind === "access-token-not-present" ? "Access token not present" : "Access token mismatch";
+  return new PaymentsClientError(message, { kind })
 }
 
 export const catch_handler = ({ logger }: { logger: Logger }) => {
@@ -54,6 +58,14 @@ export const catch_handler = ({ logger }: { logger: Logger }) => {
       logger.error(src_error)
       logger.error("target error")
       logger.error(PaymentsClientError.from(src_error));
+    }
+
+    if(!res.headersSent) {
+      try {
+        res.status(ERROR_STATUS_CODE).json(target_error.to_payload());
+      } catch(e) {
+        logger.warn(`error sending error json payload: ${String(e)}`)
+      }
     }
   }
 }

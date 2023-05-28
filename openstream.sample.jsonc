@@ -42,6 +42,20 @@
     "addrs": [ "0.0.0.0:10900" ]
   },
 
+  // payments server configuration
+  "payments": {
+
+    // string(Url) (required)
+    // base url of the payments server, it could be in another location that is not local and 
+    // could be an http:// or https:// url, should not
+    "base_url": "http://localhost:17100",
+
+    // string (required)
+    // the access token to grant access to the payments server
+    // it must match the one specified in front_config.payments.access_token 
+    "access_token": ""
+  },
+  
   // smtp related settings for mail delivery
   // smtp server must use StartTLS on the specified port
   "smtp": {

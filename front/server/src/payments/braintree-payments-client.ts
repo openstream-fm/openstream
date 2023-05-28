@@ -1,4 +1,4 @@
-import braintree, { CreditCard } from "braintree";
+import braintree from "braintree";
 import type { PaymentsClient } from "../defs/payments/api/payments-client";
 import { assert_never } from "../assert_never";
 import { operation_rethrow } from "./error";
@@ -51,7 +51,14 @@ export class BraintreePaymentsClient implements PaymentsClient {
       last_name,
     } = query;
 
-    const customer = await this.gateway.customer.find(customer_id).catch(e => null);
+    const customer = await this.gateway.customer.find(customer_id).catch((e: any) => {
+      if(e?.type === "notFoundError") {
+        return null;
+      } else {
+        throw e;
+      }
+    }).catch(operation_rethrow);
+
     if(customer) return { customer_id: customer.id };
 
     const res = await this.gateway.customer.create({

@@ -22,7 +22,7 @@ const handler = <T>(fn: (req: Request) => Promise<T>) => {
     }
   }
 }
-export const add_all = (router: Router, validate_rethrow: ValidateRethrow, client: PaymentsClient) => {
+export const add_all = (router: Router, client: PaymentsClient, validate_rethrow: ValidateRethrow) => {
   router.post("/generate-client-token", handler(async req => {
    const payload = validate_rethrow(() => typia.assertEquals<generate_client_token.Query>(req.body));
    return await client.generate_client_token(payload)

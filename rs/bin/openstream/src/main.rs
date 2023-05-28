@@ -371,6 +371,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     ref api,
     ref storage,
     ref smtp,
+    payments: _payments,
   } = config.as_ref();
 
   let mailer = mailer::send::Mailer {

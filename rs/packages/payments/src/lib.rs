@@ -2,8 +2,10 @@ use std::path::Path;
 
 use serde::{de::DeserializeOwned, Serialize};
 
+pub mod client;
 pub mod error;
 pub mod query;
+pub use client::PaymentsClient;
 
 pub trait Query: Send + Sync + Serialize + DeserializeOwned + ts_rs::TS + 'static {
   const PATH: &'static str;
@@ -151,7 +153,7 @@ mod test {
         String::from("  }"),
         String::from("}"),
 
-        String::from("export const add_all = (router: Router, validate_rethrow: ValidateRethrow, client: PaymentsClient) => {")
+        String::from("export const add_all = (router: Router, client: PaymentsClient, validate_rethrow: ValidateRethrow) => {")
       ]);
 
       $(
