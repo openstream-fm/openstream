@@ -6,6 +6,7 @@ pub mod auth;
 pub mod stations;
 pub mod users;
 
+pub mod analytics;
 pub mod plans;
 pub mod runtime;
 pub mod station_pictures;
@@ -106,6 +107,10 @@ pub fn router(
     }
     .into_handler(),
   );
+
+  app
+    .at("/analytics")
+    .get(analytics::get::Endpoint {}.into_handler());
 
   app.at("/stream-stats").get(
     stream_stats::get::Endpoint {

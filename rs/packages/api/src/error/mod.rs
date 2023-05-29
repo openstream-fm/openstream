@@ -40,10 +40,10 @@ pub enum ApiError {
   Hyper(#[from] hyper::Error),
 
   #[error("querystring: {0}")]
-  QueryString(#[from] serde_querystring::de::Error),
+  QueryString(#[from] serde_qs::Error),
 
-  #[error("querystring2: {0}")]
-  QueryString2(String),
+  #[error("querystring-custom: {0}")]
+  QueryStringCustom(String),
 
   #[error("token missing")]
   TokenMissing,
@@ -198,7 +198,7 @@ impl ApiError {
       UserNotFound(_) => StatusCode::NOT_FOUND,
       AudioFileNotFound(_) => StatusCode::NOT_FOUND,
       QueryString(_) => StatusCode::BAD_REQUEST,
-      QueryString2(_) => StatusCode::BAD_REQUEST,
+      QueryStringCustom(_) => StatusCode::BAD_REQUEST,
       PayloadIo(_) => StatusCode::BAD_REQUEST,
       PayloadJson(_) => StatusCode::BAD_REQUEST,
       PayloadTooLarge(_) => StatusCode::BAD_REQUEST,
@@ -265,7 +265,7 @@ impl ApiError {
       DeviceNotFound(id) => format!("Device with id {id} not found"),
       AudioFileNotFound(id) => format!("Audio file with id {id} not found"),
       QueryString(e) => format!("Invalid query string: {e}"),
-      QueryString2(message) => format!("Invalid query string: {message}"),
+      QueryStringCustom(message) => format!("Invalid query string: {message}"),
       PayloadIo(e) => format!("Error reading payload: {e}"),
       PayloadJson(e) => format!("Invalid JSON payload: {e}"),
       PayloadTooLarge(_) => format!("Payload size exceeded"),
@@ -331,7 +331,7 @@ impl ApiError {
       AudioFileNotFound(_) => PublicErrorCode::AudioFileNotFound,
       DeviceNotFound(_) => PublicErrorCode::DeviceNotFound,
       QueryString(_) => PublicErrorCode::QueryStringInvalid,
-      QueryString2(_) => PublicErrorCode::QueryStringInvalid,
+      QueryStringCustom(_) => PublicErrorCode::QueryStringInvalid,
       PayloadIo(_) => PublicErrorCode::PayloadIo,
       PayloadJson(_) => PublicErrorCode::PayloadJson,
       PayloadTooLarge(_) => PublicErrorCode::PayloadTooLarge,
@@ -469,7 +469,7 @@ impl From<CreateStationPictureError> for ApiError {
       ImageTooLargeBytes | ImageNotSquare | ImageTooSmallSize | Ril(_) => {
         ApiError::PayloadInvalid(format!("{e}"))
       }
-      AccountNotFound(_) => ApiError::QueryString2(format!("{e}")),
+      AccountNotFound(_) => ApiError::QueryStringCustom(format!("{e}")),
     }
   }
 }

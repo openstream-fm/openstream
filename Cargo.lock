@@ -123,9 +123,9 @@ dependencies = [
  "rand 0.8.5",
  "random-string",
  "serde",
- "serde-querystring 0.1.0",
  "serde-util",
  "serde_json",
+ "serde_qs",
  "sha1",
  "shutdown",
  "slugify",
@@ -3365,6 +3365,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
+ "serde_qs",
  "test-util",
  "thiserror",
  "tokio",
@@ -4096,26 +4097,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde-querystring"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a9e4eec4c3d3ff56ddc6279c894bf0d1ce7eb584e1d8a9a75c61d953a78ed4b7"
-dependencies = [
- "lexical",
- "serde",
-]
-
-[[package]]
-name = "serde-querystring"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce88f8e75d0920545b35b78775e0927137337401f65b01326ce299734885fd21"
-dependencies = [
- "lexical",
- "serde",
-]
-
-[[package]]
 name = "serde-util"
 version = "0.1.0"
 dependencies = [
@@ -4163,6 +4144,17 @@ dependencies = [
  "itoa 1.0.5",
  "ryu",
  "serde",
+]
+
+[[package]]
+name = "serde_qs"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0431a35568651e363364210c91983c1da5eb29404d9f0928b67d4ebcfa7d330c"
+dependencies = [
+ "percent-encoding",
+ "serde",
+ "thiserror",
 ]
 
 [[package]]
@@ -4379,8 +4371,8 @@ dependencies = [
  "rand 0.8.5",
  "regex_static",
  "serde",
- "serde-querystring 0.2.1",
  "serde-util",
+ "serde_qs",
  "shutdown",
  "socket2 0.5.2",
  "static_init",

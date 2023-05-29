@@ -36,9 +36,9 @@ prex = { version = "0.1.0", path = "../prex" }
 rand = "0.8.5"
 random-string = "1.0.0"
 serde = "1.0.145"
-serde-querystring = "0.1.0"
 serde-util = { version = "0.1.0", path = "../serde-util" }
 serde_json = { version = "1.0", features = ["preserve_order"] }
+serde_qs = "0.12.0"
 sha1 = "0.10.5"
 shutdown = { version = "0.1.0", path = "../shutdown" }
 slugify = "0.1.0"
