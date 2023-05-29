@@ -1,3 +1,4 @@
+pub mod email_exists;
 pub mod login;
 pub mod logout;
 pub mod recover;

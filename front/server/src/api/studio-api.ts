@@ -119,6 +119,10 @@ export const studio_api = ({
     return { locale };
   }))
 
+  api.get("/auth/user/email-exists/:email", json(async (req, res) => {
+    return await client.auth.user.email_exists(ip(req), ua(req), null, req.params.email);
+  }))
+
   api.post("/auth/user/login", json(async (req, res) => {
     const sess = req.cookie_session;
     const r = await client.auth.user.login(ip(req), ua(req), null, { ...req.body, device_id: sess.device_id });

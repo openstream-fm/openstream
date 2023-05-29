@@ -237,6 +237,10 @@ export class AuthUser {
     this.recovery_token = new AuthUserRecoveryToken(this.client);
   }
 
+  async email_exists(ip: string | null, ua: string | null, token: string | null, email: string): Promise<import("$api/auth/user/email-exists/[email]/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/auth/user/email-exists/${email}`);
+  }
+
   async login(ip: string | null, ua: string | null, token: string | null, payload: import("$api/auth/user/login/POST/Payload").Payload): Promise<import("$api/auth/user/login/POST/Output").Output> {
     return await this.client.post(ip, ua, token, "/auth/user/login", payload)
   }

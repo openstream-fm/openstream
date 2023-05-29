@@ -1,9 +1,11 @@
 <script lang="ts">
+  import { MaybePromise } from "./util";
+
   import { slide } from "svelte/transition";
 
   type Value = $$Generic;
   export let value: Value;
-  export let fn: (v: Value) => string | null; 
+  export let fn: (v: Value) => MaybePromise<string | null>; 
 
   import { FORMY_KEY } from "./formy";
   import type { FormyContext } from "./formy";
@@ -13,9 +15,14 @@
   let current_message: string | null;
 
   $: on_value(value);
-  const on_value = (...args: any[]) => {
+  let _token = 0;
+  const on_value = async (...args: any[]) => {
     if(current_message != null) {
-      current_message = fn(value);
+      const token = ++_token; 
+      const message = await fn(value);
+      if(token === _token) {
+        current_message = message;
+      }
     }
   }
 
@@ -25,9 +32,13 @@
     if(context != null) {
       const parent_element = node.parentElement;
       if(parent_element != null) {
-        const validate = () => {
-          current_message = fn(value);
-          return current_message;
+        const validate = async () => {
+          let token = ++_token;
+          let message = await fn(value);
+          if(token === _token) {
+            current_message = message;
+          }
+          return message;
         }
         return {
           destroy: context.add({ fn: validate, parent_element })
