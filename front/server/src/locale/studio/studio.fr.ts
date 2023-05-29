@@ -345,8 +345,8 @@ const locale: import("./studio.locale").StudioLocale = {
       },
 
       "station_item": {
-        "on_air": "ON",
-        "off_air": "OFF",
+        "on_air": "ON AIR",
+        "off_air": "OFF AIR",
         "playlist": "Playlist",
         "live": "En direct",
       }
@@ -375,8 +375,8 @@ const locale: import("./studio.locale").StudioLocale = {
     },
 
     "station/dashboard": {
-      "on_air": "ON",
-      "off_air": "OFF",
+      "on_air": "ON AIR",
+      "off_air": "OFF AIR",
       "playlist": "Playlist",
       "live": "En direct",
       "preview": "Aperçu",

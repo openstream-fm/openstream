@@ -347,7 +347,7 @@ const locale: import("./studio.locale").StudioLocale = {
 
       "station_item": {
         "on_air": "直播中",
-        "off_air": "离线",
+        "off_air": "未直播",
         "playlist": "播放列表",
         "live": "现场直播",
       }
@@ -377,7 +377,7 @@ const locale: import("./studio.locale").StudioLocale = {
 
     "station/dashboard": {
       "on_air": "直播中",
-      "off_air": "离线",
+      "off_air": "未直播",
       "playlist": "播放列表",
       "live": "现场直播",
       "preview": "预览",

@@ -60,9 +60,10 @@ pub fn export_query<T: Query>() {
         "// This file was automatically generated from its Rust definition, do not manually edit",
       ),
       String::from(""),
-      String::from(r#"export * from "./Path" "#),
-      String::from(r#"export * from "./Query" "#),
-      String::from(r#"export * from "./Response" "#),
+      String::from(r#"export { path } from "./Path" "#),
+      String::from(r#"export type { Path } from "./Path" "#),
+      String::from(r#"export type { Query } from "./Query" "#),
+      String::from(r#"export type { Response } from "./Response" "#),
     ]
     .join("\n");
 
