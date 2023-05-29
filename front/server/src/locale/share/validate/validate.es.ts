@@ -27,6 +27,8 @@ const locale: import("./validate.locale").ValidateLocale = {
     "protocol": "Este campo debe empezar por http:// o https://",
   },
 
+  "email_registered": "Este email ya está registrado",
+
   "twitter_url": "Este campo debe ser una URL de Twitter válida, navega hasta tu página de Twitter y copia la URL entera desde allí",
   "facebook_url": "Este campo debe ser una URL de Facebook válida, navega hasta tu página de Facebook y copia la URL entera desde allí",
   "instagram_url": "Este campo debe ser una URL de Instagram válida, navega hasta tu página de Instagram y copia la URL entera desde allí",

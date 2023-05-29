@@ -29,6 +29,8 @@ const locale = {
     "protocol": "Questo campo deve iniziare con http:// o https://",
   },
 
+  "email_registered": "Questa email è già registrata",
+
   "twitter_url": "Questo campo deve essere un URL Twitter valido, vai alla tua pagina Twitter e copia l'intero URL da lì",
   "facebook_url": "Questo campo deve essere un URL Facebook valido, vai alla tua pagina Facebook e copia l'intero URL da lì",
   "instagram_url": "Questo campo deve essere un URL Instagram valido, vai alla tua pagina Instagram e copia l'intero URL da lì",
