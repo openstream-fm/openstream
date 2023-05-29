@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { sleep } from "$share/util";
+
   import { MaybePromise } from "./util";
 
   import { slide } from "svelte/transition";
@@ -16,12 +18,26 @@
 
   $: on_value(value);
   let _token = 0;
+  let on_value_executing = false;
   const on_value = async (...args: any[]) => {
     if(current_message != null) {
-      const token = ++_token; 
-      const message = await fn(value);
-      if(token === _token) {
-        current_message = message;
+      const token = ++_token;
+      while(on_value_executing) {
+        await sleep(100);
+        if(token !== _token) return;
+      }
+
+      on_value_executing = true;
+      
+      try {
+        const message = await fn(value);
+        if(token === _token) {
+          current_message = message;
+        }
+        on_value_executing = false;
+      
+      } catch(e) {
+        on_value_executing = false;
       }
     }
   }

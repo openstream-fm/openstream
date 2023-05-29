@@ -65,7 +65,7 @@ pub fn router(
 
   app
     .at("/auth/user/email-exists/:email")
-    .post(auth::user::email_exists::get::Endpoint {}.into_handler());
+    .get(auth::user::email_exists::get::Endpoint {}.into_handler());
 
   app
     .at("/auth/user/register")
