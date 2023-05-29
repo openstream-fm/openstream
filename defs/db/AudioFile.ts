@@ -2,7 +2,7 @@
 import type { AudioMetadata } from "./AudioMetadata";
 import type { DateTime } from "../DateTime";
 
-export interface AudioFile {
+export type AudioFile = {
   _id: string;
   station_id: string;
   sha_256: string;
@@ -16,4 +16,4 @@ export interface AudioFile {
   metadata: AudioMetadata;
   order: number;
   created_at: DateTime;
-}
+};

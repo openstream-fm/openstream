@@ -26,11 +26,8 @@ pub enum State {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(
-  export,
-  export_to = "../../../defs/db/",
-  rename = "BaseAudioUploadOperation"
-)]
+#[ts(export, export_to = "../../../defs/db/")]
+// #[ts(rename = "BaseAudioUploadOperation")
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct AudioUploadOperation {
@@ -41,7 +38,7 @@ pub struct AudioUploadOperation {
   pub created_at: DateTime,
   /// TODO: working in adding support for flattened enums in ts-rs
   #[serde(flatten)]
-  #[ts(skip)]
+  // #[ts(skip)]
   pub state: State,
 }
 

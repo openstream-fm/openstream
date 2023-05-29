@@ -2,7 +2,7 @@
 import type { DateTime } from "../DateTime";
 import type { Metadata } from "./Metadata";
 
-export interface Admin {
+export type Admin = {
   _id: string;
   first_name: string;
   last_name: string;
@@ -12,4 +12,4 @@ export interface Admin {
   created_at: DateTime;
   updated_at: DateTime;
   deleted_at: DateTime | null;
-}
+};

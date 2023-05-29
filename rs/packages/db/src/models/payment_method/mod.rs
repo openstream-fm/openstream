@@ -9,7 +9,6 @@ use mongodb::bson::doc;
 crate::register!(PaymentMethod);
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(rename = "PaymentMethodBase")]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
@@ -42,14 +41,14 @@ pub enum PaymentMethodKind {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/")]
-#[ts(rename = "PublicPaymentMethodBase")]
 pub struct PublicPaymentMethod {
   #[ts(rename = "_id")]
   pub id: String,
   pub user_id: String,
-  #[ts(skip)]
+
   #[serde(flatten)]
   pub kind: PublicPaymentMethodKind,
+
   pub created_at: DateTime,
   pub updated_at: DateTime,
   pub deleted_at: Option<DateTime>,
@@ -79,6 +78,7 @@ impl From<PaymentMethod> for PublicPaymentMethod {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/")]
+#[serde(tag = "kind")]
 pub enum PublicPaymentMethodKind {
   #[serde(rename = "card")]
   Card {

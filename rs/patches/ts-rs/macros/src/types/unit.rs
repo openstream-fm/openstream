@@ -15,7 +15,7 @@ pub(crate) fn unit(attr: &StructAttr, name: &str) -> Result<DerivedTS> {
     Ok(DerivedTS {
         inline: quote!("null".to_owned()),
         decl: quote!(format!("type {} = null;", #name)),
-        inline_flattened: None,
+        // inline_flattened: None,
         name: name.to_owned(),
         dependencies: Dependencies::default(),
         export: attr.export,

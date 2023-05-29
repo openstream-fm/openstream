@@ -63,12 +63,9 @@ pub fn router(
     .at("/auth/user/logout")
     .post(auth::user::logout::post::Endpoint {}.into_handler());
 
-  app.at("/auth/user/register").post(
-    auth::user::register::post::Endpoint {
-      payments_client: payments_client.clone(),
-    }
-    .into_handler(),
-  );
+  app
+    .at("/auth/user/register")
+    .post(auth::user::register::post::Endpoint { payments_client }.into_handler());
 
   app
     .at("/auth/user/recover")

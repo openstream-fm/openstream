@@ -20,7 +20,7 @@ struct DerivedTS {
     name: String,
     inline: TokenStream,
     decl: TokenStream,
-    inline_flattened: Option<TokenStream>,
+    // inline_flattened: Option<TokenStream>,
     dependencies: Dependencies,
 
     export: bool,
@@ -66,19 +66,19 @@ impl DerivedTS {
             name,
             inline,
             decl,
-            inline_flattened,
+            // inline_flattened,
             dependencies,
             ..
         } = self;
-        let inline_flattened = inline_flattened
-            .map(|t| {
-                quote! {
-                    fn inline_flattened() -> String {
-                        #t
-                    }
-                }
-            })
-            .unwrap_or_else(TokenStream::new);
+        // let inline_flattened = inline_flattened
+        //     .map(|t| {
+        //         quote! {
+        //             fn inline_flattened() -> String {
+        //                 #t
+        //             }
+        //         }
+        //     })
+        //     .unwrap_or_else(TokenStream::new);
 
         let impl_start = generate_impl(&rust_ty, &generics);
         quote! {
@@ -88,16 +88,21 @@ impl DerivedTS {
                 fn decl() -> String {
                     #decl
                 }
+
                 fn name() -> String {
                     #name.to_owned()
                 }
+
                 fn inline() -> String {
                     #inline
                 }
-                #inline_flattened
+
+                // inline_flattened
+
                 fn dependencies() -> Vec<ts_rs::Dependency> {
                     #dependencies
                 }
+
                 fn transparent() -> bool {
                     false
                 }

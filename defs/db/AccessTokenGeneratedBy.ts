@@ -2,17 +2,15 @@
 import type { UserAgent } from "../UserAgent";
 
 export type AccessTokenGeneratedBy =
-  | {
-    generated_by: "login";
+  | ({ generated_by: "login" } & {
     ip: string;
     user_agent: UserAgent;
     device_id: string;
-  }
-  | {
-    generated_by: "register";
+  })
+  | ({ generated_by: "register" } & {
     ip: string;
     user_agent: UserAgent;
     device_id: string;
-  }
-  | { generated_by: "api"; title: string }
-  | { generated_by: "cli"; title: string };
+  })
+  | ({ generated_by: "api" } & { title: string })
+  | ({ generated_by: "cli" } & { title: string });

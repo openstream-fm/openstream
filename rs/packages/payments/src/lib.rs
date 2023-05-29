@@ -202,17 +202,5 @@ mod test {
       base.join(format!("{}.ts", crate::error::PaymentsErrorKind::name())),
     )
     .unwrap();
-
-    let contents = [
-      "// This file was automatically generated from its Rust definition, do not manually edit",
-      "",
-      r#"import { PaymentsErrorBase } from  "./PaymentsErrorBase""#,
-      r#"import { PaymentsErrorKind } from  "./PaymentsErrorKind""#,
-      "",
-      "export type PaymentsError = PaymentsErrorBase & PaymentsErrorKind",
-    ]
-    .join("\n");
-
-    std::fs::write(base.join("PaymentsError.ts"), contents).unwrap();
   }
 }

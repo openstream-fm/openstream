@@ -5,7 +5,7 @@ import type { Metadata } from "./db/Metadata";
 import type { StationFrequency } from "./StationFrequency";
 import type { StationTypeOfContent } from "./db/StationTypeOfContent";
 
-export interface UserPublicStation {
+export type UserPublicStation = {
   _id: string;
   account_id: string;
   picture_id: string;
@@ -33,4 +33,4 @@ export interface UserPublicStation {
   created_at: DateTime;
   updated_at: DateTime;
   deleted_at: DateTime | null;
-}
+};

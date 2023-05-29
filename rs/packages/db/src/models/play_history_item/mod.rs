@@ -9,11 +9,8 @@ use crate::Model;
 crate::register!(PlayHistoryItem);
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(
-  export,
-  export_to = "../../../defs/db/",
-  rename = "BasePlayHistoryItem"
-)]
+#[ts(export, export_to = "../../../defs/db/")]
+// #[ts(rename = "BasePlayHistoryItem")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct PlayHistoryItem {
@@ -29,7 +26,7 @@ pub struct PlayHistoryItem {
   pub title: String,
   pub artist: Option<String>,
 
-  #[ts(skip)]
+  // #[ts(skip)]
   #[serde(flatten)]
   pub kind: Kind,
 

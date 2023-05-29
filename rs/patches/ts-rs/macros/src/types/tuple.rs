@@ -44,7 +44,7 @@ pub(crate) fn tuple(
                 Self::inline()
             )
         },
-        inline_flattened: None,
+        // inline_flattened: None,
         name: name.to_owned(),
         dependencies,
         export: attr.export,

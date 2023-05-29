@@ -22,15 +22,17 @@ struct Watcher {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/", rename = "BaseEvent")]
+// #[ts(rename = "BaseEvent")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct Event {
   #[serde(rename = "_id")]
   id: String,
   created_at: DateTime,
+
   // TODO: working in adding support for flattened enums in ts-rs
   #[serde(flatten)]
-  #[ts(skip)]
+  // #[ts(skip)]
   variant: Variant,
 }
 

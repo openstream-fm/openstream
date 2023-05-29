@@ -2,7 +2,7 @@
 import type { DateTime } from "../DateTime";
 import type { StationPictureVariantFormat } from "./StationPictureVariantFormat";
 
-export interface StationPictureVariant {
+export type StationPictureVariant = {
   _id: string;
   picture_id: string;
   format: StationPictureVariantFormat;
@@ -12,4 +12,4 @@ export interface StationPictureVariant {
   data: Uint8Array;
   created_at: DateTime;
   updated_at: DateTime;
-}
+};

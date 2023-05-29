@@ -48,6 +48,7 @@ pub struct Status {
 }
 
 impl ApiServer {
+  #[allow(clippy::too_many_arguments)]
   pub fn new(
     deployment_id: String,
     addrs: Vec<SocketAddr>,

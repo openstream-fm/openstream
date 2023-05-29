@@ -17,6 +17,7 @@ pub(crate) fn named(
     generics: &Generics,
 ) -> Result<DerivedTS> {
     let mut formatted_fields = vec![];
+    let mut flattened_fields = vec![];
     let mut dependencies = Dependencies::default();
     if let Some(tag) = &attr.tag {
         let formatted = format!("{}: \"{}\",", tag, name);
@@ -28,6 +29,7 @@ pub(crate) fn named(
     for field in &fields.named {
         format_field(
             &mut formatted_fields,
+            &mut flattened_fields,
             &mut dependencies,
             field,
             &attr.rename_all,
@@ -38,15 +40,22 @@ pub(crate) fn named(
     let fields = quote!(vec![#(#formatted_fields),*].join(" "));
     let generic_args = format_generics(&mut dependencies, generics);
 
+    let inline = quote! {
+        vec![
+            format!("{{ {} }}", #fields),
+            #(#flattened_fields),*
+        ].join("&")
+    };
+
     Ok(DerivedTS {
-        inline: quote! {
-            format!(
-                "{{ {} }}",
-                #fields,
-            )
-        },
-        decl: quote!(format!("interface {}{} {}", #name, #generic_args, Self::inline())),
-        inline_flattened: Some(fields),
+        inline,
+        // quote! {
+        //     format!(
+        //         "{{ {} }}",                #fields,
+        //     )
+        // },
+        decl: quote!(format!("type {}{} = {}", #name, #generic_args, Self::inline())),
+        // inline_flattened: Some(fields),
         name: name.to_owned(),
         dependencies,
         export: attr.export,
@@ -57,6 +66,7 @@ pub(crate) fn named(
 // build an expresion which expands to a string, representing a single field of a struct.
 fn format_field(
     formatted_fields: &mut Vec<TokenStream>,
+    flattened_fields: &mut Vec<TokenStream>,
     dependencies: &mut Dependencies,
     field: &Field,
     rename_all: &Option<Inflection>,
@@ -82,14 +92,15 @@ fn format_field(
 
     if flatten {
         match (&type_override, &rename, inline) {
-            (Some(_), _, _) => syn_err!("`type` is not compatible with `flatten`"),
+            // (Some(_), _, _) => syn_err!("`type` is not compatible with `flatten`"),
             (_, Some(_), _) => syn_err!("`rename` is not compatible with `flatten`"),
             (_, _, true) => syn_err!("`inline` is not compatible with `flatten`"),
             _ => {}
         }
-
-        formatted_fields.push(quote!(<#ty as ts_rs::TS>::inline_flattened()));
-        dependencies.append_from(ty);
+        flattened_fields.push(quote!(<#ty as ts_rs::TS>::name()));
+        // formatted_fields.push(quote!(<#ty as ts_rs::TS>::inline()));
+        dependencies.push_or_append_from(ty);
+        // dependencies.append_from(ty);
         return Ok(());
     }
 

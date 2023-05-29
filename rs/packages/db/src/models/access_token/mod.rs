@@ -114,6 +114,7 @@ impl GeneratedBy {
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/", rename = "BaseAccessToken")]
+// #[ts(rename = "BaseAccessToken")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct AccessToken {
@@ -127,11 +128,11 @@ pub struct AccessToken {
   pub media_hash: String,
 
   #[serde(flatten)]
-  #[ts(skip)]
+  // #[ts(skip)]
   pub scope: Scope,
 
   #[serde(flatten)]
-  #[ts(skip)]
+  // #[ts(skip)]
   pub generated_by: GeneratedBy,
 
   pub last_used_at: Option<DateTime>,

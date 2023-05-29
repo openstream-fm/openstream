@@ -2,9 +2,9 @@
 import type { PublicAccount } from "../../../../../PublicAccount";
 import type { PublicUser } from "../../../../../db/PublicUser";
 
-export interface Output {
+export type Output = {
   user: PublicUser;
   account: PublicAccount;
   token: string;
   media_key: string;
-}
+};

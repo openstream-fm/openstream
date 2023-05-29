@@ -2,9 +2,9 @@
 import type { AccountPatchLimits } from "./AccountPatchLimits";
 import type { Metadata } from "../db/Metadata";
 
-export interface AccountPatch {
+export type AccountPatch = {
   name?: string;
   limits?: AccountPatchLimits;
   user_metadata?: Metadata;
   system_metadata?: Metadata;
-}
+};

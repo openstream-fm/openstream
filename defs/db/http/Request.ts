@@ -7,7 +7,7 @@ import type { Uri } from "./Uri";
 import type { UserAgent } from "../../UserAgent";
 import type { Version } from "./Version";
 
-export interface Request {
+export type Request = {
   real_ip: string;
   country_code: CountryCode | null;
   local_addr: SocketAddr;
@@ -17,4 +17,4 @@ export interface Request {
   uri: Uri;
   headers: Headers;
   user_agent: UserAgent;
-}
+};

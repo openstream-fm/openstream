@@ -2,7 +2,7 @@
 import type { AudioFile } from "../../../../../db/AudioFile";
 import type { Paged } from "../../../../../Paged";
 
-export interface Output {
+export type Output = {
   files: Paged<AudioFile>;
   playlist_is_randomly_shuffled: boolean;
-}
+};
