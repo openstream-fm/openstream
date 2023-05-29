@@ -61,7 +61,7 @@ export const admin_api = ({
 
   api.post("/auth/admin/login", json(async (req, res) => {
     const sess = req.cookie_session;
-    const r = await client.auth.admin.login(ip(req), ua(req), { ...req.body, device_id: sess.device_id });
+    const r = await client.auth.admin.login(ip(req), ua(req), null, { ...req.body, device_id: sess.device_id });
     const data = req.cookie_session;
     res.set_session({ ...data, admin: { _id: r.admin._id, token: r.token, media_key: r.media_key  } });
     return { admin: r.admin, media_key: r.media_key }

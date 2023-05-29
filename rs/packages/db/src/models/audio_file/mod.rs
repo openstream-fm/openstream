@@ -12,6 +12,8 @@ use serde::{Deserialize, Serialize};
 use serde_util::{as_f64, DateTime};
 use ts_rs::TS;
 
+crate::register!(AudioFile);
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]

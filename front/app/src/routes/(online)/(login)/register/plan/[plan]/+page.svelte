@@ -123,7 +123,9 @@
 				phone,
 				email,
 				password,
-				email_verification_code: email_verification_code.trim()
+				email_verification_code: email_verification_code.trim(),
+				payment_method_nonce: payment_nonce!,
+				payment_device_data: payment_device_data,
 			};
 
 			const { account } = await _post<import('$api/auth/user/register/POST/Output').Output>(

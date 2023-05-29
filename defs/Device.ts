@@ -2,7 +2,7 @@
 import type { DateTime } from "./DateTime";
 import type { UserAgent } from "./UserAgent";
 
-export interface Device {
+export type Device = {
   _id: string;
   is_current: boolean;
   ip: string;
@@ -11,4 +11,4 @@ export interface Device {
   last_used_at: DateTime | null;
   user_id: string | null;
   admin_id: string | null;
-}
+};

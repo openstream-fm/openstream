@@ -8,6 +8,8 @@ use serde_util::DateTime;
 use std::net::IpAddr;
 use ts_rs::TS;
 
+crate::register!(StreamConnectionLite);
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]

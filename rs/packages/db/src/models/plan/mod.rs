@@ -11,6 +11,8 @@ use ts_rs::TS;
 
 use crate::current_filter_doc;
 
+crate::register!(Plan);
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]

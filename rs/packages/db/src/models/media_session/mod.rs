@@ -4,9 +4,11 @@ use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
 
+crate::register!(MediaSession);
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
-#[ts(rename = "MediaSessionBase")]
+// #[ts(rename = "MediaSessionBase")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct MediaSession {
@@ -18,9 +20,10 @@ pub struct MediaSession {
 
   pub state: MediaSessionState,
 
-  #[ts(skip)]
+  // #[ts(skip)]
   #[serde(flatten)]
   pub kind: MediaSessionKind,
+
   pub now_playing: Option<MediaSessionNowPlaying>,
 
   #[serde(with = "serde_util::as_f64")]

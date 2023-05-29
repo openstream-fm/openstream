@@ -1,7 +1,6 @@
 use async_trait::async_trait;
 use futures_util::TryStreamExt;
 use log::*;
-use models::{transfer_checkpoint, user_account_relation};
 use mongodb::error::Result as MongoResult;
 use mongodb::options::{
   FindOptions, ReplaceOptions, SelectionCriteria, SessionOptions, TransactionOptions,
@@ -25,30 +24,9 @@ pub mod metadata;
 
 pub mod check;
 pub mod models;
+pub mod registry;
 
-pub use models::access_token;
-pub use models::account;
-pub use models::admin;
-pub use models::audio_chunk;
-pub use models::audio_file;
-pub use models::audio_upload_operation;
-pub use models::config;
-pub use models::db_writable_test;
-pub use models::deployment;
-pub use models::email_verification_code;
-pub use models::event;
-pub use models::media_session;
-pub use models::plan;
-pub use models::play_history_item;
-pub use models::relay_session;
-pub use models::sent_email;
-pub use models::station;
-pub use models::station_picture;
-pub use models::station_picture_variant;
-pub use models::stream_connection;
-pub use models::token_user_email_confirmation;
-pub use models::token_user_recovery;
-pub use models::user;
+pub use models::*;
 
 static CLIENT_AND_STORAGE_DB_NAME: OnceCell<(Client, Option<String>)> = OnceCell::new();
 
@@ -92,33 +70,34 @@ pub fn try_init(
 }
 
 pub async fn ensure_collections() -> MongoResult<()> {
-  config::Config::ensure_collection().await?;
-  db_writable_test::DbWritableTest::ensure_collection().await?;
-  user::User::ensure_collection().await?;
-  account::Account::ensure_collection().await?;
-  station::Station::ensure_collection().await?;
-  admin::Admin::ensure_collection().await?;
-  audio_chunk::AudioChunk::ensure_collection().await?;
-  audio_file::AudioFile::ensure_collection().await?;
-  audio_upload_operation::AudioUploadOperation::ensure_collection().await?;
-  access_token::AccessToken::ensure_collection().await?;
-  event::Event::ensure_collection().await?;
-  stream_connection::StreamConnection::ensure_collection().await?;
-  stream_connection::lite::StreamConnectionLite::ensure_collection().await?;
-  play_history_item::PlayHistoryItem::ensure_collection().await?;
-  media_session::MediaSession::ensure_collection().await?;
-  transfer_checkpoint::TransferCheckpoint::ensure_collection().await?;
-  user_account_relation::UserAccountRelation::ensure_collection().await?;
-  deployment::Deployment::ensure_collection().await?;
-  relay_session::RelaySession::ensure_indexes().await?;
-  user_account_relation::UserAccountRelation::ensure_collection().await?;
-  token_user_email_confirmation::TokenUserEmailConfirmation::ensure_collection().await?;
-  token_user_recovery::TokenUserRecovery::ensure_collection().await?;
-  plan::Plan::ensure_collection().await?;
-  sent_email::SentEmail::ensure_collection().await?;
-  email_verification_code::EmailVerificationCode::ensure_collection().await?;
-
+  let registry = registry::Registry::global();
+  registry.ensure_collections().await?;
   Ok(())
+  // config::Config::ensure_collection().await?;
+  // db_writable_test::DbWritableTest::ensure_collection().await?;
+  // user::User::ensure_collection().await?;
+  // account::Account::ensure_collection().await?;
+  // station::Station::ensure_collection().await?;
+  // admin::Admin::ensure_collection().await?;
+  // audio_chunk::AudioChunk::ensure_collection().await?;
+  // audio_file::AudioFile::ensure_collection().await?;
+  // audio_upload_operation::AudioUploadOperation::ensure_collection().await?;
+  // access_token::AccessToken::ensure_collection().await?;
+  // event::Event::ensure_collection().await?;
+  // stream_connection::StreamConnection::ensure_collection().await?;
+  // stream_connection::lite::StreamConnectionLite::ensure_collection().await?;
+  // play_history_item::PlayHistoryItem::ensure_collection().await?;
+  // media_session::MediaSession::ensure_collection().await?;
+  // transfer_checkpoint::TransferCheckpoint::ensure_collection().await?;
+  // user_account_relation::UserAccountRelation::ensure_collection().await?;
+  // deployment::Deployment::ensure_collection().await?;
+  // relay_session::RelaySession::ensure_indexes().await?;
+  // user_account_relation::UserAccountRelation::ensure_collection().await?;
+  // token_user_email_confirmation::TokenUserEmailConfirmation::ensure_collection().await?;
+  // token_user_recovery::TokenUserRecovery::ensure_collection().await?;
+  // plan::Plan::ensure_collection().await?;
+  // sent_email::SentEmail::ensure_collection().await?;
+  // email_verification_code::EmailVerificationCode::ensure_collection().await?;
 }
 
 pub fn client_ref() -> &'static Client {
@@ -560,14 +539,6 @@ pub trait Singleton: Model + Default + Clone {
     Ok(())
   }
 }
-
-// #[macro_export]
-// macro_rules! fetch_and_update {
-//   ($Model:ident, $id:expr, $err:expr, $session:expr, $apply:expr) => {
-//     let id = $id;
-//     $Model::get_with_session($id)
-//   };
-// }
 
 #[macro_export]
 macro_rules! fetch_and_patch {

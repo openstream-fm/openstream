@@ -3,6 +3,8 @@ use macros::Singleton;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
+crate::register!(Config);
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS, Singleton)]
 #[singleton(collection = "config")]
 #[ts(export, export_to = "../../../defs/db/")]

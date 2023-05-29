@@ -27,7 +27,7 @@ pub(crate) fn r#enum_def(s: &ItemEnum) -> syn::Result<DerivedTS> {
             name,
             inline: quote!("never".to_owned()),
             decl: quote!("type {} = never;"),
-            inline_flattened: None,
+            // inline_flattened: None,
             dependencies: Dependencies::default(),
             export: enum_attr.export,
             export_to: enum_attr.export_to,
@@ -50,7 +50,7 @@ pub(crate) fn r#enum_def(s: &ItemEnum) -> syn::Result<DerivedTS> {
     Ok(DerivedTS {
         inline: quote!(vec![#(#formatted_variants),*].join(" | ")),
         decl: quote!(format!("type {}{} = {};", #name, #generic_args, Self::inline())),
-        inline_flattened: None,
+        // inline_flattened: None,
         dependencies,
         name,
         export: enum_attr.export,
@@ -101,25 +101,18 @@ fn format_variant(
             Fields::Unit => quote!(format!("{{ {}: \"{}\" }}", #tag, #name)),
             _ => quote!(format!("{{ {}: \"{}\", {}: {} }}", #tag, #name, #content, #inline_type)),
         },
-        Tagged::Internally { tag } => match variant_type.inline_flattened {
-            Some(inline_flattened) => quote! {
-                format!(
-                    "{{ {}: \"{}\", {} }}",
-                    #tag,
-                    #name,
-                    #inline_flattened
-                )
-            },
-            None => match &variant.fields {
-                Fields::Unnamed(unnamed) if unnamed.unnamed.len() == 1 => {
-                    let ty = format_type(&unnamed.unnamed[0].ty, dependencies, generics);
-                    quote!(format!("{{ {}: \"{}\" }} & {}", #tag, #name, #ty))
-                }
-                Fields::Unit => quote!(format!("{{ {}: \"{}\" }}", #tag, #name)),
-                _ => {
-                    quote!(format!("{{ {}: \"{}\" }} & {}", #tag, #name, #inline_type))
-                }
-            },
+        Tagged::Internally { tag } => match &variant.fields {
+            Fields::Unnamed(unnamed) if unnamed.unnamed.len() == 1 => {
+                let ty = format_type(&unnamed.unnamed[0].ty, dependencies, generics);
+                quote!(format!("({{ {}: \"{}\" }} & {})", #tag, #name, #ty))
+            }
+            Fields::Unnamed(_) => {
+                quote!(format!("({{ {}: \"{}\" }} & {})", #tag, #name, #inline_type))
+            }
+            Fields::Named(_) => {
+                quote!(format!("({{ {}: \"{}\" }} & {})", #tag, #name, #inline_type))
+            }
+            Fields::Unit => quote!(format!("{{ {}: \"{}\" }}", #tag, #name)),
         },
     };
 
@@ -135,7 +128,7 @@ fn empty_enum(name: impl Into<String>, enum_attr: EnumAttr) -> DerivedTS {
         inline: quote!("never".to_owned()),
         decl: quote!(format!("type {} = never;", #name)),
         name,
-        inline_flattened: None,
+        // inline_flattened: None,
         dependencies: Dependencies::default(),
         export: enum_attr.export,
         export_to: enum_attr.export_to,

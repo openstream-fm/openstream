@@ -14,6 +14,8 @@ use ts_rs::TS;
 use validate::url::patterns::*;
 use validify::validify;
 
+crate::register!(Station);
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]

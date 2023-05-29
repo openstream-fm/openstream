@@ -2,7 +2,7 @@
 import type { DateTime } from "./DateTime";
 import type { Metadata } from "./db/Metadata";
 
-export interface PublicAdmin {
+export type PublicAdmin = {
   _id: string;
   first_name: string;
   last_name: string;
@@ -10,4 +10,4 @@ export interface PublicAdmin {
   created_at: DateTime;
   updated_at: DateTime;
   system_metadata: Metadata;
-}
+};

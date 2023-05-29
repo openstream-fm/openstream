@@ -55,7 +55,7 @@ pub(crate) fn newtype(
     Ok(DerivedTS {
         decl: quote!(format!("type {}{} = {};", #name, #generic_args, #inline_def)),
         inline: inline_def,
-        inline_flattened: None,
+        // inline_flattened: None,
         name: name.to_owned(),
         dependencies,
         export: attr.export,

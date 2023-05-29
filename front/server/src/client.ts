@@ -215,8 +215,8 @@ export class AuthAdmin {
     this.client = client
   }
 
-  async login(ip: string | null, ua: string | null, payload: import("$api/auth/admin/login/POST/Payload").Payload): Promise<import("$api/auth/admin/login/POST/Output").Output> {
-    return await this.client.post(ip, ua, null, "/auth/admin/login", payload)
+  async login(ip: string | null, ua: string | null, token: string | null, payload: import("$api/auth/admin/login/POST/Payload").Payload): Promise<import("$api/auth/admin/login/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, "/auth/admin/login", payload)
   }
 
   async logout(ip: string | null, ua: string | null, token: string): Promise<import("$api/auth/admin/logout/POST/Output").Output> {
@@ -237,8 +237,8 @@ export class AuthUser {
     this.recovery_token = new AuthUserRecoveryToken(this.client);
   }
 
-  async login(ip: string | null, ua: string | null, payload: import("$api/auth/user/login/POST/Payload").Payload): Promise<import("$api/auth/user/login/POST/Output").Output> {
-    return await this.client.post(ip, ua, null, "/auth/user/login", payload)
+  async login(ip: string | null, ua: string | null, token: string | null, payload: import("$api/auth/user/login/POST/Payload").Payload): Promise<import("$api/auth/user/login/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, "/auth/user/login", payload)
   }
 
   async logout(ip: string | null, ua: string | null, token: string): Promise<import("$api/auth/user/logout/POST/Output").Output> {
@@ -249,8 +249,8 @@ export class AuthUser {
     return await this.client.post(ip, ua, token, "/auth/user/register", payload)
   }
 
-  async recover(ip: string | null, ua: string | null, payload: import("$api/auth/user/recover/POST/Payload").Payload): Promise<import("$api/auth/user/recover/POST/Output").Output> {
-    return await this.client.post(ip, ua, null, "/auth/user/recover", payload)
+  async recover(ip: string | null, ua: string | null, token: string | null, payload: import("$api/auth/user/recover/POST/Payload").Payload): Promise<import("$api/auth/user/recover/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, "/auth/user/recover", payload)
   }
 }
 
@@ -262,12 +262,12 @@ export class AuthUserRecoveryToken {
     this.client = client;
   }
 
-  async get(ip: string | null, ua: string | null, key: string): Promise<import("$api/auth/user/recovery-token/[token]/GET/Output").Output> {
-    return await this.client.get(ip, ua, null, `/auth/user/recovery-token/${key}`)
+  async get(ip: string | null, ua: string | null, token: string | null, key: string): Promise<import("$api/auth/user/recovery-token/[token]/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/auth/user/recovery-token/${key}`)
   }
 
-  async set_password(ip: string | null, ua: string | null, key: string, payload: import("$api/auth/user/recovery-token/[token]/set-password/POST/Payload").Payload): Promise<import("$api/auth/user/recovery-token/[token]/set-password/POST/Output").Output> {
-    return await this.client.post(ip, ua, null, `/auth/user/recovery-token/${key}/set-password`, payload)
+  async set_password(ip: string | null, ua: string | null, token: string | null, key: string, payload: import("$api/auth/user/recovery-token/[token]/set-password/POST/Payload").Payload): Promise<import("$api/auth/user/recovery-token/[token]/set-password/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, `/auth/user/recovery-token/${key}/set-password`, payload)
   }
 }
 

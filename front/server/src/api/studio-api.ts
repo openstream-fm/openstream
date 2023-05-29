@@ -121,7 +121,7 @@ export const studio_api = ({
 
   api.post("/auth/user/login", json(async (req, res) => {
     const sess = req.cookie_session;
-    const r = await client.auth.user.login(ip(req), ua(req), { ...req.body, device_id: sess.device_id });
+    const r = await client.auth.user.login(ip(req), ua(req), null, { ...req.body, device_id: sess.device_id });
     const data = req.cookie_session;
     res.set_session({
       ...data,
@@ -149,15 +149,15 @@ export const studio_api = ({
   }))
 
   api.post("/auth/user/recover", json(async (req, res) => {
-    return await client.auth.user.recover(ip(req), ua(req), req.body);
+    return await client.auth.user.recover(ip(req), ua(req), null, req.body);
   }))
 
   api.get("/auth/user/recovery-token/:token", json(async req => {
-    return await client.auth.user.recovery_token.get(ip(req), ua(req), req.params.token);
+    return await client.auth.user.recovery_token.get(ip(req), ua(req), null, req.params.token);
   }))
 
   api.post("/auth/user/recovery-token/:token/set-password", json(async req => {
-    return await client.auth.user.recovery_token.set_password(ip(req), ua(req), req.params.token, req.body);
+    return await client.auth.user.recovery_token.set_password(ip(req), ua(req), null, req.params.token, req.body);
   }))
 
   api.route("/plans")

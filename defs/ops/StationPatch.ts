@@ -4,7 +4,7 @@ import type { Metadata } from "../db/Metadata";
 import type { StationFrequency } from "../StationFrequency";
 import type { StationTypeOfContent } from "../db/StationTypeOfContent";
 
-export interface StationPatch {
+export type StationPatch = {
   name?: string;
   picture_id?: string;
   slogan?: string | null;
@@ -25,4 +25,4 @@ export interface StationPatch {
   app_store_url?: string | null;
   user_metadata?: Metadata;
   system_metadata?: Metadata;
-}
+};

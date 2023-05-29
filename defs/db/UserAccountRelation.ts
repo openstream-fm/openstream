@@ -2,10 +2,10 @@
 import type { DateTime } from "../DateTime";
 import type { UserAccountRelationKind } from "./UserAccountRelationKind";
 
-export interface UserAccountRelation {
+export type UserAccountRelation = {
   _id: string;
   user_id: string;
   account_id: string;
   kind: UserAccountRelationKind;
   created_at: DateTime;
-}
+};
