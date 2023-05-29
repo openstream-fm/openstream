@@ -302,6 +302,11 @@ pub mod post {
         return Err(HandleError::EmailInvalid);
       }
 
+      let email_exists = User::email_exists(&email).await?;
+      if email_exists {
+        return Err(HandleError::EmailExists);
+      }
+
       let verification_code_document = {
         let hash = crypt::sha256(&email_verification_code);
         let filter = doc! {
