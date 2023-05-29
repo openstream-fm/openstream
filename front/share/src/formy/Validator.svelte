@@ -1,18 +1,14 @@
 <script lang="ts">
-  import { sleep } from "$share/util";
-
-  import { MaybePromise } from "./util";
-
-  import { slide } from "svelte/transition";
-
   type Value = $$Generic;
   export let value: Value;
   export let fn: (v: Value) => MaybePromise<string | null>; 
 
+  import { sleep } from "$share/util";
+  import type { MaybePromise } from "./util";
+  import { slide } from "svelte/transition";
   import { FORMY_KEY } from "./formy";
   import type { FormyContext } from "./formy";
   import { getContext } from "svelte";
-  // import { add } from "$share/util";
 
   let current_message: string | null;
 
@@ -62,17 +58,6 @@
       }
     }
   }
-
-  // const mount = (node: Node) => {
-  //   const parent = node.parentElement;
-  //   if(parent) {
-  //     return {
-  //       destroy: add(parent, "focusin", event => {
-  //         current_message = null;
-  //       })
-  //     }
-  //   }
-  // }
 </script>
 
 <style>
