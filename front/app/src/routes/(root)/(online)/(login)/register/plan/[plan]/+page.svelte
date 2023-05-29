@@ -27,7 +27,7 @@
 	import { scale } from 'svelte/transition';
 	import CircularProgress from '$share/CircularProgress.svelte';
 	import { lang, locale } from '$lib/locale';
-	import { invalidateSiblings } from '$lib/invalidate';
+	import { invalidate_siblings } from '$lib/invalidate';
 	import { logical_fly } from '$share/transition';
 	import Dropin from "$share/braintree/Dropin.svelte";
 
@@ -138,7 +138,7 @@
 			);
 			sending_code = false;
 			goto(`/accounts/${account._id}/welcome`, { invalidateAll: true });
-			invalidateSiblings();
+			invalidate_siblings();
 		} catch (e) {
 			sending_code = false;
 			throw e;

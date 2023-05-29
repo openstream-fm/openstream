@@ -20,13 +20,13 @@
 	import { mdiAccountCircleOutline, mdiAccountMultipleOutline, mdiCastAudioVariant, mdiLogout } from "@mdi/js";
 	import { goto } from "$app/navigation";
 	import { locale } from "$lib/locale";
-	import { invalidateSiblings } from "$lib/invalidate";
+	import { invalidate_siblings } from "$lib/invalidate";
 	import { logical_fly } from "$share/transition";
 
   const sign_out = action(async () => {
     await _post("/api/auth/user/logout", {});
     goto("/", { invalidateAll: true })
-    invalidateSiblings();
+    invalidate_siblings();
   })
 
   let menu_open = false;

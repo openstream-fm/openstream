@@ -12,7 +12,7 @@
   import { goto } from "$app/navigation";
 	import Color from "color";
   import "$share/LoginDashboard/login-page.css";
-	import { invalidateSiblings } from "$lib/invalidate";
+	import { invalidate_siblings } from "$lib/invalidate";
 	import { lang, locale } from "$lib/locale";
 	import { logical_fly } from "$share/transition";
 	import { tick } from "svelte";
@@ -78,7 +78,7 @@
       sending_pay = false;
 
       goto(`/accounts/${account._id}`, { invalidateAll: true });
-      invalidateSiblings();
+      invalidate_siblings();
 		} catch (e) {
 			sending_pay = false;
 			throw e;

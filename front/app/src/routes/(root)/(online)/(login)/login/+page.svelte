@@ -10,7 +10,7 @@
 	import { _string } from "$share/formy/validate";
   import "$share/LoginDashboard/login-page.css";
 	import { locale } from "$lib/locale";
-	import { invalidateSiblings } from "$lib/invalidate";
+	import { invalidate_siblings } from "$lib/invalidate";
 
   let email = "";
   let password = "";
@@ -20,7 +20,7 @@
     await _post("/api/auth/user/login", payload);
     const target = decodeURIComponent(location.hash.replace(/^#/, "")) || "/";
     goto(target, { invalidateAll: true });
-    invalidateSiblings();
+    invalidate_siblings();
   })
 </script>
 
