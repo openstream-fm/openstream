@@ -352,6 +352,7 @@ pub async fn internal_get_access_token_scope(
   Ok(scope)
 }
 
+// TODO: remove delegate to user query?
 pub async fn get_scope_from_token(
   req: &Request,
   token: &AccessToken,

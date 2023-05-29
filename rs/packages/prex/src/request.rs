@@ -285,7 +285,8 @@ impl Request {
 
   pub fn qs<'de, T: Deserialize<'de>>(&'de self) -> Result<T, serde_qs::Error> {
     let qs = self.uri().query().unwrap_or("");
-    serde_qs::from_str(qs)
+    // serde_qs::from_str(qs)
+    serde_qs::Config::new(10, false).deserialize_str(qs)
   }
 }
 
