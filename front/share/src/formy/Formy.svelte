@@ -22,26 +22,37 @@
   const context: FormyContext = { add };
   setContext(FORMY_KEY, context);
 
-  const submit = (event: SubmitEvent | void) => {
+  let validating = false;
+
+  const submit = async (event: SubmitEvent | void) => {
     event?.preventDefault();
-    let fails: { message: string, element: Element | null }[] = [];
-    let element: Element | null = null;
-    for(const item of map.values()) {
-      const message = item.fn();
-      if(message != null) {
-        if(element == null) element = item.parent_element;
-        fails.push({ message, element: item.parent_element });
+    validating = true;
+    try {
+      let fails: { message: string, element: Element | null }[] = [];
+      let element: Element | null = null;
+      for(const item of map.values()) {
+        const message = await item.fn();
+        if(message != null) {
+          if(element == null) element = item.parent_element;
+          fails.push({ message, element: item.parent_element });
+        }
       }
-    }
-    if(fails.length === 0) {
-      action();
-    } else {
-      logger.warn("validation fails", fails)
-      if(element != null) {
-        element.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+
+      validating = false;
+
+      if(fails.length === 0) {
+        action();
+      } else {
+        logger.warn("validation fails", fails)
+        if(element != null) {
+          element.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+        }
       }
+    } catch (e) {
+      validating = false;
+      throw e;
     }
   }
 </script>
 
-<slot {submit}></slot>
+<slot {submit} {validating}></slot>

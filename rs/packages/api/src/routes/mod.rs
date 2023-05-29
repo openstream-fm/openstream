@@ -64,6 +64,10 @@ pub fn router(
     .post(auth::user::logout::post::Endpoint {}.into_handler());
 
   app
+    .at("/auth/user/email-exists/:email")
+    .get(auth::user::email_exists::get::Endpoint {}.into_handler());
+
+  app
     .at("/auth/user/register")
     .post(auth::user::register::post::Endpoint { payments_client }.into_handler());
 

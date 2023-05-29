@@ -13,6 +13,7 @@
 		_confirmation_password,
 		_email,
 		_new_password,
+		_new_user_email,
 		_phone,
 		_string
 	} from '$share/formy/validate';
@@ -424,7 +425,7 @@
 				</div>
 				<div class="login-page-field">
 					<Email label={$locale.pages.register.form.fields.email} bind:value={email} />
-					<Validator value={email} fn={_email({ required: true })} />
+					<Validator value={email} fn={_new_user_email()} />
 				</div>
 				<div class="login-page-field">
 					<Password
