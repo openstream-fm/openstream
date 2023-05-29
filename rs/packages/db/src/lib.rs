@@ -26,31 +26,7 @@ pub mod check;
 pub mod models;
 pub mod registry;
 
-pub use models::access_token;
-pub use models::account;
-pub use models::admin;
-pub use models::audio_chunk;
-pub use models::audio_file;
-pub use models::audio_upload_operation;
-pub use models::config;
-pub use models::db_writable_test;
-pub use models::deployment;
-pub use models::email_verification_code;
-pub use models::event;
-pub use models::media_session;
-pub use models::plan;
-pub use models::play_history_item;
-pub use models::relay_session;
-pub use models::sent_email;
-pub use models::station;
-pub use models::station_picture;
-pub use models::station_picture_variant;
-pub use models::stream_connection;
-pub use models::token_user_email_confirmation;
-pub use models::token_user_recovery;
-pub use models::transfer_checkpoint;
-pub use models::user;
-pub use models::user_account_relation;
+pub use models::*;
 
 static CLIENT_AND_STORAGE_DB_NAME: OnceCell<(Client, Option<String>)> = OnceCell::new();
 

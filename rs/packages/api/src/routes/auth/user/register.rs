@@ -6,11 +6,13 @@ pub mod post {
   use db::account::{Account, Limit, Limits, PublicAccount};
   use db::email_verification_code::EmailVerificationCode;
   use db::metadata::Metadata;
-  use db::models::user_account_relation::{UserAccountRelation, UserAccountRelationKind};
+  use db::payment_method::{PaymentMethod, PaymentMethodKind};
   use db::plan::Plan;
   use db::user::{PublicUser, User};
+  use db::user_account_relation::{UserAccountRelation, UserAccountRelationKind};
   use db::{run_transaction, Model};
   use mongodb::bson::doc;
+  use payments::query::save_payment_method::SavePaymentMethodResponse;
   use prex::{request::ReadBodyJsonError, Request};
   use serde::{Deserialize, Serialize};
   use serde_util::DateTime;
@@ -399,30 +401,30 @@ pub mod post {
         res.customer_id
       };
 
-      let payment_method = {
+      let payment_method_response = {
         let query = payments::query::save_payment_method::SavePaymentMethod {
           customer_id,
           payment_method_nonce,
           device_data: payment_device_data,
         };
 
-        let payment_method = self
+        let payment_method_response = self
           .payments_client
           .perform(query)
           .await
           .map_err(HandleError::PaymentSavePaymentMethod)?;
 
-        payment_method
+        payment_method_response
       };
 
-      log::info!("payment method created: {payment_method:?}");
+      // log::info!("payment method created: {payment_method:?}");
 
       let password = crypt::hash(password);
 
       let now = DateTime::now();
 
       let user = User {
-        id: user_id,
+        id: user_id.clone(),
         email,
         phone,
         first_name,
@@ -494,6 +496,31 @@ pub mod post {
         deleted_at: None,
       };
 
+      let payment_method = {
+        let SavePaymentMethodResponse {
+          payment_method_token,
+          card_type,
+          last_4,
+          expiration_month,
+          expiration_year,
+        } = payment_method_response;
+
+        PaymentMethod {
+          id: PaymentMethod::uid(),
+          user_id,
+          kind: PaymentMethodKind::Card {
+            token: payment_method_token,
+            card_type,
+            last_4,
+            expiration_month,
+            expiration_year,
+          },
+          created_at: now,
+          updated_at: now,
+          deleted_at: None,
+        }
+      };
+
       run_transaction!(session => {
         let email_exists = tx_try!(User::email_exists_with_session(user.email.as_str(), &mut session).await);
         if email_exists {
@@ -504,6 +531,7 @@ pub mod post {
         tx_try!(Account::insert_with_session(&account, &mut session).await);
         tx_try!(UserAccountRelation::insert_with_session(&relation, &mut session).await);
         tx_try!(AccessToken::insert_with_session(&token, &mut session).await);
+        tx_try!(PaymentMethod::insert_with_session(&payment_method, &mut session).await);
         tx_try!(EmailVerificationCode::update_by_id_with_session(&verification_code_document.id, doc! { "$set": { EmailVerificationCode::KEY_USED_AT: now } }, &mut session).await)
       });
 
