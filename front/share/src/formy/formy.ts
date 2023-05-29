@@ -1,4 +1,4 @@
-import { MaybePromise } from "./util";
+import type { MaybePromise } from "./util";
 
 export type FormyValidation = () => MaybePromise<string | null>;
 export type ValidationItem = { fn: FormyValidation, parent_element: Element };
