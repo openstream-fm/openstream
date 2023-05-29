@@ -120,9 +120,8 @@ export const _new_user_email = () => {
 
     try {
       const { exists } = await _get<import("$api/auth/user/email-exists/[email]/GET/Output").Output>(`/api/auth/user/email-exists/${String(v).trim().toLowerCase()}`)
-      // TODO: add localized strings here
       if(exists) {
-        return "This email is already registered";
+        return get(locale).validate.email_registered;
       } else {
         return null;
       }

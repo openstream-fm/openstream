@@ -346,8 +346,8 @@ const locale: import("./studio.locale").StudioLocale = {
       },
 
       "station_item": {
-        "on_air": "تشغيل",
-        "off_air": "إيقاف",
+        "on_air": "على الهواء",
+        "off_air": "خارج الهواء",
         "playlist": "قائمة التشغيل",
         "live": "مباشر",
       }
@@ -376,8 +376,8 @@ const locale: import("./studio.locale").StudioLocale = {
     },
 
     "station/dashboard": {
-      "on_air": "تشغيل",
-      "off_air": "إيقاف",
+      "on_air": "على الهواء",
+      "off_air": "خارج الهواء",
       "playlist": "قائمة التشغيل",
       "live": "مباشر",
       "preview": "معاينة",

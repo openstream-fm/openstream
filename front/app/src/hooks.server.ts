@@ -43,10 +43,9 @@ export const handle: Handle = async ({ event, resolve }) => {
     transformPageChunk: ({ html, done }) => {
       buffer += html;
       if(done) {
-        let attrs = "";
-        if(event.locals.lang) attrs += `lang="${event.locals.lang}"`;
-        if(event.locals.dir) attrs += ` dir="${event.locals.dir}"`;
-        return buffer.replace("%html_attrs%", attrs);
+        const lang = event.locals.lang  || "en";
+        const dir = event.locals.dir || "ltr";
+        return buffer.replace("%html_attrs%", `lang="${lang}" dir="${dir}"`);
       } else {
         return undefined;
       }

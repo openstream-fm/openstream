@@ -12,7 +12,7 @@
   import { _message } from "$share/notify";
   import { default_logger } from "$share/logger";
 	import { locale } from "$lib/locale";
-	import { invalidateSiblings } from "$lib/invalidate";
+	import { invalidate_siblings } from "$lib/invalidate";
 
   const logger = default_logger.scoped("recovery");
 
@@ -51,7 +51,7 @@
       });
 
       goto("/", { invalidateAll: true });
-      invalidateSiblings();
+      invalidate_siblings();
 
       sending = false;
     } catch(e) {

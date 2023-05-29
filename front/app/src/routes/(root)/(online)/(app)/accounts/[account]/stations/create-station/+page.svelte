@@ -14,7 +14,7 @@
 	import StationProfile from "$lib/components/StationProfile.svelte";
 	import Formy from "$share/formy/Formy.svelte";
   import { locale } from "$lib/locale";
-	import { invalidateSiblings } from "$lib/invalidate";
+	import { invalidate_siblings } from "$lib/invalidate";
 
   let start = {
     name: null as string | null,
@@ -82,7 +82,7 @@
     current = clone(start);
     
     goto(`/accounts/${data.account._id}/stations/${station._id}`, { invalidateAll: true });
-    invalidateSiblings();
+    invalidate_siblings();
   });
 </script>
 

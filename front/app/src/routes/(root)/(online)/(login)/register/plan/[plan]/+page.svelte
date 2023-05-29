@@ -7,15 +7,18 @@
 	import Password from '$lib/components/Form/Password.svelte';
 	import TextField from '$lib/components/Form/TextField.svelte';
 	import { action, _post } from '$share/net.client';
-	import { mdiAccountOutline, mdiPhoneOutline } from '@mdi/js';
+	import { 
+		mdiAccountOutline,
+		// mdiPhoneOutline
+	} from '@mdi/js';
 	import Validator from '$share/formy/Validator.svelte';
 	import {
 		_confirmation_password,
 		_email,
 		_new_password,
 		_new_user_email,
-		_phone,
 		_string
+		// _phone,
 	} from '$share/formy/validate';
 	import Formy from '$share/formy/Formy.svelte';
 	import '$share/LoginDashboard/login-page.css';
@@ -24,7 +27,7 @@
 	import { scale } from 'svelte/transition';
 	import CircularProgress from '$share/CircularProgress.svelte';
 	import { lang, locale } from '$lib/locale';
-	import { invalidateSiblings } from '$lib/invalidate';
+	import { invalidate_siblings } from '$lib/invalidate';
 	import { logical_fly } from '$share/transition';
 	import Dropin from "$share/braintree/Dropin.svelte";
 
@@ -35,7 +38,7 @@
 	let first_name = '';
 	let last_name = '';
 	let account_name = '';
-	let phone = '';
+	// let phone = '';
 	let email = '';
 	let password = '';
 	let confirm_password = '';
@@ -78,7 +81,7 @@
 		try {
 			try {
 				const payment_result = await dropin.requestPaymentMethod();
-				console.log('payment result', payment_result);
+				// console.log('payment result', payment_result);
 				if (typeof payment_result?.nonce !== 'string') {
 					throw new Error('Payment internal error: invalid response');
 				} else {
@@ -121,7 +124,7 @@
 				first_name,
 				last_name,
 				account_name,
-				phone,
+				phone: null,
 				email,
 				password,
 				email_verification_code: email_verification_code.trim(),
@@ -135,7 +138,7 @@
 			);
 			sending_code = false;
 			goto(`/accounts/${account._id}/welcome`, { invalidateAll: true });
-			invalidateSiblings();
+			invalidate_siblings();
 		} catch (e) {
 			sending_code = false;
 			throw e;
@@ -413,16 +416,16 @@
 					</div>
 					<Validator value={account_name} fn={_string({ required: true, maxlen: 50 })} />
 				</div>
-				<div class="login-page-field">
+				<!-- <div class="login-page-field">
 					<TextField
 						type="tel"
 						label={$locale.pages.register.form.fields.phone}
 						icon={mdiPhoneOutline}
 						autocomplete="tel"
-						bind:value={phone}
 					/>
+						bind:value={phone}
 					<Validator value={phone} fn={_phone({ required: true })} />
-				</div>
+				</div> -->
 				<div class="login-page-field">
 					<Email label={$locale.pages.register.form.fields.email} bind:value={email} />
 					<Validator value={email} fn={_new_user_email()} />

@@ -13,7 +13,7 @@
 	import { mdiTrashCanOutline } from "@mdi/js";
 	import Icon from "$share/Icon.svelte";
 	import { locale } from "$lib/locale";
-	import { invalidateSiblings } from "$lib/invalidate";
+	import { invalidate_siblings } from "$lib/invalidate";
 
   let delete_name_input_value = "";
   
@@ -38,7 +38,7 @@
       deleting = false;
       _message($locale.pages["station/settings"].notifier.station_deleted);
       goto(`/accounts/${data.station.account_id}/stations`, { invalidateAll: true });
-      invalidateSiblings();
+      invalidate_siblings();
     } catch(e) {
       deleting = false;
       throw e;

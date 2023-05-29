@@ -28,6 +28,8 @@ const locale: import("./validate.locale").ValidateLocale = {
     "protocol": "此字段必须以http://或https://开头",
   },
 
+  "email_registered": "电子邮件已经注册",
+  
   "twitter_url": "此字段必须为有效的Twitter URL，导航至您的Twitter页面并从那里复制整个URL",
   "facebook_url": "此字段必须为有效的Facebook URL，导航至您的Facebook页面并从那里复制整个URL",
   "instagram_url": "此字段必须为有效的Instagram URL，导航至您的Instagram页面并从那里复制整个URL",

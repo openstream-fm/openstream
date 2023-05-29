@@ -7,8 +7,8 @@ const logger = default_logger.scoped("invalidate");
 
 const store = intertab<number>("studio.invalidate.all");
 
-export const invalidateSiblings = () => {
-  logger.info("invalidateSiblings called from this tab");
+export const invalidate_siblings = () => {
+  logger.info("invalidate_siblings called from this tab");
   store.set(Math.random());
 }
 

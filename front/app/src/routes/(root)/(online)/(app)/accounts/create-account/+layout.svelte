@@ -1,5 +1,5 @@
 <script lang="ts">
-  import SimpleLogo from '../../../../../lib/components/SimpleLogo.svelte';
+  import SimpleLogo from '$lib/components/SimpleLogo.svelte';
   import TopUser from "$lib/components/Dashboard/TopUser.svelte";
 	import { logical_fly } from '$share/transition';
 </script>
