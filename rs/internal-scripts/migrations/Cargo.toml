@@ -11,6 +11,11 @@ path = "./src/migration_add_audio_file_order.rs"
 name = "migration-add-access-token-media-key"
 path = "./src/migration_add_access_token_media_key.rs"
 
+[[bin]]
+name = "migration-add-stream-connection-lite-keys"
+path = "./src/migration_add_stream_connection_lite_keys.rs"
+
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]

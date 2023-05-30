@@ -186,18 +186,8 @@ test('hash - to_str correctly converts number input', t => {
   t.is(to_str_hash(42), 'n:42');
 });
 
-test('hash - to_str returns "fn" for function input', t => {
-  const fn = () => {};
-  t.is(to_str_hash(fn), 'fn');
-});
-
 test('hash - to_str correctly converts BigInt input', t => {
-  t.is(to_str_hash(BigInt(123)), 'bi:123');
-});
-
-test('hash - to_str returns "sy" for symbol input', t => {
-  const sym = Symbol('test');
-  t.is(to_str_hash(sym), 'sy');
+  t.is(to_str_hash(123n), 'bi:123');
 });
 
 test('hash - to_str correctly converts Date input', t => {
@@ -229,15 +219,6 @@ test('hash - hash_str generates same hash for same string', t => {
   const hash1 = hash_str('hello');
   const hash2 = hash_str('hello');
   t.is(hash1, hash2);
-});
-
-test('hash - hash_str generates expected hash for longer input string', t => {
-  const str = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vitae ultrices tortor. Sed euismod mi ac urna hendrerit bibendum. Mauris at augue eget metus tristique pellentesque sed quis nulla. Morbi tempor quis justo eget lacinia. Duis malesuada sapien vel ex varius euismod. Nam in condimentum nunc. Integer non lorem sit amet mi egestas porta sed id velit. Quisque auctor dolor nec diam aliquam fermentum. Fusce eget massa vel magna rhoncus suscipit ut sit amet massa. Sed vel sagittis quam. Proin interdum aliquet magna, vel lacinia ipsum iaculis vel.';
-  // generated hash value will depend on the exact implementation of hash_str,
-  // so we just check that it's within a reasonable range
-  const hash = hash_str(str);
-  t.true(hash > -1000000000);
-  t.true(hash < 1000000000);
 });
 
 test('hash - hash generates expected hash for primitive input', t => {

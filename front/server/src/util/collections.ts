@@ -1,3 +1,13 @@
+export type JsonValue<T = never> = 
+  null | 
+  undefined |
+  boolean | 
+  number | 
+  string | 
+  T |
+  JsonValue<T>[] |
+  { [key: string | number]: JsonValue<T> }
+
 export const clone = <T>(src: T): T => {
   const t = typeof src;
   if(src == null) return src;
@@ -86,18 +96,16 @@ export const diff = <T extends Record<string, any>>(db: T, current: T): Partial<
 }
 
 
-export const to_str_hash = (object: any): string => {
+export const to_str_hash = (object: JsonValue<BigInt | Date>): string => {
   
   // we treat null and undefined as the same
   if (object == null) return 'n';
  
   const t = typeof object;
   if (t === "boolean") return object ? "t" : "f";
-  if (t === "string") return `s:${object.replace(/([\\\\;\:])/g, "\\$1")}`;
+  if (t === "string") return `s:${(object as string).replace(/([\\\\;\:])/g, "\\$1")}`;
   if (t === "number") return `n:${object}`;
-  if (t === "function") return "fn";
   if (t === "bigint") return `bi:${object}`;
-  if (t === "symbol") return "sy";
   if (object instanceof Date) return `d:${+object}`;
   if (object instanceof Array) {
     return `a:${object.map(to_str_hash).join(";")}`;  
@@ -106,17 +114,17 @@ export const to_str_hash = (object: any): string => {
     Object.keys(object)
     // we ignore there types in objects
     .filter(k => {
-      const v = object[k];
+      const v = (object as any)[k];
       const ty = typeof v;
       return v != null && ty !== "symbol" && ty !== "function";
     })
     .sort()
-    .map(k => `${k}:${to_str_hash(object[k])}`)
+    .map(k => `${k}:${to_str_hash((object as any)[k])}`)
     .join(";")
   }`;
 }
 
-export const hash = (object: any): number => {
+export const hash = (object: JsonValue<BigInt | Date>): number => {
   return hash_str(to_str_hash(object));
 }
 
