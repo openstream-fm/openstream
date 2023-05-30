@@ -16,8 +16,15 @@ use crate::{station::Station, stream_connection::lite::StreamConnectionLite, Mod
 pub struct Analytics {
   pub stations: Vec<AnalyticsStation>,
 
-  pub start_date: AnalyticsDate,
-  pub end_date: AnalyticsDate,
+  #[ts(type = "/** time::DateTime */ string")]
+  #[serde(with = "time::serde::iso8601")]
+  pub since: time::OffsetDateTime,
+
+  #[ts(type = "/** time::DateTime */ string")]
+  #[serde(with = "time::serde::iso8601")]
+  pub until: time::OffsetDateTime,
+
+  pub utc_offset_minutes: i16,
 
   #[serde(with = "serde_util::as_f64")]
   pub sessions: u64,
@@ -27,104 +34,37 @@ pub struct Analytics {
 
   pub total_duration_ms: f64,
 
-  pub by_day: Vec<AnalyticsByDay>,
-  pub by_month: Vec<AnalyticsByMonth>,
-  pub by_browser: Vec<AnalyticsByBrowser>,
-  pub by_os: Vec<AnalyticsByOs>,
-  pub by_country: Vec<AnalyticsByCountry>,
-  pub by_station: Vec<AnalyticsByStation>,
+  pub by_month: Vec<AnalyticsItem<YearMonth>>,
+  pub by_day: Vec<AnalyticsItem<YearMonthDay>>,
+  pub by_hour: Vec<AnalyticsItem<u8>>,
+  pub by_browser: Vec<AnalyticsItem<Option<String>>>,
+  pub by_os: Vec<AnalyticsItem<Option<String>>>,
+  pub by_country: Vec<AnalyticsItem<Option<CountryCode>>>,
+  pub by_station: Vec<AnalyticsItem<String>>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/analytics/")]
-pub struct AnalyticsDate {
+pub struct AnalyticsItem<K> {
+  key: K,
+  #[serde(with = "serde_util::as_f64")]
+  sessions: u64,
+  total_duration_ms: f64,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, TS)]
+#[ts(export, export_to = "../../../defs/analytics/")]
+pub struct YearMonth {
+  pub year: u16,
+  pub month: u8,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, TS)]
+#[ts(export, export_to = "../../../defs/analytics/")]
+pub struct YearMonthDay {
   pub year: u16,
   pub month: u8,
   pub day: u8,
-}
-
-impl From<time::OffsetDateTime> for AnalyticsDate {
-  fn from(value: time::OffsetDateTime) -> Self {
-    Self {
-      year: value.year() as u16,
-      month: value.month() as u8,
-      day: value.day(),
-    }
-  }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/analytics/")]
-pub struct AnalyticsByCountry {
-  pub country_code: Option<CountryCode>,
-
-  #[serde(with = "serde_util::as_f64")]
-  pub sessions: u64,
-  pub total_duration_ms: f64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/analytics/")]
-pub struct AnalyticsByBrowser {
-  pub browser: Option<String>,
-
-  #[serde(with = "serde_util::as_f64")]
-  pub sessions: u64,
-  pub total_duration_ms: f64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/analytics/")]
-pub struct AnalyticsByOs {
-  pub os: Option<String>,
-
-  #[serde(with = "serde_util::as_f64")]
-  pub sessions: u64,
-  pub total_duration_ms: f64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/analytics/")]
-pub struct AnalyticsByDay {
-  #[serde(with = "serde_util::as_f64")]
-  pub year: u16,
-
-  #[serde(with = "serde_util::as_f64")]
-  pub month: u8,
-
-  #[serde(with = "serde_util::as_f64")]
-  pub day: u8,
-
-  #[serde(with = "serde_util::as_f64")]
-  pub sessions: u64,
-
-  pub total_duration_ms: f64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/analytics/")]
-pub struct AnalyticsByStation {
-  pub station_id: String,
-
-  #[serde(with = "serde_util::as_f64")]
-  pub sessions: u64,
-
-  pub total_duration_ms: f64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/analytics/")]
-pub struct AnalyticsByMonth {
-  #[serde(with = "serde_util::as_f64")]
-  pub year: u16,
-
-  #[serde(with = "serde_util::as_f64")]
-  pub month: u8,
-
-  #[serde(with = "serde_util::as_f64")]
-  pub sessions: u64,
-
-  pub total_duration_ms: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -202,18 +142,21 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     total_duration_ms: f64,
   }
 
-  let mut days_accumulator = HashMap::<(u16, u8, u8), AccumulatorItem>::new();
-  let mut months_accumulator = HashMap::<(u16, u8), AccumulatorItem>::new();
+  let mut months_accumulator = HashMap::<YearMonth, AccumulatorItem>::new();
+  let mut days_accumulator = HashMap::<YearMonthDay, AccumulatorItem>::new();
+  let mut hours_accumulator = HashMap::<u8, AccumulatorItem>::new();
   let mut browser_accumulator = HashMap::<Option<String>, AccumulatorItem>::new();
   let mut os_accumulator = HashMap::<Option<String>, AccumulatorItem>::new();
   let mut country_accumulator = HashMap::<Option<CountryCode>, AccumulatorItem>::new();
   let mut station_accumulator = HashMap::<String, AccumulatorItem>::new();
 
+  // accumulate
   while let Some(conn) = cursor.try_next().await? {
     let conn_duration_ms = 0.0; // conn.duration_ms.unwrap_or(0.0);
-    let conn_year = conn.created_at.year() as u16;
-    let conn_month = conn.created_at.month() as u8;
-    let conn_day = conn.created_at.day();
+    let conn_year = conn.created_at.to_offset(query.start_date.offset()).year() as u16;
+    let conn_month = conn.created_at.to_offset(query.start_date.offset()).month() as u8;
+    let conn_day = conn.created_at.to_offset(query.start_date.offset()).day();
+    let conn_hour = conn.created_at.hour();
     let conn_browser: Option<String> = None; // conn.browser
     let conn_os: Option<String> = None; // conn.os
 
@@ -229,82 +172,86 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
       };
     }
 
-    add!(months_accumulator, (conn_year, conn_month));
-    add!(days_accumulator, (conn_year, conn_month, conn_day));
+    add!(
+      months_accumulator,
+      YearMonth {
+        year: conn_year,
+        month: conn_month
+      }
+    );
+    add!(
+      days_accumulator,
+      YearMonthDay {
+        year: conn_year,
+        month: conn_month,
+        day: conn_day
+      }
+    );
+    add!(hours_accumulator, conn_hour);
     add!(browser_accumulator, conn_browser);
     add!(os_accumulator, conn_os);
     add!(country_accumulator, conn.country_code);
     add!(station_accumulator, conn.station_id);
   }
 
-  let by_month = months_accumulator
-    .into_iter()
-    .map(|(key, value)| AnalyticsByMonth {
-      year: key.0,
-      month: key.1,
-      sessions: value.sessions,
-      total_duration_ms: value.total_duration_ms,
-    })
-    .collect::<Vec<_>>();
+  macro_rules! collect {
+    ($acc:ident) => {
+      $acc
+        .into_iter()
+        .map(|(key, value)| AnalyticsItem::<_> {
+          key,
+          sessions: value.sessions,
+          total_duration_ms: value.total_duration_ms,
+        })
+        .collect::<Vec<_>>()
+    };
+  }
 
-  let by_day = days_accumulator
-    .into_iter()
-    .map(|(key, value)| AnalyticsByDay {
-      year: key.0,
-      month: key.1,
-      day: key.2,
-      sessions: value.sessions,
-      total_duration_ms: value.total_duration_ms,
-    })
-    .collect::<Vec<_>>();
+  // collect
+  let mut by_month = collect!(months_accumulator);
+  let mut by_day = collect!(days_accumulator);
+  let mut by_hour = collect!(hours_accumulator);
+  let mut by_browser = collect!(browser_accumulator);
+  let mut by_os = collect!(os_accumulator);
+  let mut by_country = collect!(country_accumulator);
+  let mut by_station = collect!(station_accumulator);
 
-  let by_browser = browser_accumulator
-    .into_iter()
-    .map(|(key, value)| AnalyticsByBrowser {
-      browser: key,
-      sessions: value.sessions,
-      total_duration_ms: value.total_duration_ms,
-    })
-    .collect::<Vec<_>>();
+  // sort
+  macro_rules! sort_by_key {
+    ($ident:ident) => {
+      $ident.sort_by(|a, b| a.key.cmp(&b.key));
+    };
+  }
 
-  let by_os = os_accumulator
-    .into_iter()
-    .map(|(key, value)| AnalyticsByOs {
-      os: key,
-      sessions: value.sessions,
-      total_duration_ms: value.total_duration_ms,
-    })
-    .collect::<Vec<_>>();
+  macro_rules! sort_by_sessions {
+    ($ident:ident) => {
+      $ident.sort_by(|a, b| b.sessions.cmp(&a.sessions));
+    };
+  }
 
-  let by_country = country_accumulator
-    .into_iter()
-    .map(|(key, value)| AnalyticsByCountry {
-      country_code: key,
-      sessions: value.sessions,
-      total_duration_ms: value.total_duration_ms,
-    })
-    .collect::<Vec<_>>();
+  sort_by_key!(by_month);
+  sort_by_key!(by_day);
+  sort_by_key!(by_hour);
 
-  let by_station = station_accumulator
-    .into_iter()
-    .map(|(key, value)| AnalyticsByStation {
-      station_id: key,
-      sessions: value.sessions,
-      total_duration_ms: value.total_duration_ms,
-    })
-    .collect::<Vec<_>>();
+  sort_by_sessions!(by_browser);
+  sort_by_sessions!(by_os);
+  sort_by_sessions!(by_country);
+  sort_by_sessions!(by_station);
 
+  // render
   let out = Analytics {
-    start_date: query.start_date.into(),
-    end_date: query.end_date.into(),
+    since: query.start_date,
+    until: query.end_date,
+    utc_offset_minutes: query.start_date.offset().whole_minutes(),
     sessions,
     total_duration_ms,
     ips: ips.len() as u64,
     stations,
+    by_month,
+    by_day,
+    by_hour,
     by_browser,
     by_country,
-    by_day,
-    by_month,
     by_os,
     by_station,
   };

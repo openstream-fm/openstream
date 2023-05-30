@@ -596,7 +596,7 @@ export class Analytics {
   }
 
   async get(ip: string | null, ua: string | null, token: string, query: import("$api/analytics/GET/Query").Query): Promise<import("$api/analytics/GET/Output").Output> {
-    const url = `/analytics?${qss(query)}`;
+    const url = `/analytics${qss(query)}`;
     console.log("====== analytics ======", query, url);
     return await this.client.get(ip, ua, token, url);
   }

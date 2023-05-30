@@ -38,9 +38,11 @@ pub mod get {
   #[ts(export_to = "../../../defs/api/analytics/GET/")]
   pub struct Query {
     #[ts(type = "/** time::DateTime */ string")]
+    #[serde(with = "time::serde::iso8601")]
     pub since: time::OffsetDateTime,
 
     #[ts(type = "/** time::DateTime */ string")]
+    #[serde(with = "time::serde::iso8601")]
     pub until: time::OffsetDateTime,
 
     #[serde(default)]
