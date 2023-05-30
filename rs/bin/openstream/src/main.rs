@@ -8,6 +8,7 @@ use config::Config;
 use db::access_token::{AccessToken, GeneratedBy};
 use db::Model;
 use db::admin::Admin;
+use db::registry::Registry;
 use drop_tracer::DropTracer;
 use futures::stream::FuturesUnordered;
 use futures::{FutureExt, TryStreamExt};
@@ -276,7 +277,10 @@ async fn check_db_async(opts: CheckDb) -> Result<(), anyhow::Error> {
 
   shared_init(opts.config).await?;
 
-  let map = db::check::check_all().await;
+  let registry = Registry::global();
+
+  let map = registry.check_all().await;
+
   let mut has_errors = false;
 
   info!("=================");

@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use error::CheckCollectionError;
 use futures_util::TryStreamExt;
 use log::*;
 use mongodb::error::Result as MongoResult;
@@ -21,8 +22,6 @@ use ts_rs::TS;
 pub mod error;
 pub mod http;
 pub mod metadata;
-
-pub mod check;
 pub mod models;
 pub mod registry;
 
@@ -368,6 +367,52 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
       limit,
       items,
     })
+  }
+
+  async fn check_collection_documents() -> Result<u64, CheckCollectionError> {
+    use CheckCollectionError::*;
+
+    let cl_name = Self::CL_NAME;
+
+    let cl = Self::cl_as::<Document>();
+
+    info!("checking collection {}", cl_name);
+
+    let count = cl.count_documents(None, None).await.map_err(Count)?;
+
+    info!(
+      "checking collection {}, counted {} documents",
+      cl_name, count
+    );
+
+    let mut cursor = cl.find(None, None).await.map_err(Find)?;
+
+    let mut i: u64 = 0;
+    let mut bson_errors = Vec::<(u64, Document, mongodb::bson::de::Error)>::new();
+
+    while let Some(document) = cursor.try_next().await.map_err(Cursor)? {
+      i += 1;
+      if i % 1000 == 0 {
+        info!("checking collection {cl_name}, testing document {i} of {count}");
+      }
+      match mongodb::bson::from_document::<Self>(document.clone()) {
+        Ok(_) => {}
+        Err(e) => {
+          warn!("error deserializing document {i}");
+          warn!("document: {:?}", document);
+          warn!("error: {} => {:?}", e, e);
+          bson_errors.push((i, document, e));
+        }
+      }
+    }
+
+    let error_count = bson_errors.len();
+    info!("checking collection {cl_name}, tested {i} documents, found {error_count} errors");
+
+    match bson_errors.len() {
+      0 => Ok(i),
+      _ => Err(Deserialize(bson_errors)),
+    }
   }
 }
 
