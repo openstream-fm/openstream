@@ -237,7 +237,7 @@ async fn shared_init(config: String) -> Result<Config, anyhow::Error> {
 
       cl.insert_one_with_session(doc! {}, None, &mut session)
         .await
-        .context("mongodb error when creating test document into test collection")?;
+        .context("mongodb error when inserting test document into test collection")?;
 
       cl.delete_many_with_session(doc! {}, None, &mut session)
         .await
@@ -285,11 +285,11 @@ async fn check_db_async(opts: CheckDb) -> Result<(), anyhow::Error> {
   for (name, result) in map.iter() {
     match result {
       Ok(n) => {
-        info!("collection {name} is ok, checked {n} documents");
+        info!("collection {} is ok, checked {} documents", name.yellow(), n.yellow());
       },
       Err(e) => {
         has_errors = true;
-        warn!("collection {name} failed with error: {e}");
+        warn!("collection {} failed with error: {}", name.red(), e.red());
       }
     }
   };
