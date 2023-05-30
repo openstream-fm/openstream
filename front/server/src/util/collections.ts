@@ -84,3 +84,48 @@ export const diff = <T extends Record<string, any>>(db: T, current: T): Partial<
   }
   return diff;
 }
+
+
+export const to_str_hash = (object: any): string => {
+  
+  // we treat null and undefined as the same
+  if (object == null) return 'n';
+ 
+  const t = typeof object;
+  if (t === "boolean") return object ? "t" : "f";
+  if (t === "string") return `s:${object.replace(/([\\\\;\:])/g, "\\$1")}`;
+  if (t === "number") return `n:${object}`;
+  if (t === "function") return "fn";
+  if (t === "bigint") return `bi:${object}`;
+  if (t === "symbol") return "sy";
+  if (object instanceof Date) return `d:${+object}`;
+  if (object instanceof Array) {
+    return `a:${object.map(to_str_hash).join(";")}`;  
+  }
+  return `o:${
+    Object.keys(object)
+    // we ignore there types in objects
+    .filter(k => {
+      const v = object[k];
+      const ty = typeof v;
+      return v != null && ty !== "symbol" && ty !== "function";
+    })
+    .sort()
+    .map(k => `${k}:${to_str_hash(object[k])}`)
+    .join(";")
+  }`;
+}
+
+export const hash = (object: any): number => {
+  return hash_str(to_str_hash(object));
+}
+
+export const hash_str = (str: string): number => {
+ let hash = 0;
+ for (let i = 0, len = str.length; i < len; i++) {
+    let chr = str.charCodeAt(i);
+    hash = (hash << 5) - hash + chr;
+    hash |= 0; // Convert to 32bit integer
+ }
+  return hash;
+}

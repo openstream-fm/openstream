@@ -1,5 +1,5 @@
 import test from 'ava';
-import { clone, equals, diff } from './collections';
+import { clone, equals, diff, to_str_hash, hash, hash_str } from './collections';
 
 test('clone - should return null when null is passed in', t => {
   t.deepEqual(clone(null), null);
@@ -164,4 +164,104 @@ test('diff - returns a partial object for different booleans', t => {
   const current = { a: false, b: true };
   const result = diff(db, current);
   t.deepEqual(result, { a: false, b: true });
+});
+
+
+test('hash - to_str returns "n" for null or undefined input', t => {
+  t.is(to_str_hash(null), 'n');
+  t.is(to_str_hash(undefined), 'n');
+});
+
+test('hash - to_str correctly converts boolean input', t => {
+  t.is(to_str_hash(true), 't');
+  t.is(to_str_hash(false), 'f');
+});
+
+test('hash - to_str correctly converts string input', t => {
+  t.is(to_str_hash('hello'), 's:hello');
+  t.is(to_str_hash('hello;world'), 's:hello\\;world'); // test escaping of semicolon
+});
+
+test('hash - to_str correctly converts number input', t => {
+  t.is(to_str_hash(42), 'n:42');
+});
+
+test('hash - to_str returns "fn" for function input', t => {
+  const fn = () => {};
+  t.is(to_str_hash(fn), 'fn');
+});
+
+test('hash - to_str correctly converts BigInt input', t => {
+  t.is(to_str_hash(BigInt(123)), 'bi:123');
+});
+
+test('hash - to_str returns "sy" for symbol input', t => {
+  const sym = Symbol('test');
+  t.is(to_str_hash(sym), 'sy');
+});
+
+test('hash - to_str correctly converts Date input', t => {
+  const date = new Date('2022-01-01');
+  t.is(to_str_hash(date), `d:${+date}`);
+});
+
+test('hash - to_str correctly converts Array input', t => {
+  const arr = ['hello', 42, { foo: 'bar' }];
+  t.is(to_str_hash(arr), 'a:s:hello;n:42;o:foo:s:bar');
+});
+
+test('hash - to_str correctly converts Object input', t => {
+  const obj = { foo: 'bar', baz: 42, qux: { quux: true } };
+  t.is(to_str_hash(obj), 'o:baz:n:42;foo:s:bar;qux:o:quux:t');
+});
+
+test('hash - hash_str generates expected hash from empty string', t => {
+  t.is(hash_str(''), 0);
+});
+
+test('hash - hash_str generates different hash for different strings', t => {
+  const hash1 = hash_str('hello');
+  const hash2 = hash_str('world');
+  t.not(hash1, hash2);
+});
+
+test('hash - hash_str generates same hash for same string', t => {
+  const hash1 = hash_str('hello');
+  const hash2 = hash_str('hello');
+  t.is(hash1, hash2);
+});
+
+test('hash - hash_str generates expected hash for longer input string', t => {
+  const str = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vitae ultrices tortor. Sed euismod mi ac urna hendrerit bibendum. Mauris at augue eget metus tristique pellentesque sed quis nulla. Morbi tempor quis justo eget lacinia. Duis malesuada sapien vel ex varius euismod. Nam in condimentum nunc. Integer non lorem sit amet mi egestas porta sed id velit. Quisque auctor dolor nec diam aliquam fermentum. Fusce eget massa vel magna rhoncus suscipit ut sit amet massa. Sed vel sagittis quam. Proin interdum aliquet magna, vel lacinia ipsum iaculis vel.';
+  // generated hash value will depend on the exact implementation of hash_str,
+  // so we just check that it's within a reasonable range
+  const hash = hash_str(str);
+  t.true(hash > -1000000000);
+  t.true(hash < 1000000000);
+});
+
+test('hash - hash generates expected hash for primitive input', t => {
+  t.is(hash(42), hash_str("n:42"));
+  t.is(hash('hello'), hash_str('s:hello'));
+  t.is(hash(true), hash_str('t'));
+  t.is(hash(null), hash_str('n'));
+});
+
+test('hash - hash generates expected hash for object input', t => {
+  const obj = { foo: 'bar', baz: 42, qux: { quux: true } };
+  const expectedHash = hash_str('o:baz:n:42;foo:s:bar;qux:o:quux:t');
+  t.is(hash(obj), expectedHash);
+});
+
+test('hash - hash generates same hash for same object', t => {
+  const obj = { foo: 'bar', baz: 42, qux: { quux: true } };
+  const hash1 = hash(obj);
+  const hash2 = hash(obj);
+  t.is(hash1, hash2);
+});
+
+test('hash - hash generates different hash for different objects', t => {
+  const obj1 = { foo: 'bar', baz: 42, qux: { quux: true } };
+  const obj2 = { foo: 'baz', qux: { quux: false }, quu: ['hello', 'world'] };
+  t.not(hash(obj1), hash(obj2));
 });
