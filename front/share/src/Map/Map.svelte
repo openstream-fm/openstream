@@ -23,6 +23,10 @@
   import { onMount } from "svelte";
   import { add } from "$share/util";
   import { click_out } from "$share/actions";
+  import Icon from "$share/Icon.svelte";
+  import { mdiDownload, mdiMenu } from "@mdi/js";
+  import { logical_fly } from "$share/transition";
+  import { ripple } from "$share/ripple";
  
   const pointerenter = (item: typeof dataset.features[number]) => {
     //logger.info(`hover start: `, item.properties.iso2, item.properties.name, item);
@@ -84,6 +88,18 @@
     return `rgba(var(--blue-rgb), ${opacity})`
   }
 
+  const fill_none = "#f3f3f3";
+  const blue_rgb = { r: 0, g: 116, b: 217 };
+  
+  const get_fill_for_export = (stats: Stats, item: Item) => {
+    const max = Math.max(0, ...Object.values(stats.country_sessions).map(Number));
+    if(max === 0) return fill_none;
+    const sessions = stats.country_sessions[item.properties.iso2] || 0;
+    if(sessions === 0) return fill_none;
+    const opacity =  0.15 + (sessions / max) * 0.85;
+    return `rgba(${blue_rgb.r},${blue_rgb.g},${blue_rgb.b},${opacity})`;
+  }
+
   const tooltip_mount = (node: HTMLElement) => {
     document.documentElement.appendChild(node);
   }
@@ -109,9 +125,71 @@
   const as_any = (src: any): any => src; 
   const projection = geoMercator().center([0, -40]).fitExtent([[0, 0], [ 1000, 660 ]], dataset as any)
   const path = geoPath(projection);
+
+  export const get_svg_source = () => {
+    let source = `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="660" viewBox="0 0 1000 660">`;
+    for(const item of dataset.features) {
+      source += `\n  <path strokeWidth="1.25" stroke="#aaaaaa" fill="${get_fill_for_export(stats, item)}" d="${path(item as any)}"></path>`;
+    }
+    source += "\n</svg>"
+    return source;
+  }
+
+  const export_svg = () => {
+    const source = get_svg_source();
+    const url = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(source)}`;
+    const a = document.createElement("a");
+    a.download = "map.svg";
+    a.href = url;
+    a.click();
+  }
+
+  const export_png = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1000;
+    canvas.height = 660;
+    const ctx = canvas.getContext('2d')!;
+    
+    const img = new Image();
+    var svg_blob = new Blob([get_svg_source()], { type: "image/svg+xml;charset=utf-8" });
+    var url = URL.createObjectURL(svg_blob);
+
+    img.onload = function () {
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+
+      canvas.toBlob(blob => {
+        if(!blob) return; 
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.download = "map.png";
+        a.href = url
+        a.click();
+      }, "image/png", 1);
+    };
+
+    img.src = url;
+  };
+
+  let menu_open = false;
+
+  const menu_click_out = () => {
+    setTimeout(() => {
+      menu_open = false;
+    }, 2)
+  }
 </script>
 
 <style>
+  .map {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    position: relative;
+  }
+
   .viewport {
     width: 100%;
     max-width: var(--map-max-width, none);
@@ -166,52 +244,133 @@
   .map-tooltip-count {
     font-size: 0.8rem;
   }
+
+  .menu-out {
+    position: absolute;
+    inset-block-start: 1rem;
+    inset-inline-end: 1rem;
+  }
+
+  .menu-position {
+    position: relative;
+  }
+
+  .menu-btn {
+    display: flex;
+    color: #333;
+    padding: 0.75rem;
+    font-size: 1.25rem;
+    border-radius: 0.25rem;
+    transition: background-color 200ms ease;
+  }
+
+  .menu-btn:hover, .menu-btn.active {
+    background: rgba(0,0,0,0.05);
+  }
+
+  .menu {
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline-end: 0;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    background: #fff;
+    box-shadow: var(--some-shadow);
+  }
+
+
+  .menu-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center; 
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    transition: background-color 200ms ease;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .menu-item:hover {
+    background-color: rgba(0,0,0,0.05);
+  }
+
+  .menu-item-icon {
+    display: flex;
+    font-size: 1rem;
+    margin-inline-end: 0.5rem;
+  }
 </style>
 
 <svelte:window bind:innerWidth={windowWidth} on:pointerdown={pointerout} />
 
-<div class="viewport">
-  <svg viewBox="0 0 1000 660" use:click_out={() => tooltip_item = null}>
-    {#each dataset.features as item (item.properties.iso2)}
-      <path
-        style:--fill={get_fill(stats, item)}
-        d={path(as_any(item))}
-        on:pointerenter|stopPropagation={() => pointerenter(item)}
-        on:pointerdown|stopPropagation={() => {}}
-        on:mouseleave={() => pointerleave(item)}
-      />
-    {/each}
-  </svg>
-</div>
-
-{#if tooltip_item != null}
-  {@const name = country_names[tooltip_item.properties.iso2] || tooltip_item.properties.name}
-  <div
-    class="map-tooltip"
-    class:to-left={tooltip_to_left}
-    in:fade|local={{ duration: 200 }}
-    style:--pointer-x="{pointerX}px"
-    style:--pointer-y="{pointerY}px"
-    use:tooltip_mount
-  >
-    <div class="map-tooltip-name">
-      {name}
-    </div>
-    <div class="map-tooltip-count">
-      {tooltip_sessions} {tooltip_sessions === 1 ? locale.listener : locale.listeners}
-    </div>
-    {#if tooltip_avg_listening_ms != null}
-      <div class="map-tooltip-count">
-        <!-- TODO: add localized string -->
-        Avg listening time: {format_avg_listening_ms(tooltip_avg_listening_ms)} 
-      </div>
-    {/if}
-    <!--
-    {#if show_ips}
-      <div class="map-tooltip-count">
-        {tooltip_ips} {tooltip_ips === 1 ? "unique IP" : "unique IPs"}
-      </div>
-    {/if}
-    -->
+<div class="map">
+  <div class="viewport">
+    <svg viewBox="0 0 1000 660" use:click_out={() => tooltip_item = null}>
+      {#each dataset.features as item (item.properties.iso2)}
+        <path
+          style:--fill={get_fill(stats, item)}
+          d={path(as_any(item))}
+          on:pointerenter|stopPropagation={() => pointerenter(item)}
+          on:pointerdown|stopPropagation={() => {}}
+          on:mouseleave={() => pointerleave(item)}
+        />
+      {/each}
+    </svg>
   </div>
-{/if}
+
+  <div class="menu-out">
+    <div class="menu-position">
+      <button class="menu-btn ripple-container" class:active={menu_open} use:ripple on:click={() => menu_open = !menu_open}>
+        <Icon d={mdiMenu} />
+      </button>
+      {#if menu_open}
+        <div class="menu" transition:logical_fly|local={{ y: -15, x: 15, duration: 200 }} use:click_out={menu_click_out}>
+          <button class="menu-item menu-item-svg ripple-container" use:ripple on:click={export_svg}>
+            <div class="menu-item-icon">
+              <Icon d={mdiDownload} />
+            </div>
+            Download as SVG
+          </button>
+          <button class="menu-item menu-item-svg ripple-container" use:ripple on:click={export_png}>
+            <div class="menu-item-icon">
+              <Icon d={mdiDownload} />
+            </div>
+            Download as PNG
+          </button>
+        </div>
+      {/if}
+    </div>
+  </div>
+
+  {#if tooltip_item != null}
+    {@const name = country_names[tooltip_item.properties.iso2] || tooltip_item.properties.name}
+    <div
+      class="map-tooltip"
+      class:to-left={tooltip_to_left}
+      in:fade|local={{ duration: 200 }}
+      style:--pointer-x="{pointerX}px"
+      style:--pointer-y="{pointerY}px"
+      use:tooltip_mount
+    >
+      <div class="map-tooltip-name">
+        {name}
+      </div>
+      <div class="map-tooltip-count">
+        {tooltip_sessions} {tooltip_sessions === 1 ? locale.listener : locale.listeners}
+      </div>
+      {#if tooltip_avg_listening_ms != null}
+        <div class="map-tooltip-count">
+          <!-- TODO: add localized string -->
+          Avg listening time: {format_avg_listening_ms(tooltip_avg_listening_ms)} 
+        </div>
+      {/if}
+      <!--
+      {#if show_ips}
+        <div class="map-tooltip-count">
+          {tooltip_ips} {tooltip_ips === 1 ? "unique IP" : "unique IPs"}
+        </div>
+      {/if}
+      -->
+    </div>
+  {/if}
+</div>

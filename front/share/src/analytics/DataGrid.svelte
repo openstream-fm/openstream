@@ -1,3 +1,5 @@
+<svelte:options immutable={true} />
+
 <script lang="ts" context="module">
   export type DataGridField<T> = {
     name: string,
@@ -134,7 +136,7 @@
     padding: 0.75rem;
     font-weight: 600;
     border-radius: 0.25rem;
-    box-sizing: var(--some-shadow);
+    box-shadow: var(--some-shadow);
     display: flex;
     flex-direction: row;
     align-items: center;

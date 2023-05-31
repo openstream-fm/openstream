@@ -1,3 +1,5 @@
+<svelte:options immutable={true} />
+
 <script lang="ts">
   export let data: import("$server/defs/analytics/Analytics").Analytics;
   export let country_names: Record<string, string | undefined>;
@@ -587,9 +589,13 @@
   .chart {
     height: calc(var(--chart-height) + 1rem);
   }
+  .chart :global(.apexcharts-menu-item.exportCSV) {
+    display: none;
+  }
 
   .map {
     --map-max-width: 800px;
+    margin-inline: -1rem;
     flex: 1;
     display: flex;
     flex-direction: column;
