@@ -52,8 +52,6 @@ impl Model for PlayHistoryItem {
   const UID_LEN: usize = 20;
 
   fn indexes() -> Vec<IndexModel> {
-    // TODO: should we add more indexes ?
-
     let created_at = IndexModel::builder()
       .keys(doc! { Self::KEY_CREATED_AT: 1 })
       .build();

@@ -4,12 +4,12 @@
   export let country_names: Record<string, string | undefined>;
   export let locale: import("$server/locale/share/stats-map/stats-map.locale").StatsMapLocale;
   
-  // TODO: remove this type and use Analytics type when available from backend defs
   type Stats = {
     sessions: number,
     country_sessions: Record<string, number | undefined>,
     ips?: number,
     country_ips?: Record<string, number | undefined>,
+    country_avg_listening_ms?: Record<string, number | undefined>,
   } 
 
   type Dataset = typeof dataset;
@@ -50,6 +50,22 @@
   const get_tooltip_sessions = (...args: any[]): number => {
     if(tooltip_item == null) return 0;
     return stats.country_sessions[tooltip_item.properties.iso2] || 0;
+  }
+
+  $: tooltip_avg_listening_ms = get_tooltip_avg_listening_ms(stats, tooltip_item);
+  const get_tooltip_avg_listening_ms = (...args: any[]): number | null => {
+    if(tooltip_item == null) return 0;
+    return stats.country_avg_listening_ms?.[tooltip_item.properties.iso2] || null;
+  }
+
+  const SEC = 1000;
+  const MIN = SEC * 60;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const format_avg_listening_ms = (ms: number) => {
+    const total_secs = Math.round(ms / SEC);
+    const mins = Math.floor(total_secs / 60);
+    const secs = total_secs % 60;
+    return `${pad(mins)}:${pad(secs)}`;
   }
 
   // $: tooltip_ips = get_tooltip_ips(stats, tooltip_item);
@@ -184,6 +200,12 @@
     <div class="map-tooltip-count">
       {tooltip_sessions} {tooltip_sessions === 1 ? locale.listener : locale.listeners}
     </div>
+    {#if tooltip_avg_listening_ms != null}
+      <div class="map-tooltip-count">
+        <!-- TODO: add localized string -->
+        Avg listening time: {format_avg_listening_ms(tooltip_avg_listening_ms)} 
+      </div>
+    {/if}
     <!--
     {#if show_ips}
       <div class="map-tooltip-count">

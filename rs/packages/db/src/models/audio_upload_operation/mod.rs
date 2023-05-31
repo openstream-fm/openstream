@@ -36,9 +36,8 @@ pub struct AudioUploadOperation {
   pub station_id: String,
   pub deployment_id: String,
   pub created_at: DateTime,
-  /// TODO: working in adding support for flattened enums in ts-rs
+
   #[serde(flatten)]
-  // #[ts(skip)]
   pub state: State,
 }
 

@@ -7,6 +7,7 @@ use futures_util::TryStreamExt;
 use geoip::CountryCode;
 use mongodb::bson::doc;
 use serde::{Deserialize, Serialize};
+use time::OffsetDateTime;
 use ts_rs::TS;
 
 use crate::{station::Station, stream_connection::lite::StreamConnectionLite, Model};
@@ -75,6 +76,7 @@ pub struct AnalyticsStation {
   #[serde(rename = "_id")]
   pub id: String,
   pub name: String,
+  pub created_at: serde_util::DateTime,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -95,6 +97,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     let projection = doc! {
       Station::KEY_ID: 1,
       Station::KEY_NAME: 1,
+      Station::KEY_CREATED_AT: 1,
     };
 
     let options = mongodb::options::FindOptions::builder()
@@ -110,8 +113,22 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     stations
   };
 
-  let start_date: serde_util::DateTime = query.start_date.into();
-  let end_date: serde_util::DateTime = query.end_date.into();
+  let mut start_date = query.start_date;
+  let mut end_date = query.end_date;
+
+  let now = OffsetDateTime::now_utc();
+  if now.unix_timestamp() < end_date.unix_timestamp() {
+    end_date = now;
+  }
+
+  for station in stations.iter() {
+    if start_date.unix_timestamp() < station.created_at.unix_timestamp() {
+      start_date = station.created_at.to_offset(start_date.offset());
+    }
+  }
+
+  let ser_start_date: serde_util::DateTime = start_date.into();
+  let ser_end_date: serde_util::DateTime = end_date.into();
 
   let filter = doc! {
     StreamConnectionLite::KEY_STATION_ID: {
@@ -122,8 +139,8 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     },
     // StreamConnectionLite::KEY_IS_OPEN: false,
     StreamConnectionLite::KEY_CREATED_AT: {
-      "$gte": start_date,
-      "$lt": end_date,
+      "$gte": ser_start_date,
+      "$lt": ser_end_date,
     }
   };
 
@@ -272,5 +289,6 @@ pub mod test {
   fn analytics_station_and_db_station_have_the_same_key_names() {
     assert_eq!(AnalyticsStation::KEY_ID, Station::KEY_ID);
     assert_eq!(AnalyticsStation::KEY_NAME, Station::KEY_NAME);
+    assert_eq!(AnalyticsStation::KEY_CREATED_AT, Station::KEY_CREATED_AT);
   }
 }

@@ -95,7 +95,7 @@ pub async fn handle_connection(
   socket.set_nodelay(true)?;
 
   // using buf reader here increases performance by aprox 6%
-  // TODO: use buffered reader?
+  // but then we have to handle the data that is kept in the reader's buffer
   // let mut reader = tokio::io::BufReader::new(socket);
 
   let head = read_request_head(&mut socket).await?;

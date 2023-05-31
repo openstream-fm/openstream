@@ -30,9 +30,7 @@ pub struct Event {
   id: String,
   created_at: DateTime,
 
-  // TODO: working in adding support for flattened enums in ts-rs
   #[serde(flatten)]
-  // #[ts(skip)]
   variant: Variant,
 }
 
