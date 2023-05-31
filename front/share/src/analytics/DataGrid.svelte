@@ -95,6 +95,12 @@
     text-align: left;
   }
 
+  .grid {
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: auto;
+  }
+
   .header {
     min-width: 100%;
     padding: 0.5rem 1rem;
@@ -167,7 +173,7 @@
 </style>
 
 <div class="grid-out">
-  <div class="grid">
+  <div class="grid thin-scroll">
     <table>
       <thead>
         <tr>

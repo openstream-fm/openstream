@@ -318,16 +318,18 @@
   const compare_numbers = (a: number, b: number) => a - b;
   
   const format_mins = (ms: number) => {
-    const mins = floor(ms / MIN);
-    const secs = min(59, floor((ms % MIN) / SEC));
-    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
+    // const mins = floor(ms / MIN);
+    // const secs = min(59, floor((ms % MIN) / SEC));
+    // return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
+    return (ms / MIN).toFixed(1);
   }
 
   const format_hours = (ms: number) => {
-    const hours = floor(ms / HOUR);
-    const mins = min(59, round((ms % HOUR) / MIN));
-    const secs = min(59, round((ms % MIN) / SEC));
-    return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
+    //const hours = floor(ms / HOUR);
+    //const mins = min(59, round((ms % HOUR) / MIN));
+    //const secs = min(59, round((ms % MIN) / SEC));
+    //return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
+    return (ms / HOUR).toFixed(1);
   }
 
   const get_common_grid_options = () => {

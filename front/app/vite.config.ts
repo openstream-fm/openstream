@@ -7,7 +7,7 @@ const config: UserConfigFn = (ctx) => {
 
 	return {
 		resolve: {
-			dedupe: ["@sveltejs/kit", "svelte", "@mdi/js", "http-status-codes", "kleur"],
+			dedupe: ["@sveltejs/kit", "svelte", "@mdi/js", "http-status-codes", "date-fns", "kleur"],
 		},
 
 		server: {
