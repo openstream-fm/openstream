@@ -30,7 +30,7 @@
 
   import Icon from "$share/Icon.svelte";
   import { ripple } from "$share/ripple";
-  import { mdiFileDownloadOutline } from "@mdi/js";
+  import { mdiFileDownloadOutline, mdiTriangle } from "@mdi/js";
   import { stringify } from "csv-stringify/browser/esm/sync";
 
 
@@ -55,9 +55,9 @@
     const field = data.fields[key];
     if(field == null) return;
     if(data.sorted_by?.key === key && data.sorted_by?.direction === "asc") {
-      data.sorted_by = { key, direction: "desc" };
+      data = { ...data, sorted_by: { key, direction: "desc" } };
     } else {
-      data.sorted_by = { key, direction: "asc" };
+      data = { ...data, sorted_by: { key, direction: "asc" } };
     }
   }
 
@@ -103,8 +103,24 @@
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
+    align-items: center;
     text-align: left;
   }
+
+  .sort-chevron {
+    display: flex;
+    transition: transform 150ms ease;
+    margin-inline-start: 0.25rem;
+    margin-inline-end: -1rem;
+    font-size: 0.75rem;
+    transform: scaleX(0.75);
+  }
+
+  .sort-chevron.asc {
+    transform: scaleX(0.75) scaleY(-1);
+    color: #000;
+  }
+
 
   .numeric .header {
     justify-content: flex-end;
@@ -160,6 +176,15 @@
               {#if field.sort != null}
                 <button class="header sortable ripple-container" use:ripple on:click={() => toggle_sort(key)}>
                   {field.name}
+                  {#if data.sorted_by?.key === key}
+                    <div
+                      class="sort-chevron"
+                      class:asc={data.sorted_by?.direction === "asc"}
+                      class:desc={data.sorted_by?.direction === "desc"}
+                    >
+                      <Icon d={mdiTriangle} />
+                    </div>
+                  {/if}
                 </button>
               {:else}
                 <div class="header">

@@ -116,14 +116,26 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
   let mut start_date = query.start_date;
   let mut end_date = query.end_date;
 
-  let now = OffsetDateTime::now_utc();
+  if start_date.unix_timestamp() > end_date.unix_timestamp() {
+    (start_date, end_date) = (end_date.to_offset(start_date.offset()), start_date);
+  }
+
+  let now = OffsetDateTime::now_utc().to_offset(start_date.offset());
   if now.unix_timestamp() < end_date.unix_timestamp() {
     end_date = now;
+  }
+
+  if now.unix_timestamp() < start_date.unix_timestamp() {
+    start_date = now;
   }
 
   for station in stations.iter() {
     if start_date.unix_timestamp() < station.created_at.unix_timestamp() {
       start_date = station.created_at.to_offset(start_date.offset());
+    }
+
+    if end_date.unix_timestamp() < station.created_at.unix_timestamp() {
+      end_date = station.created_at.to_offset(end_date.offset());
     }
   }
 
@@ -189,7 +201,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
       ($acc:ident, $key:expr) => {
         let mut item = $acc.entry($key).or_default();
         item.sessions += 1;
-        item.total_duration_ms = conn_duration_ms;
+        item.total_duration_ms += conn_duration_ms;
       };
     }
 
@@ -261,8 +273,8 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
 
   // render
   let out = Analytics {
-    since: query.start_date,
-    until: query.end_date,
+    since: start_date,
+    until: end_date,
     utc_offset_minutes: query.start_date.offset().whole_minutes(),
     sessions,
     total_duration_ms,

@@ -17,8 +17,7 @@
   const HOUR = MIN * 60;
   const DAY = HOUR * 24;
 
-  const round = Math.round;
-  const floor = Math.round;
+  const { round, floor, min } = Math;
 
   const chartHeight = 350;
 
@@ -29,13 +28,13 @@
     const secs = (ms % MIN) / SEC;
 
     if (days >= 1) {
-      return `${floor(days)} days and ${round(hours)} hours`;
+      return `${floor(days)} days and ${min(23, round(hours))} hours`;
     } else if (hours >= 1) {
-      return `${floor(hours)} hours and ${round(mins)} minutes`;
+      return `${floor(hours)} hours and ${min(59, round(mins))} minutes`;
     } else if (mins >= 1) {
-      return `${floor(mins)} minutes and ${round(secs)} seconds`;
+      return `${floor(mins)} minutes and ${min(59, round(secs))} seconds`;
     } else {
-      return `${round(secs)} seconds`;
+      return `${min(59, round(secs))} seconds`;
     }
   };
 
@@ -78,7 +77,7 @@
   }
 
   const days_data = by_day_data(data.by_day);
-  let days_options: ApexOptions = {
+  const days_options: ApexOptions = {
     series: [
       {
         name: "Sessions",
@@ -183,7 +182,7 @@
     }
   };
 
-  let os_options: ApexOptions = {
+  const os_options: ApexOptions = {
     chart: {
       type: "bar",
       fontFamily: "inherit",
@@ -221,7 +220,7 @@
     }]
   };
 
-  let browser_options: ApexOptions = {
+  const browser_options: ApexOptions = {
     chart: {
       type: "bar",
       fontFamily: "inherit",
@@ -259,7 +258,7 @@
     }]
   };
 
-  let station_options: ApexOptions = {
+  const station_options: ApexOptions = {
     chart: {
       type: "bar",
       fontFamily: "inherit",
@@ -320,11 +319,16 @@
   const compare_numbers = (a: number, b: number) => a - b;
   
   const format_mins = (ms: number) => {
-    return (ms / MIN).toFixed(2)
+    const mins = floor(ms / MIN);
+    const secs = min(59, floor((ms % MIN) / SEC));
+    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
   }
 
   const format_hours = (ms: number) => {
-    return (ms / HOUR).toFixed(2)
+    const hours = floor(ms / HOUR);
+    const mins = min(59, round((ms % HOUR) / MIN));
+    const secs = min(59, round((ms % MIN) / SEC));
+    return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
   }
 
   const get_common_grid_options = () => {
@@ -349,7 +353,7 @@
       "total_time": {
         name: "Total listening hours",
         format: item => format_hours(item.total_duration_ms),
-        sort: (a, b) => compare_numbers(a.sessions, b.sessions),
+        sort: (a, b) => compare_numbers(a.total_duration_ms, b.total_duration_ms),
         numeric: true,
       },
 
@@ -530,8 +534,6 @@
   const by_station_grid_data = get_by_station_grid();
   const by_country_grid_data = get_by_country_grid();
   const by_day_grid_data = get_by_day_grid();
-  
-
 </script>
 
 <style>
@@ -560,8 +562,7 @@
   }
 
   .total-title {
-    font-weight: 600;
-    font-size: 1.25rem;
+    font-size: 1.1rem;
   }
 
   .total-value {
@@ -611,84 +612,97 @@
   .chart-grid-daily {
     margin-top: 1rem;
   }
+
+  .empty {
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+  }
 </style>
 
 <div class="analytics">
-  <div class="totals">
-    <div class="total">
-      <div class="total-title">Total sessions completed</div>
-      <div class="total-value">
-        {data.sessions}
+  {#if data.sessions === 0}
+    <div class="empty">
+      There's no data recorded for the specified filters
+    </div>
+  {:else}
+    <div class="totals">
+      <div class="total">
+        <div class="total-title">Total sessions completed</div>
+        <div class="total-value">
+          {data.sessions}
+        </div>
+      </div>
+
+      <div class="total">
+        <div class="total-title">Total unique IPs</div>
+        <div class="total-value">
+          {data.ips}
+        </div>
+      </div>
+
+      <div class="total">
+        <div class="total-title">Average listening time</div>
+        <div class="total-value">
+          {time(data.total_duration_ms / data.sessions)}
+        </div>
+      </div>
+
+      <div class="total">
+        <div class="total-title">Total listening time</div>
+        <div class="total-value">
+          {time(data.total_duration_ms)}
+        </div>
       </div>
     </div>
 
-    <div class="total">
-      <div class="total-title">Total unique IPs</div>
-      <div class="total-value">
-        {data.ips}
+    <div class="charts" style:--chart-height="{chartHeight}px">
+      <div class="chart-box">
+        <div class="chart-title">By date</div>
+        <div class="chart" use:chart={days_options} />
       </div>
-    </div>
 
-    <div class="total">
-      <div class="total-title">Average listening time</div>
-      <div class="total-value">
-        {time(data.total_duration_ms / data.sessions)}
+      <div class="chart-box chart-box-map">
+        <div class="chart-title">By country</div>
+        <div class="map">
+          <Mapp stats={map_data} {country_names} locale={$locale.stats_map} />
+        </div>
+        <div class="chart-grid">
+          <DataGrid data={by_country_grid_data} />
+        </div>
       </div>
-    </div>
 
-    <div class="total">
-      <div class="total-title">Total listening time</div>
-      <div class="total-value">
-        {time(data.total_duration_ms)}
+      <div class="chart-box">
+        <div class="chart-title">By device</div>
+        <div class="chart" use:chart={os_options} />
+        <div class="chart-grid">
+          <DataGrid data={by_device_grid_data} />
+        </div>
       </div>
-    </div>
-  </div>
 
-  <div class="charts" style:--chart-height="{chartHeight}px">
-    <div class="chart-box">
-      <div class="chart-title">By date</div>
-      <div class="chart" use:chart={days_options} />
-    </div>
+      <div class="chart-box">
+        <div class="chart-title">By browser</div>
+        <div class="chart" use:chart={browser_options} />
+        <div class="chart-grid">
+          <DataGrid data={by_browser_grid_data} />
+        </div>
+      </div>
 
-    <div class="chart-box chart-box-map">
-      <div class="chart-title">By country</div>
-      <div class="map">
-        <Mapp stats={map_data} {country_names} locale={$locale.stats_map} />
+      <div class="chart-box">
+        <div class="chart-title">By station</div>
+        <div class="chart" use:chart={station_options} />
+        <div class="chart-grid">
+          <DataGrid data={by_station_grid_data} />
+        </div>
       </div>
-      <div class="chart-grid">
-        <DataGrid data={by_country_grid_data} />
-      </div>
-    </div>
 
-    <div class="chart-box">
-      <div class="chart-title">By device</div>
-      <div class="chart" use:chart={os_options} />
-      <div class="chart-grid">
-        <DataGrid data={by_device_grid_data} />
+      <div class="chart-box">
+        <div class="chart-title">Daily stats</div>
+        <div class="chart-grid chart-grid-daily">
+          <DataGrid data={by_day_grid_data} />
+        </div>
       </div>
     </div>
+  {/if}
 
-    <div class="chart-box">
-      <div class="chart-title">By browser</div>
-      <div class="chart" use:chart={browser_options} />
-      <div class="chart-grid">
-        <DataGrid data={by_browser_grid_data} />
-      </div>
-    </div>
-
-    <div class="chart-box">
-      <div class="chart-title">By station</div>
-      <div class="chart" use:chart={station_options} />
-      <div class="chart-grid">
-        <DataGrid data={by_station_grid_data} />
-      </div>
-    </div>
-
-    <div class="chart-box">
-      <div class="chart-title">Daily stats</div>
-      <div class="chart-grid chart-grid-daily">
-        <DataGrid data={by_day_grid_data} />
-      </div>
-    </div>
-  </div>
 </div>
