@@ -138,7 +138,6 @@
       type: "datetime",
       categories: days_data.dates.map(date => formatISO(date)),
       labels: {
-        rotate: -75,
         format: "dd/MM/yyyy",
       }
     },
@@ -152,7 +151,7 @@
           }
         },
         labels: {
-          formatter: v => String(v ?? 0),
+          formatter: v => (v % 1 === 0 || v == null) ? String(v ?? 0) : v.toFixed(2),
         } 
       }, {
         opposite: true,

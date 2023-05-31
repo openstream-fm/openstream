@@ -21,10 +21,21 @@
   import icon_osx from "$share/img/os-icons/osx.svg";
   import icon_ios from "$share/img/os-icons/ios.svg";
 
-  import { browser } from "$app/environment";
-	import Page from "$lib/components/Page.svelte";
-	import { locale } from "$lib/locale";
+  import Page from "$lib/components/Page.svelte";
+	import { locale, lang } from "$lib/locale";
 
+
+  const format_date = (date: Date | string | number): string => {
+    return new Date(date).toLocaleString($lang, {
+      day: "numeric",
+      weekday: "long",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    })
+  }
 
   $: data = get_data(device);
   const get_data = (..._args: any[]): Array<{ label: string, value: string }> => {
@@ -61,12 +72,12 @@
 
     data.push({
       label: $locale.pages["me/devices"].device.connected,
-      value: browser ? new Date(device.created_at).toLocaleString() : ""
+      value: format_date(device.created_at),
     })
 
     data.push({
       label: $locale.pages["me/devices"].device.last_used,
-      value: browser ? new Date(device.last_used_at || device.created_at).toLocaleString() : "" 
+      value: format_date(device.last_used_at || device.created_at)
     })
     
     return data;
