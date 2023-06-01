@@ -1,18 +1,13 @@
 <svelte:options immutable={true} />
 
-<script>
-  //type Item = $$Generic;
-  //type Fields = $$Generic<Record<string, any>>;
-  //type Key = keyof Fields;
-  // import type { DataGridData, DataGridField  } from "./types";
+<script lang="ts">
+  type Item = $$Generic;
+  type Fields = $$Generic<Record<string, any>>;
+  type Key = keyof Fields;
+  import type { DataGridData, DataGridField  } from "./types";
 
-  //export let data: DataGridData<Item, Fields>;
-  //export let locale: import("$server/locale/share/analytics/analytics.locale").AnalyticsLocale["data_grid"];
-  
-  /** @type any */
-  export let data;
-  /** @type any */
-  export let locale;
+  export let data: DataGridData<Item, Fields>;
+  export let locale: import("$server/locale/share/analytics/analytics.locale").AnalyticsLocale["data_grid"];
 
   import Icon from "$share/Icon.svelte";
   import { ripple } from "$share/ripple";
@@ -23,15 +18,13 @@
   //   return (a: T, b: T) => fn(a, b) * -1;
   // };
 
-  // @ts-ignore
   const inverse = (fn) => (a, b) => fn(a, b) * - 1; 
   //   return (a: T, b: T) => fn(a, b) * -1;
   // };
 
-  // @ts-ignore
   $: items = get_items(data);
   // const get_items = (...args: any[]): typeof data.items => {
-  const get_items = () => {
+  const get_items = (...args) => {
     if (data.sorted_by?.key == null) return data.items;
     let sort_fn = data.fields[data.sorted_by.key].sort;
     if (sort_fn == null) return data.items;
@@ -44,7 +37,6 @@
   // }
 
   // const toggle_sort = (key: Key) => {
-  // @ts-ignore
   const toggle_sort = (key) => {
     const field = data.fields[key];
     if (field == null) return;
@@ -61,7 +53,6 @@
   const do_export = () => {
     const fs = Object.values(data.fields);
     const headers = fs.map((field) => field.name);
-    // @ts-ignore
     const rows = items.map((item) => fs.map((field) => field.format(item)));
     const out = stringify([headers, ...rows]);
     const url = `data:text/csv;charset=utf-8,${encodeURIComponent(out)}`;

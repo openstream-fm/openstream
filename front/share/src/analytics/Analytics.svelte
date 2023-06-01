@@ -14,7 +14,7 @@
   import { add, formatISO, isSameDay, startOfDay } from "date-fns";
   import DataGrid from "./DataGrid.svelte";
   
-  import type { DataGridData, DataGridField } from "./DataGrid.svelte";
+  import type { DataGridData, DataGridField } from "./types";
   import type { CountryCode } from "$server/defs/CountryCode";
   
   const SEC = 1000;
