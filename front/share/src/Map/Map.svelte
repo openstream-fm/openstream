@@ -1,6 +1,5 @@
 <script lang="ts">
   export let stats: Stats;
-  export let show_ips = false;
   export let country_names: Record<string, string | undefined>;
   export let locale: import("$server/locale/share/stats-map/stats-map.locale").StatsMapLocale;
   
