@@ -339,11 +339,9 @@
   const map_data = (() => {
     
     const country_sessions: Partial<Record<CountryCode, number>> = {};
-    const country_avg_listening_ms: Partial<Record<CountryCode, number>> = {};
     for(const item of data.by_country) {
       if(item.key) {
         country_sessions[item.key] = item.sessions;
-        country_avg_listening_ms[item.key] = item.total_duration_ms / item.sessions;
       }
     }
 
@@ -351,9 +349,31 @@
       sessions: data.sessions,
       ips: data.ips,
       country_sessions,
-      country_avg_listening_ms,
     }
   })()
+
+  const map_country_sessions = (code: CountryCode) => {
+    const item = data.by_country.find(item => item.key === code);
+    return item?.sessions || 0;
+  }
+
+  const map_country_avg_minutes = (code: CountryCode) => {
+    const item = data.by_country.find(item => item.key === code);
+    if(item) {
+      return (item.total_duration_ms / item.sessions / MIN).toFixed(1).replace(".", ",");
+    } else {
+      return "-"
+    }
+  }
+
+  const map_country_total_hours = (code: CountryCode) => {
+    const item = data.by_country.find(item => item.key === code);
+    if(item) {
+      return (item.total_duration_ms / HOUR).toFixed(1).replace(".", ",");
+    } else {
+      return "0"
+    }
+  }
 
   const compare_numbers = (a: number, b: number) => a - b;
   
@@ -666,6 +686,24 @@
     justify-content: center;
     align-items: center;
   }
+
+  .map-tooltip-name {
+    font-weight: 600;
+    font-size: 1rem;  
+    margin-block-end: 0.35rem;
+  }
+
+  .map-tooltip-stat {
+    font-size: 0.85rem; 
+  }
+
+  .map-tooltip-stat + .map-tooltip-stat {
+    margin-top: 0.2rem;
+  }
+
+  .map-tooltip-stat-value {
+    font-weight: 700;
+  }
 </style>
 
 <div class="analytics">
@@ -713,7 +751,35 @@
       <div class="chart-box chart-box-map">
         <div class="chart-title">{locale.By_country}</div>
         <div class="map">
-          <Mapp stats={map_data} {country_names} locale={stats_map_locale} />
+          <Mapp stats={map_data} {country_names} locale={stats_map_locale}>
+            <div slot="tooltip" class="map-tooltip" let:country_name let:country_code>
+              <div class="map-tooltip-name">{country_name}</div>
+              <div class="map-tooltip-stat">
+                <span class="map-tooltip-stat-name">
+                  {locale.Sessions}:
+                </span>
+                <span class="map-tooltip-stat-value">
+                  {map_country_sessions(country_code)}
+                </span>
+              </div>
+              <div class="map-tooltip-stat">
+                <span class="map-tooltip-stat-name">
+                  {locale.Average_listening_minutes}:
+                </span>
+                <span class="map-tooltip-stat-value">
+                  {map_country_avg_minutes(country_code)}
+                </span>
+              </div>
+              <div class="map-tooltip-stat">
+                <span class="map-tooltip-stat-name">
+                  {locale.Total_listening_hours}:
+                </span>
+                <span class="map-tooltip-stat-value">
+                  {map_country_total_hours(country_code)}
+                </span>
+              </div>
+            </div>
+          </Mapp>
         </div>
         <div class="chart-grid">
           <DataGrid data={by_country_grid_data} locale={locale.data_grid} />

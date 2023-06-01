@@ -354,25 +354,15 @@
       style:--pointer-y="{pointerY}px"
       use:tooltip_mount
     >
-      <div class="map-tooltip-name">
-        {name}
-      </div>
-      <div class="map-tooltip-count">
-        {tooltip_sessions} {tooltip_sessions === 1 ? locale.listener : locale.listeners}
-      </div>
-      {#if tooltip_avg_listening_ms != null}
-        <div class="map-tooltip-count">
-          <!-- TODO: add localized string -->
-          Avg listening time: {format_avg_listening_ms(tooltip_avg_listening_ms)} 
+      <slot name="tooltip" country_code={tooltip_item.properties.iso2} country_name={name}>
+        <div class="map-tooltip-name">
+          {name}
         </div>
-      {/if}
-      <!--
-      {#if show_ips}
+        
         <div class="map-tooltip-count">
-          {tooltip_ips} {tooltip_ips === 1 ? "unique IP" : "unique IPs"}
+          {tooltip_sessions} {tooltip_sessions === 1 ? locale.listener : locale.listeners}
         </div>
-      {/if}
-      -->
+      </slot>
     </div>
   {/if}
 </div>
