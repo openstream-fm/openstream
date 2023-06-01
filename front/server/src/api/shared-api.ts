@@ -278,5 +278,9 @@ export const shared_api = ({
       return await client.stations.pictures.post(ip(req), ua(req), get_token(req), req.query as any, req)
     }));
   
+  api.route("/analytics").get(json(async req => {
+    return await client.analytics.get(ip(req), ua(req), get_token(req), req.query as any);
+  }))
+
   return api;
 }

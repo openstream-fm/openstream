@@ -7,6 +7,7 @@ use serde_util::DateTime;
 use std::net::IpAddr;
 use ts_rs::TS;
 
+pub mod analytics;
 pub mod index;
 pub mod lite;
 pub mod stats;

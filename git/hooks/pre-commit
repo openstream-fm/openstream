@@ -52,6 +52,22 @@ await within(async () => {
 		check();
 	})
 
+	await within(async () => {
+		write("Running front types sync...");
+		
+		await within(async () => {
+			cd("front/app")
+			await $`npm run sync`;
+		})
+
+		await within(async () => {
+			cd("front/admin")
+			await $`npm run sync`;
+		})
+		
+		check();
+	})
+
 	writeln("Done!")
 }).catch(e => {
 	writeln("===============");

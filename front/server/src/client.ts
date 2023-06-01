@@ -29,6 +29,7 @@ export class Client {
   users: Users;
   accounts: Accounts;
   stations: Stations;
+  analytics: Analytics;
 
   constructor(base_url: string, { logger, fetch = node_fetch }: { logger: Logger, fetch?: typeof node_fetch }) {
     this.base_url = base_url.trim().replace(/\/+$/g, "")
@@ -43,6 +44,7 @@ export class Client {
     this.users = new Users(this);
     this.accounts = new Accounts(this);
     this.stations = new Stations(this);
+    this.analytics = new Analytics(this);
   }
 
   async fetch(_url: string, init: RequestInit = {}): Promise<Response> {
@@ -584,5 +586,18 @@ export class StationFiles {
 
   async move_after(ip: string | null, ua: string | null, token: string, station_id: string, file_id: string, payload: import("$api/stations/[station]/files/[file]/order/move-after/POST/Payload").Payload): Promise<import("$api/stations/[station]/files/[file]/order/move-after/POST/Output").Output> {
     return await this.client.post(ip, ua, token, `/stations/${station_id}/files/${file_id}/order/move-after`, payload)
+  }
+}
+
+export class Analytics {
+  client: Client;
+  constructor(client: Client) {
+    this.client = client;
+  }
+
+  async get(ip: string | null, ua: string | null, token: string, query: import("$api/analytics/GET/Query").Query): Promise<import("$api/analytics/GET/Output").Output> {
+    const url = `/analytics${qss(query)}`;
+    // console.log("====== analytics ======", query, url);
+    return await this.client.get(ip, ua, token, url);
   }
 }

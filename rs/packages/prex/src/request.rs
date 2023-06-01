@@ -6,6 +6,7 @@ use hyper::http::Extensions;
 use hyper::{self, HeaderMap, Uri, Version};
 use hyper::{Body, Method};
 use serde::de::DeserializeOwned;
+use serde::Deserialize;
 use std::net::{IpAddr, SocketAddr};
 
 #[allow(clippy::declare_interior_mutable_const)]
@@ -280,6 +281,12 @@ impl Request {
     }
 
     Ok(Bytes::from(buf))
+  }
+
+  pub fn qs<'de, T: Deserialize<'de>>(&'de self) -> Result<T, serde_qs::Error> {
+    let qs = self.uri().query().unwrap_or("");
+    // serde_qs::from_str(qs)
+    serde_qs::Config::new(10, false).deserialize_str(qs)
   }
 }
 

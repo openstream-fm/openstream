@@ -6,7 +6,6 @@ let instance: Notify | null = null;
 export const getNotify = (): Notify => {
   
   if(instance == null){
-    // @ts-ignore
     instance = new Notify({target: document.body});
   }
   

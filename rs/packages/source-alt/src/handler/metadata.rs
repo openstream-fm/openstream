@@ -27,7 +27,7 @@ pub enum MetadataError {
   #[error("Internal server error (db)")]
   Db(#[from] mongodb::error::Error),
   #[error("Invalid query string: {0}")]
-  Query(#[from] serde_querystring::de::Error),
+  Query(#[from] serde_qs::Error),
   #[error("Invalid query string: {0}")]
   InvalidQuery(String),
 }
@@ -53,10 +53,7 @@ pub async fn metadata(
     head: RequestHead,
     deployment_id: String,
   ) -> Result<(), MetadataError> {
-    let mut query: MetadataQueryString = serde_querystring::from_str(
-      head.uri.query().unwrap_or(""),
-      serde_querystring::ParseMode::UrlEncoded,
-    )?;
+    let mut query: MetadataQueryString = serde_qs::from_str(head.uri.query().unwrap_or(""))?;
 
     if query.mode != "updinfo" {
       return Err(MetadataError::InvalidQuery("mode must be 'updinfo'".into()));

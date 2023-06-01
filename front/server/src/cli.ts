@@ -16,20 +16,6 @@ import { env } from "./env";
 
 const __dirname =  path.dirname(fileURLToPath(import.meta.url));
 
-// const originalEmit = process.emit;
-// // @ts-ignore
-// process.emit = function (name, data, ...args) {
-//   if (
-//     name === `warning` &&
-//     // @ts-ignore
-//     data?.name === `ExperimentalWarning`
-//   ) {
-//     return false;
-//   }
-//   // @ts-ignore
-//   return originalEmit.call(process, name, data, ...args);
-// };
-
 const VERSION = "0.0.1"
 
 const createConfig = (opts: { output: string }) => {

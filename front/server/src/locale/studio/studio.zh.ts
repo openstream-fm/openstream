@@ -3,6 +3,7 @@ import stats_map from "../share/stats-map/stats-map.zh";
 import validate from "../share/validate/validate.zh";
 import countries from "../share/countries/countries.zh";
 import type_of_content from "../share/type-of-content/type-of-content.zh";
+import analytics from "../share/analytics/analytics.zh";
 
 const locale: import("./studio.locale").StudioLocale = {
 
@@ -19,6 +20,7 @@ const locale: import("./studio.locale").StudioLocale = {
   "countries": countries,
   "validate": validate,
   "stats_map": stats_map,
+  "analytics": analytics,
 
   "language": {
     "auto": "自动检测",
@@ -351,6 +353,13 @@ const locale: import("./studio.locale").StudioLocale = {
         "playlist": "播放列表",
         "live": "现场直播",
       }
+    },
+
+    "account/analytics": {
+      "head": {
+        "title": "分析",
+      },
+      "title": "分析",
     },
 
     "stations": {

@@ -2,6 +2,7 @@ import stats_map from "../share/stats-map/stats-map.es";
 import validate from "../share/validate/validate.es";
 import countries from "../share/countries/countries.es";
 import type_of_content from "../share/type-of-content/type-of-content.es";
+import analytics from "../share/analytics/analytics.es";
 
 const locale: import("./studio.locale").StudioLocale = {
 
@@ -18,6 +19,7 @@ const locale: import("./studio.locale").StudioLocale = {
   "countries": countries,
   "validate": validate,
   "stats_map": stats_map,
+  "analytics": analytics,
 
   "language": {
     "auto": "Auto detectar",
@@ -349,7 +351,14 @@ const locale: import("./studio.locale").StudioLocale = {
         "off_air": "OFF AIR",
         "playlist": "Playlist",
         "live": "En vivo",
-      }
+      },
+    },
+
+    "account/analytics": {
+      "head": {
+        "title": "Analítica",
+      },
+      "title": "Analítica",
     },
 
     "stations": {

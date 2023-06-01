@@ -487,11 +487,6 @@ impl StreamHandler {
 
         #[allow(clippy::collapsible_if)]
         if media_sessions.read().get(&station_id).is_none() {
-          // TODO: use station limit or query for audio file?
-          // if station.limits.storage.used == 0 {
-          //   return Err(StreamError::NotStreaming(station.id.clone()));
-          // }
-
           if !AudioFile::exists(doc! { AudioFile::KEY_STATION_ID: &station.id }).await? {
             return Err(StreamError::NotStreaming(station.id));
           }
@@ -677,7 +672,10 @@ impl Drop for StreamConnectionDropper {
 
       {
         let update_lite = doc! {
-          "$set": { StreamConnectionLite::KEY_IS_OPEN: false }
+          "$set": {
+            StreamConnectionLite::KEY_IS_OPEN: false,
+            StreamConnectionLite::KEY_DURATION_MS: duration_ms as f64,
+          }
         };
 
         let r = StreamConnectionLite::update_by_id(&id, update_lite)
@@ -873,11 +871,6 @@ impl LinkHandler {
 
     #[allow(clippy::collapsible_if)]
     if self.media_sessions.read().get(&station_id).is_none() {
-      // TODO: use station limit or query for audio file?
-      // if station.limits.storage.used == 0 {
-      //   return Err(StreamError::NotStreaming(station.id.clone()));
-      // }
-
       if !AudioFile::exists(doc! { AudioFile::KEY_STATION_ID: &station.id }).await? {
         return Err(StreamError::NotStreaming(station.id));
       }

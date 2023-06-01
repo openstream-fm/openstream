@@ -78,7 +78,6 @@ const now_playing_stop = () => {
 
 
 export const pause = () => {
-  // TODO: why onpause not called with station audio type
   logger.info("pause()");
   audio?.pause();
   set_audio_state("paused");
@@ -165,8 +164,6 @@ export const play_station = (station: { _id: string, picture_id: string, name: s
       audio_state: "loading",
       station,
     })
-    // TODO: fix ts rule and deduplicate stream url getter
-    // @ts-ignore
     const audio = get_audio_tag(station_stream_url(station._id))
     audio.play().catch(e => {
       logger.warn(`error playing station ${station._id} => ${e}`)

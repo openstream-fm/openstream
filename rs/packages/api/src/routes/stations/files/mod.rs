@@ -67,7 +67,7 @@ pub mod get {
     #[error("access: {0}")]
     Access(#[from] GetAccessTokenScopeError),
     #[error("querystring: {0}")]
-    QueryString(#[from] serde_querystring::de::Error),
+    QueryString(#[from] serde_qs::Error),
   }
 
   impl From<ParseError> for ApiError {
@@ -95,7 +95,7 @@ pub mod get {
 
       let Query { skip, limit } = match req.uri().query() {
         None => Default::default(),
-        Some(qs) => serde_querystring::from_str(qs, serde_querystring::de::ParseMode::UrlEncoded)?,
+        Some(_) => req.qs()?,
       };
 
       Ok(Self::Input {
@@ -194,7 +194,7 @@ pub mod post {
     #[error("token: {0}")]
     Token(#[from] GetAccessTokenScopeError),
     #[error("querystring: {0}")]
-    Query(#[from] serde_querystring::de::Error),
+    Query(#[from] serde_qs::Error),
     #[error("content length is required")]
     ContentLengthRequired,
   }
@@ -218,14 +218,11 @@ pub mod post {
 
     async fn parse(&self, request: Request) -> Result<Self::Input, ParseError> {
       let station_id = request.param("station").unwrap();
-      let query: Query = serde_querystring::from_str(
-        request.uri().query().unwrap_or(""),
-        serde_querystring::de::ParseMode::UrlEncoded,
-      )?;
+      let query: Query = request.qs()?;
 
       let filename = query.filename.trim();
       if filename.is_empty() {
-        return Err(serde_querystring::de::Error::custom("filename is required").into());
+        return Err(serde_qs::Error::custom("filename is required").into());
       }
 
       let content_length: u64 = match request.headers().get(CONTENT_LENGTH) {

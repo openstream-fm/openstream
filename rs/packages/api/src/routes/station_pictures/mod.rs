@@ -107,7 +107,7 @@ pub mod post {
   #[derive(Debug, thiserror::Error)]
   pub enum ParseError {
     #[error("qs: {0}")]
-    Query(#[from] serde_querystring::de::Error),
+    Query(#[from] serde_qs::Error),
     #[error("token: {0}")]
     Token(#[from] GetAccessTokenScopeError),
     #[error("payload: {0}")]
@@ -146,10 +146,7 @@ pub mod post {
     type HandleError = HandleError;
 
     async fn parse(&self, mut req: Request) -> Result<Input, ParseError> {
-      let query = serde_querystring::from_str::<Query>(
-        req.uri().query().unwrap_or(""),
-        serde_querystring::de::ParseMode::UrlEncoded,
-      )?;
+      let query: Query = req.qs()?;
 
       let access_token_scope = request_ext::get_access_token_scope(&req).await?;
       let _account = access_token_scope
