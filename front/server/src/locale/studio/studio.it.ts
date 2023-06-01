@@ -355,6 +355,13 @@ const locale: import("./studio.locale").StudioLocale = {
       }
     },
 
+    "account/analytics": {
+      "head": {
+        "title": "Analisi",
+      },
+      "title": "Analisi",
+    },
+
     "stations": {
       "head": {
         "title": "Stazioni",

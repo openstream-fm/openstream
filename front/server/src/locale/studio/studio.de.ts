@@ -356,6 +356,13 @@ const locale = {
       }
     },
 
+    "account/analytics": {
+      "head": {
+        "title": "Analysen",
+      },
+      "title": "Analysen",
+    },
+
     "stations": {
       "head": {
         "title": "Stationen",

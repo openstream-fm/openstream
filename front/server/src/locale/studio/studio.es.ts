@@ -351,7 +351,14 @@ const locale: import("./studio.locale").StudioLocale = {
         "off_air": "OFF AIR",
         "playlist": "Playlist",
         "live": "En vivo",
-      }
+      },
+    },
+
+    "account/analytics": {
+      "head": {
+        "title": "Analítica",
+      },
+      "title": "Analítica",
     },
 
     "stations": {

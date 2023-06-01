@@ -355,6 +355,13 @@ const locale: import("./studio.locale").StudioLocale = {
       }
     },
 
+    "account/analytics": {
+      "head": {
+        "title": "分析",
+      },
+      "title": "分析",
+    },
+
     "stations": {
       "head": {
         "title": "电台",

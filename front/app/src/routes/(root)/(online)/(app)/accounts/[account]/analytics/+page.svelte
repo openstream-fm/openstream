@@ -61,11 +61,11 @@
 
 
 <svelte:head>
-  <title>Analytics</title>
+  <title>{$locale.pages["account/analytics"].head.title}</title>
 </svelte:head>
 
 <Page>
-  <h1>Analytics</h1>
+  <h1>{$locale.pages["account/analytics"].title}</h1>
 
   <div class="boxes">
     <div class="filters">
