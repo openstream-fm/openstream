@@ -80,8 +80,8 @@
     </div>
 
     {#if analytics}
-      {#key hash(analytics)}
-        <div class="analytics" class:loading>
+      <div class="analytics" class:loading>
+        {#key hash(analytics)}
           <Analytics
             data={analytics}
             country_names={$locale.countries}
@@ -89,8 +89,8 @@
             locale={$locale.analytics}
             stats_map_locale={$locale.stats_map}
           />
-        </div>
-      {/key}
+        {/key}
+      </div>
     {/if}
   </div>
 </Page>
