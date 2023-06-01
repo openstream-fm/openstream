@@ -20,6 +20,7 @@ const locale = {
   "countries": countries,
   "validate": validate,
   "stats_map": stats_map,
+  "analytics": analytics,
 
   "copy_to_clipboard": "In die Zwischenablage kopieren",
   "show_password": "Passwort anzeigen",
