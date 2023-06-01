@@ -14,17 +14,12 @@
   import { mdiFileDownloadOutline, mdiTriangle } from "@mdi/js";
   import { stringify } from "csv-stringify/browser/esm/sync";
 
-  // const inverse = <T>(fn: (a: T, b: T) => number) => {
-  //   return (a: T, b: T) => fn(a, b) * -1;
-  // };
-
-  const inverse = (fn) => (a, b) => fn(a, b) * - 1; 
-  //   return (a: T, b: T) => fn(a, b) * -1;
-  // };
+  const inverse = <T>(fn: (a: T, b: T) => number) => {
+    return (a: T, b: T) => fn(a, b) * -1;
+  };
 
   $: items = get_items(data);
-  // const get_items = (...args: any[]): typeof data.items => {
-  const get_items = (...args) => {
+  const get_items = (...args: any[]): typeof data.items => {
     if (data.sorted_by?.key == null) return data.items;
     let sort_fn = data.fields[data.sorted_by.key].sort;
     if (sort_fn == null) return data.items;
@@ -32,12 +27,7 @@
     return data.items.slice().sort(sort_fn);
   };
 
-  // const as_key = (k: string) => {
-  //   return k as Key;
-  // }
-
-  // const toggle_sort = (key: Key) => {
-  const toggle_sort = (key) => {
+  const toggle_sort = (key: Key) => {
     const field = data.fields[key];
     if (field == null) return;
     if (data.sorted_by?.key === key && data.sorted_by?.direction === "asc") {
@@ -47,7 +37,7 @@
     }
   };
 
-  // let fields: [Key, DataGridField<Item>][];
+  let fields: [Key, DataGridField<Item>][];
   $: fields = Object.entries(data.fields);
 
   const do_export = () => {

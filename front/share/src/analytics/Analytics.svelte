@@ -108,6 +108,14 @@
         data: days_data.avg
       },
     ],
+
+    markers: {
+      size: 4,
+      hover: {
+        size: 8,
+      }
+    },
+
     chart: {
       animations: {
         enabled: false,
