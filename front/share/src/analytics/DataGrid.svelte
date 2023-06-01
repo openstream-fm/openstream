@@ -57,6 +57,7 @@
 
   // let fields: [Key, DataGridField<Item>][];
   $: fields = Object.entries(data.fields);
+  $: display_fields = fields.filter(([key, field]) => !field.csv_only);
 
   const do_export = () => {
     const fs = Object.values(data.fields);
@@ -88,6 +89,17 @@
 
   th {
     text-align: left;
+    font-weight: 400;
+    font-size: 0.9rem;
+  }
+
+  td {
+    font-family: var(--monospace);
+    font-size: 0.75rem;
+  }
+
+  .value {
+    padding: 0.5rem 1rem;
   }
 
   .grid {
@@ -131,10 +143,6 @@
     background: rgba(0, 0, 0, 0.05);
   }
 
-  .value {
-    padding: 0.5rem 1rem;
-  }
-
   .numeric {
     text-align: right;
   }
@@ -170,7 +178,7 @@
     <table>
       <thead>
         <tr>
-          {#each fields as [key, field] (key)}
+          {#each display_fields as [key, field] (key)}
             <th class:numeric={field.numeric}>
               {#if field.sort != null}
                 <button
@@ -201,7 +209,7 @@
       <tbody>
         {#each items as item}
           <tr>
-            {#each fields as [key, field] (key)}
+            {#each display_fields as [key, field] (key)}
               <td class:numeric={field.numeric}>
                 <div class="value">
                   {field.format(item)}

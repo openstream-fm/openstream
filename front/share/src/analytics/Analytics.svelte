@@ -480,6 +480,13 @@
     const display_name = (iso: string | null) => iso == null ? locale.Unknown : country_names[iso] || `#${iso}`;
 
     const fields = {
+      "iso": {
+        name: "ISO",
+        /// ZZ is the "unspecified" value for ISO country codes
+        /// The definition of CountryCode does not include ZZ, instead it use the null value, Eg: Option<CountryCode>
+        format: item => item.key ?? "ZZ",
+        csv_only: true,
+      },
       "key": {
         name: locale.Country,
         format: item => display_name(item.key),

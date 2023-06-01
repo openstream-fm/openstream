@@ -3,6 +3,7 @@ export type DataGridField<T> = {
   format: (v: T) => string;
   sort?: ((a: T, b: T) => number) | null;
   numeric?: boolean;
+  csv_only?: boolean;
 };
 
 export type DataGridData<T, R extends Record<string, any>> = {
