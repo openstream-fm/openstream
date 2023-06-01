@@ -14,7 +14,6 @@
   import type { ApexOptions } from "apexcharts";
   import { add, formatISO, isSameDay, startOfDay } from "date-fns";
   import DataGrid, { DataGridData, DataGridField } from "./DataGrid.svelte";
-  import { local } from "d3";
 
   const SEC = 1000;
   const MIN = SEC * 60;
@@ -40,7 +39,7 @@
   }
 
 
-  const time = (ms: number) => {
+  const time = (ms: number): string => {
     const days = ms / DAY;
     const hours = (ms % DAY) / HOUR;
     const mins = (ms % HOUR) / MIN;
@@ -51,9 +50,9 @@
     } else if (hours >= 1) {
       return join_time(floor(hours), "hour", min(59, round(mins)), "minute");
     } else if (mins >= 1) {
-      join_time(floor(mins), "minute", min(59, round(secs)), "second");
+      return join_time(floor(mins), "minute", min(59, round(secs)), "second");
     } else {
-      n_time(min(59, round(secs)), "second");
+      return n_time(min(59, round(secs)), "second");
     }
   };
 
@@ -352,7 +351,7 @@
     // const mins = floor(ms / MIN);
     // const secs = min(59, floor((ms % MIN) / SEC));
     // return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
-    return (ms / MIN).toFixed(1);
+    return (ms / MIN).toFixed(1).replace(".", ",");
   }
 
   const format_hours = (ms: number) => {
@@ -360,7 +359,7 @@
     //const mins = min(59, round((ms % HOUR) / MIN));
     //const secs = min(59, round((ms % MIN) / SEC));
     //return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
-    return (ms / HOUR).toFixed(1);
+    return (ms / HOUR).toFixed(1).replace(".", ",");;
   }
 
   const get_common_grid_options = () => {

@@ -155,6 +155,8 @@
     var url = URL.createObjectURL(svg_blob);
 
     img.onload = function () {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0);
       URL.revokeObjectURL(url);
 

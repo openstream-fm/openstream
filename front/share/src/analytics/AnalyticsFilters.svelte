@@ -191,20 +191,6 @@
     }, 2)
   }
 
-
-  const temporal_names: Record<QueryKind, string> = {
-    "last-24h": "Last 24 hours",
-    "last-7d": "Last 7 days",
-    "last-30d": "Last 30 days",
-    "today": "Today",
-    "this-week": "This week",
-    "this-month": "This month",
-    "yesterday": "Yesterday",
-    "previous-week": "Previous week",
-    "previous-month": "Previous month",
-    "custom": "Custom",
-  }
-
   const temporal_keys = [
     "last-24h",
     "last-7d",
@@ -498,7 +484,7 @@
       }}
     >
       <div class="field-text">
-        {temporal_names[kind]}
+        {locale.query_kind[kind]}
       </div>
     </button>
 

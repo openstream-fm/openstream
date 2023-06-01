@@ -2,7 +2,7 @@
   export let data: import("./$types").PageData;
   import Page from "$lib/components/Page.svelte";
 	import Analytics from "$share/analytics/Analytics.svelte";
-  import { locale } from "$lib/locale";
+  import { locale, lang } from "$lib/locale";
 	import AnalyticsFilters from "$share/analytics/AnalyticsFilters.svelte";
 	import type { OnSubmitEvent } from "$share/analytics/AnalyticsFilters.svelte";
   import { _get, action } from "$share/net.client";
@@ -69,13 +69,26 @@
 
   <div class="boxes">
     <div class="filters">
-      <AnalyticsFilters {loading} stations={account_stations} selected_stations="all" kind="last-24h" {on_submit} />
+      <AnalyticsFilters
+        {loading}
+        stations={account_stations}
+        selected_stations="all"
+        kind="last-24h"
+        {on_submit}
+        locale={$locale.analytics.filters}
+      />
     </div>
 
     {#if analytics}
       {#key hash(analytics)}
         <div class="analytics" class:loading>
-          <Analytics data={analytics} country_names={$locale.countries} />
+          <Analytics
+            data={analytics}
+            country_names={$locale.countries}
+            lang={$lang}
+            locale={$locale.analytics}
+            stats_map_locale={$locale.stats_map}
+          />
         </div>
       {/key}
     {/if}
