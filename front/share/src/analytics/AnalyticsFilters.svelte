@@ -200,7 +200,8 @@
     "yesterday",
     "previous-week",
     "previous-month",
-    "custom",
+    // TODO: add custom time-frames when Date picker is ready
+    // "custom",
   ] as const;
 
   const submit = () => {
