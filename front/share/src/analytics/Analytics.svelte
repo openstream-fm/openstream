@@ -352,6 +352,11 @@
     }
   })()
 
+  const map_country_has_data = (code: CountryCode) => {
+    const item = data.by_country.find(item => item.key === code);
+    return item && item?.sessions !== 0;
+  }
+
   const map_country_sessions = (code: CountryCode) => {
     const item = data.by_country.find(item => item.key === code);
     return item?.sessions || 0;
@@ -762,22 +767,24 @@
                   {map_country_sessions(country_code)}
                 </span>
               </div>
-              <div class="map-tooltip-stat">
-                <span class="map-tooltip-stat-name">
-                  {locale.Average_listening_minutes}:
-                </span>
-                <span class="map-tooltip-stat-value">
-                  {map_country_avg_minutes(country_code)}
-                </span>
-              </div>
-              <div class="map-tooltip-stat">
-                <span class="map-tooltip-stat-name">
-                  {locale.Total_listening_hours}:
-                </span>
-                <span class="map-tooltip-stat-value">
-                  {map_country_total_hours(country_code)}
-                </span>
-              </div>
+              {#if map_country_has_data(country_code)}
+                <div class="map-tooltip-stat">
+                  <span class="map-tooltip-stat-name">
+                    {locale.Average_listening_minutes}:
+                  </span>
+                  <span class="map-tooltip-stat-value">
+                    {map_country_avg_minutes(country_code)}
+                  </span>
+                </div>
+                <div class="map-tooltip-stat">
+                  <span class="map-tooltip-stat-name">
+                    {locale.Total_listening_hours}:
+                  </span>
+                  <span class="map-tooltip-stat-value">
+                    {map_country_total_hours(country_code)}
+                  </span>
+                </div>
+              {/if}
             </div>
           </Mapp>
         </div>
