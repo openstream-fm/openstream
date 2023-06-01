@@ -8,13 +8,15 @@
   export let stats_map_locale: import("$server/locale/share/stats-map/stats-map.locale").StatsMapLocale;
   export let lang: string;
 
-  import { CountryCode } from "$server/defs/CountryCode";
   import Mapp from "$share/Map/Map.svelte";
   import { chart } from "$share/apexcharts/apexcharts";
   import type { ApexOptions } from "apexcharts";
   import { add, formatISO, isSameDay, startOfDay } from "date-fns";
-  import DataGrid, { DataGridData, DataGridField } from "./DataGrid.svelte";
-
+  import DataGrid from "./DataGrid.svelte";
+  
+  import type { DataGridData, DataGridField } from "./DataGrid.svelte";
+  import type { CountryCode } from "$server/defs/CountryCode";
+  
   const SEC = 1000;
   const MIN = SEC * 60;
   const HOUR = MIN * 60;

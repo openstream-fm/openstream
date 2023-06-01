@@ -50,7 +50,7 @@
   export let custom_since: Date | null = null;
   export let custom_until: Date | null = null;
   export let loading: boolean = false;
-  export let locale: AnalyticsLocale["filters"];
+  export let locale:   import("$server/locale/share/analytics/analytics.locale").AnalyticsLocale["filters"];
 
   export const get_resolved_since = (now = new Date()) => {
     if (kind === "today") {
@@ -142,7 +142,6 @@
   import { logical_fly } from "$share/transition";
   import { click_out } from "$share/actions";
   import CircularProgress from "$share/CircularProgress.svelte";
-  import { AnalyticsLocale } from "$server/locale/share/analytics/analytics.locale";
 
   const unselect_station = (id: string) => {
     if (selected_stations === "all") {

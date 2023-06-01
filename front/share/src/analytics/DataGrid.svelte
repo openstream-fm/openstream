@@ -2,21 +2,21 @@
 
 <script lang="ts" context="module">
   export type DataGridField<T> = {
-    name: string,
-    format: (v: T) => string
-    sort?: ((a: T, b: T) => number) | null
-    numeric?: boolean,
-  }
+    name: string;
+    format: (v: T) => string;
+    sort?: ((a: T, b: T) => number) | null;
+    numeric?: boolean;
+  };
 
   export type DataGridData<T, R extends Record<string, any>> = {
-    title: string,
-    fields: Record<keyof R, DataGridField<T>>,
-    items: T[],
+    title: string;
+    fields: Record<keyof R, DataGridField<T>>;
+    items: T[];
     sorted_by?: {
-      key: keyof R,
-      direction: "asc" | "desc",
-    }
-  }
+      key: keyof R;
+      direction: "asc" | "desc";
+    };
+  };
 </script>
 
 <script lang="ts">
@@ -33,20 +33,19 @@
   import { ripple } from "$share/ripple";
   import { mdiFileDownloadOutline, mdiTriangle } from "@mdi/js";
   import { stringify } from "csv-stringify/browser/esm/sync";
-      
 
   const inverse = <T>(fn: (a: T, b: T) => number) => {
     return (a: T, b: T) => fn(a, b) * -1;
-  }
+  };
 
   $: items = get_items(data);
   const get_items = (...args: any[]): typeof data.items => {
-    if(data.sorted_by?.key == null) return data.items;
+    if (data.sorted_by?.key == null) return data.items;
     let sort_fn = data.fields[data.sorted_by.key].sort;
-    if(sort_fn == null) return data.items;
-    if(data.sorted_by.direction === "desc") sort_fn = inverse(sort_fn);
+    if (sort_fn == null) return data.items;
+    if (data.sorted_by.direction === "desc") sort_fn = inverse(sort_fn);
     return data.items.slice().sort(sort_fn);
-  }
+  };
 
   // const as_key = (k: string) => {
   //   return k as Key;
@@ -54,42 +53,42 @@
 
   const toggle_sort = (key: Key) => {
     const field = data.fields[key];
-    if(field == null) return;
-    if(data.sorted_by?.key === key && data.sorted_by?.direction === "asc") {
+    if (field == null) return;
+    if (data.sorted_by?.key === key && data.sorted_by?.direction === "asc") {
       data = { ...data, sorted_by: { key, direction: "desc" } };
     } else {
       data = { ...data, sorted_by: { key, direction: "asc" } };
     }
-  }
+  };
 
   let fields: [Key, DataGridField<Item>][];
   $: fields = Object.entries(data.fields);
 
   const do_export = () => {
     const fs = Object.values(data.fields);
-    const headers = fs.map(field => field.name);
-    const rows = items.map(item => fs.map(field => field.format(item)));
-    const out = stringify([ headers, ...rows ]);
+    const headers = fs.map((field) => field.name);
+    const rows = items.map((item) => fs.map((field) => field.format(item)));
+    const out = stringify([headers, ...rows]);
     const url = `data:text/csv;charset=utf-8,${encodeURIComponent(out)}`;
     const a = document.createElement("a");
     a.href = url;
     a.download = `${data.title}.csv`;
     a.click();
-  }
+  };
 </script>
 
 <style>
   table {
-    min-width: 100%;  
+    min-width: 100%;
     border-collapse: collapse;
   }
 
   thead {
-    background: rgba(0,0,0,0.06);
+    background: rgba(0, 0, 0, 0.06);
   }
 
   tbody > tr:nth-child(even) {
-    background: rgba(0,0,0,0.03);
+    background: rgba(0, 0, 0, 0.03);
   }
 
   th {
@@ -128,14 +127,13 @@
     color: #000;
   }
 
-
   .numeric .header {
     justify-content: flex-end;
     text-align: right;
   }
 
   .header:hover {
-    background: rgba(0,0,0,0.05);
+    background: rgba(0, 0, 0, 0.05);
   }
 
   .value {
@@ -154,7 +152,7 @@
   }
 
   .export {
-    background: #3D9970;
+    background: #3d9970;
     color: #fff;
     padding: 0.75rem;
     font-weight: 600;
@@ -170,7 +168,6 @@
     margin-inline-end: 0.5rem;
     font-size: 1.25rem;
   }
-  
 </style>
 
 <div class="grid-out">
@@ -181,7 +178,11 @@
           {#each fields as [key, field] (key)}
             <th class:numeric={field.numeric}>
               {#if field.sort != null}
-                <button class="header sortable ripple-container" use:ripple on:click={() => toggle_sort(key)}>
+                <button
+                  class="header sortable ripple-container"
+                  use:ripple
+                  on:click={() => toggle_sort(key)}
+                >
                   {field.name}
                   {#if data.sorted_by?.key === key}
                     <div
