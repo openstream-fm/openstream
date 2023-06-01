@@ -50,6 +50,7 @@
   export let custom_since: Date | null = null;
   export let custom_until: Date | null = null;
   export let loading: boolean = false;
+  export let locale: AnalyticsLocale["filters"];
 
   export const get_resolved_since = (now = new Date()) => {
     if (kind === "today") {
@@ -141,6 +142,7 @@
   import { logical_fly } from "$share/transition";
   import { click_out } from "$share/actions";
   import CircularProgress from "$share/CircularProgress.svelte";
+  import { AnalyticsLocale } from "$server/locale/share/analytics/analytics.locale";
 
   const unselect_station = (id: string) => {
     if (selected_stations === "all") {
@@ -203,7 +205,18 @@
     "custom": "Custom",
   }
 
-  const temporal_entries = Object.entries(temporal_names) as [QueryKind, string][]
+  const temporal_keys = [
+    "last-24h",
+    "last-7d",
+    "last-30d",
+    "today",
+    "this-week",
+    "this-month",
+    "yesterday",
+    "previous-week",
+    "previous-month",
+    "custom",
+  ] as const;
 
   const submit = () => {
     const query = get_resolved_query();
@@ -402,9 +415,9 @@
       {#if selected_stations === "all"}
         <div class="field-text" transition:slide|local={{ duration: 200 }}>
           {#if stations.length}
-            All stations
+            {locale.All_stations}
           {:else}
-            No stations
+            {locale.No_stations}
           {/if}
         </div>
       {:else}
@@ -469,7 +482,7 @@
           </button>
         {:else}
           <div class="no-stations-message">
-            This account doesn't have any stations
+            {locale.no_stations_message}
           </div>
         {/each}
       </div>
@@ -491,8 +504,9 @@
 
     {#if time_menu_open}
       <div class="menu" transition:logical_fly={{ y: -25, duration: 200 }} use:click_out={() => time_menu_click_out()}>
-        {#each temporal_entries as [key, name] (key)}
+        {#each temporal_keys as key (key)}
           {@const selected = kind === key}
+          {@const name = locale.query_kind[key]}
           <button
             class="menu-item ripple-container"
             class:selected
@@ -534,7 +548,7 @@
         <Icon d={mdiPoll} />
       </div>
       <div class="submit-text">
-        Get analytics
+        {locale.submit}
       </div>
       {#if loading}
         <div class="submit-loading" transition:scale|local={{ duration: 200 }}>

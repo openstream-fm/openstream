@@ -3,6 +3,7 @@ import stats_map from "../share/stats-map/stats-map.de"
 import validate from "../share/validate/validate.de";
 import countries from "../share/countries/countries.de";
 import type_of_content from "../share/type-of-content/type-of-content.de";
+import analytics from "../share/analytics/analytics.de";
 
 const locale = {
 

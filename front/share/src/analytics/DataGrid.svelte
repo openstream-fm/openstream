@@ -27,12 +27,13 @@
   type Key = keyof Fields;
 
   export let data: DataGridData<Item, Fields>;
+  export let locale: import("$server/locale/share/analytics/analytics.locale").AnalyticsLocale["data_grid"];
 
   import Icon from "$share/Icon.svelte";
   import { ripple } from "$share/ripple";
   import { mdiFileDownloadOutline, mdiTriangle } from "@mdi/js";
   import { stringify } from "csv-stringify/browser/esm/sync";
-
+      
 
   const inverse = <T>(fn: (a: T, b: T) => number) => {
     return (a: T, b: T) => fn(a, b) * -1;
@@ -222,7 +223,7 @@
       <div class="export-icon">
         <Icon d={mdiFileDownloadOutline} />
       </div>
-      Export as CSV
+      {locale.export_as_csv}
     </button>
   </div>
 </div>

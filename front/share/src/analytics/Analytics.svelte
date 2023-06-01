@@ -1,16 +1,20 @@
 <svelte:options immutable={true} />
 
 <script lang="ts">
+
   export let data: import("$server/defs/analytics/Analytics").Analytics;
   export let country_names: Record<string, string | undefined>;
+  export let locale: import("$server/locale/share/analytics/analytics.locale").AnalyticsLocale;
+  export let stats_map_locale: import("$server/locale/share/stats-map/stats-map.locale").StatsMapLocale;
+  export let lang: string;
 
   import { CountryCode } from "$server/defs/CountryCode";
   import Mapp from "$share/Map/Map.svelte";
   import { chart } from "$share/apexcharts/apexcharts";
   import type { ApexOptions } from "apexcharts";
   import { add, formatISO, isSameDay, startOfDay } from "date-fns";
-  import { locale } from "$share/locale";
   import DataGrid, { DataGridData, DataGridField } from "./DataGrid.svelte";
+  import { local } from "d3";
 
   const SEC = 1000;
   const MIN = SEC * 60;
@@ -21,6 +25,21 @@
 
   const chartHeight = 350;
 
+  const n_time = (n: number, unit: "day" | "hour" | "minute" | "second") => {
+    if(n === 1) {
+      return locale.time[`1_${unit}`];
+    } else {
+      return locale.time[`n_${unit}s`].replace("@n", String(n));
+    }
+  }
+
+  const join_time = (n1: number, unit1: "day" | "hour" | "minute" | "second", n2: number, unit2: "day" | "hour" | "minute" | "second") => {
+    return locale.time.join
+      .replace("@time1", n_time(n1, unit1))
+      .replace("@time2", n_time(n2, unit2))
+  }
+
+
   const time = (ms: number) => {
     const days = ms / DAY;
     const hours = (ms % DAY) / HOUR;
@@ -28,13 +47,13 @@
     const secs = (ms % MIN) / SEC;
 
     if (days >= 1) {
-      return `${floor(days)} days and ${min(23, round(hours))} hours`;
+      return join_time(floor(days), "day", min(23, round(hours)), "hour");
     } else if (hours >= 1) {
-      return `${floor(hours)} hours and ${min(59, round(mins))} minutes`;
+      return join_time(floor(hours), "hour", min(59, round(mins)), "minute");
     } else if (mins >= 1) {
-      return `${floor(mins)} minutes and ${min(59, round(secs))} seconds`;
+      join_time(floor(mins), "minute", min(59, round(secs)), "second");
     } else {
-      return `${min(59, round(secs))} seconds`;
+      n_time(min(59, round(secs)), "second");
     }
   };
 
@@ -80,11 +99,11 @@
   const days_options: ApexOptions = {
     series: [
       {
-        name: "Sessions",
+        name: locale.Sessions,
         data: days_data.sessions
       },
       {
-        name: "Avg listening time",
+        name: locale.Average_listening_time,
         data: days_data.avg
       },
     ],
@@ -138,13 +157,19 @@
       type: "datetime",
       categories: days_data.dates.map(date => formatISO(date)),
       labels: {
-        format: "dd/MM/yyyy",
+        formatter: (v) => {
+          return new Date(v).toLocaleDateString(lang, {
+            year: "numeric",
+            day: "2-digit",
+            month: "2-digit",
+          })
+        }
       }
     },
     yaxis: [
       {
         title: {
-          text: "Sessions",
+          text: locale.Sessions,
           style: {
            fontSize: "1rem",
            fontWeight: 600,
@@ -156,7 +181,7 @@
       }, {
         opposite: true,
         title: {
-          text: "Avg listening time",
+          text: locale.Average_listening_time,
           style: {
            fontSize: "1rem",
            fontWeight: 600,
@@ -176,7 +201,13 @@
     ],
     tooltip: {
       x: {
-        format: "dd/MM/yyyy",
+        formatter: v => {
+          return new Date(v).toLocaleString(lang, {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          })
+        }
       },
     }
   };
@@ -201,7 +232,7 @@
     },
     yaxis: {
       title: {
-        text: "Sessions",
+        text: locale.Sessions,
         style: {
           fontSize: "1rem",
           fontWeight: 600,
@@ -209,10 +240,10 @@
       },
     },
     series: [{ 
-      name: "Sessions",
+      name: locale.Sessions,
       data: data.by_os.map(item => {
         return {
-          x: item.key == null ? "Unknown" : item.key,
+          x: item.key == null ? locale.Unknown : item.key,
           y: item.sessions,
         }
       })
@@ -239,7 +270,7 @@
     }, 
     yaxis: {
       title: {
-        text: "Sessions",
+        text: locale.Sessions,
         style: {
           fontSize: "1rem",
           fontWeight: 600,
@@ -247,10 +278,10 @@
       },
     },
     series: [{
-      name: "Sessions",
+      name: locale.Sessions,
       data: data.by_browser.map(item => {
         return {
-          x: item.key == null ? "Unknown" : item.key,
+          x: item.key == null ? locale.Unknown : item.key,
           y: item.sessions,
         }
       })
@@ -277,7 +308,7 @@
     }, 
     yaxis: {
       title: {
-        text: "Sessions",
+        text: locale.Sessions,
         style: {
           fontSize: "1rem",
           fontWeight: 600,
@@ -285,7 +316,7 @@
       },
     },
     series: [{
-      name: "Sessions",
+      name: locale.Sessions,
       data: data.by_station.map(item => {
         const station = data.stations.find(station => station._id === item.key);
         return {
@@ -338,21 +369,21 @@
 
     const fields = {
       "sessions": {
-        name: "Sessions",
+        name: locale.Sessions,
         format: item => String(item.sessions),
         sort: (a, b) => compare_numbers(a.sessions, b.sessions),
         numeric: true,
       },
 
       "avg_time": {
-        name: "Average listening minutes",
+        name: locale.Average_listening_minutes,
         format: item => item.sessions === 0 ? "-" : format_mins(item.total_duration_ms / item.sessions),
         sort: (a, b) => compare_numbers((a.total_duration_ms / a.sessions) || 0,  (b.total_duration_ms / b.sessions) || 0),
         numeric: true,
       },
 
       "total_time": {
-        name: "Total listening hours",
+        name: locale.Total_listening_hours,
         format: item => format_hours(item.total_duration_ms),
         sort: (a, b) => compare_numbers(a.total_duration_ms, b.total_duration_ms),
         numeric: true,
@@ -372,8 +403,8 @@
     const common = get_common_grid_options();    
     const fields = {
       "key": {
-        name: "Browser",
-        format: item => item.key || "Unknown",
+        name: locale.Browser,
+        format: item => item.key || locale.Unknown,
         sort: (a, b) => (a.key || "").localeCompare(b.key || ""),
       },
       ...common.fields
@@ -382,7 +413,7 @@
 
     return {
       ...common,
-      title: "Stats by browser",
+      title: locale.Stats_by_browser,
       fields,
       items,
     } satisfies DataGridData<typeof items[number], typeof fields>;
@@ -393,8 +424,8 @@
     const common = get_common_grid_options();    
     const fields = {
       "key": {
-        name: "Device",
-        format: item => item.key || "Unknown",
+        name: locale.Device,
+        format: item => item.key || locale.Unknown,
         sort: (a, b) => (a.key || "").localeCompare(b.key || ""),
       },
       ...common.fields
@@ -403,7 +434,7 @@
 
     return {
       ...common,
-      title: "Stats by device",
+      title: locale.Stats_by_device,
       fields,
       items,
     } satisfies DataGridData<typeof items[number], typeof fields>;
@@ -418,7 +449,7 @@
     }
     const fields = {
       "key": {
-        name: "Station",
+        name: locale.Station,
         format: item => display_name(item.key),
         sort: (a, b) => display_name(a.key).localeCompare(display_name(b.key))
       },
@@ -428,7 +459,7 @@
 
     return {
       ...common,
-      title: "Stats by station",
+      title: locale.Stats_by_station,
       fields,
       items,
     } satisfies DataGridData<typeof items[number], typeof fields>;
@@ -437,11 +468,11 @@
   const get_by_country_grid = () => {
     const items = data.by_country;
     const common = get_common_grid_options();
-    const display_name = (iso: string | null) => iso == null ? "Unknown" : country_names[iso] || `#${iso}`;
+    const display_name = (iso: string | null) => iso == null ? locale.Unknown : country_names[iso] || `#${iso}`;
 
     const fields = {
       "key": {
-        name: "Country",
+        name: locale.Country,
         format: item => display_name(item.key),
         sort: (a, b) => display_name(a.key || "").localeCompare(display_name(b.key || "")),
       },
@@ -451,7 +482,7 @@
 
     return {
       ...common,
-      title: "Stats by country",
+      title: locale.Stats_by_country,
       fields,
       items,
     } satisfies DataGridData<typeof items[number], typeof fields>;
@@ -510,7 +541,7 @@
 
     const fields = {
       "key": {
-        name: "Date",
+        name: locale.Date,
         format: item => `${pad(item.key.year, 4)}/${pad(item.key.month + 1)}/${pad(item.key.day)}`,
         sort: (a, b) => compare_numbers(to_num(a.key), to_num(b.key))
       },
@@ -520,7 +551,7 @@
 
     return {
       ...common,
-      title: "Stats by date",
+      title: locale.Stats_by_date,
       fields,
       items,
       sorted_by: {
@@ -624,33 +655,33 @@
 <div class="analytics">
   {#if data.sessions === 0}
     <div class="empty">
-      There's no data recorded for the specified filters
+      {locale.no_data_message}
     </div>
   {:else}
     <div class="totals">
       <div class="total">
-        <div class="total-title">Total sessions completed</div>
+        <div class="total-title">{locale.Sessions}</div>
         <div class="total-value">
           {data.sessions}
         </div>
       </div>
 
       <div class="total">
-        <div class="total-title">Total unique IPs</div>
+        <div class="total-title">{locale.Unique_IPs}</div>
         <div class="total-value">
           {data.ips}
         </div>
       </div>
 
       <div class="total">
-        <div class="total-title">Average listening time</div>
+        <div class="total-title">{locale.Average_listening_time}</div>
         <div class="total-value">
           {time(data.total_duration_ms / data.sessions)}
         </div>
       </div>
 
       <div class="total">
-        <div class="total-title">Total listening time</div>
+        <div class="total-title">{locale.Total_listening_time}</div>
         <div class="total-value">
           {time(data.total_duration_ms)}
         </div>
@@ -659,48 +690,48 @@
 
     <div class="charts" style:--chart-height="{chartHeight}px">
       <div class="chart-box">
-        <div class="chart-title">By date</div>
+        <div class="chart-title">{locale.By_date}</div>
         <div class="chart" use:chart={days_options} />
       </div>
 
       <div class="chart-box chart-box-map">
-        <div class="chart-title">By country</div>
+        <div class="chart-title">{locale.By_country}</div>
         <div class="map">
-          <Mapp stats={map_data} {country_names} locale={$locale.stats_map} />
+          <Mapp stats={map_data} {country_names} locale={stats_map_locale} />
         </div>
         <div class="chart-grid">
-          <DataGrid data={by_country_grid_data} />
+          <DataGrid data={by_country_grid_data} locale={locale.data_grid} />
         </div>
       </div>
 
       <div class="chart-box">
-        <div class="chart-title">By device</div>
+        <div class="chart-title">{locale.By_device}</div>
         <div class="chart" use:chart={os_options} />
         <div class="chart-grid">
-          <DataGrid data={by_device_grid_data} />
+          <DataGrid data={by_device_grid_data} locale={locale.data_grid} />
         </div>
       </div>
 
       <div class="chart-box">
-        <div class="chart-title">By browser</div>
+        <div class="chart-title">{locale.By_browser}</div>
         <div class="chart" use:chart={browser_options} />
         <div class="chart-grid">
-          <DataGrid data={by_browser_grid_data} />
+          <DataGrid data={by_browser_grid_data} locale={locale.data_grid} />
         </div>
       </div>
 
       <div class="chart-box">
-        <div class="chart-title">By station</div>
+        <div class="chart-title">{locale.By_station}</div>
         <div class="chart" use:chart={station_options} />
         <div class="chart-grid">
-          <DataGrid data={by_station_grid_data} />
+          <DataGrid data={by_station_grid_data} locale={locale.data_grid} />
         </div>
       </div>
 
       <div class="chart-box">
-        <div class="chart-title">Daily stats</div>
+        <div class="chart-title">{locale.Daily_stats}</div>
         <div class="chart-grid chart-grid-daily">
-          <DataGrid data={by_day_grid_data} />
+          <DataGrid data={by_day_grid_data} locale={locale.data_grid} />
         </div>
       </div>
     </div>
