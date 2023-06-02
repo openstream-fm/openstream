@@ -3,6 +3,7 @@ import stats_map from "../share/stats-map/stats-map.zh";
 import validate from "../share/validate/validate.zh";
 import countries from "../share/countries/countries.zh";
 import type_of_content from "../share/type-of-content/type-of-content.zh";
+import analytics from "../share/analytics/analytics.zh";
 
 const locale: import("./studio.locale").StudioLocale = {
 
@@ -10,15 +11,16 @@ const locale: import("./studio.locale").StudioLocale = {
   "region": null,
 
   // @notranslate
-  "logo_text": "nuva",
+  "logo_text": "openstream",
 
   // @notranslate
-  "app_name": "Nuva Studio",
+  "app_name": "Openstream Studio",
   
   "station_type_of_content": type_of_content,
   "countries": countries,
   "validate": validate,
   "stats_map": stats_map,
+  "analytics": analytics,
 
   "language": {
     "auto": "自动检测",
@@ -114,7 +116,7 @@ const locale: import("./studio.locale").StudioLocale = {
   "plan_selector": {
     "price": {
       "per_month": "每月",
-      "$_n_per_month": "每月 $ @n",
+      "n_per_month": "每月 @n",
     },
 
     "unlimited": "无限",
@@ -214,7 +216,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "title": "开始免费试用",
       "plan": {
         "selected_plan": "已选套餐",
-        "$_n_price_per_month": "每月 @n 美元",
+        "n_per_month": "每月 @n",
         "limits": {
           "station": "电台",
           "stations": "电台",
@@ -308,7 +310,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "title": "创建发射帐户",
       "plan": {
         "title": "已选套餐",
-        "$_n_per_month": "每月 @n 美元",
+        "n_per_month": "每月 @n",
         "station": "电台",
         "stations": "电台",
         "listeners": "听众",
@@ -347,10 +349,17 @@ const locale: import("./studio.locale").StudioLocale = {
 
       "station_item": {
         "on_air": "直播中",
-        "off_air": "离线",
+        "off_air": "未直播",
         "playlist": "播放列表",
         "live": "现场直播",
       }
+    },
+
+    "account/analytics": {
+      "head": {
+        "title": "分析",
+      },
+      "title": "分析",
     },
 
     "stations": {
@@ -377,7 +386,7 @@ const locale: import("./studio.locale").StudioLocale = {
 
     "station/dashboard": {
       "on_air": "直播中",
-      "off_air": "离线",
+      "off_air": "未直播",
       "playlist": "播放列表",
       "live": "现场直播",
       "preview": "预览",

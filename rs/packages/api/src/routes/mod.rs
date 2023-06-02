@@ -6,6 +6,7 @@ pub mod auth;
 pub mod stations;
 pub mod users;
 
+pub mod analytics;
 pub mod plans;
 pub mod runtime;
 pub mod station_pictures;
@@ -23,6 +24,8 @@ use shutdown::Shutdown;
 use crate::error::ApiError;
 use crate::json::JsonHandler;
 
+use payments::client::PaymentsClient;
+
 use async_trait::async_trait;
 
 pub fn router(
@@ -31,6 +34,7 @@ pub fn router(
   shutdown: Shutdown,
   drop_tracer: DropTracer,
   stream_connections_index: MemIndex,
+  payments_client: PaymentsClient,
   mailer: Mailer,
 ) -> Builder {
   let mut app = prex::prex();
@@ -61,8 +65,12 @@ pub fn router(
     .post(auth::user::logout::post::Endpoint {}.into_handler());
 
   app
+    .at("/auth/user/email-exists/:email")
+    .get(auth::user::email_exists::get::Endpoint {}.into_handler());
+
+  app
     .at("/auth/user/register")
-    .post(auth::user::register::post::Endpoint {}.into_handler());
+    .post(auth::user::register::post::Endpoint { payments_client }.into_handler());
 
   app
     .at("/auth/user/recover")
@@ -99,6 +107,10 @@ pub fn router(
     }
     .into_handler(),
   );
+
+  app
+    .at("/analytics")
+    .get(analytics::get::Endpoint {}.into_handler());
 
   app.at("/stream-stats").get(
     stream_stats::get::Endpoint {

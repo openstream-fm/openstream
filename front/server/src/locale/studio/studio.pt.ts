@@ -2,21 +2,23 @@ import stats_map from "../share/stats-map/stats-map.pt";
 import validate from "../share/validate/validate.pt";
 import countries from "../share/countries/countries.pt";
 import type_of_content from "../share/type-of-content/type-of-content.pt";
+import analytics from "../share/analytics/analytics.pt";
 
 const locale: import("./studio.locale").StudioLocale = {
   "lang": "pt",
   "region": null,
 
   // @notranslate
-  "logo_text": "nuva",
+  "logo_text": "openstream",
 
   // @notranslate
-  "app_name": "Nuva Studio",
+  "app_name": "Openstream Studio",
 
   "station_type_of_content": type_of_content,
   "countries": countries,
   "validate": validate,
   "stats_map": stats_map,
+  "analytics": analytics,
 
   "language": {
     "auto": "Detecção automática",
@@ -112,7 +114,7 @@ const locale: import("./studio.locale").StudioLocale = {
   "plan_selector": {
     "price": {
       "per_month": "por mês",
-      "$_n_per_month": "$ @n / mês",
+      "n_per_month": "@n / mês",
     },
 
     "unlimited": "Ilimitados",
@@ -212,7 +214,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "title": "Comece seu teste grátis",
       "plan": {
         "selected_plan": "Plano selecionado",
-        "$_n_price_per_month": "$ @n / mês",
+        "n_per_month": "@n / mês",
         "limits": {
           "station": "Estação",
           "stations": "Estações",
@@ -306,7 +308,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "title": "Criar uma conta de transmissor",
       "plan": {
         "title": "Plano selecionado",
-        "$_n_per_month": "$ @n / mês",
+        "n_per_month": "@n / mês",
         "station": "Estação",
         "stations": "Estações",
         "listeners": "Ouvintes",
@@ -344,11 +346,18 @@ const locale: import("./studio.locale").StudioLocale = {
       },
 
       "station_item": {
-        "on_air": "ON",
-        "off_air": "OFF",
+        "on_air": "ON AIR",
+        "off_air": "OFF AIR",
         "playlist": "Playlist",
         "live": "Ao vivo",
       }
+    },
+
+    "account/analytics": {
+      "head": {
+        "title": "Análise",
+      },
+      "title": "Análise",
     },
 
     "stations": {
@@ -374,8 +383,8 @@ const locale: import("./studio.locale").StudioLocale = {
     },
 
     "station/dashboard": {
-      "on_air": "ON",
-      "off_air": "OFF",
+      "on_air": "ON AIR",
+      "off_air": "OFF AIR",
       "playlist": "Playlist",
       "live": "Ao vivo",
       "preview": "Visualizar",

@@ -29,6 +29,7 @@ export class Client {
   users: Users;
   accounts: Accounts;
   stations: Stations;
+  analytics: Analytics;
 
   constructor(base_url: string, { logger, fetch = node_fetch }: { logger: Logger, fetch?: typeof node_fetch }) {
     this.base_url = base_url.trim().replace(/\/+$/g, "")
@@ -43,6 +44,7 @@ export class Client {
     this.users = new Users(this);
     this.accounts = new Accounts(this);
     this.stations = new Stations(this);
+    this.analytics = new Analytics(this);
   }
 
   async fetch(_url: string, init: RequestInit = {}): Promise<Response> {
@@ -215,8 +217,8 @@ export class AuthAdmin {
     this.client = client
   }
 
-  async login(ip: string | null, ua: string | null, payload: import("$api/auth/admin/login/POST/Payload").Payload): Promise<import("$api/auth/admin/login/POST/Output").Output> {
-    return await this.client.post(ip, ua, null, "/auth/admin/login", payload)
+  async login(ip: string | null, ua: string | null, token: string | null, payload: import("$api/auth/admin/login/POST/Payload").Payload): Promise<import("$api/auth/admin/login/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, "/auth/admin/login", payload)
   }
 
   async logout(ip: string | null, ua: string | null, token: string): Promise<import("$api/auth/admin/logout/POST/Output").Output> {
@@ -237,8 +239,12 @@ export class AuthUser {
     this.recovery_token = new AuthUserRecoveryToken(this.client);
   }
 
-  async login(ip: string | null, ua: string | null, payload: import("$api/auth/user/login/POST/Payload").Payload): Promise<import("$api/auth/user/login/POST/Output").Output> {
-    return await this.client.post(ip, ua, null, "/auth/user/login", payload)
+  async email_exists(ip: string | null, ua: string | null, token: string | null, email: string): Promise<import("$api/auth/user/email-exists/[email]/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/auth/user/email-exists/${email}`);
+  }
+
+  async login(ip: string | null, ua: string | null, token: string | null, payload: import("$api/auth/user/login/POST/Payload").Payload): Promise<import("$api/auth/user/login/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, "/auth/user/login", payload)
   }
 
   async logout(ip: string | null, ua: string | null, token: string): Promise<import("$api/auth/user/logout/POST/Output").Output> {
@@ -249,8 +255,8 @@ export class AuthUser {
     return await this.client.post(ip, ua, token, "/auth/user/register", payload)
   }
 
-  async recover(ip: string | null, ua: string | null, payload: import("$api/auth/user/recover/POST/Payload").Payload): Promise<import("$api/auth/user/recover/POST/Output").Output> {
-    return await this.client.post(ip, ua, null, "/auth/user/recover", payload)
+  async recover(ip: string | null, ua: string | null, token: string | null, payload: import("$api/auth/user/recover/POST/Payload").Payload): Promise<import("$api/auth/user/recover/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, "/auth/user/recover", payload)
   }
 }
 
@@ -262,12 +268,12 @@ export class AuthUserRecoveryToken {
     this.client = client;
   }
 
-  async get(ip: string | null, ua: string | null, key: string): Promise<import("$api/auth/user/recovery-token/[token]/GET/Output").Output> {
-    return await this.client.get(ip, ua, null, `/auth/user/recovery-token/${key}`)
+  async get(ip: string | null, ua: string | null, token: string | null, key: string): Promise<import("$api/auth/user/recovery-token/[token]/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/auth/user/recovery-token/${key}`)
   }
 
-  async set_password(ip: string | null, ua: string | null, key: string, payload: import("$api/auth/user/recovery-token/[token]/set-password/POST/Payload").Payload): Promise<import("$api/auth/user/recovery-token/[token]/set-password/POST/Output").Output> {
-    return await this.client.post(ip, ua, null, `/auth/user/recovery-token/${key}/set-password`, payload)
+  async set_password(ip: string | null, ua: string | null, token: string | null, key: string, payload: import("$api/auth/user/recovery-token/[token]/set-password/POST/Payload").Payload): Promise<import("$api/auth/user/recovery-token/[token]/set-password/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, `/auth/user/recovery-token/${key}/set-password`, payload)
   }
 }
 
@@ -580,5 +586,18 @@ export class StationFiles {
 
   async move_after(ip: string | null, ua: string | null, token: string, station_id: string, file_id: string, payload: import("$api/stations/[station]/files/[file]/order/move-after/POST/Payload").Payload): Promise<import("$api/stations/[station]/files/[file]/order/move-after/POST/Output").Output> {
     return await this.client.post(ip, ua, token, `/stations/${station_id}/files/${file_id}/order/move-after`, payload)
+  }
+}
+
+export class Analytics {
+  client: Client;
+  constructor(client: Client) {
+    this.client = client;
+  }
+
+  async get(ip: string | null, ua: string | null, token: string, query: import("$api/analytics/GET/Query").Query): Promise<import("$api/analytics/GET/Output").Output> {
+    const url = `/analytics${qss(query)}`;
+    // console.log("====== analytics ======", query, url);
+    return await this.client.get(ip, ua, token, url);
   }
 }

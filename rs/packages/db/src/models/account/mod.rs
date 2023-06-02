@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
 
+crate::register!(Account);
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
@@ -163,7 +165,6 @@ impl Account {
   ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
     const KEY: &str = crate::key!(Account::KEY_LIMITS, Limits::KEY_LISTENERS, Limit::KEY_USED);
     let update = doc! { "$inc": { KEY: 1.0_f64 } };
-    log::info!("increment_used_listeners account={id} update: {:?}", update);
     Self::update_by_id(id, update).await
   }
 
@@ -172,7 +173,6 @@ impl Account {
   ) -> Result<mongodb::results::UpdateResult, mongodb::error::Error> {
     const KEY: &str = crate::key!(Account::KEY_LIMITS, Limits::KEY_LISTENERS, Limit::KEY_USED);
     let update = doc! { "$inc": { KEY: -1.0_f64 } };
-    log::info!("decrement_used_listeners account={id} update: {:?}", update);
     Self::update_by_id(id, update).await
   }
 }

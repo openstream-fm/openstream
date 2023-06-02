@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
 
+crate::register!(AudioUploadOperation);
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[ts(rename = "AudioUploadOperationState")]
@@ -24,11 +26,8 @@ pub enum State {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(
-  export,
-  export_to = "../../../defs/db/",
-  rename = "BaseAudioUploadOperation"
-)]
+#[ts(export, export_to = "../../../defs/db/")]
+// #[ts(rename = "BaseAudioUploadOperation")
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct AudioUploadOperation {
@@ -37,9 +36,8 @@ pub struct AudioUploadOperation {
   pub station_id: String,
   pub deployment_id: String,
   pub created_at: DateTime,
-  /// TODO: working in adding support for flattened enums in ts-rs
+
   #[serde(flatten)]
-  #[ts(skip)]
   pub state: State,
 }
 

@@ -6,12 +6,11 @@ use ts_rs::TS;
 
 use crate::Model;
 
+crate::register!(PlayHistoryItem);
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(
-  export,
-  export_to = "../../../defs/db/",
-  rename = "BasePlayHistoryItem"
-)]
+#[ts(export, export_to = "../../../defs/db/")]
+// #[ts(rename = "BasePlayHistoryItem")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct PlayHistoryItem {
@@ -27,7 +26,7 @@ pub struct PlayHistoryItem {
   pub title: String,
   pub artist: Option<String>,
 
-  #[ts(skip)]
+  // #[ts(skip)]
   #[serde(flatten)]
   pub kind: Kind,
 
@@ -53,8 +52,6 @@ impl Model for PlayHistoryItem {
   const UID_LEN: usize = 20;
 
   fn indexes() -> Vec<IndexModel> {
-    // TODO: should we add more indexes ?
-
     let created_at = IndexModel::builder()
       .keys(doc! { Self::KEY_CREATED_AT: 1 })
       .build();

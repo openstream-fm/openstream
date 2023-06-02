@@ -4,5 +4,5 @@ import type { PublicUser } from "../db/PublicUser";
 
 export type Me =
   | { scope: "global" }
-  | { scope: "admin"; admin: PublicAdmin }
-  | { scope: "user"; user: PublicUser };
+  | ({ scope: "admin" } & { admin: PublicAdmin })
+  | ({ scope: "user" } & { user: PublicUser });

@@ -45,7 +45,7 @@ jobs:
     
     - uses: Swatinem/rust-cache@v2
       with:
-        cache-all-crates: ""
+        cache-all-crates: true
     # with:
       # The prefix cache key, this can be changed to start a new cache manually.
       # default: "v0-rust"

@@ -2,7 +2,7 @@
 import type { DateTime } from "../DateTime";
 import type { RelaySessionState } from "./RelaySessionState";
 
-export interface RelaySessionBase {
+export type RelaySessionBase = {
   _id: string;
   station_id: string;
   deployment_id: string;
@@ -13,4 +13,4 @@ export interface RelaySessionBase {
   duration_ms: number | null;
   created_at: DateTime;
   updated_at: DateTime;
-}
+};

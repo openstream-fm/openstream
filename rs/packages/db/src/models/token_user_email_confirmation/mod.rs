@@ -6,6 +6,8 @@ use serde_util::DateTime;
 use time::Duration;
 use ts_rs::TS;
 
+crate::register!(TokenUserEmailConfirmation);
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]

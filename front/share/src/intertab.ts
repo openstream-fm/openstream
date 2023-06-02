@@ -81,7 +81,7 @@ let intertab = <T>(key: string) => {
 }
 
 if(!browser) {
-  // @ts-ignore
+  // @ts-expect-error
   intertab = () => {}
 }
 

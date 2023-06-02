@@ -260,9 +260,9 @@ pub trait TS: 'static {
 
     /// Flatten an type declaration.  
     /// This function will panic if the type cannot be flattened.
-    fn inline_flattened() -> String {
-        panic!("{} cannot be flattened", Self::name())
-    }
+    // fn inline_flattened() -> String {
+    //     panic!("{} cannot be flattened", Self::name())
+    // }
 
     /// Information about types this type depends on.
     /// This is used for resolving imports when exporting to a file.
@@ -374,7 +374,7 @@ macro_rules! impl_wrapper {
                 args.remove(0)
             }
             fn inline() -> String { T::inline() }
-            fn inline_flattened() -> String { T::inline_flattened() }
+            // fn inline_flattened() -> String { T::inline_flattened() }
             fn dependencies() -> Vec<Dependency> { T::dependencies() }
             fn transparent() -> bool { T::transparent() }
         }
@@ -388,7 +388,7 @@ macro_rules! impl_shadow {
             fn name() -> String { <$s>::name() }
             fn name_with_type_args(args: Vec<String>) -> String { <$s>::name_with_type_args(args) }
             fn inline() -> String { <$s>::inline() }
-            fn inline_flattened() -> String { <$s>::inline_flattened() }
+            // fn inline_flattened() -> String { <$s>::inline_flattened() }
             fn dependencies() -> Vec<$crate::Dependency> { <$s>::dependencies() }
             fn transparent() -> bool { <$s>::transparent() }
         }

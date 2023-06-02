@@ -39,3 +39,4 @@ thiserror = "1.0.40"
 hyper = "0.14.26"
 validate = { version = "0.1.0", path = "../../packages/validate" }
 mailer = { version = "0.1.0", path = "../../packages/mailer" }
+payments = { version = "0.1.0", path = "../../packages/payments" }

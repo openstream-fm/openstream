@@ -88,9 +88,7 @@ export const ripple = (node: HTMLElement, _options: Partial<Options> = {}) => {
     ripple = start(e, options);
   };
   const handleStop = () => {
-    // stop(riplle)
-    // @ts-ignore
-    stop(ripple);
+    ripple && stop(ripple);
     ripple = null;
   }
   const handleKeyboardStart = (e: KeyboardEvent) => {

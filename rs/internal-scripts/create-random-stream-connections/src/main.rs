@@ -7,6 +7,36 @@ use db::{
 };
 use log::*;
 
+fn random_os() -> Option<String> {
+  use rand::seq::SliceRandom; // 0.7.2
+
+  let vs = vec![
+    Some("Linux"),
+    Some("Android"),
+    Some("iPhone"),
+    Some("iPad"),
+    Some("Windows"),
+    Some("Mac OSX"),
+    None,
+  ];
+  let option = vs.choose(&mut rand::thread_rng()).unwrap();
+  option.map(String::from)
+}
+
+fn random_browser() -> Option<String> {
+  use rand::seq::SliceRandom; // 0.7.2
+
+  let vs = vec![
+    Some("Chrome"),
+    Some("Safari"),
+    Some("Edge"),
+    Some("Firefox"),
+    None,
+  ];
+  let option = vs.choose(&mut rand::thread_rng()).unwrap();
+  option.map(String::from)
+}
+
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
   let c: usize = std::env::var("C")
@@ -106,9 +136,9 @@ async fn create_random_stream_connection(
       category: None,
       browser_type: None,
       vendor: None,
-      name: None,
+      name: random_browser(),
       version: None,
-      os: None,
+      os: random_os(),
       os_version: None,
     },
     version: db::http::Version::HTTP_10,

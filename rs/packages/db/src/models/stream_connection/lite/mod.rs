@@ -8,6 +8,8 @@ use serde_util::DateTime;
 use std::net::IpAddr;
 use ts_rs::TS;
 
+crate::register!(StreamConnectionLite);
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
@@ -15,16 +17,31 @@ use ts_rs::TS;
 pub struct StreamConnectionLite {
   #[serde(rename = "_id")]
   pub id: String,
-  #[serde(rename = "s")]
+
+  #[serde(rename = "st")]
   pub station_id: String,
-  #[serde(rename = "o")]
+
+  #[serde(rename = "op")]
   pub is_open: bool,
-  #[serde(rename = "i")]
+
+  #[serde(rename = "ip")]
   #[serde(with = "serde_util::ip")]
   pub ip: IpAddr,
-  #[serde(rename = "c")]
+
+  #[serde(rename = "cc")]
   pub country_code: Option<CountryCode>,
-  #[serde(rename = "d")]
+
+  #[serde(rename = "du")]
+  #[serde(with = "serde_util::as_f64::option")]
+  pub duration_ms: Option<u64>,
+
+  #[serde(rename = "br")]
+  pub browser: Option<String>,
+
+  #[serde(rename = "os")]
+  pub os: Option<String>,
+
+  #[serde(rename = "ca")]
   pub created_at: DateTime,
 }
 
@@ -36,6 +53,9 @@ impl StreamConnectionLite {
       is_open: full.is_open,
       ip: full.ip,
       country_code: full.country_code,
+      browser: full.request.user_agent.name.clone(),
+      os: full.request.user_agent.os.clone(),
+      duration_ms: full.duration_ms,
       created_at: full.created_at,
     }
   }
@@ -48,6 +68,9 @@ impl From<StreamConnection> for StreamConnectionLite {
       station_id: full.station_id,
       is_open: full.is_open,
       ip: full.ip,
+      browser: full.request.user_agent.name,
+      os: full.request.user_agent.os,
+      duration_ms: full.duration_ms,
       country_code: full.country_code,
       created_at: full.created_at,
     }

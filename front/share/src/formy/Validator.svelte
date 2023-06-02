@@ -1,21 +1,40 @@
 <script lang="ts">
-  import { slide } from "svelte/transition";
-
   type Value = $$Generic;
   export let value: Value;
-  export let fn: (v: Value) => string | null; 
+  export let fn: (v: Value) => MaybePromise<string | null>; 
 
+  import { sleep } from "$share/util";
+  import type { MaybePromise } from "./util";
+  import { slide } from "svelte/transition";
   import { FORMY_KEY } from "./formy";
   import type { FormyContext } from "./formy";
   import { getContext } from "svelte";
-  // import { add } from "$share/util";
 
   let current_message: string | null;
 
   $: on_value(value);
-  const on_value = (...args: any[]) => {
+  let _token = 0;
+  let on_value_executing = false;
+  const on_value = async (...args: any[]) => {
     if(current_message != null) {
-      current_message = fn(value);
+      const token = ++_token;
+      while(on_value_executing) {
+        await sleep(100);
+        if(token !== _token) return;
+      }
+
+      on_value_executing = true;
+      
+      try {
+        const message = await fn(value);
+        if(token === _token) {
+          current_message = message;
+        }
+        on_value_executing = false;
+      
+      } catch(e) {
+        on_value_executing = false;
+      }
     }
   }
 
@@ -25,9 +44,13 @@
     if(context != null) {
       const parent_element = node.parentElement;
       if(parent_element != null) {
-        const validate = () => {
-          current_message = fn(value);
-          return current_message;
+        const validate = async () => {
+          let token = ++_token;
+          let message = await fn(value);
+          if(token === _token) {
+            current_message = message;
+          }
+          return message;
         }
         return {
           destroy: context.add({ fn: validate, parent_element })
@@ -35,17 +58,6 @@
       }
     }
   }
-
-  // const mount = (node: Node) => {
-  //   const parent = node.parentElement;
-  //   if(parent) {
-  //     return {
-  //       destroy: add(parent, "focusin", event => {
-  //         current_message = null;
-  //       })
-  //     }
-  //   }
-  // }
 </script>
 
 <style>

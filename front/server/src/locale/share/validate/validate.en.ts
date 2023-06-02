@@ -28,6 +28,8 @@ const locale = {
     "protocol": "This field must start with http:// or https://",
   },
 
+  "email_registered": "This email is already registered",
+
   "twitter_url": "This field must be a valid Twitter URL, navigate to your Twitter page and copy the entire URL from there",
   "facebook_url": "This field must be a valid Facebook URL, navigate to your Facebook page and copy the entire URL from there",
   "instagram_url": "This field must be a valid Instagram URL, navigate to your Instagram page and copy the entire URL from there",

@@ -2,6 +2,7 @@ import stats_map from "../share/stats-map/stats-map.en"
 import validate from "../share/validate/validate.en";
 import countries from "../share/countries/countries.en";
 import type_of_content from "../share/type-of-content/type-of-content.en";
+import analytics from "../share/analytics/analytics.en";
 
 const locale = {
 
@@ -9,15 +10,16 @@ const locale = {
   "region": null as string | null,
 
   // @notranslate
-  "logo_text": "nuva",
+  "logo_text": "openstream",
 
   // @notranslate
-  "app_name": "Nuva Studio",
+  "app_name": "Openstream Studio",
 
   "station_type_of_content": type_of_content,
   "countries": countries,
   "validate": validate,
   "stats_map": stats_map,
+  "analytics": analytics,
 
   "copy_to_clipboard": "Copy to clipboard",
   "show_password": "Show password",
@@ -112,7 +114,7 @@ const locale = {
   "plan_selector": {
     "price": {
       "per_month": "per month",
-      "$_n_per_month": "$ @n / month",
+      "n_per_month": "@n / month",
     },
 
     "unlimited": "Unlimited",
@@ -213,7 +215,7 @@ const locale = {
       "title": "Start your trial",
       "plan": {
         "selected_plan": "Selected plan",
-        "$_n_price_per_month": "$ @n / month",
+        "n_per_month": "@n / month",
         "limits": {
           "station": "Station",
           "stations": "Stations",
@@ -308,7 +310,7 @@ const locale = {
       "title": "Create a broadcaster account",
       "plan": {
         "title": "Selected plan",
-        "$_n_per_month": "$ @n / month",
+        "n_per_month": "@n / month",
         "station": "Station",
         "stations": "Stations",
         "listeners": "Listeners",
@@ -351,6 +353,13 @@ const locale = {
         "playlist": "Playlist",
         "live": "Live",
       }
+    },
+
+    "account/analytics": {
+      "head": {
+        "title": "Analytics",
+      },
+      "title": "Analytics",
     },
 
     "stations": {

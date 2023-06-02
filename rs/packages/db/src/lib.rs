@@ -1,7 +1,7 @@
 use async_trait::async_trait;
+use error::CheckCollectionError;
 use futures_util::TryStreamExt;
 use log::*;
-use models::{transfer_checkpoint, user_account_relation};
 use mongodb::error::Result as MongoResult;
 use mongodb::options::{
   FindOptions, ReplaceOptions, SelectionCriteria, SessionOptions, TransactionOptions,
@@ -22,33 +22,10 @@ use ts_rs::TS;
 pub mod error;
 pub mod http;
 pub mod metadata;
-
-pub mod check;
 pub mod models;
+pub mod registry;
 
-pub use models::access_token;
-pub use models::account;
-pub use models::admin;
-pub use models::audio_chunk;
-pub use models::audio_file;
-pub use models::audio_upload_operation;
-pub use models::config;
-pub use models::db_writable_test;
-pub use models::deployment;
-pub use models::email_verification_code;
-pub use models::event;
-pub use models::media_session;
-pub use models::plan;
-pub use models::play_history_item;
-pub use models::relay_session;
-pub use models::sent_email;
-pub use models::station;
-pub use models::station_picture;
-pub use models::station_picture_variant;
-pub use models::stream_connection;
-pub use models::token_user_email_confirmation;
-pub use models::token_user_recovery;
-pub use models::user;
+pub use models::*;
 
 static CLIENT_AND_STORAGE_DB_NAME: OnceCell<(Client, Option<String>)> = OnceCell::new();
 
@@ -92,33 +69,34 @@ pub fn try_init(
 }
 
 pub async fn ensure_collections() -> MongoResult<()> {
-  config::Config::ensure_collection().await?;
-  db_writable_test::DbWritableTest::ensure_collection().await?;
-  user::User::ensure_collection().await?;
-  account::Account::ensure_collection().await?;
-  station::Station::ensure_collection().await?;
-  admin::Admin::ensure_collection().await?;
-  audio_chunk::AudioChunk::ensure_collection().await?;
-  audio_file::AudioFile::ensure_collection().await?;
-  audio_upload_operation::AudioUploadOperation::ensure_collection().await?;
-  access_token::AccessToken::ensure_collection().await?;
-  event::Event::ensure_collection().await?;
-  stream_connection::StreamConnection::ensure_collection().await?;
-  stream_connection::lite::StreamConnectionLite::ensure_collection().await?;
-  play_history_item::PlayHistoryItem::ensure_collection().await?;
-  media_session::MediaSession::ensure_collection().await?;
-  transfer_checkpoint::TransferCheckpoint::ensure_collection().await?;
-  user_account_relation::UserAccountRelation::ensure_collection().await?;
-  deployment::Deployment::ensure_collection().await?;
-  relay_session::RelaySession::ensure_indexes().await?;
-  user_account_relation::UserAccountRelation::ensure_collection().await?;
-  token_user_email_confirmation::TokenUserEmailConfirmation::ensure_collection().await?;
-  token_user_recovery::TokenUserRecovery::ensure_collection().await?;
-  plan::Plan::ensure_collection().await?;
-  sent_email::SentEmail::ensure_collection().await?;
-  email_verification_code::EmailVerificationCode::ensure_collection().await?;
-
+  let registry = registry::Registry::global();
+  registry.ensure_collections().await?;
   Ok(())
+  // config::Config::ensure_collection().await?;
+  // db_writable_test::DbWritableTest::ensure_collection().await?;
+  // user::User::ensure_collection().await?;
+  // account::Account::ensure_collection().await?;
+  // station::Station::ensure_collection().await?;
+  // admin::Admin::ensure_collection().await?;
+  // audio_chunk::AudioChunk::ensure_collection().await?;
+  // audio_file::AudioFile::ensure_collection().await?;
+  // audio_upload_operation::AudioUploadOperation::ensure_collection().await?;
+  // access_token::AccessToken::ensure_collection().await?;
+  // event::Event::ensure_collection().await?;
+  // stream_connection::StreamConnection::ensure_collection().await?;
+  // stream_connection::lite::StreamConnectionLite::ensure_collection().await?;
+  // play_history_item::PlayHistoryItem::ensure_collection().await?;
+  // media_session::MediaSession::ensure_collection().await?;
+  // transfer_checkpoint::TransferCheckpoint::ensure_collection().await?;
+  // user_account_relation::UserAccountRelation::ensure_collection().await?;
+  // deployment::Deployment::ensure_collection().await?;
+  // relay_session::RelaySession::ensure_indexes().await?;
+  // user_account_relation::UserAccountRelation::ensure_collection().await?;
+  // token_user_email_confirmation::TokenUserEmailConfirmation::ensure_collection().await?;
+  // token_user_recovery::TokenUserRecovery::ensure_collection().await?;
+  // plan::Plan::ensure_collection().await?;
+  // sent_email::SentEmail::ensure_collection().await?;
+  // email_verification_code::EmailVerificationCode::ensure_collection().await?;
 }
 
 pub fn client_ref() -> &'static Client {
@@ -390,6 +368,52 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
       items,
     })
   }
+
+  async fn check_collection_documents() -> Result<u64, CheckCollectionError> {
+    use CheckCollectionError::*;
+
+    let cl_name = Self::CL_NAME;
+
+    let cl = Self::cl_as::<Document>();
+
+    info!("checking collection {}", cl_name);
+
+    let count = cl.count_documents(None, None).await.map_err(Count)?;
+
+    info!(
+      "checking collection {}, counted {} documents",
+      cl_name, count
+    );
+
+    let mut cursor = cl.find(None, None).await.map_err(Find)?;
+
+    let mut i: u64 = 0;
+    let mut bson_errors = Vec::<(u64, Document, mongodb::bson::de::Error)>::new();
+
+    while let Some(document) = cursor.try_next().await.map_err(Cursor)? {
+      i += 1;
+      if i % 1000 == 0 {
+        info!("checking collection {cl_name}, testing document {i} of {count}");
+      }
+      match mongodb::bson::from_document::<Self>(document.clone()) {
+        Ok(_) => {}
+        Err(e) => {
+          warn!("error deserializing document {i}");
+          warn!("document: {:?}", document);
+          warn!("error: {} => {:?}", e, e);
+          bson_errors.push((i, document, e));
+        }
+      }
+    }
+
+    let error_count = bson_errors.len();
+    info!("checking collection {cl_name}, tested {i} documents, found {error_count} errors");
+
+    match bson_errors.len() {
+      0 => Ok(i),
+      _ => Err(Deserialize(bson_errors)),
+    }
+  }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -560,14 +584,6 @@ pub trait Singleton: Model + Default + Clone {
     Ok(())
   }
 }
-
-// #[macro_export]
-// macro_rules! fetch_and_update {
-//   ($Model:ident, $id:expr, $err:expr, $session:expr, $apply:expr) => {
-//     let id = $id;
-//     $Model::get_with_session($id)
-//   };
-// }
 
 #[macro_export]
 macro_rules! fetch_and_patch {

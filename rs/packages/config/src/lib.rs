@@ -12,6 +12,7 @@ pub struct Config {
   pub api: Option<Api>,
   pub storage: Option<Storage>,
   pub smtp: Smtp,
+  pub payments: Payments,
 }
 
 impl Config {
@@ -70,6 +71,13 @@ pub struct Api {
 #[serde(deny_unknown_fields)]
 pub struct Storage {
   pub addrs: Vec<SocketAddr>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct Payments {
+  pub base_url: String,
+  pub access_token: String,
 }
 
 #[derive(Debug, thiserror::Error)]

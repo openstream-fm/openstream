@@ -5,10 +5,10 @@ import validate from "../share/validate/validate.en";
 const locale = {
 
   // @notranslate
-  "logo_text": "nuva",
+  "logo_text": "openstream",
 
   // @notranslate
-  "app_name": "Nuva Admin",
+  "app_name": "Openstream Admin",
 
   "show_password": "Show password",
   "hide_password": "Hide password",

@@ -4,7 +4,7 @@ import type { Metadata } from "../../../db/Metadata";
 import type { StationFrequency } from "../../../StationFrequency";
 import type { StationTypeOfContent } from "../../../db/StationTypeOfContent";
 
-export interface Payload {
+export type Payload = {
   account_id: string;
   picture_id: string;
   name: string;
@@ -26,4 +26,4 @@ export interface Payload {
   frequencies: Array<StationFrequency> | null;
   user_metadata?: Metadata;
   system_metadata?: Metadata;
-}
+};

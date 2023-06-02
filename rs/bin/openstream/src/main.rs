@@ -8,6 +8,7 @@ use config::Config;
 use db::access_token::{AccessToken, GeneratedBy};
 use db::Model;
 use db::admin::Admin;
+use db::registry::Registry;
 use drop_tracer::DropTracer;
 use futures::stream::FuturesUnordered;
 use futures::{FutureExt, TryStreamExt};
@@ -34,9 +35,6 @@ pub mod error;
 static ALLOCATOR: Jemalloc = Jemalloc;
 
 static VERSION: &str = env!("CARGO_PKG_VERSION");
-
-// #[global_allocator]
-// static ALLOCATOR: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 #[derive(Debug, Parser)]
 #[command(author, version, about = "openstream radio streaming server")]
@@ -239,7 +237,7 @@ async fn shared_init(config: String) -> Result<Config, anyhow::Error> {
 
       cl.insert_one_with_session(doc! {}, None, &mut session)
         .await
-        .context("mongodb error when creating test document into test collection")?;
+        .context("mongodb error when inserting test document into test collection")?;
 
       cl.delete_many_with_session(doc! {}, None, &mut session)
         .await
@@ -276,7 +274,10 @@ async fn check_db_async(opts: CheckDb) -> Result<(), anyhow::Error> {
 
   shared_init(opts.config).await?;
 
-  let map = db::check::check_all().await;
+  let registry = Registry::global();
+
+  let map = registry.check_all().await;
+
   let mut has_errors = false;
 
   info!("=================");
@@ -284,11 +285,11 @@ async fn check_db_async(opts: CheckDb) -> Result<(), anyhow::Error> {
   for (name, result) in map.iter() {
     match result {
       Ok(n) => {
-        info!("collection {name} is ok, checked {n} documents");
+        info!("collection {} is ok, checked {} documents", name.yellow(), n.yellow());
       },
       Err(e) => {
         has_errors = true;
-        warn!("collection {name} failed with error: {e}");
+        warn!("collection {} failed with error: {}", name.red(), e.red());
       }
     }
   };
@@ -371,6 +372,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     ref api,
     ref storage,
     ref smtp,
+    ref payments,
   } = config.as_ref();
 
   let mailer = mailer::send::Mailer {
@@ -430,7 +432,10 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   }
 
   if let Some(api_config) = api {
+    
+    let payments_client = payments::client::PaymentsClient::new(payments.base_url.clone(), payments.access_token.clone());
     let stream_connections_index = db::stream_connection::index::MemIndex::new().await;
+
     let api = ApiServer::new(
       deployment.id.clone(),
       api_config.addrs.clone(),
@@ -438,6 +443,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
       drop_tracer.clone(),
       media_sessions.clone(),
       stream_connections_index,
+      payments_client,
       mailer,
     );
     let fut = api.start()?;
@@ -712,8 +718,9 @@ fn create_admin(
         let v = v.trim().to_string();
         if v.is_empty() {
           bail!("First name is required");
+        } else {
+          v
         }
-        v
       } else {
         loop {
           let v: String = dialoguer::Input::new()
@@ -736,8 +743,9 @@ fn create_admin(
         let v = v.trim().to_string();
         if v.is_empty() {
           bail!("Last name is required");
+        } else {
+          v
         }
-        v
       } else {
         loop {
           let v: String = dialoguer::Input::new()
@@ -760,8 +768,9 @@ fn create_admin(
         let v = v.trim().to_string(); 
         if !validate::email::is_valid_email(&v) {
           bail!("Email address is invalid");
-        } 
-        v
+        } else {
+          v
+        }
       } else {
         loop {
           let v: String = dialoguer::Input::new()
@@ -786,8 +795,9 @@ fn create_admin(
       if let Some(v) = password {
         if v.len() < 8 {
           bail!("Password must have 8 characters or more");
+        } else {
+          v
         }
-        v
       } else {
         loop {
           let v: String = dialoguer::Input::new()
@@ -811,7 +821,7 @@ fn create_admin(
       println!("New admin created: {} {} <{}>", admin.first_name, admin.last_name, admin.email);
     } else {
       let confirm = dialoguer::Confirm::new()
-        .with_prompt("This will generate a global admininistrator in all openstream instances that share this mongodb deployment?")
+        .with_prompt("This will generate a global admininistrator in all openstream instances that share this mongodb deployment, continue?")
         .default(true)
         .show_default(true)
         .wait_for_newline(true)
@@ -843,7 +853,7 @@ fn create_config(CreateConfig { output }: CreateConfig) -> Result<(), anyhow::Er
     );
   }
 
-  let contents = if output.ends_with(".json") {
+  let contents = if output.ends_with(".json") || output.ends_with(".jsonc") {
     include_str!("../../../../openstream.sample.jsonc")
   } else {
     include_str!("../../../../openstream.sample.toml")

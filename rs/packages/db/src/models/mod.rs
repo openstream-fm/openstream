@@ -26,3 +26,5 @@ pub mod user_account_relation;
 pub mod sent_email;
 
 pub mod email_verification_code;
+
+pub mod payment_method;

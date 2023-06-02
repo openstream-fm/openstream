@@ -2,6 +2,7 @@ import stats_map from "../share/stats-map/stats-map.es";
 import validate from "../share/validate/validate.es";
 import countries from "../share/countries/countries.es";
 import type_of_content from "../share/type-of-content/type-of-content.es";
+import analytics from "../share/analytics/analytics.es";
 
 const locale: import("./studio.locale").StudioLocale = {
 
@@ -9,15 +10,16 @@ const locale: import("./studio.locale").StudioLocale = {
   "region": "AR",
 
   // @notranslate
-  "logo_text": "nuva",
+  "logo_text": "openstream",
 
   // @notranslate
-  "app_name": "Nuva Studio",
+  "app_name": "Openstream Studio",
 
   "station_type_of_content": type_of_content,
   "countries": countries,
   "validate": validate,
   "stats_map": stats_map,
+  "analytics": analytics,
 
   "language": {
     "auto": "Auto detectar",
@@ -113,7 +115,7 @@ const locale: import("./studio.locale").StudioLocale = {
   "plan_selector": {
     "price": {
       "per_month": "por mes",
-      "$_n_per_month": "$ @n / mes",
+      "n_per_month": "@n / mes",
     },
 
     "unlimited": "Ilimitados",
@@ -143,7 +145,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "transfer": "Con @tb TB de transferencia mensual tendrás capacidad de transmitir alrededor de @hours horas de audio",
       "storage": "@gb GB de almacenamiento para música o episodios antiguos",
       "staff": "Puedes agregar usuarios para todo tu equipo sin límite",
-      "auto_dj": "Emite desde una playlist cuando estés sin conexión",
+      "auto_dj": "Emití desde una playlist cuando estés sin conexión",
       "stats": "Estadísticas históricas y en vivo, sabé quien está escuchando tus estaciones",
       "android_app": "Una aplicación para Android con tu marca y tus estaciones, disponible en todo el mundo a través de Google Play",
     }
@@ -213,7 +215,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "title": "Empezá tu prueba gratis",
       "plan": {
         "selected_plan": "Plan seleccionado",
-        "$_n_price_per_month": "$ @n / mes",
+        "n_per_month": "@n / mes",
         "limits": {
           "station": "Estación",
           "stations": "Estaciones",
@@ -309,7 +311,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "title": "Creá una cuenta de emisor",
       "plan": {
         "title": "Plan seleccionado",
-        "$_n_per_month": "$ @n / month",
+        "n_per_month": "@n / mes",
         "station": "Estación",
         "stations": "Estaciones",
         "listeners": "Oyentes",
@@ -347,11 +349,18 @@ const locale: import("./studio.locale").StudioLocale = {
       },
 
       "station_item": {
-        "on_air": "ON",
-        "off_air": "OFF",
+        "on_air": "ON AIR",
+        "off_air": "OFF AIR",
         "playlist": "Playlist",
         "live": "En vivo",
       }
+    },
+
+    "account/analytics": {
+      "head": {
+        "title": "Analítica",
+      },
+      "title": "Analítica",
     },
 
     "stations": {
@@ -377,8 +386,8 @@ const locale: import("./studio.locale").StudioLocale = {
     },
 
     "station/dashboard": {
-      "on_air": "ON",
-      "off_air": "OFF",
+      "on_air": "ON AIR",
+      "off_air": "OFF AIR",
       "playlist": "Playlist",
       "live": "En vivo",
       "preview": "Vista previa",

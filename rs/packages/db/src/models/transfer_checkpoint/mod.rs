@@ -8,6 +8,8 @@ use ts_rs::TS;
 use crate::account::{Account, Limit, Limits};
 use crate::{run_transaction, Model};
 
+crate::register!(TransferCheckpoint);
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[macros::keys]

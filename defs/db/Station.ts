@@ -6,7 +6,7 @@ import type { OwnerDeploymentInfo } from "./OwnerDeploymentInfo";
 import type { StationFrequency } from "../StationFrequency";
 import type { StationTypeOfContent } from "./StationTypeOfContent";
 
-export interface Station {
+export type Station = {
   _id: string;
   account_id: string;
   picture_id: string;
@@ -36,4 +36,4 @@ export interface Station {
   created_at: DateTime;
   updated_at: DateTime;
   deleted_at: DateTime | null;
-}
+};

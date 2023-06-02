@@ -7,6 +7,8 @@ const locale: import("./stats-map.locale").StatsMapLocale = {
   "listeners": "oyentes",
   "country": "país",
   "countries": "países",
+  "download_as_svg": "Descargar como SVG",
+  "download_as_png": "Descargar como PNG",
 }
 
 export default locale;

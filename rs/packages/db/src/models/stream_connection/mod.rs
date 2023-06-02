@@ -7,9 +7,12 @@ use serde_util::DateTime;
 use std::net::IpAddr;
 use ts_rs::TS;
 
+pub mod analytics;
 pub mod index;
 pub mod lite;
 pub mod stats;
+
+crate::register!(StreamConnection);
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]

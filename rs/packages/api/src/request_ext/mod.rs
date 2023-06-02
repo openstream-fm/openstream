@@ -15,7 +15,6 @@ use db::{
 use db::{current_filter_doc, PublicScope};
 use prex::Request;
 use serde::{Deserialize, Serialize};
-use serde_querystring::de::ParseMode;
 
 pub static X_ACCESS_TOKEN: &str = "x-access-token";
 
@@ -322,10 +321,7 @@ async fn internal_get_access_token(
           token: String,
         }
 
-        let id_media_key = match serde_querystring::from_str::<TokenQuery>(
-          req.uri().query().unwrap_or(""),
-          ParseMode::UrlEncoded,
-        ) {
+        let id_media_key = match req.qs::<TokenQuery>() {
           Ok(qs) => qs.token,
           Err(_) => {
             return Err(GetAccessTokenScopeError::Missing);
@@ -356,6 +352,7 @@ pub async fn internal_get_access_token_scope(
   Ok(scope)
 }
 
+// TODO: remove delegate to user query?
 pub async fn get_scope_from_token(
   req: &Request,
   token: &AccessToken,
@@ -364,12 +361,11 @@ pub async fn get_scope_from_token(
     ($base:expr) => {
       match req.uri().query() {
         None => return Ok($base),
-        Some(qs) => {
-          let DelegateQuery { as_user } =
-            match serde_querystring::from_str(qs, serde_querystring::de::ParseMode::UrlEncoded) {
-              Err(_) => return Ok($base),
-              Ok(qs) => qs,
-            };
+        Some(_) => {
+          let DelegateQuery { as_user } = match req.qs() {
+            Err(_) => return Ok($base),
+            Ok(qs) => qs,
+          };
 
           let user_id = match as_user {
             None => return Ok($base),

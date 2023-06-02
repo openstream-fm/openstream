@@ -68,7 +68,7 @@ export const Unauthorized = Err(StatusCode.UNAUTHORIZED, "FRONT_UNAUTHORIZED");
 export const json_catch_handler = (logger: Logger) => {
   return (e: Error, req: Request, res: Response, _next: NextFunction) => {
     const error = ApiError.from(e);
-    logger.warn(`API Error: ${req.method} ${req.path} => ${error.status} ${error.code} ${e?.message}`)
+    logger.warn(`API Error: ${req.originalUrl} ${req.path} => ${error.status} ${error.code} ${e?.message}`)
     if(!res.headersSent) {
       res.status(error.status).json(error);
     }

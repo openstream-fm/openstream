@@ -2,7 +2,7 @@
 import type { DateTime } from "../DateTime";
 import type { PlanLimits } from "./PlanLimits";
 
-export interface Plan {
+export type Plan = {
   _id: string;
   identifier: string;
   slug: string;
@@ -15,4 +15,4 @@ export interface Plan {
   created_at: DateTime;
   updated_at: DateTime;
   deleted_at: DateTime | null;
-}
+};

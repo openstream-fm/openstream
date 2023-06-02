@@ -2,7 +2,7 @@ import type { Config, HostConfig } from "../config";
 import { Router, json as json_body_parser } from "express";
 import { ApiError, json_catch_handler } from "../error";
 import type { Logger } from "../logger";
-import { json } from "../handler";
+import { handler, json } from "../handler";
 import { Client } from "../client";
 import { session } from "../session";
 import { ip } from "../ip";
@@ -13,7 +13,7 @@ import { user_media_key } from "../media_key";
 import { ua } from "../ua";
 import { shared_api } from "./shared-api";
 import { host } from "../host";
-import { default_studio_locale, studio_locales } from "../locale/studio/studio.locale";
+import { default_studio_locale, locales_map, studio_locales } from "../locale/studio/studio.locale";
 import type { StudioLocale } from "../locale/studio/studio.locale";
 import acceptLanguageParser from "accept-language-parser";
 
@@ -65,7 +65,7 @@ export const studio_api = ({
     return public_config(hosts);
   }))
 
-  api.get("/locale", json(async (req, res): Promise<LocalePayload> => {
+  api.get("/locale", handler(async (req, res) => {
     let langs: ReturnType<typeof acceptLanguageParser.parse> | null = null;
     if(req.cookie_session.user) {
       try {
@@ -112,16 +112,32 @@ export const studio_api = ({
     const dir = locale.lang === "ar" ? "rtl" : "ltr";
     const lang = locale.region ? `${locale.lang}-${locale.region}` : locale.lang;
     
-    res.vary("accept-language");
     res.header("x-locale-lang", lang);
     res.header("x-locale-dir", dir);
+    res.vary("accept-language");
+    res.redirect(302, `/api/locale/${lang}.json`);
+  }))
 
-    return { locale };
+  api.get("/locale/:code.json", json(async (req, res): Promise<LocalePayload> => {
+    const code = req.params.code;
+    const locale = locales_map.get(code);
+    if(locale == null) {
+      throw new ApiError(StatusCodes.NOT_FOUND, "FRONT_RESOURCE_NOT_FOUND", `Locale with code ${code} not found`);
+    }
+    const dir = locale.lang === "ar" ? "rtl" : "ltr";
+    const lang = locale.region ? `${locale.lang}-${locale.region}` : locale.lang;
+    res.header("x-locale-lang", lang);
+    res.header("x-locale-dir", dir);
+    return { locale }
+  }))
+
+  api.get("/auth/user/email-exists/:email", json(async (req, res) => {
+    return await client.auth.user.email_exists(ip(req), ua(req), null, req.params.email);
   }))
 
   api.post("/auth/user/login", json(async (req, res) => {
     const sess = req.cookie_session;
-    const r = await client.auth.user.login(ip(req), ua(req), { ...req.body, device_id: sess.device_id });
+    const r = await client.auth.user.login(ip(req), ua(req), null, { ...req.body, device_id: sess.device_id });
     const data = req.cookie_session;
     res.set_session({
       ...data,
@@ -149,15 +165,15 @@ export const studio_api = ({
   }))
 
   api.post("/auth/user/recover", json(async (req, res) => {
-    return await client.auth.user.recover(ip(req), ua(req), req.body);
+    return await client.auth.user.recover(ip(req), ua(req), null, req.body);
   }))
 
   api.get("/auth/user/recovery-token/:token", json(async req => {
-    return await client.auth.user.recovery_token.get(ip(req), ua(req), req.params.token);
+    return await client.auth.user.recovery_token.get(ip(req), ua(req), null, req.params.token);
   }))
 
   api.post("/auth/user/recovery-token/:token/set-password", json(async req => {
-    return await client.auth.user.recovery_token.set_password(ip(req), ua(req), req.params.token, req.body);
+    return await client.auth.user.recovery_token.set_password(ip(req), ua(req), null, req.params.token, req.body);
   }))
 
   api.route("/plans")

@@ -3,6 +3,7 @@ import stats_map from "../share/stats-map/stats-map.ar";
 import validate from "../share/validate/validate.ar";
 import countries from "../share/countries/countries.ar";
 import type_of_content from "../share/type-of-content/type-of-content.ar";
+import analytics from "../share/analytics/analytics.ar";
 
 const locale: import("./studio.locale").StudioLocale = {
 
@@ -10,15 +11,16 @@ const locale: import("./studio.locale").StudioLocale = {
   "region": null,
 
   // @notranslate
-  "logo_text": "nuva",
+  "logo_text": "openstream",
 
   // @notranslate
-  "app_name": "Nuva Studio",
+  "app_name": "Openstream Studio",
   
   "station_type_of_content": type_of_content,
   "countries": countries,
   "validate": validate,
   "stats_map": stats_map,
+  "analytics": analytics,
 
   "language": {
     "auto": "الكشف التلقائي",
@@ -114,7 +116,7 @@ const locale: import("./studio.locale").StudioLocale = {
   "plan_selector": {
     "price": {
       "per_month": "في الشهر",
-      "$_n_per_month": "$ @n / شهر",
+      "n_per_month": "@n / شهر",
     },
 
     "unlimited": "غير محدود",
@@ -214,7 +216,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "title": "ابدأ تجربتك المجانية",
       "plan": {
         "selected_plan": "الخطة المحددة",
-        "$_n_price_per_month": "$ @n / شهر",
+        "n_per_month": "@n / شهر",
         "limits": {
           "station": "محطة",
           "stations": "محطات",
@@ -308,7 +310,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "title": "إنشاء حساب مستخدم",
       "plan": {
         "title": "الخطة المحددة",
-        "$_n_per_month": "$ @n / شهر",
+        "n_per_month": "@n / شهر",
         "station": "محطة",
         "stations": "محطات",
         "listeners": "المستمعين",
@@ -346,11 +348,18 @@ const locale: import("./studio.locale").StudioLocale = {
       },
 
       "station_item": {
-        "on_air": "تشغيل",
-        "off_air": "إيقاف",
+        "on_air": "على الهواء",
+        "off_air": "خارج الهواء",
         "playlist": "قائمة التشغيل",
         "live": "مباشر",
       }
+    },
+
+    "account/analytics": {
+      "head": {
+        "title": "تحليلات",
+      },
+      "title": "تحليلات",
     },
 
     "stations": {
@@ -376,8 +385,8 @@ const locale: import("./studio.locale").StudioLocale = {
     },
 
     "station/dashboard": {
-      "on_air": "تشغيل",
-      "off_air": "إيقاف",
+      "on_air": "على الهواء",
+      "off_air": "خارج الهواء",
       "playlist": "قائمة التشغيل",
       "live": "مباشر",
       "preview": "معاينة",

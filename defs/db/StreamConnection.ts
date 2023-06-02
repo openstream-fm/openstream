@@ -3,7 +3,7 @@ import type { CountryCode } from "../CountryCode";
 import type { DateTime } from "../DateTime";
 import type { Request } from "./http/Request";
 
-export interface StreamConnection {
+export type StreamConnection = {
   _id: string;
   station_id: string;
   deployment_id: string;
@@ -15,4 +15,4 @@ export interface StreamConnection {
   ip: string;
   request: Request;
   last_transfer_at: DateTime;
-}
+};

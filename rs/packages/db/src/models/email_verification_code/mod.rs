@@ -5,6 +5,8 @@ use ts_rs::TS;
 
 use crate::Model;
 
+crate::register!(EmailVerificationCode);
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[macros::keys]

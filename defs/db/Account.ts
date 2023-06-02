@@ -3,7 +3,7 @@ import type { AccountLimits } from "../AccountLimits";
 import type { DateTime } from "../DateTime";
 import type { Metadata } from "./Metadata";
 
-export interface Account {
+export type Account = {
   _id: string;
   plan_id: string;
   name: string;
@@ -12,4 +12,4 @@ export interface Account {
   updated_at: DateTime;
   user_metadata: Metadata;
   system_metadata: Metadata;
-}
+};

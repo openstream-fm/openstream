@@ -50,7 +50,7 @@ pub mod get {
     #[error("token: {0}")]
     Token(#[from] GetAccessTokenScopeError),
     #[error("querystring: {0}")]
-    QueryString(#[from] serde_querystring::de::Error),
+    QueryString(#[from] serde_qs::Error),
   }
 
   impl From<ParseError> for ApiError {
@@ -72,7 +72,7 @@ pub mod get {
     async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
       let query = match req.uri().query() {
         None => Default::default(),
-        Some(qs) => serde_querystring::from_str(qs, serde_querystring::de::ParseMode::UrlEncoded)?,
+        Some(_) => req.qs()?,
       };
 
       let optional_access_token_scope = request_ext::get_optional_access_token_scope(&req).await?;

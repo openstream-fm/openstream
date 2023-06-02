@@ -1,0 +1,1 @@
+export type AnalyticsLocale = typeof import("./analytics.en").default;

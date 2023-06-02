@@ -2,6 +2,6 @@
 
 export type AccessTokenScope =
   | { scope: "global" }
-  | { scope: "admin"; admin_id: string }
-  | { scope: "admin_as_user"; admin_id: string; user_id: string }
-  | { scope: "user"; user_id: string };
+  | ({ scope: "admin" } & { admin_id: string })
+  | ({ scope: "admin_as_user" } & { admin_id: string; user_id: string })
+  | ({ scope: "user" } & { user_id: string });

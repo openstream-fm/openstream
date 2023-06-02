@@ -2,11 +2,14 @@
 import type { CountryCode } from "../CountryCode";
 import type { DateTime } from "../DateTime";
 
-export interface StreamConnectionLite {
+export type StreamConnectionLite = {
   _id: string;
-  s: string;
-  o: boolean;
-  i: string;
-  c: CountryCode | null;
-  d: DateTime;
-}
+  st: string;
+  op: boolean;
+  ip: string;
+  cc: CountryCode | null;
+  du: number | null;
+  br: string | null;
+  os: string | null;
+  ca: DateTime;
+};

@@ -1,15 +1,15 @@
 <script lang="ts">
+	export let error: App.Error | null = $page.error;
 	import { page } from '$app/stores';
-	export let error: App.Error = $page.error!;
 	import Page from '$lib/components/Page.svelte';
 	import { locale } from '$lib/locale';
 	import { ripple } from '$share/ripple';
 
 	let online = true;
 
-	$: status = error.status || 500;
-	$: message = error?.message || $locale.pages.error.default_message;
-	$: code = error?.code || "CLIENT_PAGE_MISSING_CODE";
+	$: status = Number(error?.status) || 500;
+	$: message = String(error?.message || "") || $locale.pages.error.default_message;
+	$: code = String(error?.code || "") || "CLIENT_PAGE_MISSING_CODE";
 	$: title = online ? `${status} ${message}` : $locale.pages.error.offline.head.title;
 </script>
 
@@ -109,7 +109,7 @@
 				</div>
 
 				<div class="btns">
-					{#if error.status !== 404}
+					{#if status !== 404}
 						<button on:click={() => location.reload()} use:ripple class="ripple-container btn retry">
 							{$locale.pages.error.retry}
 						</button>

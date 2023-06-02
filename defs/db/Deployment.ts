@@ -2,7 +2,7 @@
 import type { DateTime } from "../DateTime";
 import type { DeploymentState } from "./DeploymentState";
 
-export interface Deployment {
+export type Deployment = {
   _id: string;
   local_ip: string;
   pid: number;
@@ -13,4 +13,4 @@ export interface Deployment {
   created_at: DateTime;
   updated_at: DateTime;
   dropped_at: DateTime | null;
-}
+};
