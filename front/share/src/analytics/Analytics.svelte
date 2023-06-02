@@ -26,6 +26,13 @@
 
   const chartHeight = 350;
 
+  const to_fixed = (n: number, min_digits: number, max_digits = min_digits) => {
+    return new Intl.NumberFormat(lang, {
+      maximumFractionDigits: min_digits,
+      minimumFractionDigits: max_digits,
+    }).format(n)
+  }
+
   const n_time = (n: number, unit: "day" | "hour" | "minute" | "second") => {
     if(n === 1) {
       return locale.time[`1_${unit}`];
@@ -110,6 +117,7 @@
     ],
 
     markers: {
+      showNullDataPoints: true,
       size: 4,
       hover: {
         size: 8,
@@ -185,7 +193,7 @@
           }
         },
         labels: {
-          formatter: v => (v % 1 === 0 || v == null) ? String(v ?? 0) : v.toFixed(2),
+          formatter: v => (v % 1 === 0 || v == null) ? String(v ?? 0) : to_fixed(v, 2),
         } 
       }, {
         opposite: true,
@@ -365,7 +373,7 @@
   const map_country_avg_minutes = (code: CountryCode) => {
     const item = data.by_country.find(item => item.key === code);
     if(item) {
-      return (item.total_duration_ms / item.sessions / MIN).toFixed(1).replace(".", ",");
+      return to_fixed(item.total_duration_ms / item.sessions / MIN, 1);
     } else {
       return "-"
     }
@@ -374,7 +382,7 @@
   const map_country_total_hours = (code: CountryCode) => {
     const item = data.by_country.find(item => item.key === code);
     if(item) {
-      return (item.total_duration_ms / HOUR).toFixed(1).replace(".", ",");
+      return to_fixed(item.total_duration_ms / HOUR, 1)
     } else {
       return "0"
     }
@@ -386,7 +394,7 @@
     // const mins = floor(ms / MIN);
     // const secs = min(59, floor((ms % MIN) / SEC));
     // return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
-    return (ms / MIN).toFixed(1).replace(".", ",");
+    return to_fixed(ms / MIN, 1)
   }
 
   const format_hours = (ms: number) => {
@@ -394,7 +402,7 @@
     //const mins = min(59, round((ms % HOUR) / MIN));
     //const secs = min(59, round((ms % MIN) / SEC));
     //return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
-    return (ms / HOUR).toFixed(1).replace(".", ",");;
+    return to_fixed(ms / HOUR, 1)
   }
 
   const get_common_grid_options = () => {

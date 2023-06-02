@@ -200,7 +200,7 @@
     "yesterday",
     "previous-week",
     "previous-month",
-    // TODO: add custom time-frames when Date picker is ready
+    // TODO: add custom time frames when Date picker is ready
     // "custom",
   ] as const;
 
