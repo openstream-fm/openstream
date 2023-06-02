@@ -93,6 +93,15 @@
   }
 
   const bg_color = color.alpha(0.1).toString();
+
+  const format_price = (price: number): string => {
+    return new Intl.NumberFormat($lang, {
+      style: "currency",
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0,
+      currency: "USD",
+    }).format(price);
+  }
 </script>
 
 <style>
@@ -242,7 +251,7 @@
         {data.plan.display_name}
       </div>
       <div class="plan-price">
-        {$locale.pages["accounts/create_account/plan"].plan.$_n_per_month.replace("@n", String(data.plan.price))}
+        {$locale.pages["accounts/create_account/plan"].plan.n_per_month.replace("@n", format_price(data.plan.price))}
       </div>
       <div class="plan-features">
         <div class="plan-feature">

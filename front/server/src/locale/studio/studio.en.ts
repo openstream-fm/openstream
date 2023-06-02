@@ -114,7 +114,7 @@ const locale = {
   "plan_selector": {
     "price": {
       "per_month": "per month",
-      "$_n_per_month": "$ @n / month",
+      "n_per_month": "@n / month",
     },
 
     "unlimited": "Unlimited",
@@ -215,7 +215,7 @@ const locale = {
       "title": "Start your trial",
       "plan": {
         "selected_plan": "Selected plan",
-        "$_n_price_per_month": "$ @n / month",
+        "n_per_month": "@n / month",
         "limits": {
           "station": "Station",
           "stations": "Stations",
@@ -310,7 +310,7 @@ const locale = {
       "title": "Create a broadcaster account",
       "plan": {
         "title": "Selected plan",
-        "$_n_per_month": "$ @n / month",
+        "n_per_month": "@n / month",
         "station": "Station",
         "stations": "Stations",
         "listeners": "Listeners",

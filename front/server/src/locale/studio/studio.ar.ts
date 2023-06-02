@@ -116,7 +116,7 @@ const locale: import("./studio.locale").StudioLocale = {
   "plan_selector": {
     "price": {
       "per_month": "في الشهر",
-      "$_n_per_month": "$ @n / شهر",
+      "n_per_month": "@n / شهر",
     },
 
     "unlimited": "غير محدود",
@@ -216,7 +216,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "title": "ابدأ تجربتك المجانية",
       "plan": {
         "selected_plan": "الخطة المحددة",
-        "$_n_price_per_month": "$ @n / شهر",
+        "n_per_month": "@n / شهر",
         "limits": {
           "station": "محطة",
           "stations": "محطات",
@@ -310,7 +310,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "title": "إنشاء حساب مستخدم",
       "plan": {
         "title": "الخطة المحددة",
-        "$_n_per_month": "$ @n / شهر",
+        "n_per_month": "@n / شهر",
         "station": "محطة",
         "stations": "محطات",
         "listeners": "المستمعين",

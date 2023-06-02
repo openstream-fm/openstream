@@ -116,7 +116,7 @@ const locale: import("./studio.locale").StudioLocale = {
   "plan_selector": {
     "price": {
       "per_month": "每月",
-      "$_n_per_month": "每月 $ @n",
+      "n_per_month": "每月 @n",
     },
 
     "unlimited": "无限",
@@ -216,7 +216,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "title": "开始免费试用",
       "plan": {
         "selected_plan": "已选套餐",
-        "$_n_price_per_month": "每月 @n 美元",
+        "n_per_month": "每月 @n",
         "limits": {
           "station": "电台",
           "stations": "电台",
@@ -310,7 +310,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "title": "创建发射帐户",
       "plan": {
         "title": "已选套餐",
-        "$_n_per_month": "每月 @n 美元",
+        "n_per_month": "每月 @n",
         "station": "电台",
         "stations": "电台",
         "listeners": "听众",

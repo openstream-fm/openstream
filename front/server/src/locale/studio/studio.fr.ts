@@ -115,7 +115,7 @@ const locale: import("./studio.locale").StudioLocale = {
   "plan_selector": {
     "price": {
       "per_month": "par mois",
-      "$_n_per_month": "$ @n / mois",
+      "n_per_month": "@n / mois",
     },
 
     "unlimited": "Illimité",
@@ -215,7 +215,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "title": "Commencez votre essai gratuit",
       "plan": {
         "selected_plan": "Plan sélectionné",
-        "$_n_price_per_month": "$ @n / mois",
+        "n_per_month": "@n / mois",
         "limits": {
           "station": "Station",
           "stations": "Stations",
@@ -309,7 +309,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "title": "Créer un compte émetteur",
       "plan": {
         "title": "Plan sélectionné",
-        "$_n_per_month": "$ @n / mois",
+        "n_per_month": "@n / mois",
         "station": "Station",
         "stations": "Stations",
         "listeners": "Auditeurs",

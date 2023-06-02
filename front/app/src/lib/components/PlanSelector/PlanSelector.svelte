@@ -13,7 +13,7 @@
 	import FeatureI from "./PlanFeatureTip.svelte";
 	import Color from "color";
 	import PlanFeatureTip from "./PlanFeatureTip.svelte";
-	import { locale } from "$lib/locale";
+	import { locale, lang } from "$lib/locale";
 
   const aprox_listening_hours = (bytes: number): number => {
     return Math.round(bytes / 16000 / 60 / 60 / 1_000) * 1_000;
@@ -33,6 +33,15 @@
     } catch(e) {
       return "rgb(83, 151, 211)"
     }
+  }
+
+  const format_price = (price: number): string => {
+    return new Intl.NumberFormat($lang, {
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0,
+      currency: "USD",
+      style: "currency",
+    }).format(price);
   }
 </script>
 
@@ -240,7 +249,7 @@
           <div class="plan-name">{plan.display_name}</div>
           <div class="plan-price">
             <div class="plan-price-n">
-              $ {plan.price}
+              {format_price(plan.price)}
             </div>
             <div class="plan-price-per">
               {$locale.plan_selector.price.per_month}
@@ -416,7 +425,7 @@
               {plan.display_name}
             </div>
             <div class="plan-bottom-price">
-              {$locale.plan_selector.price.$_n_per_month.replace("@n", String(plan.price))}
+              {$locale.plan_selector.price.n_per_month.replace("@n", format_price(plan.price))}
             </div>
             <div class="plan-bottom-select">
               <a href={target_url(plan)} class="na plan-bottom-btn ripple-container" use:ripple>
