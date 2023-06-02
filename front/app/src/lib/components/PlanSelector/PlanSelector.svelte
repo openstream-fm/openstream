@@ -43,6 +43,22 @@
       style: "currency",
     }).format(price);
   }
+
+  const format_number = (n: number): string => {
+    return new Intl.NumberFormat($lang, {
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0,   
+    }).format(n);
+  }
+
+  const format_listening_hours = (n: number): string => {
+    return new Intl.NumberFormat($lang, {
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0,
+      /// 3 zeros
+      maximumSignificantDigits: Math.max(2, String(Math.round(n)).length - 3),
+    }).format(n);
+  }
 </script>
 
 <style>
@@ -267,7 +283,7 @@
               <div class="feature-text">
                 <span class="feature-ellipsis">
                   <span class="feature-n">
-                    {plan.limits.stations}
+                    {format_number(plan.limits.stations)}
                   </span>
                   <span class="feature-label">
                     {plan.limits.stations === 1 ? $locale.plan_selector.features.station : $locale.plan_selector.features.stations}
@@ -278,7 +294,7 @@
                 {#if plan.limits.stations === 1}
                   <PlanFeatureTip text={$locale.plan_selector.tooltips.one_station} />
                 {:else}
-                  <PlanFeatureTip text={$locale.plan_selector.tooltips.n_stations.replace("@n", String(plan.limits.stations))} />
+                  <PlanFeatureTip text={$locale.plan_selector.tooltips.n_stations.replace("@n", format_number(plan.limits.stations))} />
                 {/if}
               </span>
             </div>
@@ -287,7 +303,7 @@
               <div class="feature-text">
                 <span class="feature-ellipsis">
                   <span class="feature-n">
-                    {new Intl.NumberFormat().format(plan.limits.listeners)}
+                    {format_number(plan.limits.listeners)}
                   </span>
                   <span class="feature-label">
                     {$locale.plan_selector.features.listeners}
@@ -295,7 +311,7 @@
                 </span>
               </div>
               <span class="tip">
-                <PlanFeatureTip text={$locale.plan_selector.tooltips.listeners.replace("@n", String(plan.limits.listeners))} />
+                <PlanFeatureTip text={$locale.plan_selector.tooltips.listeners.replace("@n", format_number(plan.limits.listeners))} />
               </span>
             </div>
 
@@ -314,7 +330,7 @@
                 <FeatureI text={
                   $locale.plan_selector.tooltips.transfer
                     .replace("@tb", String(plan.limits.transfer / 1_000_000_000_000))
-                    .replace("@hours",    new Intl.NumberFormat().format(aprox_listening_hours(plan.limits.transfer)))
+                    .replace("@hours", format_number(aprox_listening_hours(plan.limits.transfer)))
                 } />
               </span>
             </div>

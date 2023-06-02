@@ -1,5 +1,15 @@
 import type { Request, Response, NextFunction } from "express";
 
+const next_once = (fn: NextFunction): NextFunction => {
+  let called = false;
+  let next: NextFunction = (...args) => {
+    if(called) return;
+    called = true;
+    return fn(...args);
+  }
+  return next;
+}
+
 export const json = <T>(fn: (req: Request, res: Response) => Promise<T>) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     let v: T;
@@ -10,5 +20,16 @@ export const json = <T>(fn: (req: Request, res: Response) => Promise<T>) => {
     }
 
     res.json(v);
+  }
+}
+
+export const handler = <T>(fn: (req: Request, res: Response, next: NextFunction) => Promise<void>) => {
+  return async (req: Request, res: Response, _next: NextFunction) => {
+    const next = next_once(_next);
+    try {
+      await fn(req, res, next);
+    } catch(e) {
+      return next(e);
+    }
   }
 }

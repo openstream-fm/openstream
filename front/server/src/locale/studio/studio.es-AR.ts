@@ -145,7 +145,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "transfer": "Con @tb TB de transferencia mensual tendrás capacidad de transmitir alrededor de @hours horas de audio",
       "storage": "@gb GB de almacenamiento para música o episodios antiguos",
       "staff": "Puedes agregar usuarios para todo tu equipo sin límite",
-      "auto_dj": "Emite desde una playlist cuando estés sin conexión",
+      "auto_dj": "Emití desde una playlist cuando estés sin conexión",
       "stats": "Estadísticas históricas y en vivo, sabé quien está escuchando tus estaciones",
       "android_app": "Una aplicación para Android con tu marca y tus estaciones, disponible en todo el mundo a través de Google Play",
     }
