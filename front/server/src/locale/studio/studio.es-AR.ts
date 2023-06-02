@@ -10,10 +10,10 @@ const locale: import("./studio.locale").StudioLocale = {
   "region": "AR",
 
   // @notranslate
-  "logo_text": "nuva",
+  "logo_text": "openstream",
 
   // @notranslate
-  "app_name": "Nuva Studio",
+  "app_name": "Openstream Studio",
 
   "station_type_of_content": type_of_content,
   "countries": countries,

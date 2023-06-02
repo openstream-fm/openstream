@@ -172,7 +172,7 @@
   <div class="bg" style:background-image="url({ bg })" />
   <div class="logo">
     <div class="logo-icon" style:background-image="url({ logo })" />
-    <div class="logo-text">nuva</div>
+    <div class="logo-text">openstream</div>
   </div>
   <div class="content">
     <Page>
@@ -205,7 +205,7 @@
           <div class="offline">	
             <h1>Offline</h1>    
               
-            <p>You need internet access to use Nuva Studio</p>
+            <p>You need internet access to use Openstream Studio</p>
             
             <div class="btns">
               <!-- svelte-ignore a11y-invalid-attribute -->
