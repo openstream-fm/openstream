@@ -330,13 +330,13 @@
             <div class="menu-item-icon">
               <Icon d={mdiDownload} />
             </div>
-            Download as SVG
+            {locale.download_as_svg}
           </button>
           <button class="menu-item menu-item-svg ripple-container" use:ripple on:click={export_png}>
             <div class="menu-item-icon">
               <Icon d={mdiDownload} />
             </div>
-            Download as PNG
+            {locale.download_as_png}
           </button>
         </div>
       {/if}

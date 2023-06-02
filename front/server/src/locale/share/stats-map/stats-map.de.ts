@@ -1,3 +1,4 @@
+/// file: stats-map.de.ts
 const locale: import("./stats-map.locale").StatsMapLocale = {
   "now": "Jetzt",
   "24_hours": "24 Stunden",
@@ -7,6 +8,8 @@ const locale: import("./stats-map.locale").StatsMapLocale = {
   "listeners": "Zuhörer",
   "country": "Land",
   "countries": "Länder",
+  "download_as_svg": "Als SVG herunterladen",
+  "download_as_png": "Als PNG herunterladen",
 }
 
 export default locale;

@@ -7,6 +7,8 @@ const locale =  {
   "listeners": "listeners",
   "country": "country",
   "countries": "countries",  
+  "download_as_svg": "Download as SVG",
+  "download_as_png": "Download as PNG",
 }
 
 export default locale;
