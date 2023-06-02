@@ -201,7 +201,7 @@
     text-overflow: ellipsis;
     margin-inline-end: 0.5rem;
     text-align: start;
-    font-weight: 700;
+    font-weight: 600;
     font-size: 1.05rem;
   }
 
