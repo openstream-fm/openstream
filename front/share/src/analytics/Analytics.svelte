@@ -591,7 +591,7 @@
     const fields = {
       "key": {
         name: locale.Date,
-        format: item => `${pad(item.key.year, 4)}/${pad(item.key.month + 1)}/${pad(item.key.day)}`,
+        format: item => `${pad(item.key.year, 4)}/${pad(item.key.month)}/${pad(item.key.day)}`,
         sort: (a, b) => compare_numbers(to_num(a.key), to_num(b.key))
       },
       ...common.fields
