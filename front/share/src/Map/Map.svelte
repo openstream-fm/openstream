@@ -125,10 +125,12 @@
   const projection = geoMercator().center([0, -40]).fitExtent([[0, 0], [ 1000, 660 ]], dataset as any)
   const path = geoPath(projection);
 
-  export const get_svg_source = () => {
-    let source = `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="660" viewBox="0 0 1000 660">`;
+  export const get_svg_source = (width = 1000) => {
+    const height = width * 0.66;
+    let source = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 1000 660">`;
+    source += `\n  <rect x="0" y="0" width="${width}" height="${height}" fill="#ffffff" />`
     for(const item of dataset.features) {
-      source += `\n  <path strokeWidth="1.25" stroke="#aaaaaa" fill="${get_fill_for_export(stats, item)}" d="${path(item as any)}"></path>`;
+      source += `\n  <path strokeWidth="1.25" stroke="#aaaaaa" fill="${get_fill_for_export(stats, item)}" d="${path(item as any)}" />`;
     }
     source += "\n</svg>"
     return source;
