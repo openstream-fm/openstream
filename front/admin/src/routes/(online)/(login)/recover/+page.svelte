@@ -21,11 +21,7 @@
     if(sending) return;
     sending = true;
     try {
-      // const payload: import("$api/auth/user/recover/POST/Payload").Payload = {
-      //   email,
-      // };
-      // TODO: implement and add types
-      const payload = { email };        
+      const payload: import("$api/auth/user/recover/POST/Payload").Payload = { email };
       await _post(`/api/auth/admin/recover`, payload);
       sent_to = email;
       email = "";
