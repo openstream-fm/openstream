@@ -41,8 +41,6 @@
     else return null;
   })
 
-  // TODO: send only a diff
-
   const send = action(async () => {
     
     if(!can_save) {

@@ -20,6 +20,7 @@
 		mdiAccountOutline,
 		mdiAccount,
 		mdiCurrencyUsd,
+		mdiShieldAccountOutline,
   } from "@mdi/js";
 	import { onMount } from "svelte";
 	import Icon from "$share/Icon.svelte";
@@ -187,7 +188,7 @@
 
     <div class="links">
       <DrawerItem href="/" label="Dashboard" icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
-      <DrawerItem href="/admins" label="Admins" icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
+      <DrawerItem href="/admins" label="Admins" icon={mdiShieldAccountOutline} on_click={close_drawer_fixed} />
       <DrawerItem href="/users" label="Users" icon={mdiAccountMultipleOutline} on_click={close_drawer_fixed} />
       <DrawerItem href="/accounts" label="Accounts" icon={mdiAccountOutline} on_click={close_drawer_fixed} />
       <DrawerItem href="/stations" label="Stations" icon={mdiRadioTower} on_click={close_drawer_fixed} />

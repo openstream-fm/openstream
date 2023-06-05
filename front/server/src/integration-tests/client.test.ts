@@ -2,7 +2,7 @@ import test, { type ExecutionContext } from "ava";
 import { Client } from "../client";
 import { LogLevel } from "../log-level";
 import { ConsoleLogger } from "../logger";
-import { IValidation, validateEquals } from "typia";
+import { IValidation } from "typia";
 
 const base_url = process.env.OPENSTREAM_FRONT_OPENSTREAM_API_BASE_URL || "https://api.local.openstream.fm";
 const token = process.env.OPENSTREAM_FRONT_OPENSTREAM_TOKEN!;
