@@ -6,6 +6,7 @@
 	import { ripple } from "$share/ripple";
 	import { mdiAccountOutline } from "@mdi/js";
 	import Limits from "./limits.svelte";
+	import Stats from "./stats.svelte";
 
   const date = (d: string | Date) => {
     const date = new Date(d);
@@ -22,6 +23,11 @@
 </script>
 
 <style>
+
+  .map {
+    margin-top: 1rem;
+  }
+
   .data {
     background: #fff;
     border-radius: 0.5rem;
@@ -205,6 +211,10 @@
 
   <div class="limits">
     <Limits bind:data />
+  </div>
+
+  <div class="map">
+    <Stats bind:data />
   </div>
 
   <div class="section">
