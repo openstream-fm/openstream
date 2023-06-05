@@ -1,11 +1,13 @@
 <script lang="ts">
   export let data: import("./$types").PageData;
   import Page from "$lib/components/Page.svelte";
+	import PageTop from "$lib/components/PageMenu/PageTop.svelte";
+	import { lang } from "$lib/locale";
 	import { ripple } from "$share/ripple";
 
   const date = (d: string | Date) => {
     const date = new Date(d);
-    return date.toLocaleString(undefined, {
+    return date.toLocaleString($lang, {
       year: "numeric",
       month: "long"       ,
       day: "numeric",
@@ -18,15 +20,6 @@
 </script>
 
 <style>
-
-  .title {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 1rem;
-  }
-
   .title-pic { 
     width: 4rem;
     height: 4rem;
@@ -34,12 +27,6 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: contain;
-  }
-
-  p {
-    color: #444;
-    font-size: 0.9rem;
-    margin-inline-start: 0.25rem;
   }
 
   .data {
@@ -79,7 +66,7 @@
   .section-title {
     font-weight: 600;
     font-size: 1.75rem;
-    text-align: center;
+    text-align: start;
   }
 
   .section-box {
@@ -123,15 +110,20 @@
 </svelte:head>
 
 <Page>
-  <div class="title">
-    <div class="title-pic" 
+  <PageTop>
+    <div slot="icon" class="title-pic" 
       style:background-image="url({data.config.storage_public_url}/station-pictures/webp/64/{data.station.picture_id}.webp)"
     />
-    <div class="title-data">
-      <h1>{data.station.name}</h1>
-      <p>Station</p>
-    </div>
-  </div>
+    
+    <svelte:fragment slot="title">
+      {data.station.name}
+    </svelte:fragment>
+
+    <svelte:fragment slot="subtitle">
+      Station
+    </svelte:fragment>
+
+  </PageTop>
 
   <div class="data">
     <div class="data-item">

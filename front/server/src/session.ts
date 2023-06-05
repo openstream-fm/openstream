@@ -99,7 +99,13 @@ export const session = (mode: "studio" | "admin", config: Config, _logger: Logge
 
   const router = Router();
   router.use(cookieParser());
-  
+
+  const httpOnly = true;
+  const sameSite = "lax";
+  const path = "/";
+  const signed = false;
+  const maxAge = config.session.max_age_days * 1000 * 60 * 60 * 24;
+
   router.use((req: Request, res: Response, next: NextFunction) => {
 
     const hosts = host(mode, config.hosts, req);
@@ -109,27 +115,29 @@ export const session = (mode: "studio" | "admin", config: Config, _logger: Logge
     const cookie_name = `${config.session.cookie_name}-${hosts.id}`;
 
     req.cookie_session = get_cookie_session(req, cookie_name, key, logger);
+
     res.set_session = (data: SessionData) => {
       const encoded = encrypt(JSON.stringify(data), key, logger);
       res.cookie(cookie_name, encoded, {
         domain,
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        signed: false,
-        maxAge: config.session.max_age_days * 1000 * 60 * 60 * 24,
+        httpOnly,
+        sameSite,
+        path,
+        signed,
+        maxAge,
       });
     }
-
+    
+    // TODO: add this rolling cookie?
     // rolling cookie (and set device id, if first time)
     // res.set_session(req.cookie_session);
 
     res.clear_session = () => res.clearCookie(cookie_name, {
       domain,
-      httpOnly: true,
-      sameSite: "lax",
-      path: "/",
-      signed: false,
+      httpOnly,
+      sameSite,
+      path,
+      signed,
     });
     next();
   })

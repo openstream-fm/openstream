@@ -1,11 +1,15 @@
 <script lang="ts">
   export let data: import("./$types").PageData;
   import Page from "$lib/components/Page.svelte";
+	import PageTop from "$lib/components/PageMenu/PageTop.svelte";
+	import { lang } from "$lib/locale";
 	import { ripple } from "$share/ripple";
+	import { mdiAccountOutline } from "@mdi/js";
+	import Limits from "./limits.svelte";
 
   const date = (d: string | Date) => {
     const date = new Date(d);
-    return date.toLocaleString(undefined, {
+    return date.toLocaleString($lang, {
       year: "numeric",
       month: "long"       ,
       day: "numeric",
@@ -18,12 +22,6 @@
 </script>
 
 <style>
-  p {
-    color: #444;
-    font-size: 0.9rem;
-    margin-inline-start: 0.25rem;
-  }
-
   .data {
     background: #fff;
     border-radius: 0.5rem;
@@ -61,7 +59,7 @@
   .section-title {
     font-weight: 600;
     font-size: 1.75rem;
-    text-align: center;
+    text-align: start;
   }
 
   .section-box {
@@ -164,8 +162,15 @@
 </svelte:head>
 
 <Page>
-  <h1>{data.account.name}</h1>
-  <p>Account</p>
+  <PageTop icon={mdiAccountOutline}>
+    <svelte:fragment slot="title">
+      {data.account.name}
+    </svelte:fragment>
+    
+    <svelte:fragment slot="subtitle">
+      Account
+    </svelte:fragment>
+  </PageTop>
 
   <div class="data">
     <div class="data-item">
@@ -195,6 +200,11 @@
         </div>
       </div>
     {/if} -->
+  </div>
+
+
+  <div class="limits">
+    <Limits bind:data />
   </div>
 
   <div class="section">

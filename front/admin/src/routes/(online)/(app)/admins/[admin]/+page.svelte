@@ -1,16 +1,11 @@
 <script lang="ts">
   export let data: import("./$types").PageData;
   import Page from "$lib/components/Page.svelte";
-	import { ripple } from "$share/ripple";
+	import PageTop from "$lib/components/PageMenu/PageTop.svelte";
+	import { mdiShieldAccountOutline } from "@mdi/js";
 </script>
 
 <style>
-  p {
-    color: #444;
-    font-size: 0.9rem;
-    margin-inline-start: 0.25rem;
-  }
-
   .data {
     background: #fff;
     border-radius: 0.5rem;
@@ -41,12 +36,19 @@
 </style>
 
 <svelte:head>
-  <title>{data.admin.first_name} {data.admin.last_name}</title>
+  <title>{data.page_admin.first_name} {data.page_admin.last_name}</title>
 </svelte:head>
 
 <Page>
-  <h1>{data.admin.first_name} {data.admin.last_name}</h1>
-  <p>Admin</p>
+  <PageTop icon={mdiShieldAccountOutline}>
+    <svelte:fragment slot="title">
+      {data.page_admin.first_name} {data.page_admin.last_name}
+    </svelte:fragment>
+
+    <svelte:fragment slot="subtitle">
+      {data.page_admin.email}
+    </svelte:fragment>
+  </PageTop>
 
   <div class="data">
     
@@ -55,7 +57,7 @@
         Id:
       </div>
       <div class="data-value">
-        {data.admin._id}
+        {data.page_admin._id}
       </div>
     </div>
 
@@ -64,7 +66,7 @@
         First name:
       </div>
       <div class="data-value">
-        {data.admin.first_name}
+        {data.page_admin.first_name}
       </div>
     </div>
 
@@ -73,7 +75,7 @@
         Last name:
       </div>
       <div class="data-value">
-        {data.admin.last_name}
+        {data.page_admin.last_name}
       </div>
     </div>
 
@@ -83,7 +85,7 @@
         Email:
       </div>
       <div class="data-value">
-        {data.admin.email}
+        {data.page_admin.email}
       </div>
     </div>
 
