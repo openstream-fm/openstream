@@ -61,7 +61,19 @@ pub mod post {
         Scope::Global | Scope::Admin { .. } => {
           return Err(GetAccessTokenScopeError::OutOfScope.into());
         }
-        Scope::User { .. } | Scope::AdminAsUser { .. } => match &access_token.generated_by {
+
+        Scope::AdminAsUser { .. } => {
+          let r = AccessToken::set_deleted_by_id(&access_token.id).await?;
+          if r.matched_count != 1 {
+            warn!(
+              "AccessToken::set_deleted_by_id {} matched_count={} modified_count={}",
+              access_token.id, r.matched_count, r.modified_count
+            )
+          }
+          Ok(Output(EmptyStruct(())))
+        }
+
+        Scope::User { .. } => match &access_token.generated_by {
           GeneratedBy::Api { .. } | GeneratedBy::Cli { .. } => {
             return Err(GetAccessTokenScopeError::OutOfScope.into());
           }
