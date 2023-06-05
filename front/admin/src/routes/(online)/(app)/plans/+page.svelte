@@ -1,7 +1,9 @@
 <script lang="ts">
   export let data: import("./$types").PageData;
   import Page from "$lib/components/Page.svelte";
+	import PageTop from "$lib/components/PageMenu/PageTop.svelte";
 	import { ripple } from "$share/ripple";
+	import { mdiCurrencyUsd } from "@mdi/js";
 	import PlanForm from "./PlanForm.svelte";
 
   $: active_plans = data.plans.items.filter(item => item.deleted_at == null);
@@ -16,12 +18,6 @@
 </script>
 
 <style>
-  p {
-    color: #444;
-    font-size: 0.9rem;
-    margin-inline-start: 0.25rem;
-  }
-
   .list {
     box-shadow: var(--some-shadow);
     display: flex;
@@ -88,22 +84,19 @@
 </svelte:head>
 
 <Page>
-  <div class="top">
-    <div class="title">
-      <h1>Plans</h1>
-      <p>
-        {active_plans.length} 
-        {#if active_plans.length === 1}
-          plan
-        {:else}
-          plans
-        {/if}
-      </p>
-    </div>
-    <a href="/plans/create-plan" class="na top-action ripple-container" use:ripple>
+  <PageTop icon={mdiCurrencyUsd}>
+    <svelte:fragment slot="title">
+      Plans
+    </svelte:fragment>
+    
+    <svelte:fragment slot="subtitle">
+      {active_plans.length} {active_plans.length === 1 ? "plan" : "plans"}
+    </svelte:fragment>
+
+    <a slot="action" href="/plans/create-plan" class="na top-action ripple-container" use:ripple>
       Create Plan
     </a>
-  </div>
+  </PageTop>
   
 
   <div class="list">

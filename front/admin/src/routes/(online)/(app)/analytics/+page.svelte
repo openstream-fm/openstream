@@ -7,6 +7,7 @@
 	import type { OnSubmitEvent } from "$share/analytics/AnalyticsFilters.svelte";
   import { _get, action } from "$share/net.client";
 	import { hash } from "$server/util/collections";
+	import PageTop from "$lib/components/PageMenu/PageTop.svelte";
 
   let analytics: import("$server/defs/analytics/Analytics").Analytics | null = null;
   let loading = false;
@@ -26,10 +27,6 @@
 </script>
 
 <style>
-  h1 {
-    font-weight: 600;
-  }
-
   .boxes {
     display: flex;
     flex-direction: column;
@@ -63,8 +60,12 @@
 </svelte:head>
 
 <Page>
-  <h1>Analytics</h1>
-
+  <PageTop>
+    <svelte:fragment slot="title">
+      Analytics
+    </svelte:fragment>
+  </PageTop>
+  
   <div class="boxes">
     <div class="filters">
       <AnalyticsFilters

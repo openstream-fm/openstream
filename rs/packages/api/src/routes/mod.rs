@@ -92,6 +92,10 @@ pub fn router(
     .at("/auth/admin/logout")
     .post(auth::admin::logout::post::Endpoint {}.into_handler());
 
+  app
+    .at("/auth/admin/delegate/:user")
+    .post(auth::admin::delegate::user::post::Endpoint {}.into_handler());
+
   app.at("/runtime/source-password-updated/:station").post(
     runtime::source_password_updated::station_id::post::Endpoint {
       media_sessions: media_sessions.clone(),

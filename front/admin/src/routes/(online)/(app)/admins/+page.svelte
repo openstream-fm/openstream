@@ -2,16 +2,12 @@
   export let data: import("./$types").PageData;
 
   import Page from "$lib/components/Page.svelte";
+	import PageTop from "$lib/components/PageMenu/PageTop.svelte";
 	import { ripple } from "$share/ripple";
+	import { mdiShieldAccountOutline } from "@mdi/js";
 </script>
 
 <style>
-  p {
-    color: #444;
-    font-size: 0.9rem;
-    margin-inline-start: 0.25rem;
-  }
-
   .list {
     box-shadow: var(--some-shadow);
     display: flex;
@@ -50,9 +46,14 @@
 </svelte:head>
 
 <Page>
-  <h1>Admins</h1>
-  <p>{data.admins.total} admins</p>
-
+  <PageTop icon={mdiShieldAccountOutline}>
+    <svelte:fragment slot="title">
+      Admins
+    </svelte:fragment>
+    <svelte:fragment slot="subtitle">
+      {data.admins.total} admins
+    </svelte:fragment>
+  </PageTop>
   <div class="list">
     {#each data.admins.items as item (item._id)}
       <a href="/admins/{item._id}" class="na item ripple-container" use:ripple>

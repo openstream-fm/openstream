@@ -15,6 +15,7 @@ import { admin_id } from "../admin-id";
 import { host } from "../host";
 
 export type PublicConfig = {
+  studio_public_url: string
   storage_public_url: string
   stream_public_url: string
   source_public_host: string
@@ -23,6 +24,7 @@ export type PublicConfig = {
 
 export const public_config = (hosts: HostConfig & { id: string }): PublicConfig => {
   const config: PublicConfig = {
+    studio_public_url: `https://${hosts.studio.host}`,
     storage_public_url: `https://${hosts.storage.host}`,
     stream_public_url: `https://${hosts.stream.host}`,
     source_public_host: hosts.source.host,
@@ -74,7 +76,7 @@ export const admin_api = ({
     return r;
   }))
 
-  api.post("/auth/delegate/:user", json(async (req, res) => {
+  api.post("/auth/admin/delegate/:user", json(async (req, res) => {
     const { user, media_key, token } = await client.auth.admin.delegate(ip(req), ua(req), admin_token(req), req.params.user, req.body);
     const data = req.cookie_session;
     res.set_session({ ...data, user: { _id: user._id, token, media_key }});

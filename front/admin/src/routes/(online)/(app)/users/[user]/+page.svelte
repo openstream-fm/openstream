@@ -1,11 +1,17 @@
 <script lang="ts">
   export let data: import("./$types").PageData;
   import Page from "$lib/components/Page.svelte";
+	import PageMenuItem from "$lib/components/PageMenu/PageMenuItem.svelte";
+	import PageTop from "$lib/components/PageMenu/PageTop.svelte";
+	import { lang } from "$lib/locale";
+	import { user_media_key } from "$server/media_key";
+	import { _post, action } from "$share/net.client";
 	import { ripple } from "$share/ripple";
+	import { mdiLogin } from "@mdi/js";
 
   const date = (d: string | Date) => {
     const date = new Date(d);
-    return date.toLocaleString(undefined, {
+    return date.toLocaleString($lang, {
       year: "numeric",
       month: "long"       ,
       day: "numeric",
@@ -15,15 +21,20 @@
       second: "2-digit",
     })
   }
+
+  const login_as = action(async (close: () => void) => {
+    const payload = ({
+      title: "Admin login as user",
+    }) satisfies import("$server/defs/api/auth/admin/delegate/[user]/POST/Payload").Payload;
+    
+    await _post<import("$server/defs/api/auth/admin/delegate/[user]/POST/Output").Output>(`/api/auth/admin/delegate/${data.user._id}`, payload);
+    const target = `${data.config.studio_public_url}/`;
+    window.open(target, "_blank")
+    close();  
+  })
 </script>
 
 <style>
-  p {
-    color: #444;
-    font-size: 0.9rem;
-    margin-inline-start: 0.25rem;
-  }
-
   .data {
     background: #fff;
     border-radius: 0.5rem;
@@ -61,7 +72,7 @@
   .section-title {
     font-weight: 600;
     font-size: 1.75rem;
-    text-align: center;
+    text-align: start;
   }
 
   .section-box {
@@ -138,6 +149,20 @@
   .section-empty {
     padding: 1rem;
   }
+
+  .letter {
+    border-radius: 50%;
+    width: 3.5rem;
+    height: 3.5rem;
+    box-shadow: var(--some-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--red);
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.75rem;
+  }
 </style>
 
 <svelte:head>
@@ -145,8 +170,25 @@
 </svelte:head>
 
 <Page>
-  <h1>{data.admin.first_name} {data.admin.last_name}</h1>
-  <p>User</p>
+  <PageTop>
+    <div slot="icon" class="letter">
+      {data.user.first_name[0] || ""}
+    </div>
+
+    <svelte:fragment slot="title">
+      {data.user.first_name} {data.user.last_name}
+    </svelte:fragment>
+
+    <svelte:fragment slot="subtitle">
+      {data.user.email}
+    </svelte:fragment>
+
+    <svelte:fragment slot="menu" let:close_menu>
+      <PageMenuItem icon={mdiLogin} on_click={() => login_as(close_menu)}>
+        Login as this user
+      </PageMenuItem>
+    </svelte:fragment>
+  </PageTop>
 
   <div class="data">
 

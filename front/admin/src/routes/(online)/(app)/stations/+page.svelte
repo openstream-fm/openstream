@@ -2,7 +2,9 @@
   export let data: import("./$types").PageData;
 
   import Page from "$lib/components/Page.svelte";
+	import PageTop from "$lib/components/PageMenu/PageTop.svelte";
 	import { ripple } from "$share/ripple";
+	import { mdiRadioTower } from "@mdi/js";
 
   const get_account = (_data: typeof data, account_id: string) => {
     return _data.accounts.items.find(item => item._id === account_id)
@@ -10,12 +12,6 @@
 </script>
 
 <style>
-  p {
-    color: #444;
-    font-size: 0.9rem;
-    margin-inline-start: 0.25rem;
-  }
-
   .list {
     box-shadow: var(--some-shadow);
     display: flex;
@@ -73,9 +69,15 @@
 </svelte:head>
 
 <Page>
-  <h1>Stations</h1>
-  <p>{data.stations.total} stations</p>
-
+  <PageTop icon={mdiRadioTower}>
+    <svelte:fragment slot="title">
+      Stations
+    </svelte:fragment>
+    <svelte:fragment slot="subtitle">
+      {data.stations.total} {data.stations.total === 1 ? "station" : "station"}
+    </svelte:fragment>
+    <p></p>
+  </PageTop>
   <div class="list">
     {#each data.stations.items as item (item._id)}
       {@const account = get_account(data, item.account_id)}

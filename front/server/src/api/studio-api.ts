@@ -20,6 +20,7 @@ import acceptLanguageParser from "accept-language-parser";
 export type PublicConfig = {
   storage_public_url: string
   stream_public_url: string
+  studio_public_url: string
   source_public_host: string
   source_public_port: number
 }
@@ -28,6 +29,7 @@ export const public_config = (hosts: HostConfig & { id: string }): PublicConfig 
   const config: PublicConfig = {
     storage_public_url: `https://${hosts.storage.host}`,
     stream_public_url: `https://${hosts.stream.host}`,
+    studio_public_url: `https://${hosts.studio.host}`,
     source_public_host: hosts.source.host,
     source_public_port: hosts.source.port,
   }
