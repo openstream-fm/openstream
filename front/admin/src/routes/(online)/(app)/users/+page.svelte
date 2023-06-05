@@ -1,17 +1,11 @@
 <script lang="ts">
   export let data: import("./$types").PageData;
-
   import Page from "$lib/components/Page.svelte";
+	import PageTop from "$lib/components/PageMenu/PageTop.svelte";
 	import { ripple } from "$share/ripple";
 </script>
 
 <style>
-  p {
-    color: #444;
-    font-size: 0.9rem;
-    margin-inline-start: 0.25rem;
-  }
-
   .list {
     box-shadow: var(--some-shadow);
     display: flex;
@@ -50,8 +44,14 @@
 </svelte:head>
 
 <Page>
-  <h1>Users</h1>
-  <p>{data.admins.total} users</p>
+  <PageTop>
+    <svelte:fragment slot="title">
+      Users
+    </svelte:fragment>
+    <svelte:fragment slot="subtitle">
+      {data.users.total} {data.users.total === 1 ? "user" : "users"}
+    </svelte:fragment>
+  </PageTop>
 
   <div class="list">
     {#each data.users.items as item (item._id)}

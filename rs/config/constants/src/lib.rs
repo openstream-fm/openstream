@@ -29,7 +29,7 @@ pub const PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY_SECS: u64 = 10;
 pub const RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS: u64 = 10;
 
 /// limit of authotization, or other sensible api endpoints requests from the same ip
-pub const API_IP_LIMIT: usize = 10;
+pub const API_IP_LIMIT: usize = 60;
 
 /// limit restart interval of API_IP_LIMIT
 pub const API_IP_LIMIT_DURATION_SECS: u64 = 60;

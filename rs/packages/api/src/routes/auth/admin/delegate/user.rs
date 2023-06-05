@@ -123,9 +123,9 @@ pub mod post {
 
           let now = DateTime::now();
           let token = AccessToken {
-            id,
-            hash: crypt::hash(&key),
-            media_hash: crypt::hash(&media_key),
+            id: id.clone(),
+            hash: crypt::sha256(&key),
+            media_hash: crypt::sha256(&media_key),
             scope: Scope::AdminAsUser { admin_id, user_id },
             generated_by: GeneratedBy::Api { title },
             hits: 0,
@@ -138,8 +138,8 @@ pub mod post {
 
           let out = Output {
             user: user.into(),
-            token: key,
-            media_key,
+            token: format!("{}-{}", id, key),
+            media_key: format!("{}-{}", id, media_key),
           };
 
           Ok(out)
