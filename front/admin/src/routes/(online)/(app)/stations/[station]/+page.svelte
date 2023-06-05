@@ -1,9 +1,13 @@
 <script lang="ts">
   export let data: import("./$types").PageData;
+  
   import Page from "$lib/components/Page.svelte";
 	import PageTop from "$lib/components/PageMenu/PageTop.svelte";
 	import { lang } from "$lib/locale";
+	import { locale } from "$lib/locale";
 	import { ripple } from "$share/ripple";
+  import StatsMap from "$share/Map/StatsMap.svelte";
+	
 
   const date = (d: string | Date) => {
     const date = new Date(d);
@@ -57,6 +61,13 @@
   .data-value {
     font-weight: 700;
     flex: 1;
+  }
+
+  .map {
+    box-shadow: var(--some-shadow);
+    border-radius: 0.5rem;
+    background: #fff;
+    margin-top: 1rem;
   }
 
   .section {
@@ -163,6 +174,16 @@
         </div>
       </div>
     {/if}
+  </div>
+
+  <div class="map">
+    <StatsMap
+      kind="station"
+      record_id={data.station._id}
+      locale={$locale.stats_map}
+      country_names={$locale.countries}
+      bind:data={data.stats}
+    />
   </div>
 
   <div class="section">

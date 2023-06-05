@@ -9,14 +9,20 @@ export const load = (async ({ parent, params, fetch, url }) => {
 
   if(account == null) throw error(404, { status: 404, message: "Account not found", code: "FRONT_RESOURCE_NOT_FOUND" })
 
+  const plan = plans.items.find(plan => plan._id === account.plan_id);
+
   const account_stations = stations.items.filter(item => {
     return item.account_id === account._id;
   })
 
-  const { members } = await load_get<import("$server/defs/api/accounts/[account]/members/GET/Output").Output>(`/api/accounts/${account._id}/members`, { fetch, url })
+  const [
+    { members },
+    { stats }
+  ] = await Promise.all([
+    load_get<import("$server/defs/api/accounts/[account]/members/GET/Output").Output>(`/api/accounts/${account._id}/members`, { fetch, url }),
+    load_get<import("$api/accounts/[account]/stream-stats/GET/Output").Output>(`/api/accounts/${params.account}/stream-stats`, { fetch, url }),
+  ]);
 
-  const plan = plans.items.find(plan => plan._id === account.plan_id);
-
-  return { account, plan, members, account_stations }
+  return { account, plan, members, stats, account_stations }
 
 }) satisfies import("./$types").PageLoad;
