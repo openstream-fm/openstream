@@ -2,7 +2,9 @@
   export let data: import("./$types").PageData;
 
   import Page from "$lib/components/Page.svelte";
+  import PageTop from "$lib/components/PageMenu/PageTop.svelte";
 	import { ripple } from "$share/ripple";
+	import { mdiAccountOutline } from "@mdi/js";
 
   const get_stations_for_account = (_data: typeof data, account_id: string) => {
     return _data.stations.items.filter(item => item.account_id === account_id)
@@ -10,12 +12,6 @@
 </script>
 
 <style>
-  p {
-    color: #444;
-    font-size: 0.9rem;
-    margin-inline-start: 0.25rem;
-  }
-
   .list {
     box-shadow: var(--some-shadow);
     display: flex;
@@ -61,8 +57,14 @@
 </svelte:head>
 
 <Page>
-  <h1>Accounts</h1>
-  <p>{data.accounts.total} accounts</p>
+  <PageTop icon={mdiAccountOutline}>
+    <svelte:fragment slot="title">
+      Accounts
+    </svelte:fragment>
+    <svelte:fragment slot="subtitle">
+      {data.accounts.total} {data.accounts.total === 1 ? "account" : "accounts"}
+    </svelte:fragment>
+  </PageTop>
 
   <div class="list">
     {#each data.accounts.items as item (item._id)}

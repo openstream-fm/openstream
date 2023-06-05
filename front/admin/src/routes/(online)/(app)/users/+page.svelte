@@ -3,6 +3,7 @@
   import Page from "$lib/components/Page.svelte";
 	import PageTop from "$lib/components/PageMenu/PageTop.svelte";
 	import { ripple } from "$share/ripple";
+	import { mdiAccountMultipleOutline } from "@mdi/js";
 </script>
 
 <style>
@@ -44,7 +45,7 @@
 </svelte:head>
 
 <Page>
-  <PageTop>
+  <PageTop icon={mdiAccountMultipleOutline}>
     <svelte:fragment slot="title">
       Users
     </svelte:fragment>

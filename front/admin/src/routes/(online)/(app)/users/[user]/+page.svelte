@@ -4,6 +4,7 @@
 	import PageMenuItem from "$lib/components/PageMenu/PageMenuItem.svelte";
 	import PageTop from "$lib/components/PageMenu/PageTop.svelte";
 	import { lang } from "$lib/locale";
+	import { user_media_key } from "$server/media_key";
 	import { _post, action } from "$share/net.client";
 	import { ripple } from "$share/ripple";
 	import { mdiLogin } from "@mdi/js";
@@ -71,7 +72,7 @@
   .section-title {
     font-weight: 600;
     font-size: 1.75rem;
-    text-align: center;
+    text-align: start;
   }
 
   .section-box {
@@ -148,6 +149,20 @@
   .section-empty {
     padding: 1rem;
   }
+
+  .letter {
+    border-radius: 50%;
+    width: 3.5rem;
+    height: 3.5rem;
+    box-shadow: var(--some-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--red);
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.75rem;
+  }
 </style>
 
 <svelte:head>
@@ -156,12 +171,16 @@
 
 <Page>
   <PageTop>
+    <div slot="icon" class="letter">
+      {data.user.first_name[0] || ""}
+    </div>
+
     <svelte:fragment slot="title">
-      {data.admin.first_name} {data.admin.last_name}
+      {data.user.first_name} {data.user.last_name}
     </svelte:fragment>
 
     <svelte:fragment slot="subtitle">
-      User
+      {data.user.email}
     </svelte:fragment>
 
     <svelte:fragment slot="menu" let:close_menu>
