@@ -1,11 +1,12 @@
 <script lang="ts">
   export let data: import("./$types").PageData;
   import Page from "$lib/components/Page.svelte";
+	import { lang } from "$lib/locale";
 	import { ripple } from "$share/ripple";
 
   const date = (d: string | Date) => {
     const date = new Date(d);
-    return date.toLocaleString(undefined, {
+    return date.toLocaleString($lang, {
       year: "numeric",
       month: "long"       ,
       day: "numeric",
