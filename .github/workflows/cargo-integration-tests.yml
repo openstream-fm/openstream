@@ -42,9 +42,16 @@ jobs:
 
     - uses: actions/checkout@v3
 
-    - uses: Swatinem/rust-cache@v2
+    - uses: actions/cache@v3
       with:
-        cache-all-crates: true
+        path: ./target
+        key: "${{ runner.os }}-cargo-integration-tests-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}"
+        restore-keys: |
+          ${{ runner.os }}-cargo-integration-tests-
+
+    # - uses: Swatinem/rust-cache@v2
+    #   with:
+    #     cache-all-crates: true
     # with:
         # The prefix cache key, this can be changed to start a new cache manually.
         # default: "v0-rust"
