@@ -30,19 +30,19 @@ jobs:
 
       - uses: actions/cache@v3
         with:
-          path: ./target
+          path: target
           key: "${{ runner.os }}-cargo-build-release-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}"
           restore-keys: |
             ${{ runner.os }}-cargo-build-release-
           
       - run: npm ci
-        working-directory: ./scripts
+        working-directory: scripts
 
       - run: npm run build
-        working-directory: ./scripts
+        working-directory: scripts
 
       - run: npm run script:release
-        working-directory: ./scripts
+        working-directory: scripts
     
       - name: Release
         uses: softprops/action-gh-release@v1
