@@ -17,7 +17,7 @@ jobs:
 
     steps:
       
-      # - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
       # - uses: Swatinem/rust-cache@v2
       #   with:
       #     cache-all-crates: true
@@ -36,13 +36,13 @@ jobs:
             ${{ runner.os }}-cargo-build-release-
           
       - run: npm ci
-        working-directory: ../scripts
+        working-directory: ./scripts
 
       - run: npm run build
-        working-directory: ../scripts
+        working-directory: ./scripts
 
       - run: npm run script:release
-        working-directory: ../scripts
+        working-directory: ./scripts
     
       - name: Release
         uses: softprops/action-gh-release@v1
