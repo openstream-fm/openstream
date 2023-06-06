@@ -9,7 +9,7 @@ jobs:
 
   release:
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     strategy:
       matrix:
@@ -28,12 +28,13 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - uses: actions/cache@v3
-        with:
-          path: ./target
-          key: "${{ runner.os }}-cargo-build-release-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}"
-          restore-keys: |
-            ${{ runner.os }}-cargo-build-release-
+      # cache doesn't seem to work under tag branches, not even to recover from master branch saved cache
+      # - uses: actions/cache@v3
+      #   with:
+      #     path: ./target
+      #     key: ${{ runner.os }}-cargo-build-release-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-cargo-build-release-
           
       - run: npm ci
         working-directory: ./scripts
