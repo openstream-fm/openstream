@@ -6,14 +6,15 @@
 	import { click_out } from "$share/actions";
 	import { action, _post } from "$share/net.client";
 	import Icon from "$share/Icon.svelte";
-	import { mdiAccountCircleOutline, mdiLogout } from "@mdi/js";
+	import { mdiShieldAccountOutline, mdiLogout } from "@mdi/js";
 	import { goto } from "$app/navigation";
 	import { logical_fly } from "$share/transition";
+	import { invalidate_siblings } from "$lib/invalidate";
 
   const sign_out = action(async () => {
     await _post("/api/auth/admin/logout", {});
     goto("/", { invalidateAll: true })
-    
+    invalidate_siblings();
   })
 
   let menu_open = false;
@@ -199,7 +200,7 @@
           <div class="menu thin-scroll" transition:logical_fly|local={{ y: -25, x: 10, duration: 200 }}>
             <div class="menu-head menu-section">
               <div class="menu-head-icon">
-                <Icon d={mdiAccountCircleOutline} />
+                <Icon d={mdiShieldAccountOutline} />
               </div>
               <div class="menu-head-info">
                 <div class="menu-head-name">{admin?.first_name} {admin?.last_name}</div>
@@ -209,7 +210,7 @@
             <div class="menu-section">
               <a href="/me" class="na menu-section-link ripple-container" use:ripple on:click={() => menu_open = false}>
                 <div class="menu-icon">
-                  <Icon d={mdiAccountCircleOutline} />
+                  <Icon d={mdiShieldAccountOutline} />
                 </div>
                 Profile
               </a>

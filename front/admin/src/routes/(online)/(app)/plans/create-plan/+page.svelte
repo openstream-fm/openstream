@@ -7,6 +7,7 @@
 	import { ripple } from "$share/ripple";
   import { goto } from "$app/navigation";
   import PlanForm from "../PlanForm.svelte";
+	import { invalidate_siblings } from "$lib/invalidate";
 
   let db = {
     identifier: "",
@@ -66,6 +67,7 @@
       _message("New plan created");
       saving = false;
       goto("/plans", { invalidateAll: true });
+      invalidate_siblings();
     } catch(e) {
       saving = false;
       throw e;

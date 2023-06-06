@@ -22,6 +22,68 @@ const locale: import("./admin.locale").AdminLocale = {
   "analytics": analytics,
   "countries": countries,
 
+  "pages": {
+    "me": {
+      "title": "Perfil",
+      "fields": {
+        "email": "Tu email",
+        "first_name": "Tu nombre",
+        "last_name": "Tu apellido",
+        "phone": "Tu teléfono",
+        "new_password": "Nueva contraseña",
+        "confirm_password": "Confirmar contraseña",
+        "language": "Idioma preferido",
+      },
+      "submit": {
+        "profile": "Guardar",
+        "password": "Guardar",
+      },
+      "change_password": {
+        "title": "Cambia tu contraseña",
+      },
+      "more": {
+        "title": "Mas",
+        "connected_devices": "Dispositivos conectados",
+      },
+      "notifier": {
+        "no_changes": "Sin cambios para guardar",
+        "profile_updated": "Perfil actualizado",
+        "password_updated": "Contraseña actualizada",
+      }
+    },
+
+    "me/devices": {
+      "head": {
+        "title": "Dispositivos",
+      },
+      "title": "Dispositivos conectados",
+      "note": "El mismo dispositivo puede aparecer mas de una vez es esta lista. Los dispositivos serán desconectados después de 7 días sin actividad.",
+      "dialogs": {
+        "disconnect": {
+          "title": "Desconectar dispositivo",
+          "message": "Esta acción es permanente.",
+          "cancel": "Cancelar",
+          "submit": "Desconectar",
+        },
+      },
+
+      "notifier": {
+        "device_disconnected": "Dispositivo desconectado",
+      },
+
+      "device": {
+        "browser": "Navegador",
+        "os": "Sistema",
+        "ip": "IP",
+        "last_used": "Usado por última vez",
+        "connected": "Conectado",
+        "unkown": "Desconocido",
+        "tooltips": {
+          "disconnect": "Desconectar",
+        }
+      }
+    }
+  }
 }
 
 export default locale;
