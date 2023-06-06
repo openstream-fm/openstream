@@ -6,7 +6,7 @@
 	import { _delete, _patch, _post, action } from "$share/net.client";
 	import { _message } from "$share/notify";
 	import { ripple } from "$share/ripple";
-  import { invalidateAll } from "$app/navigation";
+  import { invalidateAll, invalidate_siblings } from "$lib/invalidate";
   import PlanForm from "../PlanForm.svelte";
 	import Icon from "$share/Icon.svelte";
 	import { mdiTrashCanOutline } from "@mdi/js";
@@ -78,6 +78,7 @@
   const del = action(async () => {
     await _delete(`/api/plans/${data.plan._id}`);
     goto("/plans", { invalidateAll: true });
+    invalidate_siblings();
   })
 </script>
 

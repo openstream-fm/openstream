@@ -9,6 +9,7 @@
 	import Validator from "$share/formy/Validator.svelte";
 	import { _string } from "$share/formy/validate";
   import "$share/LoginDashboard/login-page.css";
+	import { invalidate_siblings } from "$lib/invalidate";
 
   let email = "";
   let password = "";
@@ -18,6 +19,7 @@
     await _post("/api/auth/admin/login", payload);
     const target = decodeURIComponent(location.hash.replace(/^#/, "")) || "/";
     goto(target, { invalidateAll: true });
+    invalidate_siblings();
   })
 </script>
 
@@ -56,10 +58,4 @@
       </button>
     </form>
   </Formy>
-
-  <div class="login-page-switch-box">
-    <span class="login-page-comment">New user?</span>
-    <a class="na login-page-link sign-up" href="/register">Sign up</a>
-  </div>
-  
 </div>
