@@ -529,7 +529,7 @@ impl StreamHandler {
           is_open: true,
           ip: request.real_ip,
           country_code: request.country_code,
-          transfer_bytes: 0,
+          transfer_bytes: None,
           duration_ms: None,
           request,
           created_at: now,

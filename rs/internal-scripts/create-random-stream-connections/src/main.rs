@@ -151,6 +151,15 @@ async fn create_random_stream_connection(
 
   let is_open = rand::random::<f64>() < (1_f64 / 30_f64);
 
+  let duration_ms = if is_open {
+    let mul: f64 = rand::random();
+    Some((mul * 6000.0) as u64) // 10 min
+  } else {
+    None
+  };
+
+  let transfer_bytes = duration_ms.map(|s| s * 16); // 16 kbps
+
   let document = StreamConnection {
     id: StreamConnection::uid(),
     station_id: station_id.to_string(),
@@ -158,8 +167,8 @@ async fn create_random_stream_connection(
     is_open,
     ip: request.real_ip,
     country_code: request.country_code,
-    transfer_bytes: 0,
-    duration_ms: Some(600_000),
+    transfer_bytes,
+    duration_ms,
     last_transfer_at: created_at.into(),
     created_at: created_at.into(),
     request,

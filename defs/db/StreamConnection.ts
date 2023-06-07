@@ -7,7 +7,7 @@ export type StreamConnection = {
   _id: string;
   station_id: string;
   deployment_id: string;
-  transfer_bytes: number;
+  transfer_bytes: number | null;
   duration_ms: number | null;
   is_open: boolean;
   created_at: DateTime;

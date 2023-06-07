@@ -9,6 +9,7 @@ export type StreamConnectionLite = {
   ip: string;
   cc: CountryCode | null;
   du: number | null;
+  by: number | null;
   br: string | null;
   os: string | null;
   ca: DateTime;

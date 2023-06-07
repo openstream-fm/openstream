@@ -4,4 +4,5 @@ export type AnalyticsItem<K> = {
   key: K;
   sessions: number;
   total_duration_ms: number;
+  total_transfer_bytes: number;
 };
