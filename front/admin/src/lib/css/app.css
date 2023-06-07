@@ -20,7 +20,7 @@
   --blue-rgb: 0, 116, 217;
   --blue: rgb(var(--blue-rgb));
   
-  --loading-color: var(--blue);
+  --loading-color: rgb(32, 118, 232);
 
   --green: #75A633;
 
