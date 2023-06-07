@@ -5,6 +5,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Average_listening_time": "Temps d'écoute moyen",
   "Total_listening_time": "Temps d'écoute total",
   "Total_listening_hours": "Heures d'écoute totales",
+  "Total_transfer_in_MB": "Transfert total en MB",
   "Unique_IPs": "IPs uniques",
 
   // @example Browser: Chrome
@@ -26,6 +27,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
   // @example Date: 2022/01/01
   "Date": "Date",
+
 
   "Stats_by_browser": "Statistiques par navigateur",
   "Stats_by_device": "Statistiques par appareil",
@@ -75,7 +77,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
     "submit": "Obtenir des analyses",
 
     "All_stations": "Toutes les stations",
-    "No_stations": "Sans stations",
+    "No_stations": "Aucune station",
 
     "no_stations_message": "Ce compte n'a pas de stations",
   },

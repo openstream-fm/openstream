@@ -5,6 +5,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Average_listening_time": "平均收听时间",
   "Total_listening_time": "总收听时间",
   "Total_listening_hours": "总收听小时数",
+  "Total_transfer_in_MB": "总传输量（MB）",
   "Unique_IPs": "唯一IP",
 
   // @example Browser: Chrome
@@ -40,7 +41,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "By_station": "按电台",
   "Daily_stats": "每日统计",
 
-  "no_data_message": "没有指定过滤器的记录数据",
+  "no_data_message": "没有符合指定筛选条件的数据",
 
   "time": {
     "1_day": "1天",
@@ -72,7 +73,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
       "custom": "自定义",
     },
 
-    "submit": "获取分析",
+    "submit": "获取分析数据",
 
     "All_stations": "所有电台",
     "No_stations": "无电台",

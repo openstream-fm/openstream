@@ -94,8 +94,7 @@
   }
 
   td {
-    font-family: var(--monospace);
-    font-size: 0.75rem;
+    font-size: 0.9rem;
   }
 
   .value {
@@ -122,6 +121,7 @@
 
   .sort-chevron {
     display: flex;
+    flex: none;
     transition: transform 150ms ease;
     margin-inline-start: 0.25rem;
     margin-inline-end: -1rem;
@@ -145,6 +145,11 @@
 
   .numeric {
     text-align: right;
+  }
+
+  td.numeric {
+    font-family: var(--monospace);
+    font-size: 0.75rem;
   }
 
   .export-out {

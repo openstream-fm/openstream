@@ -33,7 +33,11 @@ pub struct Analytics {
   #[serde(with = "serde_util::as_f64")]
   pub ips: u64,
 
+  #[serde(with = "serde_util::as_f64")]
   pub total_duration_ms: u64,
+
+  #[serde(with = "serde_util::as_f64")]
+  pub total_transfer_bytes: u64,
 
   pub by_month: Vec<AnalyticsItem<YearMonth>>,
   pub by_day: Vec<AnalyticsItem<YearMonthDay>>,
@@ -52,6 +56,8 @@ pub struct AnalyticsItem<K> {
   sessions: u64,
   #[serde(with = "serde_util::as_f64")]
   total_duration_ms: u64,
+  #[serde(with = "serde_util::as_f64")]
+  total_transfer_bytes: u64,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, TS)]
@@ -167,11 +173,13 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
   let mut sessions: u64 = 0;
   let mut ips = HashSet::<IpAddr>::new();
   let mut total_duration_ms: u64 = 0;
+  let mut total_transfer_bytes: u64 = 0;
 
   #[derive(Default)]
   struct AccumulatorItem {
     sessions: u64,
     total_duration_ms: u64,
+    total_transfer_bytes: u64,
   }
 
   let mut months_accumulator = HashMap::<YearMonth, AccumulatorItem>::new();
@@ -186,6 +194,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
   while let Some(conn) = cursor.try_next().await? {
     let created_at = conn.created_at.to_offset(query.start_date.offset());
     let conn_duration_ms = conn.duration_ms.unwrap_or(0);
+    let conn_transfer_bytes = conn.transfer_bytes.unwrap_or(0);
     let conn_year = created_at.year() as u16;
     let conn_month = created_at.month() as u8;
     let conn_day = created_at.day();
@@ -195,6 +204,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
 
     sessions += 1;
     total_duration_ms += conn_duration_ms;
+    total_transfer_bytes += conn_transfer_bytes;
     ips.insert(conn.ip);
 
     macro_rules! add {
@@ -202,6 +212,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
         let mut item = $acc.entry($key).or_default();
         item.sessions += 1;
         item.total_duration_ms += conn_duration_ms;
+        item.total_transfer_bytes += conn_transfer_bytes;
       };
     }
 
@@ -235,6 +246,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
           key,
           sessions: value.sessions,
           total_duration_ms: value.total_duration_ms,
+          total_transfer_bytes: value.total_transfer_bytes,
         })
         .collect::<Vec<_>>()
     };
@@ -278,6 +290,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     utc_offset_minutes: query.start_date.offset().whole_minutes(),
     sessions,
     total_duration_ms,
+    total_transfer_bytes,
     ips: ips.len() as u64,
     stations,
     by_month,

@@ -35,6 +35,10 @@ pub struct StreamConnectionLite {
   #[serde(with = "serde_util::as_f64::option")]
   pub duration_ms: Option<u64>,
 
+  #[serde(rename = "by")]
+  #[serde(with = "serde_util::as_f64::option")]
+  pub transfer_bytes: Option<u64>,
+
   #[serde(rename = "br")]
   pub browser: Option<String>,
 
@@ -56,6 +60,7 @@ impl StreamConnectionLite {
       browser: full.request.user_agent.name.clone(),
       os: full.request.user_agent.os.clone(),
       duration_ms: full.duration_ms,
+      transfer_bytes: full.transfer_bytes,
       created_at: full.created_at,
     }
   }
@@ -71,6 +76,7 @@ impl From<StreamConnection> for StreamConnectionLite {
       browser: full.request.user_agent.name,
       os: full.request.user_agent.os,
       duration_ms: full.duration_ms,
+      transfer_bytes: full.transfer_bytes,
       country_code: full.country_code,
       created_at: full.created_at,
     }

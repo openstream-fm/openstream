@@ -5,6 +5,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Average_listening_time": "متوسط وقت الاستماع",
   "Total_listening_time": "إجمالي وقت الاستماع",
   "Total_listening_hours": "إجمالي ساعات الاستماع",
+  "Total_transfer_in_MB": "إجمالي التحويل بالميغابايت",
   "Unique_IPs": "عناوين IP فريدة",
 
   // @example Browser: Chrome
@@ -22,19 +23,20 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Station": "محطة",
 
   // @example Coutry: Argentina
-  "Country": "البلد",
+  "Country": "الدولة",
 
   // @example Date: 2022/01/01
   "Date": "التاريخ",
 
+
   "Stats_by_browser": "الإحصائيات حسب المتصفح",
   "Stats_by_device": "الإحصائيات حسب الجهاز",
   "Stats_by_station": "الإحصائيات حسب المحطة",
-  "Stats_by_country": "الإحصائيات حسب البلد",
+  "Stats_by_country": "الإحصائيات حسب الدولة",
   "Stats_by_date": "الإحصائيات حسب التاريخ",
 
   "By_date": "حسب التاريخ",
-  "By_country": "حسب البلد",
+  "By_country": "حسب الدولة",
   "By_device": "حسب الجهاز",
   "By_browser": "حسب المتصفح",
   "By_station": "حسب المحطة",
@@ -84,6 +86,5 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
     "export_as_csv": "تصدير كملف CSV"
   }
 }
-
 
 export default locale;
