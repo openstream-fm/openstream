@@ -5,6 +5,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Average_listening_time": "Tempo médio de escuta",
   "Total_listening_time": "Tempo total de escuta",
   "Total_listening_hours": "Horas totais de escuta",
+  "Total_transfer_in_MB": "Transferência total em MB",
   "Unique_IPs": "IPs únicos",
 
   // @example Browser: Chrome

@@ -5,11 +5,14 @@
 /* @import url("./gilroy/gilroy.css"); */
 /* @import url("./g/g.css");  */
 @import url("./circular/circular.css");
+@import url("./azeret-mono/azeret-mono.css");
 
 
 :root {
   font-family: Circular, "Fira Sans", G, Cera, Jost, Overpass, sans-serif;
   font-size: 16px;
+
+  --monospace: "Azeret Mono", "Chivo Mono", monospace, ui-monospace;
 
   --drawer-width: 250px;
   --top-h: 4.5rem;
@@ -20,7 +23,7 @@
   --blue-rgb: 0, 116, 217;
   --blue: rgb(var(--blue-rgb));
   
-  --loading-color: var(--blue);
+  --loading-color: rgb(32, 118, 232);
 
   --green: #75A633;
 

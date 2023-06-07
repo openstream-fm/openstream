@@ -5,6 +5,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Average_listening_time": "Durchschnittliche Hördauer",
   "Total_listening_time": "Gesamte Hördauer",
   "Total_listening_hours": "Gesamte Hördauer in Stunden",
+  "Total_transfer_in_MB": "Gesamtübertragung in MB",
   "Unique_IPs": "Einzigartige IPs",
 
   // @example Browser: Chrome
@@ -26,6 +27,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
   // @example Date: 2022/01/01
   "Date": "Datum",
+
 
   "Stats_by_browser": "Statistiken nach Browser",
   "Stats_by_device": "Statistiken nach Gerät",

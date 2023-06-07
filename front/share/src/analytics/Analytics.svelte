@@ -229,6 +229,51 @@
     }
   };
 
+  // const colors = [
+  //   // BLUE
+  //   "#0074D9",
+  //   // GREEN
+  //   "#2ECC40",
+  //   // RED
+  //   "#FF4136",
+  //   // PURPLE
+  //   "#B10DC9",
+  //   // ORANGE
+  //   "#FF851B",
+  //   // YELLOW
+  //   "#FFDC00",
+  //   // AQUA
+  //   "#7FDBFF",
+  //   // TEAL
+  //   "#39CCCC",
+  //   // NAVY
+  //   "#001f3f",
+  //   // FUCHSIA
+  //   "#F012BE",
+  //   // MAROON
+  //   "#85144b",
+  // ]
+
+  // const os_options: ApexOptions = {
+  //   chart: {
+  //     type: "pie",
+  //     fontFamily: "inherit",
+  //     height: chartHeight,
+  //   },
+  //   plotOptions: {
+  //     pie: {
+  //       donut: {
+  //         labels: {
+  //           show: true,
+  //         }
+  //       }
+  //     },
+  //   },
+  //   colors,
+  //   series: data.by_os.map(item => item.sessions),
+  //   labels: data.by_os.map(item => item.key || locale.Unknown),
+  // }
+
   const os_options: ApexOptions = {
     chart: {
       type: "bar",
@@ -266,6 +311,7 @@
       })
     }]
   };
+
 
   const browser_options: ApexOptions = {
     chart: {
@@ -407,7 +453,7 @@
 
   const get_common_grid_options = () => {
     
-    type Item = {  sessions: number, total_duration_ms: number }
+    type Item = {  sessions: number, total_duration_ms: number, total_transfer_bytes: number }
 
     const fields = {
       "sessions": {
@@ -430,6 +476,13 @@
         sort: (a, b) => compare_numbers(a.total_duration_ms, b.total_duration_ms),
         numeric: true,
       },
+
+      "total_transfer": {
+        name: locale.Total_transfer_in_MB,
+        format: item => to_fixed(item.total_transfer_bytes / 1_000_000, 1),
+        sort: (a, b) => compare_numbers(a.total_transfer_bytes, b.total_transfer_bytes),
+        numeric: true,
+      }
 
     } satisfies Record<string, DataGridField<Item>>;
     
@@ -564,6 +617,7 @@
           key: item_key,
           sessions: 0,
           total_duration_ms: 0,
+          total_transfer_bytes: 0,
         })
       } else {
         items.push(item)
