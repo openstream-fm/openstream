@@ -24,18 +24,18 @@ env:
 
 jobs:
 
-  skip_check:
-    runs-on: self-hosted-unit-tests
-    outputs:
-      should_skip: ${{ steps.skip_check.outputs.should_skip }}
-    steps:
-      - id: skip_check
-        uses: fkirc/skip-duplicate-actions@v5
+  # skip_check:
+  #   runs-on: self-hosted-unit-tests
+  #   outputs:
+  #     should_skip: ${{ steps.skip_check.outputs.should_skip }}
+  #   steps:
+  #     - id: skip_check
+  #       uses: fkirc/skip-duplicate-actions@v5
 
   backend-unit-tests:
 
-    needs: skip_check
-    if: needs.skip_check.outputs.should_skip != 'true'
+    # needs: skip_check
+    # if: needs.skip_check.outputs.should_skip != 'true'
 
     runs-on: ubuntu-latest
 
