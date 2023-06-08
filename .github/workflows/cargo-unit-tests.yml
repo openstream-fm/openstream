@@ -54,7 +54,7 @@ jobs:
       id: unit-tests-cargo-cache
       uses: MasterworksIO/action-local-cache@1.0.0
       with:
-        path: ./target
+        path: ./target/
         key: unit-tests-cargo-target
 
     - name: Cargo Unit Tests
