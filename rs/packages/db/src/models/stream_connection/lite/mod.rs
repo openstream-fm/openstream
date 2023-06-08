@@ -42,6 +42,9 @@ pub struct StreamConnectionLite {
   #[serde(rename = "br")]
   pub browser: Option<String>,
 
+  #[serde(rename = "do")]
+  pub domain: Option<String>,
+
   #[serde(rename = "os")]
   pub os: Option<String>,
 
@@ -50,6 +53,16 @@ pub struct StreamConnectionLite {
 }
 
 impl StreamConnectionLite {
+  pub fn get_domain(full: &StreamConnection) -> Option<String> {
+    match full.request.headers.get("referer") {
+      None => None,
+      Some(h) => match url::Url::parse(h) {
+        Err(_) => None,
+        Ok(url) => url.domain().map(String::from),
+      },
+    }
+  }
+
   pub fn from_stream_connection_ref(full: &StreamConnection) -> Self {
     Self {
       id: full.id.clone(),
@@ -59,6 +72,7 @@ impl StreamConnectionLite {
       country_code: full.country_code,
       browser: full.request.user_agent.name.clone(),
       os: full.request.user_agent.os.clone(),
+      domain: Self::get_domain(full),
       duration_ms: full.duration_ms,
       transfer_bytes: full.transfer_bytes,
       created_at: full.created_at,
@@ -69,6 +83,7 @@ impl StreamConnectionLite {
 impl From<StreamConnection> for StreamConnectionLite {
   fn from(full: StreamConnection) -> Self {
     Self {
+      domain: Self::get_domain(&full),
       id: full.id,
       station_id: full.station_id,
       is_open: full.is_open,

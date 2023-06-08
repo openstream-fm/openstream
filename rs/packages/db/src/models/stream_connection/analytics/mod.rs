@@ -1,5 +1,6 @@
 use std::{
   collections::{HashMap, HashSet},
+  hash::Hash,
   net::IpAddr,
 };
 
@@ -46,6 +47,7 @@ pub struct Analytics {
   pub by_os: Vec<AnalyticsItem<Option<String>>>,
   pub by_country: Vec<AnalyticsItem<Option<CountryCode>>>,
   pub by_station: Vec<AnalyticsItem<String>>,
+  pub by_domain: Vec<AnalyticsItem<Option<String>>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -93,6 +95,7 @@ pub struct AnalyticsQuery {
   pub country_code: Option<Option<CountryCode>>,
   pub browser: Option<Option<String>>,
   pub os: Option<Option<String>>,
+  pub domain: Option<Option<String>>,
 }
 
 pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::error::Error> {
@@ -199,6 +202,17 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     }
   }
 
+  if let Some(domain) = query.domain {
+    filter = doc! {
+      "$and": [
+        filter,
+        {
+          StreamConnectionLite::KEY_DOMAIN: domain
+        }
+      ]
+    }
+  }
+
   let sort = doc! {
     StreamConnectionLite::KEY_CREATED_AT: 1,
   };
@@ -226,6 +240,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
   let mut os_accumulator = HashMap::<Option<String>, AccumulatorItem>::new();
   let mut country_accumulator = HashMap::<Option<CountryCode>, AccumulatorItem>::new();
   let mut station_accumulator = HashMap::<String, AccumulatorItem>::new();
+  let mut domain_accumulator = HashMap::<Option<String>, AccumulatorItem>::new();
 
   // accumulate
   while let Some(conn) = cursor.try_next().await? {
@@ -273,6 +288,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     add!(os_accumulator, conn_os);
     add!(country_accumulator, conn.country_code);
     add!(station_accumulator, conn.station_id);
+    add!(domain_accumulator, conn.domain);
   }
 
   macro_rules! collect {
@@ -297,6 +313,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
   let mut by_os = collect!(os_accumulator);
   let mut by_country = collect!(country_accumulator);
   let mut by_station = collect!(station_accumulator);
+  let mut by_domain = collect!(domain_accumulator);
 
   // sort
   macro_rules! sort_by_key {
@@ -319,6 +336,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
   sort_by_sessions!(by_os);
   sort_by_sessions!(by_country);
   sort_by_sessions!(by_station);
+  sort_by_sessions!(by_domain);
 
   // render
   let out = Analytics {
@@ -337,6 +355,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     by_country,
     by_os,
     by_station,
+    by_domain,
   };
 
   Ok(out)

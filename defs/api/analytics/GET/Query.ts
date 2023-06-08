@@ -7,5 +7,6 @@ export type Query = {
   stations: string[] | undefined;
   browser: string | null;
   os: string | null;
+  domain: string | null;
   country_code: CountryCodeOrZZ | null;
 };

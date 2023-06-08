@@ -5,6 +5,7 @@
     | { kind: "country_code", value: CountryCode | null | undefined }
     | { kind: "os", value: string | null | undefined }
     | { kind: "browser", value: string | null | undefined }
+    | { kind: "domain", value: string | null | undefined }
     | { kind: "station", value: string }
 </script>
 
@@ -19,6 +20,7 @@
   export let os: string | null | undefined;
   export let country_code: CountryCode | null | undefined; 
   export let browser: string | null | undefined;
+  export let domain: string | null | undefined;
   export let selected_stations: StationItem[] | "all";
 
   const is_station_selected = (id: string) => {
@@ -371,6 +373,45 @@
     }]
   };
 
+
+  const domain_options: ApexOptions = {
+    chart: {
+      type: "bar",
+      fontFamily: "inherit",
+      height: chartHeight,
+      animations: {
+        enabled: false,
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    plotOptions: {
+      bar: {
+        distributed: true,
+        columnWidth: "40%",
+      }
+    },
+    yaxis: {
+      title: {
+        text: locale.Sessions,
+        style: {
+          fontSize: "1rem",
+          fontWeight: 600,
+        }
+      },
+    },
+    series: [{ 
+      name: locale.Sessions,
+      data: data.by_domain.map(item => {
+        return {
+          x: item.key == null ? locale.Unknown : item.key,
+          y: item.sessions,
+        }
+      })
+    }]
+  };
+
   const station_options: ApexOptions = {
     chart: {
       type: "bar",
@@ -559,6 +600,29 @@
     } satisfies DataGridData<typeof items[number], typeof fields>;
   }
 
+  const get_by_domain_grid = () => {
+    const items = data.by_domain;
+    const common = get_common_grid_options();    
+    const fields = {
+      "key": {
+        name: locale.Website,
+        format: item => item.key || locale.Unknown,
+        sort: (a, b) => (a.key || "").localeCompare(b.key || ""),
+        is_selected: item => domain === item.key,
+        on_click: item => on_click({ kind: "domain", value: item.key })
+      },
+      ...common.fields
+    } satisfies Record<string, DataGridField<typeof items[number]>>;
+
+
+    return {
+      ...common,
+      title: locale.Stats_by_device,
+      fields,
+      items,
+    } satisfies DataGridData<typeof items[number], typeof fields>;
+  }
+
   const get_by_station_grid = () => {
     const items = data.by_station;
     const common = get_common_grid_options();
@@ -694,6 +758,7 @@
 
   const by_browser_grid_data = get_by_browser_grid();
   const by_device_grid_data = get_by_device_grid();
+  const by_domain_grid_data = get_by_domain_grid();
   const by_station_grid_data = get_by_station_grid();
   const by_country_grid_data = get_by_country_grid();
   const by_day_grid_data = get_by_day_grid();
@@ -880,6 +945,14 @@
         </div>
         <div class="chart-grid">
           <DataGrid data={by_country_grid_data} locale={locale.data_grid} />
+        </div>
+      </div>
+
+      <div class="chart-box">
+        <div class="chart-title">{locale.By_website}</div>
+        <div class="chart" use:chart={domain_options} />
+        <div class="chart-grid">
+          <DataGrid data={by_domain_grid_data} locale={locale.data_grid} />
         </div>
       </div>
 

@@ -22,6 +22,8 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   // @context Radio Station
   "Station": "محطة",
 
+  "Website": "الموقع",
+
   // @example Coutry: Argentina
   "Country": "الدولة",
 
@@ -33,6 +35,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Stats_by_device": "الإحصائيات حسب الجهاز",
   "Stats_by_station": "الإحصائيات حسب المحطة",
   "Stats_by_country": "الإحصائيات حسب الدولة",
+  "Stats_by_website": "الإحصائيات حسب الموقع",
   "Stats_by_date": "الإحصائيات حسب التاريخ",
 
   "By_date": "حسب التاريخ",
@@ -40,6 +43,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "By_device": "حسب الجهاز",
   "By_browser": "حسب المتصفح",
   "By_station": "حسب المحطة",
+  "By_website": "حسب الموقع",
   "Daily_stats": "الإحصائيات اليومية",
 
   "no_data_message": "لا توجد بيانات مسجلة للمرشحين المحددين",

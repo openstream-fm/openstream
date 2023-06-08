@@ -8,7 +8,8 @@
   export let browser: string | null | undefined = undefined;
   export let os: string | null | undefined = undefined;
   export let country_code: CountryCode | null | undefined = undefined;
-  
+  export let domain: string | null | undefined = undefined;
+
   export let locale: import("$server/locale/share/analytics/analytics.locale").AnalyticsLocale;
   export let country_names: import("$server/locale/share/countries/countries.locale").CountriesLocale;
   export let stats_map_locale: import("$server/locale/share/stats-map/stats-map.locale").StatsMapLocale;
@@ -65,6 +66,12 @@
         browser = undefined;
       } else {
         browser = event.value;
+      }
+    } else if (event.kind === "domain") {
+      if(event.value === domain) {
+        domain = undefined;
+      } else {
+        domain = event.value;
       }
     } else if(event.kind === "station") {
       const item = stations.find(station => station._id === event.value);
@@ -123,6 +130,7 @@
       stations={stations}
       bind:selected_stations={selected_stations}
       bind:kind={kind}
+      bind:domain={domain}
       {on_submit}
       locale={locale}
       country_names={country_names}
@@ -141,6 +149,7 @@
           country_code={country_code}
           os={os}
           browser={browser}
+          domain={domain}
           country_names={country_names}
           lang={lang}
           locale={locale}

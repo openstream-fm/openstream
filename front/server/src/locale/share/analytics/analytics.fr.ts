@@ -5,7 +5,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Average_listening_time": "Temps d'écoute moyen",
   "Total_listening_time": "Temps d'écoute total",
   "Total_listening_hours": "Heures d'écoute totales",
-  "Total_transfer_in_MB": "Transfert total en MB",
+  "Total_transfer_in_MB": "Transfert total en Mo",
   "Unique_IPs": "IPs uniques",
 
   // @example Browser: Chrome
@@ -22,6 +22,8 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   // @context Radio Station
   "Station": "Station",
 
+  "Website": "Site web",
+
   // @example Coutry: Argentina
   "Country": "Pays",
 
@@ -33,6 +35,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Stats_by_device": "Statistiques par appareil",
   "Stats_by_station": "Statistiques par station",
   "Stats_by_country": "Statistiques par pays",
+  "Stats_by_website": "Statistiques par site web",
   "Stats_by_date": "Statistiques par date",
 
   "By_date": "Par date",
@@ -40,6 +43,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "By_device": "Par appareil",
   "By_browser": "Par navigateur",
   "By_station": "Par station",
+  "By_website": "Par site web",
   "Daily_stats": "Statistiques quotidiennes",
 
   "no_data_message": "Aucune donnée enregistrée pour les filtres spécifiés",
@@ -68,7 +72,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
       "this-week": "Cette semaine",
       "previous-week": "Semaine précédente",
       "last-7d": "7 derniers jours",
-      "this-month": "Ce mois",
+      "this-month": "Ce mois-ci",
       "previous-month": "Mois précédent",
       "last-30d": "30 derniers jours",
       "custom": "Personnalisé",

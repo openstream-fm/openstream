@@ -75,6 +75,9 @@ pub mod get {
     pub os: Option<String>,
 
     #[serde(default)]
+    pub domain: Option<String>,
+
+    #[serde(default)]
     pub country_code: Option<CountryCodeOrZZ>,
   }
 
@@ -142,6 +145,7 @@ pub mod get {
         country_code,
         browser,
         os,
+        domain,
       } = query;
 
       let station_ids = match access_token_scope {
@@ -187,6 +191,12 @@ pub mod get {
         Some(browser) => Some(Some(browser)),
       };
 
+      let domain = match domain {
+        None => None,
+        Some(null) if null == "null" => Some(None),
+        Some(domain) => Some(Some(domain)),
+      };
+
       let country_code = match country_code {
         None => None,
         Some(CountryCodeOrZZ::ZZ(_)) => Some(None),
@@ -200,6 +210,7 @@ pub mod get {
         country_code,
         os,
         browser,
+        domain,
       };
 
       let analytics = analytics::get_analytics(query).await?;
