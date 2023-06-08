@@ -13,6 +13,7 @@ pub mod get {
   use db::stream_connection::analytics;
   use db::Model;
   use db::{station::Station, stream_connection::analytics::Analytics};
+  use geoip::CountryCode;
   use mongodb::bson::Bson;
 
   use super::*;
@@ -36,6 +37,22 @@ pub mod get {
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export)]
   #[ts(export_to = "../../../defs/api/analytics/GET/")]
+  #[serde(untagged)]
+  pub enum CountryCodeOrZZ {
+    ZZ(ZZ),
+    CC(CountryCode),
+  }
+
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../../defs/api/analytics/GET/")]
+  pub enum ZZ {
+    ZZ,
+  }
+
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export)]
+  #[ts(export_to = "../../../defs/api/analytics/GET/")]
   pub struct Query {
     #[ts(type = "/** time::DateTime */ string")]
     #[serde(with = "time::serde::iso8601")]
@@ -50,6 +67,15 @@ pub mod get {
     /// ommiting this value means all available stations
     /// for the current access scope (this is valid only for admin and global access token scopes)
     pub stations: Vec<String>,
+
+    #[serde(default)]
+    pub browser: Option<String>,
+
+    #[serde(default)]
+    pub os: Option<String>,
+
+    #[serde(default)]
+    pub country_code: Option<CountryCodeOrZZ>,
   }
 
   #[derive(Debug, thiserror::Error)]
@@ -113,6 +139,9 @@ pub mod get {
         since,
         until,
         stations: station_ids,
+        country_code,
+        browser,
+        os,
       } = query;
 
       let station_ids = match access_token_scope {
@@ -146,10 +175,31 @@ pub mod get {
         }
       };
 
+      let os = match os {
+        None => None,
+        Some(null) if null == "null" => Some(None),
+        Some(os) => Some(Some(os)),
+      };
+
+      let browser = match browser {
+        None => None,
+        Some(null) if null == "null" => Some(None),
+        Some(browser) => Some(Some(browser)),
+      };
+
+      let country_code = match country_code {
+        None => None,
+        Some(CountryCodeOrZZ::ZZ(_)) => Some(None),
+        Some(CountryCodeOrZZ::CC(cc)) => Some(Some(cc)),
+      };
+
       let query = analytics::AnalyticsQuery {
         station_ids,
         start_date: since,
         end_date: until,
+        country_code,
+        os,
+        browser,
       };
 
       let analytics = analytics::get_analytics(query).await?;

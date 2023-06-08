@@ -5,7 +5,7 @@
     // # string - URL (required)
     // # openstream api base URL
     // # env.OPENSTREAM_FRONT_OPENSTREAM_API_BASE_URL
-    "api_base_url": "http://127.0.0.1:10700",
+    "api_base_url": "http://127.0.0.1:10700"
   },
 
 

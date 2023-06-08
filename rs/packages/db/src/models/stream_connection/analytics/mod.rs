@@ -90,6 +90,9 @@ pub struct AnalyticsQuery {
   pub station_ids: Vec<String>,
   pub start_date: time::OffsetDateTime,
   pub end_date: time::OffsetDateTime,
+  pub country_code: Option<Option<CountryCode>>,
+  pub browser: Option<Option<String>>,
+  pub os: Option<Option<String>>,
 }
 
 pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::error::Error> {
@@ -148,7 +151,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
   let ser_start_date: serde_util::DateTime = start_date.into();
   let ser_end_date: serde_util::DateTime = end_date.into();
 
-  let filter = doc! {
+  let mut filter = doc! {
     StreamConnectionLite::KEY_STATION_ID: {
       "$in": &query.station_ids,
     },
@@ -161,6 +164,40 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
       "$lt": ser_end_date,
     }
   };
+
+  if let Some(os) = query.os {
+    filter = doc! {
+      "$and": [
+        filter,
+        {
+          StreamConnectionLite::KEY_OS: os,
+        }
+      ]
+    }
+  }
+
+  if let Some(browser) = query.browser {
+    filter = doc! {
+      "$and": [
+        filter,
+        {
+          StreamConnectionLite::KEY_BROWSER: browser,
+        }
+      ]
+    }
+  }
+
+  if let Some(cc) = query.country_code {
+    filter = doc! {
+      "$and": [
+        filter,
+        {
+          // this convertion should never fail
+          StreamConnectionLite::KEY_COUNTRY_CODE: mongodb::bson::to_bson(&cc).unwrap()
+        }
+      ]
+    }
+  }
 
   let sort = doc! {
     StreamConnectionLite::KEY_CREATED_AT: 1,

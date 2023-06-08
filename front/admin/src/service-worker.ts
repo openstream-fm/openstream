@@ -1,3 +1,8 @@
+/// <reference types="@sveltejs/kit" />
+/// <reference no-default-lib="true"/>
+/// <reference lib="esnext" />
+/// <reference lib="webworker" />
+
 import "./service-worker-env";
 import { registerRoute, setCatchHandler, setDefaultHandler } from "workbox-routing";
 import { CacheFirst, NetworkOnly } from "workbox-strategies";

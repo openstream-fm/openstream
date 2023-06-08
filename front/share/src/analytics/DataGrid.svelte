@@ -101,6 +101,15 @@
     padding: 0.5rem 1rem;
   }
 
+  .value.clickable {
+    cursor: pointer;
+    text-align: inherit;
+  }
+
+  .value.clickable:hover {
+    text-decoration: underline;
+  }
+
   .grid {
     width: 100%;
     overflow-y: auto;
@@ -216,9 +225,15 @@
           <tr>
             {#each display_fields as [key, field] (key)}
               <td class:numeric={field.numeric}>
-                <div class="value">
-                  {field.format(item)}
-                </div>
+                {#if field.on_click}
+                  <button class="value clickable" on:click={() => field.on_click(item)}>
+                    {field.format(item)}
+                  </button>  
+                {:else}
+                  <div class="value">
+                    {field.format(item)}
+                  </div>
+                {/if}
               </td>
             {/each}
           </tr>
