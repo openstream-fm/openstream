@@ -137,6 +137,10 @@
       {#key hash(data)}
         <AnalyticsData
           data={data}
+          selected_stations={selected_stations}
+          country_code={country_code}
+          os={os}
+          browser={browser}
           country_names={country_names}
           lang={lang}
           locale={locale}

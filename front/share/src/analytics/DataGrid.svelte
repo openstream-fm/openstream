@@ -16,7 +16,7 @@
 
   import Icon from "$share/Icon.svelte";
   import { ripple } from "$share/ripple";
-  import { mdiFileDownloadOutline, mdiTriangle } from "@mdi/js";
+  import { mdiClose, mdiFileDownloadOutline, mdiTriangle } from "@mdi/js";
   import { stringify } from "csv-stringify/browser/esm/sync";
 
   // const inverse = <T>(fn: (a: T, b: T) => number) => {
@@ -138,6 +138,10 @@
     transform: scaleX(0.75);
   }
 
+  :global([dir=rtl]) .value-selected-icon {
+    transform: scaleX(-1);
+  }
+
   .sort-chevron.asc {
     transform: scaleX(0.75) scaleY(-1);
     color: #000;
@@ -227,6 +231,11 @@
               <td class:numeric={field.numeric}>
                 {#if field.on_click}
                   <button class="value clickable" on:click={() => field.on_click(item)}>
+                    {#if field.is_selected?.(item)}
+                      <span class="value-selected-icon">
+                        «
+                      </span>
+                    {/if}
                     {field.format(item)}
                   </button>  
                 {:else}

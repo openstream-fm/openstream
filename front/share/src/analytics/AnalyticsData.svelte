@@ -16,10 +16,15 @@
   export let stats_map_locale: import("$server/locale/share/stats-map/stats-map.locale").StatsMapLocale;
   export let lang: string;
 
-  // export let os: string | null | undefined;
-  // export let country_code: string | null | undefined; 
-  // export let browser: string | null | undefined;
-    
+  export let os: string | null | undefined;
+  export let country_code: CountryCode | null | undefined; 
+  export let browser: string | null | undefined;
+  export let selected_stations: StationItem[] | "all";
+
+  const is_station_selected = (id: string) => {
+    return Array.isArray(selected_stations) && selected_stations.length === 1 && selected_stations[0]._id === id;
+  }
+  
   export let on_click: (event: ClickEvent) => void;
 
   import Mapp from "$share/Map/Map.svelte";
@@ -30,6 +35,7 @@
   
   import type { DataGridData, DataGridField } from "./types";
   import type { CountryCode } from "$server/defs/CountryCode";
+  import { StationItem } from "./AnalyticsFilters.svelte";
   
   const SEC = 1000;
   const MIN = SEC * 60;
@@ -515,7 +521,8 @@
         name: locale.Browser,
         format: item => item.key || locale.Unknown,
         sort: (a, b) => (a.key || "").localeCompare(b.key || ""),
-        on_click: (item) => on_click({ kind: "browser", value: item.key })
+        is_selected: item => browser === item.key,
+        on_click: item => on_click({ kind: "browser", value: item.key })
       },
       ...common.fields
     } satisfies Record<string, DataGridField<typeof items[number]>>;
@@ -537,7 +544,8 @@
         name: locale.Device,
         format: item => item.key || locale.Unknown,
         sort: (a, b) => (a.key || "").localeCompare(b.key || ""),
-        on_click: (item) => on_click({ kind: "os", value: item.key })
+        is_selected: item => os === item.key,
+        on_click: item => on_click({ kind: "os", value: item.key })
       },
       ...common.fields
     } satisfies Record<string, DataGridField<typeof items[number]>>;
@@ -563,7 +571,8 @@
         name: locale.Station,
         format: item => display_name(item.key),
         sort: (a, b) => display_name(a.key).localeCompare(display_name(b.key)),
-        on_click: (item) => on_click({ kind: "station", value: item.key })
+        is_selected: item => is_station_selected(item.key),
+        on_click: item => on_click({ kind: "station", value: item.key })
       },
       ...common.fields
     } satisfies Record<string, DataGridField<typeof items[number]>>;
@@ -594,7 +603,8 @@
         name: locale.Country,
         format: item => display_name(item.key),
         sort: (a, b) => display_name(a.key || "").localeCompare(display_name(b.key || "")),
-        on_click: (item) => on_click({ kind: "country_code", value: item.key })
+        is_selected: item => country_code === item.key,
+        on_click: item => on_click({ kind: "country_code", value: item.key })
       },
       ...common.fields
     } satisfies Record<string, DataGridField<typeof items[number]>>;
