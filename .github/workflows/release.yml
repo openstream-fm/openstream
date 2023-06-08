@@ -27,7 +27,7 @@ jobs:
         id: release-cargo-cache
         uses: MasterworksIO/action-local-cache@1.0.0
         with:
-          path: ./target
+          path: ./target/
           key: release-cargo-target
 
       - name: Use Node.js ${{ matrix.node-version }}
