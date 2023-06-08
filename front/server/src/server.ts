@@ -23,7 +23,7 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
     let app = express();
 
     app.use("/api", studio_api({ config, logger }))
-    app.use(express.static(path.resolve(__dirname, "../../static/studio"), { etag: true, dotfiles: "allow" }))
+    app.use(express.static(path.resolve(__dirname, "../../../static/studio"), { etag: true, dotfiles: "allow" }))
 
     if(env.SVELTEKIT_APP_DEV) {
       app.use(sveltekit_dev_proxy(env.SVELTEKIT_APP_PORT))
@@ -43,7 +43,7 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
     let app = express();
 
     app.use("/api", admin_api({ config, logger }))
-    app.use(express.static(path.resolve(__dirname, "../../static/admin"), { etag: true, dotfiles: "allow" }))
+    app.use(express.static(path.resolve(__dirname, "../../../static/admin"), { etag: true, dotfiles: "allow" }))
 
     if(env.SVELTEKIT_ADMIN_DEV) {
       app.use(sveltekit_dev_proxy(env.SVELTEKIT_ADMIN_PORT))

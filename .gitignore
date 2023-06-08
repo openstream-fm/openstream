@@ -2,6 +2,8 @@
 .env
 openstream.toml
 openstream-2.toml
+openstream-front.toml
+openstream-front-2.toml
 node_modules/
 /release.tar.gz
 /release-tmp

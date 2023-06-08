@@ -1,0 +1,1 @@
+import "./front/server/dist/cli.js";

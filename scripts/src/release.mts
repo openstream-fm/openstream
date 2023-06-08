@@ -16,6 +16,8 @@ const binfile = {
   target: `${tmpdir}/target/release/openstream`,
 }
 
+const info = { target: `${tmpdir}/info.txt` };
+
 if(fs.existsSync(tmpdir)) {
   await $`rm -r ${tmpdir}`;
 }
@@ -23,6 +25,10 @@ if(fs.existsSync(tmpdir)) {
 if(fs.existsSync(target)) {
   await $`rm ${target}`;
 }
+
+const revision = (await $`git rev-parse HEAD`).stdout.trim();
+const branch = (await $`git branch --show-current`).stdout.trim();
+const comment = (await $`git --no-pager log -1 --format=%s`).stdout.trim();
 
 await $`cargo build --release --bin openstream --color always`;
 
@@ -56,6 +62,8 @@ await $`cp -r ${`${frontdir.src}/static`} ${`${frontdir.target}/static`}`;
 await $`cp -r ${`${basedir}/mailer-static`} ${`${tmpdir}/mailer-static`}`;
 
 await $`cp ${binfile.src} ${binfile.target}`;
+
+fs.writeFileSync(info.target, JSON.stringify({ revision, branch, comment }));
 
 await within(async () => {
   cd(tmpdir);

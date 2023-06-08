@@ -15,9 +15,9 @@ module.exports = {
     }
   }, {
     namespace: "s1",
-    script: "./front/server/dist/cli.js",
+    script: "./openstream-front.mjs",
     interpreter_args: ["--no-warnings", "--experimental-specifier-resolution=node"],
-    args: ["start", "-c", "./front/server/openstream-front.toml"],
+    args: ["start", "-c", "./openstream-front.toml"],
     time: false,
     merge_logs: true,
     name: "openstream-front-1",
