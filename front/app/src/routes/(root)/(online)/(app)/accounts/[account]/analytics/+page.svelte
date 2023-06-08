@@ -12,15 +12,17 @@
   let country_code: CountryCode | null | undefined = undefined;
   let os: string | null | undefined = undefined;
   let browser: string | null | undefined = undefined;
+  let domain: string | null | undefined = undefined;
   let kind: QueryKind = "last-30d";
   let selected_stations: StationItem[] | "all" = "all";
   let loading: boolean = false;
   let analytics_data: import("$server/defs/analytics/Analytics").Analytics | null = null;
-
+  
   type Snapshot = {
     country_code: CountryCode | null | undefined,
     os: string | null | undefined,
     browser: string | null | undefined,
+    domain: string | null | undefined,
     kind: QueryKind,
     selected_stations: StationItem[] | "all",
     analytics_data: import("$server/defs/analytics/Analytics").Analytics | null,
@@ -34,6 +36,7 @@
         os,
         browser,
         kind,
+        domain,
         selected_stations
       }
     },
@@ -45,6 +48,7 @@
         browser,
         country_code,
         os,
+        domain,
         selected_stations,
       } = snapshot);
     }
@@ -67,6 +71,7 @@
     bind:country_code
     bind:os
     bind:browser
+    bind:domain
     lang={$lang}
     locale={$locale.analytics}
     stats_map_locale={$locale.stats_map}

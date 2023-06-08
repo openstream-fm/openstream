@@ -6,7 +6,7 @@
     | { kind: "os", value: string | null | undefined }
     | { kind: "browser", value: string | null | undefined }
     | { kind: "domain", value: string | null | undefined }
-    | { kind: "station", value: string }
+    | { kind: "station", value: string };
 </script>
 
 <script lang="ts">

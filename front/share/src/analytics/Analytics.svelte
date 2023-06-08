@@ -5,10 +5,10 @@
   //export let custom_since: Date | null = null;
   //export let custom_until: Date | null = null;
   export let loading: boolean = false;
-  export let browser: string | null | undefined = undefined;
-  export let os: string | null | undefined = undefined;
-  export let country_code: CountryCode | null | undefined = undefined;
-  export let domain: string | null | undefined = undefined;
+  export let browser: string | null | undefined;
+  export let os: string | null | undefined;
+  export let country_code: CountryCode | null | undefined;
+  export let domain: string | null | undefined;
 
   export let locale: import("$server/locale/share/analytics/analytics.locale").AnalyticsLocale;
   export let country_names: import("$server/locale/share/countries/countries.locale").CountriesLocale;
@@ -130,13 +130,13 @@
       stations={stations}
       bind:selected_stations={selected_stations}
       bind:kind={kind}
-      bind:domain={domain}
       {on_submit}
       locale={locale}
       country_names={country_names}
       bind:country_code={country_code}
       bind:os={os}
       bind:browser={browser}
+      bind:domain={domain}
     />
   </div>
 

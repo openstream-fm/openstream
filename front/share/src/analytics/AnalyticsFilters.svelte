@@ -72,10 +72,10 @@
   export let custom_since: Date | null = null;
   export let custom_until: Date | null = null;
   export let loading: boolean = false;
-  export let browser: string | null | undefined = undefined;
-  export let os: string | null | undefined = undefined;
-  export let domain: string | null | undefined = undefined;
-  export let country_code: CountryCode | null | undefined = undefined;
+  export let browser: string | null | undefined;
+  export let os: string | null | undefined;
+  export let domain: string | null | undefined;
+  export let country_code: CountryCode | null | undefined;
   export let locale: import("$server/locale/share/analytics/analytics.locale").AnalyticsLocale;
   export let country_names: import("$server/locale/share/countries/countries.locale").CountriesLocale;
 
@@ -442,6 +442,7 @@
   .more-chip-label {
     color: #666;
     margin-inline-start: 0.25rem;
+    flex: none;
   }
 
   .more-chip-value {
@@ -597,7 +598,7 @@
     {/if}
   </div>
 
-  {#if country_code !== undefined || os !== undefined || browser !== undefined}
+  {#if country_code !== undefined || os !== undefined || browser !== undefined || domain !== undefined}
     <div class="more-filters" transition:slide|local={{ duration: 200 }}>
       {#if country_code !== undefined}
         <div class="more-chip" transition:scale|local={{ duration: 200 }}>
@@ -612,6 +613,21 @@
           </button>
         </div>
       {/if}
+
+      {#if domain !== undefined}
+        <div class="more-chip" transition:scale|local={{ duration: 200 }}>
+          <div class="more-chip-label">
+            {locale.Website}:
+          </div>
+          <div class="more-chip-value">
+            {domain == null ? locale.Unknown : domain}
+          </div>
+          <button class="more-chip-remove ripple-container" use:ripple on:click={() => domain = undefined}>
+            <Icon d={mdiClose} />
+          </button>
+        </div>
+      {/if}
+
 
       {#if os !== undefined}
         <div class="more-chip" transition:scale|local={{ duration: 200 }}>
@@ -636,20 +652,6 @@
             {browser == null ? locale.Unknown : browser}
           </div>
           <button class="more-chip-remove ripple-container" use:ripple on:click={() => browser = undefined}>
-            <Icon d={mdiClose} />
-          </button>
-        </div>
-      {/if}
-
-      {#if domain !== undefined}
-        <div class="more-chip" transition:scale|local={{ duration: 200 }}>
-          <div class="more-chip-label">
-            {locale.Website}:
-          </div>
-          <div class="more-chip-value">
-            {domain == null ? locale.Unknown : domain}
-          </div>
-          <button class="more-chip-remove ripple-container" use:ripple on:click={() => domain = undefined}>
             <Icon d={mdiClose} />
           </button>
         </div>
