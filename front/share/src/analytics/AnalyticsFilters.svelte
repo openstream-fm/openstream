@@ -27,7 +27,7 @@
     domain: string | null | undefined
   };
 
-  export type OnSubmitEvent = ResolvedQuery & { y: URLSearchParams | null };
+  export type OnSubmitEvent = ResolvedQuery & { qs: URLSearchParams | null };
 
   export const to_querystring = (
     query: ResolvedQuery
@@ -36,8 +36,11 @@
     if (query.until == null) return null;
 
     const qs = new URLSearchParams();
+    
     qs.append("since", formatISO(query.since));
+    
     qs.append("until", formatISO(query.until));
+
     for (const station of query.stations) {
       qs.append("stations[]", station._id);
     }
@@ -170,7 +173,7 @@
   import { logical_fly } from "$share/transition";
   import { click_out } from "$share/actions";
   import CircularProgress from "$share/CircularProgress.svelte";
-  import { CountryCode } from "$server/defs/CountryCode";
+  import type { CountryCode } from "$server/defs/CountryCode";
 
   const unselect_station = (id: string) => {
     if (selected_stations === "all") {

@@ -17,7 +17,7 @@
   export let data: import("$server/defs/analytics/Analytics").Analytics | null;
   export let lang: string;
 
-  import { CountryCode } from "$server/defs/CountryCode";
+  import type { CountryCode } from "$server/defs/CountryCode";
   import type { StationItem, QueryKind,  } from "./AnalyticsFilters.svelte";
   export type { StationItem, QueryKind };
 

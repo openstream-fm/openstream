@@ -37,7 +37,7 @@
   
   import type { DataGridData, DataGridField } from "./types";
   import type { CountryCode } from "$server/defs/CountryCode";
-  import { StationItem } from "./AnalyticsFilters.svelte";
+  import type { StationItem } from "./AnalyticsFilters.svelte";
   
   const SEC = 1000;
   const MIN = SEC * 60;
