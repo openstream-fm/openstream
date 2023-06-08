@@ -13,7 +13,7 @@ import path from "path";
 export type Config = {
   openstream: {
     api_base_url: string
-    token: string
+    // token: string
   }
 
   session: {
@@ -145,7 +145,7 @@ export const merge_env = (partial: PartialDeep<Config>, { logger, env = process.
   }
 
   str("openstream.api_base_url")
-  str("openstream.token")
+  // str("openstream.token")
 
   str("session.secret");
   num("session.max_age_days");

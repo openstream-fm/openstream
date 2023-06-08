@@ -58,8 +58,9 @@ for(const dir of ["server", "app", "admin"]) {
   })
 }
 
-await $`cp -r ${`${frontdir.src}/static`} ${`${frontdir.target}/static`}`;
+await $`cp -r ${`${basedir}/static`} ${`${tmpdir}/static`}`;
 await $`cp -r ${`${basedir}/mailer-static`} ${`${tmpdir}/mailer-static`}`;
+await $`cp ${`${basedir}/openstream-front.mjs`} ${`${tmpdir}/openstream-front.mjs`}`;
 
 await $`cp ${binfile.src} ${binfile.target}`;
 

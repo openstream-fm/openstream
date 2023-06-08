@@ -12,7 +12,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const defaultConfig: Config = {
   openstream: {
     api_base_url: "https://api.openstream.fm",
-    token: "test_token",
+    // token: "test_token",
   },
   session: {
     secret: "test_secret",
@@ -61,7 +61,7 @@ test("load_from_string should load config from TOML string", (t) => {
   const tomlString = `
 [openstream]
 api_base_url = "https://api.openstream.fm"
-token = "test_token"
+# token = "test_token"
 
 [session]
 secret = "test_secret"
@@ -102,7 +102,7 @@ studio = { host = "studio.openstream.fm" }
 test("merge_env should merge environment variables with config", (t) => {
   const env = {
     OPENSTREAM_FRONT_OPENSTREAM_API_BASE_URL: "https://api.openstream.fm/env",
-    OPENSTREAM_FRONT_OPENSTREAM_TOKEN: "test_token_env",
+    // OPENSTREAM_FRONT_OPENSTREAM_TOKEN: "test_token_env",
     OPENSTREAM_FRONT_SESSION_SECRET: "test_secret_env",
     OPENSTREAM_FRONT_SESSION_MAX_AGE_DAYS: "40",
     OPENSTREAM_FRONT_SESSION_COOKIE_NAME: "test_cookie_env",
@@ -133,7 +133,7 @@ test("merge_env should merge environment variables with config", (t) => {
   const expectedConfig: Config = {
     openstream: {
       api_base_url: "https://api.openstream.fm/env",
-      token: "test_token_env",
+      // token: "test_token_env",
     },
     session: {
       secret: "test_secret_env",
@@ -208,7 +208,7 @@ test("load_from_string should load config from JSON string with missing properti
   });
 
   const env = {
-    OPENSTREAM_FRONT_OPENSTREAM_TOKEN: "test_token",
+    // OPENSTREAM_FRONT_OPENSTREAM_TOKEN: "test_token",
     OPENSTREAM_FRONT_SESSION_COOKIE_NAME: "test_cookie",
     OPENSTREAM_FRONT_STUDIO_ENABLED: "true",
     OPENSTREAM_FRONT_STUDIO_PORT: "3000",
@@ -248,7 +248,7 @@ test("load_from_string should load config from JSON string with missing properti
   `;
   
     const env = {
-      OPENSTREAM_FRONT_OPENSTREAM_TOKEN: "test_token",
+      // OPENSTREAM_FRONT_OPENSTREAM_TOKEN: "test_token",
       OPENSTREAM_FRONT_SESSION_COOKIE_NAME: "test_cookie",
       OPENSTREAM_FRONT_STUDIO_ENABLED: "true",
       OPENSTREAM_FRONT_STUDIO_PORT: "3000",
@@ -279,7 +279,7 @@ test("load_from_string should load config from JSON string with missing properti
   });
   
   test("load_from_string should throw error for invalid JSON string", (t) => {
-    const invalidJsonString = `{"openstream": {"api_base_url": "https://api.openstream.fm", "token": "test_token"},}`;
+    const invalidJsonString = `{"openstream": {"api_base_url": "https://api.openstream.fm",,}`;
   
     t.throws(() => load_from_string(invalidJsonString, "json"));
   });
@@ -288,7 +288,7 @@ test("load_from_string should load config from JSON string with missing properti
     const invalidTomlString = `
   [openstream]
   api_base_url = "https://api.openstream.fm"
-  token = "test_token"
+  # token = "test_token"
   invalid_key = "invalid_value"
   
   [hosts.default]
@@ -308,7 +308,7 @@ test("load_from_string should load config from JSON string with missing properti
     const invalidJsonString = JSON.stringify({
       openstream: {
         api_base_url: "https://api.openstream.com",
-        token: "test_token",
+        // token: "test_token",
       },
       session: {
         secret: "test_secret",
@@ -328,7 +328,7 @@ test("load_from_string should load config from JSON string with missing properti
     const invalidTomlString = `
   [openstream]
   api_base_url = "https://api.openstream.com"
-  token = "test_token"
+  # token = "test_token"
   
   [session]
   secret = "test_secret"
