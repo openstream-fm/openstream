@@ -364,7 +364,7 @@ impl AccessToken {
 }
 
 impl Model for AccessToken {
-  const UID_LEN: usize = 24;
+  const UID_LEN: usize = 12;
   const CL_NAME: &'static str = "access_tokens";
 
   fn indexes() -> Vec<IndexModel> {
