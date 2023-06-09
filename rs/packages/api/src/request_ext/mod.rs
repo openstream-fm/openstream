@@ -302,7 +302,7 @@ async fn internal_get_access_token(
         Ok(v) => v,
       };
 
-      match AccessToken::touch_cached(id_key).await? {
+      match AccessToken::touch(id_key).await? {
         None => {
           ip_limit::hit(ip);
           return Err(GetAccessTokenScopeError::NotFound);

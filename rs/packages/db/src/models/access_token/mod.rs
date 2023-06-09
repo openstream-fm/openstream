@@ -2,7 +2,6 @@ use std::collections::hash_map::Entry;
 use std::net::IpAddr;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
-use std::time::Instant;
 
 use crate::current_filter_doc;
 use crate::Model;
@@ -24,8 +23,6 @@ use tokio::time::Duration;
 
 use parking_lot::Mutex;
 use std::collections::HashMap;
-use std::sync::Arc;
-use tokio::sync::OnceCell;
 
 crate::register!(AccessToken);
 
@@ -187,101 +184,7 @@ fn start_access_token_hit_saver_job() {
   });
 }
 
-const CACHE_CLEAR_INTERVAL: Duration = Duration::from_secs(5);
-static CACHE_JOB_STARTED: AtomicBool = AtomicBool::new(false);
-
-#[allow(clippy::type_complexity)]
-static ACCESS_TOKEN_CACHE: tokio::sync::Mutex<
-  Option<HashMap<String, (Instant, Arc<OnceCell<AccessToken>>)>>,
-> = tokio::sync::Mutex::const_new(None);
-
-const ACCESS_TOKEN_CACHE_VALIDITY: Duration = Duration::from_secs(300);
-
-fn start_access_token_cache_job() {
-  info!("access token cache clear job started");
-  tokio::spawn(async move {
-    loop {
-      tokio::time::sleep(CACHE_CLEAR_INTERVAL).await;
-
-      let mut lock = ACCESS_TOKEN_CACHE.lock().await;
-
-      match lock.as_mut() {
-        None => continue,
-        Some(map) => map.retain(|_, (got_at, _)| got_at.elapsed() < CACHE_CLEAR_INTERVAL),
-      }
-    }
-  });
-}
-
 impl AccessToken {
-  pub async fn touch_cached(id_key: &str) -> Result<Option<AccessToken>, mongodb::error::Error> {
-    let v = CACHE_JOB_STARTED.swap(true, Ordering::SeqCst);
-    if !v {
-      start_access_token_cache_job();
-    }
-
-    let cell = {
-      let mut lock = ACCESS_TOKEN_CACHE.lock().await;
-
-      let entry = lock
-        .get_or_insert_with(HashMap::new)
-        .entry(id_key.to_string());
-
-      match entry {
-        Entry::Occupied(mut entry) => {
-          let (instant, cell) = entry.get();
-          if instant.elapsed() > ACCESS_TOKEN_CACHE_VALIDITY {
-            let cell = Arc::new(OnceCell::new());
-            entry.insert((Instant::now(), cell.clone()));
-            cell
-          } else {
-            cell.clone()
-          }
-        }
-
-        Entry::Vacant(entry) => {
-          let cell = Arc::new(OnceCell::new());
-          entry.insert((Instant::now(), cell.clone()));
-          cell
-        }
-      }
-    };
-
-    #[derive(Debug, thiserror::Error)]
-    enum AccessTokenInitError {
-      #[error("mongo: {0}")]
-      Mongo(#[from] mongodb::error::Error),
-      #[error("access token none")]
-      None,
-    }
-
-    let result = cell
-      .get_or_try_init(|| async {
-        let (id, key) = match id_key.split_once('-') {
-          None => return Err(AccessTokenInitError::None),
-          Some(r) => r,
-        };
-        let hash = crypt::sha256(key);
-        let filter = current_filter_doc! { AccessToken::KEY_ID: id, AccessToken::KEY_HASH: hash };
-        let token = AccessToken::internal_touch(filter, false).await?;
-        match token {
-          Some(token) => Ok(token),
-          None => Err(AccessTokenInitError::None),
-        }
-      })
-      .await;
-
-    match result {
-      Ok(token) => {
-        Self::hit(token.id.clone());
-        Ok(Some(token.clone()))
-      }
-
-      Err(AccessTokenInitError::Mongo(e)) => Err(e),
-      Err(AccessTokenInitError::None) => Ok(None),
-    }
-  }
-
   fn hit(id: String) {
     let v = HIT_JOB_STARTED.swap(true, Ordering::SeqCst);
 
@@ -365,7 +268,7 @@ impl AccessToken {
     uid::uid(24)
   }
 
-  const DEVICE_ID_LEN: usize = 24;
+  pub const DEVICE_ID_LEN: usize = 24;
   pub fn random_device_id() -> String {
     uid::uid(Self::DEVICE_ID_LEN)
   }
