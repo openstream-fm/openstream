@@ -6,7 +6,6 @@ use std::sync::atomic::Ordering;
 use crate::current_filter_doc;
 use crate::Model;
 use mongodb::bson::doc;
-use mongodb::bson::Document;
 use mongodb::options::IndexOptions;
 use mongodb::IndexModel;
 use serde::{Deserialize, Serialize};
@@ -21,6 +20,10 @@ use tokio::time::Duration;
 
 use parking_lot::Mutex;
 use std::collections::HashMap;
+
+use self::index::AccessTokenIndex;
+
+pub mod index;
 
 crate::register!(AccessToken);
 
@@ -118,16 +121,14 @@ pub struct AccessToken {
 
   pub hash: String,
 
-  /// the media_hash is used to access streams and files with access token scope
+  /// the media_hash is used to access streams and files
   /// directly from the client without exposing a full access token
   pub media_hash: String,
 
   #[serde(flatten)]
-  // #[ts(skip)]
   pub scope: Scope,
 
   #[serde(flatten)]
-  // #[ts(skip)]
   pub generated_by: GeneratedBy,
 
   pub last_used_at: Option<DateTime>,
@@ -182,6 +183,21 @@ fn start_access_token_hit_saver_job() {
   });
 }
 
+#[derive(Debug, Clone)]
+enum TouchQuery {
+  Hash(String, String),
+  MediaHash(String, String),
+}
+
+impl TouchQuery {
+  fn id(&self) -> &str {
+    match self {
+      Self::Hash(id, _) => id,
+      Self::MediaHash(id, _) => id,
+    }
+  }
+}
+
 impl AccessToken {
   fn hit(id: String) {
     let v = HIT_JOB_STARTED.swap(true, Ordering::SeqCst);
@@ -209,12 +225,54 @@ impl AccessToken {
   }
 
   async fn internal_touch(
-    filter: Document,
+    query: TouchQuery,
     hit: bool,
   ) -> Result<Option<AccessToken>, mongodb::error::Error> {
-    let doc = match Self::get(filter).await? {
-      None => return Ok(None),
-      Some(doc) => doc,
+    let id = query.id();
+
+    let index = AccessTokenIndex::global();
+    let doc = match index.get_by_id(id).await {
+      Some(doc) => match query {
+        TouchQuery::Hash(_id, hash) => {
+          if doc.hash == hash {
+            doc
+          } else {
+            return Ok(None);
+          }
+        }
+
+        TouchQuery::MediaHash(_id, media_hash) => {
+          if doc.media_hash == media_hash {
+            doc
+          } else {
+            return Ok(None);
+          }
+        }
+      },
+
+      // if token is not found in index we pass the query to the database
+      None => {
+        let filter = match query {
+          TouchQuery::Hash(id, hash) => {
+            current_filter_doc! {
+              AccessToken::KEY_ID: id,
+              AccessToken::KEY_HASH: hash
+            }
+          }
+
+          TouchQuery::MediaHash(id, media_hash) => {
+            current_filter_doc! {
+              AccessToken::KEY_ID: id,
+              AccessToken::KEY_MEDIA_HASH: media_hash
+            }
+          }
+        };
+
+        match Self::get(filter).await? {
+          None => return Ok(None),
+          Some(doc) => doc,
+        }
+      }
     };
 
     if hit {
@@ -232,11 +290,7 @@ impl AccessToken {
 
     let hash = crypt::sha256(key);
 
-    Self::internal_touch(
-      current_filter_doc! { AccessToken::KEY_ID: id, AccessToken::KEY_HASH: hash },
-      true,
-    )
-    .await
+    Self::internal_touch(TouchQuery::Hash(id.into(), hash), true).await
   }
 
   pub async fn touch_by_media_key(
@@ -249,11 +303,7 @@ impl AccessToken {
 
     let media_hash = crypt::sha256(media_key);
 
-    Self::internal_touch(
-      current_filter_doc! { AccessToken::KEY_ID: id,  AccessToken::KEY_MEDIA_HASH: media_hash },
-      true,
-    )
-    .await
+    Self::internal_touch(TouchQuery::MediaHash(id.into(), media_hash), true).await
   }
 }
 

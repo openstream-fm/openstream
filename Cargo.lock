@@ -5409,6 +5409,7 @@ dependencies = [
 name = "user-agent"
 version = "0.1.0"
 dependencies = [
+ "deepsize",
  "prex",
  "serde",
  "static_init",
