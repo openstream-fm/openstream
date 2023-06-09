@@ -5,10 +5,8 @@ use std::sync::atomic::Ordering;
 
 use crate::current_filter_doc;
 use crate::Model;
+use mongodb::bson::doc;
 use mongodb::bson::Document;
-// compiler bug (this is indeed used)
-#[allow(unused)]
-use mongodb::bson::{self, doc};
 use mongodb::options::IndexOptions;
 use mongodb::IndexModel;
 use serde::{Deserialize, Serialize};
@@ -260,6 +258,53 @@ impl AccessToken {
 }
 
 impl AccessToken {
+  pub const ACCESS_TOKEN_AUTOREMOVE_INTERVAL: tokio::time::Duration =
+    tokio::time::Duration::from_secs(60 * 5); // 5 min
+
+  pub fn start_autoremove_job() -> tokio::task::JoinHandle<()> {
+    info!(target: "access-token-autoremove", "access token autoremove job started");
+    tokio::spawn(async move {
+      let mut interval = tokio::time::interval(Self::ACCESS_TOKEN_AUTOREMOVE_INTERVAL);
+      loop {
+        // first tick is instantaneous
+        interval.tick().await;
+
+        let now = time::OffsetDateTime::now_utc();
+        let limit = time::OffsetDateTime::from_unix_timestamp(
+          now.unix_timestamp() - constants::ACCESS_TOKEN_NOT_USED_AUTOREMOVE_SECS as i64,
+        )
+        .unwrap();
+        let limit: serde_util::DateTime = limit.into();
+
+        let filter = current_filter_doc! {
+          "$and": [
+            { AccessToken::KEY_LAST_USED_AT: { "$lt": limit } },
+            {
+              "$or": [
+                // user, register generated tokens
+                { GeneratedBy::KEY_ENUM_TAG: GeneratedBy::KEY_ENUM_VARIANT_REGISTER },
+                // admin and user, login generated tokens
+                { GeneratedBy::KEY_ENUM_TAG: GeneratedBy::KEY_ENUM_VARIANT_LOGIN },
+                // admin-as-user tokens (this are generated via API)
+                { Scope::KEY_ENUM_TAG: Scope::KEY_ENUM_VARIANT_ADMINASUSER }
+              ]
+            }
+          ]
+        };
+
+        let r = match Self::set_deleted(filter).await {
+          Ok(r) => r,
+          Err(e) => {
+            error!(target: "access-token-autoremove", "mongodb error marking access tokens as deleted: {e}, {e:?}");
+            continue;
+          }
+        };
+
+        info!(target: "access-token-autoremove", "{} tokens marked as deleted",  r.matched_count);
+      }
+    })
+  }
+
   pub fn random_key() -> String {
     uid::uid(48)
   }
@@ -369,6 +414,7 @@ impl Model for AccessToken {
 mod test {
 
   use super::*;
+  use mongodb::bson;
 
   #[test]
   fn keys_match() {

@@ -33,3 +33,9 @@ pub const API_IP_LIMIT: usize = 60;
 
 /// limit restart interval of API_IP_LIMIT
 pub const API_IP_LIMIT_DURATION_SECS: u64 = 60;
+
+/// access token autoremove validity
+/// remove access tokens that are not used in the last X time
+/// this is only for Login, Register or AdminAsUser access tokens
+/// Cli or Api(not AdminAsUser) access tokens does not auto-expire
+pub const ACCESS_TOKEN_NOT_USED_AUTOREMOVE_SECS: u64 = 60 * 60 * 24 * 7; // 7 days
