@@ -38,8 +38,9 @@ impl ConstRegistry {
     let lock = self.map.lock();
     for (key, value) in lock.iter() {
       buf.push_str(&format!(
-        "\nexport const {} = {};",
+        "\n\nexport const {} = {};",
         key,
+        // serde_json::Value to_string will never error
         serde_json::to_string_pretty(value).unwrap()
       ))
     }
