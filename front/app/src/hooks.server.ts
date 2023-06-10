@@ -1,6 +1,6 @@
 import type { Handle, HandleFetch } from "@sveltejs/kit";
 import { env } from "./env.server";
-import { FORWARD_IP_HEADER, PROTOCOL_HEADER, X_REAL_IP } from "$server/constants";
+import { FORWARD_IP_HEADER, LOCALE_DIR_HEADER, LOCALE_LANG_HEADER, PROTOCOL_HEADER, REAL_IP_HEADER } from "$server/constants";
 import { server_logger } from "$lib/logger.server";
 
 export const handle: Handle = async ({ event, resolve }) => {
@@ -9,19 +9,10 @@ export const handle: Handle = async ({ event, resolve }) => {
     throw new Error("Internal error");
   }
 
-  // console.log("===============")
-  // console.log("kit request");
-  // console.log(event.request.url);
-  // console.log(event.request.headers);
-  // server_logger.info(`host: ${event.request.headers.get("host")}`, );
-
-  // event.locals.set_cookie = new Set();
-  // event.locals.cookie = new Set();
-
   const start = Date.now();
 
-  const ip = event.request.headers.get(X_REAL_IP);
-  if(ip == null) server_logger.warn(`handle: received request without ${X_REAL_IP} header: ${event.request.url}`);
+  const ip = event.request.headers.get(REAL_IP_HEADER);
+  if(ip == null) server_logger.warn(`handle: received request without ${REAL_IP_HEADER} header: ${event.request.url}`);
   event.locals.ip = ip || "0.0.0.0";
 
   let proto_header = event.request.headers.get(PROTOCOL_HEADER);
@@ -108,10 +99,10 @@ export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
       // mode: "same-origin"
     });
 
-    const lang = res.headers.get("x-locale-lang");
+    const lang = res.headers.get(LOCALE_LANG_HEADER);
     if(lang != null) event.locals.lang = lang;
 
-    const dir = res.headers.get("x-locale-dir");
+    const dir = res.headers.get(LOCALE_DIR_HEADER);
     if(dir != null) event.locals.dir = dir;
     
     // const set_cookie = res.headers.get("set-cookie");

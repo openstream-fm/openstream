@@ -16,6 +16,7 @@ import { host } from "../host";
 import { default_studio_locale, locales_map, studio_locales } from "../locale/studio/studio.locale";
 import type { StudioLocale } from "../locale/studio/studio.locale";
 import acceptLanguageParser from "accept-language-parser";
+import { LOCALE_DIR_HEADER, LOCALE_LANG_HEADER } from "../constants";
 
 export type PublicConfig = {
   storage_public_url: string
@@ -114,8 +115,8 @@ export const studio_api = ({
     const dir = locale.lang === "ar" ? "rtl" : "ltr";
     const lang = locale.region ? `${locale.lang}-${locale.region}` : locale.lang;
     
-    res.header("x-locale-lang", lang);
-    res.header("x-locale-dir", dir);
+    res.header(LOCALE_LANG_HEADER, lang);
+    res.header(LOCALE_DIR_HEADER, dir);
     res.vary("accept-language");
     res.redirect(302, `/api/locale/${lang}.json`);
   }))
@@ -128,8 +129,8 @@ export const studio_api = ({
     }
     const dir = locale.lang === "ar" ? "rtl" : "ltr";
     const lang = locale.region ? `${locale.lang}-${locale.region}` : locale.lang;
-    res.header("x-locale-lang", lang);
-    res.header("x-locale-dir", dir);
+    res.header(LOCALE_LANG_HEADER, lang);
+    res.header(LOCALE_DIR_HEADER, dir);
     return { locale }
   }))
 

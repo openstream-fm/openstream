@@ -13,6 +13,11 @@ pub fn keys(args: TokenStream, tokens: TokenStream) -> TokenStream {
   impls::keys::keys(args, tokens)
 }
 
+#[proc_macro_attribute]
+pub fn const_register(args: TokenStream, tokens: TokenStream) -> TokenStream {
+  impls::const_register::const_register(args, tokens)
+}
+
 // #[proc_macro_attribute]
 // pub fn validate(args: TokenStream, tokens: TokenStream) -> TokenStream {
 //   todo!();

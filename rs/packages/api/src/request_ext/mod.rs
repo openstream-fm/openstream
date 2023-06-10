@@ -16,7 +16,7 @@ use db::{current_filter_doc, PublicScope};
 use prex::Request;
 use serde::{Deserialize, Serialize};
 
-pub static X_ACCESS_TOKEN: &str = "x-access-token";
+pub static X_ACCESS_TOKEN: &str = constants::ACCESS_TOKEN_HEADER;
 
 #[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
 pub struct DelegateQuery {

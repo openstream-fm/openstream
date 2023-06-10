@@ -28,7 +28,8 @@ impl PaymentsClient {
       .client
       .post(format!("{}{}", self.base_url, Q::PATH))
       .json(&query)
-      .header("x-access-token", &self.access_token)
+      // this is not the same access token header as the api one
+      .header(constants::PAYMENTS_ACCESS_TOKEN_HEADER, &self.access_token)
       .send()
       .await
       .map_err(PerformError::Fetch)?;

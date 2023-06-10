@@ -1,11 +1,11 @@
 import type { Request } from "express";
-import { FORWARD_IP_HEADER, LOCALHOST, X_REAL_IP } from "./constants";
+import { FORWARD_IP_HEADER, LOCALHOST, REAL_IP_HEADER } from "./constants";
 
 export const ip = (req: Request): string => {
   let ip = req.ip;
 
   if(LOCALHOST.includes(ip)){
-    const v = req.header(X_REAL_IP); 
+    const v = req.header(REAL_IP_HEADER); 
     if(v) ip = v;
   }
 

@@ -1,6 +1,6 @@
 import type { Handle, HandleFetch } from "@sveltejs/kit";
 import { env } from "./env.server";
-import { FORWARD_IP_HEADER, PROTOCOL_HEADER, X_REAL_IP } from "$server/constants";
+import { FORWARD_IP_HEADER, PROTOCOL_HEADER, REAL_IP_HEADER } from "$server/constants";
 import { server_logger } from "$lib/logger.server";
 
 export const handle: Handle = async ({ event, resolve }) => {
@@ -11,8 +11,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   const start = Date.now();
 
-  const ip = event.request.headers.get(X_REAL_IP);
-  if(ip == null) server_logger.warn(`handle: received request without ${X_REAL_IP} header: ${event.request.url}`);
+  const ip = event.request.headers.get(REAL_IP_HEADER);
+  if(ip == null) server_logger.warn(`handle: received request without ${REAL_IP_HEADER} header: ${event.request.url}`);
   event.locals.ip = ip || "0.0.0.0";
 
   let proto_header = event.request.headers.get(PROTOCOL_HEADER);
