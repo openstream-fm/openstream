@@ -37,7 +37,7 @@ jobs:
     # needs: skip_check
     # if: needs.skip_check.outputs.should_skip != 'true'
 
-    runs-on: ubuntu-latest
+    runs-on: self-hosted-unit-tests
 
     steps:
     
