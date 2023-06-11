@@ -4,6 +4,7 @@ import validate from "../share/validate/validate.it";
 import countries from "../share/countries/countries.it";
 import type_of_content from "../share/type-of-content/type-of-content.it";
 import analytics from "../share/analytics/analytics.it";
+import payments from "../share/payments/payments.it";
 
 const locale: import("./studio.locale").StudioLocale = {
 
@@ -21,6 +22,7 @@ const locale: import("./studio.locale").StudioLocale = {
   "validate": validate,
   "stats_map": stats_map,
   "analytics": analytics,
+  "payments": payments,
 
   "language": {
     "auto": "Rilevamento automatico",

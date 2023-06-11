@@ -3,6 +3,7 @@ import validate from "../share/validate/validate.pt";
 import countries from "../share/countries/countries.pt";
 import type_of_content from "../share/type-of-content/type-of-content.pt";
 import analytics from "../share/analytics/analytics.pt";
+import payments from "../share/payments/payments.pt";
 
 const locale: import("./studio.locale").StudioLocale = {
   "lang": "pt",
@@ -19,6 +20,7 @@ const locale: import("./studio.locale").StudioLocale = {
   "validate": validate,
   "stats_map": stats_map,
   "analytics": analytics,
+  "payments": payments,
 
   "language": {
     "auto": "Detecção automática",

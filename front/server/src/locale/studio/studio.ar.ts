@@ -4,6 +4,7 @@ import validate from "../share/validate/validate.ar";
 import countries from "../share/countries/countries.ar";
 import type_of_content from "../share/type-of-content/type-of-content.ar";
 import analytics from "../share/analytics/analytics.ar";
+import payments from "../share/payments/payments.ar";
 
 const locale: import("./studio.locale").StudioLocale = {
 
@@ -21,6 +22,7 @@ const locale: import("./studio.locale").StudioLocale = {
   "validate": validate,
   "stats_map": stats_map,
   "analytics": analytics,
+  "payments": payments,
 
   "language": {
     "auto": "الكشف التلقائي",

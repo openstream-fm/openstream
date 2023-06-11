@@ -296,7 +296,13 @@
         <h2>{$locale.pages["accounts/create_account/plan"].form.pay.title}</h2>
 
         <div class="dropin-out">
-          <PaymentMethodSelector authorization="sandbox_d58xyrp3_xbw6cq92jcgfmzdh" bind:saved_methods={data.payment_methods.items} lang={$lang} bind:this={selector} />
+          <PaymentMethodSelector
+            locale={$locale.payments}
+            lang={$lang}
+            authorization="sandbox_d58xyrp3_xbw6cq92jcgfmzdh"
+            bind:saved_methods={data.payment_methods.items}
+            bind:this={selector}
+          />
           <!--<Dropin authorization="sandbox_d58xyrp3_xbw6cq92jcgfmzdh" bind:this={dropin}  />-->
         </div>
 

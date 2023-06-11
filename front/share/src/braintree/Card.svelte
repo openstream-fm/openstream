@@ -1,12 +1,14 @@
 <script lang="ts">
-  import Icon from "$share/Icon.svelte";
-import { ripple } from "$share/ripple";
-  import { mdiCheck, mdiCheckBold, mdiCheckboxMarkedCircle } from "@mdi/js";
-  import { scale } from "svelte/transition";
-
   export let card: import("$server/defs/PublicPaymentMethod").PublicPaymentMethod;
   export let selected: boolean = false;
   export let on_click: () => void;
+  export let locale: import("$server/locale/share/payments/payments.locale").PaymentsLocale;
+
+  import Icon from "$share/Icon.svelte";
+  import { ripple } from "$share/ripple";
+  import { mdiCheckBold } from "@mdi/js";
+  import { scale } from "svelte/transition";
+
 </script>
 
 <style>
@@ -68,13 +70,19 @@ import { ripple } from "$share/ripple";
 >
   <div class="data">
     <div class="brand">{card.card_type}</div>
-    <div class="number">Ending in <b>{card.last_4}</b></div>
+    <div class="number">
+      {@html
+        locale.Ending_in_XXXX_html
+          .replace("@XXXX", card.last_4)
+      }
+    </div>
     {#if card.expiration_month && card.expiration_year}
       <div class="expiration">
-        Expires at
-        <b>
-          <span class="month">{card.expiration_month}</span>/<span class="year">{card.expiration_year}</span>
-        </b>
+        {@html
+          locale.Expires_at_MM_YYYY_html
+            .replace("@YYYY", card.expiration_year)
+            .replace("@MM", card.expiration_month)
+        }
       </div>  
     {/if}
   </div>

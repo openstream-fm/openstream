@@ -4,6 +4,7 @@ import validate from "../share/validate/validate.de";
 import countries from "../share/countries/countries.de";
 import type_of_content from "../share/type-of-content/type-of-content.de";
 import analytics from "../share/analytics/analytics.de";
+import payments from "../share/payments/payments.de";
 
 const locale = {
 
@@ -21,6 +22,7 @@ const locale = {
   "validate": validate,
   "stats_map": stats_map,
   "analytics": analytics,
+  "payments": payments,
 
   "copy_to_clipboard": "In die Zwischenablage kopieren",
   "show_password": "Passwort anzeigen",

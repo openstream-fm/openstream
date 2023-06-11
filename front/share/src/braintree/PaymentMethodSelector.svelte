@@ -1,15 +1,11 @@
 <script lang="ts">
-  import { display_fly_enter } from "$share/display_transitions";
-  import { _post } from "$share/net.client";
-  import { _error } from "$share/notify";
-  import { ripple } from "$share/ripple";
-  import Card from "./Card.svelte";
 
   export let lang: string;
   export let authorization: string | (() => Promise<string>);
   export let saved_methods: PublicPaymentMethod[];
   export let selected_method: PublicPaymentMethod | null = null;
   export let user_id: string | null = null;
+  export let locale: import("$server/locale/share/payments/payments.locale").PaymentsLocale;
 
   let stage: "saved" | "new" = saved_methods.length === 0 ? "new" : "saved"; 
 
@@ -17,11 +13,15 @@
     stage = "new";
   }
 
+  import Dropin from "./Dropin.svelte";
+  import { display_fly_enter } from "$share/display_transitions";
+  import { _post } from "$share/net.client";
+  import { _error } from "$share/notify";
+  import Card from "./Card.svelte";
+
   let dropin: Dropin;
 
   type PublicPaymentMethod = import("$server/defs/PublicPaymentMethod").PublicPaymentMethod;
-
-  import Dropin from "./Dropin.svelte";
 
   export const requestMethodId = async (): Promise<string> => {
     
@@ -30,8 +30,8 @@
       if(selected_method) {
         return selected_method._id;
       } else {
-        _error("Please select a saved payment method or add a new one");
-        throw new Error("No method selected");
+        _error(locale.no_method_error_messaage);
+        throw new Error(locale.no_method_error_messaage);
       }
     
     } else {
@@ -125,7 +125,7 @@
 
   <div class="stage stage-saved" class:stage-on={stage === "saved"} use:display_fly_enter={{ start: false, show: stage === "saved", duration: 200, x: -25 }}>
     <div class="stage-title">
-      Select a payment method
+      {locale.Select_a_payment_method}
     </div>
 
     <div class="saved-items">
@@ -135,13 +135,14 @@
             card={method}
             selected={method._id === selected_method?._id}
             on_click={() => toggle(method)}
+            {locale}
           />
         </div>
       {/each}
     </div>
 
     <button class="stage-link new-link" on:click|preventDefault={() => stage = "new"}>
-      or add a new payment method
+      {locale.or_add_a_new_payment_method}
     </button>
   </div>
 
@@ -149,7 +150,7 @@
 
     {#if saved_methods.length}
       <div class="stage-title">
-        Add a payment method
+        {locale.Add_a_payment_method}
       </div>
     {/if}
 
@@ -159,7 +160,7 @@
     
     {#if saved_methods.length}
       <button class="stage-link saved-link" on:click|preventDefault={() => stage = "saved"}>
-        or use a saved payment method
+        {locale.or_use_a_saved_payment_method}
       </button>
     {/if}
   </div>

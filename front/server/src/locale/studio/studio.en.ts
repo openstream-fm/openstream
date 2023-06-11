@@ -3,6 +3,7 @@ import validate from "../share/validate/validate.en";
 import countries from "../share/countries/countries.en";
 import type_of_content from "../share/type-of-content/type-of-content.en";
 import analytics from "../share/analytics/analytics.en";
+import payments from "../share/payments/payments.en";
 
 const locale = {
 
@@ -20,6 +21,7 @@ const locale = {
   "validate": validate,
   "stats_map": stats_map,
   "analytics": analytics,
+  "payments": payments,
 
   "copy_to_clipboard": "Copy to clipboard",
   "show_password": "Show password",

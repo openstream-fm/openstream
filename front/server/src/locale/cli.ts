@@ -50,13 +50,13 @@ while (true) {
   break;
 }
 
-const kinds = ["studio", "countries", "stats-map", "validate", "type-of-content", "analytics"];
+const kinds = ["studio", "countries", "stats-map", "validate", "type-of-content", "analytics", "payments"];
 let selected_kinds: string[];
 
 while (true) {
   const s = (await rl.question(`select a kind (${kinds.join(", ")}) `)).trim();
   if (s === "share") {
-    selected_kinds = ["countries", "stats-map", "validate", "type-of-content", "analytics"];
+    selected_kinds = ["countries", "stats-map", "validate", "type-of-content", "analytics", "payments"];
     break;
   } else if (kinds.includes(s)) {
     selected_kinds = [s];
