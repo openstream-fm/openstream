@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use error::CheckCollectionError;
-use futures_util::TryStreamExt;
+use futures_util::{Future, TryStreamExt};
 use log::*;
 use mongodb::error::Result as MongoResult;
 use mongodb::options::{
@@ -72,31 +72,6 @@ pub async fn ensure_collections() -> MongoResult<()> {
   let registry = registry::Registry::global();
   registry.ensure_collections().await?;
   Ok(())
-  // config::Config::ensure_collection().await?;
-  // db_writable_test::DbWritableTest::ensure_collection().await?;
-  // user::User::ensure_collection().await?;
-  // account::Account::ensure_collection().await?;
-  // station::Station::ensure_collection().await?;
-  // admin::Admin::ensure_collection().await?;
-  // audio_chunk::AudioChunk::ensure_collection().await?;
-  // audio_file::AudioFile::ensure_collection().await?;
-  // audio_upload_operation::AudioUploadOperation::ensure_collection().await?;
-  // access_token::AccessToken::ensure_collection().await?;
-  // event::Event::ensure_collection().await?;
-  // stream_connection::StreamConnection::ensure_collection().await?;
-  // stream_connection::lite::StreamConnectionLite::ensure_collection().await?;
-  // play_history_item::PlayHistoryItem::ensure_collection().await?;
-  // media_session::MediaSession::ensure_collection().await?;
-  // transfer_checkpoint::TransferCheckpoint::ensure_collection().await?;
-  // user_account_relation::UserAccountRelation::ensure_collection().await?;
-  // deployment::Deployment::ensure_collection().await?;
-  // relay_session::RelaySession::ensure_indexes().await?;
-  // user_account_relation::UserAccountRelation::ensure_collection().await?;
-  // token_user_email_confirmation::TokenUserEmailConfirmation::ensure_collection().await?;
-  // token_user_recovery::TokenUserRecovery::ensure_collection().await?;
-  // plan::Plan::ensure_collection().await?;
-  // sent_email::SentEmail::ensure_collection().await?;
-  // email_verification_code::EmailVerificationCode::ensure_collection().await?;
 }
 
 pub fn client_ref() -> &'static Client {
@@ -441,6 +416,63 @@ impl<T> Paged<T> {
       limit,
       items: items.into_iter().map(f).collect(),
     }
+  }
+
+  pub async fn map_async<O, F: FnMut(T) -> Fut, Fut: Future<Output = O>>(
+    self,
+    buffer: usize,
+    f: F,
+  ) -> Paged<O> {
+    let Paged {
+      total,
+      skip,
+      limit,
+      items,
+    } = self;
+
+    use futures_util::StreamExt;
+
+    let items = futures_util::stream::iter(items)
+      .map(f)
+      .buffered(buffer)
+      .collect()
+      .await;
+
+    Paged {
+      total,
+      skip,
+      limit,
+      items,
+    }
+  }
+
+  pub async fn try_map_async<O, E, F: FnMut(T) -> Fut, Fut: Future<Output = Result<O, E>>>(
+    self,
+    buffer: usize,
+    f: F,
+  ) -> Result<Paged<O>, E> {
+    let Paged {
+      total,
+      skip,
+      limit,
+      items,
+    } = self;
+
+    use futures_util::StreamExt;
+    //use futures_util::TryStreamExt;
+
+    let items = futures_util::stream::iter(items)
+      .map(f)
+      .buffered(buffer)
+      .try_collect()
+      .await?;
+
+    Ok(Paged {
+      total,
+      skip,
+      limit,
+      items,
+    })
   }
 }
 

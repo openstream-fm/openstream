@@ -42,7 +42,7 @@ pub enum PaymentMethodKind {
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/")]
 pub struct PublicPaymentMethod {
-  #[ts(rename = "_id")]
+  #[serde(rename = "_id")]
   pub id: String,
   pub user_id: String,
 

@@ -42,16 +42,10 @@ impl Display for DateTime {
     );
 
     if y.is_negative() {
+      let abs_y = y.abs();
       write!(
         f,
-        "-{:06}-{:02}-{:02}T{:02}:{:02}:{:02}.{:03}Z",
-        y.abs(),
-        m,
-        d,
-        h,
-        min,
-        sec,
-        milli
+        "-{abs_y:06}-{m:02}-{d:02}T{h:02}:{min:02}:{sec:02}.{milli:03}Z",
       )
     } else {
       write!(

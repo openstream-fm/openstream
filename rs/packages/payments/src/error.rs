@@ -1,11 +1,9 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, thiserror::Error, ts_rs::TS)]
-// #[ts(rename = "PaymentsErrorBase")]
 #[error("{:?}: {}", kind, message)]
 pub struct PaymentsError {
   pub message: String,
-  // #[ts(skip)]
   #[serde(flatten)]
   pub kind: PaymentsErrorKind,
 }

@@ -282,5 +282,18 @@ export const shared_api = ({
     return await client.analytics.get(ip(req), ua(req), get_token(req), req.query as any);
   }))
 
+  api.route("/payment-methods")
+    .get(json(async req => {
+      return await client.payment_methods.list(ip(req), ua(req), get_token(req), req.query as any)
+    }))
+    .post(json(async req => {
+      return await client.payment_methods.post(ip(req), ua(req), get_token(req), req.body)
+    }))
+
+  api.route("/payment-methods/:payment_method")
+    .get(json(async req => {
+      return await client.payment_methods.get(ip(req), ua(req), get_token(req), req.params.payment_method);
+    }))
+
   return api;
 }

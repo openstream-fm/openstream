@@ -8,7 +8,6 @@ crate::register!(RelaySession);
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
-#[ts(rename = "RelaySessionBase")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct RelaySession {

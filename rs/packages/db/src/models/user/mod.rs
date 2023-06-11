@@ -12,17 +12,32 @@ crate::register!(User);
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
+#[validify::validify]
 #[macros::keys]
 pub struct User {
   #[serde(rename = "_id")]
   pub id: String,
-  // pub station_ids: Vec<String>,
+
+  #[modify(trim)]
+  #[validate(length(min = 1, max = 50))]
   pub first_name: String,
+
+  #[modify(trim)]
+  #[validate(length(min = 1, max = 50))]
   pub last_name: String,
+
+  #[validate(length(min = 1, max = 50))]
   pub email: String,
+
+  #[modify(trim)]
+  #[validate(length(min = 1, max = 50))]
   pub phone: Option<String>,
+
   pub language: Option<String>,
+
+  #[validate(length(min = 1, max = 50))]
   pub password: Option<String>,
+
   pub created_at: DateTime,
   pub updated_at: DateTime,
   pub user_metadata: Metadata,

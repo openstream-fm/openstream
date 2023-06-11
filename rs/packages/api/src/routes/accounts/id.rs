@@ -9,7 +9,11 @@ use ts_rs::TS;
 
 pub mod get {
 
-  use std::convert::Infallible;
+  use db::{
+    current_filter_doc,
+    user_account_relation::{UserAccountRelation, UserAccountRelationKind},
+    Model,
+  };
 
   use super::*;
 
@@ -27,6 +31,7 @@ pub mod get {
   #[ts(export_to = "../../../defs/api/accounts/[account]/GET/")]
   // #[serde(rename_all = "camelCase")]
   pub struct Output {
+    pub is_owner: bool,
     pub account: PublicAccount,
   }
 
@@ -35,7 +40,7 @@ pub mod get {
     type Input = Input;
     type Output = Output;
     type ParseError = GetAccessTokenScopeError;
-    type HandleError = Infallible;
+    type HandleError = mongodb::error::Error;
 
     async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
       let account_id = req.param("account").unwrap();
@@ -56,9 +61,22 @@ pub mod get {
         account,
       } = input;
 
+      let is_owner = match &access_token_scope {
+        AccessTokenScope::Global | AccessTokenScope::Admin(_) => true,
+        AccessTokenScope::User(user) => {
+          let filter = current_filter_doc! {
+            UserAccountRelation::KEY_USER_ID: &user.id,
+            UserAccountRelation::KEY_ACCOUNT_ID: &account.id,
+            UserAccountRelation::KEY_KIND: UserAccountRelationKind::KEY_ENUM_VARIANT_OWNER,
+          };
+
+          UserAccountRelation::exists(filter).await?
+        }
+      };
+
       let account = account.into_public(access_token_scope.as_public_scope());
 
-      Ok(Output { account })
+      Ok(Output { account, is_owner })
     }
   }
 }

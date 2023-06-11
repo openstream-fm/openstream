@@ -30,6 +30,8 @@ export class Client {
   accounts: Accounts;
   stations: Stations;
   analytics: Analytics;
+  invitations: AccountInvitations;
+  payment_methods: PaymentMethods;
 
   constructor(base_url: string, { logger, fetch = node_fetch }: { logger: Logger, fetch?: typeof node_fetch }) {
     this.base_url = base_url.trim().replace(/\/+$/g, "")
@@ -45,6 +47,8 @@ export class Client {
     this.accounts = new Accounts(this);
     this.stations = new Stations(this);
     this.analytics = new Analytics(this);
+    this.invitations = new AccountInvitations(this);
+    this.payment_methods = new PaymentMethods(this);
   }
 
   async fetch(_url: string, init: RequestInit = {}): Promise<Response> {
@@ -597,7 +601,60 @@ export class Analytics {
 
   async get(ip: string | null, ua: string | null, token: string, query: import("$api/analytics/GET/Query").Query): Promise<import("$api/analytics/GET/Output").Output> {
     const url = `/analytics${qss(query)}`;
-    // console.log("====== analytics ======", query, url);
     return await this.client.get(ip, ua, token, url);
+  }
+}
+
+export class PaymentMethods {
+  client: Client;
+  constructor(client: Client) {
+    this.client = client;
+  }
+  
+  async list(ip: string | null, ua: string | null, token: string, query: import("$api/payment-methods/GET/Query").Query): Promise<import("$api/payment-methods/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/payment-methods${qss(query)}`);
+  }
+
+  async post(ip: string | null, ua: string | null, token: string, payload: import("$api/payment-methods/POST/Payload").Payload): Promise<import("$api/payment-methods/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, `/payment-methods`, payload);
+  }
+
+
+  async get(ip: string | null, ua: string | null, token: string, payment_method_id: string): Promise<import("$api/payment-methods/[payment-method]/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/payment-methods/${payment_method_id}`);
+  }
+}
+
+
+export class AccountInvitations {
+  client: Client;
+  constructor(client: Client) {
+    this.client = client;
+  }
+  
+  async list(ip: string | null, ua: string | null, token: string, query: import("$api/invitations/GET/Query").Query): Promise<import("$api/invitations/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/invitations${qss(query)}`);
+  }
+  
+  async post(ip: string | null, ua: string | null, token: string, payload: import("$api/invitations/POST/Payload").Payload): Promise<import("$api/invitations/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, `/invitations`, payload);
+  }
+
+  async get(ip: string | null, ua: string | null, token: string, invitation_id: string): Promise<import("$api/invitations/[invitation]/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/invitations/${invitation_id}`);
+  }
+
+  
+
+  async get_by_token(ip: string | null, ua: string | null, token: string | null, payload: import("$api/invitations/get-by-token/POST/Payload").Payload): Promise<import("$api/invitations/get-by-token/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, `/invitations/get-by-token`, payload); 
+  }
+
+  async accept(ip: string | null, ua: string | null, token: string | null, payload: import("$api/invitations/accept/POST/Payload").Payload): Promise<import("$api/invitations/accept/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, `/invitations/accept`, payload); 
+  }
+
+  async reject(ip: string | null, ua: string | null, token: string | null, payload: import("$api/invitations/reject/POST/Payload").Payload): Promise<import("$api/invitations/reject/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, `/invitations/reject`, payload); 
   }
 }

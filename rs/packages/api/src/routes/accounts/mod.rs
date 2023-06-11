@@ -166,9 +166,10 @@ pub mod post {
 
   use db::account::{Limit, Limits};
   use db::models::user_account_relation::UserAccountRelationKind;
+  use db::payment_method::PaymentMethod;
   use db::plan::Plan;
-  use db::run_transaction;
   use db::user::User;
+  use db::{current_filter_doc, run_transaction};
   use serde_util::DateTime;
   use ts_rs::TS;
 
@@ -187,6 +188,7 @@ pub mod post {
     pub user_metadata: Option<Metadata>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub system_metadata: Option<Metadata>,
+    pub payment_method_id: String,
   }
 
   #[derive(Debug, Clone)]
@@ -224,8 +226,10 @@ pub mod post {
     Db(#[from] mongodb::error::Error),
     #[error("token: {0}")]
     Token(#[from] GetAccessTokenScopeError),
-    #[error("name missing")]
+    #[error("plan not found: {0}")]
     PlanNotFound(String),
+    #[error("payment method not found: {0}")]
+    PaymentMethodNotFound(String),
     #[error("name missing")]
     NameMissing,
     #[error("user id missing")]
@@ -241,6 +245,9 @@ pub mod post {
         HandleError::Token(e) => ApiError::from(e),
         HandleError::PlanNotFound(id) => {
           ApiError::PayloadInvalid(format!("Plan with id {id} not found"))
+        }
+        HandleError::PaymentMethodNotFound(id) => {
+          ApiError::PayloadInvalid(format!("Payment method with id {id} not found"))
         }
         HandleError::NameMissing => ApiError::PayloadInvalid(String::from("Name is required")),
         HandleError::UserIdMissing => ApiError::PayloadInvalid(String::from("user_id is required")),
@@ -280,6 +287,7 @@ pub mod post {
         user_id,
         user_metadata,
         system_metadata,
+        payment_method_id,
       } = payload;
 
       let name = name.trim().to_string();
@@ -342,6 +350,7 @@ pub mod post {
       let account = Account {
         id: Account::uid(),
         plan_id,
+        payment_method_id: Some(payment_method_id.clone()),
         name,
         limits,
         system_metadata,
@@ -362,6 +371,13 @@ pub mod post {
         let filter = doc! { User::KEY_ID: &user_id };
         if !tx_try!(User::exists_with_session(filter, &mut session).await) {
           return Err(HandleError::UserNotFound(user_id.clone()));
+        }
+        {
+          let filter = current_filter_doc!{ PaymentMethod::KEY_ID: &payment_method_id, PaymentMethod::KEY_USER_ID: &user_id };
+          let exists = tx_try!(PaymentMethod::exists_with_session(filter, &mut session).await);
+          if !exists {
+            return Err(HandleError::PaymentMethodNotFound(payment_method_id.clone()));
+          }
         }
 
         tx_try!(Account::insert_with_session(&account, &mut session).await);

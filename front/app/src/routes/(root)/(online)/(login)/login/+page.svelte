@@ -12,7 +12,9 @@
 	import { locale } from "$lib/locale";
 	import { invalidate_siblings } from "$lib/invalidate";
 
-  let email = "";
+  import { page } from "$app/stores";
+
+  let email = $page.url.searchParams.get("email")?.trim() || "";
   let password = "";
 
   const login = action(async () => {

@@ -27,7 +27,6 @@ pub enum State {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
-// #[ts(rename = "BaseAudioUploadOperation")
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct AudioUploadOperation {

@@ -112,7 +112,6 @@ impl GeneratedBy {
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/", rename = "BaseAccessToken")]
-// #[ts(rename = "BaseAccessToken")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct AccessToken {

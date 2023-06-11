@@ -422,6 +422,7 @@ pub mod post {
         payment_method_response
       };
 
+      let payment_method_id = PaymentMethod::uid();
       // log::info!("payment method created: {payment_method:?}");
 
       let password = crypt::hash(password);
@@ -464,6 +465,7 @@ pub mod post {
       let account = Account {
         id: Account::uid(),
         plan_id,
+        payment_method_id: Some(payment_method_id.clone()),
         limits,
         name: account_name,
         user_metadata: account_user_metadata,
@@ -511,7 +513,7 @@ pub mod post {
         } = payment_method_response;
 
         PaymentMethod {
-          id: PaymentMethod::uid(),
+          id: payment_method_id,
           user_id,
           kind: PaymentMethodKind::Card {
             token: payment_method_token,

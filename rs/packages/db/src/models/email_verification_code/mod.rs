@@ -25,13 +25,9 @@ impl Model for EmailVerificationCode {
 }
 
 impl EmailVerificationCode {
-  #[allow(clippy::identity_op)]
-  pub const VALIDITY_SECONDS: u32 = 60 * 60 * 1; // 1 hr
-  pub const CODE_LEN: usize = 6;
-
   pub fn random_code() -> String {
     static CHARSET: &str = "0123456789";
-    random_string::generate(Self::CODE_LEN, CHARSET)
+    random_string::generate(constants::EMAIL_VERIFICATION_CODE_LEN, CHARSET)
   }
 
   pub fn is_expired(&self) -> bool {
@@ -39,7 +35,7 @@ impl EmailVerificationCode {
 
     let until = self
       .created_at
-      .saturating_add(Duration::SECOND * Self::VALIDITY_SECONDS);
+      .saturating_add(Duration::SECOND * constants::EMAIL_VERIFICATION_VALIDITY_SECS);
 
     now > until
   }

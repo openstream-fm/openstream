@@ -75,6 +75,8 @@ pub enum PublicErrorCode {
   AudioFileNotFound,
   DeviceNotFound,
   PlanNotFound,
+  PaymentMethodNotFound,
+  InvitationNotFound,
 
   QueryStringInvalid,
   PayloadIo,

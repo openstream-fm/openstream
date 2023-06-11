@@ -5,6 +5,8 @@ export const ACCESS_TOKEN_HEADER = "x-access-token";
 
 export const ACCESS_TOKEN_NOT_USED_AUTOREMOVE_SECS = 604800;
 
+export const ACCOUNT_INVITATION_VALIDITY_SECS = 604800;
+
 export const API_IP_LIMIT = 60;
 
 export const API_IP_LIMIT_DURATION_SECS = 60;
@@ -12,6 +14,10 @@ export const API_IP_LIMIT_DURATION_SECS = 60;
 export const AUDIO_FILE_BYTERATE = 16000;
 
 export const AUDIO_FILE_CHUNK_SIZE = 256000;
+
+export const EMAIL_VERIFICATION_CODE_LEN = 6;
+
+export const EMAIL_VERIFICATION_VALIDITY_SECS = 3600;
 
 export const FORWARD_IP_HEADER = "x-openstream-forwarded-ip";
 
@@ -32,5 +38,7 @@ export const STREAM_CHUNK_SIZE = 16000;
 export const STREAM_IP_CONNECTIONS_LIMIT = 8;
 
 export const STREAM_KBITRATE = 128;
+
+export const TOKEN_USER_RECOVERY_VALIDITY_SECS = 3600;
 
 export const TRANSFER_SAVE_INTERVAL_MILLIS = 5000;

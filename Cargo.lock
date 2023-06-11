@@ -1031,6 +1031,7 @@ dependencies = [
  "mongodb",
  "once_cell",
  "parking_lot 0.12.1",
+ "paste",
  "prex",
  "rand 0.8.5",
  "random-string",

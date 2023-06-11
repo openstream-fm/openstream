@@ -17,7 +17,7 @@ pub mod station_files_pre_shuffle_checkpoint;
 pub mod station_picture;
 pub mod station_picture_variant;
 pub mod stream_connection;
-pub mod token_user_email_confirmation;
+// pub mod token_user_email_confirmation;
 pub mod token_user_recovery;
 pub mod transfer_checkpoint;
 pub mod user;
@@ -28,3 +28,5 @@ pub mod sent_email;
 pub mod email_verification_code;
 
 pub mod payment_method;
+
+pub mod account_invitations;

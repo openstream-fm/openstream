@@ -84,6 +84,12 @@ pub enum ApiError {
   #[error("plan not found: {0}")]
   PlanNotFound(String),
 
+  #[error("payment method not found: {0}")]
+  PaymentMethodNotFound(String),
+
+  #[error("invitaiton not found: {0}")]
+  InvitationNotFound(String),
+
   #[error("payload io: {0}")]
   PayloadIo(hyper::Error),
 
@@ -190,13 +196,17 @@ impl ApiError {
       TokenUserNotFound(_) => StatusCode::INTERNAL_SERVER_ERROR,
       TokenAdminNotFound(_) => StatusCode::INTERNAL_SERVER_ERROR,
       TokenOutOfScope => StatusCode::UNAUTHORIZED,
+      
       StationNotFound(_) => StatusCode::NOT_FOUND,
       AdminNotFound(_) => StatusCode::NOT_FOUND,
       DeviceNotFound(_) => StatusCode::NOT_FOUND,
       AccountNotFound(_) => StatusCode::NOT_FOUND,
       PlanNotFound(_) => StatusCode::NOT_FOUND,
+      PaymentMethodNotFound(_) => StatusCode::NOT_FOUND,
       UserNotFound(_) => StatusCode::NOT_FOUND,
       AudioFileNotFound(_) => StatusCode::NOT_FOUND,
+      InvitationNotFound(_) => StatusCode::NOT_FOUND,
+
       QueryString(_) => StatusCode::BAD_REQUEST,
       QueryStringCustom(_) => StatusCode::BAD_REQUEST,
       PayloadIo(_) => StatusCode::BAD_REQUEST,
@@ -257,13 +267,17 @@ impl ApiError {
       TokenUserNotFound(id) => format!("User with id {id} not found"),
       TokenAdminNotFound(id) => format!("Admin with id {id} not found"),
       TokenOutOfScope => format!("Not enough permissions"),
+      
       StationNotFound(id) => format!("Station with id {id} not found"),
       AdminNotFound(id) => format!("Admin with id {id} not found"),
       UserNotFound(id) => format!("User with id {id} not found"),
       PlanNotFound(id) => format!("Plan with id {id} not found"),
+      PaymentMethodNotFound(id) => format!("Payment method with id {id} not found"),
       AccountNotFound(id) => format!("Account with id {id} not found"),
       DeviceNotFound(id) => format!("Device with id {id} not found"),
       AudioFileNotFound(id) => format!("Audio file with id {id} not found"),
+      InvitationNotFound(id) => format!("Invitation with id {id} not found"),
+      
       QueryString(e) => format!("Invalid query string: {e}"),
       QueryStringCustom(message) => format!("Invalid query string: {message}"),
       PayloadIo(e) => format!("Error reading payload: {e}"),
@@ -323,6 +337,7 @@ impl ApiError {
       TokenUserNotFound(_) => PublicErrorCode::TokenUserNotFound,
       TokenAdminNotFound(_) => PublicErrorCode::TokenAdminNotFound,
       TokenOutOfScope => PublicErrorCode::TokenOutOfScope,
+      
       StationNotFound(_) => PublicErrorCode::StationNotFound,
       AdminNotFound(_) => PublicErrorCode::AdminNotFound,
       UserNotFound(_) => PublicErrorCode::UserNotFound,
@@ -330,6 +345,9 @@ impl ApiError {
       AccountNotFound(_) => PublicErrorCode::AccountNotFound,
       AudioFileNotFound(_) => PublicErrorCode::AudioFileNotFound,
       DeviceNotFound(_) => PublicErrorCode::DeviceNotFound,
+      PaymentMethodNotFound(_) => PublicErrorCode::PaymentMethodNotFound,
+      InvitationNotFound(_) => PublicErrorCode::InvitationNotFound,
+
       QueryString(_) => PublicErrorCode::QueryStringInvalid,
       QueryStringCustom(_) => PublicErrorCode::QueryStringInvalid,
       PayloadIo(_) => PublicErrorCode::PayloadIo,

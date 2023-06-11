@@ -1,0 +1,1 @@
+export type PaymentsLocale = typeof import("./payments.en").default;

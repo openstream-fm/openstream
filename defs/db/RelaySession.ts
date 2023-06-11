@@ -2,7 +2,7 @@
 import type { DateTime } from "../DateTime";
 import type { RelaySessionState } from "./RelaySessionState";
 
-export type RelaySessionBase = {
+export type RelaySession = {
   _id: string;
   station_id: string;
   deployment_id: string;

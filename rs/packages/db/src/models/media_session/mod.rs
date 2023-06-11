@@ -8,7 +8,6 @@ crate::register!(MediaSession);
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
-// #[ts(rename = "MediaSessionBase")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct MediaSession {
@@ -20,7 +19,6 @@ pub struct MediaSession {
 
   pub state: MediaSessionState,
 
-  // #[ts(skip)]
   #[serde(flatten)]
   pub kind: MediaSessionKind,
 
