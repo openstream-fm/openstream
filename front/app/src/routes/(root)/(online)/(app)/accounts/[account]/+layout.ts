@@ -1,24 +1,14 @@
 import { load_get } from "$lib/load";
 
-export const load = (async ({ fetch, url, parent, depends, params }) => {
+export const load = (async ({ fetch, url, depends, params }) => {
 
   depends("api:accounts/:id");
 
-  const { accounts } = await parent();
+  const { account, is_owner }: import("$api/accounts/[account]/GET/Output").Output = await load_get(`/api/accounts/${params.account}`, { fetch, url });
   
-  let account: import("$api/accounts/[account]/GET/Output").Output["account"];
-
-  let item = accounts.items.find(item => item._id === params.account);
-
-  if(item != null) {
-    account = item;
-  } else {
-    const res: import("$api/accounts/[account]/GET/Output").Output = await load_get(`/api/accounts/${params.account}`, { fetch, url });
-    account = res.account;
-  }
-
   return {
     account,
+    is_account_owner: is_owner,
     station: null,
   }
 

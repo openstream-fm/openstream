@@ -50,7 +50,7 @@ while (true) {
   break;
 }
 
-const kinds = ["studio", "countries", "stats-map", "validate", "type-of-content", "analytics", "payments"];
+const kinds = ["studio", "admin", "wip", "countries", "stats-map", "validate", "type-of-content", "analytics", "payments"];
 let selected_kinds: string[];
 
 while (true) {
@@ -79,7 +79,11 @@ for (const iso of isos) {
   for (const kind of selected_kinds) {
     logger.info(`generating kind ${kind} - lang ${iso}`);
 
-    const dir = kind === "studio" ? "studio" : `share/${kind}`;
+    const dir = kind === "studio" ? "studio" :
+                kind === "admin" ? "admin" :
+                kind === "wip" ? "wip" :
+                `share/${kind}`;
+
     const src = `${__dirname}/${dir}/${kind}.${base}.ts`;
     const target = `${__dirname}/${dir}/${kind}.${iso}.ts`;
 
@@ -98,7 +102,7 @@ for (const iso of isos) {
 
     const request_message = `\
   Generate a localization file in typescript format for the language ${language_names[iso]} (ISO code: ${iso}), based on the \
-  file provided in ${base === "es" ? "Spanish" : "Englishº"}.
+  file provided in ${base === "es" ? "Spanish" : "English"}.
   Keep variables starting with "@" as is.
   The context of the translation is a user interface for a radio broadcasting application.
 

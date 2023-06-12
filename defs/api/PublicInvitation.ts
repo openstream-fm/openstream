@@ -14,6 +14,7 @@ export type PublicInvitation = {
   receiver_email: string;
   created_at: DateTime;
   is_expired: boolean;
+  expires_at: DateTime;
   account: InvitationAccount | null;
   user_sender: InvitationUserSender | null;
   admin_sender: InvitationAdminSender | null;

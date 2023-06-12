@@ -5,19 +5,17 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize, Template)]
 #[template(path = "account-invitation.html")]
 pub struct AccountInvitation {
-  account_name: String,
-  sender_first_name: String,
-  sender_last_name: String,
-  invitation_url: String,
+  pub account_name: String,
+  pub sender_name: Option<String>,
+  pub invitation_url: String,
 }
 
 impl Redactable for AccountInvitation {
   fn into_redacted(self) -> Self {
     Self {
       account_name: self.account_name,
-      sender_first_name: self.sender_first_name,
-      sender_last_name: self.sender_last_name,
-      invitation_url: String::from("https://studio.openstream.fm/invitations/:redacted"),
+      sender_name: self.sender_name,
+      invitation_url: String::from("https://studio.openstream.fm/email-invitations/:redacted"),
     }
   }
 }
@@ -26,9 +24,8 @@ impl Sample for AccountInvitation {
   fn sample() -> Self {
     Self {
       account_name: String::from("Account"),
-      sender_first_name: String::from("Name"),
-      sender_last_name: String::from("Lastname"),
-      invitation_url: String::from("https://studio.openstream.fm/invitations/:token"),
+      sender_name: Some(String::from("Sender")),
+      invitation_url: String::from("https://studio.openstream.fm/email-invitations/:token"),
     }
   }
 }

@@ -39,7 +39,7 @@ export const load_get = async <T>(
   if(redirectToLoginOnAuthErrors) {
     if(res.status === StatusCode.UNAUTHORIZED) {
       const to = `${url.pathname}${url.search}`;
-      const login_url = to === "/" ? "/login" : `/login#${encodeURIComponent(target)}`
+      const login_url = to === "/" ? "/login" : `/login#${target}`
       throw redirect(302, login_url);
     }
   }

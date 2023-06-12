@@ -41,7 +41,47 @@ export const load_get = async <T>(
   if(redirectToLoginOnAuthErrors) {
     if(res.status === StatusCode.UNAUTHORIZED) {
       const to = `${url.pathname}${url.search}`;
-      const login_url = to === "/" ? "/login" : `/login#${encodeURIComponent(target)}`
+      const login_url = to === "/" ? "/login" : `/login#${target}`
+      throw redirect(302, login_url);
+    }
+  }
+
+  if(body.error) {
+    const e = ApiError.from_error_payload(body.error);
+    throw error(e.status, e.toJSON().error)
+  }
+
+  return body as T
+}
+
+export const load_with_payload = async <T>(
+  method: "POST" | "PUT" | "PATCH",
+  _target: string,
+  payload: any,
+  { fetch, url }: Pick<LoadEvent, "fetch" | "url">,
+  { redirectToLoginOnAuthErrors = true } = {}
+): Promise<T> => {
+
+  const target = browser ? _target : `${url.origin}${_target}`
+
+  const res = await fetch(target, {
+    method,
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload),
+  }).catch((_e) => {
+    const e = new ApiError(StatusCode.BAD_GATEWAY, "FRONT_GATEWAY_FETCH", "Bad gateway (fetch)");
+    throw error(e.status, e.toJSON().error);
+  }) 
+  
+  const body: any = await res.json().catch((_e) => {
+    const e = new ApiError(StatusCode.BAD_GATEWAY, "FRONT_GATEWAY_JSON", "Bad gateway (json)");
+    throw error(e.status, e.toJSON().error);
+  })
+
+  if(redirectToLoginOnAuthErrors) {
+    if(res.status === StatusCode.UNAUTHORIZED) {
+      const to = `${url.pathname}${url.search}`;
+      const login_url = to === "/" ? "/login" : `/login#${target}`
       throw redirect(302, login_url);
     }
   }

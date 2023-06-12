@@ -45,4 +45,12 @@ pub enum SentEmailKind {
 
   #[serde(rename = "email-verification-code")]
   EmailVerificationCode { email: String, code_id: String },
+
+  #[serde(rename = "account-invitation")]
+  AccountInvitation {
+    receiver_email: String,
+    invitation_id: String,
+    user_sender_id: Option<String>,
+    admin_sender_id: Option<String>,
+  },
 }

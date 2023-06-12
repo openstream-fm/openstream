@@ -14,7 +14,7 @@
   const sign_out = action(async () => {
     await _post("/api/auth/admin/logout", {});
     goto("/", { invalidateAll: true })
-    invalidate_siblings();
+    invalidate_siblings()
   })
 
   let menu_open = false;

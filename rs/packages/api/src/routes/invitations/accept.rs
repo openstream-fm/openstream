@@ -97,6 +97,10 @@ pub mod post {
     Token(#[from] GetAccessTokenScopeError),
     #[error("validate")]
     Validate(#[from] ValidationErrors),
+    #[error("password too short")]
+    PasswordTooShort,
+    #[error("password too long")]
+    PasswordTooLong,
   }
 
   impl From<HandleError> for ApiError {
@@ -105,6 +109,12 @@ pub mod post {
         HandleError::Db(e) => e.into(),
         HandleError::Token(e) => e.into(),
         HandleError::Validate(errors) => ApiError::PayloadInvalid(format!("{}", errors)),
+        HandleError::PasswordTooShort => {
+          ApiError::PayloadInvalid(String::from("password must have 8 characters or more"))
+        }
+        HandleError::PasswordTooLong => {
+          ApiError::PayloadInvalid(String::from("password must have 50 characters or less"))
+        }
       }
     }
   }
@@ -151,8 +161,7 @@ pub mod post {
               Some(user) => user,
             };
 
-            let invitation = tx_try!(AccountInvitation::get_by_id_with_session(&invitation_id, &mut session).await);
-            let invitation = match invitation {
+            let mut invitation = match tx_try!(AccountInvitation::get_by_id_with_session(&invitation_id, &mut session).await) {
               None => return Ok(Output::NotFound),
               Some(doc) => doc,
             };
@@ -196,6 +205,8 @@ pub mod post {
               created_at: now,
             };
 
+            invitation.state = AccountInvitationState::Accepted { used_at: now };
+            tx_try!(AccountInvitation::replace_with_session(&invitation.id, &invitation, &mut session).await);
             tx_try!(UserAccountRelation::insert(&user_account_relation).await);
           });
 
@@ -210,6 +221,12 @@ pub mod post {
             password,
             phone,
           } = data;
+
+          if password.len() < 8 {
+            return Err(HandleError::PasswordTooShort);
+          } else if password.len() > 50 {
+            return Err(HandleError::PasswordTooLong);
+          }
 
           run_transaction!(session => {
             let invitation = tx_try!(AccountInvitation::get_by_token_with_session(&token, &mut session).await);
@@ -237,10 +254,12 @@ pub mod post {
 
             let user_id = User::uid();
 
+            let hash = crypt::hash(&password);
+
             let user = User {
               id: user_id.clone(),
               email: invitation.receiver_email.clone(),
-              password: Some(password.clone()),
+              password: Some(hash),
               phone: phone.clone(),
               user_metadata: Default::default(),
               system_metadata: Default::default(),

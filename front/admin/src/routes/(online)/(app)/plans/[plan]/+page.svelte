@@ -77,7 +77,7 @@
   let delete_open = false;
   const del = action(async () => {
     await _delete(`/api/plans/${data.plan._id}`);
-    goto("/plans", { invalidateAll: true });
+    goto("/plans", { invalidateAll: true })
     invalidate_siblings();
   })
 </script>

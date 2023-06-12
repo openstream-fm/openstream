@@ -7,6 +7,7 @@ use async_trait::async_trait;
 use db::account::Account;
 use db::account_invitations::{AccountInvitation, AccountInvitationState};
 use db::admin::Admin;
+use db::sent_email::{SentEmail, SentEmailAddress, SentEmailKind};
 use db::user::User;
 use db::{Model, Paged};
 use mongodb::bson::doc;
@@ -33,6 +34,7 @@ pub struct PublicInvitation {
   #[serde(flatten)]
   pub state: AccountInvitationState,
   pub is_expired: bool,
+  pub expires_at: DateTime,
 
   pub account: Option<InvitationAccount>,
   pub user_sender: Option<InvitationUserSender>,
@@ -249,7 +251,7 @@ pub mod get {
           }
         }
 
-        AccessTokenScope::User(_) => {
+        AccessTokenScope::User(user) => {
           if let Some(account_id) = account_id {
             // only owners can see and send account invitations
             access_token_scope
@@ -258,8 +260,9 @@ pub mod get {
 
             doc! { AccountInvitation::KEY_ACCOUNT_ID: account_id }
           } else {
-            // account id is required for user acccess token scope
-            return Err(GetAccessTokenScopeError::OutOfScope.into());
+            // if no account is requested we resolve to the invitations
+            // where the target user is the access token user
+            doc! { AccountInvitation::KEY_RECEIVER_EMAIL: &user.email }
           }
         }
       };
@@ -269,6 +272,7 @@ pub mod get {
       let page = page
         .try_map_async(10, |item| async move {
           let is_expired = item.is_expired();
+          let expires_at = item.expires_at();
 
           let account = Account::get_by_id(&item.account_id)
             .await?
@@ -301,6 +305,7 @@ pub mod get {
             state: item.state,
             created_at: item.created_at,
             is_expired,
+            expires_at,
             account,
             user_sender,
             admin_sender,
@@ -318,7 +323,11 @@ pub mod get {
 
 pub mod post {
 
-  use mailer::send::Mailer;
+  use db::{current_filter_doc, user_account_relation::UserAccountRelation};
+  use mailer::{
+    error::RenderError,
+    send::{Address, Email, Mailer, SendError},
+  };
 
   use super::*;
 
@@ -371,6 +380,12 @@ pub mod post {
     Token(#[from] GetAccessTokenScopeError),
     #[error("email invalid")]
     EmailInvalid,
+    #[error("email user already part of account")]
+    AlreadyMember(String),
+    #[error("mailer render: {0}")]
+    MailerRender(#[from] RenderError),
+    #[error("mailer send: {0}")]
+    MailerSend(#[from] SendError),
   }
 
   impl From<HandleError> for ApiError {
@@ -379,6 +394,11 @@ pub mod post {
         HandleError::Db(e) => e.into(),
         HandleError::Token(e) => e.into(),
         HandleError::EmailInvalid => ApiError::PayloadInvalid(String::from("Email is invalid")),
+        HandleError::MailerRender(e) => e.into(),
+        HandleError::MailerSend(e) => e.into(),
+        HandleError::AlreadyMember(email) => ApiError::PayloadInvalid(format!(
+          "The user with email {email} is already a member of the account"
+        )),
       }
     }
   }
@@ -423,16 +443,35 @@ pub mod post {
         AccessTokenScope::User(user) => (None, Some(user)),
       };
 
-      let receiver = User::find_by_email(&email).await?;
+      let sender_name = match (&admin_sender, &user_sender) {
+        (None, None) => None,
+        (Some(admin), _) => Some(admin.first_name.clone()),
+        (_, Some(user)) => Some(user.first_name.clone()),
+      };
 
+      let receiver = User::find_by_email(&email).await?;
+      if let Some(ref user) = receiver {
+        let filter = current_filter_doc! {
+          UserAccountRelation::KEY_ACCOUNT_ID: &account.id,
+          UserAccountRelation::KEY_USER_ID: &user.id,
+        };
+
+        let exists = UserAccountRelation::exists(filter).await?;
+        if exists {
+          return Err(HandleError::AlreadyMember(email));
+        }
+      }
+
+      let id = AccountInvitation::uid();
       let key = AccountInvitation::random_key();
       let hash = crypt::sha256(&key);
+      let token = format!("{id}-{key}");
 
       let invitation = AccountInvitation {
-        id: AccountInvitation::uid(),
+        id,
         account_id: account.id.clone(),
         hash,
-        receiver_email: email,
+        receiver_email: email.clone(),
         admin_sender_id: admin_sender.as_ref().map(|s| &s.id).cloned(),
         user_sender_id: user_sender.as_ref().map(|s| &s.id).cloned(),
         state: AccountInvitationState::Pending,
@@ -440,6 +479,81 @@ pub mod post {
       };
 
       AccountInvitation::insert(&invitation).await?;
+
+      // email
+      {
+        let subject = match &sender_name {
+          None => format!(
+            "You have been invited to join {} at Openstream",
+            account.name
+          ),
+          Some(name) => format!(
+            "{} invited you to join {} at Openstream",
+            name, account.name
+          ),
+        };
+
+        // TODO: not hardcode the URL
+        let template = mailer::templates::AccountInvitation {
+          sender_name,
+          account_name: account.name.clone(),
+          invitation_url: format!("https://studio.openstream.fm/email-invitations/{token}"),
+        };
+
+        let render = mailer::render::render(template)?;
+
+        let from_name = String::from("Openstream");
+
+        let sent_email = SentEmail {
+          id: SentEmail::uid(),
+
+          from: SentEmailAddress {
+            name: Some(from_name.clone()),
+            email: self.mailer.username.clone(),
+          },
+
+          to: SentEmailAddress {
+            name: None,
+            email: email.clone(),
+          },
+
+          reply_to: None,
+
+          subject: subject.clone(),
+
+          text: render.storable.text,
+          html: render.storable.html,
+
+          kind: SentEmailKind::AccountInvitation {
+            receiver_email: email.clone(),
+            invitation_id: invitation.id.clone(),
+            user_sender_id: invitation.user_sender_id.clone(),
+            admin_sender_id: invitation.admin_sender_id.clone(),
+          },
+
+          created_at: DateTime::now(),
+        };
+
+        SentEmail::insert(sent_email).await?;
+
+        let email = Email {
+          from: Address {
+            name: Some(from_name),
+            email: self.mailer.username.clone(),
+          },
+          to: Address {
+            name: None,
+            email: email.clone(),
+          },
+          html: render.sendable.html,
+          text: render.sendable.text,
+          subject,
+        };
+
+        self.mailer.send(email).await?;
+      };
+
+      let expires_at = invitation.expires_at();
 
       let populated = PublicInvitation {
         id: invitation.id,
@@ -456,6 +570,7 @@ pub mod post {
         user_sender: user_sender.map(Into::into),
 
         is_expired: false,
+        expires_at,
       };
 
       Ok(Output {
