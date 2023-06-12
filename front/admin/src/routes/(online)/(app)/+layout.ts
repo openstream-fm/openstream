@@ -9,7 +9,7 @@ export const load = (async ({ fetch, url, parent, depends }) => {
    const { maybe_admin } = await parent();
    if (maybe_admin == null) {
       const to = `${url.pathname}${url.search}`;
-      const login_url = to === "/" ? "/login" : `/login#${encodeURIComponent(to)}`
+      const login_url = to === "/" ? "/login" : `/login#${to}`
       throw redirect(302, login_url);
    }
 

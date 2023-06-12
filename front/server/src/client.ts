@@ -644,10 +644,8 @@ export class AccountInvitations {
     return await this.client.get(ip, ua, token, `/invitations/${invitation_id}`);
   }
 
-  
-
-  async get_by_token(ip: string | null, ua: string | null, token: string | null, payload: import("$api/invitations/get-by-token/POST/Payload").Payload): Promise<import("$api/invitations/get-by-token/POST/Output").Output> {
-    return await this.client.post(ip, ua, token, `/invitations/get-by-token`, payload); 
+  async get_by_token(ip: string | null, ua: string | null, token: string | null, invitation_token: string): Promise<import("$api/invitations/get-by-token/[token]/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/invitations/get-by-token/${invitation_token}`); 
   }
 
   async accept(ip: string | null, ua: string | null, token: string | null, payload: import("$api/invitations/accept/POST/Payload").Payload): Promise<import("$api/invitations/accept/POST/Output").Output> {

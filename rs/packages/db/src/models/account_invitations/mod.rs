@@ -58,12 +58,14 @@ impl AccountInvitation {
 
   pub fn is_expired(&self) -> bool {
     let now = DateTime::now().inner();
+    now > self.expires_at().inner()
+  }
 
-    let until = self
+  pub fn expires_at(&self) -> DateTime {
+    self
       .created_at
-      .saturating_add(time::Duration::SECOND * constants::EMAIL_VERIFICATION_VALIDITY_SECS);
-
-    now > until
+      .saturating_add(time::Duration::SECOND * constants::ACCOUNT_INVITATION_VALIDITY_SECS)
+      .into()
   }
 
   pub async fn get_by_token(id_key: &str) -> Result<Option<Self>, mongodb::error::Error> {

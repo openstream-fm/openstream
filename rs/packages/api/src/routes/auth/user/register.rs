@@ -45,8 +45,6 @@ pub mod post {
   pub enum HandleError {
     #[error("mongodb: {0}")]
     Db(mongodb::error::Error),
-    #[error("token out of scope")]
-    TokenOutOfScope,
     #[error("account name is empty")]
     AccountNameEmpty,
     #[error("first name is empty")]
@@ -100,7 +98,6 @@ pub mod post {
     fn from(e: HandleError) -> Self {
       match e {
         HandleError::Db(e) => e.into(),
-        HandleError::TokenOutOfScope => ApiError::TokenOutOfScope,
         HandleError::AccountNameEmpty => {
           ApiError::PayloadInvalid(String::from("Account name is required"))
         }

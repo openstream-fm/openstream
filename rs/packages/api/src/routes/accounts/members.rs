@@ -56,10 +56,10 @@ pub mod get {
 
     async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
       let account_id = req.param("account").unwrap();
-
       let access_token_scope = request_ext::get_access_token_scope(&req).await?;
-
-      let account = access_token_scope.grant_account_scope(account_id).await?;
+      let account = access_token_scope
+        .grant_account_owner_scope(account_id)
+        .await?;
 
       Ok(Input {
         account_id: account.id,

@@ -2,23 +2,20 @@ use super::*;
 
 /// we use POST here to not expose the token in system logs or in the database
 /// if we decide to save the requests to a mongodb collection  
-pub mod post {
+pub mod get {
 
   use super::*;
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../../defs/api/invitations/get-by-token/POST/")]
-  pub struct Payload {
+  #[derive(Debug)]
+  pub struct Input {
     token: String,
   }
 
-  #[derive(Debug)]
-  pub struct Input {
-    payload: Payload,
-  }
-
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../../defs/api/invitations/get-by-token/POST/")]
+  #[ts(
+    export,
+    export_to = "../../../defs/api/invitations/get-by-token/[token]/GET/"
+  )]
   #[serde(tag = "kind")]
   #[allow(clippy::large_enum_variant)]
   pub enum Output {
@@ -66,14 +63,13 @@ pub mod post {
     type ParseError = ParseError;
     type HandleError = HandleError;
 
-    async fn parse(&self, mut req: Request) -> Result<Input, ParseError> {
-      let payload = req.read_body_json(5_000).await?;
-      Ok(Input { payload })
+    async fn parse(&self, req: Request) -> Result<Input, ParseError> {
+      let token = req.param("token").unwrap().to_string();
+      Ok(Input { token })
     }
 
     async fn perform(&self, input: Input) -> Result<Output, HandleError> {
-      let Input { payload } = input;
-      let Payload { token } = payload;
+      let Input { token } = input;
 
       let invitation = match AccountInvitation::get_by_token(&token).await? {
         None => return Ok(Output::NotFound),
@@ -98,6 +94,7 @@ pub mod post {
         .map(From::from);
 
       let is_expired = invitation.is_expired();
+      let expires_at = invitation.expires_at();
 
       let populated = PublicInvitation {
         id: invitation.id,
@@ -107,6 +104,7 @@ pub mod post {
         receiver_email: invitation.receiver_email,
         state: invitation.state,
         is_expired,
+        expires_at,
         created_at: invitation.created_at,
         account,
         admin_sender,

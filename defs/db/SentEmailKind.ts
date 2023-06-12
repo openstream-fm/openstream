@@ -6,4 +6,12 @@ export type SentEmailKind = {
 } | {
   kind: "email-verification-code";
   data: { email: string; code_id: string };
+} | {
+  kind: "account-invitation";
+  data: {
+    receiver_email: string;
+    invitation_id: string;
+    user_sender_id: string | null;
+    admin_sender_id: string | null;
+  };
 };

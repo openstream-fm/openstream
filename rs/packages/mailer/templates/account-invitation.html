@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}
-  {{ sender_first_name }} invited you to join {{ account_name }} at Openstream.
+  {% if let Some(sender_name) = sender_name %}
+    {{ sender_name }} invited you to join {{ account_name }} at Openstream.
+  {% else %}
+    You have been invited to join {{ account_name }} at Openstream.
+  {% endif %}
 {% endblock %}
 
 {% block content %} 
@@ -23,24 +27,32 @@
       border-radius: 5px;
       text-decoration: none;
       font-weight: 700;
+      margin-top: 10px;
     }
   </style>
-
-
-  <h1 class="title">{{ sender_first_name }} {{ sender_last_name }} invited you to join the account {{ account_name }} at Openstream.</h1>
+  
+  <h1 class="title">
+    {% if let Some(sender_name) = sender_name %}
+      {{ sender_name }} invited you to join {{ account_name }} at Openstream.
+    {% else %}
+      You have been invited to join {{ account_name }} at Openstream.
+    {% endif %}
+  </h1>
 
   <div class="content">
     <p class="text">Hello!</p>
     <p class="text">
-      <b>{{ sender_first_name }} {{ sender_last_name }}</b>
-      invited you join the account <b>{{ account_name }}</b>
-      at <b>Openstream</b>
+      {% if let Some(sender_name) = sender_name %}
+          <b>{{ sender_name }}</b> invited you to join <b>{{ account_name }}</b> at <b>Openstream</b>.
+      {% else %}
+        You have been invited to join <b>{{ account_name }}</b> at <b>Openstream</b>.
+      {% endif %}
     </p>
 
     <p class="text">To accept or reject the invitation click below:</p>
 
     <div class="accept-out">
-      <a class="accept" href="{{ invitation_url|safe }}" target="_blank">Go to the Invitation</a>
+      <a class="accept" href="{{ invitation_url|safe }}" target="_blank">Open invitation</a>
     </div>
 
     <br />

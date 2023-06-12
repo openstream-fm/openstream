@@ -35,7 +35,6 @@ pub struct User {
 
   pub language: Option<String>,
 
-  #[validate(length(min = 1, max = 50))]
   pub password: Option<String>,
 
   pub created_at: DateTime,

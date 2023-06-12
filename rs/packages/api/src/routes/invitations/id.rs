@@ -1,8 +1,6 @@
 use super::*;
 
-/// we use POST here to not expose the token in system logs or in the database
-/// if we decide to save the requests to a mongodb collection  
-pub mod post {
+pub mod get {
 
   use super::*;
 
@@ -113,6 +111,7 @@ pub mod post {
         .map(From::from);
 
       let is_expired = invitation.is_expired();
+      let expires_at = invitation.expires_at();
 
       let populated = PublicInvitation {
         id: invitation.id,
@@ -122,6 +121,7 @@ pub mod post {
         receiver_email: invitation.receiver_email,
         state: invitation.state,
         is_expired,
+        expires_at,
         created_at: invitation.created_at,
         account,
         admin_sender,

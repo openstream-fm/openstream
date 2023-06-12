@@ -266,7 +266,7 @@ const locale: import("./studio.locale").StudioLocale = {
         "expired": "El link ha caducado",
         "used": "El link ya fue usado",
         "not_found": "No se encontró el link",
-        "ok": "Reincia tu contraseña",
+        "ok": "Reinicia tu contraseña",
       },
       "fields": {
         "email": "Email",
@@ -548,7 +548,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "dialogs": {
         "delete_station": {
           "title": "Eliminar estación @name",
-          "message_html": "La eliminación de una estación es una acción permanente, no podŕas acceder nuevamente a la información de la estación, por lo que asegurate de estar seguro de proceder.<br /><br />Si realmente quieres eliminar la estacion @name ingresa el nombre de la estación en el siguiente campo: <b>@name</b><br />",
+          "message_html": "La eliminación de una estación es una acción permanente, no podŕas acceder nuevamente a la información de la estación, por lo que asegurate de estar seguro de proceder.<br /><br />Si realmente quieres eliminar la estación@name ingresa el nombre de la estación en el siguiente campo: <b>@name</b><br />",
           "field_label": "Nombre de la estación",
           "cancel": "Cancelar",
           "submit": "Eliminar",
@@ -613,6 +613,109 @@ const locale: import("./studio.locale").StudioLocale = {
         "unkown": "Desconocido",
         "tooltips": {
           "disconnect": "Desconectar",
+        }
+      }
+    },
+
+    "account/members": {
+      "head": {
+        "title": "Miembros"
+      },
+      "title": "Miembros",
+
+      "no_owner_message_p1": "Esta sección esta disponible solo para los administradores de la cuenta",
+      "no_owner_message_p2": "Contáctate con los administradores de la cuenta si necesitas invitar gente a participar en esta cuenta.",
+
+      "Pending_invitations": "Invitaciones pendientes",
+      "no_pending_invitations_message": "No hay invitaciones pendientes",
+      "invite_btn_text": "Invitar personas",
+
+      "validate": {
+        "user_account_exists": "El usuario con email @email ya forma parte de esta cuenta",
+      },
+
+      "notifier": {
+        "invitation_sent": "Invitación enviada",
+      },
+
+      "dialogs": {
+        "invite": {
+          "title": "Invita personas a participar de este cuenta con rol @role",
+          "submit": "Invitar",
+          "Email": "Email",
+        }
+      }
+    },
+
+    "email_invitation": {
+      "head_page_title": {
+        "not_found": "Invitaciónno encontrada",
+        "expired": "La invitaciónha expirado",
+        "accepted": "La invitation ya fue aceptada",
+        "rejected": "La invitación ya fue rechazada",
+        "ok": "Invitación pendiente",
+      },
+
+      "error_message": {
+        "not_found": "El link que usaste para acceder a esta página ya no existe o fue eliminado",
+        "expired": "La invitación ha expirado, contáctate con los administradores de la cuenta para que te envíen una nueva invitación",
+        "accepted": "La invitación ya fue aceptada",
+        "rejected": "La invitación ya fue rechazada, si fue un error, contáctate con los administradores de la cuenta para que te envíen una nueva invitación",
+      },
+
+      "description": {
+        "with_sender_name_html": "<b>@sender</b> te está invitando a que te unas a <b>@account</b> en Openstream.",
+        "without_sender_name_html": "Fuiste invitado a unirte a <b>@account</b> en Openstream",
+      },
+
+      "login_as_btn_html": "Ingresa como <b>@email</b> para aceptar la invitación",
+
+      "form": {
+        "fields": {
+          "first_name": "Tu nombre",
+          "last_name": "Tu apellido",
+          "email": "Tu email",
+          "password": "Constraseña",
+          "confirm_password": "Confirmar contraseña",
+        },
+        "pre_message_html": "Para <b>aceptar</b> la invitación, completa el formulario.",
+        "title": "Registarme",
+        "submit": "Enviar",
+      },
+
+      "notifier": {
+        "accept_error": "Hubo un error aceptando la invitacion: @error"
+      }
+    },
+
+    "me/invitations": {
+      "head": {
+        "title": "Invitaciones pendientes",
+      },
+      "title": "Invitaciones pendientes",
+
+      "no_items_message": "No tienes invitaciones pendientes",
+
+      "notifier": {
+        "accept_error": "Hubo un error aceptando la invtación: @error",
+        "accepted": "Invitación aceptada",
+        "rejected": "Invitación rechazada",
+      },
+
+      "actions": {
+        "reject": "Rechazar",
+        "accept": "Aceptar",
+      },
+
+      "item_message_with_sender_html": "<b>@sender</b> te esta invitando a que te unas a <b>@account</b>",
+      "item_message_without_sender_html": "Fuiste invitado a unirte a <b>@account</b>",
+
+      "dialogs": {
+        "reject": {
+          "title": "Rechazar invitación",
+          "message": "¿Estás seguro de que quieres rechazar la invitación?",
+          "cancel": "Cancelar",
+          "reject": "Rechazar invitación",
         }
       }
     }

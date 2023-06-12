@@ -405,8 +405,12 @@ pub fn router(
     .post(invitations::post::Endpoint { mailer }.into_handler());
 
   app
-    .at("/invitations/get-by-token")
-    .post(invitations::get_by_token::post::Endpoint {}.into_handler());
+    .at("/invitations")
+    .get(invitations::id::get::Endpoint {}.into_handler());
+
+  app
+    .at("/invitations/get-by-token/:token")
+    .get(invitations::get_by_token::get::Endpoint {}.into_handler());
 
   app
     .at("/invitations/accept")

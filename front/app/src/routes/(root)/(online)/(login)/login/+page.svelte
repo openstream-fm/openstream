@@ -20,9 +20,10 @@
   const login = action(async () => {
     const payload: Omit<import("$api/auth/user/login/POST/Payload").Payload, "device_id"> = { email, password };
     await _post("/api/auth/user/login", payload);
-    const target = decodeURIComponent(location.hash.replace(/^#/, "")) || "/";
-    goto(target, { invalidateAll: true });
-    invalidate_siblings();
+    const target = location.hash.replace(/^#/, "") || "/";
+    goto(target, { invalidateAll: true }).then(() => {
+      invalidate_siblings();
+    });
   })
 </script>
 

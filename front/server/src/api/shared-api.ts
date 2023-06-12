@@ -282,6 +282,36 @@ export const shared_api = ({
     return await client.analytics.get(ip(req), ua(req), get_token(req), req.query as any);
   }))
 
+  api.route("/invitations")
+    .get(json(async req => {
+      return await client.invitations.list(ip(req), ua(req), get_token(req), req.query as any)
+    }))
+    .post(json(async req => {
+      return await client.invitations.post(ip(req), ua(req), get_token(req), req.body)
+    }))
+
+  api.route("/invitations/:invitation")
+    .get(json(async req => {
+      return await client.invitations.get(ip(req), ua(req), get_token(req), req.params.invitation)
+    }))
+
+  api.route("/invitations/accept")
+    .post(json(async req => {
+      return await client.invitations.accept(ip(req), ua(req), get_token(req), req.body)
+    }))
+
+  api.route("/invitations/reject")
+    .post(json(async req => {
+      return await client.invitations.reject(ip(req), ua(req), get_token(req), req.body)
+    }))
+
+  api.route("/invitations/get-by-token/:token")
+    .get(json(async req => {
+      return await client.invitations.get_by_token(ip(req), ua(req), null, req.params.token)
+    }))
+
+    
+
   api.route("/payment-methods")
     .get(json(async req => {
       return await client.payment_methods.list(ip(req), ua(req), get_token(req), req.query as any)

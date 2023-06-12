@@ -57,6 +57,9 @@ pub enum GetAccessTokenScopeError {
   #[error("token out of scope")]
   OutOfScope,
 
+  #[error("token out of scope")]
+  UserAccountNotOwner,
+
   #[error("admin not found: {0}")]
   ResolveAdminNotFound(String),
 
@@ -137,11 +140,15 @@ impl AccessTokenScope {
         let filter = current_filter_doc! {
           UserAccountRelation::KEY_USER_ID: &user.id,
           UserAccountRelation::KEY_ACCOUNT_ID: account_id,
-          UserAccountRelation::KEY_KIND: UserAccountRelationKind::KEY_ENUM_VARIANT_OWNER,
+          // UserAccountRelation::KEY_KIND: UserAccountRelationKind::KEY_ENUM_VARIANT_OWNER,
         };
-        let exists = UserAccountRelation::exists(filter).await?;
-        if !exists {
-          return Err(GetAccessTokenScopeError::OutOfScope);
+        let relation = UserAccountRelation::get(filter).await?;
+        match relation.map(|r| r.kind) {
+          Some(UserAccountRelationKind::Owner) => {}
+          None => return Err(GetAccessTokenScopeError::OutOfScope),
+          Some(UserAccountRelationKind::Staff) => {
+            return Err(GetAccessTokenScopeError::UserAccountNotOwner)
+          }
         }
       }
     }
@@ -439,6 +446,7 @@ impl From<GetAccessTokenScopeError> for ApiError {
       NonUtf8 => ApiError::TokenMalformed,
       NotFound => ApiError::TokenNotFound,
       OutOfScope => ApiError::TokenOutOfScope,
+      UserAccountNotOwner => ApiError::TokenUserAccountNotOwner,
       UserNotFound(id) => ApiError::TokenUserNotFound(id),
       AdminNotFound(id) => ApiError::TokenAdminNotFound(id),
       AccountNotFound(id) => ApiError::AccountNotFound(id),
