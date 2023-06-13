@@ -13,6 +13,7 @@ export type PublicInvitation = {
   account_id: string;
   receiver_email: string;
   created_at: DateTime;
+  deleted_at: DateTime | null;
   is_expired: boolean;
   expires_at: DateTime;
   account: InvitationAccount | null;

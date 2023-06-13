@@ -118,7 +118,12 @@ pub mod post {
 
             let invitation = match tx_try!(AccountInvitation::get_by_id_with_session(invitation_id, &mut session).await) {
               None => return Ok(Output::NotFound),
-              Some(doc) => doc,
+              Some(doc) => {
+                if doc.deleted_at.is_some() {
+                  return Ok(Output::NotFound)
+                }
+                doc
+              },
             };
 
             match access_token_scope {

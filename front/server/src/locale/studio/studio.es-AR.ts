@@ -639,6 +639,14 @@ const locale: import("./studio.locale").StudioLocale = {
 
       "notifier": {
         "invitation_sent": "Invitación enviada",
+        "member_access_revoked": "Acceso revocado",
+        "member_role_changed": "Rol de acceso actualizado",
+      },
+
+      "actions": {
+        "set_role_to": "Establecer rol a @role",
+        "revoke_access": "Revocar acceso",
+        "delete": "Eliminar",
       },
 
       "dialogs": {
@@ -681,7 +689,7 @@ const locale: import("./studio.locale").StudioLocale = {
           "password": "Constraseña",
           "confirm_password": "Confirmar contraseña",
         },
-        "pre_message_html": "Para <b>aceptar</b> la invitación, completa el formulario.",
+        "pre_message_html": "Para <b>aceptar</b> la invitación, completá el formulario.",
         "title": "Registarme",
         "submit": "Enviar",
       },
@@ -726,6 +734,7 @@ const locale: import("./studio.locale").StudioLocale = {
 
   "user_menu": {
     "profile": "Perfil",
+    "invitations": "Invitaciones",
     "accounts": "Cuentas",
     "stations": "Estaciones",
     "sign_out": "Cerrar sesión",

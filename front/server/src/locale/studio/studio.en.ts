@@ -637,6 +637,14 @@ const locale = {
 
       "notifier": {
         "invitation_sent": "Invitation sent",
+        "member_access_revoked": "Member access revoked",
+        "member_role_changed": "Member access role updated",
+      },
+
+      "actions": {
+        "set_role_to": "Set role to @role",
+        "revoke_access": "Revoke access",
+        "delete": "Delete",
       },
 
       "dialogs": {
@@ -724,6 +732,7 @@ const locale = {
 
   "user_menu": {
     "profile": "Profile",
+    "invitations": "Invitations",
     "accounts": "Accounts",
     "stations": "Stations",
     "sign_out": "Sign out",

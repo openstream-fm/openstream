@@ -17,7 +17,7 @@
 	import { click_out } from "$share/actions";
 	import { action, _post } from "$share/net.client";
 	import Icon from "$share/Icon.svelte";
-	import { mdiAccountCircleOutline, mdiAccountMultipleOutline, mdiCastAudioVariant, mdiLogout } from "@mdi/js";
+	import { mdiAccountCircleOutline, mdiAccountMultipleOutline, mdiAccountPlusOutline, mdiCastAudioVariant, mdiLogout } from "@mdi/js";
 	import { goto } from "$app/navigation";
 	import { locale } from "$lib/locale";
 	import { invalidate_siblings } from "$lib/invalidate";
@@ -269,6 +269,14 @@
                   <Icon d={mdiAccountCircleOutline} />
                 </div>
                 {$locale.user_menu.profile}
+              </a>
+            </div>
+            <div class="menu-section">
+              <a href="/me/invitations" class="na menu-section-link ripple-container" use:ripple on:click={() => menu_open = false}>
+                <div class="menu-icon">
+                  <Icon d={mdiAccountPlusOutline} />
+                </div>
+                {$locale.user_menu.invitations}
               </a>
             </div>
             <div class="menu-section">

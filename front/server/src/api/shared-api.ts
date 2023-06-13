@@ -76,6 +76,16 @@ export const shared_api = ({
       return await client.accounts.list_members(ip(req), ua(req), get_token(req), req.params.account)
     }))
 
+  api.route("/accounts/:account/members/:member")
+    .delete(json(async req => {
+      return await client.accounts.delete_member(ip(req), ua(req), get_token(req), req.params.account, req.params.member)
+    }))
+
+  api.route("/accounts/:account/members/:member/set-role")
+    .post(json(async req => {
+      return await client.accounts.set_member_role(ip(req), ua(req), get_token(req), req.params.account, req.params.member, req.body);
+    }))
+
   api.route("/accounts/:account/stream-stats")
     .get(json(async req => {
       return await client.accounts.get_stream_stats(ip(req), ua(req), get_token(req), req.params.account);
@@ -293,6 +303,9 @@ export const shared_api = ({
   api.route("/invitations/:invitation")
     .get(json(async req => {
       return await client.invitations.get(ip(req), ua(req), get_token(req), req.params.invitation)
+    }))
+    .delete(json(async req => {
+      return await client.invitations.delete(ip(req), ua(req), get_token(req), req.params.invitation)
     }))
 
   api.route("/invitations/accept")

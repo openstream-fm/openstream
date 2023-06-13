@@ -202,6 +202,14 @@ pub fn router(
     .at("/accounts/:account/members")
     .get(accounts::members::get::Endpoint {}.into_handler());
 
+  app
+    .at("/accounts/:account/members/:member")
+    .delete(accounts::members::id::delete::Endpoint {}.into_handler());
+
+  app
+    .at("/accounts/:account/members/:member/set-role")
+    .post(accounts::members::id::set_role::post::Endpoint {}.into_handler());
+
   app.at("/accounts/:account/stream-stats").get(
     accounts::stream_stats::get::Endpoint {
       index: stream_connections_index.clone(),
@@ -405,8 +413,9 @@ pub fn router(
     .post(invitations::post::Endpoint { mailer }.into_handler());
 
   app
-    .at("/invitations")
-    .get(invitations::id::get::Endpoint {}.into_handler());
+    .at("/invitations/:invitation")
+    .get(invitations::id::get::Endpoint {}.into_handler())
+    .delete(invitations::id::delete::Endpoint {}.into_handler());
 
   app
     .at("/invitations/get-by-token/:token")
