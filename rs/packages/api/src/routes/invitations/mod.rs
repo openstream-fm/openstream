@@ -31,6 +31,7 @@ pub struct PublicInvitation {
   pub account_id: String,
   pub receiver_email: String,
   pub created_at: DateTime,
+  pub deleted_at: Option<DateTime>,
   #[serde(flatten)]
   pub state: AccountInvitationState,
   pub is_expired: bool,
@@ -304,6 +305,7 @@ pub mod get {
             admin_sender_id: item.admin_sender_id,
             state: item.state,
             created_at: item.created_at,
+            deleted_at: item.deleted_at,
             is_expired,
             expires_at,
             account,
@@ -476,6 +478,7 @@ pub mod post {
         user_sender_id: user_sender.as_ref().map(|s| &s.id).cloned(),
         state: AccountInvitationState::Pending,
         created_at: DateTime::now(),
+        deleted_at: None,
       };
 
       AccountInvitation::insert(&invitation).await?;
@@ -563,6 +566,7 @@ pub mod post {
         user_sender_id: invitation.user_sender_id,
         state: invitation.state,
         created_at: invitation.created_at,
+        deleted_at: invitation.deleted_at,
 
         account: Some(account.into()),
         receiver: receiver.map(Into::into),

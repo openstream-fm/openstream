@@ -73,7 +73,13 @@ pub mod get {
 
       let invitation = match AccountInvitation::get_by_token(&token).await? {
         None => return Ok(Output::NotFound),
-        Some(invitation) => invitation,
+        Some(invitation) => {
+          if invitation.deleted_at.is_some() {
+            return Ok(Output::NotFound);
+          }
+
+          invitation
+        }
       };
 
       let account = Account::get_by_id(&invitation.account_id)
@@ -106,6 +112,7 @@ pub mod get {
         is_expired,
         expires_at,
         created_at: invitation.created_at,
+        deleted_at: invitation.deleted_at,
         account,
         admin_sender,
         user_sender,

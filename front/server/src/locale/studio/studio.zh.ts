@@ -637,6 +637,14 @@ const locale: import("./studio.locale").StudioLocale = {
 
       "notifier": {
         "invitation_sent": "邀请已发送",
+        "member_access_revoked": "成员访问权限已撤销",
+        "member_role_changed": "成员访问角色已更新",
+      },
+
+      "actions": {
+        "set_role_to": "将角色设置为 @role",
+        "revoke_access": "撤销访问权限",
+        "delete": "删除",
       },
 
       "dialogs": {
@@ -724,6 +732,7 @@ const locale: import("./studio.locale").StudioLocale = {
 
   "user_menu": {
     "profile": "个人资料",
+    "invitations": "邀请",
     "accounts": "账户",
     "stations": "电台",
     "sign_out": "登出",

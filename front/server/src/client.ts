@@ -340,6 +340,14 @@ export class Accounts {
     return await this.client.get(ip, ua, token, `/accounts/${account_id}/members`)
   }
 
+  async delete_member(ip: string | null, ua: string | null, token: string, account_id: string, member_id: string): Promise<import("$api/accounts/[account]/members/[member]/DELETE/Output").Output> {
+    return await this.client.delete(ip, ua, token, `/accounts/${account_id}/members/${member_id}`)
+  }
+
+  async set_member_role(ip: string | null, ua: string | null, token: string, account_id: string, member_id: string, payload: import("$api/accounts/[account]/members/[member]/set-role/POST/Payload").Payload): Promise<import("$api/accounts/[account]/members/[member]/set-role/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, `/accounts/${account_id}/members/${member_id}/set-role`, payload);
+  }
+
   async get_stream_stats(ip: string | null, ua: string | null, token: string, account_id: string): Promise<import("$api/accounts/[account]/stream-stats/GET/Output").Output> {
     return await this.client.get(ip, ua, token, `/accounts/${account_id}/stream-stats`);
   }
@@ -642,6 +650,10 @@ export class AccountInvitations {
 
   async get(ip: string | null, ua: string | null, token: string, invitation_id: string): Promise<import("$api/invitations/[invitation]/GET/Output").Output> {
     return await this.client.get(ip, ua, token, `/invitations/${invitation_id}`);
+  }
+
+  async delete(ip: string | null, ua: string | null, token: string, invitation_id: string): Promise<import("$api/invitations/[invitation]/DELETE/Output").Output> {
+    return await this.client.delete(ip, ua, token, `/invitations/${invitation_id}`);
   }
 
   async get_by_token(ip: string | null, ua: string | null, token: string | null, invitation_token: string): Promise<import("$api/invitations/get-by-token/[token]/GET/Output").Output> {

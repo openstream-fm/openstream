@@ -636,6 +636,14 @@ const locale: import("./studio.locale").StudioLocale = {
 
       "notifier": {
         "invitation_sent": "تم إرسال الدعوة",
+        "member_access_revoked": "تم إلغاء وصول العضو",
+        "member_role_changed": "تم تحديث دور الوصول للعضو",
+      },
+
+      "actions": {
+        "set_role_to": "تعيين الدور إلى @role",
+        "revoke_access": "إلغاء الوصول",
+        "delete": "حذف",
       },
 
       "dialogs": {
@@ -723,6 +731,7 @@ const locale: import("./studio.locale").StudioLocale = {
 
   "user_menu": {
     "profile": "الملف الشخصي",
+    "invitations": "الدعوات",
     "accounts": "الحسابات",
     "stations": "المحطات",
     "sign_out": "تسجيل الخروج",

@@ -636,6 +636,14 @@ const locale: import("./studio.locale").StudioLocale = {
 
       "notifier": {
         "invitation_sent": "Invitation envoyée",
+        "member_access_revoked": "Accès membre révoqué",
+        "member_role_changed": "Rôle d'accès membre mis à jour",
+      },
+
+      "actions": {
+        "set_role_to": "Définir le rôle à @role",
+        "revoke_access": "Révoquer l'accès",
+        "delete": "Supprimer",
       },
 
       "dialogs": {
@@ -723,6 +731,7 @@ const locale: import("./studio.locale").StudioLocale = {
 
   "user_menu": {
     "profile": "Profil",
+    "invitations": "Invitations",
     "accounts": "Comptes",
     "stations": "Stations",
     "sign_out": "Se déconnecter",

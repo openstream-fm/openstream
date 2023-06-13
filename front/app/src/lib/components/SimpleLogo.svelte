@@ -31,10 +31,10 @@
   }
 </style>
 
-    <div class="logo">
-      <div class="logo-icon" style:background-image="url({ logo })" />
-      <div class="logo-text">
-        {$locale.logo_text}
-      </div>
-    </div>
+<div class="logo">
+  <div class="logo-icon" style:background-image="url({ logo })" />
+  <div class="logo-text">
+    {$locale.logo_text}
+  </div>
+</div>
 

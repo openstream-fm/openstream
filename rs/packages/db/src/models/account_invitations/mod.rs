@@ -34,6 +34,8 @@ pub struct AccountInvitation {
   pub state: AccountInvitationState,
 
   pub created_at: DateTime,
+
+  pub deleted_at: Option<DateTime>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]

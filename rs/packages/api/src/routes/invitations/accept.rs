@@ -163,7 +163,12 @@ pub mod post {
 
             let mut invitation = match tx_try!(AccountInvitation::get_by_id_with_session(&invitation_id, &mut session).await) {
               None => return Ok(Output::NotFound),
-              Some(doc) => doc,
+              Some(doc) => {
+                if doc.deleted_at.is_some() {
+                  return Ok(Output::NotFound)
+                }
+                doc
+              },
             };
 
             if invitation.receiver_email != user.email {
@@ -229,10 +234,14 @@ pub mod post {
           }
 
           run_transaction!(session => {
-            let invitation = tx_try!(AccountInvitation::get_by_token_with_session(&token, &mut session).await);
-            let mut invitation = match invitation {
-              Some(invitation) => invitation,
+            let mut invitation = match tx_try!(AccountInvitation::get_by_token_with_session(&token, &mut session).await) {
               None => return Ok(Output::NotFound),
+              Some(doc) => {
+                if doc.deleted_at.is_some() {
+                  return Ok(Output::NotFound)
+                }
+                doc
+              }
             };
 
             match &invitation.state {

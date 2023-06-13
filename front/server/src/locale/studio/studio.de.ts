@@ -638,6 +638,14 @@ const locale = {
 
       "notifier": {
         "invitation_sent": "Einladung gesendet",
+        "member_access_revoked": "Mitgliederzugriff widerrufen",
+        "member_role_changed": "Mitgliederzugriffsrolle aktualisiert",
+      },
+
+      "actions": {
+        "set_role_to": "Rolle auf @role setzen",
+        "revoke_access": "Zugriff widerrufen",
+        "delete": "Löschen",
       },
 
       "dialogs": {
@@ -725,6 +733,7 @@ const locale = {
 
   "user_menu": {
     "profile": "Profil",
+    "invitations": "Einladungen",
     "accounts": "Konten",
     "stations": "Stationen",
     "sign_out": "Abmelden",

@@ -9,19 +9,79 @@
 	import Formy from "$share/formy/Formy.svelte";
 	import Validator from "$share/formy/Validator.svelte";
 	import { _email } from "$share/formy/validate";
-	import { _post, action } from "$share/net.client";
+	import { _delete, _post, action } from "$share/net.client";
 	import { _message } from "$share/notify";
 	import { ripple } from "$share/ripple";
-	import { mdiAccountPlusOutline } from "@mdi/js";
-	import { scale } from "svelte/transition";
+	import { mdiAccountPlusOutline, mdiDotsVertical, mdiSecurity, mdiTrashCanOutline } from "@mdi/js";
+	import { scale, slide } from "svelte/transition";
   import { locale } from "$lib/locale";
+	import { logical_fly } from "$share/transition";
+	import { click_out } from "$share/actions";
+	import { invalidate } from "$app/navigation";
+	import { invalidateAll } from "$lib/invalidate";
 
-
-  type Relation = Exclude<typeof data.access.members, null>[number]["relation"];
+  type Member = Exclude<typeof data.access.members, null>[number];
+  type Relation = Member["relation"];
   const relation_names: Record<Relation, string> = {
     "owner": "Admin",
     "staff": "Staff",
   };
+
+  let member_menu_open_id: string | null = null;
+
+  const toggle_member_menu = (id: string) => {
+    if(member_menu_open_id === id) member_menu_open_id = null;
+    else member_menu_open_id = id;
+  }
+
+  const member_menu_click_out = () => {
+    setTimeout(() => {
+      member_menu_open_id = null;
+    }, 3)
+  }
+
+  let roling = false;
+  const set_member_role = action(async (member: Member, relation: "owner" | "staff") => {
+    if(roling) return;
+    roling = true;
+    try {
+      const payload: import("$api/accounts/[account]/members/[member]/set-role/POST/Payload").Payload = {
+        role: relation
+      }
+      
+      await _post(`/api/accounts/${data.account._id}/members/${member._id}/set-role`, payload);
+      
+      member_menu_open_id = null;
+
+      _message($locale.pages["account/members"].notifier.member_role_changed);
+      roling = false;
+      invalidateAll();
+    } catch(e) {
+      roling = false;
+      invalidateAll();
+      throw e;
+    }
+  })
+
+  
+  let deleting_member = false;
+  const del_member = action(async (member: Member) => {
+    if(deleting_member == true) return;
+    deleting_member = true;
+    try {
+      await _delete<import("$api/accounts/[account]/members/[member]/DELETE/Output").Output>(`/api/accounts/${data.account._id}/members/${member._id}`);
+      _message($locale.pages["account/members"].notifier.member_access_revoked)
+      member_menu_open_id = null;
+      deleting_member = false;
+      invalidateAll();
+
+    } catch(e) {
+      deleting_member = false;
+      invalidateAll();
+      throw e;
+    }
+  })
+
 
   let invite_open = false;
 
@@ -63,7 +123,7 @@
     // we only show the last pending invitation for each receiver_email 
     // sort the invitations in reverse order and filter already existing invitations
     for(const item of items.slice().sort((a, b) => b.created_at.localeCompare(a.created_at))) {
-      if(item.is_expired || item.state !== "pending") continue;
+      if(item.is_expired || item.state !== "pending" || item.deleted_at != null) continue;
       if(map.has(item.receiver_email)) continue;
       map.set(item.receiver_email, item);
     }
@@ -91,6 +151,51 @@
       return null;
     }
   })()
+
+  let invitation_menu_open_id: string | null = null;
+
+  const toggle_invitation_menu = (id: string) => {
+    if(invitation_menu_open_id === id) invitation_menu_open_id = null;
+    else invitation_menu_open_id = id;
+  }
+
+  const invitation_menu_click_out = () => {
+    setTimeout(() => {
+      invitation_menu_open_id = null;
+    }, 3)
+  }
+
+  let deleting = false;
+  const del_invitation = action(async (item: PublicInvitation) => {
+
+    if(deleting) return;
+    deleting = true;
+
+    try {
+      // remove all pending invitations to the same email
+      const ids = new Set([item.id]);
+      if(data.access.is_owner) {
+        for(const each of data.access.invitations.items) {
+          if(each.deleted_at != null) continue;
+          if(each.state !== "pending") continue;
+          if(each.receiver_email !== item.receiver_email) continue;
+          ids.add(each.id);
+        }
+      }
+
+      await Promise.all([...ids].map(async id => {
+        await _delete<import("$api/invitations/[invitation]/DELETE/Output").Output>(`/api/invitations/${id}`);
+      }));
+
+      invitation_menu_open_id = null;
+      deleting = false;
+      invalidate("api:invitations");
+    } catch(e) {
+      deleting = false;
+      invalidate("api:invitations");
+      throw e;
+    }
+  })
 </script>
 
 <style>
@@ -109,8 +214,15 @@
   .item {
     padding: 1rem;
     display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .item-data {
+    display: flex;
     flex-direction: column;
     align-items: flex-start;
+    flex: 1;
   }
 
   .item-name {
@@ -122,6 +234,7 @@
     color: #444;
     font-size: 0.95rem;
     margin-top: 0.25rem;
+    word-break: break-all;
   }
 
   .item-relation {
@@ -149,7 +262,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    margin-top: 1rem;
+    margin-top: 2rem;
   }
 
   .invite {
@@ -218,6 +331,82 @@
     line-height: 2rem;
   }
 
+  .invitations {
+    background: #fff;
+    padding: 0.5rem 0;
+    box-shadow: var(--some-shadow);
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .invitation-item {
+    padding: 0 1rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .invitation-item:nth-child(even) {
+    background: rgba(0,0,0,0.05);
+  }
+
+  .invitation-item-email {
+    padding: 0.75rem 0;
+    font-weight: 600;
+    flex: 1;
+    word-break: break-all;
+  }
+
+  .menu-anchor {
+    position: relative;
+    flex: none; 
+  }
+
+  .menu-btn {
+    display: flex;
+    font-size: 1.5rem;
+    border-radius: 50%;
+    padding: 0.75rem;
+    transition: background-color 200ms ease;
+  }
+
+  .menu-btn:hover, .menu-btn.open {
+    background-color: rgba(0,0,0,0.05)
+  }
+
+
+  .menu {
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline-end: 0;
+    background: #fff;
+    box-shadow: var(--some-shadow);
+    border-radius: 0.25rem;
+    padding: 0.25rem;
+    min-width: 10rem;
+    display: flex;
+    flex-direction: column;
+    z-index: 1;
+  }
+
+  .menu-item {
+    white-space: nowrap;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    transition: background-color 200ms ease;
+    align-self: stretch;
+  }
+
+  .menu-item:hover {
+    background-color: rgba(0,0,0,0.05);
+  }
+
+  .menu-item-icon {
+    display: flex;
+    margin-inline-end: 0.75rem;
+  }
 </style>
 
 <svelte:head>
@@ -240,29 +429,122 @@
     
     <div class="list">
       {#each data.access.members as item (item._id)}
+        {@const is_self = data.user._id === item._id}
+        {@const menu_open = member_menu_open_id === item._id}
         {@const relation_name = relation_names[item.relation]}
-        <div class="item" class:me={data.user._id === item._id}>
-          <div class="item-name">{item.first_name} {item.last_name}</div>
-          <div class="item-email">{item.email}</div>
-          <div class="item-relation">{relation_name}</div>
-        </div>
+        <div class="item" class:me={is_self} transition:slide|local={{ duration: 400 }}>
+          <div class="item-data">
+            <div class="item-name">{item.first_name} {item.last_name}</div>
+            <div class="item-email">{item.email}</div>
+            <div class="item-relation">{relation_name}</div>
+          </div>
+          {#if !is_self}
+            <div class="menu-anchor">
+              <button
+                class="menu-btn ripple-container"
+                class:open={menu_open}
+                on:click={() => toggle_member_menu(item._id)}
+                use:ripple
+              >
+                <Icon d={mdiDotsVertical} /> 
+              </button>
+              {#if menu_open}
+                <div
+                  class="menu"
+                  transition:logical_fly|local={{ duration: 200, y: -15, x: 15 }}
+                  use:click_out={member_menu_click_out}
+                >
+                  {#if item.relation === "owner"}
+                    <button
+                      class="menu-item ripple-container"
+                      use:ripple
+                      on:click={() => set_member_role(item, "staff")}
+                    >
+                      <div class="menu-item-icon">
+                        <Icon d={mdiSecurity} />
+                      </div>
+                        {
+                          $locale.pages["account/members"].actions.set_role_to
+                            .replace("@role", relation_names["staff"])
+                        }
+                    </button>
+                  {:else}
+                    <button
+                      class="menu-item ripple-container"
+                      use:ripple
+                      on:click={() => set_member_role(item, "owner")}
+                    >
+                      <div class="menu-item-icon">
+                        <Icon d={mdiSecurity} />
+                      </div>
+                      {
+                        $locale.pages["account/members"].actions.set_role_to
+                          .replace("@role", relation_names["owner"])
+                      }
+                    </button>
+                  {/if}
+                  <button
+                    class="menu-item ripple-container"
+                    use:ripple
+                    on:click={() => del_member(item)}
+                  >
+                    <div class="menu-item-icon">
+                      <Icon d={mdiTrashCanOutline} />
+                    </div>
+                      {$locale.pages["account/members"].actions.revoke_access}
+                    </button>
+                </div>
+              {/if}
+            </div>
+          {/if}
+      </div>
       {/each}
     </div>
 
-    {@const invitations = filter_invitations(data.access.invitations.items)}
  
     <h2>{$locale.pages["account/members"].Pending_invitations}</h2>
+
+    {@const invitations = filter_invitations(data.access.invitations.items)}
     
     {#if invitations.length}
-      <div class="invitations">
-        {#each filter_invitations(data.access.invitations.items) as item (item.id)}
-          <div class="invitation-item">
+      <div class="invitations" transition:slide|local={{ duration: 400 }}>
+        {#each invitations as item (item.id)}
+          {@const menu_open = invitation_menu_open_id == item.id}
+          <div class="invitation-item" transition:slide|local={{ duration: 400 }}>
             <div class="invitation-item-email">{item.receiver_email}</div>
+            <div class="menu-anchor">
+              <button
+                class="menu-btn ripple-container"
+                class:open={menu_open}
+                use:ripple
+                on:click={() => toggle_invitation_menu(item.id)}
+              >
+                <Icon d={mdiDotsVertical} />
+              </button>
+              {#if menu_open}
+                <div
+                  class="menu"
+                  transition:logical_fly|local={{ duration: 200, y: -15, x: 15 }}
+                  use:click_out={invitation_menu_click_out}
+                >
+                  <button
+                    class="menu-item ripple-container"
+                    use:ripple
+                    on:click={() => del_invitation(item)}
+                  >
+                    <div class="menu-item-icon">
+                      <Icon d={mdiTrashCanOutline} />
+                    </div>
+                    {$locale.pages["account/members"].actions.delete}
+                  </button>
+                </div>
+              {/if}
+            </div>
           </div>
         {/each}
       </div>
     {:else}
-      <p class="invitations-empty">
+      <p class="invitations-empty" transition:slide|local={{ duration: 400 }}>
         {$locale.pages["account/members"].no_pending_invitations_message}
       </p>
     {/if}

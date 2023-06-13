@@ -3,7 +3,7 @@ import { load_get } from "$lib/load";
 export const load = (async ({ fetch, url, depends, parent }) => {
   
   depends("api:accounts/:id/members");
-  depends("api:accounts/invitations");
+  depends("api:invitations");
   
   const { account, is_account_owner } = await parent();
 

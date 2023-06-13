@@ -20,6 +20,7 @@
     const map = new Map<string, Item>();
     // we only show the last invitation for each account
     for(const item of data.invitations.items.slice().sort((a, b) => b.created_at.localeCompare(a.created_at))) {
+      if(item.deleted_at != null) continue;
       if(item.is_expired) continue;
       if(item.state !== "pending") continue;
       if(map.has(item.account_id)) continue;
@@ -34,17 +35,35 @@
 	let to_reject_item: Item | null = null;
   const reject = action(async () => {
 		if (to_reject_item == null) return;
-		const payload: import("$api/invitations/reject/POST/Payload").Payload = {
-      invitation_id: to_reject_item.id
-    };
-
+		const item = to_reject_item;
+    const payload: import("$api/invitations/reject/POST/Payload").Payload = { invitation_id: item.id };
+    
     await _post(`/api/invitations/reject`, payload);
-		
-    _message($locale.pages['me/invitations'].notifier.rejected);
-
-		to_reject_item = null;
-		invalidate('api:invitations');
+		_message($locale.pages['me/invitations'].notifier.rejected);
+    to_reject_item = null;
+    
+    await delete_siblings(item).catch(() => {});
+      
+    invalidate('api:invitations');
 	});
+
+  /** delete other invitations to same account */
+  const delete_siblings = async (item: Item) => {
+    const ids = new Set();
+      for(const each of data.invitations.items) {
+      if(each.deleted_at != null) continue;
+      if(each.is_expired) continue;
+      if(each.state !== "pending") continue;
+      if(each.id === item.id) continue;
+      if(each.account_id !== item.account_id) {
+        ids.add(each.id);
+      }
+    } 
+
+    await Promise.all([...ids].map(async id => {
+      await _delete<import("$api/invitations/[invitation]/DELETE/Output").Output>(`/api/invitations/${id}`);
+    }))
+  }
 
   let accepting = false;
   const accept = action(async (item: Item) => {
@@ -60,6 +79,7 @@
       if(result !== "ok") {
         _error($locale.pages['me/invitations'].notifier.accept_error.replace("@error", result))
       } else {
+        await delete_siblings(item).catch(() => {});
         _message($locale.pages["me/invitations"].notifier.accepted);
       }
 
@@ -213,13 +233,13 @@
           <div class="invitation" data-invitation-id={item.id} transition:slide|local={{ duration: 400 }}>
             <div class="invitation-data">
               {#if item.user_sender}
-                {
+                {@html 
                   $locale.pages['me/invitations'].item_message_with_sender_html
                     .replace("@sender", item.user_sender.first_name)
                     .replace("@account", item.account ? item.account.name : `#${item.account_id}`)
                 }
               {:else}
-                {
+                {@html
                   $locale.pages['me/invitations'].item_message_without_sender_html
                     .replace("@account", item.account ? item.account.name : `#${item.account_id}`)
                 }
