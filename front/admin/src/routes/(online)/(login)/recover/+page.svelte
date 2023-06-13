@@ -104,7 +104,7 @@
   <Formy action={send} let:submit>
     <form novalidate class="login-page-fields" on:submit={submit}>
       <div class="login-page-field field-box">
-        <Email label="Email" bind:value={email} />
+        <Email label="Email" autocomplete="username" bind:value={email} />
         <Validator value={email} fn={_email({ required: true })} />
         <span class="comment login-page-comment">We'll send you an e-mail for you to recover access</span>
         <a class="na back" href="/login">Back to login</a>

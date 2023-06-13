@@ -571,7 +571,7 @@
   >
     <Formy action={invite} let:submit>
       <form novalidate class="invite-dialog" on:submit={submit}>
-        <Email label={$locale.pages["account/members"].dialogs.invite.Email} bind:value={invite_email} /> 
+        <Email label={$locale.pages["account/members"].dialogs.invite.Email} autocomplete="username" bind:value={invite_email} /> 
         <div class="invite-dialog-validate">
           <Validator value={invite_email} fn={email_validate} /> 
         </div>

@@ -49,7 +49,7 @@
   <Formy action={login} let:submit>
     <form novalidate class="login-page-fields" on:submit={submit}>
       <div class="login-page-field">
-        <Email label={$locale.pages.login.fields.email} bind:value={email} />
+        <Email autocomplete="username" label={$locale.pages.login.fields.email} bind:value={email} />
         <Validator value={email} fn={_string({ required: true })} />
       </div>
       <div class="login-page-field password-box">

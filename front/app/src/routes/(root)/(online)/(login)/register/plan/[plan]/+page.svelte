@@ -399,7 +399,7 @@
 					<Validator value={phone} fn={_phone({ required: true })} />
 				</div> -->
 				<div class="login-page-field">
-					<Email label={$locale.pages.register.form.fields.email} bind:value={email} />
+					<Email label={$locale.pages.register.form.fields.email} autocomplete="username" bind:value={email} />
 					<Validator value={email} fn={_new_user_email()} />
 				</div>
 				<div class="login-page-field">

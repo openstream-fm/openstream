@@ -252,7 +252,7 @@
         
               <div class="login-page-fields">
                 <div class="login-page-field">
-                  <Email label={$locale.pages.email_invitation.form.fields.email} disabled value={email()} />
+                  <Email autocomplete="username" label={$locale.pages.email_invitation.form.fields.email} disabled value={email()} />
                 </div>
                 
                 <div class="login-page-field">
