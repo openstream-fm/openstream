@@ -1,18 +1,22 @@
 use crate::error::CheckCollectionError;
 use crate::Model;
 use async_trait::async_trait;
+use once_cell::sync::Lazy;
 use parking_lot::Mutex;
-use std::any::Any;
 use std::collections::BTreeMap;
 use std::{any::TypeId, collections::HashMap, marker::PhantomData, sync::Arc};
 
-static REGISTRY: Mutex<Option<Registry>> = Mutex::new(None);
+pub use paste::paste;
+
+static REGISTRY: Lazy<Registry> = Lazy::new(Registry::new);
 
 #[macro_export]
 macro_rules! register {
   ($type:ty) => {
-    #[static_init::dynamic]
-    static REGISTRATION: () = $crate::registry::Registry::global().register::<$type>();
+    $crate::registry::paste! {
+      #[static_init::dynamic]
+      static [<$type:snake:upper _REGISTRATION>]: () = $crate::registry::Registry::global().register::<$type>();
+    }
   };
 }
 
@@ -23,14 +27,7 @@ pub struct Registry {
 
 impl Registry {
   pub fn global() -> Self {
-    let mut lock = REGISTRY.lock();
-    if lock.is_some() {
-      lock.as_ref().unwrap().clone()
-    } else {
-      let registry = Self::new();
-      *lock = Some(registry.clone());
-      registry
-    }
+    REGISTRY.clone()
   }
 
   pub fn new() -> Self {
@@ -41,7 +38,7 @@ impl Registry {
 
   pub fn register<M: Model + 'static>(&self) {
     let wrapper: ModelWrapper<M> = ModelWrapper { model: PhantomData };
-    let type_id = Any::type_id(&wrapper);
+    let type_id = TypeId::of::<M>();
     let item = RegistryItem {
       model: Arc::new(wrapper),
     };
@@ -56,11 +53,7 @@ impl Registry {
   }
 
   pub async fn ensure_collections(&self) -> Result<(), mongodb::error::Error> {
-    let items = {
-      let lock = self.inner.lock();
-      let items = lock.values().cloned().collect::<Vec<_>>();
-      items
-    };
+    let items = self.items();
 
     for item in items {
       item.ensure_collection().await?;
@@ -125,7 +118,7 @@ trait DynModelWrapper: Send + Sync + 'static {
 
 #[derive(Debug, Clone)]
 struct ModelWrapper<M: Model + 'static> {
-  model: PhantomData<M>,
+  model: PhantomData<&'static M>,
 }
 
 #[async_trait]

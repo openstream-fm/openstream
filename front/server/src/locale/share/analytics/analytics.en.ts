@@ -21,6 +21,8 @@ const locale = {
   // @context Radio Station
   "Station": "Station",
 
+  "Website": "Website",
+
   // @example Coutry: Argentina
   "Country": "Country",
 
@@ -33,12 +35,14 @@ const locale = {
   "Stats_by_station": "Stats by station",
   "Stats_by_country": "Stats by country",
   "Stats_by_date": "Stats by date",
+  "Stats_by_website": "Stats_by_website",
 
   "By_date": "By date",
   "By_country": "By country",
   "By_device": "By device",
   "By_browser": "By browser",
   "By_station": "By station",
+  "By_website": "By website",
   "Daily_stats": "Daily stats",
 
   "no_data_message": "There's no data recorded for the specified filters",

@@ -9,6 +9,7 @@ edition = "2021"
 api = { version = "0.1.0", path = "../../packages/api" }
 async-stream = "0.3.3"
 bytes = "1.2.1"
+constants = { version = "0.1.0", path = "../../config/constants" }
 db = { version = "0.1.0", path = "../../packages/db" }
 dotenv = "0.15.0"
 ffmpeg = { version = "0.1.0", path = "../../packages/ffmpeg" }

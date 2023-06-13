@@ -7,4 +7,5 @@ export type Payload = {
   user_id?: string;
   user_metadata?: Metadata;
   system_metadata?: Metadata;
+  payment_method_id: string;
 };

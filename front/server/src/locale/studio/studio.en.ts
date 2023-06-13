@@ -3,6 +3,7 @@ import validate from "../share/validate/validate.en";
 import countries from "../share/countries/countries.en";
 import type_of_content from "../share/type-of-content/type-of-content.en";
 import analytics from "../share/analytics/analytics.en";
+import payments from "../share/payments/payments.en";
 
 const locale = {
 
@@ -20,6 +21,7 @@ const locale = {
   "validate": validate,
   "stats_map": stats_map,
   "analytics": analytics,
+  "payments": payments,
 
   "copy_to_clipboard": "Copy to clipboard",
   "show_password": "Show password",
@@ -273,7 +275,7 @@ const locale = {
         "confirm_password": "Confirm password",
       },
       "error": {
-        "used_message_html": "The link you used to access this page is expired.<br /> Create a new link from the @user_recovery_page",
+        "used_message_html": "The link you used to access this page has already been used.<br /> Create a new link from the @user_recovery_page",
         "expired_message_html": "The link you used to access this page doesn't has expired.<br /> Create a new link from the @user_recovery_page",
         "not_found_message_html": "The link you used to access this page doesn't exist anymore.<br /> Create a new link from the @user_recovery_page",
         "user_recovery_page": "user recovery page",
@@ -614,11 +616,123 @@ const locale = {
           "disconnect": "Disconnect",
         }
       }
+    },
+
+    "account/members": {
+      "head": {
+        "title": "Members"
+      },
+      "title": "Members",
+
+      "no_owner_message_p1": "This section is only available for account administrators.",
+      "no_owner_message_p2": "Contact the account administrators if you need to invite people to this account.",
+
+      "Pending_invitations": "Pending invitations",
+      "no_pending_invitations_message": "There are no pending invitations",
+      "invite_btn_text": "Invite people",
+
+      "validate": {
+        "user_account_exists": "The user with email @email is already a member of the account",
+      },
+
+      "notifier": {
+        "invitation_sent": "Invitation sent",
+        "member_access_revoked": "Member access revoked",
+        "member_role_changed": "Member access role updated",
+      },
+
+      "actions": {
+        "set_role_to": "Set role to @role",
+        "revoke_access": "Revoke access",
+        "delete": "Delete",
+      },
+
+      "dialogs": {
+        "invite": {
+          "title": "Invite people to manage this account with @role role",
+          "submit": "Invite",
+          "Email": "Email",
+        }
+      }
+    },
+
+    "email_invitation": {
+      "head_page_title": {
+        "not_found": "Invitation not found",
+        "expired": "Invitation has expired",
+        "accepted": "Invitation already accepted",
+        "rejected": "Invitation already rejected",
+        "ok": "Pending invitation",
+      },
+
+      "error_message": {
+        "not_found": "The link used to access this page has doesn't exist or has been deleted",
+        "expired": "The invitation has expired, ask the administrators of the account to send a new invitation",
+        "accepted": "This invitation has already been accepted",
+        "rejected": "This invitation has already been rejected, if that was an error, ask the administrators of the account to send a new invitation",
+      },
+
+      "description": {
+        "with_sender_name_html": "<b>@sender</b> has invited you to join <b>@account</b> at Openstream.",
+        "without_sender_name_html": "You have been invited yo join <b>@account</b> at Openstream",
+      },
+
+      "login_as_btn_html": "Login as <b>@email</b> to accept the invitation",
+
+      "form": {
+        "fields": {
+          "first_name": "Yout first name",
+          "last_name": "Yout last name",
+          "email": "Your email",
+          "password": "Password",
+          "confirm_password": "Confirm password",
+        },
+        "pre_message_html": "To <b>accept</b> the invitation, fill the form.",
+        "title": "Sign up",
+        "submit": "Submit",
+      },
+
+      "notifier": {
+        "accept_error": "There was an error accepting the invitaiton: @error"
+      }
+    },
+
+    "me/invitations": {
+      "head": {
+        "title": "Pending invitations",     
+      },
+      "title": "Pending invitations",
+      
+      "no_items_message": "You don't have any pending invitations",
+
+      "notifier": {
+        "accept_error": "There was an error accepting the invitation: @error",
+        "accepted": "Invitation accepted",
+        "rejected": "Invitation rejected",
+      },
+
+      "actions": {
+        "reject": "Reject",
+        "accept": "Accept",
+      },
+
+      "item_message_with_sender_html": "<b>@sender</b> has invited you to join <b>@account</b>",
+      "item_message_without_sender_html":  "You have been invited to join <b>@account</b>",
+      
+      "dialogs": {
+        "reject": {
+          "title": "Reject invitation",
+          "message": "Are you sure you want to reject the invitation?",
+          "cancel": "Cancel",
+          "reject": "Reject invitation",
+        }
+      }
     }
   },
 
   "user_menu": {
     "profile": "Profile",
+    "invitations": "Invitations",
     "accounts": "Accounts",
     "stations": "Stations",
     "sign_out": "Sign out",

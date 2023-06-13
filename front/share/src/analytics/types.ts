@@ -4,6 +4,8 @@ export type DataGridField<T> = {
   sort?: ((a: T, b: T) => number) | null;
   numeric?: boolean;
   csv_only?: boolean;
+  is_selected?: (item: T) => boolean;
+  on_click?: (item: T) => void;
 };
 
 export type DataGridData<T, R extends Record<string, any>> = {

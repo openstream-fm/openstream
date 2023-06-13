@@ -22,6 +22,8 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   // @context Radio Station
   "Station": "Stazione",
 
+  "Website": "Sito web",
+
   // @example Coutry: Argentina
   "Country": "Paese",
 
@@ -33,6 +35,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Stats_by_device": "Statistiche per dispositivo",
   "Stats_by_station": "Statistiche per stazione",
   "Stats_by_country": "Statistiche per paese",
+  "Stats_by_website": "Statistiche per sito web",
   "Stats_by_date": "Statistiche per data",
 
   "By_date": "Per data",
@@ -40,6 +43,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "By_device": "Per dispositivo",
   "By_browser": "Per browser",
   "By_station": "Per stazione",
+  "By_website": "Per sito web",
   "Daily_stats": "Statistiche giornaliere",
 
   "no_data_message": "Non ci sono dati registrati per i filtri specificati",

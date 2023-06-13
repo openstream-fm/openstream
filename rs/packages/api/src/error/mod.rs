@@ -63,6 +63,9 @@ pub enum ApiError {
   #[error("token out of scope")]
   TokenOutOfScope,
 
+  #[error("token user account not owner")]
+  TokenUserAccountNotOwner,
+
   #[error("station not found: {0}")]
   StationNotFound(String),
 
@@ -83,6 +86,12 @@ pub enum ApiError {
 
   #[error("plan not found: {0}")]
   PlanNotFound(String),
+
+  #[error("payment method not found: {0}")]
+  PaymentMethodNotFound(String),
+
+  #[error("invitation not found: {0}")]
+  InvitationNotFound(String),
 
   #[error("payload io: {0}")]
   PayloadIo(hyper::Error),
@@ -190,13 +199,18 @@ impl ApiError {
       TokenUserNotFound(_) => StatusCode::INTERNAL_SERVER_ERROR,
       TokenAdminNotFound(_) => StatusCode::INTERNAL_SERVER_ERROR,
       TokenOutOfScope => StatusCode::UNAUTHORIZED,
+      TokenUserAccountNotOwner => StatusCode::UNAUTHORIZED,
+      
       StationNotFound(_) => StatusCode::NOT_FOUND,
       AdminNotFound(_) => StatusCode::NOT_FOUND,
       DeviceNotFound(_) => StatusCode::NOT_FOUND,
       AccountNotFound(_) => StatusCode::NOT_FOUND,
       PlanNotFound(_) => StatusCode::NOT_FOUND,
+      PaymentMethodNotFound(_) => StatusCode::NOT_FOUND,
       UserNotFound(_) => StatusCode::NOT_FOUND,
       AudioFileNotFound(_) => StatusCode::NOT_FOUND,
+      InvitationNotFound(_) => StatusCode::NOT_FOUND,
+
       QueryString(_) => StatusCode::BAD_REQUEST,
       QueryStringCustom(_) => StatusCode::BAD_REQUEST,
       PayloadIo(_) => StatusCode::BAD_REQUEST,
@@ -251,19 +265,25 @@ impl ApiError {
       BadRequestCustom(message) => message.clone(),
       Db(_) => format!("Internal server error"),
       Hyper(_) => format!("I/O request error"),
+      
       TokenMissing => format!("Access token is required"),
       TokenMalformed => format!("Access token is malformed"),
       TokenNotFound => format!("Access token not found"),
       TokenUserNotFound(id) => format!("User with id {id} not found"),
       TokenAdminNotFound(id) => format!("Admin with id {id} not found"),
       TokenOutOfScope => format!("Not enough permissions"),
+      TokenUserAccountNotOwner => format!("This section is only for account owners"),
+
       StationNotFound(id) => format!("Station with id {id} not found"),
       AdminNotFound(id) => format!("Admin with id {id} not found"),
       UserNotFound(id) => format!("User with id {id} not found"),
       PlanNotFound(id) => format!("Plan with id {id} not found"),
+      PaymentMethodNotFound(id) => format!("Payment method with id {id} not found"),
       AccountNotFound(id) => format!("Account with id {id} not found"),
       DeviceNotFound(id) => format!("Device with id {id} not found"),
       AudioFileNotFound(id) => format!("Audio file with id {id} not found"),
+      InvitationNotFound(id) => format!("Invitation with id {id} not found"),
+      
       QueryString(e) => format!("Invalid query string: {e}"),
       QueryStringCustom(message) => format!("Invalid query string: {message}"),
       PayloadIo(e) => format!("Error reading payload: {e}"),
@@ -303,7 +323,7 @@ impl ApiError {
       SendMail(_) => format!("There was an error sending the email, try again later"),
       
       CreateStationAccountLimit => format!("You reached your limit of stations for this account, upgrade your plan to add more stations"),
-      
+
       PaymentsPerform(_) => format!("An error ocurred when processing payment information, try again later"),
     }
   }
@@ -317,12 +337,15 @@ impl ApiError {
       BadRequestCustom(_) => PublicErrorCode::BadRequest,
       Db(_) => PublicErrorCode::InternalDb,
       Hyper(_) => PublicErrorCode::IoRequest,
+      
       TokenMissing => PublicErrorCode::TokenMissing,
       TokenMalformed => PublicErrorCode::TokenMalformed,
       TokenNotFound => PublicErrorCode::TokenNotFound,
       TokenUserNotFound(_) => PublicErrorCode::TokenUserNotFound,
       TokenAdminNotFound(_) => PublicErrorCode::TokenAdminNotFound,
       TokenOutOfScope => PublicErrorCode::TokenOutOfScope,
+      TokenUserAccountNotOwner => PublicErrorCode::TokenUserAccountNotOwner,
+
       StationNotFound(_) => PublicErrorCode::StationNotFound,
       AdminNotFound(_) => PublicErrorCode::AdminNotFound,
       UserNotFound(_) => PublicErrorCode::UserNotFound,
@@ -330,6 +353,9 @@ impl ApiError {
       AccountNotFound(_) => PublicErrorCode::AccountNotFound,
       AudioFileNotFound(_) => PublicErrorCode::AudioFileNotFound,
       DeviceNotFound(_) => PublicErrorCode::DeviceNotFound,
+      PaymentMethodNotFound(_) => PublicErrorCode::PaymentMethodNotFound,
+      InvitationNotFound(_) => PublicErrorCode::InvitationNotFound,
+
       QueryString(_) => PublicErrorCode::QueryStringInvalid,
       QueryStringCustom(_) => PublicErrorCode::QueryStringInvalid,
       PayloadIo(_) => PublicErrorCode::PayloadIo,

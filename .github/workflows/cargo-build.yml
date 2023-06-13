@@ -52,7 +52,7 @@ jobs:
       id: build-cargo-cache
       uses: MasterworksIO/action-local-cache@1.0.0
       with:
-        path: ./target
+        path: ./target/
         key: build-cargo-target
 
     - name: Cargo Build

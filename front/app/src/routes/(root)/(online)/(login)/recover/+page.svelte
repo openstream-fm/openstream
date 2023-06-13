@@ -108,7 +108,7 @@
   <Formy action={send} let:submit>
     <form novalidate class="login-page-fields" on:submit={submit}>
       <div class="login-page-field field-box">
-        <Email label="Email" bind:value={email} />
+        <Email autocomplete="username" label="Email" bind:value={email} />
         <Validator value={email} fn={_email({ required: true })} />
         <span class="comment login-page-comment">
           {$locale.pages.recover.comment}

@@ -50,7 +50,7 @@ const start = async (opts: { config: string }) => {
   let conf: config.Config;
 
   try {
-    let filename = opts.config == "null" ? null : path.resolve(process.cwd(), opts.config);
+    const filename = await config.resolve(opts.config === "null" ? null : opts.config);
     conf = config.load(filename, { logger });
   } catch(e: any) {
     logger.error(`error loading config: ${e}`);
@@ -76,7 +76,7 @@ cmd.version(VERSION);
 
 cmd.command("start")
   .description("start the webmail server")
-  .option("-c --config <path>", "path to the config file", "./openstream-front.toml")
+  .option("-c --config <path>", "path to the config file", "__UP__")
   .action(start);
 
 cmd.command("create-config")

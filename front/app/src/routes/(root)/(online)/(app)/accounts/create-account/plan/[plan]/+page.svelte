@@ -16,34 +16,26 @@
 	import { lang, locale } from "$lib/locale";
 	import { logical_fly } from "$share/transition";
 	import { tick } from "svelte";
-  import Dropin from "$share/braintree/Dropin.svelte";
+  import PaymentMethodSelector from "$share/braintree/PaymentMethodSelector.svelte";
+	import { display_fly_enter } from "$share/display_transitions";
   
   let account_name = "";
   // let sending_data = false;
 
-  let payment_nonce: string | null = null;
-  let payment_device_data: string | null = null;
-
-  let dropin: Dropin;
-
-  let animations = false;
+  let selector: PaymentMethodSelector;
+  let payment_method_id: string | null = null;
+  // let payment_nonce: string | null = null;
+  // let payment_device_data: string | null = null;
+  // let dropin: Dropin;
 
   let view: "data" | "pay" = "data";
   
   const send_data = action(async () => {
-    animations = false;
     view = "pay";
-    tick().then(() => {
-      animations = true;
-    })
   })
 
   const back_to_data = () => {
-    animations = false;
-    view = "data";
-    tick().then(() => {
-      animations = true;
-    }) 
+    view = "data"; 
   }
   
   let sending_pay = false;
@@ -53,23 +45,18 @@
     if (sending_pay) return;
 		sending_pay = true;
 
-		try {
-			try {
-				const payment_result = await dropin.requestPaymentMethod();
-				if (typeof payment_result?.nonce !== 'string') {
-					throw new Error('Payment internal error: invalid response');
-				} else {
-					payment_nonce = payment_result.nonce;
-          payment_device_data = payment_result.deviceData || null;
-				}
-			} catch (e) {
-				sending_pay = false;
-				// we dont log a notifier message here as it automatically shows the error in the UI
-				return;
-			}
+    try {
+      try {
+        payment_method_id = await selector.requestMethodId();
+      } catch(e) {
+        sending_pay = false;
+        // we dont log a notifier message here as it automatically shows the error in the UI
+        return;
+      }
 
-			const payload: import("$api/accounts/POST/Payload").Payload = {
+      const payload: import("$api/accounts/POST/Payload").Payload = {
         plan_id: data.plan._id,
+        payment_method_id,
         name: account_name,
       };
 
@@ -79,10 +66,10 @@
 
       goto(`/accounts/${account._id}`, { invalidateAll: true });
       invalidate_siblings();
-		} catch (e) {
-			sending_pay = false;
-			throw e;
-		}
+    } catch (e) {
+      sending_pay = false;
+      throw e;
+    }
   })
 
   let color: Color;
@@ -119,25 +106,6 @@
 
   .view:not(.active) {
 		display: none;
-	}
-
-	.animations {
-		animation-name: view-enter;
-		animation-duration: 200ms;
-		animation-timing-function: ease;
-		animation-fill-mode: forwards;
-	}
-
-	@keyframes view-enter {
-		0% {
-			opacity: 0;
-			transform: translateX(-25px);
-		}
-
-		100% {
-			opacity: 1;
-			transform: none;
-		}
 	}
 
   h2 {
@@ -290,8 +258,8 @@
     <Formy action={send_data} let:submit>
       <form
         class="view view-data"
-        class:animations
         class:active={view === "data"}
+        use:display_fly_enter={{ start: false, show: view === "data", duration: 200, x: -25 }}
         on:submit={submit}
       >
         <h2>{$locale.pages["accounts/create_account/plan"].form.title}</h2>
@@ -321,14 +289,21 @@
       <form
         novalidate
         class="view view-pay"
-        class:animations
         class:active={view === "pay"}
+        use:display_fly_enter={{ start: false, show: view === "pay", duration: 200, x: -25 }}
         on:submit={submit}
       >
         <h2>{$locale.pages["accounts/create_account/plan"].form.pay.title}</h2>
 
         <div class="dropin-out">
-          <Dropin authorization="sandbox_d58xyrp3_xbw6cq92jcgfmzdh" bind:this={dropin} lang={$lang} />
+          <PaymentMethodSelector
+            locale={$locale.payments}
+            lang={$lang}
+            authorization="sandbox_d58xyrp3_xbw6cq92jcgfmzdh"
+            bind:saved_methods={data.payment_methods.items}
+            bind:this={selector}
+          />
+          <!--<Dropin authorization="sandbox_d58xyrp3_xbw6cq92jcgfmzdh" bind:this={dropin}  />-->
         </div>
 
         <button class="back-to" on:click|preventDefault={() => back_to_data()}>

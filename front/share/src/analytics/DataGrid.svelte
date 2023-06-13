@@ -16,7 +16,7 @@
 
   import Icon from "$share/Icon.svelte";
   import { ripple } from "$share/ripple";
-  import { mdiFileDownloadOutline, mdiTriangle } from "@mdi/js";
+  import { mdiClose, mdiFileDownloadOutline, mdiTriangle } from "@mdi/js";
   import { stringify } from "csv-stringify/browser/esm/sync";
 
   // const inverse = <T>(fn: (a: T, b: T) => number) => {
@@ -101,6 +101,15 @@
     padding: 0.5rem 1rem;
   }
 
+  .value.clickable {
+    cursor: pointer;
+    text-align: inherit;
+  }
+
+  .value.clickable:hover {
+    text-decoration: underline;
+  }
+
   .grid {
     width: 100%;
     overflow-y: auto;
@@ -127,6 +136,10 @@
     margin-inline-end: -1rem;
     font-size: 0.75rem;
     transform: scaleX(0.75);
+  }
+
+  :global([dir=rtl]) .value-selected-icon {
+    transform: scaleX(-1);
   }
 
   .sort-chevron.asc {
@@ -216,9 +229,20 @@
           <tr>
             {#each display_fields as [key, field] (key)}
               <td class:numeric={field.numeric}>
-                <div class="value">
-                  {field.format(item)}
-                </div>
+                {#if field.on_click}
+                  <button class="value clickable" on:click={() => field.on_click(item)}>
+                    {#if field.is_selected?.(item)}
+                      <span class="value-selected-icon">
+                        «
+                      </span>
+                    {/if}
+                    {field.format(item)}
+                  </button>  
+                {:else}
+                  <div class="value">
+                    {field.format(item)}
+                  </div>
+                {/if}
               </td>
             {/each}
           </tr>

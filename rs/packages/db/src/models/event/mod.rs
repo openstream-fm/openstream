@@ -22,7 +22,6 @@ struct Watcher {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/", rename = "BaseEvent")]
-// #[ts(rename = "BaseEvent")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct Event {

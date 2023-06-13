@@ -222,7 +222,7 @@ async fn get_source_password(
   .unwrap();
   let res = client
     .get(url)
-    .header("x-access-token", TOKEN)
+    .header(constants::ACCESS_TOKEN_HEADER, TOKEN)
     .send()
     .await
     .map_err(GetPasswordError::Fetch)?;

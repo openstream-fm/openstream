@@ -7,11 +7,13 @@ import type { PartialDeep } from "type-fest";
 import * as dot from "dot-prop";
 import { clone } from "./util/collections";
 import CommentJSON from "comment-json";
+import { findUp } from "find-up";
+import path from "path";
 
 export type Config = {
   openstream: {
     api_base_url: string
-    token: string
+    // token: string
   }
 
   session: {
@@ -143,7 +145,7 @@ export const merge_env = (partial: PartialDeep<Config>, { logger, env = process.
   }
 
   str("openstream.api_base_url")
-  str("openstream.token")
+  // str("openstream.token")
 
   str("session.secret");
   num("session.max_age_days");
@@ -204,4 +206,18 @@ export const load = (filename: string | null, { logger: _logger, env = process.e
   }
 
   return load_from_string(source, format, { env, logger });
+}
+
+export const resolve = async (name: "__UP__" | string | null): Promise<string | null> => {
+  if(name == null) return null;
+  else if(name === "__UP__") {
+    const up = await findUp("openstream-front.toml");
+    if(up == null) {
+      throw new Error("Couldn't find openstream-front.toml file in working diretory or parent directories");
+    } else {
+      return up;
+    }
+  } else {
+    return path.resolve(process.cwd(), name);
+  }
 }

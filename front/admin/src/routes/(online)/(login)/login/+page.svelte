@@ -17,7 +17,7 @@
   const login = action(async () => {
     const payload: Omit<import("$api/auth/admin/login/POST/Payload").Payload, "device_id"> = { email, password };
     await _post("/api/auth/admin/login", payload);
-    const target = decodeURIComponent(location.hash.replace(/^#/, "")) || "/";
+    const target = location.hash.replace(/^#/, "") || "/";
     goto(target, { invalidateAll: true });
     invalidate_siblings();
   })
@@ -45,7 +45,7 @@
   <Formy action={login} let:submit>
     <form novalidate class="login-page-fields" on:submit={submit}>
       <div class="login-page-field">
-        <Email label="Email" bind:value={email} />
+        <Email label="Email" autocomplete="username" bind:value={email} />
         <Validator value={email} fn={_string({ required: true })} />
       </div>
       <div class="login-page-field password-box">

@@ -60,6 +60,7 @@ pub enum PublicErrorCode {
   InternalSerialize,
 
   IoRequest,
+
   TokenMissing,
   TokenMalformed,
   TokenNotFound,
@@ -67,6 +68,7 @@ pub enum PublicErrorCode {
   TokenStationNotFound,
   TokenAdminNotFound,
   TokenOutOfScope,
+  TokenUserAccountNotOwner,
 
   StationNotFound,
   AdminNotFound,
@@ -75,6 +77,8 @@ pub enum PublicErrorCode {
   AudioFileNotFound,
   DeviceNotFound,
   PlanNotFound,
+  PaymentMethodNotFound,
+  InvitationNotFound,
 
   QueryStringInvalid,
   PayloadIo,

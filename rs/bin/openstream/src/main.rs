@@ -375,6 +375,8 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     ref payments,
   } = config.as_ref();
 
+  db::access_token::AccessToken::start_autoremove_job();
+
   let mailer = mailer::send::Mailer {
     hostname: smtp.hostname.clone(),
     port: smtp.port,

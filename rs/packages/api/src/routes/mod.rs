@@ -7,6 +7,8 @@ pub mod stations;
 pub mod users;
 
 pub mod analytics;
+pub mod invitations;
+pub mod payment_methods;
 pub mod plans;
 pub mod runtime;
 pub mod station_pictures;
@@ -68,13 +70,19 @@ pub fn router(
     .at("/auth/user/email-exists/:email")
     .get(auth::user::email_exists::get::Endpoint {}.into_handler());
 
-  app
-    .at("/auth/user/register")
-    .post(auth::user::register::post::Endpoint { payments_client }.into_handler());
+  app.at("/auth/user/register").post(
+    auth::user::register::post::Endpoint {
+      payments_client: payments_client.clone(),
+    }
+    .into_handler(),
+  );
 
-  app
-    .at("/auth/user/recover")
-    .post(auth::user::recover::post::Endpoint { mailer }.into_handler());
+  app.at("/auth/user/recover").post(
+    auth::user::recover::post::Endpoint {
+      mailer: mailer.clone(),
+    }
+    .into_handler(),
+  );
 
   app
     .at("/auth/user/recovery-token/:token")
@@ -193,6 +201,14 @@ pub fn router(
   app
     .at("/accounts/:account/members")
     .get(accounts::members::get::Endpoint {}.into_handler());
+
+  app
+    .at("/accounts/:account/members/:member")
+    .delete(accounts::members::id::delete::Endpoint {}.into_handler());
+
+  app
+    .at("/accounts/:account/members/:member/set-role")
+    .post(accounts::members::id::set_role::post::Endpoint {}.into_handler());
 
   app.at("/accounts/:account/stream-stats").get(
     accounts::stream_stats::get::Endpoint {
@@ -390,6 +406,37 @@ pub fn router(
     .at("/admins/:admin")
     .get(admins::id::get::Endpoint {}.into_handler())
     .patch(admins::id::patch::Endpoint {}.into_handler());
+
+  app
+    .at("/invitations")
+    .get(invitations::get::Endpoint {}.into_handler())
+    .post(invitations::post::Endpoint { mailer }.into_handler());
+
+  app
+    .at("/invitations/:invitation")
+    .get(invitations::id::get::Endpoint {}.into_handler())
+    .delete(invitations::id::delete::Endpoint {}.into_handler());
+
+  app
+    .at("/invitations/get-by-token/:token")
+    .get(invitations::get_by_token::get::Endpoint {}.into_handler());
+
+  app
+    .at("/invitations/accept")
+    .post(invitations::accept::post::Endpoint {}.into_handler());
+
+  app
+    .at("/invitations/reject")
+    .post(invitations::reject::post::Endpoint {}.into_handler());
+
+  app
+    .at("/payment-methods")
+    .get(payment_methods::get::Endpoint {}.into_handler())
+    .post(payment_methods::post::Endpoint { payments_client }.into_handler());
+
+  app
+    .at("/payment-methods/:payment_method")
+    .get(payment_methods::id::get::Endpoint {}.into_handler());
 
   // 404 catch all
   app.with(ResourceNotFound.into_handler());

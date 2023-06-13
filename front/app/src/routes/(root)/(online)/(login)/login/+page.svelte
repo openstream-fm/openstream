@@ -12,15 +12,18 @@
 	import { locale } from "$lib/locale";
 	import { invalidate_siblings } from "$lib/invalidate";
 
-  let email = "";
+  import { page } from "$app/stores";
+
+  let email = $page.url.searchParams.get("email")?.trim() || "";
   let password = "";
 
   const login = action(async () => {
     const payload: Omit<import("$api/auth/user/login/POST/Payload").Payload, "device_id"> = { email, password };
     await _post("/api/auth/user/login", payload);
-    const target = decodeURIComponent(location.hash.replace(/^#/, "")) || "/";
-    goto(target, { invalidateAll: true });
-    invalidate_siblings();
+    const target = location.hash.replace(/^#/, "") || "/";
+    goto(target, { invalidateAll: true }).then(() => {
+      invalidate_siblings();
+    });
   })
 </script>
 
@@ -46,7 +49,7 @@
   <Formy action={login} let:submit>
     <form novalidate class="login-page-fields" on:submit={submit}>
       <div class="login-page-field">
-        <Email label={$locale.pages.login.fields.email} bind:value={email} />
+        <Email autocomplete="username" label={$locale.pages.login.fields.email} bind:value={email} />
         <Validator value={email} fn={_string({ required: true })} />
       </div>
       <div class="login-page-field password-box">

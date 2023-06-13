@@ -1,10 +1,10 @@
 import { RequestHandler } from "express";
 import { ip } from "./ip";
-import { X_REAL_IP } from "./constants";
+import { REAL_IP_HEADER } from "./constants";
 
 export const kit = (handler: RequestHandler): RequestHandler => {
   return (req, res, next) => {
-    req.headers[X_REAL_IP] = ip(req);
+    req.headers[REAL_IP_HEADER] = ip(req);
     return handler(req, res, next);
   }
 }

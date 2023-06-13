@@ -24,7 +24,6 @@ pub struct TokenUserRecovery {
 
 impl TokenUserRecovery {
   pub const RANDOM_KEY_LEN: usize = 24;
-  pub const VALIDITY_SECONDS: u32 = 60 * 60; // 1 hr
 
   pub fn random_key() -> String {
     uid::uid(Self::RANDOM_KEY_LEN)
@@ -35,7 +34,7 @@ impl TokenUserRecovery {
 
     let until = self
       .created_at
-      .saturating_add(Duration::SECOND * Self::VALIDITY_SECONDS);
+      .saturating_add(Duration::SECOND * constants::TOKEN_USER_RECOVERY_VALIDITY_SECS);
 
     now > until
   }

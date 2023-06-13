@@ -9,7 +9,9 @@ static PARSER: Parser = Parser::default();
 
 /// UserAgent is an owned value
 /// it does allocate in favor of simplicity
-#[derive(Debug, Default, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
+#[derive(
+  Debug, Default, Clone, Serialize, Deserialize, Eq, PartialEq, TS, deepsize::DeepSizeOf,
+)]
 #[ts(export)]
 #[ts(export_to = "../../../defs/")]
 // #[serde(rename_all = "camelCase")]

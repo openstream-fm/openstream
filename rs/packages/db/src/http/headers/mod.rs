@@ -15,7 +15,7 @@ impl Headers {
 
   #[inline]
   pub fn is_sensible_key(key: &str) -> bool {
-    key.eq_ignore_ascii_case("x-access-token") || key.eq_ignore_ascii_case("cookie")
+    key.eq_ignore_ascii_case(constants::ACCESS_TOKEN_HEADER) || key.eq_ignore_ascii_case("cookie")
   }
 
   #[inline]

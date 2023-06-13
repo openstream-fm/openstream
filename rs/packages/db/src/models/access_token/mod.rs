@@ -2,14 +2,10 @@ use std::collections::hash_map::Entry;
 use std::net::IpAddr;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering;
-use std::time::Instant;
 
 use crate::current_filter_doc;
 use crate::Model;
-use mongodb::bson::Document;
-// compiler bug (this is indeed used)
-#[allow(unused)]
-use mongodb::bson::{self, doc};
+use mongodb::bson::doc;
 use mongodb::options::IndexOptions;
 use mongodb::IndexModel;
 use serde::{Deserialize, Serialize};
@@ -24,8 +20,10 @@ use tokio::time::Duration;
 
 use parking_lot::Mutex;
 use std::collections::HashMap;
-use std::sync::Arc;
-use tokio::sync::OnceCell;
+
+use self::index::AccessTokenIndex;
+
+pub mod index;
 
 crate::register!(AccessToken);
 
@@ -114,7 +112,6 @@ impl GeneratedBy {
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/", rename = "BaseAccessToken")]
-// #[ts(rename = "BaseAccessToken")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct AccessToken {
@@ -123,16 +120,14 @@ pub struct AccessToken {
 
   pub hash: String,
 
-  /// the media_hash is used to access streams and files with access token scope
+  /// the media_hash is used to access streams and files
   /// directly from the client without exposing a full access token
   pub media_hash: String,
 
   #[serde(flatten)]
-  // #[ts(skip)]
   pub scope: Scope,
 
   #[serde(flatten)]
-  // #[ts(skip)]
   pub generated_by: GeneratedBy,
 
   pub last_used_at: Option<DateTime>,
@@ -187,101 +182,22 @@ fn start_access_token_hit_saver_job() {
   });
 }
 
-const CACHE_CLEAR_INTERVAL: Duration = Duration::from_secs(5);
-static CACHE_JOB_STARTED: AtomicBool = AtomicBool::new(false);
+#[derive(Debug, Clone)]
+enum TouchQuery {
+  Hash(String, String),
+  MediaHash(String, String),
+}
 
-#[allow(clippy::type_complexity)]
-static ACCESS_TOKEN_CACHE: tokio::sync::Mutex<
-  Option<HashMap<String, (Instant, Arc<OnceCell<AccessToken>>)>>,
-> = tokio::sync::Mutex::const_new(None);
-
-const ACCESS_TOKEN_CACHE_VALIDITY: Duration = Duration::from_secs(300);
-
-fn start_access_token_cache_job() {
-  info!("access token cache clear job started");
-  tokio::spawn(async move {
-    loop {
-      tokio::time::sleep(CACHE_CLEAR_INTERVAL).await;
-
-      let mut lock = ACCESS_TOKEN_CACHE.lock().await;
-
-      match lock.as_mut() {
-        None => continue,
-        Some(map) => map.retain(|_, (got_at, _)| got_at.elapsed() < CACHE_CLEAR_INTERVAL),
-      }
+impl TouchQuery {
+  fn id(&self) -> &str {
+    match self {
+      Self::Hash(id, _) => id,
+      Self::MediaHash(id, _) => id,
     }
-  });
+  }
 }
 
 impl AccessToken {
-  pub async fn touch_cached(id_key: &str) -> Result<Option<AccessToken>, mongodb::error::Error> {
-    let v = CACHE_JOB_STARTED.swap(true, Ordering::SeqCst);
-    if !v {
-      start_access_token_cache_job();
-    }
-
-    let cell = {
-      let mut lock = ACCESS_TOKEN_CACHE.lock().await;
-
-      let entry = lock
-        .get_or_insert_with(HashMap::new)
-        .entry(id_key.to_string());
-
-      match entry {
-        Entry::Occupied(mut entry) => {
-          let (instant, cell) = entry.get();
-          if instant.elapsed() > ACCESS_TOKEN_CACHE_VALIDITY {
-            let cell = Arc::new(OnceCell::new());
-            entry.insert((Instant::now(), cell.clone()));
-            cell
-          } else {
-            cell.clone()
-          }
-        }
-
-        Entry::Vacant(entry) => {
-          let cell = Arc::new(OnceCell::new());
-          entry.insert((Instant::now(), cell.clone()));
-          cell
-        }
-      }
-    };
-
-    #[derive(Debug, thiserror::Error)]
-    enum AccessTokenInitError {
-      #[error("mongo: {0}")]
-      Mongo(#[from] mongodb::error::Error),
-      #[error("access token none")]
-      None,
-    }
-
-    let result = cell
-      .get_or_try_init(|| async {
-        let (id, key) = match id_key.split_once('-') {
-          None => return Err(AccessTokenInitError::None),
-          Some(r) => r,
-        };
-        let hash = crypt::sha256(key);
-        let filter = current_filter_doc! { AccessToken::KEY_ID: id, AccessToken::KEY_HASH: hash };
-        let token = AccessToken::internal_touch(filter, false).await?;
-        match token {
-          Some(token) => Ok(token),
-          None => Err(AccessTokenInitError::None),
-        }
-      })
-      .await;
-
-    match result {
-      Ok(token) => {
-        Self::hit(token.id.clone());
-        Ok(Some(token.clone()))
-      }
-
-      Err(AccessTokenInitError::Mongo(e)) => Err(e),
-      Err(AccessTokenInitError::None) => Ok(None),
-    }
-  }
-
   fn hit(id: String) {
     let v = HIT_JOB_STARTED.swap(true, Ordering::SeqCst);
 
@@ -308,12 +224,54 @@ impl AccessToken {
   }
 
   async fn internal_touch(
-    filter: Document,
+    query: TouchQuery,
     hit: bool,
   ) -> Result<Option<AccessToken>, mongodb::error::Error> {
-    let doc = match Self::get(filter).await? {
-      None => return Ok(None),
-      Some(doc) => doc,
+    let id = query.id();
+
+    let index = AccessTokenIndex::global();
+    let doc = match index.get_by_id(id).await {
+      Some(doc) => match query {
+        TouchQuery::Hash(_id, hash) => {
+          if doc.hash == hash {
+            doc
+          } else {
+            return Ok(None);
+          }
+        }
+
+        TouchQuery::MediaHash(_id, media_hash) => {
+          if doc.media_hash == media_hash {
+            doc
+          } else {
+            return Ok(None);
+          }
+        }
+      },
+
+      // if token is not found in index we pass the query to the database
+      None => {
+        let filter = match query {
+          TouchQuery::Hash(id, hash) => {
+            current_filter_doc! {
+              AccessToken::KEY_ID: id,
+              AccessToken::KEY_HASH: hash
+            }
+          }
+
+          TouchQuery::MediaHash(id, media_hash) => {
+            current_filter_doc! {
+              AccessToken::KEY_ID: id,
+              AccessToken::KEY_MEDIA_HASH: media_hash
+            }
+          }
+        };
+
+        match Self::get(filter).await? {
+          None => return Ok(None),
+          Some(doc) => doc,
+        }
+      }
     };
 
     if hit {
@@ -331,11 +289,7 @@ impl AccessToken {
 
     let hash = crypt::sha256(key);
 
-    Self::internal_touch(
-      current_filter_doc! { AccessToken::KEY_ID: id, AccessToken::KEY_HASH: hash },
-      true,
-    )
-    .await
+    Self::internal_touch(TouchQuery::Hash(id.into(), hash), true).await
   }
 
   pub async fn touch_by_media_key(
@@ -348,15 +302,58 @@ impl AccessToken {
 
     let media_hash = crypt::sha256(media_key);
 
-    Self::internal_touch(
-      current_filter_doc! { AccessToken::KEY_ID: id,  AccessToken::KEY_MEDIA_HASH: media_hash },
-      true,
-    )
-    .await
+    Self::internal_touch(TouchQuery::MediaHash(id.into(), media_hash), true).await
   }
 }
 
 impl AccessToken {
+  pub const ACCESS_TOKEN_AUTOREMOVE_INTERVAL: tokio::time::Duration =
+    tokio::time::Duration::from_secs(60 * 5); // 5 min
+
+  pub fn start_autoremove_job() -> tokio::task::JoinHandle<()> {
+    info!(target: "access-token-autoremove", "access token autoremove job started");
+    tokio::spawn(async move {
+      let mut interval = tokio::time::interval(Self::ACCESS_TOKEN_AUTOREMOVE_INTERVAL);
+      loop {
+        // first tick is instantaneous
+        interval.tick().await;
+
+        let now = time::OffsetDateTime::now_utc();
+        let limit = time::OffsetDateTime::from_unix_timestamp(
+          now.unix_timestamp() - constants::ACCESS_TOKEN_NOT_USED_AUTOREMOVE_SECS as i64,
+        )
+        .unwrap();
+        let limit: serde_util::DateTime = limit.into();
+
+        let filter = current_filter_doc! {
+          "$and": [
+            { AccessToken::KEY_LAST_USED_AT: { "$lt": limit } },
+            {
+              "$or": [
+                // user, register generated tokens
+                { GeneratedBy::KEY_ENUM_TAG: GeneratedBy::KEY_ENUM_VARIANT_REGISTER },
+                // admin and user, login generated tokens
+                { GeneratedBy::KEY_ENUM_TAG: GeneratedBy::KEY_ENUM_VARIANT_LOGIN },
+                // admin-as-user tokens (this are generated via API)
+                { Scope::KEY_ENUM_TAG: Scope::KEY_ENUM_VARIANT_ADMINASUSER }
+              ]
+            }
+          ]
+        };
+
+        let r = match Self::set_deleted(filter).await {
+          Ok(r) => r,
+          Err(e) => {
+            error!(target: "access-token-autoremove", "mongodb error marking access tokens as deleted: {e}, {e:?}");
+            continue;
+          }
+        };
+
+        info!(target: "access-token-autoremove", "{} tokens marked as deleted",  r.matched_count);
+      }
+    })
+  }
+
   pub fn random_key() -> String {
     uid::uid(48)
   }
@@ -365,7 +362,7 @@ impl AccessToken {
     uid::uid(24)
   }
 
-  const DEVICE_ID_LEN: usize = 24;
+  pub const DEVICE_ID_LEN: usize = 24;
   pub fn random_device_id() -> String {
     uid::uid(Self::DEVICE_ID_LEN)
   }
@@ -416,7 +413,7 @@ impl AccessToken {
 }
 
 impl Model for AccessToken {
-  const UID_LEN: usize = 24;
+  const UID_LEN: usize = 12;
   const CL_NAME: &'static str = "access_tokens";
 
   fn indexes() -> Vec<IndexModel> {
@@ -466,6 +463,7 @@ impl Model for AccessToken {
 mod test {
 
   use super::*;
+  use mongodb::bson;
 
   #[test]
   fn keys_match() {

@@ -380,7 +380,7 @@
     <div class="links thin-scroll">
       <DrawerItem href="/accounts/{account._id}" label={$locale.drawer.dashboard} icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
       <DrawerItem href="/accounts/{account._id}/stations" label={$locale.drawer.stations} icon={mdiRadioTower} on_click={close_drawer_fixed} />
-      <!-- <DrawerItem href="/accounts/{account._id}/members" label={$locale.drawer.members} icon={mdiAccountMultipleOutline} on_click={close_drawer_fixed} /> -->
+      <DrawerItem href="/accounts/{account._id}/members" label={$locale.drawer.members} icon={mdiAccountMultipleOutline} on_click={close_drawer_fixed} />
       <DrawerItem href="/accounts/{account._id}/analytics" label={$locale.drawer.analytics} icon={mdiPoll} on_click={close_drawer_fixed} />
     </div>
   </div>

@@ -544,8 +544,9 @@ impl MemIndex {
     filter: F,
   ) -> usize {
     let start = Instant::now();
-    let total = {
-      let lock = self.map.read().await;
+    let me = self.clone();
+    let total = tokio::task::spawn_blocking(move || {
+      let lock = me.map.blocking_read();
 
       let mut sum: usize = 0;
 
@@ -582,17 +583,20 @@ impl MemIndex {
           }
         }
       }
-      sum
-    };
 
-    log::info!(
-      target: "stream_stats",
-      "stats count, station({}) filter({}) => {} items in {}ms",
-      station_query,
-      filter,
-      total,
-      start.elapsed().as_millis()
-    );
+      log::info!(
+        target: "stream_stats",
+        "stats count, station({}) filter({}) => {} items in {}ms",
+        station_query,
+        filter,
+        sum,
+        start.elapsed().as_millis()
+      );
+
+      sum
+    })
+    .await
+    .unwrap();
 
     total
   }
@@ -819,7 +823,7 @@ impl<T: Default> CountryCodeMap<T> {
   }
 }
 
-impl<T: Default + Copy> Default for CountryCodeMap<T> {
+impl<T: Default> Default for CountryCodeMap<T> {
   fn default() -> Self {
     Self::new()
   }
@@ -838,7 +842,7 @@ impl<T: Default + Copy + Eq> CountryCodeMap<T> {
     map
   }
 
-  pub fn into_btree_map_as<M: From<T>>(self) -> BTreeMap<CountryCode, M> {
+  pub fn into_mapped_btree_map<M: From<T>>(self) -> BTreeMap<CountryCode, M> {
     use strum::IntoEnumIterator;
     let mut map = BTreeMap::new();
     for cc in CountryCode::iter() {
@@ -922,7 +926,7 @@ impl StationQuery {
   }
 
   pub fn some(station_ids: HashSet<String>) -> Self {
-    let mut hashed = HashSet::new();
+    let mut hashed = HashSet::with_capacity(station_ids.len());
     for id in station_ids.iter() {
       hashed.insert(hash(id));
     }

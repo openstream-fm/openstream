@@ -140,7 +140,7 @@
       </div>
     </a>
 
-    <a href="/plans" class="na ripple-container section" use:ripple>
+    <a href="/analytics" class="na ripple-container section" use:ripple>
       <div class="section-icon">
         <Icon d={mdiPoll} />
       </div>

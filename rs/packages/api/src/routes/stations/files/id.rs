@@ -12,7 +12,11 @@ use prex::{Request, Response};
 use serde::{Deserialize, Serialize};
 
 #[allow(clippy::declare_interior_mutable_const)]
-const VARY_RANGE_X_ACCESS_TOKEN: HeaderValue = HeaderValue::from_static("range,x-access-token");
+const VARY_RANGE_X_ACCESS_TOKEN: HeaderValue = HeaderValue::from_static(const_str::concat!(
+  "range",
+  ",",
+  constants::ACCESS_TOKEN_HEADER
+));
 
 #[allow(clippy::declare_interior_mutable_const)]
 const ACCEPT_RANGES_BYTES: HeaderValue = HeaderValue::from_static("bytes");

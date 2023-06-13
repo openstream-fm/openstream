@@ -146,6 +146,7 @@
                 <div class="field">
                   <Email
                     label={$locale.pages.user_recovery.fields.email}
+                    autocomplete="username"
                     readonly
                     value={data.result.user_email}
                   />

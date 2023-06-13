@@ -45,33 +45,20 @@
 
 	let email_verification_code = '';
 
-	let animations = false;
 	let view: 'data' | 'code' | 'pay' = 'data';
 
 	const back_to_data = () => {
-		animations = false;
 		view = 'data';
-		tick().then(() => {
-			animations = true;
-		});
 	};
 
 	const back_to_pay = () => {
-		animations = false;
 		email_verification_code = '';
 		view = 'pay';
-		tick().then(() => {
-			animations = true;
-		});
 	};
 
 	let sending_data = false;
 	const submit_data = action(async () => {
-		animations = false;
 		view = 'pay';
-		tick().then(() => {
-			animations = true;
-		});
 	});
 
 	let sending_pay = false;
@@ -102,12 +89,7 @@
 			await _post(`/api/auth/email-verification/send-code`, payload);
 
 			sending_pay = false;
-
-			animations = false;
 			view = 'code';
-			tick().then(() => {
-				animations = true;
-			});
 		} catch (e) {
 			sending_pay = false;
 			throw e;
@@ -155,7 +137,7 @@
 	const bg_color = color.alpha(0.1).toString();
 
 	import { form } from '../../../transitions';
-	import { tick } from 'svelte';
+	import { display_fly_enter } from '$share/display_transitions';
 
   const format_price = (price: number): string => {
     return new Intl.NumberFormat($lang, {
@@ -176,25 +158,6 @@
 
 	.view:not(.active) {
 		display: none;
-	}
-
-	.animations {
-		animation-name: view-enter;
-		animation-duration: 200ms;
-		animation-timing-function: ease;
-		animation-fill-mode: forwards;
-	}
-
-	@keyframes view-enter {
-		0% {
-			opacity: 0;
-			transform: translateX(-25px);
-		}
-
-		100% {
-			opacity: 1;
-			transform: none;
-		}
 	}
 
 	h2 {
@@ -386,8 +349,8 @@
 			novalidate
 			on:submit={submit}
 			class="view view-data"
-			class:animations
 			class:active={view === 'data'}
+			use:display_fly_enter={{ start: false, show: view === "data", x: -25, duration: 200 }}
 		>
 			<h2>{$locale.pages.register.form.title}</h2>
 
@@ -436,7 +399,7 @@
 					<Validator value={phone} fn={_phone({ required: true })} />
 				</div> -->
 				<div class="login-page-field">
-					<Email label={$locale.pages.register.form.fields.email} bind:value={email} />
+					<Email label={$locale.pages.register.form.fields.email} autocomplete="username" bind:value={email} />
 					<Validator value={email} fn={_new_user_email()} />
 				</div>
 				<div class="login-page-field">
@@ -478,8 +441,8 @@
 			novalidate
 			on:submit={submit}
 			class="view view-pay"
-			class:animations
 			class:active={view === 'pay'}
+			use:display_fly_enter={{ start: false, show: view === "pay", x: -25, duration: 200 }}
 		>
 			<h2>{$locale.pages.register.pay.title}</h2>
 
@@ -517,7 +480,7 @@
 			on:submit={submit}
 			class="view view-code"
 			class:active={view === 'code'}
-			class:animations
+			use:display_fly_enter={{ start: false, show: view === "code", x: -25, duration: 200 }}
 		>
 			<h2>
 				{$locale.pages.register.verification.title}

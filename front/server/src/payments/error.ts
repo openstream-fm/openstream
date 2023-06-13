@@ -7,11 +7,11 @@ import { StatusCodes } from "http-status-codes";
 export const ERROR_STATUS_CODE = StatusCodes.IM_A_TEAPOT;
 export class PaymentsClientError extends Error {
   
-  kind: PaymentsErrorKind;
+  detail: PaymentsErrorKind;
 
-  constructor(message: string, kind: PaymentsErrorKind, cause?: any) {
+  constructor(message: string, detail: PaymentsErrorKind, cause?: any) {
     super(message, { cause });
-    this.kind = kind;
+    this.detail = detail;
   }
 
   static from(e: any): PaymentsClientError {
@@ -24,7 +24,7 @@ export class PaymentsClientError extends Error {
     return {
       error: {
         message: this.message,
-        ...this.kind
+        ...this.detail
       }
     }
   }
@@ -56,7 +56,7 @@ export const catch_handler = ({ logger }: { logger: Logger }) => {
   return (src_error: any, req: Request, res: Response, next: NextFunction) => {
     const target_error = PaymentsClientError.from(src_error);
     if(target_error === src_error) {
-      logger.warn(`error at endpoint ${req.path} => ${target_error.kind.kind} => ${target_error.message}${target_error.cause ? ` => cause: ${String(target_error.cause)}` : ""}`)
+      logger.warn(`error at endpoint ${req.path} => ${target_error.detail.kind} => ${target_error.message}${target_error.cause ? ` => cause: ${String(target_error.cause)}` : ""}`)
     } else {
       logger.error(`unhandled error at endpoint ${req.path}`);
       logger.error("source error");

@@ -23,4 +23,5 @@ export type Analytics = {
   by_os: Array<AnalyticsItem<string | null>>;
   by_country: Array<AnalyticsItem<CountryCode | null>>;
   by_station: Array<AnalyticsItem<string>>;
+  by_domain: Array<AnalyticsItem<string | null>>;
 };

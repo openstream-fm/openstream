@@ -297,6 +297,7 @@
           <Email
             label={$locale.pages.me.fields.email}
             disabled
+            autocomplete="username"
             value={data.admin.email}
           />
         </div>

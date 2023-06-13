@@ -6,6 +6,7 @@ import type { Metadata } from "./db/Metadata";
 export type UserPublicAccount = {
   _id: string;
   plan_id: string;
+  payment_method_id: string | null;
   name: string;
   limits: AccountLimits;
   created_at: DateTime;

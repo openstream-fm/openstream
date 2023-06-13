@@ -16,6 +16,7 @@ pub struct Account {
   #[serde(rename = "_id")]
   pub id: String,
   pub plan_id: String,
+  pub payment_method_id: Option<String>,
   pub name: String,
   pub limits: Limits,
   pub created_at: DateTime,
@@ -31,6 +32,7 @@ pub struct UserPublicAccount {
   #[serde(rename = "_id")]
   pub id: String,
   pub plan_id: String,
+  pub payment_method_id: Option<String>,
   pub name: String,
   pub limits: Limits,
   pub created_at: DateTime,
@@ -182,6 +184,7 @@ impl From<Account> for UserPublicAccount {
     Self {
       id: account.id,
       plan_id: account.plan_id,
+      payment_method_id: account.payment_method_id,
       name: account.name,
       limits: account.limits,
       created_at: account.created_at,

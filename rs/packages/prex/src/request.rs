@@ -10,10 +10,10 @@ use serde::Deserialize;
 use std::net::{IpAddr, SocketAddr};
 
 #[allow(clippy::declare_interior_mutable_const)]
-const X_OPENSTREAM_FORWARDED_IP: HeaderName = HeaderName::from_static("x-openstream-forwarded-ip");
+const X_OPENSTREAM_FORWARDED_IP: HeaderName = HeaderName::from_static(constants::FORWARD_IP_HEADER);
 
 #[allow(clippy::declare_interior_mutable_const)]
-const X_REAL_IP: HeaderName = HeaderName::from_static("x-real-ip");
+const X_REAL_IP: HeaderName = HeaderName::from_static(constants::REAL_IP_HEADER);
 
 pub fn is_trusted_ip(ip: IpAddr) -> bool {
   !ip_rfc::global(&ip)

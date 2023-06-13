@@ -3,62 +3,57 @@
   import Page from "$lib/components/Page.svelte";
 	import Analytics from "$share/analytics/Analytics.svelte";
   import { locale, lang } from "$lib/locale";
-	import AnalyticsFilters from "$share/analytics/AnalyticsFilters.svelte";
-	import type { OnSubmitEvent } from "$share/analytics/AnalyticsFilters.svelte";
-  import { _get, action } from "$share/net.client";
-	import { hash } from "$server/util/collections";
+
+  import type { CountryCode } from "$server/defs/CountryCode";
+	import type { QueryKind, StationItem } from "$share/analytics/AnalyticsFilters.svelte";
 
   $: account_stations = data.stations.items.filter(item => item.account_id === data.account._id);
-  
-  let analytics: import("$server/defs/analytics/Analytics").Analytics | null = null;
-  let loading = false;
 
-  const on_submit = action(async ({ qs }: OnSubmitEvent) => {
-    if(loading) return;
-    loading = true;
-    try {
-      const { analytics: data } = await _get<import("$server/defs/api/analytics/GET/Output").Output>(`/api/analytics?${qs}`);
-      analytics = data;
-      loading = false;
-    } catch(e) {
-      loading = false;
-      throw e;
+  let country_code: CountryCode | null | undefined = undefined;
+  let os: string | null | undefined = undefined;
+  let browser: string | null | undefined = undefined;
+  let domain: string | null | undefined = undefined;
+  let kind: QueryKind = "last-30d";
+  let selected_stations: StationItem[] | "all" = "all";
+  let loading: boolean = false;
+  let analytics_data: import("$server/defs/analytics/Analytics").Analytics | null = null;
+  
+  type Snapshot = {
+    country_code: CountryCode | null | undefined,
+    os: string | null | undefined,
+    browser: string | null | undefined,
+    domain: string | null | undefined,
+    kind: QueryKind,
+    selected_stations: StationItem[] | "all",
+    analytics_data: import("$server/defs/analytics/Analytics").Analytics | null,
+  };
+
+  export const snapshot = {
+    capture: (): Snapshot => {
+      return {
+        analytics_data,
+        country_code,
+        os,
+        browser,
+        kind,
+        domain,
+        selected_stations
+      }
+    },
+
+    restore: (snapshot: Snapshot) => {
+      ({ 
+        analytics_data,
+        kind,
+        browser,
+        country_code,
+        os,
+        domain,
+        selected_stations,
+      } = snapshot);
     }
-  });
+  }
 </script>
-
-<style>
-  h1 {
-    font-weight: 600;
-  }
-
-  .boxes {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 2rem;
-  }
-  
-  .filters {
-    background: #fff;
-    display: flex;
-    flex-direction: column;
-    border-radius: 0.5rem;
-    box-shadow: var(--some-shadow);
-    padding: 1rem;
-    margin-block-start: 2rem;
-  }
-  
-  .analytics {
-    margin-top: 2rem;
-    transition: opacity 300ms ease;
-  }
-
-  .analytics.loading {
-    opacity: 0.2;
-  }
-</style>
-
 
 <svelte:head>
   <title>{$locale.pages["account/analytics"].head.title}</title>
@@ -67,30 +62,19 @@
 <Page>
   <h1>{$locale.pages["account/analytics"].title}</h1>
 
-  <div class="boxes">
-    <div class="filters">
-      <AnalyticsFilters
-        {loading}
-        stations={account_stations}
-        selected_stations="all"
-        kind="last-24h"
-        {on_submit}
-        locale={$locale.analytics.filters}
-      />
-    </div>
-
-    {#if analytics}
-      <div class="analytics" class:loading>
-        {#key hash(analytics)}
-          <Analytics
-            data={analytics}
-            country_names={$locale.countries}
-            lang={$lang}
-            locale={$locale.analytics}
-            stats_map_locale={$locale.stats_map}
-          />
-        {/key}
-      </div>
-    {/if}
-  </div>
+  <Analytics
+    stations={account_stations}
+    bind:data={analytics_data}
+    bind:loading
+    bind:selected_stations
+    bind:kind
+    bind:country_code
+    bind:os
+    bind:browser
+    bind:domain
+    lang={$lang}
+    locale={$locale.analytics}
+    stats_map_locale={$locale.stats_map}
+    country_names={$locale.countries}
+  />
 </Page>

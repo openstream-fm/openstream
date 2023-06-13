@@ -21,6 +21,10 @@
     since: Date | null;
     until: Date | null;
     stations: StationItem[];
+    country_code: CountryCode | null | undefined,
+    os: string | null | undefined,
+    browser: string | null | undefined
+    domain: string | null | undefined
   };
 
   export type OnSubmitEvent = ResolvedQuery & { qs: URLSearchParams | null };
@@ -32,10 +36,29 @@
     if (query.until == null) return null;
 
     const qs = new URLSearchParams();
+    
     qs.append("since", formatISO(query.since));
+    
     qs.append("until", formatISO(query.until));
+
     for (const station of query.stations) {
       qs.append("stations[]", station._id);
+    }
+
+    if(query.country_code !== undefined) {
+      qs.append("country_code", query.country_code ?? "ZZ")
+    }
+
+    if(query.os !== undefined) {
+      qs.append("os", query.os ?? "null")
+    }
+
+    if(query.browser !== undefined) {
+      qs.append("browser", query.browser ?? "null")
+    }
+
+    if(query.domain !== undefined) {
+      qs.append("domain", query.domain ?? "null")
     }
 
     return qs;
@@ -44,13 +67,17 @@
 
 <script lang="ts">
   export let stations: StationItem[];
-
   export let selected_stations: "all" | StationItem[];
   export let kind: QueryKind;
   export let custom_since: Date | null = null;
   export let custom_until: Date | null = null;
   export let loading: boolean = false;
-  export let locale:   import("$server/locale/share/analytics/analytics.locale").AnalyticsLocale["filters"];
+  export let browser: string | null | undefined;
+  export let os: string | null | undefined;
+  export let domain: string | null | undefined;
+  export let country_code: CountryCode | null | undefined;
+  export let locale: import("$server/locale/share/analytics/analytics.locale").AnalyticsLocale;
+  export let country_names: import("$server/locale/share/countries/countries.locale").CountriesLocale;
 
   export const get_resolved_since = (now = new Date()) => {
     if (kind === "today") {
@@ -112,6 +139,10 @@
       since: get_resolved_since(),
       until: get_resolved_until(),
       stations: get_resolved_stations(),
+      country_code,
+      os,
+      browser,
+      domain,
     };
   };
 
@@ -142,6 +173,7 @@
   import { logical_fly } from "$share/transition";
   import { click_out } from "$share/actions";
   import CircularProgress from "$share/CircularProgress.svelte";
+  import type { CountryCode } from "$server/defs/CountryCode";
 
   const unselect_station = (id: string) => {
     if (selected_stations === "all") {
@@ -387,6 +419,44 @@
     transform: translate(-50%, -50%);
     font-size: 1.4rem;
   }
+
+  .more-filters {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .more-chip {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0.5rem;
+    border-radius: 3rem;
+    background: #eee;
+    font-size: 0.9rem;
+  }
+
+  .more-chip-label {
+    color: #666;
+    margin-inline-start: 0.25rem;
+    flex: none;
+  }
+
+  .more-chip-value {
+    margin-inline-start: 0.25rem;
+    font-weight: 600;
+  }
+
+  .more-chip-remove {
+    display: flex;
+    padding: 1.25rem;
+    margin: -1rem;
+    border-radius: 50%;
+    flex: none;
+  }
 </style>
 
 <div class="analytics-filters" class:loading>
@@ -401,10 +471,10 @@
       {#if selected_stations === "all"}
         <div class="field-text" transition:slide|local={{ duration: 200 }}>
           {#if stations.length}
-            {locale.All_stations}
+            {locale.filters.All_stations}
           {:else}
-            {locale.No_stations}
-          {/if}
+            {locale.filters.No_stations}
+         {/if}
         </div>
       {:else}
         <div class="chips" transition:slide|local={{ duration: 200 }}>
@@ -468,7 +538,7 @@
           </button>
         {:else}
           <div class="no-stations-message">
-            {locale.no_stations_message}
+            {locale.filters.no_stations_message}
           </div>
         {/each}
       </div>
@@ -484,7 +554,7 @@
       }}
     >
       <div class="field-text">
-        {locale.query_kind[kind]}
+        {locale.filters.query_kind[kind]}
       </div>
     </button>
 
@@ -492,7 +562,7 @@
       <div class="menu" transition:logical_fly={{ y: -25, duration: 200 }} use:click_out={() => time_menu_click_out()}>
         {#each temporal_keys as key (key)}
           {@const selected = kind === key}
-          {@const name = locale.query_kind[key]}
+          {@const name = locale.filters.query_kind[key]}
           <button
             class="menu-item ripple-container"
             class:selected
@@ -528,13 +598,74 @@
     {/if}
   </div>
 
+  {#if country_code !== undefined || os !== undefined || browser !== undefined || domain !== undefined}
+    <div class="more-filters" transition:slide|local={{ duration: 200 }}>
+      {#if country_code !== undefined}
+        <div class="more-chip" transition:scale|local={{ duration: 200 }}>
+          <div class="more-chip-label">
+            {locale.Country}:
+          </div>
+          <div class="more-chip-value">
+            {country_code == null ? locale.Unknown : country_names[country_code] ?? country_code}
+          </div>
+          <button class="more-chip-remove ripple-container" use:ripple on:click={() => country_code = undefined}>
+            <Icon d={mdiClose} />
+          </button>
+        </div>
+      {/if}
+
+      {#if domain !== undefined}
+        <div class="more-chip" transition:scale|local={{ duration: 200 }}>
+          <div class="more-chip-label">
+            {locale.Website}:
+          </div>
+          <div class="more-chip-value">
+            {domain == null ? locale.Unknown : domain}
+          </div>
+          <button class="more-chip-remove ripple-container" use:ripple on:click={() => domain = undefined}>
+            <Icon d={mdiClose} />
+          </button>
+        </div>
+      {/if}
+
+
+      {#if os !== undefined}
+        <div class="more-chip" transition:scale|local={{ duration: 200 }}>
+          <div class="more-chip-label">
+            {locale.Device}:
+          </div>
+          <div class="more-chip-value">
+            {os == null ? locale.Unknown : os}
+          </div>
+          <button class="more-chip-remove ripple-container" use:ripple on:click={() => os = undefined}>
+            <Icon d={mdiClose} />
+          </button>
+        </div>
+      {/if}
+
+      {#if browser !== undefined}
+        <div class="more-chip" transition:scale|local={{ duration: 200 }}>
+          <div class="more-chip-label">
+            {locale.Browser}:
+          </div>
+          <div class="more-chip-value">
+            {browser == null ? locale.Unknown : browser}
+          </div>
+          <button class="more-chip-remove ripple-container" use:ripple on:click={() => browser = undefined}>
+            <Icon d={mdiClose} />
+          </button>
+        </div>
+      {/if}
+    </div>
+  {/if}
+
   <div class="submit-out">
     <button class="submit ripple-container" use:ripple on:click={submit}>
       <div class="submit-icon">
         <Icon d={mdiPoll} />
       </div>
       <div class="submit-text">
-        {locale.submit}
+        {locale.filters.submit}
       </div>
       {#if loading}
         <div class="submit-loading" transition:scale|local={{ duration: 200 }}>

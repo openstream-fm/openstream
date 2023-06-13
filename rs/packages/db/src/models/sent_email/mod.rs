@@ -8,7 +8,6 @@ crate::register!(SentEmail);
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/", rename = "SentEmailBase")]
-// #[ts(rename = "SentEmailBase")]
 pub struct SentEmail {
   #[serde(rename = "_id")]
   pub id: String,
@@ -19,7 +18,6 @@ pub struct SentEmail {
   pub html: String,
   pub reply_to: Option<SentEmailAddress>,
 
-  // #[ts(skip)]
   #[serde(flatten)]
   pub kind: SentEmailKind,
 
@@ -47,4 +45,12 @@ pub enum SentEmailKind {
 
   #[serde(rename = "email-verification-code")]
   EmailVerificationCode { email: String, code_id: String },
+
+  #[serde(rename = "account-invitation")]
+  AccountInvitation {
+    receiver_email: String,
+    invitation_id: String,
+    user_sender_id: Option<String>,
+    admin_sender_id: Option<String>,
+  },
 }
