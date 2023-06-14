@@ -33,9 +33,13 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
       app.use(kit(handler));
     }
 
-    app.listen(config.studio.port, () => {
-      logger.scoped("start").info(`studio server bound to port ${color.yellow(config.studio!.port)}`);
-    });
+    await new Promise<void>((resolve, reject) => {
+      app.listen(config.studio!.port, (...args: any[]) => {
+        if(args[0]) return reject(args[0])
+        logger.scoped("start").info(`studio server bound to port ${color.yellow(config.studio!.port)}`);
+        resolve();
+      });
+    })
   }
 
   if(config.admin?.enabled) {
@@ -53,9 +57,13 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
       app.use(kit(handler));
     }
 
-    app.listen(config.admin.port, () => {
-      logger.scoped("start").info(`admin server bound to port ${color.yellow(config.admin!.port)}`);
-    });
+    await new Promise<void>((resolve, reject) => {
+      app.listen(config.admin!.port, (...args: any[]) => {
+        if(args[0]) return reject(args[0])
+        logger.scoped("start").info(`admin server bound to port ${color.yellow(config.admin!.port)}`);
+        resolve();
+      });
+    })
   }
 
   if(config.payments?.enabled) {
@@ -64,8 +72,12 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
 
     app.use(payments_api({ config: config.payments, logger }))
 
-    app.listen(config.payments.port, () => {
-      logger.scoped("start").info(`payments server bound to port ${color.yellow(config.payments!.port)}`);
+    await new Promise<void>((resolve, reject) => {
+      app.listen(config.payments!.port, (...args: any[]) => {
+        if(args[0]) return reject(args[0])
+        logger.scoped("start").info(`payments server bound to port ${color.yellow(config.payments!.port)}`);
+        resolve();
+      });
     });
   }
 }

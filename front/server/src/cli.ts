@@ -69,7 +69,9 @@ const start = async (opts: { config: string }) => {
     process.exit(1);
   }
 
-  app.start({ config: conf, logger });
+  await app.start({ config: conf, logger });
+
+  if(process.send) process.send("ready");
 }
 
 cmd.version(VERSION);
