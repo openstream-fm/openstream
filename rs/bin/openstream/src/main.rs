@@ -25,6 +25,7 @@ use serde_util::DateTime;
 use shutdown::Shutdown;
 // use source::SourceServer;
 use stream::StreamServer;
+use assets::StaticServer;
 use tokio::runtime::Runtime;
 
 use jemallocator::Jemalloc;
@@ -371,6 +372,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     ref source,
     ref api,
     ref storage,
+    ref assets,
     ref smtp,
     ref payments,
   } = config.as_ref();
@@ -467,6 +469,19 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
       Ok(())
     }.boxed());
   }
+
+  if let Some(static_config) = assets {
+    let assets = StaticServer::new(
+      static_config.addrs.clone(),
+      shutdown.clone(),
+    );
+    let fut = assets.start()?;
+    futs.push(async move {
+      fut.await.map_err(crate::error::ServerStartError::from)?;
+      Ok(())
+    }.boxed());
+  }
+
 
   // if let Some(router_config) = router {
   //   let router = RouterServer::new(router_config.addrs.clone(), shutdown.clone());
