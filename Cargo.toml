@@ -23,6 +23,7 @@ members = [
     "rs/packages/stream",
     "rs/packages/source-alt",
     "rs/packages/stream",
+    "rs/packages/assets",
     "rs/packages/router",
     "rs/packages/upload",
     "rs/packages/api",

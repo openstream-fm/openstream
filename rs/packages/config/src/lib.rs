@@ -11,13 +11,21 @@ pub struct Config {
   // pub router: Option<Router>,
   pub api: Option<Api>,
   pub storage: Option<Storage>,
+
+  #[serde(rename = "static")]
+  pub assets: Option<Static>,
+
   pub smtp: Smtp,
   pub payments: Payments,
 }
 
 impl Config {
   pub fn has_interfaces(&self) -> bool {
-    self.stream.is_some() || self.source.is_some() || self.api.is_some() || self.storage.is_some()
+    self.stream.is_some()
+      || self.source.is_some()
+      || self.api.is_some()
+      || self.storage.is_some()
+      || self.assets.is_some()
   }
 }
 
@@ -40,6 +48,12 @@ pub struct Mongodb {
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Stream {
+  pub addrs: Vec<SocketAddr>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct Static {
   pub addrs: Vec<SocketAddr>,
 }
 

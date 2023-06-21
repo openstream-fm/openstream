@@ -42,6 +42,13 @@
     "addrs": [ "0.0.0.0:10900" ]
   },
 
+  // the [static] server is the interface to the static files server
+  "static": {
+    // string(SocketAddr)[] (required)
+    // socket addrs to bind the assets server to
+    "addrs": [ "0.0.0.0:11000" ]
+  },
+
   // payments server configuration
   "payments": {
 
