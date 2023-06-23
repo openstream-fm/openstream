@@ -67,7 +67,7 @@ pub async fn start(
           let deployment_id = deployment_id.clone();
           let media_sessions = media_sessions.clone();
           let drop_tracer = drop_tracer.clone();
-          let drop_tracer = drop_tracer.clone();
+          let shutdown = shutdown.clone();
 
           async move {
             let r = handle_connection(
@@ -84,7 +84,7 @@ pub async fn start(
               warn!("error in handle connection: {} => {:?}", e, e)
             }
           }
-        });
+        })
       },
 
       _ = shutdown.signal() => {
