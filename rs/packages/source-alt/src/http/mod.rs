@@ -156,7 +156,11 @@ pub async fn parse_request_head(buffer: Vec<u8>) -> Result<RequestHead, ReadHead
     }
   }
 
-  let uri = hyper::Uri::from_str(uri)?;
+  let uri = if uri.starts_with('/') {
+    hyper::Uri::from_str(uri)?
+  } else {
+    hyper::Uri::from_str(&format!("/{uri}"))?
+  };
 
   let head = RequestHead {
     buffer,
