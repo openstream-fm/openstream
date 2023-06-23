@@ -86,8 +86,11 @@ pub async fn read_request_head<R: AsyncRead + Unpin>(
     }
 
     let byte = reader.read_u8().await?;
+    info!("byte: {:?}", String::from_utf8_lossy(&[byte]));
 
-    if byte == b'\n' && i >= 3 && &buf[(i - 3)..i] == b"\r\n\r" {
+    if byte == b'\n'
+      && ((i >= 3 && &buf[(i - 3)..i] == b"\r\n\r") || (i >= 1 && buf[i - 1] == b'\n'))
+    {
       buf[i] = byte;
       break &buf[0..=i];
     }
