@@ -63,15 +63,28 @@ pub async fn start(
 
         let (socket, remote_addr) = r?;
 
-        tokio::spawn(handle_connection(
-          socket,
-          local_addr,
-          remote_addr,
-          deployment_id.clone(),
-          media_sessions.clone(),
-          drop_tracer.clone(),
-          shutdown.clone(),
-        ));
+        tokio::spawn({
+          let deployment_id = deployment_id.clone();
+          let media_sessions = media_sessions.clone();
+          let drop_tracer = drop_tracer.clone();
+          let shutdown = shutdown.clone();
+
+          async move {
+            let r = handle_connection(
+              socket,
+              local_addr,
+              remote_addr,
+              deployment_id,
+              media_sessions,
+              drop_tracer,
+              shutdown,
+            ).await;
+
+            if let Err(e) = &r {
+              warn!("error in handle connection: {} => {:?}", e, e)
+            }
+          }
+        })
       },
 
       _ = shutdown.signal() => {

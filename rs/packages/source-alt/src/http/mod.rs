@@ -86,7 +86,6 @@ pub async fn read_request_head<R: AsyncRead + Unpin>(
     }
 
     let byte = reader.read_u8().await?;
-    info!("byte: {:?}", String::from_utf8_lossy(&[byte]));
 
     if byte == b'\n'
       && ((i >= 3 && &buf[(i - 3)..i] == b"\r\n\r") || (i >= 1 && buf[i - 1] == b'\n'))
@@ -156,7 +155,11 @@ pub async fn parse_request_head(buffer: Vec<u8>) -> Result<RequestHead, ReadHead
     }
   }
 
-  let uri = hyper::Uri::from_str(uri)?;
+  let uri = if uri.starts_with('/') {
+    hyper::Uri::from_str(uri)?
+  } else {
+    hyper::Uri::from_str(&format!("/{uri}"))?
+  };
 
   let head = RequestHead {
     buffer,

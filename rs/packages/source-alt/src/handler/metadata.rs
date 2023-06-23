@@ -196,5 +196,5 @@ pub async fn metadata(
   socket.write_all(message.as_bytes()).await?;
   socket.flush().await?;
 
-  todo!();
+  Ok(())
 }
