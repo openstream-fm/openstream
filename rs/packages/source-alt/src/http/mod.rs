@@ -109,7 +109,7 @@ pub async fn parse_request_head(buffer: Vec<u8>) -> Result<RequestHead, ReadHead
 
   let string = String::from_utf8_lossy(buffer.as_ref());
 
-  let mut lines = string.split_terminator("\r\n");
+  let mut lines = string.split_terminator('\n');
 
   let mut line = match lines.next() {
     None => return Err(ReadHeadError::NoHeadLine),
@@ -171,7 +171,7 @@ pub async fn parse_request_head(buffer: Vec<u8>) -> Result<RequestHead, ReadHead
 }
 
 pub fn parse_head_line(line: &str) -> Result<(hyper::Method, &str, hyper::Version), ReadHeadError> {
-  let mut parts = line.split_ascii_whitespace();
+  let mut parts = line.trim().split_ascii_whitespace();
 
   let method = match parts.next() {
     None => return Err(ReadHeadError::NoMethod),
