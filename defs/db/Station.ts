@@ -32,6 +32,7 @@ export type Station = {
   system_metadata: Metadata;
   owner_deployment_info: OwnerDeploymentInfo | null;
   playlist_is_randomly_shuffled: boolean;
+  external_relay_url: string | null;
   source_password: string;
   created_at: DateTime;
   updated_at: DateTime;

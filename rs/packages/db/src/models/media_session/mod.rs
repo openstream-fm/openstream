@@ -54,6 +54,9 @@ pub enum MediaSessionKind {
 
   #[serde(rename = "live")]
   Live { request: crate::http::Request },
+
+  #[serde(rename = "external-relay")]
+  ExternalRelay { url: String },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
@@ -90,6 +93,7 @@ impl MediaSession {
   pub fn resumed_from(&self) -> Option<&str> {
     match &self.kind {
       MediaSessionKind::Live { .. } => None,
+      MediaSessionKind::ExternalRelay { .. } => None,
       MediaSessionKind::Playlist { resumed_from, .. } => resumed_from.as_ref().map(|s| s.as_str()),
     }
   }

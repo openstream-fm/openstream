@@ -354,7 +354,7 @@ async fn resume_info_for_station(
 
   let (audio_file_id, audio_file_order, i, parts) = match session.kind {
     // this will never happen for security we provide an impl nevertheless
-    MediaSessionKind::Live { .. } => {
+    MediaSessionKind::Live { .. } | MediaSessionKind::ExternalRelay { .. } => {
       warn!(
         "unreachable MediaSessionKind::Live reached for station {} playlist",
         station_id

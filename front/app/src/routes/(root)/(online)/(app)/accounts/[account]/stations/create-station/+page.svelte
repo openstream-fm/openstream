@@ -71,6 +71,7 @@
       account_id: data.account._id,
       picture_id,
       frequencies: null,
+      external_relay_url: null,
     }
 
     const {

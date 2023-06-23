@@ -7,6 +7,7 @@ use std::collections::BTreeMap;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
 
+pub mod external_relay;
 pub mod live;
 pub mod playlist;
 pub mod relay;
@@ -61,6 +62,10 @@ impl Map {
 pub enum RestartError {
   #[error("cannot restart, station is live streaming")]
   LiveStreaming,
+  #[error("cannot restart, station is streaming from external relay")]
+  ExternalRelay,
+  #[error("cannot restart, deployment is not owner of relay")]
+  Relay,
 }
 
 impl<'a> WriteLock<'a> {
@@ -81,8 +86,13 @@ impl<'a> WriteLock<'a> {
     drop_tracer: DropTracer,
   ) -> Result<(), RestartError> {
     if let Some(session) = self.get(station_id) {
-      if session.is_live() {
-        return Err(RestartError::LiveStreaming);
+      match session.kind() {
+        MediaSessionKind::Live { .. } => return Err(RestartError::LiveStreaming),
+        MediaSessionKind::ExternalRelay => {
+          return Err(RestartError::ExternalRelay);
+        }
+        MediaSessionKind::Relay { .. } => return Err(RestartError::Relay),
+        MediaSessionKind::Playlist { .. } => {}
       }
     }
 
@@ -315,6 +325,7 @@ pub enum MediaSessionKind {
   Live { content_type: String },
   Playlist {},
   Relay { content_type: String },
+  ExternalRelay,
 }
 
 impl MediaSessionKind {
@@ -324,6 +335,7 @@ impl MediaSessionKind {
       MediaSessionKind::Live { content_type } => content_type,
       MediaSessionKind::Playlist {} => "audio/mpeg",
       MediaSessionKind::Relay { content_type, .. } => content_type,
+      MediaSessionKind::ExternalRelay {} => "audio/mpeg",
     }
   }
 

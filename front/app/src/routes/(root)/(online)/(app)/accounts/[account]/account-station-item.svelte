@@ -111,15 +111,23 @@
         {#if now_playing.kind === "none"}
           {#if now_playing.start_on_connect}
             <div class="now-playing-sub">
-              {$locale.pages["account/dashboard"].station_item.playlist}
+              {#if now_playing.external_relay_url != null}
+                <!-- TODO: locale -->
+                Relay
+              {:else}
+                {$locale.pages["account/dashboard"].station_item.playlist}
+              {/if}
             </div>
           {/if}
         {:else}
           <div class="now-playing-sub">
             {#if now_playing.kind === "live"}
               {$locale.pages["account/dashboard"].station_item.live}
-            {:else}
+            {:else if now_playing.kind === "playlist"}
               {$locale.pages["account/dashboard"].station_item.playlist}
+            {:else if now_playing.kind === "external-relay"}
+              <!-- TODO: locale -->
+              Relay
             {/if}
           </div>
         {/if}

@@ -147,6 +147,7 @@ pub struct Station {
 
   // misc
   pub playlist_is_randomly_shuffled: bool,
+  pub external_relay_url: Option<String>,
 
   // auth
   pub source_password: String,
@@ -521,6 +522,21 @@ pub struct StationPatch {
   )]
   pub app_store_url: Option<Option<String>>,
 
+  #[ts(optional)]
+  #[serde(
+    default,
+    deserialize_with = "map_some",
+    skip_serializing_if = "Option::is_none"
+  )]
+  #[modify(trim)]
+  #[validate(
+    url,
+    regex = "WEBSITE",
+    length(max = "URLS_MAX"),
+    non_control_character
+  )]
+  pub external_relay_url: Option<Option<String>>,
+
   //#[ts(optional)]
   //#[serde(skip_serializing_if = "Option::is_none")]
   //pub limits: Option<StationPatchLimits>,
@@ -641,6 +657,8 @@ impl Station {
     apply!(app_store_url);
 
     apply!(frequencies);
+
+    apply!(external_relay_url);
 
     if let Some(metadata) = patch.user_metadata {
       self.user_metadata.merge(metadata);

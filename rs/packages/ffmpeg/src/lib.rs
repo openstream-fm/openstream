@@ -73,6 +73,7 @@ impl Display for Format {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FfmpegConfig {
   pub bin: &'static str,
+  pub input: Option<String>,
   pub loglevel: LogLevel,
   pub format: Format,
   pub kbitrate: usize,
@@ -126,6 +127,7 @@ impl Default for FfmpegConfig {
   fn default() -> Self {
     Self {
       bin: Self::BIN,
+      input: None,
       loglevel: Self::LOGLEVEL,
       kbitrate: Self::KBITRATE,
       //kminrate: Self::KMINRATE,
@@ -163,7 +165,10 @@ impl Ffmpeg {
 
     // input
     cmd.arg("-i");
-    cmd.arg("-");
+    match &self.config.input {
+      None => cmd.arg("-"),
+      Some(input) => cmd.arg(input),
+    };
 
     // copy codec
     if self.config.copycodec {

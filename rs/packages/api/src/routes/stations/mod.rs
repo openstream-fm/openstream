@@ -316,6 +316,16 @@ pub mod post {
     #[validate]
     pub frequencies: Option<Vec<StationFrequency>>,
 
+    //#[serde(skip_serializing_if = "Option::is_none")]
+    #[modify(trim)]
+    #[validate(
+      url,
+      regex = "WEBSITE",
+      length(max = "URLS_MAX"),
+      non_control_character
+    )]
+    pub external_relay_url: Option<String>,
+
     #[ts(optional)]
     //#[serde(skip_serializing_if = "Option::is_none")]
     pub user_metadata: Option<Metadata>,
@@ -459,6 +469,8 @@ pub mod post {
 
         frequencies,
 
+        external_relay_url,
+
         user_metadata,
         system_metadata,
       } = payload;
@@ -512,6 +524,8 @@ pub mod post {
 
         source_password: Station::random_source_password(),
         playlist_is_randomly_shuffled: false,
+        external_relay_url,
+
         owner_deployment_info: None,
 
         system_metadata,

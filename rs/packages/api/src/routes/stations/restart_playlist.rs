@@ -50,6 +50,8 @@ pub mod post {
     Db(#[from] mongodb::error::Error),
     #[error("station is currently live streaming")]
     StationIsLive,
+    #[error("station is currently streaming from external relay")]
+    StationIsExternalRelay,
     #[error("no media files in station")]
     NoFiles,
   }
@@ -59,6 +61,7 @@ pub mod post {
       match e {
         HandleError::Db(e) => e.into(),
         HandleError::StationIsLive => ApiError::PlaylistStartIsLive,
+        HandleError::StationIsExternalRelay => ApiError::PlaylistStartIsExternalRelay,
         HandleError::NoFiles => ApiError::PlaylistStartNoFiles,
       }
     }
@@ -98,6 +101,9 @@ pub mod post {
 
         Some(media_session) => match media_session.kind {
           MediaSessionKind::Live { .. } => return Err(HandleError::StationIsLive),
+          MediaSessionKind::ExternalRelay { .. } => {
+            return Err(HandleError::StationIsExternalRelay)
+          }
           MediaSessionKind::Playlist { .. } => {
             if media_session.deployment_id == self.deployment_id {
               let mut lock = self.media_sessions.write();

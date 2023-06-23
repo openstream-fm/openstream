@@ -11,4 +11,5 @@ export type MediaSessionKind =
     last_audio_chunk_skip_parts: number;
     last_audio_chunk_date: DateTime;
   })
-  | ({ kind: "live" } & { request: Request });
+  | ({ kind: "live" } & { request: Request })
+  | ({ kind: "external-relay" } & { url: string });

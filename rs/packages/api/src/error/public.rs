@@ -111,6 +111,7 @@ pub enum PublicErrorCode {
   UnresolvableUserMe,
 
   PlaylistStartIsLive,
+  PlaylistStartIsExternalRelay,
   PlaylistStartNoFiles,
 
   RenderMail,

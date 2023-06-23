@@ -13,6 +13,7 @@ use hyper::header::{HeaderName, ACCEPT_RANGES, CACHE_CONTROL, RETRY_AFTER};
 use hyper::{header::CONTENT_TYPE, http::HeaderValue, Body, Server, StatusCode};
 use ip_counter::IpCounter;
 use log::*;
+use media_sessions::external_relay::run_external_releay_session;
 use media_sessions::playlist::run_playlist_session;
 use media_sessions::MediaSessionMap;
 use media_sessions::RecvError;
@@ -487,9 +488,16 @@ impl StreamHandler {
 
         #[allow(clippy::collapsible_if)]
         if media_sessions.read().get(&station_id).is_none() {
-          if !AudioFile::exists(doc! { AudioFile::KEY_STATION_ID: &station.id }).await? {
-            return Err(StreamError::NotStreaming(station.id));
+          match &station.external_relay_url {
+            None => {
+              if !AudioFile::exists(doc! { AudioFile::KEY_STATION_ID: &station.id }).await? {
+                return Err(StreamError::NotStreaming(station.id));
+              }
+            }
+
+            Some(_) => { }
           }
+          
         };
 
         let rx = {
@@ -500,15 +508,32 @@ impl StreamHandler {
 
             None => {
               let mut lock = lock.upgrade();
-              let tx = lock.transmit(&station_id, media_sessions::MediaSessionKind::Playlist {});
-              let rx = tx.subscribe();
-              let shutdown = shutdown.clone();
-              let deployment_id = deployment_id.clone();
-              tokio::spawn(async move {
-                let _ = run_playlist_session(tx, deployment_id, shutdown, drop_tracer, true).await.unwrap();
-                drop(dropper);
-              });
-              rx
+              match &station.external_relay_url {
+                None => {
+                  let tx = lock.transmit(&station_id, media_sessions::MediaSessionKind::Playlist {});
+                  let rx = tx.subscribe();
+                  let shutdown = shutdown.clone();
+                  let deployment_id = deployment_id.clone();
+                  tokio::spawn(async move {
+                    let _ = run_playlist_session(tx, deployment_id, shutdown, drop_tracer, true).await.unwrap();
+                    drop(dropper);
+                  });
+                  rx
+                }
+
+                Some(url) => {
+                  let tx = lock.transmit(&station_id, media_sessions::MediaSessionKind::ExternalRelay);
+                  let rx = tx.subscribe();
+                  let shutdown = shutdown.clone();
+                  let deployment_id = deployment_id.clone();
+                  let url = url.clone();
+                  tokio::spawn(async move {
+                    let _ = run_external_releay_session(tx, deployment_id, url, shutdown, drop_tracer).await.unwrap();
+                    drop(dropper);
+                  });
+                  rx
+                }
+              }
             }
           }
         };

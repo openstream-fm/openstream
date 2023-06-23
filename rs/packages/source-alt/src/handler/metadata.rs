@@ -117,6 +117,7 @@ pub async fn metadata(
     use db::media_session::MediaSessionNowPlaying;
     let (media_session_id, current_now_playing) = match &media_session.kind {
       Playlist { .. } => return Err(MetadataError::NotLiveStreaming),
+      ExternalRelay { .. } => return Err(MetadataError::NotLiveStreaming),
       Live { .. } => (media_session.id, media_session.now_playing),
     };
 
