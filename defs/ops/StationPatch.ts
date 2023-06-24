@@ -9,8 +9,8 @@ export type StationPatch = {
   picture_id?: string;
   slogan?: string | null;
   description?: string | null;
-  type_of_content: StationTypeOfContent | null;
-  country_code: CountryCode | null;
+  type_of_content?: StationTypeOfContent;
+  country_code?: CountryCode;
   frequencies?: Array<StationFrequency>;
   email?: string | null;
   phone?: string | null;

@@ -136,10 +136,11 @@ pub mod get {
         Some(account_id) => doc! { Station::KEY_ACCOUNT_ID: account_id },
       };
 
-      let query_active_filter = match active.unwrap_or(QueryActive::Active) {
-        QueryActive::Active => current_filter_doc! {},
-        QueryActive::Deleted => deleted_filter_doc! {},
-        QueryActive::All => doc! {},
+      let query_active_filter = match active {
+        None => current_filter_doc! {},
+        Some(QueryActive::Active) => current_filter_doc! {},
+        Some(QueryActive::Deleted) => deleted_filter_doc! {},
+        Some(QueryActive::All) => doc! {},
       };
 
       let sort = doc! { Station::KEY_CREATED_AT: 1 };

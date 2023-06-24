@@ -104,8 +104,22 @@ pub fn router(
     .at("/auth/admin/delegate/:user")
     .post(auth::admin::delegate::user::post::Endpoint {}.into_handler());
 
+  app.at("/runtime/station-deleted/:station").post(
+    runtime::station_deleted::station_id::post::Endpoint {
+      media_sessions: media_sessions.clone(),
+    }
+    .into_handler(),
+  );
+
   app.at("/runtime/source-password-updated/:station").post(
     runtime::source_password_updated::station_id::post::Endpoint {
+      media_sessions: media_sessions.clone(),
+    }
+    .into_handler(),
+  );
+
+  app.at("/runtime/external-relay-updated/:station").post(
+    runtime::external_relay_updated::station_id::post::Endpoint {
       media_sessions: media_sessions.clone(),
     }
     .into_handler(),
@@ -257,8 +271,20 @@ pub fn router(
   app
     .at("/stations/:station")
     .get(stations::id::get::Endpoint {}.into_handler())
-    .delete(stations::id::delete::Endpoint {}.into_handler())
-    .patch(stations::id::patch::Endpoint {}.into_handler());
+    .delete(
+      stations::id::delete::Endpoint {
+        deployment_id: deployment_id.clone(),
+        media_sessions: media_sessions.clone(),
+      }
+      .into_handler(),
+    )
+    .patch(
+      stations::id::patch::Endpoint {
+        deployment_id: deployment_id.clone(),
+        media_sessions: media_sessions.clone(),
+      }
+      .into_handler(),
+    );
 
   app.at("/stations/:station/stream-stats").get(
     stations::stream_stats::get::Endpoint {

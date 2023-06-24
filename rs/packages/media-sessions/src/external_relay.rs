@@ -3,7 +3,8 @@ use std::time::Instant;
 
 use crate::{SendError, Transmitter};
 use constants::{
-  EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS, STREAM_CHUNK_SIZE, STREAM_KBITRATE,
+  EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS, STREAM_BURST_LENGTH, STREAM_CHUNK_SIZE,
+  STREAM_KBITRATE,
 };
 use db::media_session::MediaSession;
 use db::{media_session::MediaSessionState, Model};
@@ -126,29 +127,26 @@ pub fn run_external_releay_session(
         async move {
           use stream_util::*;
 
-          let chunks = stdout
-            .into_bytes_stream(STREAM_CHUNK_SIZE)
-            .rated(STREAM_KBITRATE * 1000);
-
-          tokio::pin!(chunks);
+          let mut chunks = stdout.into_bytes_stream(STREAM_CHUNK_SIZE);
 
           let mut no_listeners_since: Option<Instant> = None;
 
-          loop {
+          // fill the burst
+          let mut filled_burst_len: usize = 0;
+          let go_on = loop {
+            if filled_burst_len >= STREAM_BURST_LENGTH {
+              break true;
+            }
+
             match chunks.next().await {
-              None => {
-                // trace!("channel {id}: ffmpeg stdout end");
-                break;
-              }
-              Some(Err(_e)) => {
-                // trace!("channel {id}: ffmpeg stdout error: {e}");
-                break;
-              }
+              None => break false,
+              Some(Err(_e)) => break false,
               Some(Ok(bytes)) => {
                 if shutdown.is_closed() {
-                  break;
+                  break false;
                 }
 
+                filled_burst_len += 1;
                 match tx.send(bytes) {
                   Ok(_) => continue,
 
@@ -162,7 +160,7 @@ pub fn run_external_releay_session(
                         "shutting down external-relay for station {} (no listeners shutdown delay elapsed)",
                         station_id
                       );
-                        break;
+                        break false;
                       } else {
                         continue;
                       }
@@ -173,8 +171,53 @@ pub fn run_external_releay_session(
                       continue;
                     }
                   },
-                  Err(SendError::Terminated(_)) => break,
+                  Err(SendError::Terminated(_)) => break false,
                 };
+              }
+            }
+          };
+
+          if go_on {
+            // we continue but now the stream is byte rated
+            let chunks = chunks.rated(STREAM_KBITRATE * 1000);
+            tokio::pin!(chunks);
+
+            loop {
+              match chunks.next().await {
+                None => break,
+                Some(Err(_e)) => break,
+                Some(Ok(bytes)) => {
+                  if shutdown.is_closed() {
+                    break;
+                  }
+
+                  match tx.send(bytes) {
+                    Ok(_) => continue,
+
+                    // check if shutdown delay is elapsed
+                    Err(SendError::NoListeners(_)) => match no_listeners_since {
+                      Some(instant) => {
+                        if instant.elapsed().as_secs()
+                          > EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS
+                        {
+                          info!(
+                        "shutting down external-relay for station {} (no listeners shutdown delay elapsed)",
+                        station_id
+                      );
+                          break;
+                        } else {
+                          continue;
+                        }
+                      }
+
+                      None => {
+                        no_listeners_since = Some(Instant::now());
+                        continue;
+                      }
+                    },
+                    Err(SendError::Terminated(_)) => break,
+                  };
+                }
               }
             }
           }
@@ -190,7 +233,7 @@ pub fn run_external_releay_session(
 
         Err(e) => {
           warn!(
-            "releay session for station {station_id}: ffmpeg child error: {} => {:?}",
+            "external-relay session for station {station_id}: ffmpeg child error: {} => {:?}",
             e, e
           );
           return Err(LiveError::ExitIo(e));
@@ -207,9 +250,9 @@ pub fn run_external_releay_session(
         }
       };
 
-      // trace!("channel {id}: ffmpeg child end: {exit}");
       drop(dropper);
 
+      // 224 is stdout broken pipe (that happens normally when the session is cancelled)
       if exit.success() {
         Ok(())
 
@@ -223,18 +266,22 @@ pub fn run_external_releay_session(
       } else {
         match stderr {
           Err(e) => {
-            warn!("master-releay session {station_id}: ffmpeg exit non-zero: exit={exit} stderr_error={e}");
+            warn!("external-releay session {station_id}: ffmpeg exit non-zero: exit={exit} stderr_error={e}");
             Err(LiveError::StderrError(e))
             // format!("internal error allocating stream converter (stderr 1)")
           }
 
           Ok(v) => {
             let stderr = String::from_utf8_lossy(v.as_ref()).to_string();
-            warn!(
-              "master-releay session for station {station_id}: ffmpeg exit non-zero: exit={exit} stderr={stderr}"
-            );
-            Err(LiveError::ExitNotOk { stderr })
-            // format!("error converting the audio stream (exit), possibly the audio is corrupted or is using a not supported format: {out}")
+            // 224 happens when stdout is terminated (broken pipe) that happens normally when the session is cancelled
+            if exit.code() == Some(224) && stderr.contains("Broken pipe") {
+              Ok(())
+            } else {
+              warn!(
+                "external-releay session for station {station_id}: ffmpeg exit non-zero: exit={exit} stderr={stderr}"
+              );
+              Err(LiveError::ExitNotOk { stderr })
+            }
           }
         }
       }
@@ -305,7 +352,7 @@ impl Drop for MediaSessionDropper {
 
         if let Err(e) = db::media_session::MediaSession::update_by_id(&id, update).await {
           error!(
-            "error closing master-relay session into db, session {}, {} {:?}",
+            "error closing external-relay session into db, session {}, {} {:?}",
             id, e, e
           )
         }

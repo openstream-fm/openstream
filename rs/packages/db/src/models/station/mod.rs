@@ -1,6 +1,6 @@
 use self::validation::*;
 use crate::error::ApplyPatchError;
-use crate::Model;
+use crate::{current_filter_doc, Model};
 use crate::{metadata::Metadata, PublicScope};
 use drop_tracer::Token;
 use geoip::CountryCode;
@@ -284,6 +284,7 @@ pub struct UserPublicStation {
 
   // misc
   pub playlist_is_randomly_shuffled: bool,
+  pub external_relay_url: Option<String>,
 
   // auth
   pub source_password: String,
@@ -359,7 +360,10 @@ pub struct StationPatch {
   #[validate(length(min = "DESC_MIN", max = "DESC_MAX"))]
   pub description: Option<Option<String>>,
 
+  #[ts(optional)]
   pub type_of_content: Option<StationTypeOfContent>,
+
+  #[ts(optional)]
   pub country_code: Option<CountryCode>,
 
   // location and language
@@ -562,7 +566,7 @@ impl Station {
     Result<(Station, DeploymentTakeDropper), Option<(Station, OwnerDeploymentInfo)>>,
     mongodb::error::Error,
   > {
-    let filter = doc! {
+    let filter = current_filter_doc! {
       Station::KEY_ID: station_id,
     };
 
@@ -704,6 +708,7 @@ impl From<Station> for UserPublicStation {
       google_play_url: station.google_play_url,
 
       playlist_is_randomly_shuffled: station.playlist_is_randomly_shuffled,
+      external_relay_url: station.external_relay_url,
       source_password: station.source_password,
 
       user_metadata: station.user_metadata,

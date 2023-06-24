@@ -29,6 +29,7 @@ export type UserPublicStation = {
   google_play_url: string | null;
   user_metadata: Metadata;
   playlist_is_randomly_shuffled: boolean;
+  external_relay_url: string | null;
   source_password: string;
   created_at: DateTime;
   updated_at: DateTime;

@@ -275,6 +275,11 @@ impl MediaSession {
   }
 
   #[inline]
+  pub fn is_external_relay(&self) -> bool {
+    self.info.is_external_relay()
+  }
+
+  #[inline]
   pub fn is_playlist(&self) -> bool {
     self.info.is_playlist()
   }
@@ -310,6 +315,11 @@ impl MediaSessionInfo {
   }
 
   #[inline]
+  pub fn is_external_relay(&self) -> bool {
+    self.kind.is_external_relay()
+  }
+
+  #[inline]
   pub fn is_playlist(&self) -> bool {
     self.kind.is_playlist()
   }
@@ -342,6 +352,11 @@ impl MediaSessionKind {
   #[inline]
   pub fn is_live(&self) -> bool {
     matches!(self, MediaSessionKind::Live { .. })
+  }
+
+  #[inline]
+  pub fn is_external_relay(&self) -> bool {
+    matches!(self, MediaSessionKind::ExternalRelay { .. })
   }
 
   #[inline]
