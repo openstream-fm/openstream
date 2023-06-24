@@ -65,8 +65,8 @@
     const payload: import("$api/stations/[station]/PATCH/Payload").Payload = {
       ...dif,
       name,
-      type_of_content: type_of_content ?? null,
-      country_code: country_code ?? null,
+      type_of_content: type_of_content ,
+      country_code: country_code,
       picture_id,
     }
 
