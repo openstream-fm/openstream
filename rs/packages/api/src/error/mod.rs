@@ -165,6 +165,9 @@ pub enum ApiError {
   #[error("cannot start playlist (currently live streaming)")]
   PlaylistStartIsLive,
 
+  #[error("cannot start playlist (currently streaming from external relay)")]
+  PlaylistStartIsExternalRelay,
+
   #[error("cannot start playlist (no files for account")]
   PlaylistStartNoFiles,
 
@@ -245,6 +248,7 @@ impl ApiError {
       SerializeJSON(_) => StatusCode::INTERNAL_SERVER_ERROR,
 
       PlaylistStartIsLive => StatusCode::BAD_REQUEST,
+      PlaylistStartIsExternalRelay => StatusCode::BAD_REQUEST,
       PlaylistStartNoFiles => StatusCode::BAD_REQUEST,
 
       RenderMail(_) => StatusCode::INTERNAL_SERVER_ERROR,
@@ -317,6 +321,7 @@ impl ApiError {
       SerializeJSON(_) => format!("Internal server error"),
 
       PlaylistStartIsLive => format!("Station is currenly live streaming"),
+      PlaylistStartIsExternalRelay => format!("Station is currenly streaming from external relay"),
       PlaylistStartNoFiles => format!("Station playlist is empty"),
       
       RenderMail(_) => format!("There was an error rendering the email, try again later"),
@@ -387,6 +392,7 @@ impl ApiError {
       SerializeJSON(_) => PublicErrorCode::InternalSerialize,
 
       PlaylistStartIsLive => PublicErrorCode::PlaylistStartIsLive,
+      PlaylistStartIsExternalRelay => PublicErrorCode::PlaylistStartIsExternalRelay,
       PlaylistStartNoFiles => PublicErrorCode::PlaylistStartNoFiles,
       
       RenderMail(_) => PublicErrorCode::RenderMail,

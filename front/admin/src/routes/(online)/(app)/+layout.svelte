@@ -1,14 +1,8 @@
 <script>
-	import Player from "$lib/components/Player/Player.svelte";
-  import { close } from "$lib/components/Player/player";
   import { onMount } from "svelte";
   import Top from "$lib/components/Dashboard/Top.svelte";
 	import Drawer from "$lib/components/Dashboard/Drawer.svelte";
 	import { logical_fly } from "$share/transition";
-  
-  onMount(() => {
-    return () => close()
-  });
   
   let drawer_fixed_open = false;
   const open_drawer_fixed = () => drawer_fixed_open = true;
@@ -70,5 +64,4 @@
       </div>
     </div>
   </div>
-  <Player />
 </div>

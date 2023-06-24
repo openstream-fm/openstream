@@ -1,6 +1,6 @@
 use self::validation::*;
 use crate::error::ApplyPatchError;
-use crate::Model;
+use crate::{current_filter_doc, Model};
 use crate::{metadata::Metadata, PublicScope};
 use drop_tracer::Token;
 use geoip::CountryCode;
@@ -147,6 +147,7 @@ pub struct Station {
 
   // misc
   pub playlist_is_randomly_shuffled: bool,
+  pub external_relay_url: Option<String>,
 
   // auth
   pub source_password: String,
@@ -283,6 +284,7 @@ pub struct UserPublicStation {
 
   // misc
   pub playlist_is_randomly_shuffled: bool,
+  pub external_relay_url: Option<String>,
 
   // auth
   pub source_password: String,
@@ -358,7 +360,10 @@ pub struct StationPatch {
   #[validate(length(min = "DESC_MIN", max = "DESC_MAX"))]
   pub description: Option<Option<String>>,
 
+  #[ts(optional)]
   pub type_of_content: Option<StationTypeOfContent>,
+
+  #[ts(optional)]
   pub country_code: Option<CountryCode>,
 
   // location and language
@@ -521,6 +526,21 @@ pub struct StationPatch {
   )]
   pub app_store_url: Option<Option<String>>,
 
+  #[ts(optional)]
+  #[serde(
+    default,
+    deserialize_with = "map_some",
+    skip_serializing_if = "Option::is_none"
+  )]
+  #[modify(trim)]
+  #[validate(
+    url,
+    regex = "WEBSITE",
+    length(max = "URLS_MAX"),
+    non_control_character
+  )]
+  pub external_relay_url: Option<Option<String>>,
+
   //#[ts(optional)]
   //#[serde(skip_serializing_if = "Option::is_none")]
   //pub limits: Option<StationPatchLimits>,
@@ -546,7 +566,7 @@ impl Station {
     Result<(Station, DeploymentTakeDropper), Option<(Station, OwnerDeploymentInfo)>>,
     mongodb::error::Error,
   > {
-    let filter = doc! {
+    let filter = current_filter_doc! {
       Station::KEY_ID: station_id,
     };
 
@@ -642,6 +662,8 @@ impl Station {
 
     apply!(frequencies);
 
+    apply!(external_relay_url);
+
     if let Some(metadata) = patch.user_metadata {
       self.user_metadata.merge(metadata);
     }
@@ -686,6 +708,7 @@ impl From<Station> for UserPublicStation {
       google_play_url: station.google_play_url,
 
       playlist_is_randomly_shuffled: station.playlist_is_randomly_shuffled,
+      external_relay_url: station.external_relay_url,
       source_password: station.source_password,
 
       user_metadata: station.user_metadata,

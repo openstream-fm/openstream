@@ -33,12 +33,17 @@ pub mod get {
   #[serde(tag = "kind")]
   pub enum Output {
     #[serde(rename = "none")]
-    None { start_on_connect: bool },
+    None {
+      start_on_connect: bool,
+      external_relay_url: Option<String>,
+    },
     #[serde(rename = "live")]
     Live {
       title: Option<String>,
       artist: Option<String>,
     },
+    #[serde(rename = "external-relay")]
+    ExternalRelay { url: String },
     #[serde(rename = "playlist")]
     Playilist {
       file_id: String,
@@ -66,13 +71,20 @@ pub mod get {
       let Self::Input { station } = input;
 
       let out = match MediaSession::get_current_for_station(&station.id).await? {
-        None => {
-          let filter = doc! { AudioFile::KEY_STATION_ID: &station.id };
-          let exists = AudioFile::exists(filter).await?;
-          Output::None {
-            start_on_connect: exists,
+        None => match station.external_relay_url {
+          Some(url) => Output::None {
+            start_on_connect: true,
+            external_relay_url: Some(url),
+          },
+          None => {
+            let filter = doc! { AudioFile::KEY_STATION_ID: &station.id };
+            let exists = AudioFile::exists(filter).await?;
+            Output::None {
+              start_on_connect: exists,
+              external_relay_url: None,
+            }
           }
-        }
+        },
         Some(media_session) => match media_session.kind {
           MediaSessionKind::Live { .. } => match media_session.now_playing {
             None => Output::Live {
@@ -84,6 +96,9 @@ pub mod get {
               artist,
             },
           },
+
+          MediaSessionKind::ExternalRelay { url } => Output::ExternalRelay { url },
+
           MediaSessionKind::Playlist {
             last_audio_file_id, ..
           } => match AudioFile::get_by_id(&last_audio_file_id).await? {
@@ -93,6 +108,7 @@ pub mod get {
               let exists = AudioFile::exists(filter).await?;
               Output::None {
                 start_on_connect: exists,
+                external_relay_url: None,
               }
             }
             Some(file) => Output::Playilist {

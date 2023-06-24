@@ -68,9 +68,14 @@ pub mod get {
 
 pub mod delete {
 
+  use constants::ACCESS_TOKEN_HEADER;
   use db::account::{Account, Limit, Limits};
   use db::audio_file::AudioFile;
+  use db::deployment::Deployment;
   use db::{run_transaction, Model};
+  use hyper::http::HeaderValue;
+  use hyper::Body;
+  use media_sessions::MediaSessionMap;
   use serde_util::DateTime;
   // use futures_util::TryStreamExt;
   use serde_util::empty_struct::EmptyStruct;
@@ -80,10 +85,14 @@ pub mod delete {
   use super::*;
 
   #[derive(Debug, Clone)]
-  pub struct Endpoint {}
+  pub struct Endpoint {
+    pub deployment_id: String,
+    pub media_sessions: MediaSessionMap,
+  }
 
   #[derive(Debug, Clone)]
   pub struct Input {
+    access_token_header: Option<HeaderValue>,
     station_id: String,
   }
 
@@ -126,16 +135,22 @@ pub mod delete {
     async fn parse(&self, req: Request) -> Result<Input, Self::ParseError> {
       let station_id = req.param("station").unwrap();
       let access_token = request_ext::get_access_token_scope(&req).await?;
+      let access_token_header = req.headers().get(ACCESS_TOKEN_HEADER).cloned();
       let station = access_token.grant_station_owner_scope(station_id).await?;
+
       Ok(Input {
+        access_token_header,
         station_id: station.id,
       })
     }
 
     async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
-      let Input { station_id } = input;
+      let Input {
+        access_token_header,
+        station_id,
+      } = input;
 
-      run_transaction!(session => {
+      let station = run_transaction!(session => {
 
         let station = match tx_try!(Station::get_by_id_with_session(&station_id, &mut session).await) {
           None => return Err(HandleError::NotFound(station_id)),
@@ -181,6 +196,52 @@ pub mod delete {
         if result.matched_count != 1 {
           return Err(HandleError::AccountNotFound(station.account_id));
         }
+
+        station
+      });
+
+      let deployment_id = self.deployment_id.clone();
+      let media_sessions = self.media_sessions.clone();
+      tokio::spawn(async move {
+        match station.owner_deployment_info {
+          None => {}
+          Some(info) => {
+            if info.deployment_id == deployment_id {
+              crate::routes::runtime::station_deleted::station_id::perform(
+                &media_sessions,
+                &station.id,
+              );
+            } else {
+              #[allow(clippy-clippy::collapsible_else_if)]
+              if let Ok(Some(deployment)) = Deployment::get_by_id(&info.deployment_id).await {
+                use rand::seq::SliceRandom;
+                let addr = deployment.local_ip;
+                let port = deployment.api_ports.choose(&mut rand::thread_rng());
+                if let Some(port) = port {
+                  let uri = format!(
+                    "http://{}:{}/runtime/station-deleted/{}",
+                    addr, port, station.id
+                  );
+
+                  let client = hyper::Client::default();
+                  let mut req = hyper::Request::builder()
+                    .method(hyper::http::Method::POST)
+                    .uri(uri);
+
+                  if let Some(v) = access_token_header {
+                    if let Ok(v) = v.to_str() {
+                      req = req.header(ACCESS_TOKEN_HEADER, v);
+                    }
+                  };
+
+                  if let Ok(req) = req.body(Body::empty()) {
+                    let _ = client.request(req).await;
+                  }
+                }
+              }
+            }
+          }
+        }
       });
 
       Ok(Output(EmptyStruct(())))
@@ -193,14 +254,21 @@ pub mod patch {
   use crate::error::ApiError;
 
   use super::*;
+  use constants::ACCESS_TOKEN_HEADER;
   use db::{
-    error::ApplyPatchError, fetch_and_patch, run_transaction, station::StationPatch, Model,
+    deployment::Deployment, error::ApplyPatchError, fetch_and_patch, run_transaction,
+    station::StationPatch, Model,
   };
+  use hyper::{http::HeaderValue, Body};
+  use media_sessions::MediaSessionMap;
   use prex::request::ReadBodyJsonError;
   use validify::{ValidationErrors, Validify};
 
   #[derive(Debug, Clone)]
-  pub struct Endpoint {}
+  pub struct Endpoint {
+    pub deployment_id: String,
+    pub media_sessions: MediaSessionMap,
+  }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../../defs/api/stations/[station]/PATCH/")]
@@ -210,6 +278,7 @@ pub mod patch {
   pub struct Input {
     payload: Payload,
     access_token_scope: AccessTokenScope,
+    access_token_header: Option<HeaderValue>,
     station: Station,
   }
 
@@ -278,9 +347,12 @@ pub mod patch {
 
       let payload: Payload = req.read_body_json(100_000).await?;
 
+      let access_token_header = req.headers().get(ACCESS_TOKEN_HEADER).cloned();
+
       Ok(Self::Input {
         payload,
         access_token_scope,
+        access_token_header,
         station,
       })
     }
@@ -289,12 +361,15 @@ pub mod patch {
       let Self::Input {
         payload: Payload(patch),
         access_token_scope,
+        access_token_header,
         station,
       } = input;
 
       let id = station.id;
 
       let patch: StationPatch = Validify::validify(patch.into())?;
+
+      let prev_external_relay_url = patch.external_relay_url.clone();
 
       let station = run_transaction!(session => {
         fetch_and_patch!(Station, station, &id, Err(HandleError::StationNotFound(id)), session, {
@@ -310,6 +385,55 @@ pub mod patch {
           station.apply_patch(patch.clone(), access_token_scope.as_public_scope())?;
         })
       });
+
+      if let Some(prev_url) = prev_external_relay_url {
+        if prev_url != station.external_relay_url {
+          let deployment_id = self.deployment_id.clone();
+          let media_sessions = self.media_sessions.clone();
+          let station = station.clone();
+          tokio::spawn(async move {
+            match &station.owner_deployment_info {
+              None => {}
+              Some(info) => {
+                if info.deployment_id == deployment_id {
+                  crate::routes::runtime::external_relay_updated::station_id::perform(
+                    &media_sessions,
+                    &station,
+                  );
+                } else {
+                  #[allow(clippy-clippy::collapsible_else_if)]
+                  if let Ok(Some(deployment)) = Deployment::get_by_id(&info.deployment_id).await {
+                    use rand::seq::SliceRandom;
+                    let addr = deployment.local_ip;
+                    let port = deployment.api_ports.choose(&mut rand::thread_rng());
+                    if let Some(port) = port {
+                      let uri = format!(
+                        "http://{}:{}/runtime/external-relay-updated/{}",
+                        addr, port, station.id
+                      );
+
+                      let client = hyper::Client::default();
+                      let mut req = hyper::Request::builder()
+                        .method(hyper::http::Method::POST)
+                        .uri(uri);
+
+                      if let Some(v) = access_token_header {
+                        if let Ok(v) = v.to_str() {
+                          req = req.header(ACCESS_TOKEN_HEADER, v);
+                        }
+                      };
+
+                      if let Ok(req) = req.body(Body::empty()) {
+                        let _ = client.request(req).await;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          });
+        }
+      }
 
       let out = station.into_public(access_token_scope.as_public_scope());
 

@@ -30,8 +30,6 @@
   // @ts-ignore
   import logo from "$share/img/logo-trans-128.png?w=64&format=webp";
 
-  import { player_state } from "../Player/player";
-
   $: if(browser) {
     document.documentElement.classList[fixed_open ? "add" : "remove"](HTML_OPEN_CLASSNAME);
   }
@@ -171,7 +169,7 @@
   <div class="drawer-overlay" transition:fade|local={{ duration: 250 }} on:click={close_drawer_fixed} />
 {/if}
 
-<div class="drawer" class:player-open={$player_state.type !== "closed"} class:fixed-open={fixed_open}>
+<div class="drawer" class:fixed-open={fixed_open}>
   <div class="inner">
     <div class="top">
       <button class="toggle ripple-container" use:ripple aria-label="Toogle drawer" on:click={close_drawer_fixed}>

@@ -147,7 +147,11 @@ export const player_subtitle = derived([player_state, now_playing], ([state, now
       } else {
         return "Playlist"
       }
-    } else {
+    } else if(now_playing.kind === "external-relay") {
+      return "Relay"
+    } 
+    
+    else {
       return assert_never(now_playing)
     }
   } else {
@@ -270,8 +274,9 @@ if (hasMediaSession) {
           } else if ($now_playing.kind === "none") {
             title = $player_state.station.name;
             artist = undefined;
-          } else {
-            return assert_never($now_playing);
+          } else if ($now_playing.kind === "external-relay") {
+            title = $player_state.station.name;
+            artist = undefined;
           }
         } else {
           title = $player_state.station.name;

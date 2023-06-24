@@ -136,10 +136,11 @@ pub mod get {
         Some(account_id) => doc! { Station::KEY_ACCOUNT_ID: account_id },
       };
 
-      let query_active_filter = match active.unwrap_or(QueryActive::Active) {
-        QueryActive::Active => current_filter_doc! {},
-        QueryActive::Deleted => deleted_filter_doc! {},
-        QueryActive::All => doc! {},
+      let query_active_filter = match active {
+        None => current_filter_doc! {},
+        Some(QueryActive::Active) => current_filter_doc! {},
+        Some(QueryActive::Deleted) => deleted_filter_doc! {},
+        Some(QueryActive::All) => doc! {},
       };
 
       let sort = doc! { Station::KEY_CREATED_AT: 1 };
@@ -316,6 +317,16 @@ pub mod post {
     #[validate]
     pub frequencies: Option<Vec<StationFrequency>>,
 
+    //#[serde(skip_serializing_if = "Option::is_none")]
+    #[modify(trim)]
+    #[validate(
+      url,
+      regex = "WEBSITE",
+      length(max = "URLS_MAX"),
+      non_control_character
+    )]
+    pub external_relay_url: Option<String>,
+
     #[ts(optional)]
     //#[serde(skip_serializing_if = "Option::is_none")]
     pub user_metadata: Option<Metadata>,
@@ -459,6 +470,8 @@ pub mod post {
 
         frequencies,
 
+        external_relay_url,
+
         user_metadata,
         system_metadata,
       } = payload;
@@ -512,6 +525,8 @@ pub mod post {
 
         source_password: Station::random_source_password(),
         playlist_is_randomly_shuffled: false,
+        external_relay_url,
+
         owner_deployment_info: None,
 
         system_metadata,

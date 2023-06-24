@@ -24,6 +24,7 @@ export type Payload = {
   google_play_url: string | null;
   app_store_url: string | null;
   frequencies: Array<StationFrequency> | null;
+  external_relay_url: string | null;
   user_metadata?: Metadata;
   system_metadata?: Metadata;
 };

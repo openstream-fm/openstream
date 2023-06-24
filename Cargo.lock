@@ -2731,6 +2731,7 @@ dependencies = [
  "constants",
  "db",
  "drop-tracer",
+ "ffmpeg",
  "futures-util",
  "hyper",
  "log",

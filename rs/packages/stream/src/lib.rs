@@ -13,8 +13,9 @@ use hyper::header::{HeaderName, ACCEPT_RANGES, CACHE_CONTROL, RETRY_AFTER};
 use hyper::{header::CONTENT_TYPE, http::HeaderValue, Body, Server, StatusCode};
 use ip_counter::IpCounter;
 use log::*;
+use media_sessions::external_relay::run_external_releay_session;
 use media_sessions::playlist::run_playlist_session;
-use media_sessions::MediaSessionMap;
+use media_sessions::{MediaSessionMap, Listener};
 use media_sessions::RecvError;
 use media_sessions::relay::run_relay_session;
 use mongodb::bson::doc;
@@ -28,7 +29,7 @@ use std::future::Future;
 use std::net::SocketAddr;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
-use std::time::SystemTime;
+use std::time::{SystemTime, Instant};
 use transfer_map::TransferTracer;
 // use url::Url;
 
@@ -380,142 +381,175 @@ impl StreamHandler {
 
     tokio::spawn(async move {
       
-      let info = OwnerDeploymentInfo {
-        deployment_id: deployment_id.clone(),
-        task_id: Station::random_owner_task_id(),
-        // audio/mpeg is because we'll start a playlist media session on demand
-        content_type: String::from("audio/mpeg"),
-      };
-
-      let (mut rx, station) = 'rx: {
-        let (station, dropper) = match Station::try_set_owner_deployment_info(&station_id, info, drop_tracer.token()).await?  {
-          Err(None) => {
-            return Err(StreamError::StationNotFound(station_id.to_string()));
-          },
-
-          Err(Some((station, owner_info))) => {
-            if owner_info.deployment_id == deployment_id {
-              (station, None)
-            } else {
-              let account = match Account::get_by_id(&station.account_id).await? {
-                Some(account) => account,
-                None => return Err(StreamError::AccountNotFound(station.account_id))
-              };
-
-              if account.limits.transfer.avail() == 0 {
-                return Err(StreamError::TransferLimit);
-              }
-    
-              if account.limits.listeners.avail() == 0 {
-                return Err(StreamError::ListenersLimit);
-              }
-
-              let deployment = match Deployment::get_by_id(&owner_info.deployment_id).await? {
-                None => return Err(StreamError::DeploymentNotFound),
-                Some(doc) => doc,
-              };
-
-              use rand::seq::SliceRandom;
-              let stream_port = deployment.stream_ports.choose(&mut rand::thread_rng());
-      
-              let port = match stream_port {
-                None => return Err(StreamError::DeploymentNoPort),
-                Some(port) => *port,
-              };
-
-              let destination = SocketAddr::from((deployment.local_ip, port));
-
-              let client = hyper::Client::default();
-            
-              let mut hyper_req = hyper::Request::builder()
-                .uri(format!("http://{}:{}/relay/{}", destination.ip(), destination.port(), station_id)); 
-    
-              for (key, value) in req.headers().clone().into_iter() {
-                if let Some(key) = key {
-                  hyper_req = hyper_req.header(key, value);
-                }
-              }
-
-              hyper_req = hyper_req
-                .header(X_OPENSTREAM_RELAY_CODE, &owner_info.deployment_id)
-                .header("x-openstream-relay-remote-addr", format!("{}", req.remote_addr()))
-                .header("x-openstream-relay-local-addr", format!("{}", req.local_addr()))
-                .header("x-openstream-relay-deployment-id", &deployment_id)
-                .header("x-openstream-relay-target-deployment-id", &deployment_id)
-                .header("connection", "close");
-
-              let hyper_req = match hyper_req.body(Body::empty()) {
-                Ok(req) => req,
-                Err(e) => return Err(StreamError::InternalHyperCreateRequest(e))
-              };
-    
-              match client.request(hyper_req).await {
-                Err(e) => return Err(StreamError::InternalHyperClientRequest(e)),
-                Ok(hyper_res) => {
-                  // if error return the same error to the client
-                  if !hyper_res.status().is_success() {
-                    return Err(StreamError::RelayStatus(hyper_res.status()));
-                  }
-
-                  let tx = media_sessions.write().transmit(&station_id, media_sessions::MediaSessionKind::Relay { content_type: owner_info.content_type });
-                  let rx = tx.subscribe();
-                  run_relay_session(tx, deployment_id.clone(), owner_info.deployment_id, hyper_res, shutdown.clone(), drop_tracer.clone());
-
-                  break 'rx (rx, station);
-                }
-              }
-            }
-          },
-
-          Ok((station, dropper)) => {
-            (station, Some(dropper))
-          }
+      async fn get_rx(deployment_id: &str, station_id: &str, req: &Request, media_sessions: &MediaSessionMap, drop_tracer: &DropTracer, shutdown: &Shutdown) -> Result<(Listener, Station), StreamError> {
+        let info = OwnerDeploymentInfo {
+          deployment_id: deployment_id.to_string(),
+          task_id: Station::random_owner_task_id(),
+          // audio/mpeg is because we'll start a playlist media session on demand
+          content_type: String::from("audio/mpeg"),
         };
+  
+        let (rx, station) = 'rx: {
+          let (station, dropper) = match Station::try_set_owner_deployment_info(station_id, info, drop_tracer.token()).await?  {
+            Err(None) => {
+              return Err(StreamError::StationNotFound(station_id.to_string()));
+            },
+  
+            Err(Some((station, owner_info))) => {
+              if owner_info.deployment_id == deployment_id {
+                (station, None)
+              } else {
+                let account = match Account::get_by_id(&station.account_id).await? {
+                  Some(account) => account,
+                  None => return Err(StreamError::AccountNotFound(station.account_id))
+                };
+  
+                if account.limits.transfer.avail() == 0 {
+                  return Err(StreamError::TransferLimit);
+                }
+      
+                if account.limits.listeners.avail() == 0 {
+                  return Err(StreamError::ListenersLimit);
+                }
+  
+                let deployment = match Deployment::get_by_id(&owner_info.deployment_id).await? {
+                  None => return Err(StreamError::DeploymentNotFound),
+                  Some(doc) => doc,
+                };
+  
+                use rand::seq::SliceRandom;
+                let stream_port = deployment.stream_ports.choose(&mut rand::thread_rng());
         
-        let account = match Account::get_by_id(&station.account_id).await? {
-          Some(account) => account,
-          None => return Err(StreamError::AccountNotFound(station.account_id))
-        };
-
-        if account.limits.transfer.avail() == 0 {
-          return Err(StreamError::TransferLimit);
-        }
+                let port = match stream_port {
+                  None => return Err(StreamError::DeploymentNoPort),
+                  Some(port) => *port,
+                };
+  
+                let destination = SocketAddr::from((deployment.local_ip, port));
+  
+                let client = hyper::Client::default();
+              
+                let mut hyper_req = hyper::Request::builder()
+                  .uri(format!("http://{}:{}/relay/{}", destination.ip(), destination.port(), station_id)); 
       
-        if account.limits.listeners.avail() == 0 {
-          return Err(StreamError::ListenersLimit);
-        }
-
-        #[allow(clippy::collapsible_if)]
-        if media_sessions.read().get(&station_id).is_none() {
-          if !AudioFile::exists(doc! { AudioFile::KEY_STATION_ID: &station.id }).await? {
-            return Err(StreamError::NotStreaming(station.id));
-          }
-        };
-
-        let rx = {
-          let lock = media_sessions.upgradable_read();
-
-          match lock.get(&station_id) {
-            Some(session) => session.subscribe(),
-
-            None => {
-              let mut lock = lock.upgrade();
-              let tx = lock.transmit(&station_id, media_sessions::MediaSessionKind::Playlist {});
-              let rx = tx.subscribe();
-              let shutdown = shutdown.clone();
-              let deployment_id = deployment_id.clone();
-              tokio::spawn(async move {
-                let _ = run_playlist_session(tx, deployment_id, shutdown, drop_tracer, true).await.unwrap();
-                drop(dropper);
-              });
-              rx
+                for (key, value) in req.headers().clone().into_iter() {
+                  if let Some(key) = key {
+                    hyper_req = hyper_req.header(key, value);
+                  }
+                }
+  
+                hyper_req = hyper_req
+                  .header(X_OPENSTREAM_RELAY_CODE, &owner_info.deployment_id)
+                  .header("x-openstream-relay-remote-addr", format!("{}", req.remote_addr()))
+                  .header("x-openstream-relay-local-addr", format!("{}", req.local_addr()))
+                  .header("x-openstream-relay-deployment-id", deployment_id)
+                  .header("x-openstream-relay-target-deployment-id", deployment_id)
+                  .header("connection", "close");
+  
+                let hyper_req = match hyper_req.body(Body::empty()) {
+                  Ok(req) => req,
+                  Err(e) => return Err(StreamError::InternalHyperCreateRequest(e))
+                };
+      
+                match client.request(hyper_req).await {
+                  Err(e) => return Err(StreamError::InternalHyperClientRequest(e)),
+                  Ok(hyper_res) => {
+                    // if error return the same error to the client
+                    if !hyper_res.status().is_success() {
+                      return Err(StreamError::RelayStatus(hyper_res.status()));
+                    }
+  
+                    let tx = media_sessions.write().transmit(station_id, media_sessions::MediaSessionKind::Relay { content_type: owner_info.content_type });
+                    let rx = tx.subscribe();
+                    run_relay_session(tx, deployment_id.to_string(), owner_info.deployment_id, hyper_res, shutdown.clone(), drop_tracer.clone());
+  
+                    break 'rx (rx, station);
+                  }
+                }
+              }
+            },
+  
+            Ok((station, dropper)) => {
+              (station, Some(dropper))
             }
+          };
+          
+          let account = match Account::get_by_id(&station.account_id).await? {
+            Some(account) => account,
+            None => return Err(StreamError::AccountNotFound(station.account_id))
+          };
+  
+          if account.limits.transfer.avail() == 0 {
+            return Err(StreamError::TransferLimit);
           }
+        
+          if account.limits.listeners.avail() == 0 {
+            return Err(StreamError::ListenersLimit);
+          }
+  
+          #[allow(clippy::collapsible_if)]
+          if media_sessions.read().get(station_id).is_none() {
+            match &station.external_relay_url {
+              None => {
+                if !AudioFile::exists(doc! { AudioFile::KEY_STATION_ID: &station.id }).await? {
+                  return Err(StreamError::NotStreaming(station.id));
+                }
+              }
+  
+              Some(_) => { }
+            }
+            
+          };
+  
+          let rx = {
+            let lock = media_sessions.upgradable_read();
+  
+            match lock.get(station_id) {
+              Some(session) => session.subscribe(),
+  
+              None => {
+                let mut lock = lock.upgrade();
+                match &station.external_relay_url {
+                  None => {
+                    let tx = lock.transmit(station_id, media_sessions::MediaSessionKind::Playlist {});
+                    let rx = tx.subscribe();
+                    let shutdown = shutdown.clone();
+                    let deployment_id = deployment_id.to_string();
+                    let drop_tracer = drop_tracer.clone();
+                    tokio::spawn(async move {
+                      let _ = run_playlist_session(tx, deployment_id, shutdown, drop_tracer, true).await.unwrap();
+                      drop(dropper);
+                    });
+                    rx
+                  }
+  
+                  Some(url) => {
+                    let tx = lock.transmit(station_id, media_sessions::MediaSessionKind::ExternalRelay);
+                    let rx = tx.subscribe();
+                    let shutdown = shutdown.clone();
+                    let deployment_id = deployment_id.to_string();
+                    let drop_tracer = drop_tracer.clone();
+                    let url = url.clone();
+
+                    tokio::spawn(async move {
+                      let _ = run_external_releay_session(tx, deployment_id, url, shutdown, drop_tracer).await.unwrap();
+                      drop(dropper);
+                    });
+                    rx
+                  }
+                }
+              }
+            }
+          };
+
+          (rx, station)
         };
 
-        (rx, station)
-      };
+        Ok((rx, station))
+      }
 
+      let (rx, station) = get_rx(&deployment_id, &station_id, &req, &media_sessions, &drop_tracer, &shutdown).await?;
+     
       let content_type = rx.info().kind().content_type().to_string();
 
       let conn_doc = {
@@ -525,7 +559,7 @@ impl StreamHandler {
         StreamConnection {
           id: StreamConnection::uid(),
           station_id: station.id,
-          deployment_id,
+          deployment_id: deployment_id.clone(),
           is_open: true,
           ip: request.real_ip,
           country_code: request.country_code,
@@ -565,44 +599,77 @@ impl StreamHandler {
       tokio::spawn({
         let shutdown = shutdown.clone();
         let transfer_map = transfer_map.clone();
+        let mut rx = rx;
+
+        let mut start = Instant::now();
+        let mut rx_had_data = false;
 
         async move {
-          loop {
-            let r = rx.recv().await;
+          'root: loop {
+            'recv: loop {
+              let r = rx.recv().await;
 
+              if shutdown.is_closed() {
+                break 'root;
+              }
+
+              match r {
+                // if lagged we ignore the error and continue with the oldest message buffered in the channel
+                // TODO: maybe we should advance to the newest message with stream.resubscribe()
+                Err(RecvError::Lagged(_)) => continue 'recv,
+
+                // Here the channel has been dropped
+                Err(RecvError::Closed) => break 'recv,
+
+                // Receive bytes and pass it to response body
+                Ok(bytes) => {
+                  if shutdown.is_closed() {
+                    break 'root;
+                  }
+
+                  rx_had_data = true;
+
+                  let len = bytes.len();
+                  match body_sender.send_data(bytes).await {
+                    Err(_) => break 'root,
+                    Ok(()) => {
+                      transfer_map.increment(&station.account_id, len);
+                      transfer_bytes.fetch_add(len as u64, Ordering::SeqCst);
+                    }
+                  };
+                }
+              }
+            }
+            
             if shutdown.is_closed() {
-              break;
+              break 'root;
             }
 
-            match r {
-              // if lagged we ignore the error and continue with the oldest message buffered in the channel
-              // TODO: maybe we should advance to the newest message with stream.resubscribe()
-              Err(RecvError::Lagged(_)) => continue,
+            // if the connection had last < 5 secs 
+            // or had no data we abort to 
+            // avoid creating infinite loops here
+            if start.elapsed().as_secs() > 5 && rx_had_data {
+              start = Instant::now();
+              rx_had_data = false;
+              let (new_rx, _) = get_rx(
+                &deployment_id,
+                &station_id,
+                &req,
+                &media_sessions,
+                &drop_tracer,
+                &shutdown,
+              ).await?;
+              rx = new_rx;
 
-              // Here the channel has been dropped
-              Err(RecvError::Closed) => break,
-
-              // Receive bytes and pass it to response body
-              Ok(bytes) => {
-                if shutdown.is_closed() {
-                  break;
-                }
-
-                let len = bytes.len();
-                match body_sender.send_data(bytes).await {
-                  Err(_) => break,
-                  Ok(()) => {
-                    transfer_map.increment(&station.account_id, len);
-                    transfer_bytes.fetch_add(len as u64, Ordering::SeqCst);
-                  }
-                };
-              }
+              continue 'root;
             }
           }
 
           closed.store(true, Ordering::SeqCst);
           drop(connection_dropper);
           drop(ip_decrementer);
+        
+          Ok::<(), StreamError>(())
         }
       });
 
