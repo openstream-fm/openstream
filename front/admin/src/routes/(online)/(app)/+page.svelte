@@ -14,6 +14,16 @@
   $: plans_subtitle = data.plans.items.length === 1 ? `${data.plans.items.length} plan` : `${data.plans.items.length} plans`;
 
   let map_view: "now" | "last_24h" | "last_7d" | "last_30d" = "now";
+
+  export const snapshot = {
+    capture: () => {
+      return { map_view }
+    },
+
+    restore: (ctx: { map_view: typeof map_view }) => {
+      map_view = ctx.map_view;
+    }
+  }
 </script>
 
 <style>
