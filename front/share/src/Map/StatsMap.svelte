@@ -6,7 +6,7 @@
 <script lang="ts">
   import StatsMapInternal from "./StatsMapInternal.svelte";
 
-  export let kind: "account" | "station";
+  export let kind: "all" | "account" | "station";
   export let record_id: string;
   export let data: Stats | null = null;
   export let view: View = "now";

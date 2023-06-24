@@ -125,6 +125,11 @@ export const admin_api = ({
       return await client.admins.patch(ip(req), ua(req), admin_token(req), req.params.admin, req.body);
     }))
 
+  api.route("/stream-stats")
+    .get(json(async req => {
+      return await client.get_stream_stats(ip(req), ua(req), admin_token(req));
+    }))
+
   api.use(shared_api({
     client,
     get_token: admin_token,

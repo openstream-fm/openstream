@@ -4,9 +4,9 @@
 </script>
 
 <script lang="ts">
-  
   export let data: Stats | null = null;
-  export let kind: "account" | "station";
+  export let kind: "all" | "account" | "station";
+  // TODO: use generics
   export let record_id: string;
   export let view: View = "now"; 
   export let in_screen = true;
@@ -88,10 +88,16 @@
     const load = async () => {
       if(!mounted) return;
       if(data == null) {
-        const url = kind === "station" ? `/api/stations/${record_id}/stream-stats` : `/api/accounts/${record_id}/stream-stats`;
+        const url = 
+          kind === "all" ? "/api/stats-map" :
+          kind === "station" ? `/api/stations/${record_id}/stream-stats` : 
+          `/api/accounts/${record_id}/stream-stats`;
+        
         let output:
-          import("$api/stations/[station]/stream-stats/GET/Output").Output | 
-          import("$api/accounts/[account]/stream-stats/GET/Output").Output;
+          import("$api/stream-stats/GET/Output").Output |
+          import("$api/accounts/[account]/stream-stats/GET/Output").Output |
+          import("$api/stations/[station]/stream-stats/GET/Output").Output; 
+        
         try { 
           output = await _get(url);
         } catch(e: any) {

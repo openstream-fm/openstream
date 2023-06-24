@@ -1,7 +1,9 @@
 <script lang="ts">
   export let data: import("./$types").PageData;
 	import Page from "$lib/components/Page.svelte";
+	import { locale } from "$lib/locale";
 	import Icon from "$share/Icon.svelte";
+	import StatsMap from "$share/Map/StatsMap.svelte";
 	import { ripple } from "$share/ripple";
 	import { mdiAccountMultipleOutline, mdiAccountOutline, mdiCurrencyUsd, mdiPoll, mdiRadioTower, mdiShieldAccountOutline } from "@mdi/js";
 
@@ -10,6 +12,18 @@
   $: accounts_subtitle = data.accounts.total === 1 ? `${data.accounts.total} account` : `${data.accounts.total} accounts`;
   $: stations_subtitle = data.stations.total === 1 ? `${data.stations.total} station` : `${data.stations.total} stations`;
   $: plans_subtitle = data.plans.items.length === 1 ? `${data.plans.items.length} plan` : `${data.plans.items.length} plans`;
+
+  let map_view: "now" | "last_24h" | "last_7d" | "last_30d" = "now";
+
+  export const snapshot = {
+    capture: () => {
+      return { map_view }
+    },
+
+    restore: (ctx: { map_view: typeof map_view }) => {
+      map_view = ctx.map_view;
+    }
+  }
 </script>
 
 <style>
@@ -78,6 +92,13 @@
     overflow: hidden;
     text-overflow: ellipsis;
     margin-top: 0.25rem;
+  }
+
+  .map {
+    background: #fff;
+    border-radius: 0.5rem;
+    box-shadow: var(--some-shadow);
+    margin-block-start: 2.5rem;
   }
 </style>
 
@@ -149,6 +170,16 @@
         <div class="section-subtitle">Get insights from the data</div>
       </div>
     </a>
+  </div>
 
+  <div class="map">
+    <StatsMap 
+      bind:data={data.stats}
+      country_names={$locale.countries}
+      kind="all"
+      record_id=""
+      locale={$locale.stats_map}
+      bind:view={map_view}  
+    />
   </div>
 </Page> 
