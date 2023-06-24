@@ -742,6 +742,7 @@ impl Drop for StreamConnectionDropper {
           "$set": {
             StreamConnectionLite::KEY_IS_OPEN: false,
             StreamConnectionLite::KEY_DURATION_MS: duration_ms as f64,
+            StreamConnectionLite::KEY_TRANSFER_BYTES: transfer_bytes as f64,
           }
         };
 
