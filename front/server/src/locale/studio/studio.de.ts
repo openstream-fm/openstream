@@ -16,6 +16,9 @@ const locale = {
   "logo_text": "openstream",
 
   // @notranslate
+  "brand_name": "Openstream",
+
+  // @notranslate
   "app_name": "Openstream Studio",
 
   "station_type_of_content": type_of_content,

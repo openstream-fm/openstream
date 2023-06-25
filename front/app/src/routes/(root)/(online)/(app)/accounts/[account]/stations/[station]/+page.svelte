@@ -231,14 +231,12 @@
                 {#if data.now_playing.kind === "playlist"}
                   {$locale.pages["station/dashboard"].playlist}
                 {:else if data.now_playing.kind === "external-relay"}
-                  <!-- TODO: locale -->
-                  Relay
+                  {$locale.misc.Relay}
                 {:else if data.now_playing.kind === "live"}
                   {$locale.pages["station/dashboard"].live}
                 {:else if data.now_playing.kind === "none"}
                   {#if data.now_playing.external_relay_url != null}
-                    <!-- TODO: locale -->
-                    Relay
+                    {$locale.misc.Relay}
                   {:else}
                     {$locale.pages["station/dashboard"].playlist}
                   {/if}

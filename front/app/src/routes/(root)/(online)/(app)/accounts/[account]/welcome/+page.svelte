@@ -2,6 +2,7 @@
   export let data: import("./$types").PageData;
   import Page from "$lib/components/Page.svelte";
 	import { ripple } from "$share/ripple";
+  import { locale } from "$lib/locale";
 </script>
 
 <style>
@@ -37,17 +38,22 @@
 </style>
 
 <svelte:head>
-  <title>Welcome</title>
+  <title>{$locale.misc.Welcome}</title>
 </svelte:head>
 
 <Page>
-  <h1>Hello <b>{data.user.first_name}</b></h1>
-  <p>Welcome to <b>openstream</b></p>
-  <p>You are now the owner of your newly created account</p>
-  <p>To start broadcasting right away, add your first station to your account</p>
+  
+  <h1>
+    {@html $locale.misc.account_welcome_title_html.replace("@name", data.user.first_name)}
+  </h1>
+
+  <p>{@html $locale.misc.account_welcome_message_1_html.replace("@brand", $locale.brand_name)}</p>
+  <p>{@html $locale.misc.account_welcome_message_2_html}</p>
+  <p>{@html $locale.misc.account_welcome_message_3_html}</p>
+  
   <div class="btn-out">
     <a class="na btn ripple-container" href="/accounts/{data.account._id}/stations/create-station" use:ripple>
-      Create my first station
+      {$locale.misc.Create_my_first_station}
     </a>
   </div>
 </Page>
