@@ -112,6 +112,7 @@ const locale = {
       "twitter": "Twitter-URL",
       "facebook": "Facebook-URL",
       "instagram": "Instagram-URL",
+      "tiktok": "TikTok-URL",
       "youtube": "Youtube-URL",
       "twitch": "Twitch-URL",
       "google_play": "Google Play-URL",

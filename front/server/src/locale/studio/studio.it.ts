@@ -113,6 +113,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "twitter": "URL di Twitter",
       "facebook": "URL di Facebook",
       "instagram": "URL di Instagram",
+      "tiktok": "URL di TikTok",
       "youtube": "URL di Youtube",
       "twitch": "URL di Twitch",
       "google_play": "URL di Google Play",

@@ -119,6 +119,10 @@ pub struct Station {
   #[validate(url, regex = "TWITCH", length(max = "URLS_MAX"), non_control_character)]
   pub twitch_url: Option<String>,
 
+  #[modify(trim)]
+  #[validate(url, regex = "TIKTOK", length(max = "URLS_MAX"), non_control_character)]
+  pub tiktok_url: Option<String>,
+
   // app links
   #[modify(trim)]
   #[validate(
@@ -495,6 +499,16 @@ pub struct StationPatch {
   #[validate(url, regex = "TWITCH", length(max = "URLS_MAX"), non_control_character)]
   pub twitch_url: Option<Option<String>>,
 
+  #[ts(optional)]
+  #[serde(
+    default,
+    deserialize_with = "map_some",
+    skip_serializing_if = "Option::is_none"
+  )]
+  #[modify(trim)]
+  #[validate(url, regex = "TIKTOK", length(max = "URLS_MAX"), non_control_character)]
+  pub tiktok_url: Option<Option<String>>,
+
   // app links
   #[ts(optional)]
   #[serde(
@@ -656,6 +670,7 @@ impl Station {
     apply!(instagram_url);
     apply!(youtube_url);
     apply!(twitch_url);
+    apply!(tiktok_url);
 
     apply!(google_play_url);
     apply!(app_store_url);

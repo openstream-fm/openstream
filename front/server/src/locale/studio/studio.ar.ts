@@ -113,6 +113,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "twitter": "عنوان تويتر",
       "facebook": "عنوان الفيسبوك",
       "instagram": "عنوان إنستغرام",
+      "tiktok": "رابط TikTok",
       "youtube": "عنوان يوتيوب",
       "twitch": "عنوان تويتش",
       "google_play": "عنوان متجر جوجل بلاي",
