@@ -21,9 +21,10 @@ export type UserPublicStation = {
   whatsapp: string | null;
   website_url: string | null;
   twitter_url: string | null;
+  facebook_url: string | null;
   instagram_url: string | null;
   twitch_url: string | null;
-  facebook_url: string | null;
+  tiktok_url: string | null;
   youtube_url: string | null;
   app_store_url: string | null;
   google_play_url: string | null;

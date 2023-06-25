@@ -274,9 +274,10 @@ pub struct UserPublicStation {
   // links
   pub website_url: Option<String>,
   pub twitter_url: Option<String>,
+  pub facebook_url: Option<String>,
   pub instagram_url: Option<String>,
   pub twitch_url: Option<String>,
-  pub facebook_url: Option<String>,
+  pub tiktok_url: Option<String>,
   pub youtube_url: Option<String>,
 
   // app links
@@ -714,9 +715,10 @@ impl From<Station> for UserPublicStation {
 
       website_url: station.website_url,
       twitter_url: station.twitter_url,
+      facebook_url: station.facebook_url,
       instagram_url: station.instagram_url,
       twitch_url: station.twitch_url,
-      facebook_url: station.facebook_url,
+      tiktok_url: station.tiktok_url,
       youtube_url: station.youtube_url,
 
       app_store_url: station.app_store_url,
