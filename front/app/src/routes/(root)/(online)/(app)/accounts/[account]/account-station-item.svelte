@@ -112,8 +112,7 @@
           {#if now_playing.start_on_connect}
             <div class="now-playing-sub">
               {#if now_playing.external_relay_url != null}
-                <!-- TODO: locale -->
-                Relay
+                {$locale.misc.Relay}  
               {:else}
                 {$locale.pages["account/dashboard"].station_item.playlist}
               {/if}
@@ -126,8 +125,7 @@
             {:else if now_playing.kind === "playlist"}
               {$locale.pages["account/dashboard"].station_item.playlist}
             {:else if now_playing.kind === "external-relay"}
-              <!-- TODO: locale -->
-              Relay
+              {$locale.misc.Relay}
             {/if}
           </div>
         {/if}

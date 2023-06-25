@@ -82,8 +82,7 @@
       }
 
       await _patch(`/api/stations/${data.station._id}`, payload);
-      // TODO: locale
-      _message("Settings updated");
+      _message($locale.misc.Settings_updated);
 
       saving_relay = false;
     } catch(e) {
@@ -265,18 +264,16 @@
     <div class="page-title">{$locale.pages["station/settings"].title}</div>
 
     <div class="section">
-      <!-- TODO: locale -->
-      <h2>Master relay</h2>
+
+      <h2>{$locale.misc.Master_relay}</h2>
       
       <Formy action={save_external_relay} let:submit>
         <form class="section-box relay-box" on:submit={submit}>
           <div class="relay-switch">
-            <!-- TODO: locale -->
-            <BooleanField bind:value={external_relay_enabled} label="Enable master relay" />
+            <BooleanField bind:value={external_relay_enabled} label={$locale.misc.Enable_master_relay} />
           </div>
           <div class="relay-field">
-            <!-- TODO: locale -->
-            <TextField label="Master Relay URL" disabled={!external_relay_enabled} bind:value={external_relay_url}  />
+            <TextField label={$locale.misc.Master_Relay_URL} disabled={!external_relay_enabled} bind:value={external_relay_url}  />
             <Validator value={external_relay_url} fn={_validate_external_relay_url} />
           </div>
 
@@ -285,8 +282,7 @@
               <!-- <div class="invite-dialog-send-icon">
                 <Icon d={mdiAccountPlusOutline} />
               </div> -->
-              <!-- TODO: locale -->
-              Save
+              {$locale.misc.Save}
             </div>
             {#if saving_relay}
               <div class="relay-send-sending" transition:scale|local={{ duration: 300 }}>
@@ -356,9 +352,8 @@
       </Formy>
     {:else}
       <div class="delete-no-owner-message">
-        <!-- TODO: locale -->
-        Only account administrators can delete stations. <br/> <br/>
-        Contact the account administrators if you want to delete this station.
+        
+        {@html $locale.misc.delete_station_not_owner_message_html}
         
         <div class="delete-dialog-btns">
           <button
@@ -366,8 +361,7 @@
             use:ripple
             on:click={() => (delete_open = false)}
           >
-            <!-- TODO: locale -->
-            OK
+            {@html $locale.misc.delete_station_not_owner_OK}
           </button>
         </div>
 
