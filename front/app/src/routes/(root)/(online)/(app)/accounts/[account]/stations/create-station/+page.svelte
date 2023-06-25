@@ -34,6 +34,7 @@
     instagram_url: null as string | null,
     youtube_url: null as string | null,
     twitch_url: null as string | null,
+    tiktok_url: null as string | null,
 
     google_play_url: null as string | null,
     app_store_url: null as string | null,

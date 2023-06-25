@@ -9,8 +9,11 @@
 		mdiTwitter,
 		mdiWeb,
 		mdiWhatsapp,
-		mdiYoutube
+		mdiYoutube,
 	} from '@mdi/js';
+	
+	const mdiTiktok = "M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-5.201 1.743l-.002-.001.002.001a2.895 2.895 0 0 1 3.183-4.51v-3.5a6.329 6.329 0 0 0-5.394 10.692 6.33 6.33 0 0 0 10.857-4.424V8.687a8.182 8.182 0 0 0 4.773 1.526V6.79a4.831 4.831 0 0 1-1.003-.104z";
+
 	import NullEmail from './Form/Nullable/NullEmail.svelte';
 	import NullTextField from './Form/Nullable/NullTextField.svelte';
 	import StationPictureField from './Form/StationPictureField.svelte';
@@ -27,7 +30,10 @@
 		_instagram_url,
 		_twitch_url,
 		_twitter_url,
-    _google_play_url
+    _google_play_url,
+
+	_tiktok_url
+
 	} from '$share/formy/validate';
 	import CountryField from './Form/CountryField.svelte';
 	import type { CountryCode } from '$server/defs/CountryCode';
@@ -55,6 +61,7 @@
 		instagram_url: string | null;
 		youtube_url: string | null;
 		twitch_url: string | null;
+		tiktok_url: string | null;
 
 		google_play_url: string | null;
 		app_store_url: string | null;
@@ -239,6 +246,19 @@
 			/>
 			<Validator value={current.twitch_url} fn={_twitch_url({ maxlen: 150 })} />
 		</div>
+
+		<div class="field">
+			<NullTextField
+				type="url"
+				label={$locale.station_profile.labels.tiktok}
+				trim
+				maxlength={150}
+				icon={mdiTiktok}
+				bind:value={current.tiktok_url}
+			/>
+			<Validator value={current.tiktok_url} fn={_tiktok_url({ maxlen: 150 })} />
+		</div>
+
 	</div>
 </div>
 

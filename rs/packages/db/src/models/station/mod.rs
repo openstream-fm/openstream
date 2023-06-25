@@ -119,6 +119,10 @@ pub struct Station {
   #[validate(url, regex = "TWITCH", length(max = "URLS_MAX"), non_control_character)]
   pub twitch_url: Option<String>,
 
+  #[modify(trim)]
+  #[validate(url, regex = "TIKTOK", length(max = "URLS_MAX"), non_control_character)]
+  pub tiktok_url: Option<String>,
+
   // app links
   #[modify(trim)]
   #[validate(
@@ -270,9 +274,10 @@ pub struct UserPublicStation {
   // links
   pub website_url: Option<String>,
   pub twitter_url: Option<String>,
+  pub facebook_url: Option<String>,
   pub instagram_url: Option<String>,
   pub twitch_url: Option<String>,
-  pub facebook_url: Option<String>,
+  pub tiktok_url: Option<String>,
   pub youtube_url: Option<String>,
 
   // app links
@@ -495,6 +500,16 @@ pub struct StationPatch {
   #[validate(url, regex = "TWITCH", length(max = "URLS_MAX"), non_control_character)]
   pub twitch_url: Option<Option<String>>,
 
+  #[ts(optional)]
+  #[serde(
+    default,
+    deserialize_with = "map_some",
+    skip_serializing_if = "Option::is_none"
+  )]
+  #[modify(trim)]
+  #[validate(url, regex = "TIKTOK", length(max = "URLS_MAX"), non_control_character)]
+  pub tiktok_url: Option<Option<String>>,
+
   // app links
   #[ts(optional)]
   #[serde(
@@ -656,6 +671,7 @@ impl Station {
     apply!(instagram_url);
     apply!(youtube_url);
     apply!(twitch_url);
+    apply!(tiktok_url);
 
     apply!(google_play_url);
     apply!(app_store_url);
@@ -699,9 +715,10 @@ impl From<Station> for UserPublicStation {
 
       website_url: station.website_url,
       twitter_url: station.twitter_url,
+      facebook_url: station.facebook_url,
       instagram_url: station.instagram_url,
       twitch_url: station.twitch_url,
-      facebook_url: station.facebook_url,
+      tiktok_url: station.tiktok_url,
       youtube_url: station.youtube_url,
 
       app_store_url: station.app_store_url,
