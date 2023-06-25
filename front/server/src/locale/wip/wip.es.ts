@@ -1,14 +1,13 @@
 /// file: wip.es.ts
 const locale = {
-  "actions": {
-    "set_role_to": "Establecer rol a @role",
-    "revoke_access": "Revocar acceso",
-    "delete": "Eliminar",
-  },
-  "notifier": {
-    "member_access_revoked": "Acceso de miembro revocado",
-    "member_role_changed": "Rol de acceso de miembro actualizado",
-  }
+  Relay: "Relay",
+  Settings_updated: "Configuración actualizada",
+  Master_relay: "Relay maestro",
+  Enable_master_relay: "Habilitar relay maestro",
+  Master_Relay_URL: "URL del relay maestro",
+  Save: "Guardar",
+  delete_station_not_owner_message_html: "Solo los administradores de la cuenta pueden eliminar estaciones.<br/><br/>Contacta a los administradores de la cuenta si deseas eliminar esta estación.",
+  delete_station_not_owner_OK: "Aceptar",
 }
 
 export default locale;

@@ -4,6 +4,7 @@ import countries from "../share/countries/countries.pt";
 import type_of_content from "../share/type-of-content/type-of-content.pt";
 import analytics from "../share/analytics/analytics.pt";
 import payments from "../share/payments/payments.pt";
+import misc from "../misc/misc.pt";
 
 const locale: import("./studio.locale").StudioLocale = {
   "lang": "pt",
@@ -11,6 +12,9 @@ const locale: import("./studio.locale").StudioLocale = {
 
   // @notranslate
   "logo_text": "openstream",
+
+  // @notranslate
+  "brand_name": "Openstream",
 
   // @notranslate
   "app_name": "Openstream Studio",
@@ -21,6 +25,7 @@ const locale: import("./studio.locale").StudioLocale = {
   "stats_map": stats_map,
   "analytics": analytics,
   "payments": payments,
+  "misc": misc,
 
   "language": {
     "auto": "Detecção automática",

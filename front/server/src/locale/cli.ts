@@ -50,7 +50,7 @@ while (true) {
   break;
 }
 
-const kinds = ["studio", "admin", "wip", "countries", "stats-map", "validate", "type-of-content", "analytics", "payments"];
+const kinds = ["studio", "admin", "misc", "wip", "countries", "stats-map", "validate", "type-of-content", "analytics", "payments"];
 let selected_kinds: string[];
 
 while (true) {
@@ -82,6 +82,7 @@ for (const iso of isos) {
     const dir = kind === "studio" ? "studio" :
                 kind === "admin" ? "admin" :
                 kind === "wip" ? "wip" :
+                kind === "misc" ? "misc" :
                 `share/${kind}`;
 
     const src = `${__dirname}/${dir}/${kind}.${base}.ts`;
@@ -114,7 +115,7 @@ for (const iso of isos) {
     }))
 
     const createChatCompletion = async function* (params: {
-      model: "gpt-4" | "gpt-3.5-turbo",
+      model: "gpt-4" | "gpt-3.5-turbo" | "gpt-3.5-turbo-16k",
       messages: ChatCompletionRequestMessage[]
     }) {
       const res = await client.createChatCompletion({
@@ -188,7 +189,7 @@ for (const iso of isos) {
       }
 
       const stream = createChatCompletion({
-        model: "gpt-4",
+        model: "gpt-3.5-turbo-16k",
         messages
       })
 
