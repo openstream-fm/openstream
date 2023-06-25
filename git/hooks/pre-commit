@@ -1,5 +1,4 @@
-#!/usr/bin/env node
-import "zx/globals";
+#!/usr/bin/env zx
 
 // zx must be installed on the system to run this
 // install it with `npm i -g zx`
