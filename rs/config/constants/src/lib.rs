@@ -16,7 +16,7 @@ pub const STREAM_CHUNK_SIZE: usize = STREAM_KBITRATE * 1000 / 8;
 
 /// stream bust len in elements (use with STREAM_CHUNK_SIZE)
 #[const_register]
-pub const STREAM_BURST_LENGTH: usize = 8;
+pub const STREAM_BURST_LENGTH: usize = 12;
 
 /// stream tokio broadcaster stream channel capacity
 #[const_register]
