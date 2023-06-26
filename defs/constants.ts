@@ -31,7 +31,7 @@ export const REAL_IP_HEADER = "x-real-ip";
 
 export const RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS = 10;
 
-export const STREAM_BURST_LENGTH = 8;
+export const STREAM_BURST_LENGTH = 12;
 
 export const STREAM_CHANNEL_CAPACITY = 5;
 
