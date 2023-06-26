@@ -654,13 +654,11 @@ impl StreamHandler {
         let connection_id = conn_doc.id.clone();
 
         async move {
-          info!("starting stream connection {connection_id} for station {station_id}");
+          info!("START stream_connection {connection_id} for station {station_id}");
 
           'root: loop {
             loop_i += 1;
-            info!(
-              "starting stream loop {loop_i} for connection {connection_id}, station {station_id}"
-            );
+            info!("LOOP stream_connection {loop_i} {connection_id} for station {station_id}");
 
             'recv: loop {
               let r = rx.recv().await;
@@ -722,7 +720,7 @@ impl StreamHandler {
             }
           }
 
-          info!("ending stream connection {connection_id} for station {station_id}");
+          info!("END stream_connection {connection_id} for station {station_id}");
 
           closed.store(true, Ordering::SeqCst);
           drop(connection_dropper);
