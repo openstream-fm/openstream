@@ -514,13 +514,20 @@
 
   const get_common_grid_options = () => {
     
-    type Item = {  sessions: number, total_duration_ms: number, total_transfer_bytes: number }
+    type Item = {  sessions: number, ips: number, total_duration_ms: number, total_transfer_bytes: number }
 
     const fields = {
       "sessions": {
         name: locale.Sessions,
         format: item => String(item.sessions),
         sort: (a, b) => compare_numbers(a.sessions, b.sessions),
+        numeric: true,
+      },
+
+      "ips": {
+        name: locale.Unique_IPs,
+        format: item => String(item.ips),
+        sort: (a, b) => compare_numbers(a.ips, b.ips),
         numeric: true,
       },
 
@@ -708,6 +715,7 @@
         items.push({
           key: item_key,
           sessions: 0,
+          ips: 0,
           total_duration_ms: 0,
           total_transfer_bytes: 0,
         })

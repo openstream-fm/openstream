@@ -8,9 +8,7 @@ import type { YearMonthDay } from "./YearMonthDay";
 export type Analytics = {
   stations: Array<AnalyticsStation>;
   since: /** time::DateTime */ string;
-  until: /** time::DateTime
-     */
-    string;
+  until: /** time::DateTime */ string;
   utc_offset_minutes: number;
   sessions: number;
   ips: number;

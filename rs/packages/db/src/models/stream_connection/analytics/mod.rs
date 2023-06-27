@@ -22,7 +22,7 @@ pub struct Analytics {
   #[serde(with = "time::serde::iso8601")]
   pub since: time::OffsetDateTime,
 
-  #[ts(type = "/** time::DateTime\n */ string")]
+  #[ts(type = "/** time::DateTime */ string")]
   #[serde(with = "time::serde::iso8601")]
   pub until: time::OffsetDateTime,
 
@@ -56,6 +56,8 @@ pub struct AnalyticsItem<K> {
   key: K,
   #[serde(with = "serde_util::as_f64")]
   sessions: u64,
+  #[serde(with = "serde_util::as_f64")]
+  ips: u64,
   #[serde(with = "serde_util::as_f64")]
   total_duration_ms: u64,
   #[serde(with = "serde_util::as_f64")]
@@ -112,8 +114,13 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
       Station::KEY_CREATED_AT: 1,
     };
 
+    let sort = doc! {
+      Station::KEY_CREATED_AT: 1,
+    };
+
     let options = mongodb::options::FindOptions::builder()
       .projection(projection)
+      .sort(sort)
       .build();
 
     let stations: Vec<AnalyticsStation> = Station::cl_as::<AnalyticsStation>()
@@ -126,29 +133,32 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
   };
 
   let mut start_date = query.start_date;
-  let mut end_date = query.end_date;
+  let mut end_date = query.end_date.to_offset(start_date.offset());
 
-  if start_date.unix_timestamp() > end_date.unix_timestamp() {
-    (start_date, end_date) = (end_date.to_offset(start_date.offset()), start_date);
+  let now = OffsetDateTime::now_utc();
+  let first_station_created_at = stations
+    .first()
+    .map(|station| *station.created_at)
+    .unwrap_or_else(OffsetDateTime::now_utc);
+
+  if start_date < first_station_created_at {
+    start_date = first_station_created_at.to_offset(start_date.offset());
   }
 
-  let now = OffsetDateTime::now_utc().to_offset(start_date.offset());
-  if now.unix_timestamp() < end_date.unix_timestamp() {
-    end_date = now;
+  if end_date < first_station_created_at {
+    end_date = first_station_created_at.to_offset(start_date.offset());
   }
 
-  if now.unix_timestamp() < start_date.unix_timestamp() {
-    start_date = now;
+  if end_date > now {
+    end_date = now.to_offset(end_date.offset());
   }
 
-  for station in stations.iter() {
-    if start_date.unix_timestamp() < station.created_at.unix_timestamp() {
-      start_date = station.created_at.to_offset(start_date.offset());
-    }
+  if start_date > now {
+    start_date = now.to_offset(start_date.offset());
+  }
 
-    if end_date.unix_timestamp() < station.created_at.unix_timestamp() {
-      end_date = station.created_at.to_offset(end_date.offset());
-    }
+  if start_date > end_date {
+    (start_date, end_date) = (end_date, start_date);
   }
 
   let ser_start_date: serde_util::DateTime = start_date.into();
@@ -229,6 +239,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
   #[derive(Default)]
   struct AccumulatorItem {
     sessions: u64,
+    ips: HashSet<IpAddr>,
     total_duration_ms: u64,
     total_transfer_bytes: u64,
   }
@@ -263,6 +274,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
       ($acc:ident, $key:expr) => {
         let mut item = $acc.entry($key).or_default();
         item.sessions += 1;
+        item.ips.insert(conn.ip);
         item.total_duration_ms += conn_duration_ms;
         item.total_transfer_bytes += conn_transfer_bytes;
       };
@@ -298,6 +310,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
         .map(|(key, value)| AnalyticsItem::<_> {
           key,
           sessions: value.sessions,
+          ips: value.ips.len() as u64,
           total_duration_ms: value.total_duration_ms,
           total_transfer_bytes: value.total_transfer_bytes,
         })
