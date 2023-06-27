@@ -648,8 +648,6 @@ impl StreamHandler {
         let transfer_map = transfer_map.clone();
         let mut rx = rx;
 
-        let mut start = Instant::now();
-        let mut rx_had_data = false;
         let mut loop_i = 0usize;
         let connection_id = conn_doc.id.clone();
 
@@ -657,8 +655,14 @@ impl StreamHandler {
           info!("START stream_connection {connection_id} for station {station_id}");
 
           'root: loop {
+            let loop_start = Instant::now();
+            let mut rx_had_data = false;
+
+            if loop_i != 0 {
+              info!("LOOP {loop_i} stream_connection {connection_id} for station {station_id}");
+            }
+
             loop_i += 1;
-            info!("LOOP stream_connection {loop_i} {connection_id} for station {station_id}");
 
             'recv: loop {
               let r = rx.recv().await;
@@ -702,9 +706,7 @@ impl StreamHandler {
             // if the connection had last < 5 secs
             // or had no data we abort to
             // avoid creating infinite loops here
-            if start.elapsed().as_secs() > 5 && rx_had_data {
-              start = Instant::now();
-              rx_had_data = false;
+            if (loop_start.elapsed().as_secs() > 5) && rx_had_data && (loop_i <= 60) {
               let (new_rx, _) = get_rx(
                 &deployment_id,
                 &station_id,
@@ -717,6 +719,8 @@ impl StreamHandler {
               rx = new_rx;
 
               continue 'root;
+            } else {
+              break 'root;
             }
           }
 
