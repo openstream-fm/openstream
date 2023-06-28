@@ -25,4 +25,4 @@ export const load = (async ({ fetch, url, parent, depends }) => {
 
    return { user: maybe_user, accounts, stations }
 
-}) satisfies import("./$types").LayoutLoad;
+}) satisfies import("./$types").LayoutServerLoad;

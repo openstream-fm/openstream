@@ -9,4 +9,4 @@ export const load = (async ({ fetch, url, depends }) => {
 
   return { plans }
 
-}) satisfies import("./$types").PageLoad;
+}) satisfies import("./$types").PageServerLoad;

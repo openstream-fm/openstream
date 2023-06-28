@@ -8,4 +8,4 @@ export const load = (async ({ depends, url, fetch, params }) => {
     result,
     token: params.token,
   };
-}) satisfies import("./$types").PageLoad;
+}) satisfies import("./$types").PageServerLoad;

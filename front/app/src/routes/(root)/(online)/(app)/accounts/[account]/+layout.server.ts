@@ -12,4 +12,4 @@ export const load = (async ({ fetch, url, depends, params }) => {
     station: null,
   }
 
-}) satisfies import("./$types").LayoutLoad;
+}) satisfies import("./$types").LayoutServerLoad;

@@ -19,4 +19,4 @@ export const load = (async ({ params, fetch, depends, url }) => {
     now_playing,
     current_page: "playlist",
   }
-}) satisfies import("./$types").PageLoad;
+}) satisfies import("./$types").PageServerLoad;

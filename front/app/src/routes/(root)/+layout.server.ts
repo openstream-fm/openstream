@@ -16,4 +16,4 @@ export const load = (async ({ depends, fetch, url }) => {
 
   return { config, locale }
 
-}) satisfies import("./$types").LayoutLoad;
+}) satisfies import("./$types").LayoutServerLoad;

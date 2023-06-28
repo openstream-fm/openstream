@@ -10,4 +10,4 @@ export const load = (async ({ fetch, url, depends }) => {
    
    return { invitations }
 
-}) satisfies import("./$types").PageLoad;
+}) satisfies import("./$types").PageServerLoad;

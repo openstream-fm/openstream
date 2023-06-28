@@ -6,4 +6,4 @@ export const load = (async ({ depends, fetch, url, params }) => {
   const { plan } = await load_get<import("$api/plans/[plan]/GET/Output").Output>(`/api/plans/by-slug/${params.plan}`, { fetch, url }); 
   const payment_methods = await load_get<import("$api/payment-methods/GET/Output").Output>("/api/payment-methods", { fetch, url });
   return { plan, payment_methods };
-}) satisfies import("./$types").PageLoad;
+}) satisfies import("./$types").PageServerLoad;

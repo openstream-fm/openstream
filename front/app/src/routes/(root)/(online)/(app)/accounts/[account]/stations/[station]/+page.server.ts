@@ -21,4 +21,4 @@ export const load = (async ({ fetch, url, depends, params }) => {
     current_page: "dashboard",
   }
 
-}) satisfies import("./$types").PageLoad;
+}) satisfies import("./$types").PageServerLoad;
