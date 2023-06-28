@@ -100,10 +100,10 @@
     try {
 
       const payload: import("$api/invitations/accept/POST/Payload").Payload = {
-        invitation_id: data.result.kind === "ok" ? data.result.invitation.id : "",
         first_name,
         last_name,
         password,        
+        phone: null,
         token: data.token,
       };
 
