@@ -13,7 +13,7 @@ use hyper::header::{HeaderName, ACCEPT_RANGES, CACHE_CONTROL, RETRY_AFTER};
 use hyper::{header::CONTENT_TYPE, http::HeaderValue, Body, Server, StatusCode};
 use ip_counter::IpCounter;
 use log::*;
-use media_sessions::external_relay::run_external_releay_session;
+use media_sessions::external_relay::run_external_relay_session;
 use media_sessions::playlist::run_playlist_session;
 use media_sessions::relay::run_relay_session;
 use media_sessions::RecvError;
@@ -564,7 +564,7 @@ impl StreamHandler {
 
                     tokio::spawn(async move {
                       let _ =
-                        run_external_releay_session(tx, deployment_id, url, shutdown, drop_tracer)
+                        run_external_relay_session(tx, deployment_id, url, shutdown, drop_tracer)
                           .await
                           .unwrap();
                       drop(dropper);
