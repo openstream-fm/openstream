@@ -5,4 +5,4 @@ export const load = (async ({ depends, url, fetch }) => {
   depends("resource:plans");
   const items = await load_get<import("$api/plans/GET/Output").Output>(`/api/plans`, { url, fetch });
   return { plans: items };
-}) satisfies import("./$types").PageLoad;
+}) satisfies import("./$types").PageServerLoad;

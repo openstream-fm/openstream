@@ -38,4 +38,4 @@ export const load = (async ({ fetch, url, depends, parent }) => {
   }
 
   return { access }
-}) satisfies import("./$types").PageLoad;
+}) satisfies import("./$types").PageServerLoad;

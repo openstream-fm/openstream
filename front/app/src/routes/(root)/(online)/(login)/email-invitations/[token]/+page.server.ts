@@ -22,4 +22,4 @@ export const load = (async ({ depends, url, fetch, params, parent }) => {
 
   return { result, token }
 
-}) satisfies import("./$types").PageLoad;
+}) satisfies import("./$types").PageServerLoad;
