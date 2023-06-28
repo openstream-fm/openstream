@@ -3,7 +3,7 @@ use std::time::Instant;
 
 use crate::{SendError, Transmitter};
 use constants::{
-  EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS, STREAM_BURST_LENGTH, STREAM_CHUNK_SIZE,
+  EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS, /*STREAM_BURST_LENGTH,*/ STREAM_CHUNK_SIZE,
   STREAM_KBITRATE,
 };
 use db::media_session::MediaSession;
@@ -85,20 +85,10 @@ pub fn run_external_relay_session(
         drop_tracer.token(),
       )));
 
-      let ffmpeg_url = match url::Url::parse(&url) {
-        Err(_) => url,
-        Ok(u) => {
-          if u.path().ends_with(".m3u") || u.path().ends_with(".m3u8") {
-            format!("hls+{url}")
-          } else {
-            url
-          }
-        }
-      };
-
       let ffmpeg_config = FfmpegConfig {
-        input: Some(ffmpeg_url),
+        input: Some(url),
         kbitrate: STREAM_KBITRATE,
+        readrate: true,
         ..FfmpegConfig::default()
       };
 
@@ -143,23 +133,73 @@ pub fn run_external_relay_session(
           let mut no_listeners_since: Option<Instant> = None;
 
           // fill the burst
-          let mut filled_burst_len: usize = 0;
-          let go_on = loop {
-            if filled_burst_len >= STREAM_BURST_LENGTH {
-              break true;
-            }
+          // let mut filled_burst_len: usize = 0;
+          // let go_on = loop {
+          //   if filled_burst_len >= STREAM_BURST_LENGTH {
+          //     break true;
+          //   }
 
+          //   match chunks.next().await {
+          //     None => break false,
+          //     Some(Err(_e)) => break false,
+          //     Some(Ok(bytes)) => {
+          //       if shutdown.is_closed() {
+          //         break false;
+          //       }
+
+          //       filled_burst_len += 1;
+          //       match tx.send(bytes) {
+          //         Ok(_) => {
+          //            no_listeners_since = None;
+          //          },
+
+          //         // check if shutdown delay is elapsed
+          //         Err(SendError::NoListeners(_)) => match no_listeners_since {
+          //           Some(instant) => {
+          //             if instant.elapsed().as_secs()
+          //               > EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS
+          //             {
+          //               info!(
+          //               "shutting down external-relay for station {} (no listeners shutdown delay elapsed)",
+          //               station_id
+          //             );
+          //               break false;
+          //             } else {
+          //               continue;
+          //             }
+          //           }
+
+          //           None => {
+          //             no_listeners_since = Some(Instant::now());
+          //             continue;
+          //           }
+          //         },
+          //         Err(SendError::Terminated(_)) => break false,
+          //       };
+          //     }
+          //   }
+          // };
+
+          // let go_on = true;
+
+          // if go_on {
+          // we continue but now the stream is byte rated
+          // let chunks = chunks.rated(STREAM_KBITRATE * 1000);
+          // tokio::pin!(chunks);
+
+          loop {
             match chunks.next().await {
-              None => break false,
-              Some(Err(_e)) => break false,
+              None => break,
+              Some(Err(_e)) => break,
               Some(Ok(bytes)) => {
                 if shutdown.is_closed() {
-                  break false;
+                  break;
                 }
 
-                filled_burst_len += 1;
                 match tx.send(bytes) {
-                  Ok(_) => continue,
+                  Ok(_) => {
+                    no_listeners_since = None;
+                  }
 
                   // check if shutdown delay is elapsed
                   Err(SendError::NoListeners(_)) => match no_listeners_since {
@@ -168,10 +208,10 @@ pub fn run_external_relay_session(
                         > EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS
                       {
                         info!(
-                        "shutting down external-relay for station {} (no listeners shutdown delay elapsed)",
-                        station_id
-                      );
-                        break false;
+                      "shutting down external-relay for station {} (no listeners shutdown delay elapsed)",
+                      station_id
+                    );
+                        break;
                       } else {
                         continue;
                       }
@@ -182,58 +222,16 @@ pub fn run_external_relay_session(
                       continue;
                     }
                   },
-                  Err(SendError::Terminated(_)) => break false,
+
+                  Err(SendError::Terminated(_)) => break,
                 };
-              }
-            }
-          };
-
-          if go_on {
-            // we continue but now the stream is byte rated
-            let chunks = chunks.rated(STREAM_KBITRATE * 1000);
-            tokio::pin!(chunks);
-
-            loop {
-              match chunks.next().await {
-                None => break,
-                Some(Err(_e)) => break,
-                Some(Ok(bytes)) => {
-                  if shutdown.is_closed() {
-                    break;
-                  }
-
-                  match tx.send(bytes) {
-                    Ok(_) => continue,
-
-                    // check if shutdown delay is elapsed
-                    Err(SendError::NoListeners(_)) => match no_listeners_since {
-                      Some(instant) => {
-                        if instant.elapsed().as_secs()
-                          > EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS
-                        {
-                          info!(
-                        "shutting down external-relay for station {} (no listeners shutdown delay elapsed)",
-                        station_id
-                      );
-                          break;
-                        } else {
-                          continue;
-                        }
-                      }
-
-                      None => {
-                        no_listeners_since = Some(Instant::now());
-                        continue;
-                      }
-                    },
-                    Err(SendError::Terminated(_)) => break,
-                  };
-                }
               }
             }
           }
         }
       };
+
+      //};
 
       let status_handle = async move { child.wait().await };
 
