@@ -32,7 +32,7 @@ pub enum LiveError {
   ExitNotOk { stderr: String },
 }
 
-pub fn run_external_releay_session(
+pub fn run_external_relay_session(
   tx: Transmitter,
   deployment_id: String,
   url: String,
@@ -85,8 +85,19 @@ pub fn run_external_releay_session(
         drop_tracer.token(),
       )));
 
+      let ffmpeg_url = match url::Url::parse(&url) {
+        Err(_) => url,
+        Ok(u) => {
+          if u.path().ends_with(".m3u") || u.path().ends_with(".m3u8") {
+            format!("hls+{url}")
+          } else {
+            url
+          }
+        }
+      };
+
       let ffmpeg_config = FfmpegConfig {
-        input: Some(url),
+        input: Some(ffmpeg_url),
         kbitrate: STREAM_KBITRATE,
         ..FfmpegConfig::default()
       };

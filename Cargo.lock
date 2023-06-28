@@ -2737,12 +2737,14 @@ dependencies = [
  "log",
  "mongodb",
  "parking_lot 0.12.1",
+ "regex_static",
  "serde-util",
  "shutdown",
  "stream-util",
  "thiserror",
  "tokio",
  "tokio-stream",
+ "url",
 ]
 
 [[package]]
