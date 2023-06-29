@@ -10,7 +10,7 @@ edition = "2021"
 # pin-project = "1.0.12"
 log = "0.4.17"
 parking_lot = "0.12.1"
-tokio = { version = "1.27.0", features = ["full"] }
+tokio = { version = "1.29.0", features = ["full"] }
 
 [dev-dependencies]
 test-util = { version = "0.1.0", path = "../test-util" }

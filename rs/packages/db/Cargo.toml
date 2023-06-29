@@ -13,7 +13,7 @@ edition = "2021"
 lazy_static = "1.4.0"
 mongodb = "2.4.0"
 serde = "1.0.145"
-tokio = { version = "1.27.0", features = [ "full" ] }
+tokio = { version = "1.29.0", features = [ "full" ] }
 chrono = { version = "0.4.22", features = [ "serde" ] }
 serde-util = { path = "../serde-util" }
 uid = { path = "../uid" }
@@ -29,7 +29,7 @@ async-stream = "0.3.3"
 ts-rs = { version = "6.2.0", features = ["chrono", "chrono-impl", "format", "indexmap-impl"] }
 time = { version = "0.3.17", features = ["serde-well-known", "local-offset", "serde-human-readable"] }
 indexmap = { version = "1.9.2", features = ["serde"] }
-hyper = "0.14.23"
+hyper = "0.14.27"
 prex = { version = "0.1.0", path = "../prex" }
 crypt = { version = "0.1.0", path = "../crypt" }
 thiserror = "1.0.38"

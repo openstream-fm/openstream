@@ -10,7 +10,7 @@ async-stream = "0.3.3"
 bytes = "1.3.0"
 constants = { version = "0.1.0", path = "../../config/constants" }
 futures-util = "0.3.25"
-hyper = "0.14.23"
+hyper = "0.14.27"
 log = "0.4.17"
 minimp3 = { version = "0.5.1", features = ["tokio", "async_tokio"] }
 parking_lot = "0.12.1"
@@ -18,6 +18,6 @@ pin-project = "1.0.12"
 spsc = { version = "0.1.0", path = "../spsc" }
 symphonia = { version = "0.5.2", default-features = false, features = ["mp3", "symphonia-bundle-mp3"] }
 thiserror = "1.0.38"
-tokio = { version = "1.27.0", features = ["full"] }
+tokio = { version = "1.29.0", features = ["full"] }
 tokio-util = { version = "0.7.4", features = ["io", "io-util"] }
 #tokio-puremp3 = { path = "../../../tokio-puremp3" }

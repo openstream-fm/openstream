@@ -16,7 +16,7 @@ db = { version = "0.1.0", path = "../db" }
 drop-tracer = { version = "0.1.0", path = "../drop-tracer" }
 ffmpeg = { version = "0.1.0", path = "../ffmpeg" }
 futures-util = "0.3.25"
-hyper = { version = "0.14.26", features = ["full"] }
+hyper = { version = "0.14.27", features = ["full"] }
 log = "0.4.17"
 mongodb = "2.4.0"
 parking_lot = "0.12.1"
@@ -25,6 +25,6 @@ serde-util = { version = "0.1.0", path = "../serde-util" }
 shutdown = { version = "0.1.0", path = "../shutdown" }
 stream-util = { version = "0.1.0", path = "../stream-util" }
 thiserror = "1.0.38"
-tokio = { version = "1.27.0", features = ["full"] }
+tokio = { version = "1.29.0", features = ["full"] }
 tokio-stream = "0.1.11"
 url = "2.4.0"

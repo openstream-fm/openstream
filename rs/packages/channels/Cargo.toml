@@ -12,5 +12,5 @@ constants = { version = "0.1.0", path = "../../config/constants" }
 log = "0.4.17"
 parking_lot = "0.12.1"
 static_init = "1.0.3"
-tokio = { version = "1.27.0", features = ["full"] }
+tokio = { version = "1.29.0", features = ["full"] }
 burst = { version = "0.1.0", path = "../burst" }

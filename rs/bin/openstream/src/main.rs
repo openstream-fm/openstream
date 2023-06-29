@@ -20,10 +20,8 @@ use defer_lite::defer;
 use media_sessions::MediaSessionMap;
 use mongodb::bson::doc;
 use mongodb::bson::Document;
-use owo_colors::*;
 use serde_util::DateTime;
 use shutdown::Shutdown;
-// use source::SourceServer;
 use stream::StreamServer;
 use assets::StaticServer;
 use tokio::runtime::Runtime;
@@ -164,26 +162,35 @@ fn runtime() -> Runtime {
 }
 
 async fn shared_init(config: String) -> Result<Config, anyhow::Error> {
-  logger::init();
   let _ = dotenv::dotenv();
 
-  info!(
-    target: "start",
-    "openstream {}{} process started",
-    "v".yellow(),
-    VERSION.yellow()
-  );
+  {
+    use owo_colors::*;
+    info!(
+      target: "start",
+      "openstream {}{} process started",
+      "v".yellow(),
+      VERSION.yellow()
+    );
+  }
 
   let canonical_config_path = std::fs::canonicalize(config.as_str())
-    .with_context(|| format!("error loading config file from {}", config.yellow()))?;
+    .with_context(|| { 
+      use owo_colors::*;
+      format!("error loading config file from {}", config.yellow())
+  })?;
 
-  info!(
-    target: "start",
-    "loading config file from {}",
-    canonical_config_path.to_string_lossy().yellow()
-  );
+  {
+    use owo_colors::*;
+    info!(
+      target: "start",
+      "loading config file from {}",
+      canonical_config_path.to_string_lossy().yellow()
+    );
+  }
 
   let config = config::load(config).with_context(|| {
+    use owo_colors::*;
     format!(
       "error loading config file from {}",
       canonical_config_path.to_string_lossy().yellow(),
@@ -272,7 +279,7 @@ fn check_db(opts: CheckDb) -> Result<(), anyhow::Error> {
 }
 
 async fn check_db_async(opts: CheckDb) -> Result<(), anyhow::Error> {
-
+  logger::init();
   shared_init(opts.config).await?;
 
   let registry = Registry::global();
@@ -286,11 +293,17 @@ async fn check_db_async(opts: CheckDb) -> Result<(), anyhow::Error> {
   for (name, result) in map.iter() {
     match result {
       Ok(n) => {
-        info!("collection {} is ok, checked {} documents", name.yellow(), n.yellow());
+        {
+          use owo_colors::*;
+          info!("collection {} is ok, checked {} documents", name.yellow(), n.yellow());
+        }
       },
       Err(e) => {
         has_errors = true;
-        warn!("collection {} failed with error: {}", name.red(), e.red());
+        {
+          use owo_colors::*;
+          warn!("collection {} failed with error: {}", name.red(), e.red());
+        }
       }
     }
   };
@@ -308,6 +321,24 @@ async fn check_db_async(opts: CheckDb) -> Result<(), anyhow::Error> {
 
 async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   
+
+  logger::init();
+  let console_addr = std::env::var("TOKIO_CONSOLE_BIND").unwrap_or_else(|_| format!("{}:{}", console_subscriber::Server::DEFAULT_IP, console_subscriber::Server::DEFAULT_PORT));
+  {
+     use owo_colors::*;
+     info!(
+       target: "start",
+       "intializing console subscriber server on addr {}", console_addr.yellow())
+  }
+
+  console_subscriber::init();
+
+  
+  
+  // console_subscriber::Builder::default().with_default_env().server_addr(addr);
+  
+  //console_subscriber::init();
+
   use db::models::deployment::{Deployment, DeploymentState};
 
   let config = Arc::new(shared_init(config).await?);
@@ -317,15 +348,22 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   let ffmpeg_path = which::which("ffmpeg")
     .context("error getting ffmpeg path (is ffmpeg installed and available in executable path?)")?;
 
+  {
+  use owo_colors::OwoColorize;
+
   info!(
     target: "start",
     "using system ffmpeg from {}",
     ffmpeg_path.to_string_lossy().yellow()
   );
+  }
 
   let local_ip = local_ip_address::local_ip().context("error obtaining local ip")?;
-  info!(target: "start", "local ip address: {}", local_ip.yellow());
 
+  {
+    use owo_colors::*;
+    info!(target: "start", "local ip address: {}", local_ip.yellow());
+  }
   // info!("retrieving public ip...");
   // let ip = ip::get_ip_v4().await.context("error obtaining public ip")?;
   // info!("public ip address: {}", ip.yellow());
@@ -507,8 +545,11 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
         .await
         .expect("failed to listen to SIGINT signal");
       
-      info!(target: "start", "{} received, starting graceful shutdown", "SIGINT".yellow());
-      
+      {
+        use owo_colors::*;
+        info!(target: "start", "{} received, starting graceful shutdown", "SIGINT".yellow());
+      }
+
       let query = doc! {
         Deployment::KEY_ID: deployment_id,
         Deployment::KEY_STATE: DeploymentState::KEY_ENUM_VARIANT_ACTIVE, 
@@ -577,6 +618,7 @@ fn cluster(opts: Cluster) -> Result<(), anyhow::Error> {
 }
 
 async fn cluster_async(Cluster { instances, config }: Cluster) -> Result<(), anyhow::Error> {
+  logger::init();
   println!("======== cluster start ========");
 
   let futs = FuturesUnordered::new();
@@ -626,7 +668,8 @@ fn token(
   }: CreateToken,
 ) -> Result<(), anyhow::Error> {
   runtime().block_on(async move {
-    
+    logger::init();
+
     async fn create(title: String) -> Result<(AccessToken, String, String), anyhow::Error> {
       
       let key = AccessToken::random_key();
@@ -705,7 +748,8 @@ fn create_admin(
   }: CreateAdmin,
 ) -> Result<(), anyhow::Error> {
   runtime().block_on(async move {
-    
+    logger::init();
+
     async fn create(first_name: String, last_name: String, email: String, password: String) -> Result<Admin, anyhow::Error> {
       
       let now = DateTime::now();
@@ -857,7 +901,13 @@ fn create_admin(
 }
 
 fn create_config(CreateConfig { output }: CreateConfig) -> Result<(), anyhow::Error> {
-  eprintln!("creating default config file into {}", output.yellow());
+  
+  logger::init();
+  
+  {
+    use owo_colors::*;
+    eprintln!("creating default config file into {}", output.yellow());
+  }
 
   let file = PathBuf::from(&output);
 
@@ -879,7 +929,10 @@ fn create_config(CreateConfig { output }: CreateConfig) -> Result<(), anyhow::Er
   std::fs::write(file.clone(), contents)
     .with_context(|| format!("error writing config file to {}", file.to_string_lossy()))?;
 
-  eprintln!("config file created in {}", output.yellow());
+  {
+    use owo_colors::*;
+    eprintln!("config file created in {}", output.yellow());
+  }
 
   Ok(())
 }
