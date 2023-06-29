@@ -88,12 +88,14 @@
   }
 
   .menu-holder {
+    z-index: var(--z-user-menu);
     position: relative;
     margin-inline-end: 1rem;
     flex: none;
   }
 
   .menu-position-out {
+    z-index: var(--z-user-menu);
     position: absolute;
     inset-block-end: 0;
     inset-inline-end: 0;
@@ -101,6 +103,7 @@
 
   .menu-position-in {
     position: relative;
+    z-index: var(--z-user-menu);
   }
 
   .menu {
