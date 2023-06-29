@@ -191,6 +191,10 @@ pub fn run_external_relay_session(
           loop {
             let chunk = tokio::select! {
               _ = tokio::time::sleep(tokio::time::Duration::from_secs(EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS)) => {
+                info!(
+                  "shutting down external-relay for station {} (no data received in specified window)",
+                  station_id
+                );
                 break;
               },
 
