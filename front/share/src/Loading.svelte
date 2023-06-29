@@ -56,7 +56,7 @@
     z-index: 10000000;
     inset-block-start: 0;
     inset-inline-start: 0;
-    height: 2px;
+    height: var(--loading-size, 3px);
     pointer-events: none;
     transition: opacity 300ms ease 200ms;
   }
