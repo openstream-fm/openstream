@@ -106,7 +106,7 @@
     flex-direction: column;
     align-items: stretch;
     min-width: 0;
-    max-height: calc(100vh - var(--top-h) - 1rem);
+    max-height: calc(100vh - var(--top-h) - min(30vh, 6rem));
     overflow-x: hidden;
     overflow-y: auto;
     z-index: var(--z-user-menu);
