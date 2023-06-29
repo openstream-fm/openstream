@@ -12,7 +12,7 @@ log = "0.4.17"
 pin-project = "1.0.12"
 spsc = { version = "0.1.0", path = "../spsc" }
 stream-util = { version = "0.1.0", path = "../stream-util" }
-tokio = { version = "1.27.0", features = [ "full" ] }
+tokio = { version = "1.29.0", features = [ "full" ] }
 tokio-stream = "0.1.11"
 
 [dev-dependencies]

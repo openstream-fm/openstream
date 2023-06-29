@@ -12,7 +12,7 @@ pin-project = "1.0.12"
 
 [dev-dependencies]
 async-stream = "0.3.3"
-tokio = { version = "1.27.0", features = ["full"] }
+tokio = { version = "1.29.0", features = ["full"] }
 test-util = { version = "0.1.0", path = "../test-util" }
 tokio-stream = "0.1.11"
 log = "0.4.17"

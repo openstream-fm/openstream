@@ -308,6 +308,8 @@ async fn check_db_async(opts: CheckDb) -> Result<(), anyhow::Error> {
 
 async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   
+  console_subscriber::init();
+
   use db::models::deployment::{Deployment, DeploymentState};
 
   let config = Arc::new(shared_init(config).await?);
