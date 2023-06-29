@@ -3,8 +3,9 @@ use std::time::Instant;
 
 use crate::{SendError, Transmitter};
 use constants::{
-  EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS, /*STREAM_BURST_LENGTH,*/ STREAM_CHUNK_SIZE,
-  STREAM_KBITRATE,
+  EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS, EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS,
+  /*STREAM_BURST_LENGTH,*/
+  STREAM_CHUNK_SIZE, STREAM_KBITRATE,
 };
 use db::media_session::MediaSession;
 use db::{media_session::MediaSessionState, Model};
@@ -188,7 +189,15 @@ pub fn run_external_relay_session(
           // tokio::pin!(chunks);
 
           loop {
-            match chunks.next().await {
+            let chunk = tokio::select! {
+              _ = tokio::time::sleep(tokio::time::Duration::from_secs(EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS)) => {
+                break;
+              },
+
+              chunk = chunks.next() => chunk
+            };
+
+            match chunk {
               None => break,
               Some(Err(_e)) => break,
               Some(Ok(bytes)) => {
