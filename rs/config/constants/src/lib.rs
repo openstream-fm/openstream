@@ -49,6 +49,10 @@ pub const EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS: u64 = 30;
 #[const_register]
 pub const RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS: u64 = 10;
 
+/// delay of which if external relay produced no data, it will be cancelled
+#[const_register]
+pub const EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS: u64 = 10;
+
 /// limit of authotization, or other sensible api endpoints requests from the same ip
 #[const_register]
 pub const API_IP_LIMIT: usize = 60;

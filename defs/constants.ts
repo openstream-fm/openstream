@@ -19,6 +19,8 @@ export const EMAIL_VERIFICATION_CODE_LEN = 6;
 
 export const EMAIL_VERIFICATION_VALIDITY_SECS = 3600;
 
+export const EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS = 10;
+
 export const EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS = 30;
 
 export const FORWARD_IP_HEADER = "x-openstream-forwarded-ip";
