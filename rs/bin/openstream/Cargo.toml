@@ -3,13 +3,16 @@ name = "openstream"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+tracing = [ "tokio/tracing" ]
+
 [dependencies]
 # source = { path = "../../packages/source" }
 # channels = { version = "0.1.0", path = "../../packages/channels" }
 # ip = { version = "0.1.0", path = "../../packages/ip" }
 # router = { version = "0.1.0", path = "../../packages/router" }
 # rust_ipify = "1.1.0"
-tokio = { version = "1.29.0", features = ["full", "tracing" ] }
+tokio = { version = "1.29.0", features = ["full" ] }
 source-alt = { path = "../../packages/source-alt" }
 stream = { path = "../../packages/stream" }
 logger = { path = "../../packages/logger" }
