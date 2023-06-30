@@ -319,21 +319,37 @@ async fn check_db_async(opts: CheckDb) -> Result<(), anyhow::Error> {
   }
 }
 
-async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
-  
-
-  logger::init();
+#[cfg(feature = "tracing")]
+fn start_tracing() {
   let console_addr = std::env::var("TOKIO_CONSOLE_BIND").unwrap_or_else(|_| format!("{}:{}", console_subscriber::Server::DEFAULT_IP, console_subscriber::Server::DEFAULT_PORT));
+  
   {
      use owo_colors::*;
+     info!(
+      target: "start",
+      "feature tracing enabled"
+    );
      info!(
        target: "start",
        "intializing console subscriber server on addr {}", console_addr.yellow())
   }
 
   console_subscriber::init();
+}
 
+#[cfg(not(feature = "tracing"))]
+fn start_tracing() {
+  info!(
+    target: "start",
+    "feature tracing not enabled"
+  );
+}
+
+async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   
+
+  logger::init();
+  start_tracing();  
   
   // console_subscriber::Builder::default().with_default_env().server_addr(addr);
   
