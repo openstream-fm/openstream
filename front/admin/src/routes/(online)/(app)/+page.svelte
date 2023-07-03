@@ -3,6 +3,7 @@
 	import Page from "$lib/components/Page.svelte";
 	import { locale } from "$lib/locale";
 	import Icon from "$share/Icon.svelte";
+	import StationSelector from "$share/Map/StationSelector.svelte";
 	import StatsMap from "$share/Map/StatsMap.svelte";
 	import { ripple } from "$share/ripple";
 	import { mdiAccountMultipleOutline, mdiAccountOutline, mdiCurrencyUsd, mdiPoll, mdiRadioTower, mdiShieldAccountOutline } from "@mdi/js";
@@ -15,14 +16,14 @@
 
   let map_view: "now" | "last_24h" | "last_7d" | "last_30d" = "now";
 
-  export const snapshot = {
-    capture: () => {
-      return { map_view }
-    },
-
-    restore: (ctx: { map_view: typeof map_view }) => {
-      map_view = ctx.map_view;
-    }
+  let map_selector_data: import("$share/Map/StationSelector.svelte").Data = {
+    all_kind: "all",
+    kind: "all",
+    record_id: "",
+    station: null,
+    stations: data.stations.items,
+    stats: data.stats,
+    storage_public_url: data.config.storage_public_url,
   }
 </script>
 
@@ -173,8 +174,13 @@
   </div>
 
   <div class="map">
+
+    <div class="selector">
+      <StationSelector bind:data={map_selector_data} />      
+    </div>
+
     <StatsMap 
-      bind:data={data.stats}
+      bind:data={map_selector_data.stats}
       country_names={$locale.countries}
       kind="all"
       record_id=""

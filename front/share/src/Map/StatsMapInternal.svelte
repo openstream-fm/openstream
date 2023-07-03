@@ -63,9 +63,14 @@
           break;
         }
 
-        const url = kind === "account" ? `/api/accounts/${record_id}/stream-stats/now` : `/api/stations/${record_id}/stream-stats/now`;
+        const url =
+          kind === "all" ? `/api/stream-stats/now` :
+          kind === "account" ? `/api/accounts/${record_id}/stream-stats/now` :
+          `/api/stations/${record_id}/stream-stats/now`;
+
         let output:
-          import("$api/stations/[station]/stream-stats/now/GET/Output").Output | 
+          import("$api/stream-stats/now/GET/Output").Output | 
+          import("$api/accounts/[account]/stream-stats/now/GET/Output").Output | 
           import("$api/stations/[station]/stream-stats/now/GET/Output").Output;
         
         try {

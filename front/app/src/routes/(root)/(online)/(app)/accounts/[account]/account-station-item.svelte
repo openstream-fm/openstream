@@ -43,15 +43,17 @@
 
 <style>
   .station {
-    border-top: 1px var(--red) solid;
+    /* border-top: 1px var(--red) solid; */
     display: flex;
     flex-direction: row;
     align-items: center;
     background: #fff;
     box-shadow: var(--some-shadow);
+    border-radius: 0.35rem;
   }
 
   .pic {
+    flex: none;
     width: min(30%, 8rem);
     aspect-ratio: 1;
     margin: 1rem 2rem 1rem 1rem;
@@ -63,6 +65,12 @@
   
   .name {
     font-size: 1.1rem;
+    margin-inline-end: 1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   .now-playing {
