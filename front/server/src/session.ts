@@ -110,7 +110,7 @@ export const session = (mode: "studio" | "admin", config: Config, _logger: Logge
 
     const hosts = host(mode, config.hosts, req);
 
-    const domain = hosts.site.host;
+    const domain = hosts.cookie_domain;
 
     const cookie_name = `${config.session.cookie_name}-${hosts.id}`;
 

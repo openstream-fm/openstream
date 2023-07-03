@@ -90,6 +90,7 @@
 
   "hosts": {
     "default": {
+      "cookie_domain": "openstream.fm",
       "site": { "host": "openstream.fm" },
       "studio": { "host": "studio.openstream.fm" },
       "admin": { "host": "admin.openstream.fm" },
@@ -97,47 +98,6 @@
       "storage": { "host": "storage.openstream.fm" },
       "stream": { "host": "stream.openstream.fm" },
       "source": { "host": "source.openstream.fm", "port": 8000 }
-    },
-
-
-    "local": {
-      "site": { "host": "local.openstream.fm" },
-      "studio": { "host": "studio.local.openstream.fm" },
-      "admin": { "host": "admin.local.openstream.fm" },
-      "api": { "host": "api.local.openstream.fm" },
-      "storage": { "host": "storage.local.openstream.fm" },
-      "stream": { "host": "stream.local.openstream.fm" },
-      "source": { "host": "source.local.openstream.fm", "port": 8000 }
-    },
-
-    "s1": {
-      "site": { "host": "s1.openstream.fm" },
-      "studio": { "host": "studio.s1.openstream.fm" },
-      "admin": { "host": "admin.s1.openstream.fm" },
-      "api": { "host": "api.s1.openstream.fm" },
-      "storage": { "host": "storage.s1.openstream.fm" },
-      "stream": { "host": "stream.s1.openstream.fm" },
-      "source": { "host": "source.s1.openstream.fm", "port": 8100 }
-    },
-
-    "s2": {
-      "site": { "host": "s2.openstream.fm" },
-      "studio": { "host": "studio.s2.openstream.fm" },
-      "admin": { "host": "admin.s2.openstream.fm" },
-      "api": { "host": "api.s2.openstream.fm" },
-      "storage": { "host": "storage.s2.openstream.fm" },
-      "stream": { "host": "stream.s2.openstream.fm" },
-      "source": { "host": "source.s2.openstream.fm", "port": 8200 }
-    },
-
-    "test": {
-      "site": { "host": "test.openstream.fm" },
-      "studio": { "host": "studio.test.openstream.fm" },
-      "admin": { "host": "admin.test.openstream.fm" },
-      "api": { "host": "api.test.openstream.fm" },
-      "storage": { "host": "storage.test.openstream.fm" },
-      "stream": { "host": "stream.test.openstream.fm" },
-      "source": { "host": "source.test.openstream.fm", "port": 8001 }
     }
   }
 }
