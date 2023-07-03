@@ -164,7 +164,7 @@
 
   .meter-title {
     font-weight: 600;
-    font-size: 2em;
+    font-size: 1.5em;
     text-align: center;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -172,7 +172,7 @@
 
   .meter-text {
     color: #333;
-    font-size: 1.5em;
+    font-size: 1.25em;
   }
 
   .used, .avail {
@@ -193,7 +193,7 @@
   }
 
   .meter-graph {
-    max-width: 15rem;
+    max-width: 12rem;
     margin: 0 auto;
   }
 
@@ -236,12 +236,8 @@
   .stations {
     margin-top: 2rem;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
     gap: 1rem;
-  }
-  
-  .station {
-    background: #ddd;
   }
 </style>
 

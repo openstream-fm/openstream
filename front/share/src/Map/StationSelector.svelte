@@ -20,8 +20,6 @@
 <script lang="ts">
   export let data: Data;
 
-  $: console.log({ data });
-
 	import type { Stats } from "$share/Map/StatsMap.svelte";
 	import { click_out } from "$share/actions";
 	import { _get, _patch, action } from "$share/net.client";
