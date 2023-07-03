@@ -40,6 +40,7 @@ const defaultConfig: Config = {
   },
   hosts: {
     default: {
+      cookie_domain: "openstream.fm",
       admin: { host: "admin.openstream.fm" },
       api: { host: "api.openstream.fm" },
       site: { host: "openstream.fm" },
@@ -87,6 +88,7 @@ public_key = "test_public_key"
 private_key = "test_private_key"
 
 [hosts.default]
+cookie_domain = "openstream.fm"
 admin = { host = "admin.openstream.fm" }
 api = { host = "api.openstream.fm" }
 site = { host = "openstream.fm" }
@@ -119,6 +121,7 @@ test("merge_env should merge environment variables with config", (t) => {
     OPENSTREAM_FRONT_PAYMENTS_CREDENTIALS_PRIVATE_KEY: "test_private_key_env",
     OPENSTREAM_FRONT_HOSTS: JSON.stringify({
       "default": {
+        "cookie_domain": "openstream.fm",
         "admin": { "host": "admin.openstream.fm" },
         "api": { "host": "api.openstream.fm" },
         "site": { "host": "openstream.fm" },
@@ -161,6 +164,7 @@ test("merge_env should merge environment variables with config", (t) => {
     },
     hosts: {
       default: {
+        cookie_domain: "openstream.fm",
         admin: { host: "admin.openstream.fm" },
         api: { host: "api.openstream.fm" },
         site: { host: "openstream.fm" },
@@ -223,6 +227,7 @@ test("load_from_string should load config from JSON string with missing properti
     OPENSTREAM_FRONT_PAYMENTS_CREDENTIALS_PRIVATE_KEY: "test_private_key",
     OPENSTREAM_FRONT_HOSTS: JSON.stringify({
       "default": {
+        "cookie_domain": "openstream.fm",
         "admin": { "host": "admin.openstream.fm" },
         "api": { "host": "api.openstream.fm" },
         "site": { "host": "openstream.fm" },
@@ -263,6 +268,7 @@ test("load_from_string should load config from JSON string with missing properti
       OPENSTREAM_FRONT_PAYMENTS_CREDENTIALS_PRIVATE_KEY: "test_private_key",
       OPENSTREAM_FRONT_HOSTS: JSON.stringify({
         "default": {
+          "cookie_domain": "openstream.fm",
           "admin": { "host": "admin.openstream.fm" },
           "api": { "host": "api.openstream.fm" },
           "site": { "host": "openstream.fm" },
@@ -292,6 +298,7 @@ test("load_from_string should load config from JSON string with missing properti
   invalid_key = "invalid_value"
   
   [hosts.default]
+  cookie_domain = "openstream.fm"
   site = { host = "openstream.fm" }
   admin = { host = "admin.openstream.fm" }
   api = { host = "api.openstream.fm" }
@@ -340,6 +347,7 @@ test("load_from_string should load config from JSON string with missing properti
   port = 3000
   
   [hosts.default]
+  cookie_domain = "openstream.fm"
   site = { host = "openstream.fm" }
   admin = { host = "admin.openstream.fm" }
   api = { host = "api.openstream.fm" }

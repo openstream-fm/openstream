@@ -48,6 +48,7 @@ export type Config = {
 }
 
 export type HostConfig = {
+  cookie_domain: string,
   site: { host: string }
   studio: { host: string }
   admin: { host: string }
