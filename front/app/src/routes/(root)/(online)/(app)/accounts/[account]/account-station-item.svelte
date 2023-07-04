@@ -56,7 +56,7 @@
     flex: none;
     width: min(30%, 8rem);
     aspect-ratio: 1;
-    margin: 1rem 2rem 1rem 1rem;
+    margin: 1rem 1.5rem 1rem 1rem;
     border-radius:  0.5rem;;
     background-size: contain;
     background-position: center;

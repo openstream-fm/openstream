@@ -43,7 +43,7 @@ pub const STREAM_IP_CONNECTIONS_LIMIT: u64 = 8;
 pub const PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY_SECS: u64 = 10;
 
 #[const_register]
-pub const EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS: u64 = 30;
+pub const EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS: u64 = 60;
 
 /// delay to shutdown a relay session when it run out of listeners
 #[const_register]
@@ -52,6 +52,10 @@ pub const RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS: u64 = 10;
 /// delay of which if external relay produced no data, it will be cancelled
 #[const_register]
 pub const EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS: u64 = 10;
+
+/// delay of which if external doesn't produce first data chunk, it will be cancelled
+#[const_register]
+pub const EXTERNAL_RELAY_NO_DATA_START_SHUTDOWN_SECS: u64 = 30;
 
 /// limit of authotization, or other sensible api endpoints requests from the same ip
 #[const_register]

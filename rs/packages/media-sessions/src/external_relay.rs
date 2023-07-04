@@ -3,8 +3,8 @@ use std::time::Instant;
 
 use crate::{SendError, Transmitter};
 use constants::{
-  EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS, EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS,
-  /*STREAM_BURST_LENGTH,*/
+  EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS, EXTERNAL_RELAY_NO_DATA_START_SHUTDOWN_SECS,
+  EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS, /*STREAM_BURST_LENGTH,*/
   STREAM_CHUNK_SIZE, STREAM_KBITRATE,
 };
 use db::media_session::MediaSession;
@@ -188,11 +188,26 @@ pub fn run_external_relay_session(
           // let chunks = chunks.rated(STREAM_KBITRATE * 1000);
           // tokio::pin!(chunks);
 
+          async fn chunk_timeout(first_chunk: bool) {
+            if first_chunk {
+              tokio::time::sleep(tokio::time::Duration::from_secs(
+                EXTERNAL_RELAY_NO_DATA_START_SHUTDOWN_SECS,
+              ))
+              .await
+            } else {
+              tokio::time::sleep(tokio::time::Duration::from_secs(
+                EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS,
+              ))
+              .await
+            }
+          }
+
+          let mut first_chunk = true;
           loop {
             let chunk = tokio::select! {
-              _ = tokio::time::sleep(tokio::time::Duration::from_secs(EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS)) => {
+              _ = chunk_timeout(first_chunk) => {
                 info!(
-                  "shutting down external-relay for station {} (no data received in specified window)",
+                  "shutting down external-relay for station {} (no data received in specified start window)",
                   station_id
                 );
                 break;
@@ -200,6 +215,8 @@ pub fn run_external_relay_session(
 
               chunk = chunks.next() => chunk
             };
+
+            first_chunk = false;
 
             match chunk {
               None => break,
@@ -221,9 +238,9 @@ pub fn run_external_relay_session(
                         > EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS
                       {
                         info!(
-                      "shutting down external-relay for station {} (no listeners shutdown delay elapsed)",
-                      station_id
-                    );
+                          "shutting down external-relay for station {} (no listeners shutdown delay elapsed)",
+                          station_id
+                        );
                         break;
                       } else {
                         continue;
