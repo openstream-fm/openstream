@@ -70,6 +70,7 @@ pub mod delete {
 
   use constants::ACCESS_TOKEN_HEADER;
   use db::account::{Account, Limit, Limits};
+  use db::audio_chunk::AudioChunk;
   use db::audio_file::AudioFile;
   use db::deployment::Deployment;
   use db::{run_transaction, Model};
@@ -169,10 +170,11 @@ pub mod delete {
 
         while let Some(item) = tx_try!(cursor.next(&mut session).await.transpose()) {
           storage_used += item.len;
-         // TODO:
-         // should we delete files or create a background job that fully delete station files
-         // when the station is finally deleted?
-         // tx_try!(AudioFile::delete_by_id_with_session(&item.id, &mut session).await);
+          tx_try!(AudioFile::delete_by_id_with_session(&item.id, &mut session).await);
+          {
+            let filter = doc! { AudioChunk::KEY_AUDIO_FILE_ID: &item.id };
+            tx_try!(AudioChunk::cl().delete_many_with_session(filter, None, &mut session).await);
+          }
         };
 
         const KEY_STATIONS_USED: &str = db::key!(Account::KEY_LIMITS, Limits::KEY_STATIONS, Limit::KEY_USED);
