@@ -772,10 +772,12 @@
   const by_day_grid_data = get_by_day_grid();
 
   const f = new Intl.NumberFormat(lang, {
+    notation: "compact",
+    style: "unit",
     unit: "byte",
-    unitDisplay: "short",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    unitDisplay: "narrow",
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
   });
 
   const bytes = (n: number) => {
@@ -918,12 +920,12 @@
         <div class="total-value">
           {time(data.total_duration_ms)}
         </div>
+      </div>
 
-        <div class="total">
-          <div class="total-title">{locale.Total_transfer}</div>
-          <div class="total-value">
-            {bytes(data.total_transfer_bytes)}
-          </div>
+      <div class="total">
+        <div class="total-title">{locale.Total_transfer}</div>
+        <div class="total-value">
+          {bytes(data.total_transfer_bytes)}
         </div>
       </div>
     </div>
