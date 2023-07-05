@@ -5,6 +5,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Average_listening_time": "Tempo medio di ascolto",
   "Total_listening_time": "Tempo totale di ascolto",
   "Total_listening_hours": "Ore totali di ascolto",
+  "Total_transfer": "Trasferimento totale",
   "Total_transfer_in_MB": "Trasferimento totale in MB",
   "Unique_IPs": "IP unici",
 
@@ -24,7 +25,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
   "Website": "Sito web",
 
-  // @example Coutry: Argentina
+  // @example Country: Italy
   "Country": "Paese",
 
   // @example Date: 2022/01/01
@@ -81,7 +82,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
     "submit": "Ottieni analitiche",
 
     "All_stations": "Tutte le stazioni",
-    "No_stations": "Senza stazioni",
+    "No_stations": "Nessuna stazione",
 
     "no_stations_message": "Questo account non ha stazioni",
   },

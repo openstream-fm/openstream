@@ -5,6 +5,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Average_listening_time": "Durchschnittliche Hördauer",
   "Total_listening_time": "Gesamte Hördauer",
   "Total_listening_hours": "Gesamte Hördauer in Stunden",
+  "Total_transfer": "Gesamtübertragung",
   "Total_transfer_in_MB": "Gesamtübertragung in MB",
   "Unique_IPs": "Einzigartige IPs",
 
@@ -20,11 +21,11 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Unknown": "Unbekannt",
 
   // @context Radio Station
-  "Station": "Sender",
+  "Station": "Station",
 
   "Website": "Webseite",
 
-  // @example Coutry: Argentina
+  // @example Country: Germany
   "Country": "Land",
 
   // @example Date: 2022/01/01
@@ -33,7 +34,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
   "Stats_by_browser": "Statistiken nach Browser",
   "Stats_by_device": "Statistiken nach Gerät",
-  "Stats_by_station": "Statistiken nach Sender",
+  "Stats_by_station": "Statistiken nach Station",
   "Stats_by_country": "Statistiken nach Land",
   "Stats_by_website": "Statistiken nach Webseite",
   "Stats_by_date": "Statistiken nach Datum",
@@ -42,11 +43,11 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "By_country": "Nach Land",
   "By_device": "Nach Gerät",
   "By_browser": "Nach Browser",
-  "By_station": "Nach Sender",
+  "By_station": "Nach Station",
   "By_website": "Nach Webseite",
   "Daily_stats": "Tägliche Statistiken",
 
-  "no_data_message": "Keine Daten für die angegebenen Filter vorhanden",
+  "no_data_message": "Es sind keine Daten für die angegebenen Filter vorhanden",
 
   "time": {
     "1_day": "1 Tag",
@@ -80,10 +81,10 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
     "submit": "Analysen abrufen",
 
-    "All_stations": "Alle Sender",
-    "No_stations": "Keine Sender",
+    "All_stations": "Alle Stationen",
+    "No_stations": "Keine Stationen",
 
-    "no_stations_message": "Dieses Konto hat keine Sender",
+    "no_stations_message": "Dieses Konto hat keine Stationen",
   },
 
   "data_grid": {

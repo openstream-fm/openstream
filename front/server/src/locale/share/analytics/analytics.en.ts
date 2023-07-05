@@ -4,6 +4,7 @@ const locale = {
   "Average_listening_time": "Average listening time",
   "Total_listening_time": "Total listening time",
   "Total_listening_hours": "Total listening hours",
+  "Total_transfer": "Total transfer",
   "Total_transfer_in_MB": "Total transfer in MB",
   "Unique_IPs": "Unique IPs",
 
