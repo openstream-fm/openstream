@@ -6,7 +6,19 @@ const locale = {
   Master_Relay_URL: "Master Relay URL",
   Save: "Save",
   delete_station_not_owner_message_html: "Only account administrators can delete stations.<br/><br/>Contact the account administrators if you want to delete this station.",
-  delete_station_not_owner_OK: "OK",
+  
+  Cancel: "Cancel",
+  OK: "OK",
+  Transfer_station: "Transfer station",
+  Station_name: "Station name",
+  station_transfer_title: "Transfer station @station to another of your accounts",
+  station_transfer_message_html: "To transfer the station @station to another of your accounts, type the name of the station: <b>@station</b> and select another of your accounts.",
+  station_transfer_not_owner_message_html: "Only account administrators can transfer stations between accounts. <br/> <br/>Contact the account administrators if you want to transfer this station to another account.",
+  station_transfer_no_targets_message: "You need to have access to another account in order to transfer this station.",
+  Station_name_do_not_match: "Station name doesn't match",
+  Target_account_is_required: "Target account is required",
+  Station_transferred: "Station transferred",
+  Select_a_target_account: "Select a target account",
 
   Welcome: "Welcome",
 

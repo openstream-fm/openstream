@@ -110,8 +110,7 @@
 
   let _transfer_name_validate = (v: string): string | null => {
     if(v.trim() !== data.station.name.trim()) {
-      // TODO: locale
-      return "Station name doesn't match" 
+      return $locale.misc.Station_name_do_not_match; 
     }
 
     return null;
@@ -126,8 +125,7 @@
 
     try {
       if(transfer_selected_account == null) {
-        // TODO: locale
-        throw new Error("Target account is required");
+        throw new Error($locale.misc.Target_account_is_required);
       }
 
       const payload: import("$api/stations/[station]/transfer/POST/Payload").Payload = {
@@ -139,8 +137,7 @@
         payload
       );
 
-      // TODO: locale
-      _message("Station transferred");
+      _message($locale.misc.Station_transferred);
 
       await goto(`/accounts/${station.account_id}`, { invalidateAll: true })
       invalidate_siblings();
@@ -378,8 +375,7 @@
           <div class="action-icon">
             <Icon d={mdiSwapHorizontal} />
           </div>
-          <!-- TODO: locale -->
-          Transfer station
+          {$locale.misc.Transfer_station}
         </button>
         <button class="action action-delete" on:click={() => delete_open = true}>
           <div class="action-icon">
@@ -393,24 +389,20 @@
 </Page>
 
 {#if transfer_open}
-  <!-- TODO: locale -->  
   <Dialog
-    title="Transfer station {data.station.name} to another of your accounts"  
+    title={$locale.misc.station_transfer_title.replace("@station", data.station.name)}  
     width="500px"
     on_close={() => transfer_open = false}
   >
-    {#if data.accounts.items.length > 2}
+    {#if data.accounts.items.length > 2 && data.is_account_owner}
       <Formy action={transfer} let:submit>
         <form novalidate class="transfer-dialog-content" on:submit={submit}>
           <div class="transfer-message">
-            <!-- TODO: locale -->
-            To transfer the station {data.station.name} to another of your accounts,
-            type the name of the station: <b>{data.station.name}</b> and select another of your accounts.
+            {@html $locale.misc.station_transfer_message_html.replaceAll("@station", data.station.name)}
           </div>
 
           <div class="transfer-name-field">
-            <!-- TODO: locale -->
-            <TextField label="Station name" bind:value={transfer_name_check_value} />
+            <TextField label={$locale.misc.Station_name} bind:value={transfer_name_check_value} />
             <Validator value={transfer_name_check_value} fn={_transfer_name_validate} /> 
           </div>
           
@@ -422,32 +414,37 @@
             <button
               class="transfer-dialog-btn-cancel ripple-container"
               use:ripple
-              on:click={() => (delete_open = false)}
+              on:click|preventDefault={() => (transfer_open = false)}
             >
-              <!-- TODO: locale -->
-              Cancel
+              {$locale.misc.Cancel}
             </button>
 
             <button class="transfer-dialog-btn-transfer ripple-container" class:disabled={!transfer_name_is_match} use:ripple>
               <div class="transfer-dialog-btn-icon">
                 <Icon d={mdiSwapHorizontal} />
               </div>
-              <!-- TODO: locale -->
-              Transfer station
+              {$locale.misc.Transfer_station}
             </button>
           </div>
 
         </form>
       </Formy>
+    {:else if !data.is_account_owner}
+      <div class="transfer-dialog-content">
+        <div class="transfer-no-target-message">
+          {@html $locale.misc.station_transfer_not_owner_message_html}
+        </div>
+        <button class="transfer-btn-no-target-ok ripple-container" use:ripple on:click|preventDefault={() => transfer_open = false}>
+          {$locale.misc.OK}
+        </button>
+      </div>
     {:else}
       <div class="transfer-dialog-content">
         <div class="transfer-no-target-message">
-          <!-- TODO: locale -->
-          You need to have access to another account in order to transfer this station
+          {$locale.misc.station_transfer_no_targets_message}
         </div>
         <button class="transfer-btn-no-target-ok ripple-container" use:ripple on:click|preventDefault={() => transfer_open = false}>
-          <!-- TODO: locale -->
-          OK
+          {$locale.misc.OK}
         </button>
       </div>
     {/if}
@@ -481,7 +478,7 @@
             <button
               class="delete-dialog-btn-cancel ripple-container"
               use:ripple
-              on:click={() => (delete_open = false)}
+              on:click|preventDefault={() => (delete_open = false)}
             >
               {$locale.pages["station/settings"].dialogs.delete_station.cancel}
             </button>
@@ -506,7 +503,7 @@
             use:ripple
             on:click={() => (delete_open = false)}
           >
-            {@html $locale.misc.delete_station_not_owner_OK}
+            {@html $locale.misc.OK}
           </button>
         </div>
 

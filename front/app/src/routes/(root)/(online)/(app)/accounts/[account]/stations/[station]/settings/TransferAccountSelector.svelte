@@ -13,6 +13,7 @@
 	import { ripple } from "$share/ripple";
 	import { mdiChevronDown } from "@mdi/js";
 	import { fly } from "svelte/transition";
+  import { locale } from "$lib/locale";
 
   let show_accounts = data.accounts.items.filter(account => account._id !== data.station.account_id).sort((a, b) => a.name.localeCompare(b.name));
 
@@ -117,8 +118,7 @@
         {#if selected}
           {selected.name}
         {:else}
-          <!-- TODO: locale -->
-          Select a target account
+          {$locale.misc.Select_a_target_account}
         {/if}
       </div>
       <div class="btn-chevron">
