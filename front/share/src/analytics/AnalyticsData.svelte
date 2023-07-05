@@ -779,7 +779,7 @@
   const units = ["byte", "kilobyte", "megabyte", "gigabyte", "terabyte"]
   const bytes = (n: number) => {
     const unit_i = Math.min(units.length - 1, Math.floor(Math.log(n) / Math.log(1000)));
-    const unit_n = Math.round(n / (1000 ** unit_i));
+    const unit_n = n / (1000 ** unit_i);
 
     const f = new Intl.NumberFormat(lang, {
       style: "unit",
