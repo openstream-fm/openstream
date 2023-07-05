@@ -772,16 +772,23 @@
   const by_day_grid_data = get_by_day_grid();
 
   const f = new Intl.NumberFormat(lang, {
-    notation: "compact",
-    style: "unit",
-    unit: "byte",
-    unitDisplay: "narrow",
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
   });
 
+  const units = ["byte", "kilobyte", "megabyte", "gigabyte", "terabyte"]
   const bytes = (n: number) => {
-    return f.format(n)
+    const unit_i = Math.min(units.length - 1, Math.floor(Math.log(n) / Math.log(1000)));
+    const unit_n = Math.round(n / (1000 ** unit_i));
+
+    const f = new Intl.NumberFormat(lang, {
+      style: "unit",
+      unit: units[unit_i],
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    })
+    
+    return f.format(unit_n);
   }
 </script>
 
