@@ -20,7 +20,7 @@ pub const STREAM_BURST_LENGTH: usize = 12;
 
 /// stream tokio broadcaster stream channel capacity
 #[const_register]
-pub const STREAM_CHANNEL_CAPACITY: usize = 5;
+pub const STREAM_CHANNEL_CAPACITY: usize = 16;
 
 /// audio file chunk size in bytes
 #[const_register]
