@@ -1,12 +1,13 @@
 /// file: analytics.ar.ts
 const locale: import("./analytics.locale").AnalyticsLocale = {
-  "Sessions": "جلسات",
+  "Sessions": "الجلسات",
   "Average_listening_minutes": "متوسط دقائق الاستماع",
   "Average_listening_time": "متوسط وقت الاستماع",
   "Total_listening_time": "إجمالي وقت الاستماع",
   "Total_listening_hours": "إجمالي ساعات الاستماع",
-  "Total_transfer_in_MB": "إجمالي التحويل بالميغابايت",
-  "Unique_IPs": "عناوين IP فريدة",
+  "Total_transfer": "إجمالي النقل",
+  "Total_transfer_in_MB": "إجمالي النقل بالميجابايت",
+  "Unique_IPs": "عناوين الـ IP الفريدة",
 
   // @example Browser: Chrome
   "Browser": "المتصفح",
@@ -20,9 +21,9 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Unknown": "غير معروف",
 
   // @context Radio Station
-  "Station": "محطة",
+  "Station": "المحطة",
 
-  "Website": "الموقع",
+  "Website": "الموقع الإلكتروني",
 
   // @example Coutry: Argentina
   "Country": "الدولة",
@@ -35,7 +36,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Stats_by_device": "الإحصائيات حسب الجهاز",
   "Stats_by_station": "الإحصائيات حسب المحطة",
   "Stats_by_country": "الإحصائيات حسب الدولة",
-  "Stats_by_website": "الإحصائيات حسب الموقع",
+  "Stats_by_website": "الإحصائيات حسب الموقع الإلكتروني",
   "Stats_by_date": "الإحصائيات حسب التاريخ",
 
   "By_date": "حسب التاريخ",
@@ -43,10 +44,10 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "By_device": "حسب الجهاز",
   "By_browser": "حسب المتصفح",
   "By_station": "حسب المحطة",
-  "By_website": "حسب الموقع",
+  "By_website": "حسب الموقع الإلكتروني",
   "Daily_stats": "الإحصائيات اليومية",
 
-  "no_data_message": "لا توجد بيانات مسجلة للمرشحين المحددين",
+  "no_data_message": "لا توجد بيانات مسجلة للفلاتر المحددة",
 
   "time": {
     "1_day": "1 يوم",
@@ -70,24 +71,24 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
       "yesterday": "أمس",
       "last-24h": "آخر 24 ساعة",
       "this-week": "هذا الأسبوع",
-      "previous-week": "الأسبوع السابق",
+      "previous-week": "الأسبوع الماضي",
       "last-7d": "آخر 7 أيام",
       "this-month": "هذا الشهر",
-      "previous-month": "الشهر السابق",
+      "previous-month": "الشهر الماضي",
       "last-30d": "آخر 30 يوم",
       "custom": "مخصص",
     },
 
-    "submit": "الحصول على التحليلات",
+    "submit": "الحصول على الإحصائيات",
 
     "All_stations": "جميع المحطات",
     "No_stations": "بدون محطات",
 
-    "no_stations_message": "لا توجد محطات لهذا الحساب",
+    "no_stations_message": "هذا الحساب لا يملك محطات",
   },
 
   "data_grid": {
-    "export_as_csv": "تصدير كملف CSV"
+    "export_as_csv": "تصدير كـ CSV"
   }
 }
 

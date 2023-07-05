@@ -5,6 +5,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Average_listening_time": "Tempo médio de escuta",
   "Total_listening_time": "Tempo total de escuta",
   "Total_listening_hours": "Horas totais de escuta",
+  "Total_transfer": "Transferência total",
   "Total_transfer_in_MB": "Transferência total em MB",
   "Unique_IPs": "IPs únicos",
 
@@ -83,7 +84,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
     "All_stations": "Todas as estações",
     "No_stations": "Sem estações",
 
-    "no_stations_message": "Esta conta não possui estações",
+    "no_stations_message": "Esta conta não tem estações",
   },
 
   "data_grid": {

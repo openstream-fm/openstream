@@ -770,6 +770,19 @@
   const by_station_grid_data = get_by_station_grid();
   const by_country_grid_data = get_by_country_grid();
   const by_day_grid_data = get_by_day_grid();
+
+  const f = new Intl.NumberFormat(lang, {
+    notation: "compact",
+    style: "unit",
+    unit: "byte",
+    unitDisplay: "narrow",
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+
+  const bytes = (n: number) => {
+    return f.format(n)
+  }
 </script>
 
 <style>
@@ -906,6 +919,13 @@
         <div class="total-title">{locale.Total_listening_time}</div>
         <div class="total-value">
           {time(data.total_duration_ms)}
+        </div>
+      </div>
+
+      <div class="total">
+        <div class="total-title">{locale.Total_transfer}</div>
+        <div class="total-value">
+          {bytes(data.total_transfer_bytes)}
         </div>
       </div>
     </div>

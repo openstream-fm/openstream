@@ -5,6 +5,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Average_listening_time": "平均收听时间",
   "Total_listening_time": "总收听时间",
   "Total_listening_hours": "总收听小时数",
+  "Total_transfer": "总传输量",
   "Total_transfer_in_MB": "总传输量（MB）",
   "Unique_IPs": "唯一IP",
 
@@ -29,6 +30,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
   // @example Date: 2022/01/01
   "Date": "日期",
+
 
   "Stats_by_browser": "按浏览器统计",
   "Stats_by_device": "按设备统计",
@@ -67,22 +69,22 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
     "query_kind": {
       "today": "今天",
       "yesterday": "昨天",
-      "last-24h": "过去24小时",
+      "last-24h": "最近24小时",
       "this-week": "本周",
       "previous-week": "上周",
-      "last-7d": "过去7天",
+      "last-7d": "最近7天",
       "this-month": "本月",
-      "previous-month": "上个月",
-      "last-30d": "过去30天",
+      "previous-month": "上月",
+      "last-30d": "最近30天",
       "custom": "自定义",
     },
 
-    "submit": "获取分析数据",
+    "submit": "获取分析",
 
     "All_stations": "所有电台",
     "No_stations": "无电台",
 
-    "no_stations_message": "此帐户没有电台",
+    "no_stations_message": "此账户没有电台",
   },
 
   "data_grid": {
