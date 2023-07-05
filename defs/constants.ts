@@ -37,7 +37,7 @@ export const RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS = 10;
 
 export const STREAM_BURST_LENGTH = 12;
 
-export const STREAM_CHANNEL_CAPACITY = 5;
+export const STREAM_CHANNEL_CAPACITY = 16;
 
 export const STREAM_CHUNK_SIZE = 16000;
 
