@@ -263,7 +263,8 @@ impl RelayHandler {
     tokio::spawn(async move {
       loop {
         match rx.recv().await {
-          Err(_) => break,
+          Err(RecvError::Lagged(_)) => continue,
+          Err(RecvError::Closed) => break,
           Ok(bytes) => match sender.send_data(bytes).await {
             Err(_) => break,
             Ok(_) => continue,
