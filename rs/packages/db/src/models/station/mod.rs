@@ -1,4 +1,5 @@
 use self::validation::*;
+use crate::audio_file::AudioFile;
 use crate::error::ApplyPatchError;
 use crate::{current_filter_doc, Model};
 use crate::{metadata::Metadata, PublicScope};
@@ -6,7 +7,7 @@ use drop_tracer::Token;
 use geoip::CountryCode;
 use mongodb::bson::{doc, Bson};
 use mongodb::options::{FindOneAndUpdateOptions, ReturnDocument};
-use mongodb::IndexModel;
+use mongodb::{ClientSession, IndexModel};
 use serde::{Deserialize, Serialize};
 use serde_util::map_some;
 use serde_util::DateTime;
@@ -687,6 +688,22 @@ impl Station {
     self.updated_at = DateTime::now();
 
     Ok(())
+  }
+
+  pub async fn get_used_storage_with_session(
+    station_id: &str,
+    session: &mut ClientSession,
+  ) -> Result<u64, mongodb::error::Error> {
+    let filter = doc! { AudioFile::KEY_STATION_ID: station_id };
+    let mut cursor = AudioFile::cl()
+      .find_with_session(filter, None, session)
+      .await?;
+    let mut acc: u64 = 0;
+    while let Some(file) = cursor.next(session).await.transpose()? {
+      acc += file.len;
+    }
+
+    Ok(acc)
   }
 }
 

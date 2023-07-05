@@ -286,6 +286,10 @@ pub fn router(
       .into_handler(),
     );
 
+  app
+    .at("/stations/:station/transfer")
+    .post(stations::transfer::post::Endpoint {}.into_handler());
+
   app.at("/stations/:station/stream-stats").get(
     stations::stream_stats::get::Endpoint {
       index: stream_connections_index.clone(),

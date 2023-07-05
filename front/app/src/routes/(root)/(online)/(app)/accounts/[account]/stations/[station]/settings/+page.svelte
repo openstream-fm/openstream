@@ -10,14 +10,15 @@
 	import Dialog from "$share/Dialog.svelte";
 	import TextField from "$lib/components/Form/TextField.svelte";
 	import Validator from "$share/formy/Validator.svelte";
-	import { mdiTrashCanOutline } from "@mdi/js";
+	import { mdiSwapHorizontal, mdiTrashCanOutline } from "@mdi/js";
 	import Icon from "$share/Icon.svelte";
 	import { locale } from "$lib/locale";
-	import { invalidate_siblings } from "$lib/invalidate";
+	import { invalidateAll, invalidate_siblings } from "$lib/invalidate";
 	import { _url } from "$share/formy/validate";
 	import CircularProgress from "$share/CircularProgress.svelte";
 	import { scale } from "svelte/transition";
 	import BooleanField from "$lib/components/Form/BooleanField.svelte";
+	import TransferAccountSelector from "./TransferAccountSelector.svelte";
 
   let delete_name_input_value = "";
   
@@ -100,6 +101,53 @@
       return null;
     }
   }
+
+  let transfer_open = false;
+  let transfer_name_check_value = "";
+  $: transfer_name_is_match = transfer_name_check_value.trim() === data.station.name.trim();
+
+  let transfer_selected_account: typeof data.accounts.items[number] | null = null;
+
+  let _transfer_name_validate = (v: string): string | null => {
+    if(v.trim() !== data.station.name.trim()) {
+      return $locale.misc.Station_name_do_not_match; 
+    }
+
+    return null;
+  }
+
+  let transferring = false;
+  
+  let transfer = action(async () => {
+    
+    if(transferring) return;
+    transferring = true;
+
+    try {
+      if(transfer_selected_account == null) {
+        throw new Error($locale.misc.Target_account_is_required);
+      }
+
+      const payload: import("$api/stations/[station]/transfer/POST/Payload").Payload = {
+        target_account_id: transfer_selected_account._id
+      } 
+
+      const { station } = await _post<import("$api/stations/[station]/transfer/POST/Output").Output>(
+        `/api/stations/${data.station._id}/transfer`,
+        payload
+      );
+
+      _message($locale.misc.Station_transferred);
+
+      await goto(`/accounts/${station.account_id}`, { invalidateAll: true })
+      invalidate_siblings();
+
+      transferring = false;    
+    } catch(e) {
+      transferring = false;
+      throw e;
+    }
+  })
 </script>
 
 <style>
@@ -167,7 +215,7 @@
     color: var(--red);
   }
 
-  .delete-dialog-btns {
+  .delete-dialog-btns, .transfer-dialog-btns {
 		display: flex;
 		flex-direction: row;
 		align-items: center;
@@ -177,7 +225,10 @@
 	}
 
 	.delete-dialog-btn-delete,
-	.delete-dialog-btn-cancel {
+	.delete-dialog-btn-cancel,
+  .transfer-dialog-btn-cancel,
+  .transfer-btn-no-target-ok,
+	.transfer-dialog-btn-transfer {
 		padding: 0.5rem 0.75rem;
 		display: flex;
 		flex-direction: row;
@@ -187,22 +238,31 @@
 	}
 
 	.delete-dialog-btn-delete:hover,
-	.delete-dialog-btn-cancel:hover {
+	.delete-dialog-btn-cancel:hover,
+  .transfer-dialog-btn-transfer:hover,
+  .transfer-btn-no-target-ok:hover,
+	.transfer-dialog-btn-cancel:hover {
 		background: rgba(0, 0, 0, 0.05);
 	}
 
-	.delete-dialog-btn-delete {
+	.delete-dialog-btn-delete, .transfer-dialog-btn-transfer {
 		font-weight: 500;
 		color: var(--red);
 		border: 2px solid var(--red);
 		box-shadow: 0 4px 8px #0000001f, 0 2px 4px #00000014;
 	}
 
-	.delete-dialog-btn-cancel {
+  .transfer-dialog-btn-transfer {
+    border-color: var(--blue);
+    color: var(--blue);
+  }
+
+
+	.delete-dialog-btn-cancel, .transfer-dialog-btn-cancel, .transfer-btn-no-target-ok {
 		color: #555;
 	}
 
-	.delete-dialog-btn-icon {
+	.delete-dialog-btn-icon, .transfer-dialog-btn-icon {
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -253,6 +313,19 @@
     top: calc(50% - (1.25rem / 2));
     left: calc(50% - (1.25rem / 2));
   }
+
+  .transfer-name-field {
+    margin-top: 1.5rem;
+  }
+
+  .transfer-account-selector {
+    margin-top: 1rem;
+  }
+
+  .transfer-btn-no-target-ok {
+    margin-inline-start: auto;
+    margin-top: 1.5rem;
+  }
 </style>
 
 <svelte:head>
@@ -298,6 +371,12 @@
       <h2>{$locale.pages["station/settings"].actions.title}</h2>
 
       <div class="section-box actions">
+        <button class="action action-transfer" on:click={() => transfer_open = true}>
+          <div class="action-icon">
+            <Icon d={mdiSwapHorizontal} />
+          </div>
+          {$locale.misc.Transfer_station}
+        </button>
         <button class="action action-delete" on:click={() => delete_open = true}>
           <div class="action-icon">
             <Icon d={mdiTrashCanOutline} />
@@ -308,6 +387,69 @@
     </div>
   </div>
 </Page>
+
+{#if transfer_open}
+  <Dialog
+    title={$locale.misc.station_transfer_title.replace("@station", data.station.name)}  
+    width="500px"
+    on_close={() => transfer_open = false}
+  >
+    {#if data.accounts.items.length > 2 && data.is_account_owner}
+      <Formy action={transfer} let:submit>
+        <form novalidate class="transfer-dialog-content" on:submit={submit}>
+          <div class="transfer-message">
+            {@html $locale.misc.station_transfer_message_html.replaceAll("@station", data.station.name)}
+          </div>
+
+          <div class="transfer-name-field">
+            <TextField label={$locale.misc.Station_name} bind:value={transfer_name_check_value} />
+            <Validator value={transfer_name_check_value} fn={_transfer_name_validate} /> 
+          </div>
+          
+          <div class="transfer-account-selector">
+            <TransferAccountSelector data={data} bind:selected={transfer_selected_account} />
+          </div>
+
+          <div class="transfer-dialog-btns">
+            <button
+              class="transfer-dialog-btn-cancel ripple-container"
+              use:ripple
+              on:click|preventDefault={() => (transfer_open = false)}
+            >
+              {$locale.misc.Cancel}
+            </button>
+
+            <button class="transfer-dialog-btn-transfer ripple-container" class:disabled={!transfer_name_is_match} use:ripple>
+              <div class="transfer-dialog-btn-icon">
+                <Icon d={mdiSwapHorizontal} />
+              </div>
+              {$locale.misc.Transfer_station}
+            </button>
+          </div>
+
+        </form>
+      </Formy>
+    {:else if !data.is_account_owner}
+      <div class="transfer-dialog-content">
+        <div class="transfer-no-target-message">
+          {@html $locale.misc.station_transfer_not_owner_message_html}
+        </div>
+        <button class="transfer-btn-no-target-ok ripple-container" use:ripple on:click|preventDefault={() => transfer_open = false}>
+          {$locale.misc.OK}
+        </button>
+      </div>
+    {:else}
+      <div class="transfer-dialog-content">
+        <div class="transfer-no-target-message">
+          {$locale.misc.station_transfer_no_targets_message}
+        </div>
+        <button class="transfer-btn-no-target-ok ripple-container" use:ripple on:click|preventDefault={() => transfer_open = false}>
+          {$locale.misc.OK}
+        </button>
+      </div>
+    {/if}
+  </Dialog>
+{/if}
 
 {#if delete_open}
   <Dialog
@@ -336,7 +478,7 @@
             <button
               class="delete-dialog-btn-cancel ripple-container"
               use:ripple
-              on:click={() => (delete_open = false)}
+              on:click|preventDefault={() => (delete_open = false)}
             >
               {$locale.pages["station/settings"].dialogs.delete_station.cancel}
             </button>
@@ -361,7 +503,7 @@
             use:ripple
             on:click={() => (delete_open = false)}
           >
-            {@html $locale.misc.delete_station_not_owner_OK}
+            {@html $locale.misc.OK}
           </button>
         </div>
 

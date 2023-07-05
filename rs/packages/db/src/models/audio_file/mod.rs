@@ -150,13 +150,7 @@ impl AudioFile {
     AudioFile::delete_by_id_with_session(&audio_file.id, session).await?;
 
     // update station
-    const KEY: &str = const_str::concat!(
-      Account::KEY_LIMITS,
-      ".",
-      Limits::KEY_STORAGE,
-      ".",
-      Limit::KEY_USED
-    );
+    const KEY: &str = crate::key!(Account::KEY_LIMITS, Limits::KEY_STORAGE, Limit::KEY_USED);
     let update = doc! { "$inc": { KEY: (audio_file.len as f64) * -1.0 } };
     Account::update_by_id_with_session(&audio_file.station_id, update, session).await?;
 

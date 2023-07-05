@@ -131,6 +131,11 @@ export const shared_api = ({
       return await client.stations.patch(ip(req), ua(req), get_token(req), req.params.station, req.body);
     }))
 
+  api.route("/stations/:station/transfer")
+    .post(json(async req => {
+      return client.stations.transfer(ip(req), ua(req), get_token(req), req.params.station, req.body);
+    }))
+
   api.route("/stations/:station/stream-stats")
     .get(json(async req => {
       return await client.stations.get_stream_stats(ip(req), ua(req), get_token(req), req.params.station);
