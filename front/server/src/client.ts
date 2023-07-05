@@ -399,6 +399,10 @@ export class Stations {
     return await this.client.post(ip, ua, token, `/stations`, payload);
   }
 
+  async transfer(ip: string | null, ua: string | null, token: string, id: string, payload: import("$api/stations/[station]/transfer/POST/Payload").Payload): Promise<import("$api/stations/[station]/transfer/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, `/stations/${id}/transfer`, payload);
+  }
+
   async patch(ip: string | null, ua: string | null, token: string, id: string, payload: import("$api/stations/[station]/PATCH/Payload").Payload): Promise<import("$api/stations/[station]/PATCH/Output").Output> {
     return await this.client.patch(ip, ua, token, `/stations/${id}`, payload);
   }

@@ -5,6 +5,7 @@ pub mod now_playing;
 pub mod reset_source_password;
 pub mod restart_playlist;
 pub mod stream_stats;
+pub mod transfer;
 
 use crate::json::JsonHandler;
 use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
