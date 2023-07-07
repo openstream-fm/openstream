@@ -6,6 +6,7 @@ export const EMAIL = /^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`
 export const TWITTER = /^https:\/\/twitter\.com\/.+/;
 export const FACEBOOK = /^https:\/\/www\.facebook\.com\/.+/;
 export const INSTAGRAM = /^https:\/\/www\.instagram\.com\/.+/;
+export const THREADS = /^https:\/\/www\.threads\.net\/.+/;
 export const YOUTUBE = /^https:\/\/www\.youtube\.com\/.+/;
 export const TWITCH = /^https:\/\/www\.twitch\.tv\/.+/;
 export const TIKTOK = /^https:\/\/www\.tiktok\.com\/.+/;
@@ -307,6 +308,7 @@ const Pattern = (regex: RegExp, message: () => string) => {
 export const _twitter_url = Pattern(TWITTER, () => get(locale).validate.twitter_url);
 export const _facebook_url = Pattern(FACEBOOK, () => get(locale).validate.facebook_url);
 export const _instagram_url = Pattern(INSTAGRAM, () => get(locale).validate.instagram_url);
+export const _threads_url = Pattern(THREADS, () => get(locale).validate.threads_url);
 export const _youtube_url = Pattern(YOUTUBE, () => get(locale).validate.youtube_url);
 export const _twitch_url = Pattern(TWITCH, () => get(locale).validate.twitch_url);
 export const _tiktok_url = Pattern(TIKTOK, () => get(locale).validate.tiktok_url);

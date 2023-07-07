@@ -24,6 +24,7 @@ export type Station = {
   twitter_url: string | null;
   facebook_url: string | null;
   instagram_url: string | null;
+  threads_url: string | null;
   youtube_url: string | null;
   twitch_url: string | null;
   tiktok_url: string | null;

@@ -283,6 +283,16 @@ pub mod post {
     #[modify(trim)]
     #[validate(
       url,
+      regex = "THREADS",
+      length(max = "URLS_MAX"),
+      non_control_character
+    )]
+    pub threads_url: Option<String>,
+
+    //#[serde(skip_serializing_if = "Option::is_none")]
+    #[modify(trim)]
+    #[validate(
+      url,
       regex = "YOUTUBE",
       length(max = "URLS_MAX"),
       non_control_character
@@ -467,6 +477,7 @@ pub mod post {
         twitter_url,
         facebook_url,
         instagram_url,
+        threads_url,
         youtube_url,
         twitch_url,
         tiktok_url,
@@ -521,6 +532,7 @@ pub mod post {
         twitter_url,
         facebook_url,
         instagram_url,
+        threads_url,
         youtube_url,
         twitch_url,
         tiktok_url,

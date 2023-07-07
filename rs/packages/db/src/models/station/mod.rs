@@ -110,6 +110,15 @@ pub struct Station {
   #[modify(trim)]
   #[validate(
     url,
+    regex = "THREADS",
+    length(max = "URLS_MAX"),
+    non_control_character
+  )]
+  pub threads_url: Option<String>,
+
+  #[modify(trim)]
+  #[validate(
+    url,
     regex = "YOUTUBE",
     length(max = "URLS_MAX"),
     non_control_character
@@ -277,6 +286,7 @@ pub struct UserPublicStation {
   pub twitter_url: Option<String>,
   pub facebook_url: Option<String>,
   pub instagram_url: Option<String>,
+  pub threads_url: Option<String>,
   pub twitch_url: Option<String>,
   pub tiktok_url: Option<String>,
   pub youtube_url: Option<String>,
@@ -485,6 +495,21 @@ pub struct StationPatch {
   #[modify(trim)]
   #[validate(
     url,
+    regex = "THREADS",
+    length(max = "URLS_MAX"),
+    non_control_character
+  )]
+  pub threads_url: Option<Option<String>>,
+
+  #[ts(optional)]
+  #[serde(
+    default,
+    deserialize_with = "map_some",
+    skip_serializing_if = "Option::is_none"
+  )]
+  #[modify(trim)]
+  #[validate(
+    url,
     regex = "YOUTUBE",
     length(max = "URLS_MAX"),
     non_control_character
@@ -670,6 +695,7 @@ impl Station {
     apply!(twitter_url);
     apply!(facebook_url);
     apply!(instagram_url);
+    apply!(threads_url);
     apply!(youtube_url);
     apply!(twitch_url);
     apply!(tiktok_url);
@@ -734,6 +760,7 @@ impl From<Station> for UserPublicStation {
       twitter_url: station.twitter_url,
       facebook_url: station.facebook_url,
       instagram_url: station.instagram_url,
+      threads_url: station.threads_url,
       twitch_url: station.twitch_url,
       tiktok_url: station.tiktok_url,
       youtube_url: station.youtube_url,
