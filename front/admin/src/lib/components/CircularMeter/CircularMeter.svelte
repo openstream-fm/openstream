@@ -21,12 +21,12 @@
       const largeArcFlag = endA - startA <= 180 ? "0" : "1";
 
       return `
-          M ${start.x}, ${start.y}
+          M ${start.x} ${start.y}
           A ${radius} ${radius} 0 ${largeArcFlag} 0 ${end.x} ${end.y}
       `;
   }
   
-  const clamp = (min: number, v: number, max: number): number => Math.min(min, Math.max(v, max));
+  const clamp = (min: number, v: number, max: number): number => Math.max(min, Math.min(v, max));
 
   $: d = describeArc(50, 50, 35, 90, clamp(0.001, used, 0.999) * 360 + 90);
 </script>
@@ -42,6 +42,6 @@
     r={35}  
   />
   {#if used !== 0}
-    <path {d} style="stroke: {stroke}; fill: {fill}; stroke-width: {strokeWidth};"></path>
+    <path data-used={used} {d} style="stroke: {stroke}; fill: {fill}; stroke-width: {strokeWidth};"></path>
   {/if}
 </svg>

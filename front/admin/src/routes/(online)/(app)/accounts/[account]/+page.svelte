@@ -4,9 +4,16 @@
 	import PageTop from "$lib/components/PageMenu/PageTop.svelte";
 	import { lang } from "$lib/locale";
 	import { ripple } from "$share/ripple";
-	import { mdiAccountOutline } from "@mdi/js";
+	import { mdiAccountOutline, mdiDotsVertical } from "@mdi/js";
 	import Limits from "./limits.svelte";
 	import Stats from "./stats.svelte";
+	import Icon from "$share/Icon.svelte";
+	import { _patch, action } from "$share/net.client";
+	import { _message } from "$share/notify";
+	import { invalidateAll } from "$lib/invalidate";
+	import Dialog from "$share/Dialog.svelte";
+	import { logical_fly } from "$share/transition";
+	import { click_out } from "$share/actions";
 
   const date = (d: string | Date) => {
     const date = new Date(d);
@@ -19,6 +26,36 @@
       minute: "2-digit",
       second: "2-digit",
     })
+  }
+
+  let selected_plan: typeof data.plans.items[number] | null  = null;
+  let changing_plan = false;
+
+  const change_plan = action(async () => {
+    if(changing_plan) return;
+    if(selected_plan == null) return;
+    changing_plan = true;
+
+    try {
+      let payload: import("$api/accounts/[account]/PATCH/Payload").Payload = {
+        plan_id: selected_plan._id,
+      };
+
+      await _patch(`/api/accounts/${data.account._id}`, payload);
+      _message("Account plan updated");
+      invalidateAll();
+      selected_plan = null;
+
+      changing_plan = false;
+    } catch(e) {
+      changing_plan = false;
+      throw e;
+    }
+  })
+
+  let plan_selector_open = false;
+  const plan_selector_click_out = () => {
+    setTimeout(() => plan_selector_open = false, 2);
   }
 </script>
 
@@ -63,6 +100,10 @@
   }
 
   .section-title {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
     font-weight: 600;
     font-size: 1.75rem;
     text-align: start;
@@ -161,6 +202,89 @@
   .section-empty {
     padding: 1rem;
   }
+
+
+  .dialog-btns {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 1.5rem;
+		margin-top: 2rem;
+	}
+
+	.dialog-btn-change-plan,
+	.dialog-btn-cancel {
+		padding: 0.5rem 0.75rem;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		border-radius: 0.25rem;
+		transition: background-color 150ms ease;
+	}
+
+	.dialog-btn-change-plan:hover,
+	.dialog-btn-cancel:hover {
+		background: rgba(0, 0, 0, 0.05);
+	}
+
+	.dialog-btn-change-plan {
+		font-weight: 500;
+		color: var(--blue);
+		border: 2px solid var(--blue);
+		box-shadow: 0 4px 8px #0000001f, 0 2px 4px #00000014;
+	}
+
+	.dialog-btn-cancel {
+		color: #555;
+	}
+
+  .plan-selector {
+    position: relative;
+    z-index: 1;
+    margin-inline-start: auto;
+  }
+
+  .plan-selector-btn {
+    color: #444;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    font-size: 1.5rem;
+    transition: background-color 200ms ease;
+    border-radius: 50%;
+  }
+
+  .plan-selector-btn:hover, .plan-selector-btn.open {
+    background: rgba(0,0,0,0.05);
+  }
+
+  .plan-selector-menu {
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline-end: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0.25rem;
+    box-shadow: var(--some-shadow);
+    border-radius: 0.25rem; 
+    background: #fff;
+  }
+
+  .plan-selector-item {
+    font-size: 1rem;
+    white-space: nowrap;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    transition: background-color 200ms ease;
+    text-align: start;
+    font-weight: 400;
+  }
+
+  .plan-selector-item:hover {
+    background-color: rgba(0,0,0,0.05);
+  }
 </style>
 
 <svelte:head>
@@ -244,6 +368,20 @@
   <div class="section">
     <div class="section-title">
       Plan
+      <div class="plan-selector">
+        <button class="plan-selector-btn" class:open={plan_selector_open} on:click={() => plan_selector_open = !plan_selector_open}>
+          <Icon d={mdiDotsVertical} />
+        </button>
+        {#if plan_selector_open}
+          <div class="plan-selector-menu" transition:logical_fly={{ y: -15, x: 15, duration: 200 }} use:click_out={plan_selector_click_out}>
+            {#each data.plans.items.filter(item => item._id !== data.plan?._id) as plan (plan._id)}
+              <button class="plan-selector-item" on:click={() => { plan_selector_open = false; selected_plan = plan }}>
+                Set plan to <b>{plan.display_name}</b> - <b>$ {plan.price}</b>
+              </button>
+            {/each}
+          </div>
+        {/if}
+      </div>
     </div>
     <div class="section-box accounts">
       {#if data.plan != null}
@@ -286,3 +424,31 @@
   </div> 
 
 </Page>
+
+{#if selected_plan != null}
+  <Dialog title="Set account plan to {selected_plan.display_name}" width="500px" on_close={() => selected_plan = null}>
+    <div class="dialog">
+      <div class="dialog-text">
+        Plan <b>{selected_plan.display_name}</b>: <br /><br />
+        Price: $ {selected_plan.price}<br />
+        Stations: {selected_plan.limits.stations}<br />
+        Listeners: {selected_plan.limits.listeners}<br />
+        Storage: {selected_plan.limits.storage / 1_000_000_000} GB<br />
+        Transfer: {selected_plan.limits.transfer / 1_000_000_000_000} TB<br />
+      </div>
+      <div class="dialog-btns">
+        <button
+          class="dialog-btn-cancel ripple-container"
+          use:ripple
+          on:click={() => (selected_plan = null)}
+        >
+          Cancel
+        </button>
+
+        <button class="dialog-btn-change-plan ripple-container" use:ripple on:click={change_plan}>
+          Change plan
+        </button>
+      </div>
+    </div>
+  </Dialog>
+{/if}

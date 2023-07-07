@@ -1,4 +1,3 @@
-use crate::error::ApplyPatchError;
 use crate::Model;
 use crate::{metadata::Metadata, PublicScope};
 use mongodb::bson::doc;
@@ -56,104 +55,21 @@ pub enum PublicAccount {
 #[ts(export, export_to = "../../../defs/ops/")]
 #[serde(rename_all = "snake_case")]
 #[serde(deny_unknown_fields)]
+#[validify::validify]
 pub struct AccountPatch {
   #[serde(skip_serializing_if = "Option::is_none")]
+  #[modify(trim)]
+  #[validate(length(min = 1, max = 60), non_control_character)]
   pub name: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub limits: Option<AccountPatchLimits>,
+  pub plan_id: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub user_metadata: Option<Metadata>,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub system_metadata: Option<Metadata>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/ops/")]
-#[serde(rename_all = "snake_case")]
-#[serde(deny_unknown_fields)]
-pub struct AccountPatchLimits {
-  #[serde(skip_serializing_if = "Option::is_none")]
-  stations: Option<u64>,
-  #[serde(skip_serializing_if = "Option::is_none")]
-  listeners: Option<u64>,
-  #[serde(skip_serializing_if = "Option::is_none")]
-  storage: Option<u64>,
-  #[serde(skip_serializing_if = "Option::is_none")]
-  transfer: Option<u64>,
-}
-
 impl Account {
-  pub fn apply_patch(
-    &mut self,
-    patch: AccountPatch,
-    scope: PublicScope,
-  ) -> Result<(), ApplyPatchError> {
-    match scope {
-      PublicScope::User => {
-        if patch.system_metadata.is_some() || patch.limits.is_some() {
-          return Err(ApplyPatchError::out_of_scope(
-            "system_metadata field is out of scope",
-          ));
-        }
-
-        if patch.name.is_none() && patch.user_metadata.is_none() {
-          return Err(ApplyPatchError::PatchEmpty);
-        }
-      }
-
-      PublicScope::Admin => {
-        if patch.name.is_none() && patch.user_metadata.is_none() && patch.system_metadata.is_none()
-        {
-          return Err(ApplyPatchError::PatchEmpty);
-        }
-      }
-    }
-
-    if let Some(ref name) = patch.name {
-      let name = name.trim();
-      if name.is_empty() {
-        return Err(ApplyPatchError::invalid("The name cannot be empty"));
-      }
-
-      self.name = name.into();
-    }
-
-    if let Some(metadata) = patch.user_metadata {
-      self.user_metadata.merge(metadata);
-    }
-
-    match scope {
-      PublicScope::User => {}
-      PublicScope::Admin => {
-        if let Some(metadata) = patch.system_metadata {
-          self.system_metadata.merge(metadata);
-        }
-
-        if let Some(limits) = patch.limits {
-          if let Some(stations) = limits.stations {
-            self.limits.stations.total = stations;
-          }
-
-          if let Some(listeners) = limits.listeners {
-            self.limits.listeners.total = listeners;
-          }
-
-          if let Some(storage) = limits.storage {
-            self.limits.storage.total = storage;
-          }
-
-          if let Some(transfer) = limits.transfer {
-            self.limits.transfer.total = transfer;
-          }
-        }
-      }
-    }
-
-    self.updated_at = DateTime::now();
-
-    Ok(())
-  }
-
   pub async fn increment_used_transfer(
     id: &str,
     size: usize,

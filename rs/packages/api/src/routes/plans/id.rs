@@ -172,7 +172,11 @@ pub mod patch {
   use crate::error::ApiError;
 
   use super::*;
-  use db::{plan::Plan, run_transaction, Model};
+  use db::{
+    account::{Account, Limit, Limits},
+    plan::Plan,
+    run_transaction, Model,
+  };
   use prex::request::ReadBodyJsonError;
   use serde_util::DateTime;
   use validify::{validify, ValidationErrors, Validify};
@@ -372,6 +376,26 @@ pub mod patch {
         plan.updated_at = DateTime::now();
 
         tx_try!(Plan::replace_with_session(&plan.id, &plan, &mut session).await);
+
+        {
+          static STATIONS: &str = db::key!(Account::KEY_LIMITS, Limits::KEY_TRANSFER, Limit::KEY_TOTAL);
+          static LISTENERS: &str = db::key!(Account::KEY_LIMITS, Limits::KEY_LISTENERS, Limit::KEY_TOTAL);
+          static STORAGE: &str = db::key!(Account::KEY_LIMITS, Limits::KEY_STORAGE, Limit::KEY_TOTAL);
+          static TRANSFER: &str = db::key!(Account::KEY_LIMITS, Limits::KEY_TRANSFER, Limit::KEY_TOTAL);
+
+          let accounts_filter = doc!{ Account::KEY_PLAN_ID: &plan.id };
+
+          let accounts_update = doc!{
+            "$set": {
+              STATIONS: plan.limits.stations as f64,
+              LISTENERS: plan.limits.listeners as f64,
+              STORAGE: plan.limits.storage as f64,
+              TRANSFER: plan.limits.transfer as f64,
+            }
+          };
+
+          tx_try!(Account::cl().update_many_with_session(accounts_filter, accounts_update, None, &mut session).await);
+        }
 
         plan
       });
