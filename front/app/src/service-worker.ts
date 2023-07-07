@@ -9,6 +9,7 @@ import { CacheFirst, NetworkOnly } from "workbox-strategies";
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { matchPrecache, precacheAndRoute } from "workbox-precaching";
 import { build, version } from "$service-worker";
+import { STATION_PICTURES_VERSION } from "../../../defs/constants"
 
 precacheAndRoute([
   { url: "/offline", revision: version },
@@ -45,7 +46,7 @@ registerRoute(
 registerRoute(
   ({ request, url }) => request.destination === "image" && url.pathname.startsWith(`/station-pictures`),
   new CacheFirst({
-    cacheName: "station-pictures",
+    cacheName: `station-pictures-v${STATION_PICTURES_VERSION}`,
     plugins: [
       new CacheableResponsePlugin({
         statuses: [0, 200]

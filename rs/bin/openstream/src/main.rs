@@ -553,6 +553,8 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   let deployment_id = deployment.id.clone();
   Deployment::insert(&deployment).await?;
 
+  tokio::spawn(db::station_picture::upgrade_images_if_needed());
+
   tokio::spawn({
     let shutdown = shutdown.clone();
     let deployment_id = deployment_id.clone();

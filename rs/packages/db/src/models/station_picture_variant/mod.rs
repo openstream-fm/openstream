@@ -49,6 +49,7 @@ impl Model for StationPictureVariant {
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "kebab-case")]
+#[macros::keys]
 pub enum StationPictureVariantFormat {
   Webp,
   Png,
