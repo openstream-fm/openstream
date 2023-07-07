@@ -33,6 +33,7 @@ const locale: import("./validate.locale").ValidateLocale = {
   "twitter_url": "Dieses Feld muss eine gültige Twitter-URL sein. Gehe zu deiner Twitter-Seite und kopiere die vollständige URL von dort",
   "facebook_url": "Dieses Feld muss eine gültige Facebook-URL sein. Gehe zu deiner Facebook-Seite und kopiere die vollständige URL von dort",
   "instagram_url": "Dieses Feld muss eine gültige Instagram-URL sein. Gehe zu deiner Instagram-Seite und kopiere die vollständige URL von dort",
+  "threads_url": "Dieses Feld muss eine gültige Threads-URL sein. Gehe zu deiner Threads-Seite und kopiere die vollständige URL von dort",
   "youtube_url": "Dieses Feld muss eine gültige YouTube-URL sein. Gehe zu deiner YouTube-Seite und kopiere die vollständige URL von dort",
   "twitch_url": "Dieses Feld muss eine gültige Twitch-URL sein. Gehe zu deiner Twitch-Seite und kopiere die vollständige URL von dort",
   "tiktok_url": "Dieses Feld muss eine gültige TikTok-URL sein. Gehe zu deiner TikTok-Seite und kopiere die vollständige URL von dort",

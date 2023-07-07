@@ -23,6 +23,7 @@
     twitter_url: data.station.twitter_url,
     facebook_url: data.station.facebook_url,
     instagram_url: data.station.instagram_url,
+    threads_url: data.station.threads_url,
     youtube_url: data.station.youtube_url,
     twitch_url: data.station.twitch_url,
     tiktok_url: data.station.tiktok_url,

@@ -32,6 +32,7 @@
     twitter_url: null as string | null,
     facebook_url: null as string | null,
     instagram_url: null as string | null,
+    threads_url: null as string | null,
     youtube_url: null as string | null,
     twitch_url: null as string | null,
     tiktok_url: null as string | null,

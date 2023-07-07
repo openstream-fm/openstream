@@ -28,6 +28,7 @@
 		_app_store_url,
 		_facebook_url,
 		_instagram_url,
+		_threads_url,
 		_twitch_url,
 		_twitter_url,
     _google_play_url,
@@ -59,6 +60,7 @@
 		twitter_url: string | null;
 		facebook_url: string | null;
 		instagram_url: string | null;
+		threads_url: string | null;
 		youtube_url: string | null;
 		twitch_url: string | null;
 		tiktok_url: string | null;
@@ -223,6 +225,17 @@
 				bind:value={current.instagram_url}
 			/>
 			<Validator value={current.instagram_url} fn={_instagram_url({ maxlen: 150 })} />
+		</div>
+		<div class="field">
+			<NullTextField
+				type="url"
+				label={$locale.station_profile.labels.threads}
+				trim
+				icon={mdiInstagram}
+				maxlength={150}
+				bind:value={current.threads_url}
+			/>
+			<Validator value={current.threads_url} fn={_threads_url({ maxlen: 150 })} />
 		</div>
 		<div class="field">
 			<NullTextField

@@ -33,6 +33,7 @@ const locale = {
   "twitter_url": "This field must be a valid Twitter URL, navigate to your Twitter page and copy the entire URL from there",
   "facebook_url": "This field must be a valid Facebook URL, navigate to your Facebook page and copy the entire URL from there",
   "instagram_url": "This field must be a valid Instagram URL, navigate to your Instagram page and copy the entire URL from there",
+  "threads_url": "This field must be a valid Threads URL, navigate to your Threads page and copy the entire URL from there",
   "youtube_url": "This field must be a valid Youtube URL, navigate to your Youtube page and copy the entire URL from there",
   "twitch_url": "This field must be a valid Twitch URL, navigate to your Twitch page and copy the entire URL from there",
   "tiktok_url": "This field must be a valid TikTok URL, navigate to your TikTok page and copy the entire URL from there",

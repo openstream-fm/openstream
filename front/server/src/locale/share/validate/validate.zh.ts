@@ -33,6 +33,7 @@ const locale: import("./validate.locale").ValidateLocale = {
   "twitter_url": "此字段必须为有效的Twitter URL，请访问您的Twitter页面并从那里复制完整的URL",
   "facebook_url": "此字段必须为有效的Facebook URL，请访问您的Facebook页面并从那里复制完整的URL",
   "instagram_url": "此字段必须为有效的Instagram URL，请访问您的Instagram页面并从那里复制完整的URL",
+  "threads_url": "此字段必须为有效的Threads URL，请访问您的Threads页面并从那里复制完整的URL",
   "youtube_url": "此字段必须为有效的Youtube URL，请访问您的Youtube页面并从那里复制完整的URL",
   "twitch_url": "此字段必须为有效的Twitch URL，请访问您的Twitch页面并从那里复制完整的URL",
   "tiktok_url": "此字段必须为有效的TikTok URL，请访问您的TikTok页面并从那里复制完整的URL",

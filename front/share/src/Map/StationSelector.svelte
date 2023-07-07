@@ -166,7 +166,8 @@
         {#if data.station != null}
           {data.station.name}
         {:else}
-          All stations
+        <!-- TODO: locale -->  
+        All stations
         {/if}
       </span>
       <span class="stats-selector-btn-chevron">
@@ -183,6 +184,7 @@
         >
           <button class="stats-selector-item" class:current={data.station == null} on:click={() => select(null)}>
             <div class="stats-selector-name">
+              <!-- TODO: locale -->
               All stations
             </div>
           </button>
