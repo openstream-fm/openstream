@@ -104,6 +104,12 @@ pub const REAL_IP_HEADER: &str = "x-real-ip";
 #[const_register]
 pub const PAYMENTS_ACCESS_TOKEN_HEADER: &str = "x-access-token";
 
+/// we need to update this value after making code changes to the station pictures logic or sizes
+/// changing to this value will make startup check and recreation of outdated images
+/// and invalidation of service workers station pictures caches
+#[const_register]
+pub const STATION_PICTURES_VERSION: f64 = 2.0;
+
 #[cfg(test)]
 pub mod test {
   use std::path::Path;
