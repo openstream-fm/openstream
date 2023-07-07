@@ -88,10 +88,11 @@ pub mod patch {
   use super::*;
   use db::{
     account::{Account, AccountPatch, PublicAccount},
-    error::ApplyPatchError,
-    fetch_and_patch, run_transaction, Model,
+    plan::Plan,
+    run_transaction, Model,
   };
   use prex::request::ReadBodyJsonError;
+  use validify::{ValidationErrors, Validify};
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
@@ -102,9 +103,9 @@ pub mod patch {
 
   #[derive(Debug, Clone)]
   pub struct Input {
+    account_id: String,
     payload: Payload,
     access_token_scope: AccessTokenScope,
-    account: Account,
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -132,8 +133,12 @@ pub mod patch {
   pub enum HandleError {
     #[error("mongodb: {0}")]
     Db(#[from] mongodb::error::Error),
-    #[error("apply patch: {0}")]
-    Patch(#[from] ApplyPatchError),
+    #[error("mongodb: {0}")]
+    Token(#[from] GetAccessTokenScopeError),
+    #[error("mongodb: {0}")]
+    Validate(#[from] ValidationErrors),
+    #[error("plan not found: {0}")]
+    PlanNotFound(String),
     #[error("station not found: {0}")]
     AccountNotFound(String),
   }
@@ -142,8 +147,12 @@ pub mod patch {
     fn from(e: HandleError) -> Self {
       match e {
         HandleError::Db(e) => Self::from(e),
-        HandleError::Patch(e) => Self::from(e),
+        HandleError::Token(e) => Self::from(e),
         HandleError::AccountNotFound(id) => Self::StationNotFound(id),
+        HandleError::PlanNotFound(id) => {
+          Self::BadRequestCustom(format!("Plan with {} not found", id))
+        }
+        HandleError::Validate(e) => ApiError::BadRequestCustom(format!("{e}")),
       }
     }
   }
@@ -156,18 +165,16 @@ pub mod patch {
     type HandleError = HandleError;
 
     async fn parse(&self, mut req: Request) -> Result<Self::Input, Self::ParseError> {
-      let station_id = req.param("account").unwrap();
+      let account_id = req.param("account").unwrap().to_string();
 
       let access_token_scope = request_ext::get_access_token_scope(&req).await?;
-
-      let account = access_token_scope.grant_account_scope(station_id).await?;
 
       let payload: Payload = req.read_body_json(100_000).await?;
 
       Ok(Self::Input {
-        payload,
+        account_id,
         access_token_scope,
-        account,
+        payload,
       })
     }
 
@@ -175,16 +182,94 @@ pub mod patch {
       let Self::Input {
         payload: Payload(payload),
         access_token_scope,
-        account,
+        account_id,
       } = input;
 
-      let id = account.id;
+      let payload: AccountPatch = AccountPatch::validify(payload.into())?;
 
-      let account = run_transaction!(session => {
-        fetch_and_patch!(Account, account, &id, Err(HandleError::AccountNotFound(id)), session, {
-          account.apply_patch(payload.clone(), access_token_scope.as_public_scope())?;
-        })
-      });
+      let account = match access_token_scope {
+        AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
+          run_transaction!(session => {
+            let mut account = match tx_try!(Account::get_by_id_with_session(&account_id, &mut session).await) {
+              None => return Err(HandleError::AccountNotFound(account_id)),
+              Some(account) => account,
+            };
+
+            if let Some(ref name) = payload.name {
+              account.name = name.clone();
+            }
+
+            if let Some(ref user_metadata) = payload.user_metadata {
+              account.user_metadata.merge(user_metadata.clone());
+            }
+
+            if let Some(ref system_metadata) = payload.system_metadata {
+              account.system_metadata.merge(system_metadata.clone());
+            }
+
+            if let Some(ref plan_id) = payload.plan_id {
+              let plan = match tx_try!(Plan::get_by_id(plan_id).await) {
+                None => return Err(HandleError::PlanNotFound(plan_id.clone())),
+                Some(plan_id) => plan_id,
+              };
+
+              if plan.deleted_at.is_some() {
+                return Err(HandleError::PlanNotFound(plan_id.clone()));
+              }
+
+              account.plan_id = plan.id.clone();
+
+              account.limits.stations.total = plan.limits.stations;
+              account.limits.listeners.total = plan.limits.listeners;
+              account.limits.storage.total = plan.limits.storage;
+              account.limits.transfer.total = plan.limits.transfer;
+            }
+
+            tx_try!(Account::replace_with_session(&account.id, &account, &mut session).await);
+
+            account
+          })
+        }
+
+        AccessTokenScope::User(_) => {
+          access_token_scope.grant_account_scope(&account_id).await?;
+          run_transaction!(session => {
+            let mut account = match tx_try!(Account::get_by_id_with_session(&account_id, &mut session).await) {
+              None => return Err(HandleError::AccountNotFound(account_id)),
+              Some(account) => account,
+            };
+
+            if let Some(ref name) = payload.name {
+              account.name = name.clone();
+            }
+
+            if let Some(ref user_metadata) = payload.user_metadata {
+              account.user_metadata.merge(user_metadata.clone());
+            }
+
+            if let Some(ref plan_id) = payload.plan_id {
+              let plan = match tx_try!(Plan::get_by_id(plan_id).await) {
+                None => return Err(HandleError::PlanNotFound(plan_id.clone())),
+                Some(plan_id) => plan_id,
+              };
+
+              if plan.deleted_at.is_some() || !plan.is_user_selectable {
+                return Err(HandleError::PlanNotFound(plan_id.clone()));
+              }
+
+              account.plan_id = plan.id.clone();
+              account.limits.stations.total = plan.limits.stations;
+              account.limits.listeners.total = plan.limits.listeners;
+              account.limits.storage.total = plan.limits.storage;
+              account.limits.transfer.total = plan.limits.transfer;
+            }
+
+            tx_try!(Account::replace_with_session(&account.id, &account, &mut session).await);
+
+            account
+          })
+        }
+      };
 
       let out = account.into_public(access_token_scope.as_public_scope());
 
