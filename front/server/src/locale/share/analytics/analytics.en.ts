@@ -7,6 +7,7 @@ const locale = {
   "Total_transfer": "Total transfer",
   "Total_transfer_in_MB": "Total transfer in MB",
   "Unique_IPs": "Unique IPs",
+  "Max_concurrent_listeners": "Max. concurrent listeners",
 
   // @example Browser: Chrome
   "Browser": "Browser",

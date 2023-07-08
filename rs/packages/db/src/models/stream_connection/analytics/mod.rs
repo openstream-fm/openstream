@@ -40,6 +40,9 @@ pub struct Analytics {
   #[serde(with = "serde_util::as_f64")]
   pub total_transfer_bytes: u64,
 
+  #[serde(with = "serde_util::as_f64")]
+  pub max_concurrent_listeners: u64,
+
   pub by_month: Vec<AnalyticsItem<YearMonth>>,
   pub by_day: Vec<AnalyticsItem<YearMonthDay>>,
   pub by_hour: Vec<AnalyticsItem<u8>>,
@@ -62,6 +65,8 @@ pub struct AnalyticsItem<K> {
   total_duration_ms: u64,
   #[serde(with = "serde_util::as_f64")]
   total_transfer_bytes: u64,
+  #[serde(with = "serde_util::as_f64")]
+  max_concurrent_listeners: u64,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, TS)]
@@ -236,12 +241,16 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
   let mut total_duration_ms: u64 = 0;
   let mut total_transfer_bytes: u64 = 0;
 
+  // u32 is the timestamp and bool is true => start, false => stop
+  let mut start_stop_events: Vec<(u32, bool)> = vec![];
+
   #[derive(Default)]
   struct AccumulatorItem {
     sessions: u64,
     ips: HashSet<IpAddr>,
     total_duration_ms: u64,
     total_transfer_bytes: u64,
+    start_stop_events: Vec<(u32, bool)>,
   }
 
   let mut months_accumulator = HashMap::<YearMonth, AccumulatorItem>::new();
@@ -265,10 +274,15 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     let conn_browser = conn.browser;
     let conn_os = conn.os;
 
+    let start = created_at.unix_timestamp() as u32;
+    let stop = start + (conn_duration_ms / 1000) as u32;
+
     sessions += 1;
     total_duration_ms += conn_duration_ms;
     total_transfer_bytes += conn_transfer_bytes;
     ips.insert(conn.ip);
+    start_stop_events.push((start, true));
+    start_stop_events.push((stop, false));
 
     macro_rules! add {
       ($acc:ident, $key:expr) => {
@@ -277,6 +291,8 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
         item.ips.insert(conn.ip);
         item.total_duration_ms += conn_duration_ms;
         item.total_transfer_bytes += conn_transfer_bytes;
+        item.start_stop_events.push((start, true));
+        item.start_stop_events.push((stop, false));
       };
     }
 
@@ -303,6 +319,29 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     add!(domain_accumulator, conn.domain);
   }
 
+  macro_rules! max_concurrent {
+    ($vec:expr) => {{
+      let mut vec = $vec;
+      vec.sort_by(|a, b| a.0.cmp(&b.0));
+
+      let mut max: u32 = 0;
+      let mut current: u32 = 0;
+      for (_, start) in vec.into_iter() {
+        if start {
+          current = current.saturating_add(1);
+        } else {
+          current = current.saturating_sub(1);
+        }
+
+        if current > max {
+          max = current;
+        }
+      }
+
+      max as u64
+    }};
+  }
+
   macro_rules! collect {
     ($acc:ident) => {
       $acc
@@ -313,6 +352,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
           ips: value.ips.len() as u64,
           total_duration_ms: value.total_duration_ms,
           total_transfer_bytes: value.total_transfer_bytes,
+          max_concurrent_listeners: max_concurrent!(value.start_stop_events),
         })
         .collect::<Vec<_>>()
     };
@@ -360,6 +400,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     total_duration_ms,
     total_transfer_bytes,
     ips: ips.len() as u64,
+    max_concurrent_listeners: max_concurrent!(start_stop_events),
     stations,
     by_month,
     by_day,

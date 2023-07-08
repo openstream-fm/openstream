@@ -514,7 +514,13 @@
 
   const get_common_grid_options = () => {
     
-    type Item = {  sessions: number, ips: number, total_duration_ms: number, total_transfer_bytes: number }
+    type Item = {
+      sessions: number,
+      ips: number,
+      total_duration_ms: number,
+      total_transfer_bytes: number,
+      max_concurrent_listeners: number
+    }
 
     const fields = {
       "sessions": {
@@ -528,6 +534,13 @@
         name: locale.Unique_IPs,
         format: item => String(item.ips),
         sort: (a, b) => compare_numbers(a.ips, b.ips),
+        numeric: true,
+      },
+
+      "max_concurrent": {
+        name: locale.Max_concurrent_listeners,
+        format: item => to_fixed(item.max_concurrent_listeners, 0),
+        sort: (a, b) => compare_numbers(a.max_concurrent_listeners, b.max_concurrent_listeners),
         numeric: true,
       },
 
@@ -718,6 +731,7 @@
           ips: 0,
           total_duration_ms: 0,
           total_transfer_bytes: 0,
+          max_concurrent_listeners: 0,
         })
       } else {
         items.push(item)
@@ -912,6 +926,13 @@
         <div class="total-title">{locale.Unique_IPs}</div>
         <div class="total-value">
           {data.ips}
+        </div>
+      </div>
+
+      <div class="total">
+        <div class="total-title">{locale.Max_concurrent_listeners}</div>
+        <div class="total-value">
+          {data.max_concurrent_listeners}
         </div>
       </div>
 
