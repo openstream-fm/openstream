@@ -1,7 +1,8 @@
 use async_trait::async_trait;
+use db::station_picture::StationPicture;
 use db::station_picture_variant::{StationPictureVariant, StationPictureVariantFormat};
 use db::Model;
-use hyper::header::{CACHE_CONTROL, CONTENT_TYPE};
+use hyper::header::{/*CACHE_CONTROL,*/ CONTENT_LENGTH, CONTENT_TYPE, ETAG, IF_NONE_MATCH};
 use hyper::http::HeaderValue;
 use hyper::{Body, StatusCode};
 use mongodb::bson::doc;
@@ -45,24 +46,52 @@ impl Handler for StationPicHandler {
       Ok(r) => match r {
         None => ApiError::ResourceNotFound {}.into_json_response(),
         Some(doc) => {
-          let mut res = Response::new(StatusCode::OK);
+          let response_etag = format!("W/\"{}-{}-{}\"", doc.id, doc.size, StationPicture::VERSION);
 
-          match HeaderValue::from_str(&doc.content_type) {
-            Err(_) => res.headers_mut().append(
-              CONTENT_TYPE,
-              HeaderValue::from_static("application/octet-stream"),
-            ),
-            Ok(value) => res.headers_mut().append(CONTENT_TYPE, value),
+          let request_etag = match req.headers().get(IF_NONE_MATCH) {
+            None => None,
+            Some(v) => v.to_str().ok(),
           };
 
-          res.headers_mut().append(
-            CACHE_CONTROL,
-            HeaderValue::from_static("public, max-age=31536000, immutable"), // 365 days
-          );
+          let is_match = if let Some(v) = request_etag {
+            v == response_etag
+          } else {
+            false
+          };
 
-          let body = Body::from(doc.data);
+          let res = if is_match {
+            Response::new(StatusCode::NOT_MODIFIED)
+          } else {
+            let mut res = Response::new(StatusCode::OK);
 
-          *res.body_mut() = body;
+            match HeaderValue::from_str(&doc.content_type) {
+              Err(_) => res.headers_mut().append(
+                CONTENT_TYPE,
+                HeaderValue::from_static("application/octet-stream"),
+              ),
+              Ok(value) => res.headers_mut().append(CONTENT_TYPE, value),
+            };
+
+            // res.headers_mut().append(
+            //   CACHE_CONTROL,
+            //   HeaderValue::from_static("public, max-age=600, immutable"), // 10 mins
+            // );
+
+            res
+              .headers_mut()
+              .append(ETAG, HeaderValue::from_str(&response_etag).unwrap());
+
+            res.headers_mut().append(
+              CONTENT_LENGTH,
+              HeaderValue::from_str(doc.data.len().to_string().as_str()).unwrap(),
+            );
+
+            let body = Body::from(doc.data);
+
+            *res.body_mut() = body;
+
+            res
+          };
 
           res
         }
