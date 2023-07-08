@@ -35,7 +35,7 @@ export const REAL_IP_HEADER = "x-real-ip";
 
 export const RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS = 10;
 
-export const STATION_PICTURES_VERSION = 2.0;
+export const STATION_PICTURES_VERSION = 3.0;
 
 export const STREAM_BURST_LENGTH = 12;
 

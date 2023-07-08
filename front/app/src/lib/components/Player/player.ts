@@ -293,7 +293,11 @@ if (hasMediaSession) {
       const storage_url = get(page).data.config.storage_public_url;
 
       const artwork = [
+        { src: `${storage_url}/station-pictures/png/32/${picture_id}.png`, sizes: "32x32", type: "image/png" },
+        { src: `${storage_url}/station-pictures/png/64/${picture_id}.png`, sizes: "64x64", type: "image/png" },
+        { src: `${storage_url}/station-pictures/png/128/${picture_id}.png`, sizes: "128x128", type: "image/png" },
         { src: `${storage_url}/station-pictures/png/192/${picture_id}.png`, sizes: "192x192", type: "image/png" },
+        { src: `${storage_url}/station-pictures/png/256/${picture_id}.png`, sizes: "256x256", type: "image/png" },
         { src: `${storage_url}/station-pictures/png/512/${picture_id}.png`, sizes: "512x512", type: "image/png" },
       ]
 

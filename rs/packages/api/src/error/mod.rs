@@ -498,7 +498,7 @@ impl From<CreateStationPictureError> for ApiError {
     use CreateStationPictureError::*;
     match e {
       Db(e) => e.into(),
-      ImageTooLargeBytes | ImageNotSquare | ImageTooSmallSize | Ril(_) => {
+      ImageTooLargeBytes | ImageNotSquare | ImageTooSmallSize | Ril(_) | Image(_) | Io(_) => {
         ApiError::PayloadInvalid(format!("{e}"))
       }
       AccountNotFound(_) => ApiError::QueryStringCustom(format!("{e}")),
