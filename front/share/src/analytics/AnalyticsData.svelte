@@ -514,7 +514,13 @@
 
   const get_common_grid_options = () => {
     
-    type Item = {  sessions: number, ips: number, total_duration_ms: number, total_transfer_bytes: number }
+    type Item = {
+      sessions: number,
+      ips: number,
+      total_duration_ms: number,
+      total_transfer_bytes: number,
+      max_concurrent_listeners: number
+    }
 
     const fields = {
       "sessions": {
@@ -725,6 +731,7 @@
           ips: 0,
           total_duration_ms: 0,
           total_transfer_bytes: 0,
+          max_concurrent_listeners: 0,
         })
       } else {
         items.push(item)
