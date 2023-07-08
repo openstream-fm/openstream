@@ -531,6 +531,13 @@
         numeric: true,
       },
 
+      "max_concurrent": {
+        name: locale.Max_concurrent_listeners,
+        format: item => to_fixed(item.max_concurrent_listeners, 0),
+        sort: (a, b) => compare_numbers(a.max_concurrent_listeners, b.max_concurrent_listeners),
+        numeric: true,
+      },
+
       "avg_time": {
         name: locale.Average_listening_minutes,
         format: item => item.sessions === 0 ? "-" : format_mins(item.total_duration_ms / item.sessions),
@@ -912,6 +919,13 @@
         <div class="total-title">{locale.Unique_IPs}</div>
         <div class="total-value">
           {data.ips}
+        </div>
+      </div>
+
+      <div class="total">
+        <div class="total-title">{locale.Max_concurrent_listeners}</div>
+        <div class="total-value">
+          {data.max_concurrent_listeners}
         </div>
       </div>
 

@@ -8,6 +8,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Total_transfer": "Transfert total",
   "Total_transfer_in_MB": "Transfert total en MB",
   "Unique_IPs": "IPs uniques",
+  "Max_concurrent_listeners": "Max. auditeurs simultanés",
 
   // @example Browser: Chrome
   "Browser": "Navigateur",

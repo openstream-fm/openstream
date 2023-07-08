@@ -14,6 +14,7 @@ export type Analytics = {
   ips: number;
   total_duration_ms: number;
   total_transfer_bytes: number;
+  max_concurrent_listeners: number;
   by_month: Array<AnalyticsItem<YearMonth>>;
   by_day: Array<AnalyticsItem<YearMonthDay>>;
   by_hour: Array<AnalyticsItem<number>>;
