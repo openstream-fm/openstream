@@ -81,9 +81,14 @@ pub fn run_relay_session(
           break 'root;
         }
 
-        match body.try_next().await? {
-          None => break 'root,
-          Some(bytes) => {
+        match body.try_next().await {
+          Err(e) => {
+            warn!("relay media session request stream error: {} => {:?}", e, e);
+            break 'root;
+          }
+
+          Ok(None) => break 'root,
+          Ok(Some(bytes)) => {
             transfer += bytes.len() as u64;
             dropper.transfer.store(transfer, Ordering::SeqCst);
             match tx.send(bytes) {

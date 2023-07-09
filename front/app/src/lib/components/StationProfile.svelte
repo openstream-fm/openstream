@@ -42,6 +42,8 @@
 	import TypeOfContentField from './Form/TypeOfContentField.svelte';
 	import type { StationTypeOfContent } from '$server/defs/db/StationTypeOfContent';
 	import { locale } from '$lib/locale';
+	import type { StationFrequency } from '$server/defs/StationFrequency';
+	import FrequencyField from './Form/FrequencyField.svelte';
 
 	export let account_id: string;
 	export let current: {
@@ -52,6 +54,7 @@
 		description: string | null;
 		country_code: CountryCode | "";
 		type_of_content: StationTypeOfContent | "",
+		frequency: StationFrequency | null,
 
 		email: string | null;
 		phone: string | null;
@@ -143,7 +146,9 @@
 			/>
 			<Validator value={current.type_of_content} fn={_string({ required: true })} />
 		</div>
-
+		<div class="field">
+			<FrequencyField bind:value={current.frequency} />
+		</div>
 	</div>
 
 </div>

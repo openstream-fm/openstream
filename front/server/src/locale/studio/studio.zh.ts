@@ -100,6 +100,14 @@ const locale: import("./studio.locale").StudioLocale = {
       "square": "图像必须是正方形",
     },
 
+    "frequency": {
+      "Main_frequency": "主频率",
+      "Frequency": "频率",
+      "Web_only": "仅限网页",
+      "Frequency_AM": "AM",
+      "Frequency_FM": "FM",
+    },
+
     "labels": {
       "name": "名称",
       "slogan": "口号",

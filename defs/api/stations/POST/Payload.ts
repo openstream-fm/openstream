@@ -25,7 +25,7 @@ export type Payload = {
   tiktok_url: string | null;
   google_play_url: string | null;
   app_store_url: string | null;
-  frequencies: Array<StationFrequency> | null;
+  frequency: StationFrequency | null;
   external_relay_url: string | null;
   user_metadata?: Metadata;
   system_metadata?: Metadata;

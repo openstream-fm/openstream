@@ -17,6 +17,10 @@
   export let minrows: number = 3;
   export let maxrows: number = 1000;
 
+  export let min: number | undefined = undefined;
+  export let max: number | undefined = undefined;
+  export let step: number | undefined = undefined;
+
   export let on_change: ((v: string) => void) | null = null; 
 
   $: empty = display_value === "";
@@ -51,5 +55,5 @@
 {#if multiline}
   <textarea class={css["forms-input"]} {maxlength} {rows} {autocomplete} {disabled} {readonly} value={display_value} on:input={event => on_input(event.currentTarget.value)} on:input />
 {:else}
-  <input {type} class={css["forms-input"]} {autocomplete} {disabled} {readonly} value={display_value} on:input={event => on_input(event.currentTarget.value)} on:input />
+  <input {type} class={css["forms-input"]} {min} {max} {step} {autocomplete} {disabled} {readonly} value={display_value} on:input={event => on_input(event.currentTarget.value)} on:input />
 {/if}

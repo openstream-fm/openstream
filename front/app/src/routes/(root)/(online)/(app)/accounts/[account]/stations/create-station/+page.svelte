@@ -15,6 +15,7 @@
 	import Formy from "$share/formy/Formy.svelte";
   import { locale } from "$lib/locale";
 	import { invalidate_siblings } from "$lib/invalidate";
+	import type { StationFrequency } from "$server/defs/StationFrequency";
 
   let start = {
     name: null as string | null,
@@ -41,6 +42,7 @@
     app_store_url: null as string | null,
 
     picture_id: null as string | null,
+    frequency: null as StationFrequency | null,
   }
 
   let current = clone(start);
@@ -72,7 +74,6 @@
       country_code,
       account_id: data.account._id,
       picture_id,
-      frequencies: null,
       external_relay_url: null,
     }
 

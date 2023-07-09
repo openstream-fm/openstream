@@ -16,7 +16,7 @@ export type Station = {
   type_of_content: StationTypeOfContent;
   country_code: CountryCode;
   description: string | null;
-  frequencies: Array<StationFrequency>;
+  frequency: StationFrequency | null;
   email: string | null;
   phone: string | null;
   whatsapp: string | null;

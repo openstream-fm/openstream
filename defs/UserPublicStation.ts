@@ -15,7 +15,7 @@ export type UserPublicStation = {
   description: string | null;
   type_of_content: StationTypeOfContent;
   country_code: CountryCode;
-  frequencies: Array<StationFrequency>;
+  frequency: StationFrequency | null;
   email: string | null;
   phone: string | null;
   whatsapp: string | null;

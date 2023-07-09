@@ -100,6 +100,14 @@ const locale: import("./studio.locale").StudioLocale = {
       "square": "L'immagine deve essere quadrata",
     },
 
+    "frequency": {
+      "Main_frequency": "Frequenza principale",
+      "Frequency": "Frequenza",
+      "Web_only": "Solo web",
+      "Frequency_AM": "AM",
+      "Frequency_FM": "FM",
+    },
+
     "labels": {
       "name": "Nome",
       "slogan": "Slogan",

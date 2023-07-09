@@ -50,12 +50,11 @@ pub struct Station {
   // location and language
   // pub language_id: Option<String>,
   // pub region_id: Option<String>,
+  // #[validate]
+  // #[deprecated(since = "0.8.4", note = "use frequency instead")]
+  // pub frequencies: Vec<StationFrequency>,
   #[validate]
-  pub frequencies: Vec<StationFrequency>,
-
-  // pìcs
-  // pub picture_id: String,
-  // pub hero_picture_id: Option<String>,
+  pub frequency: Option<StationFrequency>,
 
   // contact
   #[modify(trim, lowercase)]
@@ -270,11 +269,7 @@ pub struct UserPublicStation {
   // location and language
   // pub language_id: Option<String>,
   // pub region_id: Option<String>,
-  pub frequencies: Vec<StationFrequency>,
-
-  // pìcs
-  // pub picture_id: String,
-  // pub hero_picture_id: Option<String>,
+  pub frequency: Option<StationFrequency>,
 
   // contact
   pub email: Option<String>,
@@ -385,10 +380,19 @@ pub struct StationPatch {
   // location and language
   // pub language_id: Option<String>,
   // pub region_id: Option<String>,
+
+  // #[ts(optional)]
+  //#[serde(skip_serializing_if = "Option::is_none")]
+  // #[validate]
+  // pub frequencies: Option<Vec<StationFrequency>>,
   #[ts(optional)]
-  #[serde(skip_serializing_if = "Option::is_none")]
+  #[serde(
+    default,
+    deserialize_with = "map_some",
+    skip_serializing_if = "Option::is_none"
+  )]
   #[validate]
-  pub frequencies: Option<Vec<StationFrequency>>,
+  pub frequency: Option<Option<StationFrequency>>,
 
   // pìcs
   // pub picture_id: String,
@@ -703,7 +707,7 @@ impl Station {
     apply!(google_play_url);
     apply!(app_store_url);
 
-    apply!(frequencies);
+    apply!(frequency);
 
     apply!(external_relay_url);
 
@@ -741,9 +745,10 @@ impl From<Station> for UserPublicStation {
       picture_id: station.picture_id,
       type_of_content: station.type_of_content,
       country_code: station.country_code,
-      //language_id: station.language_id,
-      //region_id: station.region_id,
-      frequencies: station.frequencies,
+      // language_id: station.language_id,
+      // region_id: station.region_id,
+      // frequencies: station.frequencies,
+      frequency: station.frequency,
 
       //picture_id: station.picture_id,
       //hero_picture_id: station.hero_picture_id,
