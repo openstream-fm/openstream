@@ -37,10 +37,9 @@ export const clone = <T>(src: T): T => {
 }
 
 export const equals = <T>(src: T, target: T) => {
-  if(src == null && target == null) return true;
+  if(src == null || target == null) return src == target; // we treat null and undefined as the same
   const t = typeof src;
   if(t !== typeof target) return false;
-  if(src == null) return t == target; // we treat null and undefined as the same
   if(t === "function") throw new Error("equals: Cannot compare a function");
   if(t === "boolean" || t === "number" || t === "string") return src === target;
   if(t === "object") {
@@ -67,7 +66,6 @@ export const equals = <T>(src: T, target: T) => {
 
     const keys = new Set([
       ...Object.keys(src),
-      // @ts-ignore
       ...Object.keys(target),
     ])
 
@@ -80,7 +78,7 @@ export const equals = <T>(src: T, target: T) => {
 
   }
   
-  throw new Error(`equals: cannot compare unkown type ${t}`);
+  throw new Error(`equals: cannot compare unknown type ${t}`);
 }
 
 export const diff = <T extends Record<string, any>>(db: T, current: T): Partial<T> => {

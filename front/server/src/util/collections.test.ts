@@ -58,6 +58,14 @@ test('clone - should return the same boolean when a boolean is passed in', t => 
   t.deepEqual(clone(false), false);
 });
 
+test('equals - returns false for object vs null', t => {
+  t.false(equals({}, null));
+});
+
+test('equals - returns false for null vs object', t => {
+  t.false(equals(null, {}));
+});
+
 test('equals - returns true for equal numbers', t => {
   t.true(equals(1, 1));
 });
