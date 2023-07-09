@@ -32,6 +32,7 @@
     picture_id: data.station.picture_id as string | null,
     country_code: data.station.country_code as typeof data.station.country_code | "",
     type_of_content: data.station.type_of_content as typeof data.station.type_of_content | "",
+    frequency: data.station.frequency,
   };
 
   let current = clone(db);

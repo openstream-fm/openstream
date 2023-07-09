@@ -22,11 +22,12 @@
   --red: rgb(var(--red-rgb));
   --blue-rgb: 0, 116, 217;
   --blue: rgb(var(--blue-rgb));
+  --green-rgb: 117, 166, 51;
+  --green: rgb(var(--green-rgb));
+
   
   --loading-color: #218bff; /* rgb(32, 118, 232); */
   --loading-size: 3px;
-
-  --green: #75A633;
 
   --orange: #FF851B;
   --selection-blue: #C2DBFF;

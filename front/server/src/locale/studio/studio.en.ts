@@ -98,6 +98,14 @@ const locale = {
       "square": "Image must be square",
     },
 
+    "frequency": {
+      "Main_frequency": "Main frequency",
+      "Frequency": "Frequency",
+      "Web_only": "Web only",
+      "Frequency_AM": "AM",
+      "Frequency_FM": "FM",
+    },
+
     "labels": {
       "name": "Name",
       "slogan": "Slogan",

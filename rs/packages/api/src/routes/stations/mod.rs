@@ -328,9 +328,11 @@ pub mod post {
     )]
     pub app_store_url: Option<String>,
 
-    //#[serde(skip_serializing_if = "Option::is_none")]
+    // #[serde(skip_serializing_if = "Option::is_none")]
+    // #[validate]
+    // pub frequencies: Option<Vec<StationFrequency>>,
     #[validate]
-    pub frequencies: Option<Vec<StationFrequency>>,
+    pub frequency: Option<StationFrequency>,
 
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
@@ -485,7 +487,7 @@ pub mod post {
         google_play_url,
         app_store_url,
 
-        frequencies,
+        frequency,
 
         external_relay_url,
 
@@ -540,7 +542,7 @@ pub mod post {
         app_store_url,
         google_play_url,
 
-        frequencies: frequencies.unwrap_or_default(),
+        frequency,
 
         source_password: Station::random_source_password(),
         playlist_is_randomly_shuffled: false,

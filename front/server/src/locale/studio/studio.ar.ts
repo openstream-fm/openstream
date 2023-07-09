@@ -100,6 +100,14 @@ const locale: import("./studio.locale").StudioLocale = {
       "square": "يجب أن تكون الصورة مربعة",
     },
 
+    "frequency": {
+      "Main_frequency": "التردد الرئيسي",
+      "Frequency": "تردد",
+      "Web_only": "موقع الويب فقط",
+      "Frequency_AM": "AM",
+      "Frequency_FM": "FM",
+    },
+
     "labels": {
       "name": "الاسم",
       "slogan": "شعار",
