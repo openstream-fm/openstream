@@ -103,6 +103,7 @@ pub struct AnalyticsQuery {
   pub browser: Option<Option<String>>,
   pub os: Option<Option<String>>,
   pub domain: Option<Option<String>>,
+  pub min_duration_ms: Option<u64>,
 }
 
 pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::error::Error> {
@@ -213,6 +214,15 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
           // this convertion should never fail
           StreamConnectionLite::KEY_COUNTRY_CODE: mongodb::bson::to_bson(&cc).unwrap()
         }
+      ]
+    }
+  }
+
+  if let Some(d) = query.min_duration_ms {
+    filter = doc! {
+      "$and": [
+        filter,
+        { StreamConnectionLite::KEY_DURATION_MS: { "$gte": d as f64 } }
       ]
     }
   }

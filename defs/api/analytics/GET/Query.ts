@@ -9,4 +9,5 @@ export type Query = {
   os: string | null;
   domain: string | null;
   country_code: CountryCodeOrZZ | null;
+  min_duration_ms?: number;
 };
