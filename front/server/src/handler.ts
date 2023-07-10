@@ -10,8 +10,8 @@ const next_once = (fn: NextFunction): NextFunction => {
   return next;
 }
 
-export const json = <T>(fn: (req: Request, res: Response) => Promise<T>) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
+export const json = <Params, T>(fn: (req: Request<Params>, res: Response) => Promise<T>) => {
+  return async (req: Request<Params>, res: Response, next: NextFunction) => {
     let v: T;
     try {
       v = await fn(req, res);

@@ -27,7 +27,7 @@
 	import Validator from '$share/formy/Validator.svelte';
 	import { ripple } from '$share/ripple';
 	import { slide } from 'svelte/transition';
-	import { assert_never } from '../../../../../share/assert-never';
+	import { assert_never } from '$share/assert-never';
 	import NullNumberField from './Nullable/NullNumberField.svelte';
 	import { mdiSineWave } from '@mdi/js';
 </script>

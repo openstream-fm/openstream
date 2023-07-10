@@ -12,6 +12,7 @@ pub mod payment_methods;
 pub mod plans;
 pub mod runtime;
 pub mod station_pictures;
+pub mod stream_connections;
 pub mod stream_stats;
 
 use db::station_picture::StationPicture;
@@ -483,6 +484,10 @@ pub fn router(
   app
     .at("/payment-methods/:payment_method")
     .get(payment_methods::id::get::Endpoint {}.into_handler());
+
+  app
+    .at("/stream-connections")
+    .get(stream_connections::get::Endpoint {}.into_handler());
 
   // 404 catch all
   app.with(ResourceNotFound.into_handler());

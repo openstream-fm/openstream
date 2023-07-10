@@ -348,5 +348,10 @@ export const shared_api = ({
       return await client.payment_methods.get(ip(req), ua(req), get_token(req), req.params.payment_method);
     }))
 
+  api.route("/stream-connections")
+    .get(json(async req => {
+      return await client.stream_connections.list(ip(req), ua(req), get_token(req), req.query as any);
+    }))
+
   return api;
 }

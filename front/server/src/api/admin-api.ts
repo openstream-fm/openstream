@@ -52,44 +52,48 @@ export const admin_api = ({
   api.use(json_body_parser())
   api.use(session("admin", config, logger));
 
-  api.get("/status", (req, res) => {
-    res.json({ ok: true })
-  })
+  api.route("/status").get(json(async () => {
+    return { ok: true }
+  }));
 
-  api.get("/config", json(async (req) => {
-    const hosts = host("admin", config.hosts, req);
-    return public_config(hosts);
-  }))
+  api.route("/config")
+    .get(json(async (req) => {
+      const hosts = host("admin", config.hosts, req);
+      return public_config(hosts);
+    }))
 
-  api.post("/auth/admin/login", json(async (req, res) => {
-    const sess = req.cookie_session;
-    const r = await client.auth.admin.login(ip(req), ua(req), null, { ...req.body, device_id: sess.device_id });
-    const data = req.cookie_session;
-    res.set_session({ ...data, admin: { _id: r.admin._id, token: r.token, media_key: r.media_key  } });
-    return { admin: r.admin, media_key: r.media_key }
-  }))
+  api.route("/auth/admin/login")
+    .post(json(async (req, res) => {
+      const sess = req.cookie_session;
+      const r = await client.auth.admin.login(ip(req), ua(req), null, { ...req.body, device_id: sess.device_id });
+      const data = req.cookie_session;
+      res.set_session({ ...data, admin: { _id: r.admin._id, token: r.token, media_key: r.media_key  } });
+      return { admin: r.admin, media_key: r.media_key }
+    }))
 
-  api.post("/auth/admin/logout", json(async (req, res) => {
-    const r = await client.auth.admin.logout(ip(req), ua(req), admin_token(req)).catch(() => {});
-    const data = req.cookie_session;
-    res.set_session({ ...data, admin: null });
-    return r;
-  }))
+  api.route("/auth/admin/logout")
+    .post(json(async (req, res) => {
+      const r = await client.auth.admin.logout(ip(req), ua(req), admin_token(req)).catch(() => {});
+      const data = req.cookie_session;
+      res.set_session({ ...data, admin: null });
+      return r;
+    }))
 
-  api.post("/auth/admin/delegate/:user", json(async (req, res) => {
-    const { user, media_key, token } = await client.auth.admin.delegate(ip(req), ua(req), admin_token(req), req.params.user, req.body);
-    const data = req.cookie_session;
-    res.set_session({ ...data, user: { _id: user._id, token, media_key }});
-    return { user, media_key };
-  }))
+  api.route("/auth/admin/delegate/:user")
+    .post(json(async (req, res) => {
+      const { user, media_key, token } = await client.auth.admin.delegate(ip(req), ua(req), admin_token(req), req.params.user, req.body);
+      const data = req.cookie_session;
+      res.set_session({ ...data, user: { _id: user._id, token, media_key }});
+      return { user, media_key };
+    }))
 
   api.route("/plans")
-  .get(json(async req => {
-    return await client.plans.list(ip(req), ua(req), admin_token(req), req.query as any);
-  }))
-  .post(json(async req => {
-    return await client.plans.post(ip(req), ua(req), admin_token(req), req.body)
-  }))
+    .get(json(async req => {
+      return await client.plans.list(ip(req), ua(req), admin_token(req), req.query as any);
+    }))
+    .post(json(async req => {
+      return await client.plans.post(ip(req), ua(req), admin_token(req), req.body)
+    }))
 
   api.route("/plans/:plan")
     .get(json(async req => {

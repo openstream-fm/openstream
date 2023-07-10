@@ -12,7 +12,7 @@
 	import Email from "$lib/components/Form/Email.svelte";
   import { _message, _error } from "$share/notify";
   import { default_logger } from "$share/logger";
-	import { assert_never } from "../../../../../../../../share/assert-never";
+	import { assert_never } from "$share/assert-never";
 	import TextField from "$lib/components/Form/TextField.svelte";
 	import { mdiAccountOutline } from "@mdi/js";
 	import CircularProgress from "$share/CircularProgress.svelte";
