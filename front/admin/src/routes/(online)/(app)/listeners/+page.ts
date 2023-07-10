@@ -8,7 +8,7 @@ export const load = (async ({ fetch, url }) => {
   const params = new URLSearchParams();
   params.set("show", "open");
   params.set("limit", String(100_000));
-  params.set("sort", "creation-asc");
+  params.set("sort", "creation-desc");
   if(station_id) params.set("stations[]", station_id);
 
   let stream_connections = await load_get<import("$api/stream-connections/GET/Output").Output>(
