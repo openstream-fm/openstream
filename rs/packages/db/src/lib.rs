@@ -326,9 +326,13 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
     skip: u64,
     limit: i64,
   ) -> MongoResult<Paged<Self>> {
-    let sort = sort.into().unwrap_or(doc! { "$natural": 1 });
+    let sort = sort.into().unwrap_or_else(|| doc! { "$natural": 1 });
     let filter = filter.into();
-    let options = FindOptions::builder().sort(sort).build();
+    let options = FindOptions::builder()
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .build();
     let total = Self::cl().count_documents(filter.clone(), None).await?;
     let items = Self::cl()
       .find(filter, options)

@@ -21,6 +21,7 @@
 		mdiAccount,
 		mdiCurrencyUsd,
 		mdiShieldAccountOutline,
+		mdiConnection,
   } from "@mdi/js";
 	import { onMount } from "svelte";
 	import Icon from "$share/Icon.svelte";
@@ -191,6 +192,7 @@
       <DrawerItem href="/accounts" label="Accounts" icon={mdiAccountOutline} on_click={close_drawer_fixed} />
       <DrawerItem href="/stations" label="Stations" icon={mdiRadioTower} on_click={close_drawer_fixed} />
       <DrawerItem href="/plans" label="Plans" icon={mdiCurrencyUsd} on_click={close_drawer_fixed} />
+      <DrawerItem href="/listeners" label="Listeners" icon={mdiConnection} on_click={close_drawer_fixed} />
       <DrawerItem href="/analytics" label="Analytics" icon={mdiPoll} on_click={close_drawer_fixed} />
     </div>
   </div>

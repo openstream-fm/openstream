@@ -46,7 +46,7 @@
   });
 
   import type { ClickEvent } from "./AnalyticsData.svelte";
-  import { assert_never } from "../../assert-never";
+  import { assert_never } from "$share/assert-never";
   import { tick } from "svelte";
   const on_data_click = async (event: ClickEvent) => {
     if(event.kind === "country_code") {

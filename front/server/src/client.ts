@@ -32,6 +32,7 @@ export class Client {
   analytics: Analytics;
   invitations: AccountInvitations;
   payment_methods: PaymentMethods;
+  stream_connections: StreamConnections;
 
   constructor(base_url: string, { logger, fetch = node_fetch }: { logger: Logger, fetch?: typeof node_fetch }) {
     this.base_url = base_url.trim().replace(/\/+$/g, "")
@@ -49,6 +50,7 @@ export class Client {
     this.analytics = new Analytics(this);
     this.invitations = new AccountInvitations(this);
     this.payment_methods = new PaymentMethods(this);
+    this.stream_connections = new StreamConnections(this);
   }
 
   async fetch(_url: string, init: RequestInit = {}): Promise<Response> {
@@ -642,6 +644,17 @@ export class PaymentMethods {
 
   async get(ip: string | null, ua: string | null, token: string, payment_method_id: string): Promise<import("$api/payment-methods/[payment-method]/GET/Output").Output> {
     return await this.client.get(ip, ua, token, `/payment-methods/${payment_method_id}`);
+  }
+}
+
+export class StreamConnections {
+  client: Client;
+  constructor(client: Client) {
+    this.client = client;
+  }
+  
+  async list(ip: string | null, ua: string | null, token: string, query: import("$api/stream-connections/GET/Query").Query): Promise<import("$api/stream-connections/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/stream-connections${qss(query)}`);
   }
 }
 

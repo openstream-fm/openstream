@@ -158,7 +158,7 @@
     startOfWeek,
     sub,
   } from "date-fns";
-  import { assert_never } from "../../assert-never";
+  import { assert_never } from "$share/assert-never";
   import { page } from "$app/stores";
   import Icon from "$share/Icon.svelte";
   import {

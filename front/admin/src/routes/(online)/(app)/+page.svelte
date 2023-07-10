@@ -6,7 +6,7 @@
 	import StationSelector from "$share/Map/StationSelector.svelte";
 	import StatsMap from "$share/Map/StatsMap.svelte";
 	import { ripple } from "$share/ripple";
-	import { mdiAccountMultipleOutline, mdiAccountOutline, mdiCurrencyUsd, mdiPoll, mdiRadioTower, mdiShieldAccountOutline } from "@mdi/js";
+	import { mdiAccountMultipleOutline, mdiAccountOutline, mdiConnection, mdiCurrencyUsd, mdiPoll, mdiRadioTower, mdiShieldAccountOutline } from "@mdi/js";
 
   $: admins_subtitle = data.admins.total === 1 ? `${data.admins.total} admin` : `${data.admins.total} admins`;
   $: users_subtitle = data.users.total === 1 ? `${data.users.total} user` : `${data.users.total} users`;
@@ -159,6 +159,16 @@
       <div class="section-data">
         <div class="section-title">Plans</div>
         <div class="section-subtitle">{plans_subtitle}</div>
+      </div>
+    </a>
+
+    <a href="/listeners" class="na ripple-container section" use:ripple>
+      <div class="section-icon">
+        <Icon d={mdiConnection} />
+      </div>
+      <div class="section-data">
+        <div class="section-title">Listeners</div>
+        <div class="section-subtitle">live or hitorical listeners data</div>
       </div>
     </a>
 
