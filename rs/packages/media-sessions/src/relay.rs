@@ -38,7 +38,11 @@ pub fn run_relay_session(
     let station_id = tx.info.station_id.clone();
 
     let result = async {
-      info!("media session (relay) start for station {}", station_id,);
+      info!(
+        target: "internal-relay-recv",
+        "internal-relay media session for station {} started",
+        station_id
+      );
 
       let relay_session_doc = {
         use db::relay_session::*;
@@ -73,8 +77,6 @@ pub fn run_relay_session(
       let mut transfer = 0u64;
 
       let mut body = response.into_body();
-      // fill the burst without delay between chunk parts
-      // tokio::pin!(stream);
 
       'root: loop {
         if shutdown.is_closed() || tx.is_terminated() {
@@ -83,11 +85,25 @@ pub fn run_relay_session(
 
         match body.try_next().await {
           Err(e) => {
-            warn!("relay media session request stream error: {} => {:?}", e, e);
+            warn!(
+              target: "internal-relay-recv",
+              "internal-relay media session for station {} request stream error: {} => {:?}",
+              station_id,
+              e,
+              e
+            );
             break 'root;
           }
 
-          Ok(None) => break 'root,
+          Ok(None) => {
+            warn!(
+              target: "internal-relay-recv",
+              "internal-relay media session for station {} request stream end",
+              station_id
+            );
+            break 'root;
+          }
+
           Ok(Some(bytes)) => {
             transfer += bytes.len() as u64;
             dropper.transfer.store(transfer, Ordering::SeqCst);
@@ -122,7 +138,13 @@ pub fn run_relay_session(
     .await;
 
     if let Err(ref e) = result {
-      warn!("media session for station {station_id} error: {e} => {e:?}");
+      warn!(
+        target: "internal-relay-recv",
+        "internal-relay media session for station {} error: {} => {:?}",
+        station_id,
+        e,
+        e,
+      );
     }
 
     result
