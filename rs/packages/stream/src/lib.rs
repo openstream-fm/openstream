@@ -228,7 +228,7 @@ impl RelayHandler {
   }
 
   pub async fn handle(&self, req: Request) -> Result<Response, RelayError> {
-    let station_id = req.param("id").unwrap();
+    let station_id = req.param("id").unwrap().to_string();
 
     match req.headers().get(X_OPENSTREAM_RELAY_CODE) {
       None => return Err(RelayError::RelayCodeMismatch),
@@ -246,7 +246,7 @@ impl RelayHandler {
 
     let (mut rx, content_type) = {
       let lock = self.media_sessions.read();
-      match lock.get(station_id) {
+      match lock.get(&station_id) {
         None => {
           return Err(RelayError::NotStreaming);
         }
@@ -263,11 +263,36 @@ impl RelayHandler {
     tokio::spawn(async move {
       loop {
         match rx.recv().await {
-          Err(RecvError::Lagged(_)) => continue,
-          Err(RecvError::Closed) => break,
+          Err(RecvError::Lagged(_)) => {
+            warn!(
+              target: "internal-relay-tx",
+              "internal-relay session for station {} lagged",
+              station_id,
+            );
+            continue;
+          }
+
+          Err(RecvError::Closed) => {
+            info!(
+              target: "internal-relay-tx",
+              "internal-relay session for station {} recv closed",
+              station_id,
+            );
+            break;
+          }
+
           Ok(bytes) => match sender.send_data(bytes).await {
-            Err(_) => break,
-            Ok(_) => continue,
+            Err(e) => {
+              info!(
+                target: "internal-relay-tx",
+                "internal-relay session for station {} body send error: {} => {:?}",
+                station_id,
+                e,
+                e
+              )
+            }
+
+            Ok(()) => continue,
           },
         }
       }
