@@ -28,6 +28,10 @@ const locale = {
   account_welcome_message_3_html: "To start broadcasting right away, add your first station to your account",
 
   Create_my_first_station: "Create my first station",
+
+  "0_listeners": "0 listeners",
+  "1_listener": "1 listener",
+  "n_listeners": "@n listeners",
 }
 
 export default locale;

@@ -159,6 +159,13 @@ pub fn router(
     .into_handler(),
   );
 
+  app.at("/stream-stats/now/count-by-station").get(
+    stream_stats::now::count_by_station::get::Endpoint {
+      index: stream_connections_index.clone(),
+    }
+    .into_handler(),
+  );
+
   app
     .at("/stream-stats/last-:num([0-9]+):unit(ms|s|min|h|d|w)")
     .get(
@@ -244,6 +251,15 @@ pub fn router(
     }
     .into_handler(),
   );
+
+  app
+    .at("/accounts/:account/stream-stats/now/count-by-station")
+    .get(
+      accounts::stream_stats::now::count_by_station::get::Endpoint {
+        index: stream_connections_index.clone(),
+      }
+      .into_handler(),
+    );
 
   app
     .at("/accounts/:account/stream-stats/last-:num([0-9]+):unit(ms|s|min|h|d|w)")

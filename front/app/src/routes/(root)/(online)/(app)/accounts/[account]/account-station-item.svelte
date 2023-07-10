@@ -1,142 +1,167 @@
 <script lang="ts">
-	import { page } from "$app/stores";
-	import { locale } from "$lib/locale";
-	import { get_now_playing_store } from "$lib/now-playing";
-	import { intersect } from "$share/actions";
-	import { ripple } from "$share/ripple";
-	import { onMount } from "svelte";
+	import { page } from '$app/stores';
+	import { locale } from '$lib/locale';
+	import { get_now_playing_store } from '$lib/now-playing';
+	import { intersect } from '$share/actions';
+	import { ripple } from '$share/ripple';
+	import { onMount } from 'svelte';
 
-  export let station: import("$server/defs/PublicStation").PublicStation;
-  export let now_playing: import("$api/stations/[station]/now-playing/GET/Output").Output | undefined = undefined;
+	export let station: import('$server/defs/PublicStation').PublicStation;
+	export let session_count: number = 0;
+	export let now_playing:
+		| import('$api/stations/[station]/now-playing/GET/Output').Output
+		| undefined = undefined;
 
-  $: on_air = now_playing && !(now_playing.kind === "none" && !now_playing.start_on_connect);
+	$: on_air = now_playing && !(now_playing.kind === 'none' && !now_playing.start_on_connect);
 
-  let store: ReturnType<typeof get_now_playing_store> | null;
-  let unsub: (() => void) | null = null;
+	let store: ReturnType<typeof get_now_playing_store> | null;
+	let unsub: (() => void) | null = null;
 
-  onMount(() => {
-    store = get_now_playing_store(station._id, now_playing || null);
-    unsub = store.subscribe(v => {
-      now_playing = v?.info || undefined;
-    })
+	onMount(() => {
+		store = get_now_playing_store(station._id, now_playing || null);
+		unsub = store.subscribe((v) => {
+			now_playing = v?.info || undefined;
+		});
 
-    return () => {
-      if(unsub) unsub();
-    }
-  })
+		return () => {
+			if (unsub) unsub();
+		};
+	});
 
-  const enter = () => {
-    if(store != null) return;
-    store = get_now_playing_store(station._id, now_playing || null);
-    unsub = store.subscribe(v => {
-      now_playing = v?.info || undefined;
-    })
-  }
+	const enter = () => {
+		if (store != null) return;
+		store = get_now_playing_store(station._id, now_playing || null);
+		unsub = store.subscribe((v) => {
+			now_playing = v?.info || undefined;
+		});
+	};
 
-  const leave = () => {
-    if(unsub == null) return;
-    unsub();
-    unsub = null;
-    store = null;
-  }
+	const leave = () => {
+		if (unsub == null) return;
+		unsub();
+		unsub = null;
+		store = null;
+	};
 </script>
 
 <style>
-  .station {
-    /* border-top: 1px var(--red) solid; */
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    background: #fff;
-    box-shadow: var(--some-shadow);
-    border-radius: 0.35rem;
-  }
+	.station {
+		/* border-top: 1px var(--red) solid; */
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		background: #fff;
+		box-shadow: var(--some-shadow);
+		border-radius: 0.35rem;
+	}
 
-  .pic {
-    flex: none;
-    width: min(30%, 8rem);
-    aspect-ratio: 1;
-    margin: 1rem 1.5rem 1rem 1rem;
-    border-radius:  0.5rem;;
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
-  }
-  
-  .name {
-    font-size: 1.1rem;
-    margin-inline-end: 1rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-  }
+	.pic {
+		flex: none;
+		width: min(30%, 8rem);
+		aspect-ratio: 1;
+		margin: 1rem 1.5rem 1rem 1rem;
+		border-radius: 0.5rem;
+		background-size: contain;
+		background-position: center;
+		background-repeat: no-repeat;
+	}
 
-  .now-playing {
-    margin-top: 0.4rem;
-    font-size: 0.8rem;
-  }
+	.name {
+		font-size: 1.1rem;
+		margin-inline-end: 1rem;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		/* display: -webkit-box; */
+		/* -webkit-line-clamp: 2; */
+		/* -webkit-box-orient: vertical; */
+	}
 
-  .now-playing-state {
-    font-weight: 900;
-  }
+	.now-playing-sessions {
+		margin-top: 0.4rem;
+		font-size: 0.8rem;
+	}
 
-  .on-air .now-playing-state {
-    color: var(--green);
-  } 
+	.now-playing-state {
+		font-weight: 900;
+	}
 
-  .off-air .now-playing-state {
-    color: var(--red);
-  }
+	.on-air .now-playing-state {
+		color: var(--green);
+	}
 
-  .now-playing-sub {
+	.off-air .now-playing-state {
+		color: var(--red);
+	}
+
+  .sessions {
     margin-top: 0.25rem;
   }
+
+	.now-playing-sub {
+		margin-top: 0.25rem;
+	}
 </style>
 
-<a 
-  href="/accounts/{station.account_id}/stations/{station._id}"
-  class="na station ripple-container"
-  use:ripple
-  use:intersect={{ enter, leave }}
-  class:on-air={on_air}
-  class:off-air={!on_air}
+<a
+	href="/accounts/{station.account_id}/stations/{station._id}"
+	class="na station ripple-container"
+	use:ripple
+	use:intersect={{ enter, leave }}
+	class:on-air={on_air}
+	class:off-air={!on_air}
 >
-  <div class="pic" style:background-image="url({$page.data.config.storage_public_url}/station-pictures/webp/128/{station.picture_id}.webp)">
-  </div>
-  <div class="data">
-    <div class="name">{station.name}</div>
-    <div class="now-playing">
-      {#if now_playing}
-        <div class="now-playing-state">
-          {#if on_air}
-            {$locale.pages["account/dashboard"].station_item.on_air}
+	<div
+		class="pic"
+		style:background-image="url({$page.data.config.storage_public_url}/station-pictures/webp/128/{station.picture_id}.webp)"
+	/>
+
+	<div class="data">
+		<div class="name">{station.name}</div>
+
+		<div class="now-playing-sessions">
+			{#if now_playing}
+				<div class="now-playing-state">
+					{#if on_air}
+						{$locale.pages['account/dashboard'].station_item.on_air}
+					{:else}
+						{$locale.pages['account/dashboard'].station_item.off_air}
+					{/if}
+				</div>
+
+        <div class="sessions">
+          {#if session_count === 0}
+            {$locale.misc['0_listeners']}
+          {:else if session_count === 1}
+            {$locale.misc['1_listener']}
           {:else}
-            {$locale.pages["account/dashboard"].station_item.off_air}
+            {$locale.misc.n_listeners.replace('@n', String(session_count))}
           {/if}
         </div>
-        {#if now_playing.kind === "none"}
-          {#if now_playing.start_on_connect}
-            <div class="now-playing-sub">
-              {#if now_playing.external_relay_url != null}
-                {$locale.misc.Relay}  
-              {:else}
-                {$locale.pages["account/dashboard"].station_item.playlist}
-              {/if}
-            </div>
-          {/if}
-        {:else}
-          <div class="now-playing-sub">
-            {#if now_playing.kind === "live"}
-              {$locale.pages["account/dashboard"].station_item.live}
-            {:else if now_playing.kind === "playlist"}
-              {$locale.pages["account/dashboard"].station_item.playlist}
-            {:else if now_playing.kind === "external-relay"}
-              {$locale.misc.Relay}
-            {/if}
-          </div>
-        {/if}
-      {/if}
-  </div>
+    
+
+				{#if now_playing.kind === 'none'}
+					{#if now_playing.start_on_connect}
+						<div class="now-playing-sub">
+							{#if now_playing.external_relay_url != null}
+								{$locale.misc.Relay}
+							{:else}
+								{$locale.pages['account/dashboard'].station_item.playlist}
+							{/if}
+						</div>
+					{/if}
+				{:else}
+					<div class="now-playing-sub">
+						{#if now_playing.kind === 'live'}
+							{$locale.pages['account/dashboard'].station_item.live}
+						{:else if now_playing.kind === 'playlist'}
+							{$locale.pages['account/dashboard'].station_item.playlist}
+						{:else if now_playing.kind === 'external-relay'}
+							{$locale.misc.Relay}
+						{/if}
+					</div>
+				{/if}
+			{/if}
+		</div>
+	</div>
 </a>

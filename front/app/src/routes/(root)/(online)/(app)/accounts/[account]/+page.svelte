@@ -35,13 +35,12 @@
 	import AccountStationItem from "./account-station-item.svelte";
 	import { locale } from "$lib/locale";
 	import StationSelector from "$share/Map/StationSelector.svelte";
+	import { onMount } from "svelte";
   
   let view: View = "now";
 
   const units = [ "B", "KB", "MB", "GB", "TB" ];
-  
   const to_fixed_2 = (v: number): number => Math.round(v * 100) / 100; 
-
   const preety_bytes = (_v: number): string => {
     
     let v = _v;
@@ -55,6 +54,47 @@
 
     return `${to_fixed_2(v)} PB`;
   }
+
+  onMount(() => {
+    const UPDATE_INTERVAL = 5_000;
+    let on_screen = true;
+    let mounted = true;
+    const logger = default_logger.scoped("sessions-by-station");
+    (async () => {
+      let _prev_skip: boolean | null = null;
+      let last = Date.now();
+        while(true) {
+          await sleep(100)
+          const skip = document.visibilityState === "hidden" || !on_screen;
+          if(!mounted) return;
+          const prev_skip = _prev_skip;
+          _prev_skip = skip;
+          if(skip) {
+            if(skip !== prev_skip) {
+              logger.info(`pausing sessions-by-station update (document: ${document.visibilityState}, on_screen: ${on_screen})`);
+            }
+          } else {
+            if(skip !== prev_skip) {
+              logger.info(`(re)starting sessions-by-station update (document: ${document.visibilityState}, on_screen: ${on_screen})`);
+            }
+            if(Date.now() - last < UPDATE_INTERVAL) continue;
+            try {
+              const { by_station } = await _get<import("$api/accounts/[account]/stream-stats/now/count-by-station/GET/Output").Output>(`/api/accounts/${data.account._id}/stream-stats/now/count-by-station`);
+              logger.info(`account limits updated`);
+              data.sessions_by_station = by_station;
+            } catch(e) {
+              logger.warn(`error updating sessions-by-station: ${e}`);
+            } finally {
+              last = Date.now();
+            }
+          }
+        }
+      })()
+
+    return () => {
+      mounted = false;
+    }
+  })
 
   const LIMITS_UPDATE_INTERVAL = 5_000;
   let limits_on_screen = true;
@@ -258,7 +298,7 @@
     <div class="stations">
       {#each current_account_stations as station (station._id)}
         <div class="station">
-          <AccountStationItem {station} now_playing={data.now_playing_record[station._id]} />
+          <AccountStationItem {station} session_count={data.sessions_by_station[station._id]} now_playing={data.now_playing_record[station._id]} />
         </div>
       {/each}
     </div>

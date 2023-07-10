@@ -30,6 +30,10 @@ const locale: typeof import("./misc.en").default = {
   account_welcome_message_3_html: "Per iniziare a trasmettere ora, aggiungi la tua prima stazione al tuo account",
 
   Create_my_first_station: "Crea la mia prima stazione",
+
+  "0_listeners": "0 ascoltatori",
+  "1_listener": "1 ascoltatore",
+  "n_listeners": "@n ascoltatori",
 }
 
 export default locale;
