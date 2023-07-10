@@ -289,7 +289,9 @@ impl RelayHandler {
                 station_id,
                 e,
                 e
-              )
+              );
+
+              break;
             }
 
             Ok(()) => continue,
