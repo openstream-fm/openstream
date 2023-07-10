@@ -135,6 +135,16 @@ export const admin_api = ({
       return await client.get_stream_stats_item_now(ip(req), ua(req), admin_token(req));
     }))
 
+  api.route("/stream-stats/now/count")
+    .get(json(async req => {
+      return await client.get_stream_stats_item_now_count(ip(req), ua(req), admin_token(req));
+    }))
+
+  api.route("/stream-stats/now/count-by-station")
+    .get(json(async req => {
+      return await client.get_stream_stats_now_count_by_station(ip(req), ua(req), admin_token(req));
+    }))
+
   api.use(shared_api({
     client,
     get_token: admin_token,

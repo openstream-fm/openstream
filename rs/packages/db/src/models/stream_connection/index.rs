@@ -600,6 +600,46 @@ impl MemIndex {
 
     total
   }
+
+  pub async fn count_by_station<F: Filter + Send + Sync + 'static>(
+    &self,
+    station_ids: HashSet<String>,
+    filter: F,
+  ) -> HashMap<String, u32> {
+    let me = self.clone();
+    tokio::task::spawn_blocking(move || {
+      let lock = me.map.blocking_read();
+      let mut map = HashMap::with_capacity(station_ids.len());
+
+      for station_id in station_ids.into_iter() {
+        let n = {
+          match lock.by_station_id.get(&hash(&station_id)) {
+            None => 0_u32,
+            Some(map) => {
+              if filter.is_all() {
+                map.len() as u32
+              } else {
+                let mut n = 0_u32;
+
+                for conn in map.values() {
+                  if filter.filter(conn) {
+                    n = n.saturating_add(1);
+                  }
+                }
+                n
+              }
+            }
+          }
+        };
+
+        map.insert(station_id, n);
+      }
+
+      map
+    })
+    .await
+    .unwrap()
+  }
 }
 
 pub trait Filter: std::fmt::Display {

@@ -151,6 +151,64 @@ pub mod now {
       }
     }
   }
+
+  pub mod count_by_station {
+    use super::*;
+    pub mod get {
+
+      use std::collections::{HashMap, HashSet};
+
+      use db::{station::Station, stream_connection::index::IsOpenFilter, Model};
+
+      use super::*;
+      #[derive(Debug, Clone)]
+      pub struct Endpoint {
+        pub index: MemIndex,
+      }
+
+      #[derive(Debug, Clone)]
+      pub struct Input {}
+
+      #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+      #[ts(export)]
+      #[ts(export_to = "../../../defs/api/stream-stats/now/count-by-station/GET/")]
+      pub struct Output {
+        pub by_station: HashMap<String, u32>,
+      }
+
+      #[async_trait]
+      impl JsonHandler for Endpoint {
+        type Input = Input;
+        type Output = Output;
+        type ParseError = GetAccessTokenScopeError;
+        type HandleError = mongodb::error::Error;
+
+        async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
+          let access_token_scope = request_ext::get_access_token_scope(&req).await?;
+          if !access_token_scope.is_admin_or_global() {
+            return Err(GetAccessTokenScopeError::OutOfScope);
+          };
+          Ok(Input {})
+        }
+
+        async fn perform(&self, _input: Self::Input) -> Result<Self::Output, Self::HandleError> {
+          let bson_ids = Station::cl().distinct(Station::KEY_ID, None, None).await?;
+          let mut station_ids = HashSet::with_capacity(bson_ids.len());
+          for bson_id in bson_ids.into_iter() {
+            let id: String = mongodb::bson::from_bson(bson_id).unwrap();
+            station_ids.insert(id);
+          }
+
+          let by_station = self
+            .index
+            .count_by_station(station_ids, IsOpenFilter(true))
+            .await;
+
+          Ok(Output { by_station })
+        }
+      }
+    }
+  }
 }
 
 pub mod since {

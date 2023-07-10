@@ -267,6 +267,82 @@ pub mod now {
       }
     }
   }
+
+  pub mod count_by_station {
+
+    use super::*;
+    pub mod get {
+      use std::collections::{HashMap, HashSet};
+
+      use super::*;
+
+      use db::stream_connection::index::{IsOpenFilter, MemIndex};
+
+      #[derive(Debug, Clone)]
+      pub struct Endpoint {
+        pub index: MemIndex,
+      }
+
+      #[derive(Debug, Clone)]
+      pub struct Input {
+        account_id: String,
+      }
+
+      #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+      #[ts(export)]
+      #[ts(
+        export_to = "../../../defs/api/accounts/[account]/stream-stats/now/count-by-station/GET/"
+      )]
+      pub struct Output {
+        pub by_station: HashMap<String, u32>,
+      }
+
+      #[async_trait]
+      impl JsonHandler for Endpoint {
+        type Input = Input;
+        type Output = Output;
+        type ParseError = GetAccessTokenScopeError;
+        type HandleError = mongodb::error::Error;
+
+        async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
+          let account_id = req.param("account").unwrap();
+          let access_token_scope = request_ext::get_access_token_scope(&req).await?;
+          let account = access_token_scope.grant_account_scope(account_id).await?;
+          Ok(Input {
+            account_id: account.id,
+          })
+        }
+
+        async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
+          let Input { account_id } = input;
+
+          let station_ids = Station::cl()
+            .distinct(
+              Station::KEY_ID,
+              doc! { Station::KEY_ACCOUNT_ID: account_id },
+              None,
+            )
+            .await?;
+
+          if station_ids.is_empty() {
+            return Ok(Output {
+              by_station: HashMap::default(),
+            });
+          }
+
+          let mut set = HashSet::with_capacity(station_ids.len());
+          for id in station_ids {
+            let id: String = mongodb::bson::from_bson(id).unwrap();
+            set.insert(id);
+          }
+
+          let by_station = self.index.count_by_station(set, IsOpenFilter(true)).await;
+
+          Ok(Output { by_station })
+        }
+      }
+    }
+  }
 }
 
 pub mod since {

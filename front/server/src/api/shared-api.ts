@@ -101,6 +101,11 @@ export const shared_api = ({
       return await client.accounts.get_stream_stats_item_now_count(ip(req), ua(req), get_token(req), req.params.account);
     }))
 
+  api.route("/accounts/:account/stream-stats/now/count-by-station")
+    .get(json(async req => {
+      return await client.accounts.get_stream_stats_now_count_by_station(ip(req), ua(req), get_token(req), req.params.account);
+    }))
+
   api.route("/accounts/:account/stream-stats/last-:num([0-9]+):unit(ms|s|min|h|d|w)")
     .get(json(async req => {
       return await client.accounts.get_stream_stats_item_since(ip(req), ua(req), get_token(req), req.params.account, req.params.num, req.params.unit);
