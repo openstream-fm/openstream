@@ -423,112 +423,129 @@ impl StreamHandler {
         };
 
         let (rx, station) = 'rx: {
-          let (station, dropper) =
+          let (station, dropper) = 'station: {
             match Station::try_set_owner_deployment_info(station_id, info, drop_tracer.token())
               .await?
             {
+              Ok((station, dropper)) => {
+                break 'station (station, Some(dropper));
+              }
+
               Err(None) => {
                 return Err(StreamError::StationNotFound(station_id.to_string()));
               }
 
               Err(Some((station, owner_info))) => {
-                if owner_info.deployment_id == deployment_id {
-                  (station, None)
-                } else {
-                  let account = match Account::get_by_id(&station.account_id).await? {
-                    Some(account) => account,
-                    None => return Err(StreamError::AccountNotFound(station.account_id)),
-                  };
-
-                  if account.limits.transfer.avail() == 0 {
-                    return Err(StreamError::TransferLimit);
-                  }
-
-                  if account.limits.listeners.avail() == 0 {
-                    return Err(StreamError::ListenersLimit);
-                  }
-
-                  let deployment = match Deployment::get_by_id(&owner_info.deployment_id).await? {
-                    None => return Err(StreamError::DeploymentNotFound),
-                    Some(doc) => doc,
-                  };
-
-                  use rand::seq::SliceRandom;
-                  let stream_port = deployment.stream_ports.choose(&mut rand::thread_rng());
-
-                  let port = match stream_port {
-                    None => return Err(StreamError::DeploymentNoPort),
-                    Some(port) => *port,
-                  };
-
-                  let destination = SocketAddr::from((deployment.local_ip, port));
-
-                  let client = hyper::Client::default();
-
-                  let mut hyper_req = hyper::Request::builder().uri(format!(
-                    "http://{}:{}/relay/{}",
-                    destination.ip(),
-                    destination.port(),
-                    station_id
-                  ));
-
-                  for (key, value) in req.headers().clone().into_iter() {
-                    if let Some(key) = key {
-                      hyper_req = hyper_req.header(key, value);
-                    }
-                  }
-
-                  hyper_req = hyper_req
-                    .header(X_OPENSTREAM_RELAY_CODE, &owner_info.deployment_id)
-                    .header(
-                      "x-openstream-relay-remote-addr",
-                      format!("{}", req.remote_addr()),
-                    )
-                    .header(
-                      "x-openstream-relay-local-addr",
-                      format!("{}", req.local_addr()),
-                    )
-                    .header("x-openstream-relay-deployment-id", deployment_id)
-                    .header("x-openstream-relay-target-deployment-id", deployment_id)
-                    .header("connection", "close");
-
-                  let hyper_req = match hyper_req.body(Body::empty()) {
-                    Ok(req) => req,
-                    Err(e) => return Err(StreamError::InternalHyperCreateRequest(e)),
-                  };
-
-                  match client.request(hyper_req).await {
-                    Err(e) => return Err(StreamError::InternalHyperClientRequest(e)),
-                    Ok(hyper_res) => {
-                      // if error return the same error to the client
-                      if !hyper_res.status().is_success() {
-                        return Err(StreamError::RelayStatus(hyper_res.status()));
+                let relay_tx = 'relay_tx: {
+                  let lock = media_sessions.upgradable_read();
+                  if owner_info.deployment_id == deployment_id {
+                    break 'station (station, None);
+                  } else {
+                    match lock.get(station_id) {
+                      None => {
+                        break 'relay_tx lock.upgrade().transmit(
+                          station_id,
+                          media_sessions::MediaSessionKind::Relay {
+                            content_type: owner_info.content_type.clone(),
+                          },
+                        )
                       }
-
-                      let tx = media_sessions.write().transmit(
-                        station_id,
-                        media_sessions::MediaSessionKind::Relay {
-                          content_type: owner_info.content_type,
-                        },
-                      );
-                      let rx = tx.subscribe();
-                      run_relay_session(
-                        tx,
-                        deployment_id.to_string(),
-                        owner_info.deployment_id,
-                        hyper_res,
-                        shutdown.clone(),
-                        drop_tracer.clone(),
-                      );
-
-                      break 'rx (rx, station);
+                      Some(session) => {
+                        if session.info().kind().is_relay() {
+                          break 'station (station, None);
+                        } else {
+                          break 'relay_tx lock.upgrade().transmit(
+                            station_id,
+                            media_sessions::MediaSessionKind::Relay {
+                              content_type: owner_info.content_type.clone(),
+                            },
+                          );
+                        }
+                      }
                     }
+                  }
+                };
+
+                let account = match Account::get_by_id(&station.account_id).await? {
+                  Some(account) => account,
+                  None => return Err(StreamError::AccountNotFound(station.account_id)),
+                };
+
+                if account.limits.transfer.avail() == 0 {
+                  return Err(StreamError::TransferLimit);
+                }
+
+                if account.limits.listeners.avail() == 0 {
+                  return Err(StreamError::ListenersLimit);
+                }
+
+                let deployment = match Deployment::get_by_id(&owner_info.deployment_id).await? {
+                  None => return Err(StreamError::DeploymentNotFound),
+                  Some(doc) => doc,
+                };
+
+                use rand::seq::SliceRandom;
+                let stream_port = deployment.stream_ports.choose(&mut rand::thread_rng());
+
+                let port = match stream_port {
+                  None => return Err(StreamError::DeploymentNoPort),
+                  Some(port) => *port,
+                };
+
+                let destination = SocketAddr::from((deployment.local_ip, port));
+
+                let client = hyper::Client::default();
+
+                let mut hyper_req = hyper::Request::builder().uri(format!(
+                  "http://{}:{}/relay/{}",
+                  destination.ip(),
+                  destination.port(),
+                  station_id
+                ));
+
+                hyper_req = hyper_req
+                  .header(X_OPENSTREAM_RELAY_CODE, &owner_info.deployment_id)
+                  .header(
+                    "x-openstream-relay-remote-addr",
+                    format!("{}", req.remote_addr()),
+                  )
+                  .header(
+                    "x-openstream-relay-local-addr",
+                    format!("{}", req.local_addr()),
+                  )
+                  .header("x-openstream-relay-deployment-id", deployment_id)
+                  .header("x-openstream-relay-target-deployment-id", deployment_id)
+                  .header("connection", "close");
+
+                let hyper_req = match hyper_req.body(Body::empty()) {
+                  Ok(req) => req,
+                  Err(e) => return Err(StreamError::InternalHyperCreateRequest(e)),
+                };
+
+                match client.request(hyper_req).await {
+                  Err(e) => return Err(StreamError::InternalHyperClientRequest(e)),
+                  Ok(hyper_res) => {
+                    // if error return the same error to the client
+                    if !hyper_res.status().is_success() {
+                      return Err(StreamError::RelayStatus(hyper_res.status()));
+                    }
+
+                    let rx = relay_tx.subscribe();
+                    run_relay_session(
+                      relay_tx,
+                      deployment_id.to_string(),
+                      owner_info.deployment_id,
+                      hyper_res,
+                      shutdown.clone(),
+                      drop_tracer.clone(),
+                    );
+
+                    break 'rx (rx, station);
                   }
                 }
               }
-
-              Ok((station, dropper)) => (station, Some(dropper)),
-            };
+            }
+          };
 
           let account = match Account::get_by_id(&station.account_id).await? {
             Some(account) => account,
