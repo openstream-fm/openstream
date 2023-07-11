@@ -23,6 +23,19 @@
   export let domain: string | null | undefined;
   export let selected_stations: StationItem[] | "all";
 
+  const df = new Intl.DateTimeFormat(lang, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+    weekday: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  const total_date = (s: Date | string) => {
+    return df.format(new Date(s));
+  } 
+
   const is_station_selected = (id: string) => {
     return Array.isArray(selected_stations) && selected_stations.length === 1 && selected_stations[0]._id === id;
   }
@@ -732,6 +745,7 @@
           total_duration_ms: 0,
           total_transfer_bytes: 0,
           max_concurrent_listeners: 0,
+          max_concurrent_listeners_date: null,
         })
       } else {
         items.push(item)
@@ -906,6 +920,13 @@
   .map-tooltip-stat-value {
     font-weight: 700;
   }
+
+  .total-max-concurrent-date {
+    text-align: center;
+    font-weight: 400;
+    font-size: 0.9rem;
+    margin-top: 0.75rem;
+  }
 </style>
 
 <div class="analytics">
@@ -933,6 +954,11 @@
         <div class="total-title">{locale.Max_concurrent_listeners}</div>
         <div class="total-value">
           {data.max_concurrent_listeners}
+          {#if data.max_concurrent_listeners_date}
+            <div class="total-max-concurrent-date">
+              {total_date(data.max_concurrent_listeners_date)}
+            </div>
+          {/if}
         </div>
       </div>
 

@@ -2,6 +2,7 @@
 import type { AnalyticsItem } from "./AnalyticsItem";
 import type { AnalyticsStation } from "./AnalyticsStation";
 import type { CountryCode } from "../CountryCode";
+import type { DateTime } from "../DateTime";
 import type { YearMonth } from "./YearMonth";
 import type { YearMonthDay } from "./YearMonthDay";
 
@@ -15,6 +16,7 @@ export type Analytics = {
   total_duration_ms: number;
   total_transfer_bytes: number;
   max_concurrent_listeners: number;
+  max_concurrent_listeners_date: DateTime | null;
   by_month: Array<AnalyticsItem<YearMonth>>;
   by_day: Array<AnalyticsItem<YearMonthDay>>;
   by_hour: Array<AnalyticsItem<number>>;
