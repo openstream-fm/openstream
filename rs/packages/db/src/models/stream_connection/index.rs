@@ -256,9 +256,19 @@ impl MemIndex {
               let one_month_ago = time::OffsetDateTime::now_utc() - time::Duration::DAY * 30;
 
               let filter = doc! {
-                "$or": [
-                  { StreamConnectionLite::KEY_CREATED_AT: { "$gte": serde_util::DateTime::from(one_month_ago) } },
-                  { StreamConnectionLite::KEY_IS_OPEN: true },
+                "$and": [
+                  {
+                    "$or": [
+                      { StreamConnectionLite::KEY_DURATION_MS: null },
+                      { StreamConnectionLite::KEY_DURATION_MS: { "$gte": 5000 } }
+                    ]
+                  },
+                  {
+                    "$or": [
+                      { StreamConnectionLite::KEY_CREATED_AT: { "$gte": serde_util::DateTime::from(one_month_ago) } },
+                      { StreamConnectionLite::KEY_IS_OPEN: true },
+                    ]
+                  }
                 ]
               };
 
@@ -344,9 +354,13 @@ impl MemIndex {
                     }
 
                     Some(doc) => {
-                      let key = doc.id.clone();
-                      let item: Item = doc.into();
-                      map.write().await.insert(key, item);
+                      // ignore sessions that are finished and had last less that 5_000ms
+                      let retain = doc.duration_ms.is_none() || doc.duration_ms.unwrap() > 5_000;
+                      if retain {
+                        map.write().await.insert(doc.id.clone(), doc.into());
+                      } else {
+                        map.write().await.remove(&doc.id);
+                      }
                     }
                   }
                 }
