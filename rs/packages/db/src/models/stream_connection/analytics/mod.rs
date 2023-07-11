@@ -43,6 +43,8 @@ pub struct Analytics {
   #[serde(with = "serde_util::as_f64")]
   pub max_concurrent_listeners: u64,
 
+  pub max_concurrent_listeners_date: Option<serde_util::DateTime>,
+
   pub by_month: Vec<AnalyticsItem<YearMonth>>,
   pub by_day: Vec<AnalyticsItem<YearMonthDay>>,
   pub by_hour: Vec<AnalyticsItem<u8>>,
@@ -56,17 +58,18 @@ pub struct Analytics {
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/analytics/")]
 pub struct AnalyticsItem<K> {
-  key: K,
+  pub key: K,
   #[serde(with = "serde_util::as_f64")]
-  sessions: u64,
+  pub sessions: u64,
   #[serde(with = "serde_util::as_f64")]
-  ips: u64,
+  pub ips: u64,
   #[serde(with = "serde_util::as_f64")]
-  total_duration_ms: u64,
+  pub total_duration_ms: u64,
   #[serde(with = "serde_util::as_f64")]
-  total_transfer_bytes: u64,
+  pub total_transfer_bytes: u64,
   #[serde(with = "serde_util::as_f64")]
-  max_concurrent_listeners: u64,
+  pub max_concurrent_listeners: u64,
+  pub max_concurrent_listeners_date: Option<serde_util::DateTime>,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, TS)]
@@ -335,8 +338,9 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
       vec.sort_by(|a, b| a.0.cmp(&b.0));
 
       let mut max: u32 = 0;
+      let mut max_timestamp: u32 = 0;
       let mut current: u32 = 0;
-      for (_, start) in vec.into_iter() {
+      for (timestamp, start) in vec.into_iter() {
         if start {
           current = current.saturating_add(1);
         } else {
@@ -345,10 +349,19 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
 
         if current > max {
           max = current;
+          max_timestamp = timestamp
         }
       }
 
-      max as u64
+      let max_concurrent_listeners_date = if max_timestamp == 0 {
+        None
+      } else {
+        time::OffsetDateTime::from_unix_timestamp(max_timestamp as i64)
+          .ok()
+          .map(serde_util::DateTime::from)
+      };
+
+      (max as u64, max_concurrent_listeners_date)
     }};
   }
 
@@ -356,13 +369,19 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     ($acc:ident) => {
       $acc
         .into_iter()
-        .map(|(key, value)| AnalyticsItem::<_> {
-          key,
-          sessions: value.sessions,
-          ips: value.ips.len() as u64,
-          total_duration_ms: value.total_duration_ms,
-          total_transfer_bytes: value.total_transfer_bytes,
-          max_concurrent_listeners: max_concurrent!(value.start_stop_events),
+        .map(|(key, value)| {
+          let (max_concurrent_listeners, max_concurrent_listeners_date) =
+            max_concurrent!(value.start_stop_events);
+
+          AnalyticsItem::<_> {
+            key,
+            sessions: value.sessions,
+            ips: value.ips.len() as u64,
+            total_duration_ms: value.total_duration_ms,
+            total_transfer_bytes: value.total_transfer_bytes,
+            max_concurrent_listeners,
+            max_concurrent_listeners_date,
+          }
         })
         .collect::<Vec<_>>()
     };
@@ -401,6 +420,9 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
   sort_by_sessions!(by_station);
   sort_by_sessions!(by_domain);
 
+  let (max_concurrent_listeners, max_concurrent_listeners_date) =
+    max_concurrent!(start_stop_events);
+
   // render
   let out = Analytics {
     since: start_date,
@@ -410,7 +432,8 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     total_duration_ms,
     total_transfer_bytes,
     ips: ips.len() as u64,
-    max_concurrent_listeners: max_concurrent!(start_stop_events),
+    max_concurrent_listeners,
+    max_concurrent_listeners_date,
     stations,
     by_month,
     by_day,
