@@ -79,6 +79,9 @@ pub mod get {
 
     #[serde(default)]
     pub country_code: Option<CountryCodeOrZZ>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub min_duration_ms: Option<u64>,
   }
 
   #[derive(Debug, thiserror::Error)]
@@ -146,6 +149,7 @@ pub mod get {
         browser,
         os,
         domain,
+        min_duration_ms,
       } = query;
 
       let station_ids = match access_token_scope {
@@ -211,6 +215,7 @@ pub mod get {
         os,
         browser,
         domain,
+        min_duration_ms: Some(min_duration_ms.unwrap_or(5_000)),
       };
 
       let analytics = analytics::get_analytics(query).await?;
