@@ -15,30 +15,20 @@ pub mod get {
   use db::admin::{Admin, PublicAdmin};
   use ts_rs::TS;
 
+  use crate::qs::{PaginationQs, VisibilityQs};
+
   use super::*;
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  pub const DEFAULT_SKIP: u64 = 0;
-  pub const DEFAULT_LIMIT: i64 = 60;
-
-  pub fn default_skip() -> u64 {
-    DEFAULT_SKIP
-  }
-
-  pub fn default_limit() -> i64 {
-    DEFAULT_LIMIT
-  }
-
   #[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
   #[ts(export, export_to = "../../../defs/api/admins/GET/")]
-  struct Query {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    skip: Option<u64>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    limit: Option<i64>,
+  pub struct Query {
+    #[serde(flatten)]
+    pub page: PaginationQs,
+    #[serde(flatten)]
+    pub show: VisibilityQs,
   }
 
   #[derive(Debug, Clone)]
@@ -92,13 +82,14 @@ pub mod get {
     async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
       let Self::Input { query } = input;
 
-      let Query { skip, limit } = query;
+      let Query {
+        page: PaginationQs { skip, limit },
+        show: VisibilityQs { show },
+      } = query;
 
-      let skip = skip.unwrap_or_else(default_skip);
-      let limit = limit.unwrap_or_else(default_limit);
       let sort = doc! { Admin::KEY_CREATED_AT: 1 };
 
-      let page = Admin::paged(None, Some(sort), skip, limit)
+      let page = Admin::paged(show.to_filter_doc(), sort, skip, limit)
         .await?
         .map(Admin::into_public);
 

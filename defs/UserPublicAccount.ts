@@ -12,4 +12,5 @@ export type UserPublicAccount = {
   created_at: DateTime;
   updated_at: DateTime;
   user_metadata: Metadata;
+  deleted_at: DateTime | null;
 };

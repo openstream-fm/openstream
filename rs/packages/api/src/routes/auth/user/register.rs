@@ -438,6 +438,7 @@ pub mod post {
         system_metadata: user_system_metadata,
         created_at: now,
         updated_at: now,
+        deleted_at: None,
       };
 
       let limits = Limits {
@@ -469,6 +470,7 @@ pub mod post {
         system_metadata: account_system_metadata,
         created_at: now,
         updated_at: now,
+        deleted_at: None,
       };
 
       let relation = UserAccountRelation {

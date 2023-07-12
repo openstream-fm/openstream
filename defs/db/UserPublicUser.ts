@@ -9,7 +9,8 @@ export type UserPublicUser = {
   email: string;
   phone: string | null;
   language: string | null;
+  user_metadata: Metadata;
   created_at: DateTime;
   updated_at: DateTime;
-  user_metadata: Metadata;
+  deleted_at: DateTime | null;
 };

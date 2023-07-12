@@ -8,11 +8,11 @@
 	import { ripple } from "$share/ripple";
 	import { mdiAccountMultipleOutline, mdiAccountOutline, mdiConnection, mdiCurrencyUsd, mdiPoll, mdiRadioTower, mdiShieldAccountOutline } from "@mdi/js";
 
-  $: admins_subtitle = data.admins.total === 1 ? `${data.admins.total} admin` : `${data.admins.total} admins`;
-  $: users_subtitle = data.users.total === 1 ? `${data.users.total} user` : `${data.users.total} users`;
-  $: accounts_subtitle = data.accounts.total === 1 ? `${data.accounts.total} account` : `${data.accounts.total} accounts`;
-  $: stations_subtitle = data.stations.total === 1 ? `${data.stations.total} station` : `${data.stations.total} stations`;
-  $: plans_subtitle = data.plans.items.length === 1 ? `${data.plans.items.length} plan` : `${data.plans.items.length} plans`;
+  $: admins_subtitle = data.admins.length === 1 ? `${data.admins.length} admin` : `${data.admins.length} admins`;
+  $: users_subtitle = data.users.length === 1 ? `${data.users.length} user` : `${data.users.length} users`;
+  $: accounts_subtitle = data.accounts.length === 1 ? `${data.accounts.length} account` : `${data.accounts.length} accounts`;
+  $: stations_subtitle = data.stations.length === 1 ? `${data.stations.length} station` : `${data.stations.length} stations`;
+  $: plans_subtitle = data.plans.length === 1 ? `${data.plans.length} plan` : `${data.plans.length} plans`;
 
   let map_view: "now" | "last_24h" | "last_7d" | "last_30d" = "now";
 
@@ -21,7 +21,7 @@
     kind: "all",
     record_id: "",
     station: null,
-    stations: data.stations.items,
+    stations: data.stations,
     stats: data.stats,
     storage_public_url: data.config.storage_public_url,
   }

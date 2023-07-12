@@ -12,9 +12,9 @@
 
   type Item = typeof data.stream_connections.items[number];
 
-  const item_station = (item: Item): typeof data.stations.items[number] | null => {
+  const item_station = (item: Item): typeof data.stations[number] | null => {
     const id = item.station_id;
-    return data.stations.items.find(item => item._id === id) ?? null;
+    return data.all_stations.find(item => item._id === id) ?? null;
   }
 
   const website = (item: Item): string | null => {

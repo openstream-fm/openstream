@@ -7,7 +7,7 @@
 	import { mdiAccountOutline } from "@mdi/js";
 
   const get_stations_for_account = (_data: typeof data, account_id: string) => {
-    return _data.stations.items.filter(item => item.account_id === account_id)
+    return _data.stations.filter(item => item.account_id === account_id)
   }
 </script>
 
@@ -62,12 +62,12 @@
       Accounts
     </svelte:fragment>
     <svelte:fragment slot="subtitle">
-      {data.accounts.total} {data.accounts.total === 1 ? "account" : "accounts"}
+      {data.accounts.length} {data.accounts.length === 1 ? "account" : "accounts"}
     </svelte:fragment>
   </PageTop>
 
   <div class="list">
-    {#each data.accounts.items as item (item._id)}
+    {#each data.accounts as item (item._id)}
       {@const stations = get_stations_for_account(data, item._id)}
       <a href="/accounts/{item._id}" class="na item ripple-container" use:ripple>
         <div class="item-title">{item.name}</div>

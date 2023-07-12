@@ -18,10 +18,11 @@ pub struct Account {
   pub payment_method_id: Option<String>,
   pub name: String,
   pub limits: Limits,
-  pub created_at: DateTime,
-  pub updated_at: DateTime,
   pub user_metadata: Metadata,
   pub system_metadata: Metadata,
+  pub created_at: DateTime,
+  pub updated_at: DateTime,
+  pub deleted_at: Option<DateTime>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -37,6 +38,7 @@ pub struct UserPublicAccount {
   pub created_at: DateTime,
   pub updated_at: DateTime,
   pub user_metadata: Metadata,
+  pub deleted_at: Option<DateTime>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -106,6 +108,7 @@ impl From<Account> for UserPublicAccount {
       created_at: account.created_at,
       updated_at: account.updated_at,
       user_metadata: account.user_metadata,
+      deleted_at: account.deleted_at,
     }
   }
 }

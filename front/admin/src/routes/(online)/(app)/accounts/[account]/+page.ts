@@ -3,15 +3,15 @@ import { error } from "@sveltejs/kit";
 
 export const load = (async ({ parent, params, fetch, url }) => {
   
-  const { stations, accounts, plans } = await parent();
+  const { all_stations, all_accounts, all_plans } = await parent();
 
-  const account = accounts.items.find(item => item._id === params.account);
+  const account = all_accounts.find(item => item._id === params.account);
 
   if(account == null) throw error(404, { status: 404, message: "Account not found", code: "FRONT_RESOURCE_NOT_FOUND" })
 
-  const plan = plans.items.find(plan => plan._id === account.plan_id);
+  const plan = all_plans.find(plan => plan._id === account.plan_id);
 
-  const account_stations = stations.items.filter(item => {
+  const account_stations = all_stations.filter(item => {
     return item.account_id === account._id;
   })
 

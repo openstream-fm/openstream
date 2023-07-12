@@ -268,15 +268,16 @@ pub mod post {
             let user = User {
               id: user_id.clone(),
               email: invitation.receiver_email.clone(),
-              password: Some(hash),
-              phone: phone.clone(),
-              user_metadata: Default::default(),
-              system_metadata: Default::default(),
               first_name: first_name.clone(),
               last_name: last_name.clone(),
+              password: Some(hash),
+              phone: phone.clone(),
+              language: None,
+              user_metadata: Default::default(),
+              system_metadata: Default::default(),
               created_at: now,
               updated_at: now,
-              language: None,
+              deleted_at: None,
             };
 
             let user = User::validify(user.into())?;

@@ -25,47 +25,24 @@ use ts_rs::TS;
 
 pub mod get {
 
-  use db::{current_filter_doc, deleted_filter_doc};
+  use crate::qs::{PaginationQs, VisibilityQs};
 
   use super::*;
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  pub const DEFAULT_SKIP: u64 = 0;
-  pub const DEFAULT_LIMIT: i64 = 60;
-
-  pub fn default_skip() -> u64 {
-    DEFAULT_SKIP
-  }
-
-  pub fn default_limit() -> i64 {
-    DEFAULT_LIMIT
-  }
-
   #[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
   #[ts(export, export_to = "../../../defs/api/stations/GET/")]
   struct Query {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    skip: Option<u64>,
+    #[serde(flatten)]
+    pub page: PaginationQs,
+
+    #[serde(flatten)]
+    pub show: VisibilityQs,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    limit: Option<i64>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    account_id: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    active: Option<QueryActive>,
-  }
-
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../../defs/api/stations/GET/")]
-  #[serde(rename_all = "kebab-case")]
-  pub enum QueryActive {
-    Deleted,
-    Active,
-    All,
+    pub account_id: Option<String>,
   }
 
   #[derive(Debug, Clone)]
@@ -123,38 +100,26 @@ pub mod get {
       } = input;
 
       let Query {
-        skip,
-        limit,
+        page: PaginationQs { skip, limit },
+        show: VisibilityQs { show },
         account_id,
-        active,
       } = query;
 
-      let skip = skip.unwrap_or_else(default_skip);
-      let limit = limit.unwrap_or_else(default_limit);
+      let mut filters = vec![show.to_filter_doc()];
 
-      let query_account_filter = match account_id {
-        None => doc! {},
-        Some(account_id) => doc! { Station::KEY_ACCOUNT_ID: account_id },
-      };
-
-      let query_active_filter = match active {
-        None => current_filter_doc! {},
-        Some(QueryActive::Active) => current_filter_doc! {},
-        Some(QueryActive::Deleted) => deleted_filter_doc! {},
-        Some(QueryActive::All) => doc! {},
+      match account_id {
+        Some(account_id) => filters.push(doc! { Station::KEY_ACCOUNT_ID: account_id }),
+        None => {}
       };
 
       let sort = doc! { Station::KEY_CREATED_AT: 1 };
 
       let page = match access_token_scope {
-        AccessTokenScope::Global | AccessTokenScope::Admin(_) => Station::paged(
-          doc! { "$and": [ query_active_filter, query_account_filter ] },
-          sort,
-          skip,
-          limit,
-        )
-        .await?
-        .map(|item| item.into_public(PublicScope::Admin)),
+        AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
+          Station::paged(doc! { "$and": filters }, sort, skip, limit)
+            .await?
+            .map(|item| item.into_public(PublicScope::Admin))
+        }
 
         AccessTokenScope::User(user) => {
           let filter = doc! { UserAccountRelation::KEY_USER_ID: &user.id };
@@ -171,9 +136,9 @@ pub mod get {
             }));
           }
 
-          let filter = doc! { "$and": [ query_active_filter, query_account_filter, { Station::KEY_ACCOUNT_ID: { "$in": account_ids } } ] };
+          filters.push(doc! { Station::KEY_ACCOUNT_ID: { "$in": account_ids } });
 
-          Station::paged(filter, sort, skip, limit)
+          Station::paged(doc! { "$and": filters }, sort, skip, limit)
             .await?
             .map(|item| item.into_public(PublicScope::User))
         }

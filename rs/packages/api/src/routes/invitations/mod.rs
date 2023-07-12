@@ -123,6 +123,10 @@ impl From<User> for InvitationReceiver {
 
 pub mod get {
 
+  use mongodb::bson::Document;
+
+  use crate::qs::{PaginationQs, VisibilityQs};
+
   use super::*;
 
   #[derive(Debug)]
@@ -134,10 +138,11 @@ pub mod get {
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../../defs/api/invitations/GET/")]
   pub struct Query {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub skip: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub limit: Option<u64>,
+    #[serde(flatten)]
+    pub page: PaginationQs,
+    #[serde(flatten)]
+    pub show: VisibilityQs,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user_sender_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -212,23 +217,20 @@ pub mod get {
       } = input;
 
       let Query {
-        skip,
-        limit,
+        page: PaginationQs { skip, limit },
+        show: VisibilityQs { show },
         account_id,
         receiver_email,
         user_sender_id,
         admin_sender_id,
       } = query;
 
-      let skip = skip.unwrap_or(0);
-      let limit = limit.unwrap_or(60);
-
       let sort = doc! { AccountInvitation::KEY_CREATED_AT: 1 };
 
-      let filter = match &access_token_scope {
-        AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
-          let mut filters = vec![];
+      let mut filters: Vec<Document> = vec![show.to_filter_doc()];
 
+      match &access_token_scope {
+        AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
           if let Some(user_id) = user_sender_id {
             filters.push(doc! { AccountInvitation::KEY_USER_SENDER_ID: user_id });
           }
@@ -244,12 +246,6 @@ pub mod get {
           if let Some(account_id) = account_id {
             filters.push(doc! { AccountInvitation::KEY_ACCOUNT_ID: account_id });
           }
-
-          if filters.is_empty() {
-            doc! {}
-          } else {
-            doc! { "$and": filters }
-          }
         }
 
         AccessTokenScope::User(user) => {
@@ -259,16 +255,18 @@ pub mod get {
               .grant_account_owner_scope(&account_id)
               .await?;
 
-            doc! { AccountInvitation::KEY_ACCOUNT_ID: account_id }
+            filters.push(doc! { AccountInvitation::KEY_ACCOUNT_ID: account_id });
           } else {
             // if no account is requested we resolve to the invitations
             // where the target user is the access token user
-            doc! { AccountInvitation::KEY_RECEIVER_EMAIL: &user.email }
+            filters.push(doc! { AccountInvitation::KEY_RECEIVER_EMAIL: &user.email });
           }
         }
       };
 
-      let page = AccountInvitation::paged(filter, sort, skip, limit as i64).await?;
+      let filter = doc! { "$and": filters };
+
+      let page = AccountInvitation::paged(filter, sort, skip, limit).await?;
 
       let page = page
         .try_map_async(10, |item| async move {

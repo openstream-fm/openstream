@@ -1,6 +1,7 @@
 export type JsonValue<T = never> = 
   null | 
   undefined |
+  void | 
   boolean | 
   number | 
   string | 

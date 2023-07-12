@@ -33,9 +33,10 @@ pub struct PublicAdmin {
   pub first_name: String,
   pub last_name: String,
   pub email: String,
+  pub system_metadata: Metadata,
   pub created_at: DateTime,
   pub updated_at: DateTime,
-  pub system_metadata: Metadata,
+  pub deleted_at: Option<DateTime>,
 }
 
 impl Admin {
@@ -45,9 +46,10 @@ impl Admin {
       first_name: self.first_name,
       last_name: self.last_name,
       email: self.email,
+      system_metadata: self.system_metadata,
       created_at: self.created_at,
       updated_at: self.updated_at,
-      system_metadata: self.system_metadata,
+      deleted_at: self.deleted_at,
     }
   }
 }

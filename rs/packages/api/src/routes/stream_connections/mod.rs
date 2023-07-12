@@ -11,6 +11,7 @@ pub mod get {
   use serde::{Deserialize, Serialize};
   use ts_rs::TS;
 
+  use crate::qs::PaginationQs;
   use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
   use crate::{error::ApiError, json::JsonHandler};
 
@@ -36,23 +37,21 @@ pub mod get {
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
   #[ts(export, export_to = "../../../defs/api/stream-connections/GET/")]
-  struct Query {
+  pub struct Query {
+    #[serde(flatten)]
+    pub page: PaginationQs,
     #[serde(skip_serializing_if = "Option::is_none")]
-    show: Option<ShowQuery>,
+    pub show: Option<ShowQuery>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    sort: Option<SortQuery>,
+    pub sort: Option<SortQuery>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    limit: Option<i64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    skip: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    stations: Option<Vec<String>>,
+    pub stations: Option<Vec<String>>,
   }
 
   #[derive(Debug, Clone)]
   pub struct Input {
-    access_token_scope: AccessTokenScope,
-    query: Query,
+    pub access_token_scope: AccessTokenScope,
+    pub query: Query,
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -121,15 +120,11 @@ pub mod get {
       } = input;
 
       let Query {
+        page: PaginationQs { skip, limit },
         show,
         stations,
         sort,
-        limit,
-        skip,
       } = query;
-
-      let limit = limit.unwrap_or(60);
-      let skip = skip.unwrap_or(0);
 
       let scope_filter = match access_token_scope {
         AccessTokenScope::Global | AccessTokenScope::Admin(_) => doc! {},

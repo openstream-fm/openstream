@@ -67,7 +67,7 @@
   </PageTop>
   
   <Analytics
-    stations={data.stations.items}
+    stations={data.stations}
     bind:data={analytics_data}
     bind:loading
     bind:selected_stations

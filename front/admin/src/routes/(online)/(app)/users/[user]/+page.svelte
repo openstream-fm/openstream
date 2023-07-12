@@ -245,7 +245,7 @@
     </div>
     <div class="section-box accounts">
       {#each data.user_accounts.items as account (account._id)}
-        {@const stations = data.stations.items.filter(item => item.account_id === account._id)}
+        {@const stations = data.stations.filter(item => item.account_id === account._id)}
         <a href="/accounts/{account._id}" class="na section-item account-item ripple-container" use:ripple>
           <div class="account-name">
             {account.name}

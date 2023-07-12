@@ -9,8 +9,9 @@ export type AdminPublicUser = {
   email: string;
   phone: string | null;
   language: string | null;
-  created_at: DateTime;
-  updated_at: DateTime;
   user_metadata: Metadata;
   system_metadata: Metadata;
+  created_at: DateTime;
+  updated_at: DateTime;
+  deleted_at: DateTime | null;
 };

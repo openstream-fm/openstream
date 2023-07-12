@@ -15,7 +15,7 @@
     station: null,
     kind: "account",
     record_id: data.account._id,
-    stations: data.stations.items,
+    stations: data.stations,
     stats: data.stats,
     storage_public_url: data.config.storage_public_url,
   }

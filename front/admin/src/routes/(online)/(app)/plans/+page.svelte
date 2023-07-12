@@ -4,13 +4,10 @@
 	import PageTop from "$lib/components/PageMenu/PageTop.svelte";
 	import { ripple } from "$share/ripple";
 	import { mdiCurrencyUsd } from "@mdi/js";
-	import PlanForm from "./PlanForm.svelte";
-
-  $: active_plans = data.plans.items.filter(item => item.deleted_at == null);
 
   const count_accounts = (accounts: typeof data.accounts, plan_id: string): number => {
     let count = 0;
-    for(const account of accounts.items) {
+    for(const account of accounts) {
       if(account.plan_id === plan_id) count += 1;
     }
     return count;
@@ -83,7 +80,7 @@
     </svelte:fragment>
     
     <svelte:fragment slot="subtitle">
-      {active_plans.length} {active_plans.length === 1 ? "plan" : "plans"}
+      {data.plans.length} {data.plans.length === 1 ? "plan" : "plans"}
     </svelte:fragment>
 
     <a slot="action" href="/plans/create-plan" class="na top-action ripple-container" use:ripple>
@@ -93,7 +90,7 @@
   
 
   <div class="list">
-    {#each active_plans as item (item._id)}
+    {#each data.plans as item (item._id)}
       {@const accounts = count_accounts(data.accounts, item._id)}
       <a href="/plans/{item._id}" class="na item ripple-container" use:ripple>
         <div class="item-title">{item.display_name}</div>

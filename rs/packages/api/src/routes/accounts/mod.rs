@@ -6,6 +6,7 @@ use crate::json::JsonHandler;
 use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
 
 use crate::error::ApiError;
+use crate::qs::{PaginationQs, VisibilityQs};
 use async_trait::async_trait;
 use db::account::Account;
 use db::account::PublicAccount;
@@ -25,25 +26,14 @@ pub mod get {
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  pub const DEFAULT_SKIP: u64 = 0;
-  pub const DEFAULT_LIMIT: i64 = 60;
-
-  pub fn default_skip() -> u64 {
-    DEFAULT_SKIP
-  }
-
-  pub fn default_limit() -> i64 {
-    DEFAULT_LIMIT
-  }
-
   #[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
   #[ts(export, export_to = "../../../defs/api/accounts/GET/")]
-  struct Query {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    skip: Option<u64>,
+  pub struct Query {
+    #[serde(flatten)]
+    page: PaginationQs,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    limit: Option<i64>,
+    #[serde(flatten)]
+    show: VisibilityQs,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     user_id: Option<String>,
@@ -104,13 +94,10 @@ pub mod get {
       } = input;
 
       let Query {
-        skip,
-        limit,
+        page: PaginationQs { skip, limit },
+        show: VisibilityQs { show },
         user_id,
       } = query;
-
-      let skip = skip.unwrap_or_else(default_skip);
-      let limit = limit.unwrap_or_else(default_limit);
 
       let query_user_filter = match user_id {
         None => doc! {},
@@ -124,11 +111,13 @@ pub mod get {
         }
       };
 
+      let common_filter = doc! { "$and": [ show.to_filter_doc(), query_user_filter ] };
+
       let sort = doc! { Account::KEY_CREATED_AT: 1 };
 
       let page = match access_token_scope {
         AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
-          Account::paged(Some(query_user_filter), Some(sort), skip, limit)
+          Account::paged(common_filter, Some(sort), skip, limit)
             .await?
             .map(|item| item.into_public(PublicScope::Admin))
         }
@@ -149,7 +138,7 @@ pub mod get {
           }
 
           let filter =
-            doc! { "$and": [ query_user_filter, { Account::KEY_ID: { "$in": account_ids } } ] };
+            doc! { "$and": [ common_filter, { Account::KEY_ID: { "$in": account_ids } } ] };
 
           Account::paged(filter, Some(sort), skip, limit)
             .await?
@@ -357,6 +346,7 @@ pub mod post {
         user_metadata,
         created_at: now,
         updated_at: now,
+        deleted_at: None,
       };
 
       let relation = UserAccountRelation {
