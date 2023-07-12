@@ -417,6 +417,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     state: DeploymentState::Active,
     created_at: now,
     updated_at: now,
+    health_checked_at: Some(now),
     dropped_at: None,
   };
 
@@ -553,6 +554,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   let deployment_id = deployment.id.clone();
   Deployment::insert(&deployment).await?;
 
+  tokio::spawn(db::deployment::start_health_check_job(deployment_id.clone()));
   tokio::spawn(db::station_picture::upgrade_images_if_needed());
 
   tokio::spawn({

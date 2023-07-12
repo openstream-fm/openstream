@@ -38,6 +38,10 @@ pub struct Deployment {
   pub created_at: DateTime,
   pub updated_at: DateTime,
 
+  // TODO: this Option is for back compat only
+  // create a migration and change this to DateTime
+  pub health_checked_at: Option<DateTime>,
+
   pub dropped_at: Option<DateTime>,
 }
 
@@ -69,6 +73,29 @@ impl Model for Deployment {
       .build();
 
     vec![state, created_at, dropped_at]
+  }
+}
+
+pub async fn start_health_check_job(deployment_id: String) {
+  let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(
+    constants::DEPLOYMENT_HEALTH_CHECK_INTERVAL_SECS as u64,
+  ));
+  loop {
+    interval.tick().await;
+    let now = serde_util::DateTime::now();
+    let update = doc! { "$set": { Deployment::KEY_HEALTH_CHECKED_AT: now } };
+    match Deployment::update_by_id(&deployment_id, update).await {
+      Ok(_) => continue,
+      Err(e) => {
+        log::error!(
+          target: "deployment-health",
+          "error updating deployment {}: {} => {}",
+          deployment_id,
+          e,
+          e,
+        )
+      }
+    };
   }
 }
 
