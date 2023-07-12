@@ -32,32 +32,21 @@ pub struct Device {
 
 pub mod get {
 
-  use db::current_filter_doc;
+  use crate::qs::{PaginationQs, VisibilityQs};
 
   use super::*;
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  pub const DEFAULT_SKIP: u64 = 0;
-  pub const DEFAULT_LIMIT: i64 = 60;
-
-  pub fn default_skip() -> u64 {
-    DEFAULT_SKIP
-  }
-
-  pub fn default_limit() -> i64 {
-    DEFAULT_LIMIT
-  }
-
   #[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
   #[ts(export, export_to = "../../../defs/api/me/devices/GET/")]
-  struct Query {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    skip: Option<u64>,
+  pub struct Query {
+    #[serde(flatten)]
+    page: PaginationQs,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    limit: Option<i64>,
+    #[serde(flatten)]
+    show: VisibilityQs,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     user_id: Option<String>,
@@ -121,44 +110,52 @@ pub mod get {
       let Self::Input {
         current_token_id,
         access_token_scope,
-        query,
+        query:
+          Query {
+            page: PaginationQs { skip, limit },
+            show: VisibilityQs { show },
+            admin_id,
+            user_id,
+          },
       } = input;
 
-      let generated_filter = doc! { GeneratedBy::KEY_ENUM_TAG: { "$in": [ GeneratedBy::KEY_ENUM_VARIANT_LOGIN, GeneratedBy::KEY_ENUM_VARIANT_REGISTER ] } };
+      let mut filters = vec![
+        show.to_filter_doc(),
+        doc! { GeneratedBy::KEY_ENUM_TAG: { "$in": [ GeneratedBy::KEY_ENUM_VARIANT_LOGIN, GeneratedBy::KEY_ENUM_VARIANT_REGISTER ] } },
+      ];
 
-      let scope_filter = match access_token_scope {
-        AccessTokenScope::Global => match &query.admin_id {
+      match access_token_scope {
+        AccessTokenScope::Global => match &admin_id {
           Some(admin_id) => {
-            doc! { Scope::KEY_ENUM_TAG: Scope::KEY_ENUM_VARIANT_ADMIN , Scope::KEY_ADMIN_ID: admin_id }
+            filters.push(doc! { Scope::KEY_ENUM_TAG: Scope::KEY_ENUM_VARIANT_ADMIN , Scope::KEY_ADMIN_ID: admin_id });
           }
 
-          None => match &query.user_id {
+          None => match &user_id {
             Some(user_id) => {
-              doc! { Scope::KEY_ENUM_TAG: Scope::KEY_ENUM_VARIANT_USER, Scope::KEY_USER_ID: user_id }
+              filters.push(doc! { Scope::KEY_ENUM_TAG: Scope::KEY_ENUM_VARIANT_USER, Scope::KEY_USER_ID: user_id });
             }
 
-            None => doc! {},
+            None => {}
           },
         },
 
-        AccessTokenScope::Admin(admin) => match &query.user_id {
+        AccessTokenScope::Admin(admin) => match &user_id {
           None => {
-            doc! { Scope::KEY_ENUM_TAG: Scope::KEY_ENUM_VARIANT_ADMIN, Scope::KEY_ADMIN_ID: admin.id }
+            filters.push(doc! { Scope::KEY_ENUM_TAG: Scope::KEY_ENUM_VARIANT_ADMIN, Scope::KEY_ADMIN_ID: admin.id });
           }
           Some(user_id) => {
-            doc! { Scope::KEY_ENUM_TAG: Scope::KEY_ENUM_VARIANT_USER, Scope::KEY_USER_ID: user_id }
+            filters.push(doc! { Scope::KEY_ENUM_TAG: Scope::KEY_ENUM_VARIANT_USER, Scope::KEY_USER_ID: user_id });
           }
         },
 
         AccessTokenScope::User(user) => {
-          doc! { Scope::KEY_ENUM_TAG: Scope::KEY_ENUM_VARIANT_USER, Scope::KEY_USER_ID: user.id }
+          filters.push(
+            doc! { Scope::KEY_ENUM_TAG: Scope::KEY_ENUM_VARIANT_USER, Scope::KEY_USER_ID: user.id },
+          );
         }
       };
 
-      let filter = current_filter_doc! { "$and": [ generated_filter, scope_filter ] };
-
-      let skip = query.skip.unwrap_or_else(default_skip);
-      let limit = query.limit.unwrap_or_else(default_limit);
+      let filter = doc! { "$and": filters };
 
       // null are the smallest in mongodb so this is ok
       let sort = doc! { AccessToken::KEY_LAST_USED_AT: -1 };

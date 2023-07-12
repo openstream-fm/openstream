@@ -20,6 +20,8 @@ pub mod get {
 
   use ts_rs::TS;
 
+  use crate::qs::{PaginationQs, VisibilityQs};
+
   use super::*;
 
   #[derive(Debug, Clone)]
@@ -28,33 +30,21 @@ pub mod get {
   #[derive(Debug, Clone)]
   pub struct Input {
     access_token_scope: AccessTokenScope,
-    skip: u64,
-    limit: i64,
-  }
-
-  pub const DEFAULT_SKIP: u64 = 0;
-  pub const DEFAULT_LIMIT: i64 = 60;
-
-  fn default_skip() -> u64 {
-    DEFAULT_SKIP
-  }
-
-  fn default_limit() -> i64 {
-    DEFAULT_LIMIT
+    query: Query,
   }
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../../defs/api/users/GET/")]
   pub struct Output(pub Paged<PublicUser>);
 
-  #[derive(Debug, Default, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../../defs/api/users/GET/")]
-  struct Query {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    skip: Option<u64>,
+  pub struct Query {
+    #[serde(flatten)]
+    pub page: PaginationQs,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    limit: Option<i64>,
+    #[serde(flatten)]
+    pub show: VisibilityQs,
   }
 
   #[derive(Debug, thiserror::Error)]
@@ -84,41 +74,38 @@ pub mod get {
     async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
       let access_token_scope = request_ext::get_access_token_scope(&req).await?;
 
-      let Query { skip, limit } = match req.uri().query() {
-        None => Default::default(),
-        Some(_) => req.qs()?,
-      };
+      let query = req.qs()?;
 
       Ok(Self::Input {
         access_token_scope,
-        skip: skip.unwrap_or_else(default_skip),
-        limit: limit.unwrap_or_else(default_limit),
+        query,
       })
     }
 
     async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
       let Self::Input {
         access_token_scope,
-        skip,
-        limit,
+        query:
+          Query {
+            page: PaginationQs { skip, limit },
+            show: VisibilityQs { show },
+          },
       } = input;
 
       let sort = doc! { User::KEY_CREATED_AT: 1 };
 
-      let page = match access_token_scope {
-        AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
-          User::paged(None, Some(sort), skip, limit)
-            .await?
-            .map(|item| item.into_public(PublicScope::Admin))
-        }
+      let mut filters = vec![show.to_filter_doc()];
 
-        AccessTokenScope::User(user) => Paged::<PublicUser> {
-          skip,
-          limit,
-          total: 1,
-          items: vec![user.into_public(PublicScope::User)],
-        },
+      match &access_token_scope {
+        AccessTokenScope::Global | AccessTokenScope::Admin(_) => {}
+        AccessTokenScope::User(user) => filters.push(doc! { User::KEY_ID: &user.id }),
       };
+
+      let filter = doc! { "$and": filters };
+      let public_scope = access_token_scope.as_public_scope();
+      let page = User::paged(filter, sort, skip, limit)
+        .await?
+        .map(|item| item.into_public(public_scope));
 
       Ok(Output(page))
     }
@@ -385,6 +372,7 @@ pub mod post {
           system_metadata: system_metadata.clone(),
           created_at: now,
           updated_at: now,
+          deleted_at: None,
         };
 
         tx_try!(User::insert_with_session(&user, &mut session).await);

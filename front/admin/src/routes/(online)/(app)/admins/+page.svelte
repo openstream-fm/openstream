@@ -51,11 +51,12 @@
       Admins
     </svelte:fragment>
     <svelte:fragment slot="subtitle">
-      {data.admins.total} admins
+      {data.admins.length}
+      {data.admins.length === 1 ? "admin" : "admins"}
     </svelte:fragment>
   </PageTop>
   <div class="list">
-    {#each data.admins.items as item (item._id)}
+    {#each data.admins as item (item._id)}
       <a href="/admins/{item._id}" class="na item ripple-container" use:ripple>
         <div class="item-title">{item.first_name} {item.last_name}</div>
         <div class="item-subtitle">{item.email}</div>

@@ -37,7 +37,12 @@ pub(crate) fn named(
         )?;
     }
 
-    let fields = quote!(vec![#(#formatted_fields),*].join(" "));
+    let fields = if formatted_fields.is_empty() {
+        quote!(String::new())
+    } else {
+        quote!(vec![#(#formatted_fields),*].join(" "))
+    };
+
     let generic_args = format_generics(&mut dependencies, generics);
 
     let inline = quote! {
@@ -146,6 +151,7 @@ fn extract_option_argument(ty: &Type) -> Result<&Type> {
                 _ => syn_err!("`Option` type must have a single generic argument"),
             }
         }
-        _ => syn_err!("`optional` can only be used on an Option<T> type"),
+        _ => Ok(ty),
+        //_ => Ok(ty) syn_err!("`optional` can only be used on an Option<T> type"),
     }
 }

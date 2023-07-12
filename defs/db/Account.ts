@@ -9,8 +9,9 @@ export type Account = {
   payment_method_id: string | null;
   name: string;
   limits: AccountLimits;
-  created_at: DateTime;
-  updated_at: DateTime;
   user_metadata: Metadata;
   system_metadata: Metadata;
+  created_at: DateTime;
+  updated_at: DateTime;
+  deleted_at: DateTime | null;
 };

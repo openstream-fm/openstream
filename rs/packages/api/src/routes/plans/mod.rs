@@ -4,33 +4,30 @@ pub mod id;
 pub mod get {
 
   use async_trait::async_trait;
+  use db::plan::Plan;
   use db::Model;
-  use db::{current_filter_doc, plan::Plan};
-  use futures_util::TryStreamExt;
+  use db::Paged;
   use mongodb::bson::doc;
   use prex::Request;
   use serde::{Deserialize, Serialize};
   use ts_rs::TS;
 
+  use crate::qs::PaginationQs;
+  use crate::qs::VisibilityQs;
   use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
   use crate::{error::ApiError, json::JsonHandler};
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export, export_to = "../../../defs/api/plans/GET/")]
-  #[serde(rename_all = "kebab-case")]
-  pub enum Show {
-    All,
-    Active,
-  }
-
   #[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
   #[ts(export, export_to = "../../../defs/api/plans/GET/")]
-  struct Query {
-    #[serde(default)]
-    show: Option<Show>,
+  /// TODO: add pagination
+  pub struct Query {
+    #[serde(flatten)]
+    pub page: PaginationQs,
+    #[serde(flatten)]
+    pub show: VisibilityQs,
   }
 
   #[derive(Debug, Clone)]
@@ -41,9 +38,7 @@ pub mod get {
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS)]
   #[ts(export, export_to = "../../../defs/api/plans/GET/")]
-  pub struct Output {
-    pub items: Vec<Plan>,
-  }
+  pub struct Output(Paged<Plan>);
 
   #[derive(Debug, thiserror::Error)]
   pub enum ParseError {
@@ -89,28 +84,27 @@ pub mod get {
         query,
       } = input;
 
-      let Query { show } = query;
+      let Query {
+        show: VisibilityQs { show },
+        page: PaginationQs { skip, limit },
+      } = query;
 
-      let filter = match (optional_access_token_scope, show) {
-        (None | Some(AccessTokenScope::User(_)), _) => {
-          current_filter_doc! {
-            Plan::KEY_IS_USER_SELECTABLE: true,
-          }
+      let mut filters = vec![show.to_filter_doc()];
+
+      match optional_access_token_scope {
+        None | Some(AccessTokenScope::User(_)) => {
+          filters.push(doc! { Plan::KEY_IS_USER_SELECTABLE: true });
         }
-        (_, None | Some(Show::Active)) => current_filter_doc! {},
-        (_, Some(Show::All)) => doc! {},
+        Some(AccessTokenScope::Global | AccessTokenScope::Admin(_)) => {}
       };
 
       let sort = doc! { Plan::KEY_CREATED_AT: 1 };
-      let options = mongodb::options::FindOptions::builder().sort(sort).build();
 
-      let items: Vec<Plan> = Plan::cl()
-        .find(filter, options)
-        .await?
-        .try_collect()
-        .await?;
+      let filter = doc! { "$and": filters };
 
-      Ok(Output { items })
+      let page = Plan::paged(filter, sort, skip, limit).await?;
+
+      Ok(Output(page))
     }
   }
 }

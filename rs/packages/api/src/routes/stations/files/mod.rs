@@ -20,21 +20,12 @@ use ts_rs::TS;
 
 pub mod get {
 
+  use crate::qs::PaginationQs;
+
   use super::*;
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
-
-  pub const DEFAULT_SKIP: u64 = 0;
-  pub const DEFAULT_LIMIT: i64 = 60;
-
-  fn default_skip() -> u64 {
-    DEFAULT_SKIP
-  }
-
-  fn default_limit() -> i64 {
-    DEFAULT_LIMIT
-  }
 
   #[derive(Debug, Serialize, Deserialize, Clone, TS)]
   #[ts(export, export_to = "../../../defs/api/stations/[station]/files/GET/")]
@@ -43,14 +34,11 @@ pub mod get {
     playlist_is_randomly_shuffled: bool,
   }
 
-  #[derive(Debug, Serialize, Deserialize, Default, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
   #[ts(export, export_to = "../../../defs/api/stations/[station]/files/GET/")]
-  struct Query {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    skip: Option<u64>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    limit: Option<i64>,
+  pub struct Query {
+    #[serde(flatten)]
+    pub page: PaginationQs,
   }
 
   #[derive(Debug, Clone)]
@@ -58,8 +46,7 @@ pub mod get {
     station: Station,
     #[allow(unused)]
     access_token_scope: AccessTokenScope,
-    skip: u64,
-    limit: i64,
+    query: Query,
   }
 
   #[derive(Debug, thiserror::Error)]
@@ -93,16 +80,12 @@ pub mod get {
 
       let station = access_token_scope.grant_station_scope(station_id).await?;
 
-      let Query { skip, limit } = match req.uri().query() {
-        None => Default::default(),
-        Some(_) => req.qs()?,
-      };
+      let query: Query = req.qs()?;
 
       Ok(Self::Input {
         access_token_scope,
         station,
-        skip: skip.unwrap_or_else(default_skip),
-        limit: limit.unwrap_or_else(default_limit),
+        query,
       })
     }
 
@@ -110,11 +93,12 @@ pub mod get {
       let Self::Input {
         access_token_scope: _,
         station,
-        skip,
-        limit,
+        query: Query {
+          page: PaginationQs { skip, limit },
+        },
       } = input;
 
-      let filter = doc! { AudioFile::KEY_STATION_ID: station.id };
+      let filter = doc! { AudioFile::KEY_STATION_ID: &station.id };
       let sort = doc! { AudioFile::KEY_ORDER: 1 };
       let page = AudioFile::paged(filter, sort, skip, limit).await?;
 

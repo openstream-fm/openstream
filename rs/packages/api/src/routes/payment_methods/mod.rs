@@ -20,17 +20,17 @@ pub mod id;
 pub mod get {
   use db::Paged;
 
+  use crate::qs::{PaginationQs, VisibilityQs};
+
   use super::*;
 
   #[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
   #[ts(export, export_to = "../../../defs/api/payment-methods/GET/")]
   pub struct Query {
-    #[ts(optional)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub skip: Option<u64>,
-    #[ts(optional)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub limit: Option<u32>,
+    #[serde(flatten)]
+    pub page: PaginationQs,
+    #[serde(flatten)]
+    pub show: VisibilityQs,
     #[ts(optional)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub user_id: Option<String>,
@@ -102,26 +102,28 @@ pub mod get {
       } = input;
 
       let Query {
+        page: PaginationQs { skip, limit },
+        show: VisibilityQs { show },
         user_id: query_user_id,
-        skip,
-        limit,
       } = query;
 
-      let skip = skip.unwrap_or(0);
-      let limit = limit.unwrap_or(60);
+      let mut filters = vec![show.to_filter_doc()];
 
-      let filter = match access_token_scope {
+      #[allow(clippy::single_match)]
+      match access_token_scope {
         AccessTokenScope::Global | AccessTokenScope::Admin(_) => match query_user_id {
-          None => doc! {},
-          Some(id) => doc! { PaymentMethod::KEY_USER_ID: id },
+          Some(id) => filters.push(doc! { PaymentMethod::KEY_USER_ID: id }),
+          None => {}
         },
 
-        AccessTokenScope::User(user) => doc! { PaymentMethod::KEY_USER_ID: user.id },
+        AccessTokenScope::User(user) => filters.push(doc! { PaymentMethod::KEY_USER_ID: user.id }),
       };
 
       let sort = doc! { PaymentMethod::KEY_CREATED_AT: 1 };
 
-      let paged = PaymentMethod::paged(filter, sort, skip, limit as i64)
+      let filter = doc! { "$and": filters };
+
+      let paged = PaymentMethod::paged(filter, sort, skip, limit)
         .await?
         .map(PublicPaymentMethod::from);
 

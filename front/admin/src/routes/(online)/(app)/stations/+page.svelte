@@ -7,7 +7,7 @@
 	import { mdiRadioTower } from "@mdi/js";
 
   const get_account = (_data: typeof data, account_id: string) => {
-    return _data.accounts.items.find(item => item._id === account_id)
+    return _data.all_accounts.find(item => item._id === account_id)
   }
 </script>
 
@@ -74,12 +74,12 @@
       Stations
     </svelte:fragment>
     <svelte:fragment slot="subtitle">
-      {data.stations.total} {data.stations.total === 1 ? "station" : "station"}
+      {data.stations.length} {data.stations.length === 1 ? "station" : "station"}
     </svelte:fragment>
     <p></p>
   </PageTop>
   <div class="list">
-    {#each data.stations.items as item (item._id)}
+    {#each data.stations as item (item._id)}
       {@const account = get_account(data, item.account_id)}
       <a href="/stations/{item._id}" class="na item ripple-container" use:ripple>
         <div class="item-pic" style:background-image="url({data.config.storage_public_url}/station-pictures/webp/64/{item.picture_id}.webp)" />

@@ -37,10 +37,11 @@ pub struct User {
 
   pub password: Option<String>,
 
-  pub created_at: DateTime,
-  pub updated_at: DateTime,
   pub user_metadata: Metadata,
   pub system_metadata: Metadata,
+  pub created_at: DateTime,
+  pub updated_at: DateTime,
+  pub deleted_at: Option<DateTime>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -54,9 +55,10 @@ pub struct UserPublicUser {
   pub email: String,
   pub phone: Option<String>,
   pub language: Option<String>,
+  pub user_metadata: Metadata,
   pub created_at: DateTime,
   pub updated_at: DateTime,
-  pub user_metadata: Metadata,
+  pub deleted_at: Option<DateTime>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -70,10 +72,11 @@ pub struct AdminPublicUser {
   pub email: String,
   pub phone: Option<String>,
   pub language: Option<String>,
-  pub created_at: DateTime,
-  pub updated_at: DateTime,
   pub user_metadata: Metadata,
   pub system_metadata: Metadata,
+  pub created_at: DateTime,
+  pub updated_at: DateTime,
+  pub deleted_at: Option<DateTime>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -93,10 +96,11 @@ impl From<User> for AdminPublicUser {
       email: user.email,
       phone: user.phone,
       language: user.language,
-      created_at: user.created_at,
-      updated_at: user.updated_at,
       user_metadata: user.user_metadata,
       system_metadata: user.system_metadata,
+      created_at: user.created_at,
+      updated_at: user.updated_at,
+      deleted_at: user.deleted_at,
     }
   }
 }
@@ -110,9 +114,10 @@ impl From<User> for UserPublicUser {
       email: user.email,
       phone: user.phone,
       language: user.language,
+      user_metadata: user.user_metadata,
       created_at: user.created_at,
       updated_at: user.updated_at,
-      user_metadata: user.user_metadata,
+      deleted_at: user.deleted_at,
     }
   }
 }
