@@ -1,3 +1,6 @@
+#![allow(non_camel_case_types)]
+// this is needed because of static_init that is generating non camel case identifiers
+
 use macros::const_register;
 
 pub(crate) mod secs {
@@ -109,6 +112,9 @@ pub const PAYMENTS_ACCESS_TOKEN_HEADER: &str = "x-access-token";
 /// and invalidation of service workers station pictures caches
 #[const_register]
 pub const STATION_PICTURES_VERSION: f64 = 3.0;
+
+#[const_register]
+pub const DEPLOYMENT_HEALTH_CHECK_INTERVAL_SECS: u16 = 1;
 
 #[cfg(test)]
 pub mod test {
