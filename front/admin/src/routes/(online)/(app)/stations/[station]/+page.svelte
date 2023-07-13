@@ -7,6 +7,13 @@
 	import { locale } from "$lib/locale";
 	import { ripple } from "$share/ripple";
   import StatsMap from "$share/Map/StatsMap.svelte";
+	import PageMenuItem from "$lib/components/PageMenu/PageMenuItem.svelte";
+	import { mdiTrashCanOutline } from "@mdi/js";
+	import { _delete, action } from "$share/net.client";
+	import { _message } from "$share/notify";
+	import { goto } from "$app/navigation";
+	import { invalidate_siblings } from "$lib/invalidate";
+	import Dialog from "$share/Dialog.svelte";
 	
 
   const date = (d: string | Date) => {
@@ -21,6 +28,24 @@
       second: "2-digit",
     })
   }
+
+  let delete_open = false;
+  let deleting = false;
+  const del = action(async () => {
+    if(deleting) return;
+    deleting = true;
+    try {
+      await _delete(`/api/stations/${data.station._id}`);
+      delete_open = false;
+      _message("Station deleted");
+      await goto("/stations", { invalidateAll: true });
+      invalidate_siblings();
+      deleting = false;
+    } catch(e) {
+      deleting = false;
+      throw e;
+    }
+  })
 </script>
 
 <style>
@@ -114,6 +139,41 @@
   .section-empty {
     padding: 1rem;
   }
+
+  .dialog-btns {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 1.5rem;
+		margin-top: 2rem;
+	}
+
+	.dialog-btn-delete,
+	.dialog-btn-cancel {
+		padding: 0.5rem 0.75rem;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		border-radius: 0.25rem;
+		transition: background-color 150ms ease;
+	}
+
+	.dialog-btn-delete:hover,
+	.dialog-btn-cancel:hover {
+		background: rgba(0, 0, 0, 0.05);
+	}
+
+  .dialog-btn-delete {
+		font-weight: 500;
+		color: var(--red);
+		border: 2px solid var(--red);
+		box-shadow: 0 4px 8px #0000001f, 0 2px 4px #00000014;
+	}
+
+	.dialog-btn-cancel {
+		color: #555;
+	}
 </style>
 
 <svelte:head>
@@ -134,6 +194,11 @@
       Station
     </svelte:fragment>
 
+    <svelte:fragment slot="menu" let:close_menu>
+      <PageMenuItem icon={mdiTrashCanOutline} on_click={() => { delete_open = true; close_menu() }}>
+        Delete this station
+      </PageMenuItem>
+    </svelte:fragment>
   </PageTop>
 
   <div class="data">
@@ -208,7 +273,28 @@
       {/if}
     </div>
   </div>
-
-  
-
 </Page>
+
+{#if delete_open}
+  <Dialog title="Delete station {data.station.name}" width="500px" on_close={() => { delete_open = false }}>
+    <div class="dialog">
+      <div class="dialog-text">
+        Delete station <b>{data.station.name}</b>.<br /><br />
+        This action is permanent.
+      </div>
+      <div class="dialog-btns">
+        <button
+          class="dialog-btn-cancel ripple-container"
+          use:ripple
+          on:click={() => { delete_open = false }}
+        >
+          Cancel
+        </button>
+
+        <button class="dialog-btn-delete ripple-container" use:ripple on:click={del}>
+          Delete
+        </button>
+      </div>
+    </div>
+  </Dialog>
+{/if}

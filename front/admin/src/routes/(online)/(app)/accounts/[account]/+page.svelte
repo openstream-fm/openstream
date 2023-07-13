@@ -4,16 +4,18 @@
 	import PageTop from "$lib/components/PageMenu/PageTop.svelte";
 	import { lang } from "$lib/locale";
 	import { ripple } from "$share/ripple";
-	import { mdiAccountOutline, mdiDotsVertical } from "@mdi/js";
+	import { mdiAccountOutline, mdiDotsVertical, mdiTrashCanOutline } from "@mdi/js";
 	import Limits from "./limits.svelte";
 	import Stats from "./stats.svelte";
 	import Icon from "$share/Icon.svelte";
-	import { _patch, action } from "$share/net.client";
+	import { _delete, _patch, action } from "$share/net.client";
 	import { _message } from "$share/notify";
-	import { invalidateAll } from "$lib/invalidate";
+	import { invalidateAll, invalidate_siblings } from "$lib/invalidate";
 	import Dialog from "$share/Dialog.svelte";
 	import { logical_fly } from "$share/transition";
 	import { click_out } from "$share/actions";
+	import { goto } from "$app/navigation";
+	import PageMenuItem from "$lib/components/PageMenu/PageMenuItem.svelte";
 
   const date = (d: string | Date) => {
     const date = new Date(d);
@@ -57,6 +59,24 @@
   const plan_selector_click_out = () => {
     setTimeout(() => plan_selector_open = false, 2);
   }
+
+  let delete_open = false;
+  let deleting = false;
+  const del = action(async () => {
+    if(deleting) return;
+    deleting = true;
+    try {
+      await _delete(`/api/accounts/${data.account._id}`);
+      delete_open = false;
+      _message("Account deleted");
+      await goto("/accounts", { invalidateAll: true });
+      invalidate_siblings();
+      deleting = false;
+    } catch(e) {
+      deleting = false;
+      throw e;
+    }
+  })
 </script>
 
 <style>
@@ -214,6 +234,7 @@
 	}
 
 	.dialog-btn-change-plan,
+	.dialog-btn-delete,
 	.dialog-btn-cancel {
 		padding: 0.5rem 0.75rem;
 		display: flex;
@@ -224,6 +245,7 @@
 	}
 
 	.dialog-btn-change-plan:hover,
+	.dialog-btn-delete:hover,
 	.dialog-btn-cancel:hover {
 		background: rgba(0, 0, 0, 0.05);
 	}
@@ -232,6 +254,13 @@
 		font-weight: 500;
 		color: var(--blue);
 		border: 2px solid var(--blue);
+		box-shadow: 0 4px 8px #0000001f, 0 2px 4px #00000014;
+	}
+
+  .dialog-btn-delete {
+		font-weight: 500;
+		color: var(--red);
+		border: 2px solid var(--red);
 		box-shadow: 0 4px 8px #0000001f, 0 2px 4px #00000014;
 	}
 
@@ -299,6 +328,12 @@
     
     <svelte:fragment slot="subtitle">
       Account
+    </svelte:fragment>
+
+    <svelte:fragment slot="menu" let:close_menu>
+      <PageMenuItem icon={mdiTrashCanOutline} on_click={() => { delete_open = true; close_menu() }}>
+        Delete this account
+      </PageMenuItem>
     </svelte:fragment>
   </PageTop>
 
@@ -447,6 +482,30 @@
 
         <button class="dialog-btn-change-plan ripple-container" use:ripple on:click={change_plan}>
           Change plan
+        </button>
+      </div>
+    </div>
+  </Dialog>
+{/if}
+
+{#if delete_open}
+  <Dialog title="Delete account {data.account.name}" width="500px" on_close={() => { delete_open = false }}>
+    <div class="dialog">
+      <div class="dialog-text">
+        Delete account <b>{data.account.name}</b>.<br /><br />
+        This action is permanent.
+      </div>
+      <div class="dialog-btns">
+        <button
+          class="dialog-btn-cancel ripple-container"
+          use:ripple
+          on:click={() => { delete_open = false }}
+        >
+          Cancel
+        </button>
+
+        <button class="dialog-btn-delete ripple-container" use:ripple on:click={del}>
+          Delete
         </button>
       </div>
     </div>

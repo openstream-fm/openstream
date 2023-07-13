@@ -208,7 +208,8 @@ pub fn router(
   app
     .at("/users/:user")
     .get(users::id::get::Endpoint {}.into_handler())
-    .patch(users::id::patch::Endpoint {}.into_handler());
+    .patch(users::id::patch::Endpoint {}.into_handler())
+    .delete(users::id::delete::Endpoint {}.into_handler());
 
   app
     .at("/accounts")
@@ -218,7 +219,8 @@ pub fn router(
   app
     .at("/accounts/:account")
     .get(accounts::id::get::Endpoint {}.into_handler())
-    .patch(accounts::id::patch::Endpoint {}.into_handler());
+    .patch(accounts::id::patch::Endpoint {}.into_handler())
+    .delete(accounts::id::delete::Endpoint {}.into_handler());
 
   app
     .at("/accounts/:account/members")
