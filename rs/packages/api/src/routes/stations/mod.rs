@@ -107,6 +107,7 @@ pub mod get {
 
       let mut filters = vec![show.to_filter_doc()];
 
+      #[allow(clippy::single_match)]
       match account_id {
         Some(account_id) => filters.push(doc! { Station::KEY_ACCOUNT_ID: account_id }),
         None => {}

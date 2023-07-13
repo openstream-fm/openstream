@@ -1,15 +1,21 @@
 use db::{current_filter_doc, deleted_filter_doc};
 use mongodb::bson::{doc, Document};
 use serde::{Deserialize, Serialize};
+use serde_with::{serde_as, DisplayFromStr};
 
+// serde_as is needed because of a serde limitation on flattened types
+// see https://docs.rs/serde_qs/latest/serde_qs/ too se where this workaround is described
+#[serde_as]
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize, ts_rs::TS)]
 #[ts(export, export_to = "../../../defs/qs/")]
 pub struct PaginationQs {
   #[ts(optional)]
   #[serde(default = "PaginationQs::default_skip")]
+  #[serde_as(as = "DisplayFromStr")]
   pub skip: u64,
   #[ts(optional)]
   #[serde(default = "PaginationQs::default_limit")]
+  #[serde_as(as = "DisplayFromStr")]
   pub limit: i64,
 }
 
