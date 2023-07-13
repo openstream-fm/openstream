@@ -264,3 +264,82 @@ pub mod patch {
     }
   }
 }
+
+pub mod delete {
+
+  use crate::error::ApiError;
+
+  use super::*;
+  use db::{run_transaction, user::AdminPublicUser, user_account_relation::UserAccountRelation};
+  use ts_rs::TS;
+
+  #[derive(Debug, Clone)]
+  pub struct Endpoint {}
+
+  #[derive(Debug, Clone)]
+  pub struct Input {
+    user_id: String,
+  }
+
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export, export_to = "../../../defs/api/users/[user]/DELETE/")]
+  pub struct Output {
+    user: AdminPublicUser,
+  }
+
+  #[derive(Debug, thiserror::Error)]
+  pub enum HandleError {
+    #[error("db: {0}")]
+    Db(#[from] mongodb::error::Error),
+    #[error("user not found: {0}")]
+    UserNotFound(String),
+  }
+
+  impl From<HandleError> for ApiError {
+    fn from(e: HandleError) -> Self {
+      match e {
+        HandleError::Db(e) => e.into(),
+        HandleError::UserNotFound(id) => ApiError::UserNotFound(id),
+      }
+    }
+  }
+
+  #[async_trait]
+  impl JsonHandler for Endpoint {
+    type Input = Input;
+    type Output = Output;
+    type ParseError = GetAccessTokenScopeError;
+    type HandleError = HandleError;
+
+    async fn parse(&self, req: Request) -> Result<Input, GetAccessTokenScopeError> {
+      let user_id = req.param("user").unwrap().to_string();
+      let access_token_scope = request_ext::get_access_token_scope(&req).await?;
+      if !access_token_scope.is_admin_or_global() {
+        return Err(GetAccessTokenScopeError::OutOfScope);
+      }
+      Ok(Self::Input { user_id })
+    }
+
+    async fn perform(&self, input: Input) -> Result<Output, HandleError> {
+      let Self::Input { user_id } = input;
+      let user = run_transaction!(session => {
+        let now = serde_util::DateTime::now();
+        let mut user = match tx_try!(User::get_by_id_with_session(&user_id, &mut session).await) {
+          Some(user) if user.deleted_at.is_none() => user,
+          _ => return Err(HandleError::UserNotFound(user_id))
+        };
+
+        user.deleted_at = Some(now);
+        user.updated_at = now;
+
+        let rel_filter = doc! { UserAccountRelation::KEY_USER_ID: &user_id };
+        tx_try!(UserAccountRelation::cl().delete_many_with_session(rel_filter, None, &mut session).await);
+        tx_try!(User::replace_with_session(&user.id, &user, &mut session).await);
+
+        user
+      });
+
+      Ok(Output { user: user.into() })
+    }
+  }
+}

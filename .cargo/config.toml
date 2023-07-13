@@ -1,3 +1,4 @@
 [build]
 rustflags = ["--cfg", "tokio_unstable"]
-jobs = 6
+# limit on parallel jobs to prevent os crash
+jobs = 12

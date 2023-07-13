@@ -3,7 +3,7 @@ import { error } from "@sveltejs/kit";
 
 export const load = (async ({ parent, params, fetch, url }) => {
   
-  const { all_stations, all_accounts, all_plans } = await parent();
+  const { stations, all_accounts, all_plans } = await parent();
 
   const account = all_accounts.find(item => item._id === params.account);
 
@@ -11,7 +11,7 @@ export const load = (async ({ parent, params, fetch, url }) => {
 
   const plan = all_plans.find(plan => plan._id === account.plan_id);
 
-  const account_stations = all_stations.filter(item => {
+  const account_stations = stations.filter(item => {
     return item.account_id === account._id;
   })
 

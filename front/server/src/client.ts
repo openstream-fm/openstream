@@ -342,6 +342,10 @@ export class Accounts {
     return await this.client.patch(ip, ua, token, `/accounts/${account_id}`, payload);
   }
 
+  async delete(ip: string | null, ua: string | null, token: string, account_id: string): Promise<import("$api/accounts/[account]/DELETE/Output").Output> {
+    return await this.client.delete(ip, ua, token, `/accounts/${account_id}`);
+  }
+
   async list_members(ip: string | null, ua: string | null, token: string, account_id: string): Promise<import("$api/accounts/[account]/members/GET/Output").Output> {
     return await this.client.get(ip, ua, token, `/accounts/${account_id}/members`)
   }
@@ -524,8 +528,12 @@ export class Users {
     return await this.client.post(ip, ua, token, `/users`, payload);
   }
 
-  async patch(ip: string | null, ua: string | null, token: string, id: string, payload: import("$api/users/[user]/PATCH/Payload").Payload): Promise<import("$api/users/[user]/PATCH/Output").Output> {
-    return await this.client.patch(ip, ua, token, `/users/${id}`, payload);
+  async patch(ip: string | null, ua: string | null, token: string, user_id: string, payload: import("$api/users/[user]/PATCH/Payload").Payload): Promise<import("$api/users/[user]/PATCH/Output").Output> {
+    return await this.client.patch(ip, ua, token, `/users/${user_id}`, payload);
+  }
+
+  async delete(ip: string | null, ua: string | null, token: string, user_id: string): Promise<import("$api/users/[user]/DELETE/Output").Output> {
+    return await this.client.delete(ip, ua, token, `/users/${user_id}`);
   }
 }
 

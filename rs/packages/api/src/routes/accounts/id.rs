@@ -3,6 +3,7 @@ use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
 
 use async_trait::async_trait;
 use db::account::{Account, PublicAccount};
+use mongodb::bson::doc;
 use prex::Request;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
@@ -270,6 +271,113 @@ pub mod patch {
           })
         }
       };
+
+      let out = account.into_public(access_token_scope.as_public_scope());
+
+      Ok(Output(out))
+    }
+  }
+}
+
+pub mod delete {
+
+  use crate::error::ApiError;
+
+  use super::*;
+  use db::{
+    account::{Account, PublicAccount},
+    current_filter_doc, run_transaction,
+    station::Station,
+    Model,
+  };
+
+  #[derive(Debug, Clone)]
+  pub struct Endpoint {}
+
+  #[derive(Debug, Clone)]
+  pub struct Input {
+    access_token_scope: AccessTokenScope,
+    account_id: String,
+  }
+
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export, export_to = "../../../defs/api/accounts/[account]/DELETE/")]
+  pub struct Output(pub PublicAccount);
+
+  #[derive(Debug, thiserror::Error)]
+  pub enum ParseError {
+    #[error("token: {0}")]
+    Token(#[from] GetAccessTokenScopeError),
+  }
+
+  impl From<ParseError> for ApiError {
+    fn from(e: ParseError) -> Self {
+      match e {
+        ParseError::Token(e) => Self::from(e),
+      }
+    }
+  }
+
+  #[derive(Debug, thiserror::Error)]
+  pub enum HandleError {
+    #[error("mongodb: {0}")]
+    Db(#[from] mongodb::error::Error),
+    #[error("station not found: {0}")]
+    AccountNotFound(String),
+  }
+
+  impl From<HandleError> for ApiError {
+    fn from(e: HandleError) -> Self {
+      match e {
+        HandleError::Db(e) => Self::from(e),
+        HandleError::AccountNotFound(id) => Self::StationNotFound(id),
+      }
+    }
+  }
+
+  #[async_trait]
+  impl JsonHandler for Endpoint {
+    type Input = Input;
+    type Output = Output;
+    type ParseError = ParseError;
+    type HandleError = HandleError;
+
+    async fn parse(&self, req: Request) -> Result<Self::Input, Self::ParseError> {
+      let account_id = req.param("account").unwrap().to_string();
+      let access_token_scope = request_ext::get_access_token_scope(&req).await?;
+      access_token_scope
+        .grant_account_owner_scope(&account_id)
+        .await?;
+
+      Ok(Self::Input {
+        account_id,
+        access_token_scope,
+      })
+    }
+
+    async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
+      let Self::Input {
+        access_token_scope,
+        account_id,
+      } = input;
+
+      let account = run_transaction!(session => {
+        let now = serde_util::DateTime::now();
+        let mut account = match tx_try!(Account::get_by_id_with_session(&account_id, &mut session).await) {
+          Some(account) if account.deleted_at.is_none() => account,
+          _ => return Err(HandleError::AccountNotFound(account_id)),
+        };
+
+        account.deleted_at = Some(now);
+        account.updated_at = now;
+
+        let stations_filter = current_filter_doc!{ Station::KEY_ACCOUNT_ID: &account.id };
+        let stations_update = doc!{ "$set": { Station::KEY_DELETED_AT: now, Station::KEY_UPDATED_AT: now } };
+        tx_try!(Station::cl().update_many_with_session(stations_filter, stations_update, None, &mut session).await);
+        tx_try!(Account::replace_with_session(&account.id, &account, &mut session).await);
+
+        account
+      });
 
       let out = account.into_public(access_token_scope.as_public_scope());
 

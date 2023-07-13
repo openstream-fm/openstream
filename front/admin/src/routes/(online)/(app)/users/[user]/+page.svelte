@@ -1,13 +1,17 @@
 <script lang="ts">
+	import { goto } from "$app/navigation";
   export let data: import("./$types").PageData;
   import Page from "$lib/components/Page.svelte";
 	import PageMenuItem from "$lib/components/PageMenu/PageMenuItem.svelte";
 	import PageTop from "$lib/components/PageMenu/PageTop.svelte";
+	import { invalidate_siblings } from "$lib/invalidate";
 	import { lang } from "$lib/locale";
 	import { user_media_key } from "$server/media_key";
-	import { _post, action } from "$share/net.client";
+	import Dialog from "$share/Dialog.svelte";
+	import { _delete, _post, action } from "$share/net.client";
+	import { _message } from "$share/notify";
 	import { ripple } from "$share/ripple";
-	import { mdiLogin } from "@mdi/js";
+	import { mdiLogin, mdiTrashCanOutline } from "@mdi/js";
 
   const date = (d: string | Date) => {
     const date = new Date(d);
@@ -31,6 +35,24 @@
     const target = `${data.config.studio_public_url}/`;
     window.open(target, "_blank")
     close();  
+  })
+
+  let delete_open = false;
+  let deleting = false;
+  const del = action(async () => {
+    if(deleting) return;
+    deleting = true;
+    try {
+      await _delete(`/api/users/${data.user._id}`);
+      delete_open = false;
+      _message("User deleted");
+      await goto("/users", { invalidateAll: true });
+      invalidate_siblings();
+      deleting = false;
+    } catch(e) {
+      deleting = false;
+      throw e;
+    }
   })
 </script>
 
@@ -163,6 +185,41 @@
     font-weight: 600;
     font-size: 1.75rem;
   }
+
+  .dialog-btns {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 1.5rem;
+		margin-top: 2rem;
+	}
+
+	.dialog-btn-delete,
+	.dialog-btn-cancel {
+		padding: 0.5rem 0.75rem;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		border-radius: 0.25rem;
+		transition: background-color 150ms ease;
+	}
+
+	.dialog-btn-delete:hover,
+	.dialog-btn-cancel:hover {
+		background: rgba(0, 0, 0, 0.05);
+	}
+
+  .dialog-btn-delete {
+		font-weight: 500;
+		color: var(--red);
+		border: 2px solid var(--red);
+		box-shadow: 0 4px 8px #0000001f, 0 2px 4px #00000014;
+	}
+
+	.dialog-btn-cancel {
+		color: #555;
+	}
 </style>
 
 <svelte:head>
@@ -186,6 +243,9 @@
     <svelte:fragment slot="menu" let:close_menu>
       <PageMenuItem icon={mdiLogin} on_click={() => login_as(close_menu)}>
         Login as this user
+      </PageMenuItem>
+      <PageMenuItem icon={mdiTrashCanOutline} on_click={() => { delete_open = true; close_menu() }}>
+        Delete this user
       </PageMenuItem>
     </svelte:fragment>
   </PageTop>
@@ -290,5 +350,28 @@
       {/each}
     </div>
   </div>
-
 </Page>
+
+{#if delete_open}
+  <Dialog title="Delete user {data.user.first_name} {data.user.last_name}" width="500px" on_close={() => { delete_open = false }}>
+    <div class="dialog">
+      <div class="dialog-text">
+        Delete user <b>{data.user.first_name} {data.user.last_name}</b>.<br /><br />
+        This action is permanent.
+      </div>
+      <div class="dialog-btns">
+        <button
+          class="dialog-btn-cancel ripple-container"
+          use:ripple
+          on:click={() => { delete_open = false }}
+        >
+          Cancel
+        </button>
+
+        <button class="dialog-btn-delete ripple-container" use:ripple on:click={del}>
+          Delete
+        </button>
+      </div>
+    </div>
+  </Dialog>
+{/if}

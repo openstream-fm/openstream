@@ -64,6 +64,9 @@ export const shared_api = ({
     .patch(json(async req => {
       return await client.accounts.patch(ip(req), ua(req), get_token(req), req.params.account, req.body)
     }))
+    .delete(json(async req => {
+      return await client.accounts.delete(ip(req), ua(req), get_token(req), req.params.account);
+    }))
 
   api.route("/accounts/:account/limits")
     .get(json(async req => {

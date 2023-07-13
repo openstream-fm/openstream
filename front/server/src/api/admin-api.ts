@@ -129,6 +129,11 @@ export const admin_api = ({
       return await client.admins.patch(ip(req), ua(req), admin_token(req), req.params.admin, req.body);
     }))
 
+  api.route("/users/:user")
+    .delete(json(async req => {
+      return await client.users.delete(ip(req), ua(req), admin_token(req), req.params.user);
+    }))
+
   api.route("/stream-stats")
     .get(json(async req => {
       return await client.get_stream_stats(ip(req), ua(req), admin_token(req));
