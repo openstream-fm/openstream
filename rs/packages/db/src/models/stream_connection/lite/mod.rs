@@ -107,6 +107,16 @@ impl Model for StreamConnectionLite {
       .keys(doc! { StreamConnectionLite::KEY_CREATED_AT: 1 })
       .build();
 
-    vec![created_at]
+    let created_at_station_id = IndexModel::builder()
+      .keys(
+        doc! { StreamConnectionLite::KEY_CREATED_AT: 1, StreamConnectionLite::KEY_STATION_ID: 1 },
+      )
+      .build();
+
+    let station_id = IndexModel::builder()
+      .keys(doc! { StreamConnectionLite::KEY_STATION_ID: 1 })
+      .build();
+
+    vec![created_at, created_at_station_id, station_id]
   }
 }

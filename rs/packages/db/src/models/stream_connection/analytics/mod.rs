@@ -343,13 +343,12 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
       for (timestamp, start) in vec.into_iter() {
         if start {
           current = current.saturating_add(1);
+          if current > max {
+            max = current;
+            max_timestamp = timestamp
+          }
         } else {
           current = current.saturating_sub(1);
-        }
-
-        if current > max {
-          max = current;
-          max_timestamp = timestamp
         }
       }
 
