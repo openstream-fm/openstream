@@ -4026,6 +4026,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "purge-deleted-items"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "config",
+ "crypt",
+ "db",
+ "dotenv",
+ "futures-util",
+ "log",
+ "logger",
+ "macros",
+ "mongodb",
+ "owo-colors 3.5.0",
+ "serde",
+ "serde-util",
+ "tokio",
+]
+
+[[package]]
 name = "qoi"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

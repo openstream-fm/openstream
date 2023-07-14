@@ -10,6 +10,7 @@ members = [
     "rs/internal-scripts/ffstress",
     "rs/internal-scripts/hls-logger",
     "rs/internal-scripts/create-random-stream-connections",
+    "rs/internal-scripts/purge-deleted-items",
 
     "rs/config/constants",
 
