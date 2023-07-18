@@ -2,6 +2,7 @@ use std::{
   collections::{HashMap, HashSet},
   hash::Hash,
   net::IpAddr,
+  time::Instant,
 };
 
 use futures_util::TryStreamExt;
@@ -40,9 +41,13 @@ pub struct Analytics {
   #[serde(with = "serde_util::as_f64")]
   pub total_transfer_bytes: u64,
 
+  #[cfg(feature = "analytics-max-concurrent")]
   #[serde(with = "serde_util::as_f64")]
+  #[ts(optional)]
   pub max_concurrent_listeners: u64,
 
+  #[cfg(feature = "analytics-max-concurrent")]
+  #[ts(optional)]
   pub max_concurrent_listeners_date: Option<serde_util::DateTime>,
 
   pub by_month: Vec<AnalyticsItem<YearMonth>>,
@@ -67,8 +72,14 @@ pub struct AnalyticsItem<K> {
   pub total_duration_ms: u64,
   #[serde(with = "serde_util::as_f64")]
   pub total_transfer_bytes: u64,
+
+  #[cfg(feature = "analytics-max-concurrent")]
   #[serde(with = "serde_util::as_f64")]
+  #[ts(optional)]
   pub max_concurrent_listeners: u64,
+
+  #[cfg(feature = "analytics-max-concurrent")]
+  #[ts(optional)]
   pub max_concurrent_listeners_date: Option<serde_util::DateTime>,
 }
 
@@ -110,6 +121,8 @@ pub struct AnalyticsQuery {
 }
 
 pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::error::Error> {
+  let start = Instant::now();
+
   let stations = {
     let filter = doc! {
       Station::KEY_ID: {
@@ -255,6 +268,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
   let mut total_transfer_bytes: u64 = 0;
 
   // u32 is the timestamp and bool is true => start, false => stop
+  #[cfg(feature = "analytics-max-concurrent")]
   let mut start_stop_events: Vec<(u32, bool)> = vec![];
 
   #[derive(Default)]
@@ -263,6 +277,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     ips: HashSet<IpAddr>,
     total_duration_ms: u64,
     total_transfer_bytes: u64,
+    #[cfg(feature = "analytics-max-concurrent")]
     start_stop_events: Vec<(u32, bool)>,
   }
 
@@ -276,6 +291,12 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
   let mut domain_accumulator = HashMap::<Option<String>, AccumulatorItem>::new();
 
   // accumulate
+  #[cfg(feature = "test-analytics-base-measure")]
+  while let Some(_conn) = cursor.try_next().await? {
+    sessions += 1;
+  }
+
+  #[cfg(not(feature = "test-analytics-base-measure"))]
   while let Some(conn) = cursor.try_next().await? {
     let created_at = conn.created_at.to_offset(query.start_date.offset());
     let conn_duration_ms = conn.duration_ms.unwrap_or(0);
@@ -287,14 +308,18 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     let conn_browser = conn.browser;
     let conn_os = conn.os;
 
-    let start = created_at.unix_timestamp() as u32;
-    let stop = start + (conn_duration_ms / 1000) as u32;
-
     sessions += 1;
     total_duration_ms += conn_duration_ms;
     total_transfer_bytes += conn_transfer_bytes;
     ips.insert(conn.ip);
+
+    #[cfg(feature = "analytics-max-concurrent")]
+    let start = created_at.unix_timestamp() as u32;
+    #[cfg(feature = "analytics-max-concurrent")]
+    let stop = start + (conn_duration_ms / 1000) as u32;
+    #[cfg(feature = "analytics-max-concurrent")]
     start_stop_events.push((start, true));
+    #[cfg(feature = "analytics-max-concurrent")]
     start_stop_events.push((stop, false));
 
     macro_rules! add {
@@ -304,7 +329,10 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
         item.ips.insert(conn.ip);
         item.total_duration_ms += conn_duration_ms;
         item.total_transfer_bytes += conn_transfer_bytes;
+
+        #[cfg(feature = "analytics-max-concurrent")]
         item.start_stop_events.push((start, true));
+        #[cfg(feature = "analytics-max-concurrent")]
         item.start_stop_events.push((stop, false));
       };
     }
@@ -332,6 +360,10 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     add!(domain_accumulator, conn.domain);
   }
 
+  let accumulate_ms = start.elapsed().as_millis();
+  let sort_start = Instant::now();
+
+  #[cfg(feature = "analytics-max-concurrent")]
   macro_rules! max_concurrent {
     ($vec:expr) => {{
       let mut vec = $vec;
@@ -369,6 +401,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
       $acc
         .into_iter()
         .map(|(key, value)| {
+          #[cfg(feature = "analytics-max-concurrent")]
           let (max_concurrent_listeners, max_concurrent_listeners_date) =
             max_concurrent!(value.start_stop_events);
 
@@ -378,7 +411,9 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
             ips: value.ips.len() as u64,
             total_duration_ms: value.total_duration_ms,
             total_transfer_bytes: value.total_transfer_bytes,
+            #[cfg(feature = "analytics-max-concurrent")]
             max_concurrent_listeners,
+            #[cfg(feature = "analytics-max-concurrent")]
             max_concurrent_listeners_date,
           }
         })
@@ -419,8 +454,20 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
   sort_by_sessions!(by_station);
   sort_by_sessions!(by_domain);
 
+  #[cfg(feature = "analytics-max-concurrent")]
   let (max_concurrent_listeners, max_concurrent_listeners_date) =
     max_concurrent!(start_stop_events);
+
+  let sort_ms = sort_start.elapsed().as_millis();
+
+  log::info!(
+    target: "analytics",
+    "got analytics, processed {} connections in {}ms => {}ms acculumate | {}ms sort",
+    sessions,
+    start.elapsed().as_millis(),
+    accumulate_ms,
+    sort_ms,
+  );
 
   // render
   let out = Analytics {
@@ -431,7 +478,9 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     total_duration_ms,
     total_transfer_bytes,
     ips: ips.len() as u64,
+    #[cfg(feature = "analytics-max-concurrent")]
     max_concurrent_listeners,
+    #[cfg(feature = "analytics-max-concurrent")]
     max_concurrent_listeners_date,
     stations,
     by_month,

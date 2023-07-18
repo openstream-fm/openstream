@@ -128,11 +128,11 @@ async fn purge() -> Result<(), mongodb::error::Error> {
 
     info!("purge transaction started");
 
-    let (admins, admins_index) = get_all!(Admin);
-    let (users, users_index) = get_all!(User);
-    let (accounts, accounts_index) = get_all!(Account);
-    let (stations, stations_index) = get_all!(Station);
-    let (station_pictures, station_pictures_index) = get_all!(StationPicture);
+    let (admins, _admins_index) = get_all!(Admin);
+    let (users, _users_index) = get_all!(User);
+    let (accounts, _accounts_index) = get_all!(Account);
+    let (stations, _stations_index) = get_all!(Station);
+    let (station_pictures, _station_pictures_index) = get_all!(StationPicture);
 
     //let (user_account_relations, user_account_relations_index) = get_all!(UserAccountRelation);
     //let (access_tokens, access_tokens_index) = get_all!(AccessToken);
@@ -152,19 +152,19 @@ async fn purge() -> Result<(), mongodb::error::Error> {
     info!("== GET stage ended ==");
 
     let (
-      current_admins,
-      current_admins_index,
+      _current_admins,
+      _current_admins_index,
       deleted_admins,
-      deleted_admins_index,
+      _deleted_admins_index,
     ) = split!(admins);
     delete_ids!(Admin, deleted_admins);
 
 
     let (
       current_users,
-      current_users_index,
+      _current_users_index,
       deleted_users,
-      deleted_users_index,
+      _deleted_users_index,
     ) = split!(users);
     delete_ids!(User, deleted_users);
 
@@ -172,15 +172,15 @@ async fn purge() -> Result<(), mongodb::error::Error> {
       current_accounts,
       current_accounts_index,
       deleted_accounts,
-      deleted_accounts_index,
+      _deleted_accounts_index,
     ) = split!(accounts);
     delete_ids!(Account, deleted_accounts);
 
     let (
       current_stations,
-      current_stations_index,
+      _current_stations_index,
       deleted_stations,
-      deleted_stations_index,
+      _deleted_stations_index,
     ) = split!(stations);
 
     info!("== SPLIT stage ended ==");
