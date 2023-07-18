@@ -23,6 +23,8 @@
   export let domain: string | null | undefined;
   export let selected_stations: StationItem[] | "all";
 
+  const with_max_concurrent = data.max_concurrent_listeners != null;
+
   const df = new Intl.DateTimeFormat(lang, {
     day: "2-digit",
     month: "2-digit",
@@ -51,6 +53,7 @@
   import type { DataGridData, DataGridField } from "./types";
   import type { CountryCode } from "$server/defs/CountryCode";
   import type { StationItem } from "./AnalyticsFilters.svelte";
+  import Analytics from "./Analytics.svelte";
   
   const SEC = 1000;
   const MIN = SEC * 60;
@@ -532,8 +535,17 @@
       ips: number,
       total_duration_ms: number,
       total_transfer_bytes: number,
-      max_concurrent_listeners: number
+      max_concurrent_listeners?: number
     }
+
+    const max_concurrent_field = (with_max_concurrent ? {
+      "max_concurrent": {
+        name: locale.Max_concurrent_listeners,
+        format: item => to_fixed(item.max_concurrent_listeners!, 0),
+        sort: (a, b) => compare_numbers(a.max_concurrent_listeners!, b.max_concurrent_listeners!),
+        numeric: true,
+      }
+    } : {} as Record<string, never>) satisfies Record<string, DataGridField<Item>>
 
     const fields = {
       "sessions": {
@@ -550,13 +562,8 @@
         numeric: true,
       },
 
-      "max_concurrent": {
-        name: locale.Max_concurrent_listeners,
-        format: item => to_fixed(item.max_concurrent_listeners, 0),
-        sort: (a, b) => compare_numbers(a.max_concurrent_listeners, b.max_concurrent_listeners),
-        numeric: true,
-      },
-
+      ...max_concurrent_field,
+      
       "avg_time": {
         name: locale.Average_listening_minutes,
         format: item => item.sessions === 0 ? "-" : format_mins(item.total_duration_ms / item.sessions),
@@ -744,8 +751,8 @@
           ips: 0,
           total_duration_ms: 0,
           total_transfer_bytes: 0,
-          max_concurrent_listeners: 0,
-          max_concurrent_listeners_date: null,
+          // max_concurrent_listeners: undefined,
+          // max_concurrent_listeners_date: undefined,
         })
       } else {
         items.push(item)
@@ -950,17 +957,19 @@
         </div>
       </div>
 
-      <div class="total">
-        <div class="total-title">{locale.Max_concurrent_listeners}</div>
-        <div class="total-value">
-          {data.max_concurrent_listeners}
-          {#if data.max_concurrent_listeners_date}
-            <div class="total-max-concurrent-date">
-              {total_date(data.max_concurrent_listeners_date)}
-            </div>
-          {/if}
+      {#if with_max_concurrent}
+        <div class="total">
+          <div class="total-title">{locale.Max_concurrent_listeners}</div>
+          <div class="total-value">
+            {data.max_concurrent_listeners}
+            {#if data.max_concurrent_listeners_date}
+              <div class="total-max-concurrent-date">
+                {total_date(data.max_concurrent_listeners_date)}
+              </div>
+            {/if}
+          </div>
         </div>
-      </div>
+      {/if}
 
       <div class="total">
         <div class="total-title">{locale.Average_listening_time}</div>

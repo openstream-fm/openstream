@@ -7,6 +7,6 @@ export type AnalyticsItem<K> = {
   ips: number;
   total_duration_ms: number;
   total_transfer_bytes: number;
-  max_concurrent_listeners: number;
-  max_concurrent_listeners_date: DateTime | null;
+  max_concurrent_listeners?: number;
+  max_concurrent_listeners_date?: DateTime;
 };

@@ -3,6 +3,14 @@ name = "db"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = [ "analytics-max-concurrent" ]
+analytics-max-concurrent = []
+
+# do not enable this, is for internal benchmarking only
+test-analytics-base-measure = []
+
+
 [dependencies]
 # array-macro = "2.1.5"
 # unused = "0.1.0"
