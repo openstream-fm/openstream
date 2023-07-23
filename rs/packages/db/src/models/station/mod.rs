@@ -79,7 +79,7 @@ pub struct Station {
   #[validate(
     email(message = "Email is invalid"),
     length(max = "VALIDATE_STATION_EMAIL_MAX_LEN", message = "Email is too long"),
-    non_control_character(message = "Email is invalid")
+    non_control_character(message = "Email cannot have control characters")
   )]
   pub email: Option<String>,
 
@@ -98,7 +98,7 @@ pub struct Station {
       max = "VALIDATE_STATION_WHATSAPP_MAX_LEN",
       message = "WhatsApp number is too long"
     ),
-    non_control_character(message = "WhatsApp number is invalid")
+    non_control_character(message = "WhatsApp number cannot have control characters")
   )]
   pub whatsapp: Option<String>,
 
@@ -111,7 +111,7 @@ pub struct Station {
       max = "VALIDATE_STATION_URLS_MAX_LEN",
       message = "Website URL is too long"
     ),
-    non_control_character(message = "Website URL is invalid")
+    non_control_character(message = "Website URL cannot have control characters")
   )]
   pub website_url: Option<String>,
 
@@ -123,7 +123,7 @@ pub struct Station {
       max = "VALIDATE_STATION_URLS_MAX_LEN",
       message = "Twitter URL is too long"
     ),
-    non_control_character(message = "Twitter URL is invalid")
+    non_control_character(message = "Twitter URL cannot have control characters")
   )]
   pub twitter_url: Option<String>,
 
@@ -135,7 +135,7 @@ pub struct Station {
       max = "VALIDATE_STATION_URLS_MAX_LEN",
       message = "Facebook URL is too long"
     ),
-    non_control_character(message = "Facebook URL is invalid")
+    non_control_character(message = "Facebook URL cannot have control characters")
   )]
   pub facebook_url: Option<String>,
 
@@ -147,7 +147,7 @@ pub struct Station {
       max = "VALIDATE_STATION_URLS_MAX_LEN",
       message = "Instagram URL is too long"
     ),
-    non_control_character(message = "Instagram URL is invalid")
+    non_control_character(message = "Instagram URL cannot have control characters")
   )]
   pub instagram_url: Option<String>,
 
@@ -159,7 +159,7 @@ pub struct Station {
       max = "VALIDATE_STATION_URLS_MAX_LEN",
       message = "Threads URL is too long"
     ),
-    non_control_character(message = "Threads URL is invalid")
+    non_control_character(message = "Threads URL cannot have control characters")
   )]
   pub threads_url: Option<String>,
 
@@ -171,7 +171,7 @@ pub struct Station {
       max = "VALIDATE_STATION_URLS_MAX_LEN",
       message = "Youtube URL is too long"
     ),
-    non_control_character(message = "Youtube URL is invalid")
+    non_control_character(message = "Youtube URL cannot have control characters")
   )]
   pub youtube_url: Option<String>,
 
@@ -183,7 +183,7 @@ pub struct Station {
       max = "VALIDATE_STATION_URLS_MAX_LEN",
       message = "Twitch URL is too long"
     ),
-    non_control_character(message = "Twitch URL is invalid")
+    non_control_character(message = "Twitch URL cannot have control characters")
   )]
   pub twitch_url: Option<String>,
 
@@ -195,7 +195,7 @@ pub struct Station {
       max = "VALIDATE_STATION_URLS_MAX_LEN",
       message = "TikTok URL is invalid"
     ),
-    non_control_character(message = "TikTok URL is invalid")
+    non_control_character(message = "TikTok URL cannot have control characters")
   )]
   pub tiktok_url: Option<String>,
 
@@ -208,7 +208,7 @@ pub struct Station {
       max = "VALIDATE_STATION_URLS_MAX_LEN",
       message = "Google Play URL is too long"
     ),
-    non_control_character(message = "Google Play URL is invalid")
+    non_control_character(message = "Google Play URL cannot have control characters")
   )]
   pub google_play_url: Option<String>,
 
@@ -220,7 +220,7 @@ pub struct Station {
       max = "VALIDATE_STATION_URLS_MAX_LEN",
       message = "App Store URL is too long"
     ),
-    non_control_character(message = "App Store URL is invalid")
+    non_control_character(message = "App Store URL cannot have control characters")
   )]
   pub app_store_url: Option<String>,
 
@@ -485,7 +485,7 @@ pub struct StationPatch {
   #[validate(
     email(message = "Email is invalid"),
     length(max = "VALIDATE_STATION_EMAIL_MAX_LEN", message = "Email is too long"),
-    non_control_character(message = "Email is invalid")
+    non_control_character(message = "Email cannot have control characters")
   )]
   pub email: Option<Option<String>>,
 
@@ -499,7 +499,7 @@ pub struct StationPatch {
   #[validate(
     phone(message = "Phone is invalid"),
     length(max = "VALIDATE_STATION_PHONE_MAX_LEN", message = "Phone is too long"),
-    non_control_character(message = "Phone is invalid")
+    non_control_character(message = "Phone cannot have control characters")
   )]
   pub phone: Option<Option<String>>,
 
@@ -516,7 +516,7 @@ pub struct StationPatch {
       max = "VALIDATE_STATION_WHATSAPP_MAX_LEN",
       message = "WhatsApp number is too long"
     ),
-    non_control_character(message = "WhatsApp number is invalid")
+    non_control_character(message = "WhatsApp number cannot have control characters")
   )]
   pub whatsapp: Option<Option<String>>,
 
@@ -535,7 +535,7 @@ pub struct StationPatch {
       max = "VALIDATE_STATION_URLS_MAX_LEN",
       message = "Website URL is too long"
     ),
-    non_control_character(message = "Website URL is invalid")
+    non_control_character(message = "Website URL cannot have control characters")
   )]
   pub website_url: Option<Option<String>>,
 
@@ -553,7 +553,7 @@ pub struct StationPatch {
       max = "VALIDATE_STATION_URLS_MAX_LEN",
       message = "Twitter URL is too long"
     ),
-    non_control_character(message = "Twitter URL is invalid")
+    non_control_character(message = "Twitter URL cannot have control characters")
   )]
   pub twitter_url: Option<Option<String>>,
 
@@ -571,7 +571,7 @@ pub struct StationPatch {
       max = "VALIDATE_STATION_URLS_MAX_LEN",
       message = "Facebook URL is too long"
     ),
-    non_control_character(message = "Facebook URL is invalid")
+    non_control_character(message = "Facebook URL cannot have control characters")
   )]
   pub facebook_url: Option<Option<String>>,
 
@@ -589,7 +589,7 @@ pub struct StationPatch {
       max = "VALIDATE_STATION_URLS_MAX_LEN",
       message = "Instagram URL is too long"
     ),
-    non_control_character(message = "Instagram URL is invalid")
+    non_control_character(message = "Instagram URL cannot have control characters")
   )]
   pub instagram_url: Option<Option<String>>,
 
@@ -607,7 +607,7 @@ pub struct StationPatch {
       max = "VALIDATE_STATION_URLS_MAX_LEN",
       message = "Threads URL is too long"
     ),
-    non_control_character(message = "Threads URL is invalid")
+    non_control_character(message = "Threads URL cannot have control characters")
   )]
   pub threads_url: Option<Option<String>>,
 
@@ -625,7 +625,7 @@ pub struct StationPatch {
       max = "VALIDATE_STATION_URLS_MAX_LEN",
       message = "Youtube URL is too long"
     ),
-    non_control_character(message = "Youtube URL is invalid")
+    non_control_character(message = "Youtube URL cannot have control characters")
   )]
   pub youtube_url: Option<Option<String>>,
 
@@ -643,7 +643,7 @@ pub struct StationPatch {
       max = "VALIDATE_STATION_URLS_MAX_LEN",
       message = "Twitch URL is too long"
     ),
-    non_control_character(message = "Twitch URL is invalid")
+    non_control_character(message = "Twitch URL cannot have control characters")
   )]
   pub twitch_url: Option<Option<String>>,
 
@@ -661,7 +661,7 @@ pub struct StationPatch {
       max = "VALIDATE_STATION_URLS_MAX_LEN",
       message = "TikTok URL is invalid"
     ),
-    non_control_character(message = "TikTok URL is invalid")
+    non_control_character(message = "TikTok URL cannot have control characters")
   )]
   pub tiktok_url: Option<Option<String>>,
 
@@ -680,7 +680,7 @@ pub struct StationPatch {
       max = "VALIDATE_STATION_URLS_MAX_LEN",
       message = "Google Play URL is too long"
     ),
-    non_control_character(message = "Google Play URL is invalid")
+    non_control_character(message = "Google Play URL cannot have control characters")
   )]
   pub google_play_url: Option<Option<String>>,
 
@@ -698,7 +698,7 @@ pub struct StationPatch {
       max = "VALIDATE_STATION_URLS_MAX_LEN",
       message = "App Store URL is too long"
     ),
-    non_control_character(message = "App Store URL is invalid")
+    non_control_character(message = "App Store URL cannot have control characters")
   )]
   pub app_store_url: Option<Option<String>>,
 
@@ -716,7 +716,7 @@ pub struct StationPatch {
       max = "VALIDATE_STATION_EXTERNAL_RELAY_URL_MAX_LEN",
       message = "External Relay URL is too long"
     ),
-    non_control_character(message = "External Relay URL is invalid")
+    non_control_character(message = "External Relay URL cannot have control characters")
   )]
   pub external_relay_url: Option<Option<String>>,
 
