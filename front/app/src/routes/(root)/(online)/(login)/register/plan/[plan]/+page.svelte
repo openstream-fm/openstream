@@ -138,6 +138,7 @@
 
 	import { form } from '../../../transitions';
 	import { display_fly_enter } from '$share/display_transitions';
+	import { VALIDATE_ACCOUNT_NAME_MAX_LEN, VALIDATE_ACCOUNT_NAME_MIN_LEN, VALIDATE_USER_EMAIL_MAX_LEN, VALIDATE_USER_FIRST_NAME_MAX_LEN, VALIDATE_USER_LAST_NAME_MAX_LEN, VALIDATE_USER_PASSWORD_MAX_LEN, VALIDATE_USER_PASSWORD_MIN_LEN } from '$server/defs/constants';
 
   const format_price = (price: number): string => {
     return new Intl.NumberFormat($lang, {
@@ -359,26 +360,37 @@
 					<TextField
 						label={$locale.pages.register.form.fields.first_name}
 						trim
+						maxlength={VALIDATE_USER_FIRST_NAME_MAX_LEN}
 						icon={mdiAccountOutline}
 						autocomplete="given-name"
 						bind:value={first_name}
 					/>
-					<Validator value={first_name} fn={_string({ required: true, maxlen: 50 })} />
+					<Validator value={first_name} fn={_string({
+							required: true,
+							maxlen: VALIDATE_USER_FIRST_NAME_MAX_LEN
+						})}
+					/>
 				</div>
 				<div class="login-page-field">
 					<TextField
 						label={$locale.pages.register.form.fields.last_name}
 						trim
+						maxlength={VALIDATE_USER_LAST_NAME_MAX_LEN}
 						icon={mdiAccountOutline}
 						autocomplete="family-name"
 						bind:value={last_name}
 					/>
-					<Validator value={last_name} fn={_string({ required: true, maxlen: 50 })} />
+					<Validator value={last_name} fn={_string({
+							required: true,
+							maxlen: VALIDATE_USER_LAST_NAME_MAX_LEN
+						})}
+					/>
 				</div>
 				<div class="login-page-field">
 					<TextField
 						label={$locale.pages.register.form.fields.account_name}
 						trim
+						maxlength={VALIDATE_ACCOUNT_NAME_MAX_LEN}
 						icon={mdiAccountOutline}
 						autocomplete="off"
 						bind:value={account_name}
@@ -386,7 +398,12 @@
 					<div class="org-explain">
 						{$locale.pages.register.form.account_name_comment}
 					</div>
-					<Validator value={account_name} fn={_string({ required: true, maxlen: 50 })} />
+					<Validator value={account_name} fn={_string({
+							required: true,
+							minlen: VALIDATE_ACCOUNT_NAME_MIN_LEN,
+							maxlen: VALIDATE_ACCOUNT_NAME_MAX_LEN
+						})}
+					/>
 				</div>
 				<!-- <div class="login-page-field">
 					<TextField
@@ -400,7 +417,10 @@
 				</div> -->
 				<div class="login-page-field">
 					<Email label={$locale.pages.register.form.fields.email} autocomplete="username" bind:value={email} />
-					<Validator value={email} fn={_new_user_email()} />
+					<Validator value={email} fn={_new_user_email({
+							maxlen: VALIDATE_USER_EMAIL_MAX_LEN
+						})}
+					/>
 				</div>
 				<div class="login-page-field">
 					<Password
@@ -408,7 +428,12 @@
 						autocomplete="new-password"
 						bind:value={password}
 					/>
-					<Validator value={password} fn={_new_password({ minlen: 8, maxlen: 50 })} />
+					<Validator value={password} fn={_new_password({
+							required: true,
+							minlen: VALIDATE_USER_PASSWORD_MIN_LEN,
+							maxlen: VALIDATE_USER_PASSWORD_MAX_LEN
+						})}
+					/>
 				</div>
 				<div class="login-page-field">
 					<Password

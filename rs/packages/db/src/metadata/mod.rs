@@ -6,12 +6,12 @@ use std::ops::{Deref, DerefMut};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Default, Eq, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
 #[ts(export_to = "../../../defs/db/")]
 pub struct Metadata(Document);
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Default, Eq, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
 #[ts(export_to = "../../../defs/db/")]
 // Record<string, Value> cannot reference itself in typescript
@@ -29,6 +29,27 @@ pub enum Value {
   Array(Vec<Value>),
   Document(Document),
 }
+
+impl PartialEq for Value {
+  fn eq(&self, other: &Self) -> bool {
+    use Value::*;
+    match (self, other) {
+      (Null, Null) => true,
+      (Bool(a), Bool(b)) => a == b,
+      (String(a), String(b)) => a == b,
+      (Array(a), Array(b)) => a == b,
+      (Document(a), Document(b)) => a == b,
+      (Number(a), Number(b)) => match (f64::is_nan(*a), f64::is_nan(*b)) {
+        (true, true) => true,
+        (false, false) => a == b,
+        _ => false,
+      },
+      _ => false,
+    }
+  }
+}
+
+impl Eq for Value {}
 
 impl Deref for Document {
   type Target = BTreeMap<String, Value>;

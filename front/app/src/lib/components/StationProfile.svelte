@@ -33,10 +33,9 @@
 		_twitch_url,
 		_twitter_url,
     _google_play_url,
-
-	_tiktok_url
-
+		_tiktok_url
 	} from '$share/formy/validate';
+	import { VALIDATE_STATION_DESC_MAX_LEN, VALIDATE_STATION_EMAIL_MAX_LEN, VALIDATE_STATION_NAME_MAX_LEN, VALIDATE_STATION_NAME_MIN_LEN, VALIDATE_STATION_PHONE_MAX_LEN, VALIDATE_STATION_SLOGAN_MAX_LEN, VALIDATE_STATION_URLS_MAX_LEN, VALIDATE_STATION_WHATSAPP_MAX_LEN } from "$server/defs/constants";
 	import CountryField from './Form/CountryField.svelte';
 	import type { CountryCode } from '$server/defs/CountryCode';
 	import TypeOfContentField from './Form/TypeOfContentField.svelte';
@@ -112,12 +111,30 @@
 	<div class="section-title">{$locale.station_profile.titles.profile_info}</div>
 	<div class="fields">
 		<div class="field">
-			<NullTextField label="{$locale.station_profile.labels.name} *" trim bind:value={current.name} />
-			<Validator value={current.name} fn={_string({ required: true, minlen: 3, maxlen: 40 })} />
+			<NullTextField
+				label="{$locale.station_profile.labels.name} *"
+				trim
+				maxlength={VALIDATE_STATION_NAME_MAX_LEN}
+				bind:value={current.name}
+			/>
+			<Validator value={current.name} fn={_string({
+					required: true,
+					minlen: VALIDATE_STATION_NAME_MIN_LEN,
+					maxlen: VALIDATE_STATION_NAME_MAX_LEN,
+				})}
+			/>
 		</div>
 		<div class="field">
-			<NullTextField label={$locale.station_profile.labels.slogan} trim bind:value={current.slogan} />
-			<Validator value={current.slogan} fn={_string({ maxlen: 50 })} />
+			<NullTextField
+				label={$locale.station_profile.labels.slogan}
+				trim
+				maxlength={VALIDATE_STATION_SLOGAN_MAX_LEN}
+				bind:value={current.slogan}
+			/>
+			<Validator value={current.slogan} fn={_string({
+					maxlen: VALIDATE_STATION_SLOGAN_MAX_LEN
+				})}
+			/>
 		</div>
 		<div class="field">
 			<NullTextField
@@ -125,10 +142,13 @@
 				multiline
 				minrows={15}
 				maxrows={50}
-				maxlength={2000}
+				maxlength={VALIDATE_STATION_DESC_MAX_LEN}
 				bind:value={current.description}
 			/>
-			<Validator value={current.description} fn={_string({ maxlen: 2000 })} />
+			<Validator value={current.description} fn={_string({
+				maxlen: VALIDATE_STATION_SLOGAN_MAX_LEN
+			})}
+			/>
 		</div>
 		<div class="field">
 			<CountryField
@@ -157,8 +177,15 @@
 	<div class="section-title">{$locale.station_profile.titles.contact_info}</div>
 	<div class="fields">
 		<div class="field">
-			<NullEmail label={$locale.station_profile.labels.email} maxlength={40} bind:value={current.email} />
-			<Validator value={current.email} fn={_email()} />
+			<NullEmail
+				label={$locale.station_profile.labels.email}
+				maxlength={VALIDATE_STATION_EMAIL_MAX_LEN}
+				bind:value={current.email}
+			/>
+			<Validator value={current.email} fn={_email({
+					maxlen: VALIDATE_STATION_EMAIL_MAX_LEN
+				})}
+			/>
 		</div>
 		<div class="field">
 			<NullTextField
@@ -166,10 +193,12 @@
 				label={$locale.station_profile.labels.phone}
 				trim
 				icon={mdiPhoneOutline}
-				maxlength={40}
+				maxlength={VALIDATE_STATION_PHONE_MAX_LEN}
 				bind:value={current.phone}
 			/>
-			<Validator value={current.phone} fn={_phone()} />
+			<Validator value={current.phone} fn={_phone({
+				maxlen: VALIDATE_STATION_PHONE_MAX_LEN
+			})} />
 		</div>
 		<div class="field">
 			<NullTextField
@@ -177,10 +206,14 @@
 				label={$locale.station_profile.labels.whatsapp}
 				trim
 				icon={mdiWhatsapp}
-				maxlength={40}
+				maxlength={VALIDATE_STATION_WHATSAPP_MAX_LEN}
 				bind:value={current.whatsapp}
 			/>
-			<Validator value={current.whatsapp} fn={_phone({ whatsapp: true })} />
+			<Validator value={current.whatsapp} fn={_phone({
+					whatsapp: true,
+					maxlen: VALIDATE_STATION_WHATSAPP_MAX_LEN
+				})}
+			/>
 		</div>
 		<div class="field">
 			<NullTextField
@@ -188,10 +221,10 @@
 				label={$locale.station_profile.labels.website}
 				trim
 				icon={mdiWeb}
-				maxlength={150}
+				maxlength={VALIDATE_STATION_URLS_MAX_LEN}
 				bind:value={current.website_url}
 			/>
-			<Validator value={current.website_url} fn={_url({ maxlen: 150 })} />
+			<Validator value={current.website_url} fn={_url({ maxlen: VALIDATE_STATION_URLS_MAX_LEN })} />
 		</div>
 	</div>
 </div>
@@ -203,12 +236,12 @@
 			<NullTextField
 				type="url"
 				label={$locale.station_profile.labels.twitter}
-				maxlength={150}
+				maxlength={VALIDATE_STATION_URLS_MAX_LEN}
 				trim
 				icon={mdiTwitter}
 				bind:value={current.twitter_url}
 			/>
-			<Validator value={current.twitter_url} fn={_twitter_url({ maxlen: 150 })} />
+			<Validator value={current.twitter_url} fn={_twitter_url({ maxlen: VALIDATE_STATION_URLS_MAX_LEN })} />
 		</div>
 		<div class="field">
 			<NullTextField
@@ -216,10 +249,10 @@
 				label={$locale.station_profile.labels.facebook}
 				trim
 				icon={mdiFacebook}
-				maxlength={150}
+				maxlength={VALIDATE_STATION_URLS_MAX_LEN}
 				bind:value={current.facebook_url}
 			/>
-			<Validator value={current.facebook_url} fn={_facebook_url({ maxlen: 150 })} />
+			<Validator value={current.facebook_url} fn={_facebook_url({ maxlen: VALIDATE_STATION_URLS_MAX_LEN })} />
 		</div>
 		<div class="field">
 			<NullTextField
@@ -227,10 +260,10 @@
 				label={$locale.station_profile.labels.instagram}
 				trim
 				icon={mdiInstagram}
-				maxlength={150}
+				maxlength={VALIDATE_STATION_URLS_MAX_LEN}
 				bind:value={current.instagram_url}
 			/>
-			<Validator value={current.instagram_url} fn={_instagram_url({ maxlen: 150 })} />
+			<Validator value={current.instagram_url} fn={_instagram_url({ maxlen: VALIDATE_STATION_URLS_MAX_LEN })} />
 		</div>
 		<div class="field">
 			<NullTextField
@@ -238,32 +271,32 @@
 				label={$locale.station_profile.labels.threads}
 				trim
 				icon={mdiThreads}
-				maxlength={150}
+				maxlength={VALIDATE_STATION_URLS_MAX_LEN}
 				bind:value={current.threads_url}
 			/>
-			<Validator value={current.threads_url} fn={_threads_url({ maxlen: 150 })} />
+			<Validator value={current.threads_url} fn={_threads_url({ maxlen: VALIDATE_STATION_URLS_MAX_LEN })} />
 		</div>
 		<div class="field">
 			<NullTextField
 				type="url"
 				label={$locale.station_profile.labels.youtube}
 				trim
-				maxlength={150}
+				maxlength={VALIDATE_STATION_URLS_MAX_LEN}
 				icon={mdiYoutube}
 				bind:value={current.youtube_url}
 			/>
-			<Validator value={current.youtube_url} fn={_youtube_url({ maxlen: 150 })} />
+			<Validator value={current.youtube_url} fn={_youtube_url({ maxlen: VALIDATE_STATION_URLS_MAX_LEN })} />
 		</div>
 		<div class="field">
 			<NullTextField
 				type="url"
 				label={$locale.station_profile.labels.twitch}
 				trim
-				maxlength={150}
+				maxlength={VALIDATE_STATION_URLS_MAX_LEN}
 				icon={mdiTwitch}
 				bind:value={current.twitch_url}
 			/>
-			<Validator value={current.twitch_url} fn={_twitch_url({ maxlen: 150 })} />
+			<Validator value={current.twitch_url} fn={_twitch_url({ maxlen: VALIDATE_STATION_URLS_MAX_LEN })} />
 		</div>
 
 		<div class="field">
@@ -271,11 +304,11 @@
 				type="url"
 				label={$locale.station_profile.labels.tiktok}
 				trim
-				maxlength={150}
+				maxlength={VALIDATE_STATION_URLS_MAX_LEN}
 				icon={mdiTiktok}
 				bind:value={current.tiktok_url}
 			/>
-			<Validator value={current.tiktok_url} fn={_tiktok_url({ maxlen: 150 })} />
+			<Validator value={current.tiktok_url} fn={_tiktok_url({ maxlen: VALIDATE_STATION_URLS_MAX_LEN })} />
 		</div>
 
 	</div>
@@ -290,10 +323,10 @@
 				label={$locale.station_profile.labels.google_play}
 				trim
 				icon={mdiGooglePlay}
-        maxlength={150}
+        maxlength={VALIDATE_STATION_URLS_MAX_LEN}
         bind:value={current.google_play_url}
 			/>
-      <Validator value={current.google_play_url} fn={_google_play_url({ maxlen: 150 })} />
+      <Validator value={current.google_play_url} fn={_google_play_url({ maxlen: VALIDATE_STATION_URLS_MAX_LEN })} />
 		</div>
 		<div class="field">
 			<NullTextField
@@ -301,10 +334,10 @@
 				label={$locale.station_profile.labels.app_store}
 				trim
 				icon={mdiApple}
-				maxlength={150}
+				maxlength={VALIDATE_STATION_URLS_MAX_LEN}
 				bind:value={current.app_store_url}
 			/>
-      <Validator value={current.app_store_url} fn={_app_store_url({ maxlen: 150 })} />
+      <Validator value={current.app_store_url} fn={_app_store_url({ maxlen: VALIDATE_STATION_URLS_MAX_LEN })} />
 		</div>
 	</div>
 </div>

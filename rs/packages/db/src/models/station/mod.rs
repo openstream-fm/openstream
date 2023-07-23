@@ -1,8 +1,8 @@
-use self::validation::*;
 use crate::audio_file::AudioFile;
 use crate::error::ApplyPatchError;
 use crate::{current_filter_doc, Model};
 use crate::{metadata::Metadata, PublicScope};
+use constants::validate::*;
 use drop_tracer::Token;
 use geoip::CountryCode;
 use mongodb::bson::{doc, Bson};
@@ -31,20 +31,38 @@ pub struct Station {
 
   // profile data
   #[modify(trim)]
-  #[validate(length(min = "NAME_MIN", max = "NAME_MAX"), non_control_character)]
+  #[validate(
+    length(
+      min = "VALIDATE_STATION_NAME_MIN_LEN",
+      max = "VALIDATE_STATION_NAME_MAX_LEN",
+      message = "Station name is empty or too long"
+    ),
+    non_control_character(message = "Station name cannot have control characters")
+  )]
   pub name: String,
 
   pub slug: String,
 
   #[modify(trim)]
-  #[validate(length(min = "SLOGAN_MIN", max = "SLOGAN_MAX"), non_control_character)]
+  #[validate(
+    length(
+      min = "VALIDATE_STATION_SLOGAN_MIN_LEN",
+      max = "VALIDATE_STATION_SLOGAN_MAX_LEN",
+      message = "Slogan is empty or too long"
+    ),
+    non_control_character(message = "Slogan cannot have control characters")
+  )]
   pub slogan: Option<String>,
 
   pub type_of_content: StationTypeOfContent,
   pub country_code: CountryCode,
 
   #[modify(trim)]
-  #[validate(length(min = "DESC_MIN", max = "DESC_MAX"))]
+  #[validate(length(
+    min = "VALIDATE_STATION_DESC_MIN_LEN",
+    max = "VALIDATE_STATION_DESC_MAX_LEN",
+    message = "Description is either too short or too long"
+  ))]
   pub description: Option<String>,
 
   // location and language
@@ -58,96 +76,151 @@ pub struct Station {
 
   // contact
   #[modify(trim, lowercase)]
-  #[validate(email, length(max = "EMAIL_MAX"), non_control_character)]
+  #[validate(
+    email(message = "Email is invalid"),
+    length(max = "VALIDATE_STATION_EMAIL_MAX_LEN", message = "Email is too long"),
+    non_control_character(message = "Email is invalid")
+  )]
   pub email: Option<String>,
 
   #[modify(trim)]
-  #[validate(phone, length(max = "PHONE_MAX"), non_control_character)]
+  #[validate(
+    phone(message = "Phone is invalid"),
+    length(max = "VALIDATE_STATION_PHONE_MAX_LEN", message = "Phone is too long"),
+    non_control_character(message = "Phone is invalid")
+  )]
   pub phone: Option<String>,
 
   #[modify(trim)]
-  #[validate(phone, length(max = "PHONE_MAX"), non_control_character)]
+  #[validate(
+    phone(message = "WhatsApp number is invalid"),
+    length(
+      max = "VALIDATE_STATION_WHATSAPP_MAX_LEN",
+      message = "WhatsApp number is too long"
+    ),
+    non_control_character(message = "WhatsApp number is invalid")
+  )]
   pub whatsapp: Option<String>,
 
   // links
   #[modify(trim)]
   #[validate(
-    url,
-    regex = "WEBSITE",
-    length(max = "URLS_MAX"),
-    non_control_character
+    url(message = "Website URL is invalid"),
+    regex(path = "WEBSITE", message = "Website URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "Website URL is too long"
+    ),
+    non_control_character(message = "Website URL is invalid")
   )]
   pub website_url: Option<String>,
 
   #[modify(trim)]
   #[validate(
-    url,
-    regex = "TWITTER",
-    length(max = "URLS_MAX"),
-    non_control_character
+    url(message = "Twitter URL is invalid"),
+    regex(path = "TWITTER", message = "Twitter URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "Twitter URL is too long"
+    ),
+    non_control_character(message = "Twitter URL is invalid")
   )]
   pub twitter_url: Option<String>,
 
   #[modify(trim)]
   #[validate(
-    url,
-    regex = "FACEBOOK",
-    length(max = "URLS_MAX"),
-    non_control_character
+    url(message = "Facebook URL is invalid"),
+    regex(path = "FACEBOOK", message = "Facebook URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "Facebook URL is too long"
+    ),
+    non_control_character(message = "Facebook URL is invalid")
   )]
   pub facebook_url: Option<String>,
 
   #[modify(trim)]
   #[validate(
-    url,
-    regex = "INSTAGRAM",
-    length(max = "URLS_MAX"),
-    non_control_character
+    url(message = "Instagram URL is invalid"),
+    regex(path = "INSTAGRAM", message = "Instagram URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "Instagram URL is too long"
+    ),
+    non_control_character(message = "Instagram URL is invalid")
   )]
   pub instagram_url: Option<String>,
 
   #[modify(trim)]
   #[validate(
-    url,
-    regex = "THREADS",
-    length(max = "URLS_MAX"),
-    non_control_character
+    url(message = "Threads URL is invalid"),
+    regex(path = "THREADS", message = "Threads URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "Threads URL is too long"
+    ),
+    non_control_character(message = "Threads URL is invalid")
   )]
   pub threads_url: Option<String>,
 
   #[modify(trim)]
   #[validate(
-    url,
-    regex = "YOUTUBE",
-    length(max = "URLS_MAX"),
-    non_control_character
+    url(message = "Youtube URL is invalid"),
+    regex(path = "YOUTUBE", message = "Youtube URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "Youtube URL is too long"
+    ),
+    non_control_character(message = "Youtube URL is invalid")
   )]
   pub youtube_url: Option<String>,
 
   #[modify(trim)]
-  #[validate(url, regex = "TWITCH", length(max = "URLS_MAX"), non_control_character)]
+  #[validate(
+    url(message = "Twitch URL is invalid"),
+    regex(path = "TWITCH", message = "Twitch URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "Twitch URL is too long"
+    ),
+    non_control_character(message = "Twitch URL is invalid")
+  )]
   pub twitch_url: Option<String>,
 
   #[modify(trim)]
-  #[validate(url, regex = "TIKTOK", length(max = "URLS_MAX"), non_control_character)]
+  #[validate(
+    url(message = "Twtich URL is invalid"),
+    regex(path = "TIKTOK", message = "TikTok URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "TikTok URL is invalid"
+    ),
+    non_control_character(message = "TikTok URL is invalid")
+  )]
   pub tiktok_url: Option<String>,
 
   // app links
   #[modify(trim)]
   #[validate(
-    url,
-    regex = "GOOGLE_PLAY",
-    length(max = "URLS_MAX"),
-    non_control_character
+    url(message = "Google Play URL is invalid"),
+    regex(path = "GOOGLE_PLAY", message = "Google Play URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "Google Play URL is too long"
+    ),
+    non_control_character(message = "Google Play URL is invalid")
   )]
   pub google_play_url: Option<String>,
 
   #[modify(trim)]
   #[validate(
-    url,
-    regex = "APP_STORE",
-    length(max = "URLS_MAX"),
-    non_control_character
+    url(message = "App Store URL is invalid"),
+    regex(path = "APP_STORE", message = "App Store URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "App Store URL is too long"
+    ),
+    non_control_character(message = "App Store URL is invalid")
   )]
   pub app_store_url: Option<String>,
 
@@ -230,25 +303,6 @@ impl From<OwnerDeploymentInfo> for Bson {
   }
 }
 
-pub mod validation {
-  pub const NAME_MIN: u64 = 3;
-  pub const NAME_MAX: u64 = 40;
-
-  pub const SLOGAN_MIN: u64 = 3;
-  pub const SLOGAN_MAX: u64 = 50;
-
-  pub const DESC_MIN: u64 = 1;
-  pub const DESC_MAX: u64 = 2000;
-
-  pub const EMAIL_MAX: u64 = 70;
-  pub const PHONE_MAX: u64 = 30;
-
-  pub const URLS_MAX: u64 = 150;
-
-  pub const FREQUENCY_MAX: f64 = 100_000.0;
-  pub const FREQUENCY_MIN: f64 = 0.0;
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/")]
 #[serde(rename_all = "snake_case")]
@@ -312,7 +366,11 @@ pub struct UserPublicStation {
 #[macros::keys]
 pub struct StationFrequency {
   kind: StationFrequencyKind,
-  #[validate(range(min = "FREQUENCY_MIN", max = "FREQUENCY_MAX"))]
+  #[validate(range(
+    min = "VALIDATE_STATION_FREQUENCY_MIN",
+    max = "VALIDATE_STATION_FREQUENCY_MAX",
+    message = "Station frequency is either too low or too high"
+  ))]
   freq: f64,
 }
 
@@ -345,7 +403,14 @@ pub struct StationPatch {
   #[ts(optional)]
   #[serde(skip_serializing_if = "Option::is_none")]
   #[modify(trim)]
-  #[validate(length(min = "NAME_MIN", max = "NAME_MAX"), non_control_character)]
+  #[validate(
+    length(
+      min = "VALIDATE_STATION_NAME_MIN_LEN",
+      max = "VALIDATE_STATION_NAME_MAX_LEN",
+      message = "Station name is empty or too long"
+    ),
+    non_control_character(message = "Station name cannot have control characters")
+  )]
   pub name: Option<String>,
 
   #[serde(skip_serializing_if = "Option::is_none")]
@@ -358,7 +423,14 @@ pub struct StationPatch {
     //skip_serializing_if = "Option::is_none"
   )]
   #[modify(trim)]
-  #[validate(length(min = "SLOGAN_MIN", max = "SLOGAN_MAX"), non_control_character)]
+  #[validate(
+    length(
+      min = "VALIDATE_STATION_SLOGAN_MIN_LEN",
+      max = "VALIDATE_STATION_SLOGAN_MAX_LEN",
+      message = "Slogan is empty or too long"
+    ),
+    non_control_character(message = "Slogan cannot have control characters")
+  )]
   pub slogan: Option<Option<String>>,
 
   #[ts(optional)]
@@ -368,7 +440,11 @@ pub struct StationPatch {
     skip_serializing_if = "Option::is_none"
   )]
   #[modify(trim)]
-  #[validate(length(min = "DESC_MIN", max = "DESC_MAX"))]
+  #[validate(length(
+    min = "VALIDATE_STATION_DESC_MIN_LEN",
+    max = "VALIDATE_STATION_DESC_MAX_LEN",
+    message = "Description is either too short or too long"
+  ))]
   pub description: Option<Option<String>>,
 
   #[ts(optional)]
@@ -406,7 +482,11 @@ pub struct StationPatch {
     skip_serializing_if = "Option::is_none"
   )]
   #[modify(trim, lowercase)]
-  #[validate(email, length(max = "EMAIL_MAX"), non_control_character)]
+  #[validate(
+    email(message = "Email is invalid"),
+    length(max = "VALIDATE_STATION_EMAIL_MAX_LEN", message = "Email is too long"),
+    non_control_character(message = "Email is invalid")
+  )]
   pub email: Option<Option<String>>,
 
   #[ts(optional)]
@@ -416,7 +496,11 @@ pub struct StationPatch {
     skip_serializing_if = "Option::is_none"
   )]
   #[modify(trim)]
-  #[validate(phone, length(max = "PHONE_MAX"), non_control_character)]
+  #[validate(
+    phone(message = "Phone is invalid"),
+    length(max = "VALIDATE_STATION_PHONE_MAX_LEN", message = "Phone is too long"),
+    non_control_character(message = "Phone is invalid")
+  )]
   pub phone: Option<Option<String>>,
 
   #[ts(optional)]
@@ -426,7 +510,14 @@ pub struct StationPatch {
     skip_serializing_if = "Option::is_none"
   )]
   #[modify(trim)]
-  #[validate(phone, length(max = "PHONE_MAX"), non_control_character)]
+  #[validate(
+    phone(message = "WhatsApp number is invalid"),
+    length(
+      max = "VALIDATE_STATION_WHATSAPP_MAX_LEN",
+      message = "WhatsApp number is too long"
+    ),
+    non_control_character(message = "WhatsApp number is invalid")
+  )]
   pub whatsapp: Option<Option<String>>,
 
   // links
@@ -438,10 +529,13 @@ pub struct StationPatch {
   )]
   #[modify(trim)]
   #[validate(
-    url,
-    regex = "WEBSITE",
-    length(max = "URLS_MAX"),
-    non_control_character
+    url(message = "Website URL is invalid"),
+    regex(path = "WEBSITE", message = "Website URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "Website URL is too long"
+    ),
+    non_control_character(message = "Website URL is invalid")
   )]
   pub website_url: Option<Option<String>>,
 
@@ -453,10 +547,13 @@ pub struct StationPatch {
   )]
   #[modify(trim)]
   #[validate(
-    url,
-    regex = "TWITTER",
-    length(max = "URLS_MAX"),
-    non_control_character
+    url(message = "Twitter URL is invalid"),
+    regex(path = "TWITTER", message = "Twitter URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "Twitter URL is too long"
+    ),
+    non_control_character(message = "Twitter URL is invalid")
   )]
   pub twitter_url: Option<Option<String>>,
 
@@ -468,10 +565,13 @@ pub struct StationPatch {
   )]
   #[modify(trim)]
   #[validate(
-    url,
-    regex = "FACEBOOK",
-    length(max = "URLS_MAX"),
-    non_control_character
+    url(message = "Facebook URL is invalid"),
+    regex(path = "FACEBOOK", message = "Facebook URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "Facebook URL is too long"
+    ),
+    non_control_character(message = "Facebook URL is invalid")
   )]
   pub facebook_url: Option<Option<String>>,
 
@@ -483,10 +583,13 @@ pub struct StationPatch {
   )]
   #[modify(trim)]
   #[validate(
-    url,
-    regex = "INSTAGRAM",
-    length(max = "URLS_MAX"),
-    non_control_character
+    url(message = "Instagram URL is invalid"),
+    regex(path = "INSTAGRAM", message = "Instagram URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "Instagram URL is too long"
+    ),
+    non_control_character(message = "Instagram URL is invalid")
   )]
   pub instagram_url: Option<Option<String>>,
 
@@ -498,10 +601,13 @@ pub struct StationPatch {
   )]
   #[modify(trim)]
   #[validate(
-    url,
-    regex = "THREADS",
-    length(max = "URLS_MAX"),
-    non_control_character
+    url(message = "Threads URL is invalid"),
+    regex(path = "THREADS", message = "Threads URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "Threads URL is too long"
+    ),
+    non_control_character(message = "Threads URL is invalid")
   )]
   pub threads_url: Option<Option<String>>,
 
@@ -513,10 +619,13 @@ pub struct StationPatch {
   )]
   #[modify(trim)]
   #[validate(
-    url,
-    regex = "YOUTUBE",
-    length(max = "URLS_MAX"),
-    non_control_character
+    url(message = "Youtube URL is invalid"),
+    regex(path = "YOUTUBE", message = "Youtube URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "Youtube URL is too long"
+    ),
+    non_control_character(message = "Youtube URL is invalid")
   )]
   pub youtube_url: Option<Option<String>>,
 
@@ -527,7 +636,15 @@ pub struct StationPatch {
     skip_serializing_if = "Option::is_none"
   )]
   #[modify(trim)]
-  #[validate(url, regex = "TWITCH", length(max = "URLS_MAX"), non_control_character)]
+  #[validate(
+    url(message = "Twitch URL is invalid"),
+    regex(path = "TWITCH", message = "Twitch URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "Twitch URL is too long"
+    ),
+    non_control_character(message = "Twitch URL is invalid")
+  )]
   pub twitch_url: Option<Option<String>>,
 
   #[ts(optional)]
@@ -537,7 +654,15 @@ pub struct StationPatch {
     skip_serializing_if = "Option::is_none"
   )]
   #[modify(trim)]
-  #[validate(url, regex = "TIKTOK", length(max = "URLS_MAX"), non_control_character)]
+  #[validate(
+    url(message = "Twtich URL is invalid"),
+    regex(path = "TIKTOK", message = "TikTok URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "TikTok URL is invalid"
+    ),
+    non_control_character(message = "TikTok URL is invalid")
+  )]
   pub tiktok_url: Option<Option<String>>,
 
   // app links
@@ -549,10 +674,13 @@ pub struct StationPatch {
   )]
   #[modify(trim)]
   #[validate(
-    url,
-    regex = "GOOGLE_PLAY",
-    length(max = "URLS_MAX"),
-    non_control_character
+    url(message = "Google Play URL is invalid"),
+    regex(path = "GOOGLE_PLAY", message = "Google Play URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "Google Play URL is too long"
+    ),
+    non_control_character(message = "Google Play URL is invalid")
   )]
   pub google_play_url: Option<Option<String>>,
 
@@ -564,10 +692,13 @@ pub struct StationPatch {
   )]
   #[modify(trim)]
   #[validate(
-    url,
-    regex = "APP_STORE",
-    length(max = "URLS_MAX"),
-    non_control_character
+    url(message = "App Store URL is invalid"),
+    regex(path = "APP_STORE", message = "App Store URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "App Store URL is too long"
+    ),
+    non_control_character(message = "App Store URL is invalid")
   )]
   pub app_store_url: Option<Option<String>>,
 
@@ -579,10 +710,13 @@ pub struct StationPatch {
   )]
   #[modify(trim)]
   #[validate(
-    url,
-    regex = "WEBSITE",
-    length(max = "URLS_MAX"),
-    non_control_character
+    url(message = "External Relay URL is invalid"),
+    regex(path = "WEBSITE", message = "External Relay URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_EXTERNAL_RELAY_URL_MAX_LEN",
+      message = "External Relay URL is too long"
+    ),
+    non_control_character(message = "External Relay URL is invalid")
   )]
   pub external_relay_url: Option<Option<String>>,
 

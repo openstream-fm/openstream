@@ -116,6 +116,94 @@ pub const STATION_PICTURES_VERSION: f64 = 3.0;
 #[const_register]
 pub const DEPLOYMENT_HEALTH_CHECK_INTERVAL_SECS: u16 = 1;
 
+/// validation constants
+pub mod validate {
+  use super::*;
+
+  // name
+  #[const_register]
+  pub const VALIDATE_STATION_NAME_MIN_LEN: usize = 1;
+
+  #[const_register]
+  pub const VALIDATE_STATION_NAME_MAX_LEN: usize = 60;
+
+  // slogan
+  #[const_register]
+  pub const VALIDATE_STATION_SLOGAN_MIN_LEN: usize = 1;
+
+  #[const_register]
+  pub const VALIDATE_STATION_SLOGAN_MAX_LEN: usize = 100;
+
+  // description
+  #[const_register]
+  pub const VALIDATE_STATION_DESC_MIN_LEN: usize = 1;
+
+  #[const_register]
+  pub const VALIDATE_STATION_DESC_MAX_LEN: usize = 1000;
+
+  // email
+  #[const_register]
+  pub const VALIDATE_STATION_EMAIL_MAX_LEN: usize = 100;
+
+  // phone
+  #[const_register]
+  pub const VALIDATE_STATION_PHONE_MAX_LEN: usize = 60;
+
+  // whatsapp
+  #[const_register]
+  pub const VALIDATE_STATION_WHATSAPP_MAX_LEN: usize = 60;
+
+  // urls
+  #[const_register]
+  pub const VALIDATE_STATION_URLS_MAX_LEN: usize = 150;
+
+  // external relay url
+  #[const_register]
+  pub const VALIDATE_STATION_EXTERNAL_RELAY_URL_MAX_LEN: usize = 200;
+
+  #[const_register]
+  pub const VALIDATE_STATION_FREQUENCY_MAX: f64 = 100_000.0;
+
+  #[const_register]
+  pub const VALIDATE_STATION_FREQUENCY_MIN: f64 = 0.0;
+
+  #[const_register]
+  pub const VALIDATE_ACCOUNT_NAME_MIN_LEN: usize = 1;
+
+  #[const_register]
+  pub const VALIDATE_ACCOUNT_NAME_MAX_LEN: usize = 60;
+
+  #[const_register]
+  pub const VALIDATE_USER_EMAIL_MAX_LEN: usize = 80;
+
+  #[const_register]
+  pub const VALIDATE_USER_FIRST_NAME_MAX_LEN: usize = 100;
+
+  #[const_register]
+  pub const VALIDATE_USER_LAST_NAME_MAX_LEN: usize = 100;
+
+  #[const_register]
+  pub const VALIDATE_USER_PASSWORD_MIN_LEN: usize = 8;
+
+  #[const_register]
+  pub const VALIDATE_USER_PASSWORD_MAX_LEN: usize = 60;
+
+  #[const_register]
+  pub const VALIDATE_USER_PHONE_MAX_LEN: usize = 40;
+
+  #[const_register]
+  pub const VALIDATE_ADMIN_FIRST_NAME_MAX_LEN: usize = 100;
+
+  #[const_register]
+  pub const VALIDATE_ADMIN_LAST_NAME_MAX_LEN: usize = 100;
+
+  #[const_register]
+  pub const VALIDATE_ADMIN_PASSWORD_MIN_LEN: usize = 8;
+
+  #[const_register]
+  pub const VALIDATE_ADMIN_PASSWORD_MAX_LEN: usize = 60;
+}
+
 #[cfg(test)]
 pub mod test {
   use std::path::Path;

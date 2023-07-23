@@ -36,6 +36,7 @@
 	import { locale } from "$lib/locale";
 	import StationSelector from "$share/Map/StationSelector.svelte";
 	import { onMount } from "svelte";
+	import { VALIDATE_ACCOUNT_NAME_MAX_LEN } from "$server/defs/constants";
   
   let view: View = "now";
 
@@ -381,8 +382,19 @@
       <form novalidate class="edit-dialog" on:submit={submit}>
         <div class="edit-dialog-fields">
           <div class="edit-dialog-field">
-            <TextField label={$locale.pages["account/dashboard"].edit.dialog.field_label} maxlength={50} trim bind:value={current_account_name} />
-            <Validator value={current_account_name} fn={_string({ required: true, maxlen: 50 })} />
+            <TextField
+              label={$locale.pages["account/dashboard"].edit.dialog.field_label}
+              maxlength={VALIDATE_ACCOUNT_NAME_MAX_LEN}
+              trim
+              bind:value={current_account_name}
+            />
+            <Validator
+              value={current_account_name}
+              fn={_string({
+                required: true,
+                maxlen: VALIDATE_ACCOUNT_NAME_MAX_LEN
+              })}
+            />
           </div>
         </div>
         <div class="edit-dialog-btn-out">

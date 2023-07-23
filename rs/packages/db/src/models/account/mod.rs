@@ -1,5 +1,6 @@
 use crate::Model;
 use crate::{metadata::Metadata, PublicScope};
+use constants::validate::*;
 use mongodb::bson::doc;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
@@ -61,7 +62,14 @@ pub enum PublicAccount {
 pub struct AccountPatch {
   #[serde(skip_serializing_if = "Option::is_none")]
   #[modify(trim)]
-  #[validate(length(min = 1, max = 60), non_control_character)]
+  #[validate(
+    length(
+      min = "VALIDATE_ACCOUNT_NAME_MIN_LEN",
+      max = "VALIDATE_ACCOUNT_NAME_MAX_LEN",
+      message = "Account name is either too short or too long",
+    ),
+    non_control_character(message = "Account name cannot have control characters")
+  )]
   pub name: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub plan_id: Option<String>,

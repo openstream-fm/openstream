@@ -18,6 +18,16 @@ pub fn const_register(args: TokenStream, tokens: TokenStream) -> TokenStream {
   impls::const_register::const_register(args, tokens)
 }
 
+#[proc_macro_attribute]
+pub fn pick_from(args: TokenStream, tokens: TokenStream) -> TokenStream {
+  impls::pick_from::pick_from(args, tokens)
+}
+
+#[proc_macro_derive(GetStatus, attributes(status))]
+pub fn status(tokens: TokenStream) -> TokenStream {
+  impls::status::status(tokens)
+}
+
 // #[proc_macro_attribute]
 // pub fn validate(args: TokenStream, tokens: TokenStream) -> TokenStream {
 //   todo!();

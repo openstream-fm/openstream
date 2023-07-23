@@ -3,4 +3,7 @@
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
   },
+  "rust-analyzer.linkedProjects": [
+    "./rs/packages/api2/Cargo.toml"
+  ],
 }

@@ -18,6 +18,7 @@
 	import { tick } from "svelte";
   import PaymentMethodSelector from "$share/braintree/PaymentMethodSelector.svelte";
 	import { display_fly_enter } from "$share/display_transitions";
+	import { VALIDATE_ACCOUNT_NAME_MAX_LEN } from "$server/defs/constants";
   
   let account_name = "";
   // let sending_data = false;
@@ -270,13 +271,18 @@
               label={$locale.pages["accounts/create_account/plan"].form.fields.account_name} 
               trim
               icon={mdiAccountOutline}
+              maxlength={VALIDATE_ACCOUNT_NAME_MAX_LEN}
               autocomplete="off"
               bind:value={account_name}
             />
             <div class="org-explain">
               {$locale.pages["accounts/create_account/plan"].form.fields.account_name_message}
             </div>
-            <Validator value={account_name} fn={_string({ required: true, maxlen: 50 })} />
+            <Validator value={account_name} fn={_string({
+                required: true,
+                maxlen: VALIDATE_ACCOUNT_NAME_MAX_LEN
+              })}
+            />
           </div>
         </div>
         <button type="submit" class="ripple-container login-page-button" use:ripple>

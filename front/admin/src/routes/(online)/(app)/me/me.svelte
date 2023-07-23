@@ -22,6 +22,7 @@
   } from "$share/formy/validate";
   import { tick } from "svelte";
 	import { locale } from "$lib/locale";
+	import { VALIDATE_ADMIN_FIRST_NAME_MAX_LEN, VALIDATE_ADMIN_LAST_NAME_MAX_LEN, VALIDATE_ADMIN_PASSWORD_MAX_LEN, VALIDATE_ADMIN_PASSWORD_MIN_LEN } from "$server/defs/constants";
 	// import SelectField from "$lib/components/Form/SelectField.svelte";
 
   let show_change_password = true;
@@ -306,10 +307,14 @@
             label={$locale.pages.me.fields.first_name}
             icon={mdiAccountOutline}
             trim
-            maxlength={50}
+            maxlength={VALIDATE_ADMIN_FIRST_NAME_MAX_LEN}
             bind:value={profile_current.first_name}
           />
-          <Validator value={profile_current.first_name} fn={_string({ required: true, maxlen: 50 })} /> 
+          <Validator value={profile_current.first_name} fn={_string({
+              required: true,
+              maxlen: VALIDATE_ADMIN_FIRST_NAME_MAX_LEN
+            })}
+          /> 
         </div>
         <div class="field">
           <TextField
@@ -317,9 +322,13 @@
             icon={mdiAccountOutline}
             trim
             bind:value={profile_current.last_name}
-            maxlength={50}
+            maxlength={VALIDATE_ADMIN_LAST_NAME_MAX_LEN}
           />
-          <Validator value={profile_current.last_name} fn={_string({ required: true, maxlen: 50 })} /> 
+          <Validator value={profile_current.last_name} fn={_string({
+              required: true,
+              maxlen: VALIDATE_ADMIN_LAST_NAME_MAX_LEN,
+            })}
+          /> 
         </div>
         <!-- <div class="field">
           <NullTextField
@@ -379,7 +388,11 @@
         <div class="fields">
           <div class="field">
             <Password label={$locale.pages.me.fields.new_password} autocomplete="new-password" bind:value={new_password} />
-            <Validator value={new_password} fn={_new_password({ minlen: 8, maxlen: 50 })} />
+            <Validator value={new_password} fn={_new_password({ 
+                minlen: VALIDATE_ADMIN_PASSWORD_MIN_LEN,
+                maxlen: VALIDATE_ADMIN_PASSWORD_MAX_LEN
+              })}
+            />
           </div>
           <div class="field">
             <Password label={$locale.pages.me.fields.confirm_password} autocomplete="new-password" bind:value={confirm_new_password} />
