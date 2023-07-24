@@ -30,6 +30,7 @@
 	import { assert_never } from '$share/assert-never';
 	import NullNumberField from './Nullable/NullNumberField.svelte';
 	import { mdiSineWave } from '@mdi/js';
+	import { VALIDATE_STATION_FREQUENCY_MAX, VALIDATE_STATION_FREQUENCY_MIN } from "$server/defs/constants";
 </script>
 
 <style>
@@ -96,7 +97,12 @@
 				step={kind === 'am' ? 1 : 0.1}
 				bind:value={freq}
 			/>
-			<Validator value={freq} fn={_number({ required: true, min: 0, max: 100_000 })} />
+			<Validator value={freq} fn={_number({
+					required: true,
+					min: VALIDATE_STATION_FREQUENCY_MIN,
+					max: VALIDATE_STATION_FREQUENCY_MAX
+				})}
+			/>
 		</div>
 	{/if}
 </div>

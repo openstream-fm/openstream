@@ -12,10 +12,11 @@ use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
 
 use crate::error::ApiError;
 use async_trait::async_trait;
+use constants::validate::*;
 use db::metadata::Metadata;
 use db::models::user_account_relation::UserAccountRelation;
 use db::station::PublicStation;
-use db::station::{validation::*, Station};
+use db::station::Station;
 use db::{Model, Paged, PublicScope};
 use mongodb::bson::doc;
 use prex::request::ReadBodyJsonError;
@@ -174,17 +175,35 @@ pub mod post {
     pub picture_id: String,
 
     #[modify(trim)]
-    #[validate(length(min = "NAME_MIN", max = "NAME_MAX"), non_control_character)]
+    #[validate(
+      length(
+        min = "VALIDATE_STATION_NAME_MIN_LEN",
+        max = "VALIDATE_STATION_NAME_MAX_LEN",
+        message = "Station name is empty or too long"
+      ),
+      non_control_character(message = "Station name cannot have control characters")
+    )]
     pub name: String,
 
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
-    #[validate(length(min = "SLOGAN_MIN", max = "SLOGAN_MAX"), non_control_character)]
+    #[validate(
+      length(
+        min = "VALIDATE_STATION_SLOGAN_MIN_LEN",
+        max = "VALIDATE_STATION_SLOGAN_MAX_LEN",
+        message = "Slogan is empty or too long"
+      ),
+      non_control_character(message = "Slogan cannot have control characters")
+    )]
     pub slogan: Option<String>,
 
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
-    #[validate(length(min = "DESC_MIN", max = "DESC_MAX"))]
+    #[validate(length(
+      min = "VALIDATE_STATION_DESC_MIN_LEN",
+      max = "VALIDATE_STATION_DESC_MAX_LEN",
+      message = "Description is either too short or too long"
+    ))]
     pub description: Option<String>,
 
     pub type_of_content: StationTypeOfContent,
@@ -192,121 +211,176 @@ pub mod post {
 
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim, lowercase)]
-    #[validate(email, length(max = "EMAIL_MAX"), non_control_character)]
+    #[validate(
+      email(message = "Email is invalid"),
+      length(max = "VALIDATE_STATION_EMAIL_MAX_LEN", message = "Email is too long"),
+      non_control_character(message = "Email cannot have control characters")
+    )]
     pub email: Option<String>,
 
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
-    #[validate(phone, length(max = "PHONE_MAX"), non_control_character)]
+    #[validate(
+      phone(message = "Phone is invalid"),
+      length(max = "VALIDATE_STATION_PHONE_MAX_LEN", message = "Phone is too long"),
+      non_control_character(message = "Phone cannot have control characters")
+    )]
     pub phone: Option<String>,
 
     ///#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
-    #[validate(phone, length(max = "PHONE_MAX"), non_control_character)]
+    #[validate(
+      phone(message = "WhatsApp number is invalid"),
+      length(
+        max = "VALIDATE_STATION_WHATSAPP_MAX_LEN",
+        message = "WhatsApp number is too long"
+      ),
+      non_control_character(message = "WhatsApp number cannot have control characters")
+    )]
     pub whatsapp: Option<String>,
 
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(
-      url,
-      regex = "WEBSITE",
-      length(max = "URLS_MAX"),
-      non_control_character
+      url(message = "Website URL is invalid"),
+      regex(path = "WEBSITE", message = "Website URL is invalid"),
+      length(
+        max = "VALIDATE_STATION_URLS_MAX_LEN",
+        message = "Website URL is too long"
+      ),
+      non_control_character(message = "Website URL cannot have control characters")
     )]
     pub website_url: Option<String>,
 
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(
-      url,
-      regex = "TWITTER",
-      length(max = "URLS_MAX"),
-      non_control_character
+      url(message = "Twitter URL is invalid"),
+      regex(path = "TWITTER", message = "Twitter URL is invalid"),
+      length(
+        max = "VALIDATE_STATION_URLS_MAX_LEN",
+        message = "Twitter URL is too long"
+      ),
+      non_control_character(message = "Twitter URL cannot have control characters")
     )]
     pub twitter_url: Option<String>,
 
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(
-      url,
-      regex = "FACEBOOK",
-      length(max = "URLS_MAX"),
-      non_control_character
+      url(message = "Facebook URL is invalid"),
+      regex(path = "FACEBOOK", message = "Facebook URL is invalid"),
+      length(
+        max = "VALIDATE_STATION_URLS_MAX_LEN",
+        message = "Facebook URL is too long"
+      ),
+      non_control_character(message = "Facebook URL cannot have control characters")
     )]
     pub facebook_url: Option<String>,
 
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(
-      url,
-      regex = "INSTAGRAM",
-      length(max = "URLS_MAX"),
-      non_control_character
+      url(message = "Instagram URL is invalid"),
+      regex(path = "INSTAGRAM", message = "Instagram URL is invalid"),
+      length(
+        max = "VALIDATE_STATION_URLS_MAX_LEN",
+        message = "Instagram URL is too long"
+      ),
+      non_control_character(message = "Instagram URL cannot have control characters")
     )]
     pub instagram_url: Option<String>,
 
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(
-      url,
-      regex = "THREADS",
-      length(max = "URLS_MAX"),
-      non_control_character
+      url(message = "Threads URL is invalid"),
+      regex(path = "THREADS", message = "Threads URL is invalid"),
+      length(
+        max = "VALIDATE_STATION_URLS_MAX_LEN",
+        message = "Threads URL is too long"
+      ),
+      non_control_character(message = "Threads URL cannot have control characters")
     )]
     pub threads_url: Option<String>,
 
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(
-      url,
-      regex = "YOUTUBE",
-      length(max = "URLS_MAX"),
-      non_control_character
+      url(message = "Youtube URL is invalid"),
+      regex(path = "YOUTUBE", message = "Youtube URL is invalid"),
+      length(
+        max = "VALIDATE_STATION_URLS_MAX_LEN",
+        message = "Youtube URL is too long"
+      ),
+      non_control_character(message = "Youtube URL cannot have control characters")
     )]
     pub youtube_url: Option<String>,
 
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
-    #[validate(url, regex = "TWITCH", length(max = "URLS_MAX"), non_control_character)]
+    #[validate(
+      url(message = "Twitch URL is invalid"),
+      regex(path = "TWITCH", message = "Twitch URL is invalid"),
+      length(
+        max = "VALIDATE_STATION_URLS_MAX_LEN",
+        message = "Twitch URL is too long"
+      ),
+      non_control_character(message = "Twitch URL cannot have control characters")
+    )]
     pub twitch_url: Option<String>,
 
     #[modify(trim)]
-    #[validate(url, regex = "TIKTOK", length(max = "URLS_MAX"), non_control_character)]
+    #[validate(
+      url(message = "Twtich URL is invalid"),
+      regex(path = "TIKTOK", message = "TikTok URL is invalid"),
+      length(
+        max = "VALIDATE_STATION_URLS_MAX_LEN",
+        message = "TikTok URL is invalid"
+      ),
+      non_control_character(message = "TikTok URL cannot have control characters")
+    )]
     pub tiktok_url: Option<String>,
 
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(
-      url,
-      regex = "GOOGLE_PLAY",
-      length(max = "URLS_MAX"),
-      non_control_character
+      url(message = "Google Play URL is invalid"),
+      regex(path = "GOOGLE_PLAY", message = "Google Play URL is invalid"),
+      length(
+        max = "VALIDATE_STATION_URLS_MAX_LEN",
+        message = "Google Play URL is too long"
+      ),
+      non_control_character(message = "Google Play URL cannot have control characters")
     )]
     pub google_play_url: Option<String>,
 
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(
-      url,
-      regex = "APP_STORE",
-      length(max = "URLS_MAX"),
-      non_control_character
+      url(message = "App Store URL is invalid"),
+      regex(path = "APP_STORE", message = "App Store URL is invalid"),
+      length(
+        max = "VALIDATE_STATION_URLS_MAX_LEN",
+        message = "App Store URL is too long"
+      ),
+      non_control_character(message = "App Store URL cannot have control characters")
     )]
     pub app_store_url: Option<String>,
 
-    // #[serde(skip_serializing_if = "Option::is_none")]
-    // #[validate]
-    // pub frequencies: Option<Vec<StationFrequency>>,
     #[validate]
     pub frequency: Option<StationFrequency>,
 
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(
-      url,
-      regex = "WEBSITE",
-      length(max = "URLS_MAX"),
-      non_control_character
+      url(message = "External Relay URL is invalid"),
+      regex(path = "WEBSITE", message = "External Relay URL is invalid"),
+      length(
+        max = "VALIDATE_STATION_EXTERNAL_RELAY_URL_MAX_LEN",
+        message = "External Relay URL is too long"
+      ),
+      non_control_character(message = "External Relay URL cannot have control characters")
     )]
     pub external_relay_url: Option<String>,
 

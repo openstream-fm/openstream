@@ -6,6 +6,9 @@ pub use macros_build::*;
 pub use paste::paste;
 pub use static_init::dynamic;
 
+mod status;
+pub use status::GetStatus;
+
 static GLOBAL_CONST_REGISTRY: once_cell::sync::Lazy<ConstRegistry> =
   once_cell::sync::Lazy::new(ConstRegistry::new);
 

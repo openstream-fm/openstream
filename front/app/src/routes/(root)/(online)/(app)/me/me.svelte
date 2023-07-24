@@ -24,6 +24,7 @@
 	import { tick } from "svelte";
 	import { locale } from "$lib/locale";
 	import SelectField from "$lib/components/Form/SelectField.svelte";
+	import { VALIDATE_USER_FIRST_NAME_MAX_LEN, VALIDATE_USER_LAST_NAME_MAX_LEN, VALIDATE_USER_PASSWORD_MAX_LEN, VALIDATE_USER_PASSWORD_MIN_LEN, VALIDATE_USER_PHONE_MAX_LEN } from "$server/defs/constants";
 
   let show_change_password = true;
 
@@ -304,10 +305,14 @@
             label={$locale.pages.me.fields.first_name}
             icon={mdiAccountOutline}
             trim
-            maxlength={50}
+            maxlength={VALIDATE_USER_FIRST_NAME_MAX_LEN}
             bind:value={profile_current.first_name}
           />
-          <Validator value={profile_current.first_name} fn={_string({ required: true, maxlen: 50 })} /> 
+          <Validator value={profile_current.first_name} fn={_string({
+              required: true,
+              maxlen: VALIDATE_USER_FIRST_NAME_MAX_LEN
+            })}
+          /> 
         </div>
         <div class="field">
           <TextField
@@ -315,9 +320,14 @@
             icon={mdiAccountOutline}
             trim
             bind:value={profile_current.last_name}
-            maxlength={50}
+            maxlength={VALIDATE_USER_LAST_NAME_MAX_LEN}
           />
-          <Validator value={profile_current.last_name} fn={_string({ required: true, maxlen: 50 })} /> 
+          <Validator value={profile_current.last_name}
+            fn={_string({
+              required: true,
+              maxlen: VALIDATE_USER_LAST_NAME_MAX_LEN,
+            })}
+          /> 
         </div>
         <div class="field">
           <NullTextField
@@ -326,9 +336,12 @@
             icon={mdiPhoneOutline}
             trim
             bind:value={profile_current.phone}
-            maxlength={40}  
+            maxlength={VALIDATE_USER_PHONE_MAX_LEN}  
           />
-          <Validator value={profile_current.phone} fn={_phone()} />
+          <Validator value={profile_current.phone} fn={_phone({
+              maxlen: VALIDATE_USER_PHONE_MAX_LEN
+            })}
+          />
         </div>
         <div class="field">
           <SelectField
@@ -377,7 +390,10 @@
         <div class="fields">
           <div class="field">
             <Password label={$locale.pages.me.fields.new_password} autocomplete="new-password" bind:value={new_password} />
-            <Validator value={new_password} fn={_new_password({ minlen: 8, maxlen: 50 })} />
+            <Validator value={new_password} fn={_new_password({
+              minlen: VALIDATE_USER_PASSWORD_MIN_LEN,
+              maxlen: VALIDATE_USER_PASSWORD_MAX_LEN
+            })} />
           </div>
           <div class="field">
             <Password label={$locale.pages.me.fields.confirm_password} autocomplete="new-password" bind:value={confirm_new_password} />

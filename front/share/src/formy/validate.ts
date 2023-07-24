@@ -91,8 +91,10 @@ export const _string = ({
 
 export const _email = ({
   required = false,
+  maxlen = null,
 }: {
   required?: boolean
+  maxlen?: number | null
 } = {}) => {
   return (v: string | null | undefined) => {
     if(is_empty_string(v)) {
@@ -107,6 +109,10 @@ export const _email = ({
       if(!is_valid_email(v)) {
         return get(locale).validate.email;
       }
+
+      if(maxlen != null && v.length > maxlen) {
+        return get(locale).validate.maxlen.replace("@maxlen", String(maxlen));
+      }
     }   
 
     return null;    
@@ -114,8 +120,12 @@ export const _email = ({
 }
 
 
-export const _new_user_email = () => {
-  const email = _email({ required: true });
+export const _new_user_email = ({
+  maxlen = null,
+}: {
+  maxlen?: number | null
+}) => {
+  const email = _email({ required: true, maxlen });
   return async (v: string | null | undefined) => {
     let m = email(v);
     if(m != null) return m;
@@ -194,9 +204,11 @@ export const _confirmation_password = ({
 export const _phone = ({
   required = false,
   whatsapp = false,
+  maxlen = null
 }: {
   required?: boolean,
   whatsapp?: boolean,
+  maxlen?: number | null,
 } = {}) => {
   return (v: string | null | undefined) => {
     if(is_empty_string(v)) {
@@ -215,6 +227,10 @@ export const _phone = ({
         } else {
           return get(locale).validate.phone.tel;
         }
+      }
+
+      if(maxlen != null && v.length > maxlen) {
+        return get(locale).validate.maxlen.replace("@maxlen", String(maxlen));
       }
     }
 

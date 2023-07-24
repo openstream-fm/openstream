@@ -6,12 +6,14 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+async-trait = "0.1.71"
 constants = { version = "0.1.0", path = "../../config/constants" }
 crypt = { version = "0.1.0", path = "../crypt" }
 db = { version = "0.1.0", path = "../db" }
 derive_more = "0.99.17"
 geoip = { version = "0.1.0", path = "../geoip" }
 http = { version = "0.2" }
+hyper = "0.14.27"
 macros = { version = "0.1.0", path = "../macros" }
 mongodb = "2.4.0"
 serde = { version = "1.0.171", features = ["derive"] }

@@ -20,6 +20,7 @@
 	import { invalidateAll, invalidate_siblings } from '$lib/invalidate';
 	import { goto } from '$app/navigation';
   import { locale } from "$lib/locale";
+	import { VALIDATE_USER_FIRST_NAME_MAX_LEN, VALIDATE_USER_LAST_NAME_MAX_LEN, VALIDATE_USER_PASSWORD_MIN_LEN, VALIDATE_USER_PASSWORD_MAX_LEN} from '$server/defs/constants';
 
   const logger = default_logger.scoped("recovery");
 
@@ -261,9 +262,14 @@
                     trim
                     icon={mdiAccountOutline}
                     autocomplete="given-name"
+                    maxlength={VALIDATE_USER_FIRST_NAME_MAX_LEN}
                     bind:value={first_name}
                   />
-                  <Validator value={first_name} fn={_string({ required: true, maxlen: 50 })} />
+                  <Validator value={first_name} fn={_string({
+                      required: true,
+                      maxlen: VALIDATE_USER_FIRST_NAME_MAX_LEN
+                    })}
+                  />
                 </div>
               
                 <div class="login-page-field">
@@ -271,10 +277,16 @@
                     label={$locale.pages.email_invitation.form.fields.last_name}
                     trim
                     icon={mdiAccountOutline}
+                    maxlength={VALIDATE_USER_LAST_NAME_MAX_LEN}
                     autocomplete="family-name"
                     bind:value={last_name}
+
                   />
-                  <Validator value={last_name} fn={_string({ required: true, maxlen: 50 })} />
+                  <Validator value={last_name} fn={_string({
+                      required: true,
+                      maxlen: VALIDATE_USER_LAST_NAME_MAX_LEN
+                    })}
+                  />
                 </div>
               
                 <div class="login-page-field">
@@ -283,7 +295,12 @@
                     autocomplete="new-password"
                     bind:value={password}
                   />
-                  <Validator value={password} fn={_new_password({ minlen: 8, maxlen: 50 })} />
+                  <Validator value={password} fn={_new_password({
+                      required: true,
+                      minlen: VALIDATE_USER_PASSWORD_MIN_LEN,
+                      maxlen: VALIDATE_USER_PASSWORD_MAX_LEN,
+                    })}
+                  />
                 </div>
               
                 <div class="login-page-field">

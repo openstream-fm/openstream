@@ -28,6 +28,7 @@ members = [
     "rs/packages/router",
     "rs/packages/upload",
     "rs/packages/api",
+    "rs/packages/api2",
 
     "rs/packages/mp3",
 
