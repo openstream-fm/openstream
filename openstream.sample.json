@@ -1,0 +1,38 @@
+{
+  "mongodb": {
+    "url": "mongodb://localhost:27017/openstream?replicaSet=rs1",
+    "storage_db_name": "openstream_storage"
+  },
+
+  "stream": {
+    "addrs": [ "0.0.0.0:10200" ]
+  },
+
+  "source": {
+    "addrs": [ "0.0.0.0:10600" ]
+  },
+
+  "api": {
+    "addrs": [ "0.0.0.0:10700" ]
+  },
+
+  "storage": {
+    "addrs": [ "0.0.0.0:10900" ]
+  },
+
+  "static": {
+    "addrs": [ "0.0.0.0:11000" ]
+  },
+
+  "payments": {
+    "base_url": "http://localhost:17100",
+    "access_token": ""
+  },
+  
+  "smtp": {
+    "hostname": "",
+    "port": 587,
+    "username": "",
+    "password": ""
+  }
+}
