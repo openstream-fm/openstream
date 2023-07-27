@@ -14,7 +14,12 @@ static GLOBAL_CONST_REGISTRY: once_cell::sync::Lazy<ConstRegistry> =
 
 #[derive(Clone)]
 pub struct ConstRegistry {
-  map: Arc<Mutex<BTreeMap<String, serde_json::Value>>>,
+  map: Arc<Mutex<BTreeMap<String, ConstItem>>>,
+}
+
+pub struct ConstItem {
+  comments: Option<String>,
+  value: serde_json::Value,
 }
 
 impl ConstRegistry {
@@ -28,10 +33,21 @@ impl ConstRegistry {
     GLOBAL_CONST_REGISTRY.clone()
   }
 
-  pub fn register<T: Serialize>(&self, name: impl Into<String>, value: T) {
+  pub fn register<T: Serialize>(
+    &self,
+    name: impl Into<String>,
+    value: T,
+    comments: Option<String>,
+  ) {
     let lit = serde_json::to_value(&value).expect("failed to serialize constant as JSON");
     let mut lock = self.map.lock();
-    lock.insert(name.into(), lit);
+    lock.insert(
+      name.into(),
+      ConstItem {
+        value: lit,
+        comments,
+      },
+    );
   }
 
   pub fn export_to_string(&self) -> String {
@@ -39,12 +55,25 @@ impl ConstRegistry {
       "/// This file is auto generated from its Rust definition, do not edit manually\n",
     );
     let lock = self.map.lock();
-    for (key, value) in lock.iter() {
+    for (key, item) in lock.iter() {
+      let comment = match &item.comments {
+        None => String::from(""),
+        Some(comment) => {
+          if comment.trim().is_empty() {
+            String::from("")
+          } else {
+            let lines = comment.trim().replace('\n', "\n *  ");
+            format!("/** {} */\n", lines)
+          }
+        }
+      };
+
       buf.push_str(&format!(
-        "\n\nexport const {} = {};",
+        "\n\n{}export const {} = {};",
+        comment,
         key,
         // serde_json::Value to_string will never error
-        serde_json::to_string_pretty(value).unwrap()
+        serde_json::to_string_pretty(&item.value).unwrap()
       ))
     }
 
@@ -67,7 +96,14 @@ macro_rules! register_const {
   ($name:ident) => {
       $crate::paste!{
         #[::static_init::dynamic]
-        static [<$name _REGISTRATION>]: () = $crate::ConstRegistry::global().register(stringify!($name), $name);
+        static [<$name _REGISTRATION>]: () = $crate::ConstRegistry::global().register(stringify!($name), $name, None);
       }
+  };
+
+  ($name:ident, $comment:expr) => {
+    $crate::paste!{
+      #[::static_init::dynamic]
+      static [<$name _REGISTRATION>]: () = $crate::ConstRegistry::global().register(stringify!($name), $name, Some(From::from($comment)));
+    }
   };
 }
