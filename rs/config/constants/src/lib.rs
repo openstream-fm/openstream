@@ -1,5 +1,6 @@
 #![allow(non_camel_case_types)]
-// this is needed because of static_init that is generating non camel case identifiers
+#![allow(non_upper_case_globals)]
+// this is needed because of static_init that is generating wrongly cased identifiers
 
 use macros::const_register;
 
