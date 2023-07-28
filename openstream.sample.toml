@@ -4,10 +4,12 @@
 # string (required)
 # must have a defined database in the path and a replicaSet in the query params
 # internally openstream uses transactions so replicaSet is required
+# env.OPENSTREAM_MONGODB_URL
 url="mongodb://localhost:27017/openstream?replicaSet=rs1"
 
 # string (optional)
 # storage database 
+# env.OPENSTREAM_MONGODB_STORAGE_DB_NAME
 storage_db_name = "openstream_storage"
 
 # the [stream] server is where end users will connect to listen to the stations
@@ -15,6 +17,7 @@ storage_db_name = "openstream_storage"
 
 # string(SocketAddr)[] (required)
 # socket addrs to bind the stream server to
+# env.OPENSTREAM_STREAM_ADDRS (comma separated)
 addrs = [ "0.0.0.0:10200" ]
 
 # the [source] server is where openstream receives the audio data from streamers, it is Icecast compatible
@@ -22,6 +25,7 @@ addrs = [ "0.0.0.0:10200" ]
 
 # string(SocketAddr)[] (required)
 # socket addrs to bind the source receiver server to
+# env.OPENSTREAM_SOURCE_ADDRS (comma separated)
 addrs = [ "0.0.0.0:10600" ]
 
 # the [api] server is the main interface for users and admins to interact with openstream server
@@ -29,6 +33,7 @@ addrs = [ "0.0.0.0:10600" ]
 
 # string(SocketAddr)[] (required)
 # socket addrs to bind the api server to
+# env.OPENSTREAM_API_ADDRS (comma separated)
 addrs = [ "0.0.0.0:10700" ]
 
 # the [storage] server is the interface to access user's files like stored audio tracks and images
@@ -36,6 +41,7 @@ addrs = [ "0.0.0.0:10700" ]
 
 # string(SocketAddr)[] (required)
 # socket addrs to bind the api server to
+# env.OPENSTREAM_STORAGE_ADDRS (comma separated)
 addrs = [ "0.0.0.0:10900" ]
 
 # the [assets] server is the interface to the static files server
@@ -43,6 +49,7 @@ addrs = [ "0.0.0.0:10900" ]
 
 # string(SocketAddr)[] (required)
 # socket addrs to bind the assets server to
+# env.OPENSTREAM_STATIC_ADDRS (comma separated)
 addrs = [ "0.0.0.0:11000" ]
 
 
@@ -52,11 +59,13 @@ addrs = [ "0.0.0.0:11000" ]
 # string(Url) (required)
 # base url of the payments server, it could be in another location that is not local and 
 # could be an http:// or https:// url, should not
+# env.OPENSTREAM_PAYMENTS_BASE_URL
 base_url = "http://localhost:17100"
 
 # string (required)
 # the access token to grant access to the payments server
 # it must match the one specified in front_config.payments.access_token 
+# env.OPENSTREAM_PAYMENTS_ACCESS_TOKEN
 access_token = ""
 
 
@@ -64,10 +73,14 @@ access_token = ""
 # smtp server must use StartTLS on the specified port
 [smtp]
 # string (required)
+# env.OPENSTREAM_SMTP_HOSTNAME
 hostname = ""
 # u16 (required)
+# env.OPENSTREAM_SMTP_PORT
 port = 587
 # string (required)
+# env.OPENSTREAM_SMTP_USERNAME
 username = ""
 # string (required)
+# env.OPENSTREAM_SMTP_PASSWORD
 password = ""

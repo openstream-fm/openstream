@@ -174,28 +174,37 @@ async fn shared_init(config: String) -> Result<Config, anyhow::Error> {
     );
   }
 
-  let canonical_config_path = std::fs::canonicalize(config.as_str())
-    .with_context(|| { 
-      use owo_colors::*;
-      format!("error loading config file from {}", config.yellow())
-  })?;
 
-  {
-    use owo_colors::*;
-    info!(
-      target: "start",
-      "loading config file from {}",
-      canonical_config_path.to_string_lossy().yellow()
-    );
-  }
+  let config: Config = {
+    if config.as_str() != "none" {
+      let canonical_config_path = std::fs::canonicalize(config.as_str())
+        .with_context(|| { 
+          use owo_colors::*;
+          format!("error loading config file from {}", config.yellow())
+      })?;
 
-  let config = config::load(config).with_context(|| {
-    use owo_colors::*;
-    format!(
-      "error loading config file from {}",
-      canonical_config_path.to_string_lossy().yellow(),
-    )
-  })?;
+      {
+        use owo_colors::*;
+        info!(
+          target: "start",
+          "loading config file from {}",
+          canonical_config_path.to_string_lossy().yellow()
+        );
+      }
+
+      config::load(Some(config)).with_context(|| {
+        use owo_colors::*;
+        format!(
+          "error loading config file from {}",
+          canonical_config_path.to_string_lossy().yellow(),
+        )
+      })?
+    } else {
+      info!(target: "start", "loading config only from env variables");
+      config::load(Option::<&str>::None).context("error loading config from env variables")?
+    }
+  };
+  
 
   debug!(target: "start", "config loaded: resolved config: {:#?}", config);
 

@@ -26,7 +26,7 @@ async fn craete_test_stations() -> Result<(), anyhow::Error> {
 
   info!("loading config file from {}", config.yellow());
 
-  let config = config::load(config)
+  let config = config::load(Some(config))
     .with_context(|| format!("error loading config file from {}", config.yellow(),))?;
 
   debug!("config loaded: resolved config: {:#?}", config);

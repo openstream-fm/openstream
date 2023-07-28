@@ -28,7 +28,7 @@ async fn shared_init(config: String) -> Result<Config, anyhow::Error> {
     canonical_config_path.to_string_lossy().yellow()
   );
 
-  let config = config::load(config).with_context(|| {
+  let config = config::load(Some(config)).with_context(|| {
     format!(
       "error loading config file from {}",
       canonical_config_path.to_string_lossy().yellow(),
