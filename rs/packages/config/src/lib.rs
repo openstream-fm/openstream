@@ -1,50 +1,67 @@
-use schematic::{Config as SchemaConfig, ConfigError, ConfigLoader};
+use garde::Validate;
+use metre::{Config as MetreConfig, ConfigLoader};
 use serde::{Deserialize, Serialize};
-use std::net::SocketAddr;
+use std::net::{AddrParseError, SocketAddr};
 use std::path::Path;
 
-fn parse_addrs(var: String) -> Result<Option<Vec<SocketAddr>>, ConfigError> {
+fn parse_addrs(var: &str) -> Result<Option<Vec<SocketAddr>>, AddrParseError> {
   let mut addrs = vec![];
   for item in var.split(',') {
     let item = item.trim();
     if item.is_empty() {
       continue;
     }
-    match item.parse::<SocketAddr>() {
-      Err(e) => return Err(ConfigError::Message(e.to_string())),
-      Ok(addr) => addrs.push(addr),
-    }
+    let addr = item.parse::<SocketAddr>()?;
+    addrs.push(addr);
   }
+
   Ok(Some(addrs))
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, SchemaConfig)]
+fn default_addrs(ports: &[u16]) -> Vec<SocketAddr> {
+  ports
+    .iter()
+    .copied()
+    .map(|port| SocketAddr::from(([127, 0, 0, 1], port)))
+    .collect()
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, MetreConfig, garde::Validate)]
 #[serde(deny_unknown_fields)]
-#[config(env_prefix = "OPENSTREAM_", rename_all = "snake_case")]
+#[config(rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 pub struct Config {
-  #[setting(nested)]
+  #[config(nested)]
+  #[garde(dive)]
   pub mongodb: Mongodb,
 
-  #[setting(nested)]
+  #[config(nested)]
+  #[garde(dive)]
   pub stream: Option<Stream>,
 
-  #[setting(nested)]
+  #[config(nested)]
+  #[garde(dive)]
   pub source: Option<Source>,
 
-  #[setting(nested)]
+  #[config(nested)]
+  #[garde(dive)]
   pub api: Option<Api>,
 
-  #[setting(nested)]
+  #[config(nested)]
+  #[garde(dive)]
   pub storage: Option<Storage>,
 
   #[serde(rename = "static")]
-  #[setting(nested, rename = "static")]
+  #[config(nested, rename = "static")]
+  #[garde(dive)]
   pub assets: Option<Static>,
 
-  #[setting(nested)]
+  #[config(nested)]
+  #[garde(dive)]
   pub smtp: Smtp,
 
-  #[setting(nested)]
+  #[config(nested)]
+  #[garde(dive)]
   pub payments: Payments,
 }
 
@@ -58,88 +75,106 @@ impl Config {
   }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, SchemaConfig)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, MetreConfig, garde::Validate)]
 #[serde(deny_unknown_fields)]
-#[config(env_prefix = "OPENSTREAM_SMTP_", rename_all = "snake_case")]
+#[config(rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 pub struct Smtp {
+  #[garde(skip)]
   pub hostname: String,
+  #[garde(skip)]
   pub port: u16,
+  #[garde(skip)]
   pub username: String,
+  #[garde(skip)]
   pub password: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, SchemaConfig)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, MetreConfig, garde::Validate)]
 #[serde(deny_unknown_fields)]
-#[config(env_prefix = "OPENSTREAM_MONGODB_", rename_all = "snake_case")]
+#[config(rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 pub struct Mongodb {
+  #[garde(skip)]
   pub url: String,
+  #[garde(skip)]
   pub storage_db_name: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, SchemaConfig)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, MetreConfig, garde::Validate)]
 #[serde(deny_unknown_fields)]
-#[config(env_prefix = "OPENSTREAM_STREAM_", rename_all = "snake_case")]
+#[config(rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 pub struct Stream {
-  #[setting(parse_env = parse_addrs)]
+  #[config(parse_env = parse_addrs)]
+  #[garde(length(min = 1))]
   pub addrs: Vec<SocketAddr>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, SchemaConfig)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, MetreConfig, garde::Validate)]
 #[serde(deny_unknown_fields)]
-#[config(env_prefix = "OPENSTREAM_STATIC_", rename_all = "snake_case")]
+#[config(rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 pub struct Static {
-  #[setting(parse_env = parse_addrs)]
+  #[config(parse_env = parse_addrs)]
+  #[garde(length(min = 1))]
   pub addrs: Vec<SocketAddr>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, SchemaConfig)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, MetreConfig, garde::Validate)]
 #[serde(deny_unknown_fields)]
-#[config(env_prefix = "OPENSTREAM_SOURCE_", rename_all = "snake_case")]
+#[config(rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 pub struct Source {
-  #[setting(parse_env = parse_addrs)]
+  #[config(parse_env = parse_addrs)]
+  #[garde(length(min = 1))]
   pub addrs: Vec<SocketAddr>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, SchemaConfig)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, MetreConfig, garde::Validate)]
 #[serde(deny_unknown_fields)]
-#[config(env_prefix = "OPENSTREAM_API_", rename_all = "snake_case")]
+#[config(rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 pub struct Api {
-  #[setting(parse_env = parse_addrs)]
+  #[config(parse_env = parse_addrs, default = default_addrs(&[10700]))]
+  #[garde(length(min = 1))]
   pub addrs: Vec<SocketAddr>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, SchemaConfig)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, MetreConfig, garde::Validate)]
 #[serde(deny_unknown_fields)]
-#[config(env_prefix = "OPENSTREAM_STORAGE_", rename_all = "snake_case")]
+#[config(rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 pub struct Storage {
-  #[setting(parse_env = parse_addrs)]
+  #[config(parse_env = parse_addrs, default = default_addrs(&[10900]))]
+  #[garde(length(min = 1))]
   pub addrs: Vec<SocketAddr>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, SchemaConfig)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, MetreConfig, garde::Validate)]
 #[serde(deny_unknown_fields)]
-#[config(env_prefix = "OPENSTREAM_PAYMENTS_", rename_all = "snake_case")]
+#[config(rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
 pub struct Payments {
+  #[garde(url)]
   pub base_url: String,
+  #[garde(skip)]
   pub access_token: String,
 }
 
 #[derive(Debug, thiserror::Error)]
 pub enum LoadConfigError {
-  #[error("schematic error loading config")]
-  Schematic(#[from] schematic::ConfigError),
+  #[error(transparent)]
+  Metre(#[from] metre::Error),
 
-  #[error("io error loading config")]
+  #[error("config validation error")]
+  Garde(#[from] garde::Errors),
+
+  #[error("I/O error loading config")]
   Io(#[from] std::io::Error),
 
-  #[error("toml error loading config")]
-  Toml(#[from] toml::de::Error),
-
-  #[error("json error loading config")]
-  Json(#[from] serde_json::Error),
-
   #[error(
-    "invalid config: at least one of [stream], [source], [api] or [storage] must be defined"
+    "invalid config: at least one of [stream] [source] [api] [storage] or [static] must be defined"
   )]
   NoInterfaces,
 }
@@ -169,35 +204,22 @@ pub fn load(path: Option<impl AsRef<Path>>) -> Result<Config, LoadConfigError> {
 }
 
 pub fn load_from_memory(code: Option<(&str, ConfigFileFormat)>) -> Result<Config, LoadConfigError> {
-  let config: Config;
+  let mut loader = ConfigLoader::<Config>::new();
 
-  match code {
-    Some((buf, format)) => match format {
-      ConfigFileFormat::Json => {
-        let reader = json_comments::StripComments::new(buf.as_bytes());
-        let value: serde_json::Value = serde_json::from_reader(reader)?;
-        let code = serde_json::to_string_pretty(&value)?;
-        let result = ConfigLoader::<Config>::new()
-          .code(code, schematic::Format::Json)?
-          .load()?;
+  loader.defaults()?;
 
-        config = result.config;
-      }
+  if let Some((code, format)) = code {
+    match format {
+      ConfigFileFormat::Json => loader.code(code, metre::Format::Jsonc)?,
+      ConfigFileFormat::Toml => loader.code(code, metre::Format::Toml)?,
+    };
+  };
 
-      ConfigFileFormat::Toml => {
-        let result = ConfigLoader::<Config>::new()
-          .code(buf, schematic::Format::Toml)?
-          .load()?;
+  loader.env_with_prefix("OPENSTREAM_")?;
 
-        config = result.config
-      }
-    },
+  let config = loader.finish()?;
 
-    None => {
-      let result = ConfigLoader::<Config>::new().load()?;
-      config = result.config;
-    }
-  }
+  config.validate(&())?;
 
   if !config.has_interfaces() {
     return Err(LoadConfigError::NoInterfaces);
