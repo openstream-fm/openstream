@@ -107,7 +107,7 @@ pub fn config(input: DeriveInput) -> Result<TokenStream, syn::Error> {
 
   let item = match &input.data {
     syn::Data::Enum(_) => syn_err!("enums are not yet supported"),
-    syn::Data::Union(_) => syn_err!("unions are not yet supported"),
+    syn::Data::Union(_) => syn_err!("unions not supported"),
     syn::Data::Struct(item) => item,
   };
 
@@ -325,7 +325,7 @@ pub fn config(input: DeriveInput) -> Result<TokenStream, syn::Error> {
         });
       } else {
         from_partial_fields.push(span_quote! {
-          #ident: #ident.unwrap_or(None),
+          #ident: #ident.unwrap_or(::core::option::Option::None),
         })
       }
     }
