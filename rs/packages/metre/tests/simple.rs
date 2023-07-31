@@ -1,6 +1,6 @@
 use metre::Config;
 
-#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub enum Asd {
   Asd,
 }

@@ -150,6 +150,8 @@ use std::path::Path;
 use std::sync::Arc;
 
 pub mod error;
+pub mod merge;
+pub mod parse;
 #[doc(hidden)]
 pub mod util;
 
@@ -267,8 +269,19 @@ impl<T: PartialConfig> PartialConfig for Option<T> {
   }
 }
 
+/// Implement this trait if you want to load a configuration from custom environment variables
+/// that are not in [`std::env::var`]
+///
+/// This is speecially usefull for unit tests
+///
+/// This trait is already implemented for several kinds of [HashMap]'s and [BTreeMap]'s from the standard library
 pub trait EnvProvider {
   type Error: Display;
+  /// Read a variable from the enviroment
+  ///
+  /// This should fail if the variable is not UTF-8 encoded
+  ///
+  /// If the variable is not present, implementations should return `Ok(None)`
   fn get(&self, key: &str) -> Result<Option<String>, Self::Error>;
 }
 
@@ -292,6 +305,7 @@ impl_env_provider_for_map!(BTreeMap<&str, String>);
 impl_env_provider_for_map!(BTreeMap<String, &str>);
 impl_env_provider_for_map!(BTreeMap<&str, &str>);
 
+/// An implementation of [`EnvProvider`] that reads from the standard library's [`std::env::var`]
 #[derive(Debug, Clone, Copy)]
 pub struct StdEnv;
 
@@ -308,6 +322,9 @@ impl EnvProvider for StdEnv {
   }
 }
 
+/// A location from where a configuration was loaded
+///
+/// can be from Memory, File, or URL
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum LoadLocation {
   Memory,
@@ -326,6 +343,7 @@ impl Display for LoadLocation {
   }
 }
 
+/// List of known configuration formats
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
 pub enum Format {
   Json,
@@ -334,18 +352,21 @@ pub enum Format {
   Yaml,
 }
 
+/// The configuration loader
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct ConfigLoader<T: Config> {
   partial: T::Partial,
 }
 
 impl<T: Config> ConfigLoader<T> {
+  /// Create a new configuration loader with all fields set as empty
   pub fn new() -> Self {
     Self {
       partial: T::Partial::default(),
     }
   }
 
+  /// Add a partial configuration from a file
   pub fn file(&mut self, path: &str, format: Format) -> Result<&mut Self, Error> {
     let code = std::fs::read_to_string(path).map_err(|e| Error::Io {
       path: path.into(),
@@ -355,6 +376,7 @@ impl<T: Config> ConfigLoader<T> {
     self.code_with_location(&code, format, LoadLocation::File(path.to_string()))
   }
 
+  /// Add a partial configuration from a file, if it exists
   pub fn file_optional(&mut self, path: &str, format: Format) -> Result<&mut Self, Error> {
     let exists = Path::new(path).try_exists().map_err(|e| Error::Io {
       path: path.into(),
@@ -368,21 +390,29 @@ impl<T: Config> ConfigLoader<T> {
     }
   }
 
+  /// Add a partial configuration from enviroment varialbes
   #[inline(always)]
   pub fn env(&mut self) -> Result<&mut Self, Error> {
     self._env(&StdEnv, None)
   }
 
+  /// Add a partial configuration from enviroment variables with a prefix
   #[inline(always)]
   pub fn env_with_prefix(&mut self, prefix: &str) -> Result<&mut Self, Error> {
     self._env(&StdEnv, Some(prefix))
   }
 
+  /// Add a partial configuration from enviroment variables with a custom provider
+  ///
+  /// The provider must implement the [`EnvProvider`] trait
+  ///
+  /// The [`EnvProvider`] trait is already implemented for several kinds of Maps from the standard library
   #[inline(always)]
   pub fn env_with_provider<E: EnvProvider>(&mut self, env: &E) -> Result<&mut Self, Error> {
     self._env(env, None)
   }
 
+  /// See [`Self::env_with_provider`] and [`Self::env_with_prefix`]
   #[inline(always)]
   pub fn env_with_provider_and_prefix<E: EnvProvider>(
     &mut self,
@@ -392,17 +422,15 @@ impl<T: Config> ConfigLoader<T> {
     self._env(env, Some(prefix))
   }
 
-  #[inline(always)]
-  fn _env<E: EnvProvider>(&mut self, env: &E, prefix: Option<&str>) -> Result<&mut Self, Error> {
-    let partial = T::Partial::from_env_with_provider_and_optional_prefix(env, prefix)?;
-    self._add(partial)
-  }
-
+  /// Add a partial configuration from in-memory code
   #[inline(always)]
   pub fn code<S: AsRef<str>>(&mut self, code: S, format: Format) -> Result<&mut Self, Error> {
     self._code(code.as_ref(), format, LoadLocation::Memory)
   }
 
+  /// Add a partial configuration from in-memory code
+  ///
+  /// Specifying the [`LoadLocation`] of the in-memory code is useful for error reporting
   #[inline(always)]
   pub fn code_with_location<S: AsRef<str>>(
     &mut self,
@@ -413,6 +441,7 @@ impl<T: Config> ConfigLoader<T> {
     self._code(code.as_ref(), format, location)
   }
 
+  /// Add a partial configuration from a url
   pub fn url(&mut self, url: &str, format: Format) -> Result<&mut Self, Error> {
     let map_err = |e| Error::Network {
       url: url.to_string(),
@@ -427,6 +456,7 @@ impl<T: Config> ConfigLoader<T> {
     self._code(&code, format, LoadLocation::Url(url.to_string()))
   }
 
+  /// Add a partial configuration from a url, async version
   pub async fn url_async(&mut self, url: &str, format: Format) -> Result<&mut Self, Error> {
     let map_err = |e| Error::Network {
       url: url.to_string(),
@@ -441,6 +471,12 @@ impl<T: Config> ConfigLoader<T> {
       .map_err(map_err)?;
 
     self._code(&code, format, LoadLocation::Url(url.to_string()))
+  }
+
+  #[inline(always)]
+  fn _env<E: EnvProvider>(&mut self, env: &E, prefix: Option<&str>) -> Result<&mut Self, Error> {
+    let partial = T::Partial::from_env_with_provider_and_optional_prefix(env, prefix)?;
+    self._add(partial)
   }
 
   fn _code(
@@ -477,11 +513,13 @@ impl<T: Config> ConfigLoader<T> {
     self._add(partial)
   }
 
+  /// Add a partial configuration from the `#[config(default = value)]` attributes
   #[inline(always)]
   pub fn defaults(&mut self) -> Result<&mut Self, Error> {
     self._add(T::Partial::defaults())
   }
 
+  /// Add a pre generated partial configuration
   #[inline(always)]
   pub fn partial(&mut self, partial: T::Partial) -> Result<&mut Self, Error> {
     self._add(partial)
@@ -493,16 +531,21 @@ impl<T: Config> ConfigLoader<T> {
     Ok(self)
   }
 
+  /// Get a reference to the partial configuration
   #[inline(always)]
   pub fn partial_state(&self) -> &T::Partial {
     &self.partial
   }
 
+  /// Get a mutable reference to the partial configuration
   #[inline(always)]
   pub fn partial_state_mut(&mut self) -> &mut T::Partial {
     &mut self.partial
   }
 
+  /// Get the final Config from the sum of all previously added stages
+  ///
+  /// this function will error if there are missing required properties
   #[inline(always)]
   pub fn finish(self) -> Result<T, Error> {
     let v = T::from_partial(self.partial)?;
@@ -518,40 +561,42 @@ impl<T: Config> Default for ConfigLoader<T> {
 
 #[cfg(test)]
 mod test {
+
   use super::*;
-
-  #[derive(crate::Config, Debug, Eq, PartialEq)]
-  #[config(crate = crate)]
-  struct Conf {
-    #[config(default = "".into())]
-    field: String,
-
-    #[config(nested)]
-    nested: Nested,
-
-    optional: Option<String>,
-
-    #[config(skip_env)]
-    list: Vec<String>,
-  }
-
-  #[derive(crate::Config, Debug, Eq, PartialEq)]
-  #[config(crate = crate)]
-  struct Nested {
-    a: String,
-    b: u8,
-  }
 
   #[test]
   fn test() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      #[config(default = "default".into())]
+      default: String,
+
+      #[config(nested)]
+      nested: Nested,
+
+      optional: Option<String>,
+
+      #[config(parse_env = crate::parse::comma_separated::<String>)]
+      list: Vec<String>,
+    }
+
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Nested {
+      a: String,
+      b: u8,
+    }
+
     let mut loader = ConfigLoader::<Conf>::new();
+    loader.defaults().unwrap();
 
     loader
       .code(
-        r#"field = "field"
+        r#"
         nested.a = "a"
         nested.b = 1
-        list = ["list"]
+        list = ["item"]
         "#,
         Format::Toml,
       )
@@ -559,14 +604,889 @@ mod test {
 
     let config = loader.finish().unwrap();
 
-    assert_eq!(config.field, "field");
     assert_eq!(
-      config.nested,
-      Nested {
-        a: "a".to_string(),
-        b: 1
+      config,
+      Conf {
+        default: "default".into(),
+        list: vec!["item".into()],
+        nested: Nested {
+          a: "a".into(),
+          b: 1
+        },
+        optional: None,
       }
     );
-    assert_eq!(config.optional, None);
+  }
+
+  #[test]
+  fn from_fixed_env() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      #[config(env = "MY_APP_PORT")]
+      port: u16,
+    }
+
+    let mut env = HashMap::new();
+    env.insert("MY_APP_PORT", "3000");
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader.env_with_provider(&env).unwrap();
+    let config = loader.finish().unwrap();
+
+    assert_eq!(config.port, 3000);
+  }
+
+  #[test]
+  fn from_env_with_prefix() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate, env_prefix = "{}CONF_")]
+    struct Conf {
+      #[config(env = "PORT")]
+      port: u16,
+      #[config(env = "{}LIST_RENAMED", parse_env = crate::parse::comma_separated::<String>)]
+      list: Vec<String>,
+      #[config(rename = "opt")]
+      optional: Option<String>,
+    }
+
+    let mut env = HashMap::new();
+    env.insert("PORT", "3000");
+    env.insert("MY_APP_CONF_LIST_RENAMED", "item1,item2");
+    env.insert("MY_APP_CONF_OPT", "optional");
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .env_with_provider_and_prefix(&env, "MY_APP_")
+      .unwrap();
+    let config = loader.finish().unwrap();
+
+    assert_eq!(config.port, 3000);
+    assert_eq!(config.list, vec!["item1".to_string(), "item2".to_string()]);
+    assert_eq!(config.optional, Some("optional".into()));
+  }
+
+  #[test]
+  fn from_json_code() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      port: u16,
+    }
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .code(
+        r#"
+        {
+          "port": 3000
+        }
+        "#,
+        Format::Json,
+      )
+      .unwrap();
+    let config = loader.finish().unwrap();
+
+    assert_eq!(config.port, 3000);
+  }
+
+  #[test]
+  fn should_load_jsonc_code() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      port: u16,
+    }
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .code(
+        r#"
+        {
+          // this is a comment
+          "port": 3000
+        }
+        "#,
+        Format::Jsonc,
+      )
+      .unwrap();
+    let config = loader.finish().unwrap();
+
+    assert_eq!(config.port, 3000);
+  }
+
+  #[test]
+  fn should_load_toml_code() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      port: u16,
+    }
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .code(
+        r#"
+        port = 3000
+        "#,
+        Format::Toml,
+      )
+      .unwrap();
+
+    let config = loader.finish().unwrap();
+
+    assert_eq!(config.port, 3000);
+  }
+
+  #[test]
+  fn should_load_yaml_code() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      port: u16,
+    }
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .code(
+        r#"
+        port: 3000
+        "#,
+        Format::Yaml,
+      )
+      .unwrap();
+    let config = loader.finish().unwrap();
+
+    assert_eq!(config.port, 3000);
+  }
+
+  #[test]
+  fn should_load_env() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      port: u16,
+    }
+
+    let mut env = HashMap::new();
+    env.insert("PORT", "3000");
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader.env_with_provider(&env).unwrap();
+    let config = loader.finish().unwrap();
+
+    assert_eq!(config.port, 3000);
+  }
+
+  #[test]
+  fn should_accumulate_partial_states() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      port: u16,
+    }
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .code(
+        r#"
+        port: 3000
+        "#,
+        Format::Yaml,
+      )
+      .unwrap();
+    let partial_state = loader.partial_state();
+    assert_eq!(partial_state.port, Some(3000));
+
+    loader
+      .code(
+        r#"
+        port: 3001
+        "#,
+        Format::Yaml,
+      )
+      .unwrap();
+    let partial_state = loader.partial_state();
+    assert_eq!(partial_state.port, Some(3001));
+  }
+
+  #[test]
+  fn should_merge_partal_states() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      port: u16,
+      addr: String,
+    }
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .code(
+        r#"
+        port: 3000
+        addr: "addr"
+        "#,
+        Format::Yaml,
+      )
+      .unwrap();
+
+    loader
+      .code(
+        r#"
+        port: 3001
+        "#,
+        Format::Yaml,
+      )
+      .unwrap();
+
+    let partial_state = loader.partial_state();
+
+    assert_eq!(partial_state.port, Some(3001));
+    assert_eq!(partial_state.addr, Some("addr".into()));
+
+    let config = loader.finish().unwrap();
+    assert_eq!(config.port, 3001);
+    assert_eq!(config.addr, "addr");
+  }
+
+  #[test]
+  fn should_error_on_missing_properties() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      port: u16,
+      addr: String,
+    }
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .code(
+        r#"
+        port: 3000
+        "#,
+        Format::Yaml,
+      )
+      .unwrap();
+
+    let err = loader.finish().unwrap_err();
+    assert!(err.to_string().contains("missing"));
+  }
+
+  #[test]
+  fn should_list_missing_properties_and_error() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      port: u16,
+      addr: String,
+    }
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .code(
+        r#"
+        port: 3000
+        "#,
+        Format::Yaml,
+      )
+      .unwrap();
+
+    let missing = loader.partial_state().list_missing_properties();
+    assert_eq!(missing, ["addr"]);
+
+    assert!(loader.finish().is_err());
+  }
+
+  #[test]
+  fn should_not_list_missing_properties_that_are_optional() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      port: u16,
+      addr: Option<String>,
+    }
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .code(
+        r#"
+        port: 3000
+        "#,
+        Format::Yaml,
+      )
+      .unwrap();
+
+    let missing = loader.partial_state().list_missing_properties();
+    assert_eq!(missing, Vec::<String>::new());
+    assert!(loader.finish().is_ok());
+  }
+
+  #[test]
+  fn should_skip_env() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      #[config(skip_env)]
+      port: u16,
+    }
+
+    let mut env = HashMap::new();
+    env.insert("PORT", "3000");
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader.env_with_provider(&env).unwrap();
+    let missing = loader.partial_state().list_missing_properties();
+    assert_eq!(missing, vec!["port"]);
+
+    loader.finish().unwrap_err();
+  }
+
+  #[test]
+  fn should_skip_env_for_nested() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      #[config(nested)]
+      nested: Nested,
+    }
+
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Nested {
+      #[config(skip_env)]
+      port: u16,
+    }
+
+    let mut env = HashMap::new();
+    env.insert("NESTED_PORT", "3000");
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader.env_with_provider(&env).unwrap();
+    let missing = loader.partial_state().list_missing_properties();
+    assert_eq!(missing, ["nested.port"]);
+
+    loader.finish().unwrap_err();
+  }
+
+  #[test]
+  fn should_skip_env_for_nested_with_prefix() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      #[config(nested)]
+      nested: Nested,
+    }
+
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate, env_prefix = "{}_N_")]
+    struct Nested {
+      #[config(skip_env)]
+      port: u16,
+    }
+
+    let mut env = HashMap::new();
+    env.insert("MY_APP_N_PORT", "3000");
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .env_with_provider_and_prefix(&env, "MY_APP_")
+      .unwrap();
+    let missing = loader.partial_state().list_missing_properties();
+    assert_eq!(missing, ["nested.port"]);
+
+    loader.finish().unwrap_err();
+  }
+
+  #[test]
+  fn should_override_with_env() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      port: u16,
+    }
+
+    let mut env = HashMap::new();
+    env.insert("PORT", "3000");
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .code(
+        r#"
+        port: 3001
+        "#,
+        Format::Yaml,
+      )
+      .unwrap();
+    loader.env_with_provider(&env).unwrap();
+    let config = loader.finish().unwrap();
+
+    assert_eq!(config.port, 3000);
+  }
+
+  #[test]
+  fn should_override_with_env_with_prefix() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate, env_prefix = "{}CONF_")]
+    struct Conf {
+      port: u16,
+    }
+
+    let mut env = HashMap::new();
+    env.insert("MY_APP_CONF_PORT", "3000");
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .code(
+        r#"
+        port: 3001
+        "#,
+        Format::Yaml,
+      )
+      .unwrap();
+    loader
+      .env_with_provider_and_prefix(&env, "MY_APP_")
+      .unwrap();
+    let config = loader.finish().unwrap();
+
+    assert_eq!(config.port, 3000);
+  }
+
+  #[test]
+  fn should_override_with_env_with_prefix_and_rename() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate, env_prefix = "{}CONF_")]
+    struct Conf {
+      #[config(rename = "port")]
+      port_renamed: u16,
+    }
+
+    let mut env = HashMap::new();
+    env.insert("MY_APP_CONF_PORT", "3000");
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .code(
+        r#"
+        port: 3001
+        "#,
+        Format::Yaml,
+      )
+      .unwrap();
+    loader
+      .env_with_provider_and_prefix(&env, "MY_APP_")
+      .unwrap();
+    let config = loader.finish().unwrap();
+
+    assert_eq!(config.port_renamed, 3000);
+  }
+
+  #[test]
+  fn should_override_with_env_with_prefix_and_rename_and_nested() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate, env_prefix = "{}CONF_")]
+    struct Conf {
+      #[config(nested)]
+      nested: Nested,
+    }
+
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Nested {
+      #[config(rename = "port")]
+      port_renamed: u16,
+    }
+
+    let mut env = HashMap::new();
+    env.insert("MY_APP_CONF_NESTED_PORT", "3000");
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .code(
+        r#"
+        nested:
+          port: 3001
+        "#,
+        Format::Yaml,
+      )
+      .unwrap();
+    loader
+      .env_with_provider_and_prefix(&env, "MY_APP_")
+      .unwrap();
+    let config = loader.finish().unwrap();
+
+    assert_eq!(config.nested.port_renamed, 3000);
+  }
+
+  #[test]
+  fn should_error_on_invalid_type() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      port: u16,
+    }
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .code(
+        r#"
+        {
+          "port": "3001"
+        }
+        "#,
+        Format::Json,
+      )
+      .unwrap_err();
+  }
+
+  #[test]
+  fn should_not_list_as_missing_optional_types() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      port: Option<u16>,
+    }
+
+    let loader = ConfigLoader::<Conf>::new();
+    let missing = loader.partial_state().list_missing_properties();
+    assert_eq!(missing, Vec::<String>::new());
+  }
+
+  #[test]
+  fn should_work_for_nested_optional_types() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      #[config(nested)]
+      nested: Option<Nested>,
+    }
+
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Nested {
+      port: u16,
+    }
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .code(
+        r#"
+        nested:
+          port: 3000
+        "#,
+        Format::Yaml,
+      )
+      .unwrap();
+    let config = loader.finish().unwrap();
+
+    assert_eq!(
+      config,
+      Conf {
+        nested: Some(Nested { port: 3000 })
+      }
+    );
+  }
+
+  #[test]
+  fn should_work_for_nested_optional_missing_values() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      #[config(nested)]
+      nested: Option<Nested>,
+    }
+
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Nested {
+      port: u16,
+    }
+
+    let loader = ConfigLoader::<Conf>::new();
+    let config = loader.finish().unwrap();
+
+    assert_eq!(config, Conf { nested: None });
+  }
+
+  #[test]
+  fn should_respect_defaults_from_attrs() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      #[config(default = 3000)]
+      port: u16,
+    }
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader.defaults().unwrap();
+    let config = loader.finish().unwrap();
+
+    assert_eq!(config.port, 3000);
+  }
+
+  #[test]
+  fn should_respect_defaults_for_nested_configs() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      #[config(nested)]
+      nested: Nested,
+    }
+
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Nested {
+      #[config(default = 3000)]
+      port: u16,
+    }
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader.defaults().unwrap();
+    let config = loader.finish().unwrap();
+
+    assert_eq!(
+      config,
+      Conf {
+        nested: Nested { port: 3000 }
+      }
+    );
+  }
+
+  #[test]
+  fn should_work_with_custom_merge_functions() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      #[config(merge = crate::merge::append_vec, skip_env)]
+      list: Vec<String>,
+    }
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .code(
+        r#"
+        list = ["item1"]
+        "#,
+        Format::Toml,
+      )
+      .unwrap();
+    loader
+      .code(
+        r#"
+        list = ["item2"]
+        "#,
+        Format::Toml,
+      )
+      .unwrap();
+    let config = loader.finish().unwrap();
+
+    assert_eq!(config.list, ["item1", "item2"]);
+  }
+
+  #[test]
+  fn should_error_on_unkown_extra_properties() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      port: u16,
+    }
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .code(
+        r#"
+        port: 3000
+        addr: "addr"
+        "#,
+        Format::Yaml,
+      )
+      .unwrap_err();
+  }
+
+  #[test]
+  fn should_not_error_on_unkown_extra_properties_with_allow_unkown_fields_attr() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate, allow_unknown_fields)]
+    struct Conf {
+      port: u16,
+    }
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .code(
+        r#"
+        port: 3000
+        addr: "addr"
+        "#,
+        Format::Yaml,
+      )
+      .unwrap();
+    let config = loader.finish().unwrap();
+
+    assert_eq!(config.port, 3000);
+  }
+
+  #[test]
+  fn partial_config_should_not_serialize_missing_properties() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      port: u16,
+      addr: String,
+    }
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .code(
+        r#"
+        port: 3000
+        "#,
+        Format::Yaml,
+      )
+      .unwrap();
+    let partial = loader.partial_state();
+
+    let serialized = serde_json::to_string(&partial).unwrap();
+    assert_eq!(serialized, "{\"port\":3000}");
+  }
+
+  #[test]
+  fn partial_config_should_not_serialize_empty_nested_configs() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      port: u16,
+      #[config(nested)]
+      nested: Nested,
+    }
+
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Nested {
+      prop: String,
+    }
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader
+      .code(
+        r#"
+        port: 3000
+        "#,
+        Format::Yaml,
+      )
+      .unwrap();
+    let partial = loader.partial_state();
+
+    let serialized = serde_json::to_string(&partial).unwrap();
+    assert_eq!(serialized, "{\"port\":3000}");
+  }
+
+  #[test]
+  fn should_load_json_file() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      port: u16,
+    }
+
+    let path = std::env::temp_dir()
+      .as_path()
+      .join("metre-test-config.json");
+    std::fs::write(&path, "{\"port\": 3000}").unwrap();
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader.file(path.to_str().unwrap(), Format::Json).unwrap();
+    let config = loader.finish().unwrap();
+
+    assert_eq!(config.port, 3000);
+  }
+
+  #[test]
+  fn should_load_jsonc_file() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      port: u16,
+      addr: String,
+    }
+
+    let path = std::env::temp_dir()
+      .as_path()
+      .join("metre-test-config.jsonc");
+    std::fs::write(
+      &path,
+      r#"
+      {
+        // this is a comment
+        "port": 3000,
+        "addr": "addr"
+      }
+      "#,
+    )
+    .unwrap();
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader.file(path.to_str().unwrap(), Format::Jsonc).unwrap();
+    let config = loader.finish().unwrap();
+
+    assert_eq!(config.port, 3000);
+    assert_eq!(config.addr, "addr");
+  }
+
+  #[test]
+  fn should_load_toml_file() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      port: u16,
+      addr: String,
+    }
+
+    let path = std::env::temp_dir()
+      .as_path()
+      .join("metre-test-config.toml");
+    std::fs::write(
+      &path,
+      r#"
+      port = 3000
+      addr = "addr"
+      "#,
+    )
+    .unwrap();
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader.file(path.to_str().unwrap(), Format::Toml).unwrap();
+    let config = loader.finish().unwrap();
+
+    assert_eq!(config.port, 3000);
+    assert_eq!(config.addr, "addr");
+  }
+
+  #[test]
+  fn should_load_yaml_file() {
+    #[derive(crate::Config, Debug, Eq, PartialEq)]
+    #[config(crate = crate)]
+    struct Conf {
+      port: u16,
+      addr: String,
+    }
+
+    let path = std::env::temp_dir()
+      .as_path()
+      .join("metre-test-config.yaml");
+    std::fs::write(
+      &path,
+      r#"
+      port: 3000
+      addr: "addr"
+      "#,
+    )
+    .unwrap();
+
+    let mut loader = ConfigLoader::<Conf>::new();
+    loader.file(path.to_str().unwrap(), Format::Yaml).unwrap();
+    let config = loader.finish().unwrap();
+
+    assert_eq!(config.port, 3000);
+    assert_eq!(config.addr, "addr");
   }
 }

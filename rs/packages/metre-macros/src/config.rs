@@ -402,7 +402,7 @@ pub fn config(input: DeriveInput) -> Result<TokenStream, syn::Error> {
   }
 
   let partial_struct_declaration = quote! {
-    #[derive(::std::default::Default, ::serde::Serialize, ::serde::Deserialize)]
+    #[derive(::std::fmt::Debug, ::std::default::Default, ::serde::Serialize, ::serde::Deserialize)]
     #rename_all_serde_attr
     #deny_unknown_attr
     #vis struct #partial_name #generics {
