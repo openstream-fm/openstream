@@ -2,7 +2,7 @@ use darling::util::SpannedValue;
 use darling::FromAttributes;
 use inflector::Inflector;
 use proc_macro2::Ident;
-use syn::{Expr, ExprPath, Meta};
+use syn::{Expr, ExprPath, Meta, Path};
 
 #[derive(Debug, Clone, Copy)]
 pub enum Inflection {
@@ -75,6 +75,8 @@ pub struct FieldArgs {
 pub struct ContainerAttrs {
   pub partial_name: Option<Ident>,
   pub env_prefix: Option<SpannedValue<String>>,
+  #[darling(rename = "crate")]
+  pub metre_crate: Option<Path>,
   #[darling(default)]
   pub skip_env: SpannedValue<bool>,
   pub rename_all: Option<SpannedValue<String>>,

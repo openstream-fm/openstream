@@ -26,7 +26,7 @@ fn fmt_has_prefix(fmt: &str) -> bool {
 // nevertheless we use the metre::UnOption::T associated type
 // so if this gives us a false posistive match it will fail to compile
 // it will also fail to compile for a false negative match for a type that
-// doesn't implement FromStr -> Option<T> 
+// doesn't implement FromStr -> Option<T>
 fn ty_is_option(ty: &syn::Type) -> bool {
   fn extract_option_segment(path: &syn::Path) -> Option<&syn::PathSegment> {
     let idents_of_path = path.segments.iter().fold(String::new(), |mut acc, v| {
@@ -60,6 +60,12 @@ pub fn config(input: DeriveInput) -> Result<TokenStream, syn::Error> {
   let name = &input.ident;
   let vis = &input.vis;
   let container_attrs = ContainerAttrs::from_attributes(&input.attrs)?;
+
+  let metre = container_attrs
+    .metre_crate
+    .clone()
+    .map(|path| quote! { #path })
+    .unwrap_or_else(|| quote! { ::metre });
 
   let partial_name = container_attrs
     .partial_name
@@ -180,7 +186,7 @@ pub fn config(input: DeriveInput) -> Result<TokenStream, syn::Error> {
       None => {
         if attrs.nested {
           default_fields.push(quote! {
-            #ident: <#ty as ::metre::Config>::Partial::defaults(),
+            #ident: <#ty as #metre::Config>::Partial::defaults(),
           })
         } else {
           default_fields.push(quote! {
@@ -205,16 +211,16 @@ pub fn config(input: DeriveInput) -> Result<TokenStream, syn::Error> {
     match attrs.nested {
       false => {
         partial_ty = span_quote! { ::core::option::Option<#ty> };
-        merge_fn = span_quote! { ::metre::util::merge_flat };
+        merge_fn = span_quote! { #metre::util::merge_flat };
         merge_map_err = quote! {};
       }
 
       true => {
-        partial_ty = span_quote! { <#ty as ::metre::Config>::Partial };
-        merge_fn = span_quote! { ::metre::util::merge_nested };
+        partial_ty = span_quote! { <#ty as #metre::Config>::Partial };
+        merge_fn = span_quote! { #metre::util::merge_nested };
         merge_map_err = quote! {
           .map_err(|e| {
-            ::metre::error::MergeError {
+            #metre::error::MergeError {
               field: format!("{}.{}", #field_name_str, e.field),
               message: e.message
             }
@@ -227,7 +233,7 @@ pub fn config(input: DeriveInput) -> Result<TokenStream, syn::Error> {
       merge_fn = quote! { #merge };
       merge_map_err = span_quote! {
         .map_err(|e| {
-          ::metre::error::MergeError {
+          #metre::error::MergeError {
             field: String::from(#field_name_str),
             message: e.to_string()
           }
@@ -247,24 +253,25 @@ pub fn config(input: DeriveInput) -> Result<TokenStream, syn::Error> {
     let parse_env_fn = match &attrs.parse_env {
       None => {
         if is_option {
-          span_quote! { <<#ty as ::metre::util::UnOption>::T as ::std::str::FromStr>::from_str(&env_value).map(|v| ::core::option::Option::Some(::core::option::Option::Some(v))) }
+          span_quote! { <<#ty as #metre::util::UnOption>::T as ::std::str::FromStr>::from_str(&env_value).map(|v| ::core::option::Option::Some(::core::option::Option::Some(v))) }
         } else {
           span_quote! { <#ty as ::std::str::FromStr>::from_str(&env_value).map(::core::option::Option::Some) }
         }
       }
       Some(path) => {
         if is_option {
-          quote! { #path(&env_value).map(::core::option::Option::Some) }
+          span_quote! { #path(&env_value).map(::core::option::Option::Some) }
         } else {
-          quote! { #path(&env_value) }
+          span_quote! { #path(&env_value) }
         }
       }
     };
 
     let serde_skip_serializing_if = if attrs.nested {
-      quote! { #[serde(skip_serializing_if = "::metre::PartialConfig::is_empty")] }
+      let path = format!("{}::PartialConfig::is_empty", metre);
+      span_quote! { #[serde(skip_serializing_if = #path)] }
     } else {
-      quote! { #[serde(skip_serializing_if = "::core::option::Option::is_none")] }
+      span_quote! { #[serde(skip_serializing_if = "::core::option::Option::is_none")] }
     };
 
     partial_fields_declaration.push(span_quote! {
@@ -283,26 +290,28 @@ pub fn config(input: DeriveInput) -> Result<TokenStream, syn::Error> {
 
     if attrs.nested {
       missing_fields_stmts.push(span_quote! {
-        for prop in ::metre::PartialConfig::list_missing_properties(&self.#ident) {
+        for prop in #metre::PartialConfig::list_missing_properties(&self.#ident) {
           missing_fields.push(format!("{}.{}", #field_name_str, prop));
         };
       });
 
       is_empty_stmts.push(span_quote! {
-        if !::metre::PartialConfig::is_empty(&self.#ident) {
+        if !#metre::PartialConfig::is_empty(&self.#ident) {
           return false;
         };
       });
 
       from_partial_fields.push(span_quote! {
-        #ident: ::metre::Config::from_partial(#ident).unwrap(),
+        #ident: #metre::Config::from_partial(#ident).unwrap(),
       });
     } else {
-      missing_fields_stmts.push(span_quote! {
-        if ::core::option::Option::is_none(&self.#ident) {
-          missing_fields.push(String::from(#field_name_str));
-        };
-      });
+      if !is_option {
+        missing_fields_stmts.push(span_quote! {
+          if ::core::option::Option::is_none(&self.#ident) {
+            missing_fields.push(String::from(#field_name_str));
+          };
+        });
+      }
 
       is_empty_stmts.push(span_quote! {
         if !::core::option::Option::is_none(&self.#ident) {
@@ -310,9 +319,15 @@ pub fn config(input: DeriveInput) -> Result<TokenStream, syn::Error> {
         };
       });
 
-      from_partial_fields.push(span_quote! {
-        #ident: ::core::option::Option::unwrap(#ident),
-      });
+      if !is_option {
+        from_partial_fields.push(span_quote! {
+          #ident: ::core::option::Option::unwrap(#ident),
+        });
+      } else {
+        from_partial_fields.push(span_quote! {
+          #ident: #ident.unwrap_or(None),
+        })
+      }
     }
 
     let field_name_lit = LitStr::new(&field_name.to_string(), field_name.span());
@@ -338,9 +353,9 @@ pub fn config(input: DeriveInput) -> Result<TokenStream, syn::Error> {
             nested_prefix.push('_');
           }
 
-          ::metre::PartialConfig::from_env_with_provider_and_prefix(env, &nested_prefix).map_err(|e| {
+          #metre::PartialConfig::from_env_with_provider_and_prefix(env, &nested_prefix).map_err(|e| {
             // set the correct deep path to the field
-            ::metre::error::FromEnvError {
+            #metre::error::FromEnvError {
               key: e.key,
               field: format!("{}.{}", #field_name_lit, e.field),
               message: e.message,
@@ -360,7 +375,7 @@ pub fn config(input: DeriveInput) -> Result<TokenStream, syn::Error> {
           let key = #get_field_env_key;
 
           let env_string_option = env.get(&key).map_err(|e| {
-            ::metre::error::FromEnvError {
+            #metre::error::FromEnvError {
               key: key.clone(),
               field: String::from(#field_name_lit),
               message: e.to_string(),
@@ -371,7 +386,7 @@ pub fn config(input: DeriveInput) -> Result<TokenStream, syn::Error> {
             None => ::core::option::Option::None,
             Some(env_value) => {
               #parse_env_fn.map_err(|e| {
-                ::metre::error::FromEnvError {
+                #metre::error::FromEnvError {
                   key,
                   field: String::from(#field_name_lit),
                   message: e.to_string(),
@@ -396,7 +411,7 @@ pub fn config(input: DeriveInput) -> Result<TokenStream, syn::Error> {
   };
 
   let partial_impl = quote! {
-    impl #generics ::metre::PartialConfig for #partial_name #generics {
+    impl #generics #metre::PartialConfig for #partial_name #generics {
 
       fn defaults() -> Self {
         Self {
@@ -404,7 +419,7 @@ pub fn config(input: DeriveInput) -> Result<TokenStream, syn::Error> {
         }
       }
 
-      fn merge(&mut self, other: Self) -> Result<(), ::metre::error::MergeError> {
+      fn merge(&mut self, other: Self) -> Result<(), #metre::error::MergeError> {
         let Self {
           #(#destructure_fields)*
         } = other;
@@ -414,7 +429,7 @@ pub fn config(input: DeriveInput) -> Result<TokenStream, syn::Error> {
         Ok(())
       }
 
-      fn from_env_with_provider_and_optional_prefix<E: ::metre::EnvProvider>(env: &E, prefix: Option<&str>) -> Result<Self, ::metre::error::FromEnvError> {
+      fn from_env_with_provider_and_optional_prefix<E: #metre::EnvProvider>(env: &E, prefix: Option<&str>) -> Result<Self, #metre::error::FromEnvError> {
 
         let env_prefix = prefix.unwrap_or("");
         let container_env_prefix = #get_container_env_prefix;
@@ -438,13 +453,13 @@ pub fn config(input: DeriveInput) -> Result<TokenStream, syn::Error> {
   };
 
   let config_impl = quote! {
-    impl #generics ::metre::Config for #name #generics {
+    impl #generics #metre::Config for #name #generics {
       type Partial = #partial_name #generics;
-      fn from_partial(partial: Self::Partial) -> Result<Self, ::metre::error::FromPartialError> {
+      fn from_partial(partial: Self::Partial) -> Result<Self, #metre::error::FromPartialError> {
 
-        let missing_properties = ::metre::PartialConfig::list_missing_properties(&partial);
+        let missing_properties = #metre::PartialConfig::list_missing_properties(&partial);
         if !missing_properties.is_empty() {
-          return Err(::metre::error::FromPartialError {
+          return Err(#metre::error::FromPartialError {
             missing_properties
           });
         }
@@ -468,10 +483,10 @@ pub fn config(input: DeriveInput) -> Result<TokenStream, syn::Error> {
     #partial_impl
 
     impl #generics TryFrom<#partial_name #generics> for #name #generics {
-      type Error = ::metre::error::FromPartialError;
+      type Error = #metre::error::FromPartialError;
       #[inline(always)]
       fn try_from(partial: #partial_name #generics) -> Result<Self, Self::Error> {
-          <#name #generics as ::metre::Config>::from_partial(partial)
+          <#name #generics as #metre::Config>::from_partial(partial)
       }
     }
   };

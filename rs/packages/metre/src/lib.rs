@@ -197,20 +197,30 @@ pub trait PartialConfig: DeserializeOwned + Default {
 }
 
 impl<T: Config> Config for Option<T> {
-  type Partial = T::Partial;
+  type Partial = Option<T::Partial>;
   fn from_partial(partial: Self::Partial) -> Result<Self, FromPartialError> {
-    if partial.is_empty() {
-      Ok(None)
-    } else {
-      let v = T::from_partial(partial)?;
-      Ok(Some(v))
+    match partial {
+      None => Ok(None),
+      Some(inner) => {
+        if inner.is_empty() {
+          Ok(None)
+        } else {
+          let v = T::from_partial(inner)?;
+          Ok(Some(v))
+        }
+      }
     }
   }
 }
 
 impl<T: PartialConfig> PartialConfig for Option<T> {
   fn defaults() -> Self {
-    Some(T::defaults())
+    let inner = T::defaults();
+    if inner.is_empty() {
+      None
+    } else {
+      Some(inner)
+    }
   }
 
   fn merge(&mut self, other: Self) -> Result<(), MergeError> {
@@ -226,8 +236,14 @@ impl<T: PartialConfig> PartialConfig for Option<T> {
 
   fn list_missing_properties(&self) -> Vec<String> {
     match self {
-      None => T::default().list_missing_properties(),
-      Some(me) => me.list_missing_properties(),
+      None => vec![],
+      Some(me) => {
+        if !me.is_empty() {
+          me.list_missing_properties()
+        } else {
+          vec![]
+        }
+      }
     }
   }
 
@@ -501,4 +517,56 @@ impl<T: Config> Default for ConfigLoader<T> {
 }
 
 #[cfg(test)]
-mod test {}
+mod test {
+  use super::*;
+
+  #[derive(crate::Config, Debug, Eq, PartialEq)]
+  #[config(crate = crate)]
+  struct Conf {
+    #[config(default = "".into())]
+    field: String,
+
+    #[config(nested)]
+    nested: Nested,
+
+    optional: Option<String>,
+
+    #[config(skip_env)]
+    list: Vec<String>,
+  }
+
+  #[derive(crate::Config, Debug, Eq, PartialEq)]
+  #[config(crate = crate)]
+  struct Nested {
+    a: String,
+    b: u8,
+  }
+
+  #[test]
+  fn test() {
+    let mut loader = ConfigLoader::<Conf>::new();
+
+    loader
+      .code(
+        r#"field = "field"
+        nested.a = "a"
+        nested.b = 1
+        list = ["list"]
+        "#,
+        Format::Toml,
+      )
+      .unwrap();
+
+    let config = loader.finish().unwrap();
+
+    assert_eq!(config.field, "field");
+    assert_eq!(
+      config.nested,
+      Nested {
+        a: "a".to_string(),
+        b: 1
+      }
+    );
+    assert_eq!(config.optional, None);
+  }
+}
