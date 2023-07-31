@@ -156,9 +156,46 @@ pub mod parse;
 pub mod util;
 
 pub use error::Error;
+/// Derive macro for [`Config`] trait
+///
+/// This macro will implement the [`Config`] trait for the given struct
+/// and define the associated [`PartialConfig`] struct
+///
+/// The generated [`PartialConfig`] struct will have the name `Partial{StructName}` by default
+/// and is accesible through the `Partial` associated type of the generated [`Config`] trait
+///
+/// The generated [`PartialConfig`] will have the same visibility as the [`Config`] (eg: pub, pub(crate), private, etc).
+///
+/// The [`PartialConfig`] generated type is a deep-partial version of the struct
+///
+/// See the [`Config`] and [`PartialConfig`] documentation for more information on the available methods.
+///
+/// # Container Attributes
+/// | Attribute | Description | Default | Example | Observations |
+/// | --- | --- | --- | --- | --- |
+/// | rename_all | The case conversion to apply to all fields | none | `#[config(rename_all = "snake_case")]` | This will apply `#[serde(rename_all)]` to the PartialConfig struct |
+/// | skip_env | If applied, this struct will not load anything from env variables | false | `#[config(skip_env)]` |
+/// | env_prefix | The prefix to use for all fields environment variables | "{}" | `#[config(env_prefix = "{}MY_APP_")]` | Almost always you'll want to include the `{}` placeholder like `"{}MY_APP"` to allow auto generated prefixes to work, if not the env key will be fixed to the value of the attribute |
+/// | allow_unknown_fields | Allow unknown fields in deserialization of the PartialConfig type | false | `#[config(allow_unknown_fields)]` | By default metre will add a `#[serde(deny_unknown_fields)]` to the Partial definition, use this attribute if you want to override this behavior |
+/// | parial_name | The name of the generated PartialConfig struct | `Partial{StructName}` | `#[config(partial_name = PartialMyConfig)] | rename the PartialConfig generated struct, the PartialConfig struct will have the same visibility as the struct |
+/// | crate | Rename the metre crate in the generated derive code | `metre` | `#[config(crate = other)]` | This is almost only useful for internal unit tests |
+///
+/// # Field Attributes
+/// | Attribute | Description | Default | Example | Observations |
+/// | --- | --- | --- | --- | --- |
+/// | env | The name of the environment variable to use for this field | `"{}PROPERTY_NAME"` | `#[config(env = "{}PORT")]` | The default value of the attribute is the SCREAMING_SNAKE_CASE version of the field name after applying rename and rename_all configurations, and the `{}` placeholder is filled with the auto calculated env prefix |
+/// | skip_env | If applied, this field will not load from env variables | false | `#[config(skip_env)]` | This attribute has precedence over the skip_env attribute in the container |
+/// | parse_env | The name of the function to use to parse the value from the environment variable | `FromStr::from_str` | `#[config(parse_env = parse_fn)]` | The function must have the signature `fn(&str) -> Result<Option<T>, E>` where `T` is the type of the field and `E` is any error that implements Display, see the [`parse`] module to see utility functions that can be used here |
+/// | merge | The name of the function to use to merge two values of this field | - | `#[config(merge = merge_fn)]` | The function must have the signature `fn(&mut Option<T>, Option<T>) -> Result<(), E>` where `T` is the type of the field and `E` is any error that implements Display, see the [`merge`] module to find utility functions that can be used here, the default implementation replaces the previous value with the next, if it is present in the new added stage |
+/// | default | The default value to use for this field | none | `#[config(default = 3000)]` | The default value must be of the same type as the field, if the field is an Option, the default value must be of the same type as the inner type of the Option, the [`Default::default`] implementation of the Partial struct will not use this value, to get the values defined with this attribute use [`PartialConfig::defaults`] |
+/// | flatten | If applied, this field will be merged with the previous stage instead of replacing it | false | `#[config(flatten)]` | This attribute will apply a `#[serde(flatten)]` to the PartialConfig struct, it will also modify the calculated env key prefix for nested fields |
+/// | nested | If applied, this field will be treated as a nested configuration | false | `#[config(nested)]` | This attrbute indicates that this field is a nested partial configuration, the nested field must also implement the [`Config`] trait |
+/// | rename | The rename the field in the partial configuration | - | `#[config(rename = "other_name")]` | This will apply a `#[serde(rename)]` attribute to the Partial struct, it will also modify the auto calculated env key for the field |
 pub use metre_macros::Config;
 
 use error::{FromEnvError, FromPartialError, MergeError};
+
+/// The Config trait that is implemented from the [`Config`] derive macro
 pub trait Config: Sized {
   type Partial: PartialConfig;
   fn from_partial(partial: Self::Partial) -> Result<Self, FromPartialError>;
