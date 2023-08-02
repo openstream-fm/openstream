@@ -8,6 +8,10 @@
 
   let current_account_stations = data.stations.items.filter(item => item.account_id === data.account._id);
 
+  $: sorted_stations = current_account_stations.slice().sort((a, b) => {
+    return data.sessions_by_station[b._id] - data.sessions_by_station[a._id]
+  });
+
   let map_selector_data: import("$share/Map/StationSelector.svelte").Data = {
     all_kind: "account",
     kind: "account",
@@ -37,6 +41,7 @@
 	import StationSelector from "$share/Map/StationSelector.svelte";
 	import { onMount } from "svelte";
 	import { VALIDATE_ACCOUNT_NAME_MAX_LEN } from "$server/defs/constants";
+	import { flip } from "svelte/animate";
   
   let view: View = "now";
 
@@ -295,10 +300,10 @@
     </button>
   </div>
 
-  {#if current_account_stations.length}
+  {#if sorted_stations.length}
     <div class="stations">
-      {#each current_account_stations as station (station._id)}
-        <div class="station">
+      {#each sorted_stations as station (station._id)}
+        <div class="station" animate:flip={{ duration: 300 }}>
           <AccountStationItem {station} session_count={data.sessions_by_station[station._id]} now_playing={data.now_playing_record[station._id]} />
         </div>
       {/each}
