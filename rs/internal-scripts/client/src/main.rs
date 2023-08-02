@@ -2,7 +2,7 @@ use bytes::Bytes;
 use ffmpeg::{Ffmpeg, FfmpegConfig, FfmpegSpawn};
 use hyper::Body;
 use reqwest::Client;
-use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
@@ -32,15 +32,15 @@ lazy_static::lazy_static! {
   };
 }
 
-fn rr_test_station_n() -> u64 {
-  static RR_STATION_N: AtomicU64 = AtomicU64::new(0);
-  let v = RR_STATION_N.fetch_add(1, Ordering::SeqCst);
-  1 + (v % *S)
-}
+// fn rr_test_station_n() -> u64 {
+//   static RR_STATION_N: AtomicU64 = AtomicU64::new(0);
+//   let v = RR_STATION_N.fetch_add(1, Ordering::SeqCst);
+//   1 + (v % *S)
+// }
 
-fn rr_test_station_id() -> String {
-  format!("test{}", rr_test_station_n())
-}
+// fn rr_test_station_id() -> String {
+//   format!("test{}", rr_test_station_n())
+// }
 
 #[tokio::main]
 async fn main() {
@@ -52,15 +52,18 @@ async fn main() {
   //   .to_string();
 
   let stream_base_url = std::env::var("STREAM_BASE_URL")
-    .expect("STREAM_BASE_URL env is not set")
+    .unwrap_or_else(|_| String::from("https://stream.local.openstream.fm"))
     .trim_end_matches('/')
     .to_string();
 
   let ports: Vec<u16> = std::env::var("STREAM_PORTS")
-    .expect("STREAM_PORTS env is not set")
+    .unwrap_or_else(|_| String::from("443"))
     .split(',')
     .map(|s| s.trim().parse().expect("invalid STREAM_PORTS env"))
     .collect();
+
+  // mitre
+  let station_id = std::env::var("STATION_ID").unwrap_or_else(|_| String::from("qe6fm5ev"));
 
   let delay: u64 = match std::env::var("D") {
     Ok(s) => s.parse().unwrap_or(5),
@@ -79,12 +82,13 @@ async fn main() {
   // println!("source base: {source_base}");
   println!("stream base url: {stream_base_url}");
   println!("stream ports: {ports:?}");
+  println!("station id: {station_id}");
   println!("concurrency: {c}");
   println!("delay: {delay}");
 
   let _ = tokio::try_join!(
     // tokio::spawn(producer(source_base, mountpoint_id.clone())),
-    tokio::spawn(clients(c, stream_base_url, ports, delay)),
+    tokio::spawn(clients(c, stream_base_url, ports, station_id, delay)),
     tokio::spawn(print_stats())
   )
   .unwrap();
@@ -138,7 +142,13 @@ async fn producer(base: String, id: String) {
   panic!("producer terminated");
 }
 
-async fn clients(n: usize, stream_base_url: String, ports: Vec<u16>, delay: u64) {
+async fn clients(
+  n: usize,
+  stream_base_url: String,
+  ports: Vec<u16>,
+  station_id: String,
+  delay: u64,
+) {
   tokio::time::sleep(Duration::from_millis(1_000)).await;
 
   let http_client = Client::builder()
@@ -152,9 +162,10 @@ async fn clients(n: usize, stream_base_url: String, ports: Vec<u16>, delay: u64)
       let port = ports[i % ports.len()];
       let base_url = stream_base_url.clone();
       let http_client = http_client.clone();
+      let station_id = station_id.clone();
       tokio::spawn(async move {
         loop {
-          let r = client(&http_client, base_url.as_str(), port, &rr_test_station_id()).await;
+          let r = client(&http_client, base_url.as_str(), port, &station_id).await;
           if let Err(e) = r {
             ERRORS.fetch_add(1, Ordering::Relaxed);
             println!("err: {}", e);
