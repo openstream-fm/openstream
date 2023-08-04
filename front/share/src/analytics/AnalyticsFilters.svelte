@@ -215,7 +215,7 @@
   $: if (selected_stations !== "all" && selected_stations.length === 0)
     selected_stations = "all";
 
-  let stations_menu_open = true;
+  let stations_menu_open = false;
   let time_menu_open = false;
 
   const stations_menu_click_out = () => {
