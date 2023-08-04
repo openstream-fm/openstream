@@ -79,6 +79,14 @@
   export let locale: import("$server/locale/share/analytics/analytics.locale").AnalyticsLocale;
   export let country_names: import("$server/locale/share/countries/countries.locale").CountriesLocale;
 
+  export let station_filter_q: string = "";
+  
+  $: stations_filter_show = get_stations_filter_show(stations, station_filter_q);
+  const get_stations_filter_show = (stations: StationItem[], filter_q: string): StationItem[] => {
+    const q = filter_q.trim().replace(/\s+/, " ").toLowerCase();
+    return stations.filter(item => item.name.toLowerCase().includes(q))
+  }
+
   export const get_resolved_since = (now = new Date()) => {
     if (kind === "today") {
       return startOfDay(now);
@@ -207,7 +215,7 @@
   $: if (selected_stations !== "all" && selected_stations.length === 0)
     selected_stations = "all";
 
-  let stations_menu_open = false;
+  let stations_menu_open = true;
   let time_menu_open = false;
 
   const stations_menu_click_out = () => {
@@ -292,14 +300,18 @@
     border-radius: 0.25rem;
     box-shadow: var(--some-shadow);
     background: #fff;
-    gap: 0.5rem;
+    gap: 0.25rem;
+    max-height: 20rem;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .menu-item {
     display: flex;
+    flex: none;
     flex-direction: row;
     align-items: center;
-    padding: 0.75rem 0.5rem;
+    padding: 0.35rem 0.5rem;
     border-radius: 0.25rem;
   }
   
@@ -457,6 +469,29 @@
     border-radius: 50%;
     flex: none;
   }
+
+  .stations-q-out {
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
+    margin-block-end: 0.25rem;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  .stations-q {
+    flex: 1;
+    border-radius: 100px;
+    border: #ddd 1px solid;
+    padding: 0.65rem 0.85rem;
+    transition: box-shadow 300ms ease;
+    outline: 0;
+  }
+
+  .stations-q:focus {
+    box-shadow: rgba(0,0,0,0.1) 0 2px 5px 1px;
+  }
 </style>
 
 <div class="analytics-filters" class:loading>
@@ -472,9 +507,9 @@
         <div class="field-text" transition:slide|local={{ duration: 200 }}>
           {#if stations.length}
             {locale.filters.All_stations}
-          {:else}
+          {:else}  
             {locale.filters.No_stations}
-         {/if}
+          {/if}
         </div>
       {:else}
         <div class="chips" transition:slide|local={{ duration: 200 }}>
@@ -499,8 +534,12 @@
     </button>
 
     {#if stations_menu_open}
-      <div class="menu" transition:logical_fly={{ y: -25, duration: 200 }} use:click_out={() => stations_menu_click_out()}>
-        {#each stations as station (station._id)}
+      <div class="menu thin-scroll" transition:logical_fly={{ y: -25, duration: 200 }} use:click_out={() => stations_menu_click_out()}>
+        <div class="stations-q-out">
+          <!-- TODO: locale-->
+          <input type="text" class="stations-q" placeholder="Search..." bind:value={station_filter_q} />
+        </div>
+        {#each stations_filter_show as station (station._id)}
           {@const selected =
             selected_stations !== "all" &&
             selected_stations.some(item => item._id === station._id)}
@@ -538,7 +577,12 @@
           </button>
         {:else}
           <div class="no-stations-message">
-            {locale.filters.no_stations_message}
+            {#if station_filter_q.trim() === ""}
+              {locale.filters.no_stations_message}
+            {:else}
+              <!-- TODO: locale -->
+              There's no stations for this query
+            {/if}
           </div>
         {/each}
       </div>
@@ -559,7 +603,7 @@
     </button>
 
     {#if time_menu_open}
-      <div class="menu" transition:logical_fly={{ y: -25, duration: 200 }} use:click_out={() => time_menu_click_out()}>
+      <div class="menu thin-scroll" transition:logical_fly={{ y: -25, duration: 200 }} use:click_out={() => time_menu_click_out()}>
         {#each temporal_keys as key (key)}
           {@const selected = kind === key}
           {@const name = locale.filters.query_kind[key]}

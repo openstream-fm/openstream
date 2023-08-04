@@ -57,7 +57,7 @@ const locale: import("./admin.locale").AdminLocale = {
         "title": "Dispositivos",
       },
       "title": "Dispositivos conectados",
-      "note": "El mismo dispositivo puede aparecer mas de una vez es esta lista. Los dispositivos serán desconectados después de 7 días sin actividad.",
+      "note": "El mismo dispositivo puede aparecer mas de una vez en esta lista. Los dispositivos serán desconectados después de 7 días sin actividad.",
       "dialogs": {
         "disconnect": {
           "title": "Desconectar dispositivo",
