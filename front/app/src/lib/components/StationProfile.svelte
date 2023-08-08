@@ -35,7 +35,7 @@
     _google_play_url,
 		_tiktok_url
 	} from '$share/formy/validate';
-	import { VALIDATE_STATION_DESC_MAX_LEN, VALIDATE_STATION_EMAIL_MAX_LEN, VALIDATE_STATION_NAME_MAX_LEN, VALIDATE_STATION_NAME_MIN_LEN, VALIDATE_STATION_PHONE_MAX_LEN, VALIDATE_STATION_SLOGAN_MAX_LEN, VALIDATE_STATION_URLS_MAX_LEN, VALIDATE_STATION_WHATSAPP_MAX_LEN } from "$server/defs/constants";
+	import { VALIDATE_STATION_DESC_MAX_LEN, VALIDATE_STATION_DESC_MIN_LEN, VALIDATE_STATION_EMAIL_MAX_LEN, VALIDATE_STATION_NAME_MAX_LEN, VALIDATE_STATION_NAME_MIN_LEN, VALIDATE_STATION_PHONE_MAX_LEN, VALIDATE_STATION_SLOGAN_MAX_LEN, VALIDATE_STATION_URLS_MAX_LEN, VALIDATE_STATION_WHATSAPP_MAX_LEN } from "$server/defs/constants";
 	import CountryField from './Form/CountryField.svelte';
 	import type { CountryCode } from '$server/defs/CountryCode';
 	import TypeOfContentField from './Form/TypeOfContentField.svelte';
@@ -146,7 +146,7 @@
 				bind:value={current.description}
 			/>
 			<Validator value={current.description} fn={_string({
-				maxlen: VALIDATE_STATION_SLOGAN_MAX_LEN
+				maxlen: VALIDATE_STATION_DESC_MAX_LEN,
 			})}
 			/>
 		</div>
