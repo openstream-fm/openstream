@@ -83,19 +83,21 @@
     if(max === 0) return "var(--fill-none)";
     const sessions = stats.country_sessions[item.properties.iso2] || 0;
     if(sessions === 0) return "var(--fill-none)";
-    const opacity =  0.15 + (sessions / max) * 0.85;
-    return `rgba(var(--blue-rgb), ${opacity})`
+    const opacity =  (Math.log(Math.max(1.5, sessions)) / Math.log(Math.max(1, max)));
+    return `rgba(var(--fill-full-rgb),${opacity})`
   }
 
   const fill_none = "#f3f3f3";
-  const blue_rgb = { r: 0, g: 116, b: 217 };
-  
+
+  //const blue_rgb = { r: 0, g: 116, b: 217 };
+  const blue_rgb = { r: 0, g: 56, b: 118 };
+
   const get_fill_for_export = (stats: Stats, item: Item) => {
     const max = Math.max(0, ...Object.values(stats.country_sessions).map(Number));
     if(max === 0) return fill_none;
     const sessions = stats.country_sessions[item.properties.iso2] || 0;
     if(sessions === 0) return fill_none;
-    const opacity =  0.15 + (sessions / max) * 0.85;
+    const opacity =  (Math.log(Math.max(1.5, sessions)) / Math.log(Math.max(1, max)));
     return `rgba(${blue_rgb.r},${blue_rgb.g},${blue_rgb.b},${opacity})`;
   }
 
@@ -130,7 +132,9 @@
     let source = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 1000 660">`;
     source += `\n  <rect x="0" y="0" width="${width}" height="${height}" fill="#ffffff" />`
     for(const item of dataset.features) {
-      source += `\n  <path strokeWidth="1.25" stroke="#aaaaaa" fill="${get_fill_for_export(stats, item)}" d="${path(item as any)}" />`;
+      const n = stats.country_sessions[item.properties.iso2] || 0;
+      const stroke = n ? "#ffffff" : "#aaaaaa"
+      source += `\n  <path strokeWidth="1.25" stroke="${stroke}" fill="${get_fill_for_export(stats, item)}" d="${path(item as any)}" />`;
     }
     source += "\n</svg>"
     return source;
@@ -208,7 +212,7 @@
   path {
     --fill-none: #f3f3f3;
     fill: var(--fill);
-    stroke: #aaa;
+    stroke: var(--stroke);
     stroke-width: 1.25;
     transition: filter 150ms ease, fill 200ms ease;
   }
@@ -306,12 +310,14 @@
 
 <svelte:window bind:innerWidth={windowWidth} on:pointerdown={pointerout} />
 
-<div class="map">
+<div class="map" style:--fill-full-rgb="{blue_rgb.r}, {blue_rgb.g}, {blue_rgb.b}">
   <div class="viewport">
     <svg viewBox="0 0 1000 660" use:click_out={() => tooltip_item = null}>
       {#each dataset.features as item (item.properties.iso2)}
+        {@const stroke = stats.country_sessions[item.properties.iso2] ? "#fff" : "#aaa"}
         <path
           style:--fill={get_fill(stats, item)}
+          style:--stroke={stroke}
           d={path(as_any(item))}
           on:pointerenter|stopPropagation={() => pointerenter(item)}
           on:pointerdown|stopPropagation={() => {}}
