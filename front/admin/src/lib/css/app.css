@@ -150,10 +150,6 @@ form {
   -webkit-tap-highlight-color: transparent;
 }
 
-.thin-scroll {
-  scrollbar-width: thin;
-}
-
 .thin-scroll::-webkit-scrollbar{
   width: 5px;
   height: 5px;
@@ -171,8 +167,8 @@ form {
   background: #888;
 }
 
-.super-thin-scroll {
-  scrollbar-width: thin;
+.thin-scroll::--webkit-scrollbar-button {
+  display: none;
 }
 
 .super-thin-scroll::-webkit-scrollbar{
@@ -190,4 +186,14 @@ form {
 
 .super-thin-scroll::-webkit-scrollbar-thumb:hover {
   background: #888;
+}
+
+.super-thin-scroll::--webkit-scrollbar-button {
+  display: none;
+}
+
+@-moz-document url-prefix() {
+  .thin-scroll, .super-thin-scroll {
+    scrollbar-width: thin;
+  }
 }
