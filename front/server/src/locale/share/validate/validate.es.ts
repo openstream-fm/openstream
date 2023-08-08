@@ -4,10 +4,10 @@ const locale: import("./validate.locale").ValidateLocale = {
   "number": "Este campo debe ser un número válido",
   "email": "Este campo debe ser una dirección de email válida",
   
-  "min": "Este campo debe ser @min or mas",
+  "min": "Este campo debe ser @min or más",
   "max": "Este campo debe ser @max or menos",
   
-  "minlen": "Este campo debe tener @minlen caractéres o mas",
+  "minlen": "Este campo debe tener @minlen caractéres o más",
   "maxlen": "Este campo debe tener @maxlen caractéres o menos",
 
   "new_password": {
