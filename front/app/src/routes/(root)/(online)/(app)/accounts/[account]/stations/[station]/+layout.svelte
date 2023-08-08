@@ -146,6 +146,9 @@
   .station-selector-menu {
     background: #fff;
     box-shadow: 0 5px 25px 0 rgb(0 0 0 / 10%);
+    max-height: 26rem;
+    overflow-y: auto;
+    overflow-x: hidden; 
   }
 
   .station-selector-item {
@@ -247,7 +250,7 @@
         <div class="station-selector-anchor">
           {#if selector_open}
             <div
-              class="station-selector-menu"
+              class="station-selector-menu thin-scroll"
               style:--scroll-y="{scroll_y}px"
               use:click_out={selector_menu_click_out}
               transition:logical_fly|local={{ duration: 200, y: -10 }}
