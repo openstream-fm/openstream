@@ -1,8 +1,11 @@
 const locale: import("./stats-map.locale").StatsMapLocale = {
+  "All_stations": "Todas las estaciones",
   "now": "Ahora",
   "24_hours": "24 horas",
   "7_days": "7 días",
   "30_days": "30 días",
+  "session": "sesión",
+  "sessions": "sesiones",
   "listener": "oyente",
   "listeners": "oyentes",
   "country": "país",

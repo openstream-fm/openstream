@@ -8,7 +8,9 @@
 	import { onMount } from "svelte";
 	import { default_logger } from "$share/logger";
 	import { sleep } from "$share/util";
-	import { afterNavigate, invalidate } from "$app/navigation";
+	import { afterNavigate, beforeNavigate } from "$app/navigation";
+	import { qss } from "$share/qs";
+	import { _get } from "$share/net.client";
 
   type Item = typeof data.stream_connections.items[number];
 
@@ -91,11 +93,19 @@
     }
   }
 
+  let token = 0;
+
+
   let last_update = Date.now();
   afterNavigate(() => {
+    token++;
     last_update = Date.now();
   })
 
+  beforeNavigate(() => {
+    token++;
+  })
+    
   onMount(() => {
     const UPDATE_INTERVAL = 1_000;
     let on_screen = true;
@@ -119,8 +129,53 @@
             }
             if(Date.now() - last_update < UPDATE_INTERVAL) continue;
             try {
-              await invalidate(url => url.pathname === "/api/stream-connections");
-              logger.info(`stream connections updated`);
+              let _token = ++token;
+
+              const params: import("$api/stream-connections/GET/Query").Query = {
+                show: "open",
+                limit: 100_000,
+                sort: "creation-desc",
+                stations: data.stream_connections_query.station_id ? [data.stream_connections_query.station_id] : undefined,
+              };
+
+
+              let stream_connections = await _get<import("$api/stream-connections/GET/Output").Output>(`/api/stream-connections${qss(params)}`);
+
+              if(_token === token) {
+
+                if(data.stream_connections_query.deployment_id != null) {
+                  const items = stream_connections.items.filter(item => item.deployment_id === data.stream_connections_query.deployment_id);
+                  stream_connections = {
+                    skip: stream_connections.skip,
+                    limit: stream_connections.limit,
+                    total: items.length,
+                    items,
+                  }
+                }
+
+                if(data.stream_connections_query.referer != null) {
+                  let items = stream_connections.items;
+                  if(data.stream_connections_query.referer === "null") {
+                    items = items.filter(item => item.request.headers.referer == null && item.request.headers.origin == null);
+                  } else {
+                    const r = `//${data.stream_connections_query.referer}`;
+                    items = items.filter(item => (item.request.headers.referer || item.request.headers.origin || "").includes(r))
+                  }
+                  
+                  stream_connections = {
+                    skip: stream_connections.skip,
+                    limit: stream_connections.limit,
+                    total: items.length,
+                    items,
+                  }
+                }
+                
+                data.stream_connections = stream_connections;
+                logger.info(`stream connections updated`);
+              
+              } else {
+                logger.info(`stream connection update skipped, token mismatch`)
+              }
             } catch(e) {
               logger.warn(`error updating listeners: ${e}`);
             } finally {

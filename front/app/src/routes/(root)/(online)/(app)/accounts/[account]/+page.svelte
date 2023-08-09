@@ -312,7 +312,7 @@
 
   <div class="stats">
     <div class="selector">
-      <StationSelector bind:data={map_selector_data} />
+      <StationSelector locale={$locale.stats_map} bind:data={map_selector_data} />
     </div>
     
     <StatsMap

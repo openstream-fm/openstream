@@ -250,6 +250,7 @@
           {@const selected = view_id === view}
           {@const sessions = stats.sessions}
           {@const countries = Object.keys(stats.country_sessions).length}
+          {@const count_names = view_id === "now" ? [locale.listener, locale.listeners] : [locale.session, locale.sessions]}
           <button class="view-btn ripple-container" class:selected use:ripple on:click={() => view = view_id}>
             <div class="view-title">
               {selector_titles[view_id]}
@@ -257,7 +258,7 @@
             <div class="counters">
               <div class="counter">
                 <span class="counter-num">{sessions}</span>
-                <span class="counter-label">{sessions === 1 ? locale.listener : locale.listeners}</span>
+                <span class="counter-label">{sessions === 1 ? count_names[0] : count_names[1]}</span>
               </div>
               <div class="counter">
                 <span class="counter-num">{countries}</span>
@@ -270,7 +271,7 @@
     </div>
     <div class="map-out">
       {#if data != null}
-        <Map stats={data[view]} {country_names} {locale} />
+        <Map is_now={view === "now"} stats={data[view]} {country_names} {locale} />
       {/if}
     </div>
   </div>

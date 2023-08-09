@@ -1,4 +1,5 @@
 <script lang="ts">
+  export let is_now: boolean = false;
   export let stats: Stats;
   export let country_names: Record<string, string | undefined>;
   export let locale: import("$server/locale/share/stats-map/stats-map.locale").StatsMapLocale;
@@ -350,6 +351,7 @@
 
   {#if tooltip_item != null}
     {@const name = country_names[tooltip_item.properties.iso2] || tooltip_item.properties.name}
+    {@const count_names = is_now ? [locale.listener, locale.listeners] : [locale.session, locale.sessions]}
     <div
       class="map-tooltip"
       class:to-left={tooltip_to_left}
@@ -364,7 +366,7 @@
         </div>
         
         <div class="map-tooltip-count">
-          {tooltip_sessions} {tooltip_sessions === 1 ? locale.listener : locale.listeners}
+          {tooltip_sessions} {tooltip_sessions === 1 ? count_names[0] : count_names[1]}
         </div>
       </slot>
     </div>

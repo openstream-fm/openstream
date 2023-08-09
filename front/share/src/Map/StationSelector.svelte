@@ -19,14 +19,15 @@
 
 <script lang="ts">
   export let data: Data;
+  export let locale: import("$server/locale/share/stats-map/stats-map.locale").StatsMapLocale;
 
 	import type { Stats } from "$share/Map/StatsMap.svelte";
 	import { click_out } from "$share/actions";
 	import { _get, _patch, action } from "$share/net.client";
 	import { ripple } from "$share/ripple";
+  import { logical_fly } from "$share/transition";
+  import { add } from "$share/util";
   
-	import { logical_fly } from "$share/transition";
-
   let _token = 0;
 
   let selector_open = false;
@@ -68,6 +69,18 @@
 
   const selector_menu_click_out = () => {
     setTimeout(close_selector, 2);  
+  }
+
+  let menu_scroll_y = 0;
+  const autoscroll = (node: HTMLElement) => {
+    node.scrollTop = menu_scroll_y;
+    const remove = add(node, "scroll", () => {
+      menu_scroll_y = node.scrollTop;
+    });
+
+    return {
+      destroy: remove
+    }
   }
 </script>
 
@@ -144,9 +157,13 @@
     background: #fff;
     padding: 0.5rem;
     border-radius: 0.5rem;
+    max-height: 26rem;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .stats-selector-item {
+    flex: none;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -166,26 +183,24 @@
         {#if data.station != null}
           {data.station.name}
         {:else}
-        <!-- TODO: locale -->  
-        All stations
+          {locale.All_stations}
         {/if}
       </span>
       <span class="stats-selector-btn-chevron">
         ▼
-        <!-- <Icon d={mdiPlay} /> -->
       </span>
     </button>
     <div class="stats-selector-anchor">
       {#if selector_open}
         <div 
-          class="stats-selector-menu"
+          class="stats-selector-menu thin-scroll"
           use:click_out={selector_menu_click_out}
           transition:logical_fly|local={{ duration: 125, y: -10 }}
+          use:autoscroll
         >
           <button class="stats-selector-item" class:current={data.station == null} on:click={() => select(null)}>
             <div class="stats-selector-name">
-              <!-- TODO: locale -->
-              All stations
+              {locale.All_stations}
             </div>
           </button>
           {#each data.stations as station (station._id)}

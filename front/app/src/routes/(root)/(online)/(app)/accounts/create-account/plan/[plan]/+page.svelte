@@ -15,7 +15,6 @@
 	import { invalidate_siblings } from "$lib/invalidate";
 	import { lang, locale } from "$lib/locale";
 	import { logical_fly } from "$share/transition";
-	import { tick } from "svelte";
   import PaymentMethodSelector from "$share/braintree/PaymentMethodSelector.svelte";
 	import { display_fly_enter } from "$share/display_transitions";
 	import { VALIDATE_ACCOUNT_NAME_MAX_LEN } from "$server/defs/constants";
