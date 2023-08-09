@@ -83,7 +83,7 @@
     if(max === 0) return "var(--fill-none)";
     const sessions = stats.country_sessions[item.properties.iso2] || 0;
     if(sessions === 0) return "var(--fill-none)";
-    const opacity =  Math.log(Math.max(2, sessions)) / Math.log(max);
+    const opacity =  Math.log(Math.max(2, sessions)) / Math.log(Math.max(2, max));
     return `rgba(var(--fill-full-rgb),${opacity})`
   }
 
@@ -97,7 +97,7 @@
     if(max === 0) return fill_none;
     const sessions = stats.country_sessions[item.properties.iso2] || 0;
     if(sessions === 0) return fill_none;
-    const opacity =  Math.log(Math.max(2, sessions)) / Math.log(Math.max(1, max));
+    const opacity =  Math.log(Math.max(2, sessions)) / Math.log(Math.max(2, max));
     return `rgba(${blue_rgb.r},${blue_rgb.g},${blue_rgb.b},${opacity})`;
   }
 
