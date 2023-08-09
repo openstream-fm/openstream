@@ -25,6 +25,7 @@
     stats: data.stats,
     storage_public_url: data.config.storage_public_url,
   }
+
 </script>
 
 <style>
@@ -192,8 +193,8 @@
     <StatsMap 
       bind:data={map_selector_data.stats}
       country_names={$locale.countries}
-      kind="all"
-      record_id=""
+      kind={map_selector_data.kind}
+      record_id={map_selector_data.record_id}
       locale={$locale.stats_map}
       bind:view={map_view}  
     />
