@@ -140,7 +140,7 @@ pub mod validate {
   pub const VALIDATE_STATION_DESC_MIN_LEN: usize = 1;
 
   #[const_register]
-  pub const VALIDATE_STATION_DESC_MAX_LEN: usize = 1000;
+  pub const VALIDATE_STATION_DESC_MAX_LEN: usize = 4000;
 
   // email
   #[const_register]

@@ -81,7 +81,7 @@ export const _string = ({
       }
   
       if(maxlen != null && v.length > maxlen) {
-        return get(locale).validate.minlen.replace("@maxlen", String(maxlen))
+        return get(locale).validate.maxlen.replace("@maxlen", String(maxlen))
       } 
     }
     
