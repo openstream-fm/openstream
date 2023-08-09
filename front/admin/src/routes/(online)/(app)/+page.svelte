@@ -168,7 +168,7 @@
       </div>
       <div class="section-data">
         <div class="section-title">Listeners</div>
-        <div class="section-subtitle">live or hitorical listeners data</div>
+        <div class="section-subtitle">live listeners data</div>
       </div>
     </a>
 
@@ -186,7 +186,7 @@
   <div class="map">
 
     <div class="selector">
-      <StationSelector bind:data={map_selector_data} />      
+      <StationSelector locale={$locale.stats_map} bind:data={map_selector_data} />      
     </div>
 
     <StatsMap 

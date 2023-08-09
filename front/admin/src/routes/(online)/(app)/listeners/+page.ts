@@ -1,19 +1,20 @@
 import { load_get } from "$lib/load";
+import { qss } from "$share/qs";
 
 export const load = (async ({ fetch, url }) => {
   const station_id = url.searchParams.get("station") || null;
   const deployment_id = url.searchParams.get("deployment") || null;
   const referer = url.searchParams.get("referer") || null;
 
-  const params = new URLSearchParams();
-  params.set("show", "open");
-  params.set("limit", String(100_000));
-  params.set("sort", "creation-desc");
-  if(station_id) params.set("stations[]", station_id);
+  const params: import("$api/stream-connections/GET/Query").Query = {
+    show: "open",
+    limit: 100_000,
+    sort: "creation-desc",
+    stations: station_id ? [station_id] : undefined,
+  };
 
   let stream_connections = await load_get<import("$api/stream-connections/GET/Output").Output>(
-    `/api/stream-connections?${params}`,
-    // `/api/stream-connections?show=${"all"}&limit=${60}&sort=${"creation-desc"}${station_id ? `&stations[]=${station_id}` : ""}`,
+    `/api/stream-connections${qss(params)}`,
     { fetch, url}
   );
 

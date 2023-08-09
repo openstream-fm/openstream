@@ -6,6 +6,7 @@
 	import { click_out } from "$share/actions";
 	import { ripple } from "$share/ripple";
 	import { logical_fly } from "$share/transition";
+	import { add } from "$share/util";
 	import { crossfade, fade } from "svelte/transition";
   
   $: current_page = $page.data.current_page;
@@ -39,9 +40,7 @@
 
   let selector_open = false;
   const selector_menu_click_out = (event: MouseEvent) => {
-    setTimeout(() => {
-      selector_open = false;
-    }, 5)
+    setTimeout(close_selector, 5)
   }
 
   const close_selector = () => {
@@ -61,6 +60,18 @@
   })
 
   let scroll_y = 0;
+
+  let menu_scroll_y = 0;
+  const autoscroll = (node: HTMLElement) => {
+    node.scrollTop = menu_scroll_y;
+    const remove = add(node, "scroll", () => {
+      menu_scroll_y = node.scrollTop;
+    });
+
+    return {
+      destroy: remove
+    }
+  }
 </script>
 
 <style>
@@ -254,6 +265,7 @@
               style:--scroll-y="{scroll_y}px"
               use:click_out={selector_menu_click_out}
               transition:logical_fly|local={{ duration: 200, y: -10 }}
+              use:autoscroll
             >
               {#each account_stations as station (station._id)}
                 <a

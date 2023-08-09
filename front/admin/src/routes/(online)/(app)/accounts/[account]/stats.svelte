@@ -34,7 +34,7 @@
 <div class="stats">
 
   <div class="selector">
-    <StationSelector bind:data={selection_data} />
+    <StationSelector locale={$locale.stats_map} bind:data={selection_data} />
   </div>
       
   <StatsMap
