@@ -14,7 +14,10 @@ import { STATION_PICTURES_VERSION } from "../../../defs/constants"
 precacheAndRoute([
   { url: "/offline", revision: version },
   ...build.map(url => {
-    return { url, revision: version };
+    return { 
+      url,
+      revision: url.includes("/immutable/") ? "0" : version,
+    };
   })
 ]);
 
