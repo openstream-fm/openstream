@@ -27,6 +27,7 @@
     youtube_url: data.station.youtube_url,
     twitch_url: data.station.twitch_url,
     tiktok_url: data.station.tiktok_url,
+    spotify_url: data.station.spotify_url,
     google_play_url: data.station.google_play_url,
     app_store_url: data.station.app_store_url,
     picture_id: data.station.picture_id as string | null,

@@ -124,6 +124,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "tiktok": "URL de TikTok",
       "youtube": "URL de Youtube",
       "twitch": "URL de Twitch",
+      "spotify": "URL de Spotify",
       "google_play": "URL de Google Play",
       "app_store": "URL de l'App Store"
     }

@@ -37,6 +37,7 @@ const locale = {
   "youtube_url": "This field must be a valid Youtube URL, navigate to your Youtube page and copy the entire URL from there",
   "twitch_url": "This field must be a valid Twitch URL, navigate to your Twitch page and copy the entire URL from there",
   "tiktok_url": "This field must be a valid TikTok URL, navigate to your TikTok page and copy the entire URL from there",
+  "spotify_url": "This field must be a valid Spotify URL, navigate to your Spotify page and copy the entire URL from there",
   "google_play_url": "This field must be a valid Google Play URL, navigate to your app's page at Google Play and copy the entire URL from there",
   "app_store_url": "This field must be a valid App Store URL, navigate to your app's page at App Store and copy the entire URL from there",
 }

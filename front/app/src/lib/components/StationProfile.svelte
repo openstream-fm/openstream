@@ -5,6 +5,7 @@
 		mdiGooglePlay,
 		mdiInstagram,
 		mdiPhoneOutline,
+		mdiSpotify,
 		mdiTwitch,
 		mdiTwitter,
 		mdiWeb,
@@ -33,7 +34,8 @@
 		_twitch_url,
 		_twitter_url,
     _google_play_url,
-		_tiktok_url
+		_tiktok_url,
+		_spotify_url,
 	} from '$share/formy/validate';
 	import { VALIDATE_STATION_DESC_MAX_LEN, VALIDATE_STATION_DESC_MIN_LEN, VALIDATE_STATION_EMAIL_MAX_LEN, VALIDATE_STATION_NAME_MAX_LEN, VALIDATE_STATION_NAME_MIN_LEN, VALIDATE_STATION_PHONE_MAX_LEN, VALIDATE_STATION_SLOGAN_MAX_LEN, VALIDATE_STATION_URLS_MAX_LEN, VALIDATE_STATION_WHATSAPP_MAX_LEN } from "$server/defs/constants";
 	import CountryField from './Form/CountryField.svelte';
@@ -67,6 +69,7 @@
 		youtube_url: string | null;
 		twitch_url: string | null;
 		tiktok_url: string | null;
+		spotify_url: string | null;
 
 		google_play_url: string | null;
 		app_store_url: string | null;
@@ -310,6 +313,19 @@
 			/>
 			<Validator value={current.tiktok_url} fn={_tiktok_url({ maxlen: VALIDATE_STATION_URLS_MAX_LEN })} />
 		</div>
+
+		<div class="field">
+			<NullTextField
+				type="url"
+				label={$locale.station_profile.labels.spotify}
+				trim
+				maxlength={VALIDATE_STATION_URLS_MAX_LEN}
+				icon={mdiSpotify}
+				bind:value={current.spotify_url}
+			/>
+			<Validator value={current.tiktok_url} fn={_spotify_url({ maxlen: VALIDATE_STATION_URLS_MAX_LEN })} />
+		</div>
+
 
 	</div>
 </div>
