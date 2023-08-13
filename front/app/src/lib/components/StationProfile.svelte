@@ -323,7 +323,7 @@
 				icon={mdiSpotify}
 				bind:value={current.spotify_url}
 			/>
-			<Validator value={current.tiktok_url} fn={_spotify_url({ maxlen: VALIDATE_STATION_URLS_MAX_LEN })} />
+			<Validator value={current.spotify_url} fn={_spotify_url({ maxlen: VALIDATE_STATION_URLS_MAX_LEN })} />
 		</div>
 
 
