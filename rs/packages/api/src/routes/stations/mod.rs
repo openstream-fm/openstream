@@ -342,6 +342,18 @@ pub mod post {
     )]
     pub tiktok_url: Option<String>,
 
+    #[modify(trim)]
+    #[validate(
+      url(message = "Spotify URL is invalid"),
+      regex(path = "SPOTIFY", message = "Spotify URL is invalid"),
+      length(
+        max = "VALIDATE_STATION_URLS_MAX_LEN",
+        message = "Spotify URL is invalid"
+      ),
+      non_control_character(message = "Spotify URL cannot have control characters")
+    )]
+    pub spotify_url: Option<String>,
+
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(
@@ -523,6 +535,7 @@ pub mod post {
         youtube_url,
         twitch_url,
         tiktok_url,
+        spotify_url,
 
         google_play_url,
         app_store_url,
@@ -578,6 +591,7 @@ pub mod post {
         youtube_url,
         twitch_url,
         tiktok_url,
+        spotify_url,
 
         app_store_url,
         google_play_url,

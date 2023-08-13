@@ -23,6 +23,7 @@ export type Payload = {
   youtube_url: string | null;
   twitch_url: string | null;
   tiktok_url: string | null;
+  spotify_url: string | null;
   google_play_url: string | null;
   app_store_url: string | null;
   frequency: StationFrequency | null;

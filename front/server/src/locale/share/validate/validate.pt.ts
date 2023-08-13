@@ -36,7 +36,8 @@ const locale: import("./validate.locale").ValidateLocale = {
   "threads_url": "Este campo deve ser uma URL de Threads válida, navegue até a sua página do Threads e copie a URL completa de lá",
   "youtube_url": "Este campo deve ser uma URL de Youtube válida, navegue até a sua página do Youtube e copie a URL completa de lá",
   "twitch_url": "Este campo deve ser uma URL de Twitch válida, navegue até a sua página do Twitch e copie a URL completa de lá",
-  "tiktok_url": "Este campo deve ser uma URL de TikTok válida, navegue até a sua página do Twitch e copie a URL completa de lá",
+  "tiktok_url": "Este campo deve ser uma URL de TikTok válida, navegue até a sua página do TikTok e copie a URL completa de lá",
+  "spotify_url": "Este campo deve ser uma URL de Spotify válida, navegue até a sua página do Spotify e copie a URL completa de lá",
   "google_play_url": "Este campo deve ser uma URL de Google Play válida, navegue até a página do seu aplicativo no Google Play e copie a URL completa de lá",
   "app_store_url": "Este campo deve ser uma URL de App Store válida, navegue até a página do seu aplicativo na App Store e copie a URL completa de lá",
 }

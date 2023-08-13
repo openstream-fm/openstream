@@ -114,7 +114,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "country": "País",
       "type_of_content": "Tipo de contenido",
       "email": "Email",
-      "phone": "Número de teléofono completo",
+      "phone": "Número de teléfono completo",
       "whatsapp": "Número de WhatsApp completo",
       "website": "URL del sitio web",
       "twitter": "URL de Twitter",
@@ -124,6 +124,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "tiktok": "URL de TikTok",
       "youtube": "URL de Youtube",
       "twitch": "URL de Twitch",
+      "spotify": "URL de Spotify",
       "google_play": "URL de Google Play",
       "app_store": "URL de App Store"
     }

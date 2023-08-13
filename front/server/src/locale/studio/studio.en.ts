@@ -123,6 +123,7 @@ const locale = {
       "tiktok": "TikTok URL",
       "youtube": "Youtube URL",
       "twitch": "Twitch URL",
+      "spotify": "Spotify URL",
       "google_play": "Google Play URL",
       "app_store": "App Store URL"
     }
