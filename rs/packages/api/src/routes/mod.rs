@@ -429,13 +429,13 @@ pub fn router(
     .at("/station-pictures")
     .post(station_pictures::post::Endpoint {}.into_handler());
 
-  for size in StationPicture::WEBP_SIZES {
+  for size in StationPicture::WEBP_SIZES.iter().copied() {
     let handler = station_pictures::StationPicHandler::Webp(size);
     let path = format!("/station-pictures/webp/{}/:picture.webp", size as u32);
     app.get(path, handler);
   }
 
-  for size in StationPicture::PNG_SIZES {
+  for size in StationPicture::PNG_SIZES.iter().copied() {
     let handler = station_pictures::StationPicHandler::Png(size);
     let path = format!("/station-pictures/png/{}/:picture.png", size as u32);
     app.get(path, handler);

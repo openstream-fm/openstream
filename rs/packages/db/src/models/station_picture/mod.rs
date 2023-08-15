@@ -223,8 +223,8 @@ pub async fn upgrade_images_if_needed() -> Result<(), CreateStationPictureError>
 
 impl StationPicture {
   pub const VERSION: f64 = constants::STATION_PICTURES_VERSION;
-  pub const PNG_SIZES: [f64; 6] = [32.0, 64.0, 128.0, 192.0, 256.0, 512.0];
-  pub const WEBP_SIZES: [f64; 5] = [32.0, 64.0, 128.0, 256.0, 512.0];
+  pub const PNG_SIZES: &[f64] = &[32.0, 64.0, 128.0, 192.0, 256.0, 512.0];
+  pub const WEBP_SIZES: &[f64] = &[32.0, 64.0, 128.0, 256.0, 384.0, 512.0];
 
   pub async fn delete_with_session(
     id: &str,
@@ -312,7 +312,7 @@ impl StationPicture {
 
         variants.push(source);
 
-        for size in StationPicture::PNG_SIZES {
+        for size in StationPicture::PNG_SIZES.iter().copied() {
           // PNG images are used for Android apps icons so they get a white background
           let mut bg = Image::new(size as u32, size as u32, ril::Rgba::white());
 
@@ -364,7 +364,7 @@ impl StationPicture {
           variants.push(variant);
         }
 
-        for size in StationPicture::WEBP_SIZES {
+        for size in StationPicture::WEBP_SIZES.iter().copied() {
           let mut img = img.clone();
           img.resize(size as u32, size as u32, ril::ResizeAlgorithm::Lanczos3);
 
@@ -483,7 +483,7 @@ impl StationPicture {
 
         variants.push(source);
 
-        for size in StationPicture::PNG_SIZES {
+        for size in StationPicture::PNG_SIZES.iter().copied() {
           
           // PNG images are used for Android apps icons so they get a white background
           let mut bg = ImageBuffer::from_fn(size as u32, size as u32, |_, _| {
@@ -520,7 +520,7 @@ impl StationPicture {
           variants.push(variant);
         }
 
-        for size in StationPicture::WEBP_SIZES {
+        for size in StationPicture::WEBP_SIZES.iter().copied() {
           let img = image::imageops::resize(&img,  size as u32, size as u32, image::imageops::FilterType::Lanczos3);
 
           let mut buf = vec![];

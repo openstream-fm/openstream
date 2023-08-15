@@ -112,7 +112,7 @@ pub const PAYMENTS_ACCESS_TOKEN_HEADER: &str = "x-access-token";
 /// changing to this value will make startup check and recreation of outdated images
 /// and invalidation of service workers station pictures caches
 #[const_register]
-pub const STATION_PICTURES_VERSION: f64 = 3.0;
+pub const STATION_PICTURES_VERSION: f64 = 4.0;
 
 #[const_register]
 pub const DEPLOYMENT_HEALTH_CHECK_INTERVAL_SECS: u16 = 1;
