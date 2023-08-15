@@ -4,6 +4,7 @@ import countries from "../share/countries/countries.es";
 import type_of_content from "../share/type-of-content/type-of-content.es";
 import analytics from "../share/analytics/analytics.es";
 import payments from "../share/payments/payments.es-AR";
+import station_profile from "../share/station-profile/station-profile.es";
 import misc from "../misc/misc.es-AR";
 
 const locale: import("./studio.locale").StudioLocale = {
@@ -27,6 +28,7 @@ const locale: import("./studio.locale").StudioLocale = {
   "analytics": analytics,
   "payments": payments,
   "misc": misc,
+  "station_profile": station_profile,
 
   "language": {
     "auto": "Auto detectar",
@@ -78,56 +80,6 @@ const locale: import("./studio.locale").StudioLocale = {
     "playlist": "Playlist",
     "broadcast": "Transmitir",
     "settings": "Configuración",
-  },
-
-  "station_profile": {
-    "titles": {
-      "logo": "Logo",
-      "profile_info": "Perfil",
-      "contact_info": "Información de contacto",
-      "social": "Redes sociales",
-      "apps": "Aplicaciones",
-    },
-    "validation": {
-      "logo_required": "El logo es requerido",
-    },
-    "upload_image": "Subir imagen",
-    "picture_requirement_labels": {
-      "format": "Formatos de imagen aceptados:",
-      "size": "Tamaño minimo de la imagen:",
-      "file_size": "Tamaño máximo del archivo:",
-      "square": "La imagen debe ser cuadrada",
-    },
-
-    "frequency": {
-      "Main_frequency": "Frecuencia principal",
-      "Frequency": "Frecuencia",
-      "Web_only": "Solo web",
-      "Frequency_AM": "AM",
-      "Frequency_FM": "FM",
-    },
-
-    "labels": {
-      "name": "Nombre",
-      "slogan": "Eslogan",
-      "description": "Descripción",
-      "country": "País",
-      "type_of_content": "Tipo de contenido",
-      "email": "Email",
-      "phone": "Número de teléfono completo",
-      "whatsapp": "Número de WhatsApp completo",
-      "website": "URL del sitio web",
-      "twitter": "URL de Twitter",
-      "facebook": "URL de Facebook",
-      "instagram": "URL de Instagram",
-      "threads": "URL de Threads",
-      "tiktok": "URL de TikTok",
-      "youtube": "URL de Youtube",
-      "twitch": "URL de Twitch",
-      "spotify": "URL de Spotify",
-      "google_play": "URL de Google Play",
-      "app_store": "URL de App Store"
-    }
   },
 
   "plan_selector": {

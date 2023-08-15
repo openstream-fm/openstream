@@ -37,7 +37,7 @@
 		_tiktok_url,
 		_spotify_url,
 	} from '$share/formy/validate';
-	import { VALIDATE_STATION_DESC_MAX_LEN, VALIDATE_STATION_DESC_MIN_LEN, VALIDATE_STATION_EMAIL_MAX_LEN, VALIDATE_STATION_NAME_MAX_LEN, VALIDATE_STATION_NAME_MIN_LEN, VALIDATE_STATION_PHONE_MAX_LEN, VALIDATE_STATION_SLOGAN_MAX_LEN, VALIDATE_STATION_URLS_MAX_LEN, VALIDATE_STATION_WHATSAPP_MAX_LEN } from "$server/defs/constants";
+	import { VALIDATE_STATION_DESC_MAX_LEN, VALIDATE_STATION_EMAIL_MAX_LEN, VALIDATE_STATION_NAME_MAX_LEN, VALIDATE_STATION_NAME_MIN_LEN, VALIDATE_STATION_PHONE_MAX_LEN, VALIDATE_STATION_SLOGAN_MAX_LEN, VALIDATE_STATION_URLS_MAX_LEN, VALIDATE_STATION_WHATSAPP_MAX_LEN } from "$server/defs/constants";
 	import CountryField from './Form/CountryField.svelte';
 	import type { CountryCode } from '$server/defs/CountryCode';
 	import TypeOfContentField from './Form/TypeOfContentField.svelte';
@@ -45,6 +45,9 @@
 	import { locale } from '$lib/locale';
 	import type { StationFrequency } from '$server/defs/StationFrequency';
 	import FrequencyField from './Form/FrequencyField.svelte';
+	import ColorField from './Form/ColorField.svelte';
+	import BooleanField from './Form/BooleanField.svelte';
+	import { display_fly_enter } from '$share/display_transitions';
 
 	export let account_id: string;
 	export let current: {
@@ -73,7 +76,17 @@
 
 		google_play_url: string | null;
 		app_store_url: string | null;
+
+		user_metadata: {
+			mob_app: {
+				base_color: string
+				icon_bg_color: string
+				icon_rounded: boolean
+			}
+		}
 	};
+	
+	export let advanced_open: boolean = false;
 </script>
 
 
@@ -98,6 +111,29 @@
     --validator-message-font-size: 1em;
     --validator-message-margin: 0;
   }
+
+	.section-advanced {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.section-advanced-title {
+		outline: none;
+		appearance: none;
+		border: 0;
+		background: none;
+		cursor: default;
+		align-self: center;
+	}
+
+	.section-advanced-title:not(.open) {
+		cursor: pointer;
+		text-decoration: underline;
+	}
+
+	.section-advanced-fields:not(.open) {
+		display: none;
+	}
 </style>
 
 
@@ -355,5 +391,30 @@
 			/>
       <Validator value={current.app_store_url} fn={_app_store_url({ maxlen: VALIDATE_STATION_URLS_MAX_LEN })} />
 		</div>
+	</div>
+</div>
+
+<div class="section section-advanced">
+	<button class="section-title section-advanced-title" class:open={advanced_open} on:click|preventDefault={() => advanced_open = true}>
+		<!-- TODO: locale -->
+		Advanced Settings
+	</button>
+
+	<div class="fields section-advanced-fields" class:open={advanced_open} use:display_fly_enter={{ show: advanced_open, start: false, duration: 300, y: -25 }}>
+		<div class="field">
+			<!-- TODO: locale -->
+			<ColorField label="App background base color" bind:value={current.user_metadata.mob_app.base_color} />
+		</div>
+
+		<div class="field">
+			<!-- TODO: locale -->
+			<ColorField label="App icon background color" bind:value={current.user_metadata.mob_app.icon_bg_color} />
+		</div>
+
+		<div class="field">
+			<!-- TODO: locale -->
+			<BooleanField label="App icon is fully rounded" bind:value={current.user_metadata.mob_app.icon_rounded} />
+		</div>
+		
 	</div>
 </div>

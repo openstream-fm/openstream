@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ColorField from "$lib/components/Form/ColorField.svelte";
 	import BooleanField from "$lib/components/Form/BooleanField.svelte";
 	import NullNumberField from "$lib/components/Form/Nullable/NullNumberField.svelte";
   export let current: {
@@ -16,23 +17,6 @@
   import TextField from "$lib/components/Form/TextField.svelte";
 	import Validator from "$share/formy/Validator.svelte";
 	import { _number, _string } from "$share/formy/validate";
-
-  import Color from "color";
-
-  const _color_validation = (value: string) => {
-    
-    if(value === "") {
-      return "Color is required";
-    }
-
-    try {
-      const color = new Color(value);
-    } catch(e: any) {
-      return String(e?.message);
-    }
-    
-    return null;
-  }
 </script>
 
 <style>
@@ -62,8 +46,7 @@
 </div>
 
 <div class="field">
-  <TextField label="Color" trim bind:value={current.color} />
-  <Validator value={current.color} fn={_color_validation} />
+  <ColorField bind:value={current.color} label="Color" required />
 </div>
 
 <div class="field">

@@ -44,6 +44,14 @@
 
     picture_id: null as string | null,
     frequency: null as StationFrequency | null,
+
+    user_metadata: {
+      mob_app: {
+        base_color: "",
+        icon_bg_color: "",
+        icon_rounded: false,
+      }
+    }
   }
 
   let current = clone(start);
