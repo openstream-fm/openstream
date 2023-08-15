@@ -34,6 +34,14 @@
     country_code: data.station.country_code as typeof data.station.country_code | "",
     type_of_content: data.station.type_of_content as typeof data.station.type_of_content | "",
     frequency: data.station.frequency,
+    user_metadata: {
+      mob_app: {
+        // TODO: types
+        base_color: String((data.station.user_metadata.mob_app as any)?.base_color ?? ""),
+        icon_bg_color: String((data.station.user_metadata.mob_app as any)?.icon_bg_color ?? ""),
+        icon_rounded: !!(data.station.user_metadata.mob_app as any)?.icon_rounded ?? false,
+      }
+    }
   };
 
   let current = clone(db);

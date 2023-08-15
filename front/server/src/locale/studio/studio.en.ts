@@ -4,6 +4,7 @@ import countries from "../share/countries/countries.en";
 import type_of_content from "../share/type-of-content/type-of-content.en";
 import analytics from "../share/analytics/analytics.en";
 import payments from "../share/payments/payments.en";
+import station_profile from "../share/station-profile/station-profile.es";
 import misc from "../misc/misc.en";
 
 const locale = {
@@ -27,6 +28,7 @@ const locale = {
   "analytics": analytics,
   "payments": payments,
   "misc": misc,
+  "station_profile": station_profile,
 
   "copy_to_clipboard": "Copy to clipboard",
   "show_password": "Show password",
@@ -77,56 +79,6 @@ const locale = {
     "playlist": "Playlist",
     "broadcast": "Broadcast",
     "settings": "Settings",
-  },
-
-  "station_profile": {
-    "titles": {
-      "logo": "Logo",
-      "profile_info": "Profile information",
-      "contact_info": "Contact information",
-      "social": "Social links",
-      "apps": "App links",
-    },
-    "validation": {
-      "logo_required": "The logo is required",
-    },
-    "upload_image": "Upload Image",
-    "picture_requirement_labels": {
-      "format": "Image formats accepted:",
-      "size": "Minimum image size:",
-      "file_size": "Maximum file size:",
-      "square": "Image must be square",
-    },
-
-    "frequency": {
-      "Main_frequency": "Main frequency",
-      "Frequency": "Frequency",
-      "Web_only": "Web only",
-      "Frequency_AM": "AM",
-      "Frequency_FM": "FM",
-    },
-
-    "labels": {
-      "name": "Name",
-      "slogan": "Slogan",
-      "description": "Description",
-      "country": "Country",
-      "type_of_content": "Type of content",
-      "email": "Email",
-      "phone": "Full phone number",
-      "whatsapp": "Full WhatsApp number",
-      "website": "Website URL",
-      "twitter": "Twitter URL",
-      "facebook": "Facebook URL",
-      "instagram": "Instagram URL",
-      "threads": "Threads URL",
-      "tiktok": "TikTok URL",
-      "youtube": "Youtube URL",
-      "twitch": "Twitch URL",
-      "spotify": "Spotify URL",
-      "google_play": "Google Play URL",
-      "app_store": "App Store URL"
-    }
   },
 
   "plan_selector": {
