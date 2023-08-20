@@ -13,13 +13,14 @@
 	import { _error } from '$share/notify';
 	import Validator from '$share/formy/Validator.svelte';
 	import { locale } from '$lib/locale';
+	import { STATION_PICTURES_VERSION } from '$defs/constants';
 
 	let error_message: string | null;
 	let loading: boolean = false;
 
   const bg_url = (storage_url: string, picture_id: string | null, loading: boolean) => {
     if(picture_id != null && !loading) {
-      return `${storage_url}/station-pictures/webp/256/${picture_id}.webp`;
+      return `${storage_url}/station-pictures/webp/256/${picture_id}.webp?v=${STATION_PICTURES_VERSION}`;
     } else {
       return no_img;
     }

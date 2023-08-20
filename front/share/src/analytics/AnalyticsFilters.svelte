@@ -181,7 +181,8 @@
   import { logical_fly } from "$share/transition";
   import { click_out } from "$share/actions";
   import CircularProgress from "$share/CircularProgress.svelte";
-  import type { CountryCode } from "$server/defs/CountryCode";
+  import type { CountryCode } from "$defs/CountryCode";
+  import { STATION_PICTURES_VERSION } from "$defs/constants"
 
   const unselect_station = (id: string) => {
     if (selected_stations === "all") {
@@ -519,7 +520,7 @@
               <div
                 class="chip-pic"
                 style:background-image="url({$page.data.config
-                  .storage_public_url}/station-pictures/webp/64/{station.picture_id}.webp)"
+                  .storage_public_url}/url(station-pictures/webp/64/{station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
               />
               <div class="chip-name">
                 {station.name}
@@ -569,7 +570,7 @@
             <div
               class="menu-pìc"
               style:background-image="url({$page.data.config
-                .storage_public_url}/station-pictures/webp/64/{station.picture_id}.webp)"
+                .storage_public_url}/url(station-pictures/webp/64/{station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
             />
             <div class="menu-name">
               {station.name}

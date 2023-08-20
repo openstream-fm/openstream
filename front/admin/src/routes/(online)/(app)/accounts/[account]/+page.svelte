@@ -16,6 +16,7 @@
 	import { click_out } from "$share/actions";
 	import { goto } from "$app/navigation";
 	import PageMenuItem from "$lib/components/PageMenu/PageMenuItem.svelte";
+  import { STATION_PICTURES_VERSION } from "$defs/constants";
 
   const date = (d: string | Date) => {
     const date = new Date(d);
@@ -442,7 +443,7 @@
       {#each data.account_stations as station (station._id)}
         <a href="/stations/{station._id}" class="na section-item station-item ripple-container" use:ripple>
           <div class="station-pic" 
-            style:background-image="url({data.config.storage_public_url}/station-pictures/webp/64/{station.picture_id}.webp)"
+            style:background-image="url({data.config.storage_public_url}/url(station-pictures/webp/64/{station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
           />
           <div class="station-data">
             <div class="station-name">

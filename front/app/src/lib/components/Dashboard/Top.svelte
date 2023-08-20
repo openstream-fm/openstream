@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { page } from "$app/stores";
-  
   export let drawer_fixed_open: boolean;
   export let close_drawer_fixed: () => void;
   export let open_drawer_fixed: () => void;
@@ -9,7 +7,8 @@
   import { ripple } from "$share/ripple";
 	import { mdiMenu } from "@mdi/js";
   import TopUser from "./TopUser.svelte";
-
+  // import { STATION_PICTURES_VERSION } from "$defs/constants";
+  
   const toggle_drawer = () => drawer_fixed_open ? close_drawer_fixed() : open_drawer_fixed();
 </script>
 
@@ -108,7 +107,7 @@
       <a class="na station" href="/accounts/{$page.data.station.account_id}/stations/{$page.data.station._id}">
         <div
           class="station-pic"
-          style="background-image: url({$page.data.config.storage_public_url}/station-pictures/webp/128/{$page.data.station.picture_id}.webp)"
+          style="background-image: url({$page.data.config.storage_public_url}/url(station-pictures/webp/128/{$page.data.station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
         />
         <span class="station-name">
           <span class="station-name-ellipsis">

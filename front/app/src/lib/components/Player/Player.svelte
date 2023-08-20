@@ -6,8 +6,8 @@
 	import { slide } from "svelte/transition";
 	import { player_state, player_title, player_subtitle, player_audio_state, pause, resume, close, player_picture_id } from "./player";
 	import { expoInOut } from "svelte/easing";
-
   import { page } from "$app/stores";
+  import { STATION_PICTURES_VERSION } from "$defs/constants";
   
   $: state = $player_state;
   $: title = $player_title;
@@ -172,7 +172,7 @@
       </div>
 
       <div class="info">
-        <div class="pic" style="background-image: url({$page.data.config.storage_public_url}/station-pictures/webp/64/{$player_picture_id}.webp)" /> 
+        <div class="pic" style="background-image: url({$page.data.config.storage_public_url}/url(station-pictures/webp/64/{$player_picture_id}.webp?v={STATION_PICTURES_VERSION})" /> 
         <div class="titles">
           <div class="title">
             <span>

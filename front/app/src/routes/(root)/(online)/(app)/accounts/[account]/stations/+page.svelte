@@ -1,8 +1,11 @@
 <script lang="ts">
-	import Page from "$lib/components/Page.svelte";
+	export let data: import("./$types").PageData;
+  
+  import Page from "$lib/components/Page.svelte";
 	import { locale } from "$lib/locale";
 	import { ripple } from "$share/ripple";
-  export let data: import("./$types").PageData;
+  import { STATION_PICTURES_VERSION } from "$server/defs/constants";
+  
   $: current_account_stations = data.stations.items.filter(item => item.account_id === data.account._id);
 </script>
 
@@ -131,7 +134,7 @@
           <a href="/accounts/{station.account_id}/stations/{station._id}" class="list-item na ripple-container" use:ripple>
             <div
               class="list-item-pic"
-              style="background-image: url({data.config.storage_public_url}/station-pictures/webp/64/{station.picture_id}.webp)"
+              style="background-image: url({data.config.storage_public_url}/url(station-pictures/webp/64/{station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
             />
             <span class="list-item-name">
               {station.name}
