@@ -14,6 +14,7 @@
 	import { goto } from "$app/navigation";
 	import { invalidate_siblings } from "$lib/invalidate";
 	import Dialog from "$share/Dialog.svelte";
+  import { STATION_PICTURES_VERSION } from "$defs/constants";
 	
 
   const date = (d: string | Date) => {
@@ -183,7 +184,7 @@
 <Page>
   <PageTop>
     <div slot="icon" class="title-pic" 
-      style:background-image="url({data.config.storage_public_url}/station-pictures/webp/64/{data.station.picture_id}.webp)"
+      style:background-image="url({data.config.storage_public_url}/url(station-pictures/webp/64/{data.station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
     />
     
     <svelte:fragment slot="title">

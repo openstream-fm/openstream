@@ -2,7 +2,9 @@ use async_trait::async_trait;
 use db::station_picture::StationPicture;
 use db::station_picture_variant::{StationPictureVariant, StationPictureVariantFormat};
 use db::Model;
-use hyper::header::{/*CACHE_CONTROL,*/ CONTENT_LENGTH, CONTENT_TYPE, ETAG, IF_NONE_MATCH};
+use hyper::header::{
+  CACHE_CONTROL, /*CACHE_CONTROL,*/ CONTENT_LENGTH, CONTENT_TYPE, ETAG, IF_NONE_MATCH,
+};
 use hyper::http::HeaderValue;
 use hyper::{Body, StatusCode};
 use mongodb::bson::doc;
@@ -21,6 +23,16 @@ pub enum StationPicHandler {
 impl Handler for StationPicHandler {
   async fn call(&self, req: Request, _next: prex::Next) -> Response {
     let id = req.param("picture").unwrap();
+
+    #[derive(serde::Deserialize)]
+    struct VQs {
+      v: Option<String>,
+    }
+
+    let has_version_qs = match req.qs::<VQs>() {
+      Ok(qs) => true,
+      Err(_) => false,
+    };
 
     let filter = match *self {
       Self::Webp(size) => doc! {
@@ -76,6 +88,13 @@ impl Handler for StationPicHandler {
             //   CACHE_CONTROL,
             //   HeaderValue::from_static("public, max-age=600, immutable"), // 10 mins
             // );
+
+            if has_version_qs {
+              res.headers_mut().append(
+                CACHE_CONTROL,
+                HeaderValue::from_static("public,max-age=31536000,immutable"), // 1 year
+              );
+            }
 
             res
               .headers_mut()

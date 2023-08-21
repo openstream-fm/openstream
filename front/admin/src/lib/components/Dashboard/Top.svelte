@@ -12,6 +12,7 @@
   const toggle_drawer = () => drawer_fixed_open ? close_drawer_fixed() : open_drawer_fixed();
 
   import TopUser from "./TopUser.svelte";
+  // import { STATION_PICTURES_VERSION } from "$defs/constants";
 </script>
 
 <style>
@@ -109,7 +110,7 @@
       <a class="na station" href="/accounts/{$page.data.station.account_id}/stations/{$page.data.station._id}">
         <div
           class="station-pic"
-          style="background-image: url({$page.data.config.storage_public_url}/station-pictures/webp/128/{$page.data.station.picture_id}.webp)"
+          style="background-image: url({$page.data.config.storage_public_url}/station-pictures/webp/128/{$page.data.station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
         />
         <span class="station-name">
           <span class="station-name-ellipsis">

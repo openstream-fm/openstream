@@ -22,6 +22,7 @@
 	import { locale } from "$lib/locale";
 	import { invalidate_siblings } from "$lib/invalidate";
 	import { logical_fly } from "$share/transition";
+  import { STATION_PICTURES_VERSION } from "$defs/constants";
 
   const sign_out = action(async () => {
     await _post("/api/auth/user/logout", {});
@@ -318,7 +319,7 @@
                 <div class="station-list thin-scroll">
                   {#each stations.items as item (item._id)}
                     <a href="/accounts/{item.account_id}/stations/{item._id}" class="na menu-station ripple-container" class:current={item._id === station?._id} use:ripple on:click={() => menu_open = false}>
-                      <div class="station-pic" style="background-image: url({$page.data.config.storage_public_url}/station-pictures/webp/32/{item.picture_id}.webp)" />
+                      <div class="station-pic" style="background-image: url({$page.data.config.storage_public_url}/url(station-pictures/webp/32/{item.picture_id}.webp?v={STATION_PICTURES_VERSION})" />
                       <span class="station-name">{item.name}</span>
                     </a>
                   {/each}

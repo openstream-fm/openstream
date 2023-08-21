@@ -5,6 +5,7 @@
 	import { intersect } from '$share/actions';
 	import { ripple } from '$share/ripple';
 	import { onMount } from 'svelte';
+	import { STATION_PICTURES_VERSION } from '$defs/constants';
 
 	export let station: import('$server/defs/PublicStation').PublicStation;
 	export let session_count: number = 0;
@@ -113,7 +114,7 @@
 >
 	<div
 		class="pic"
-		style:background-image="url({$page.data.config.storage_public_url}/station-pictures/webp/128/{station.picture_id}.webp)"
+		style:background-image="url({$page.data.config.storage_public_url}/url(station-pictures/webp/128/{station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
 	/>
 
 	<div class="data">
