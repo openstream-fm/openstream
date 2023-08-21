@@ -107,7 +107,7 @@
       <a class="na station" href="/accounts/{$page.data.station.account_id}/stations/{$page.data.station._id}">
         <div
           class="station-pic"
-          style="background-image: url({$page.data.config.storage_public_url}/url(station-pictures/webp/128/{$page.data.station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
+          style="background-image: url({$page.data.config.storage_public_url}/station-pictures/webp/128/{$page.data.station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
         />
         <span class="station-name">
           <span class="station-name-ellipsis">

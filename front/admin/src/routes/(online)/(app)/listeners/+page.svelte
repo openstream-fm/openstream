@@ -285,7 +285,7 @@
       <div class="item" class:open={item.is_open} class:closed={!item.is_open} transition:slide|local={{ duration: 400 }}>
         <div class="pic" class:empty={station == null} style:background-image={
             station != null ? 
-            `url(${data.config.storage_public_url}/url(station-pictures/webp/128/${station?.picture_id}.webp?v=${STATION_PICTURES_VERSION})` :
+            `url(${data.config.storage_public_url}/station-pictures/webp/128/${station?.picture_id}.webp?v=${STATION_PICTURES_VERSION})` :
             undefined
           }
         /> 

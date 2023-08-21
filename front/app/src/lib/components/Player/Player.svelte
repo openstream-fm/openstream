@@ -172,7 +172,7 @@
       </div>
 
       <div class="info">
-        <div class="pic" style="background-image: url({$page.data.config.storage_public_url}/url(station-pictures/webp/64/{$player_picture_id}.webp?v={STATION_PICTURES_VERSION})" /> 
+        <div class="pic" style="background-image: url({$page.data.config.storage_public_url}/station-pictures/webp/64/{$player_picture_id}.webp?v={STATION_PICTURES_VERSION})" /> 
         <div class="titles">
           <div class="title">
             <span>

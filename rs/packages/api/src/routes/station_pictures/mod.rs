@@ -26,13 +26,11 @@ impl Handler for StationPicHandler {
 
     #[derive(serde::Deserialize)]
     struct VQs {
+      #[allow(unused)]
       v: Option<String>,
     }
 
-    let has_version_qs = match req.qs::<VQs>() {
-      Ok(qs) => true,
-      Err(_) => false,
-    };
+    let has_version_qs = req.qs::<VQs>().is_ok();
 
     let filter = match *self {
       Self::Webp(size) => doc! {
