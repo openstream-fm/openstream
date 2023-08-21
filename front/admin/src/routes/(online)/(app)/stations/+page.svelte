@@ -83,7 +83,7 @@
     {#each data.stations as item (item._id)}
       {@const account = get_account(data, item.account_id)}
       <a href="/stations/{item._id}" class="na item ripple-container" use:ripple>
-        <div class="item-pic" style:background-image="url({data.config.storage_public_url}/url(station-pictures/webp/64/{item.picture_id}.webp?v={STATION_PICTURES_VERSION})" />
+        <div class="item-pic" style:background-image="url({data.config.storage_public_url}/station-pictures/webp/64/{item.picture_id}.webp?v={STATION_PICTURES_VERSION})" />
         <div class="item-info">
           <div class="item-title">{item.name}</div>
           <div class="item-subtitle">

@@ -177,7 +177,7 @@
       {#if data.station != null}
         <div
           class="stats-selector-btn-icon"
-          style:background-image="url({data.storage_public_url}/url(station-pictures/webp/64/{data.station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
+          style:background-image="url({data.storage_public_url}/station-pictures/webp/64/{data.station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
         />
       {/if}
       <span class="stats-selector-btn-text">
@@ -206,7 +206,7 @@
           </button>
           {#each data.stations as station (station._id)}
             <button class="stats-selector-item" class:current={data.station?._id === station._id} on:click={() => select(station)}>
-              <div class="stats-selector-icon" style:background-image="url({data.storage_public_url}/url(station-pictures/webp/64/{station.picture_id}.webp?v={STATION_PICTURES_VERSION})" />
+              <div class="stats-selector-icon" style:background-image="url({data.storage_public_url}/station-pictures/webp/64/{station.picture_id}.webp?v={STATION_PICTURES_VERSION})" />
               <div class="stats-selector-name">
                 {station.name}
               </div>

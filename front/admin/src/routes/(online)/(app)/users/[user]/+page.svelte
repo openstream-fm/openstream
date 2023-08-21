@@ -332,7 +332,7 @@
         {@const account = data.user_accounts.items.find(item => item._id === station.account_id)}
         <a href="/stations/{station._id}" class="na section-item station-item ripple-container" use:ripple>
           <div class="station-pic" 
-            style:background-image="url({data.config.storage_public_url}/url(station-pictures/webp/64/{station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
+            style:background-image="url({data.config.storage_public_url}/station-pictures/webp/64/{station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
           />
           <div class="station-data">
             <div class="station-name">

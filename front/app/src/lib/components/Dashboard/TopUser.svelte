@@ -319,7 +319,7 @@
                 <div class="station-list thin-scroll">
                   {#each stations.items as item (item._id)}
                     <a href="/accounts/{item.account_id}/stations/{item._id}" class="na menu-station ripple-container" class:current={item._id === station?._id} use:ripple on:click={() => menu_open = false}>
-                      <div class="station-pic" style="background-image: url({$page.data.config.storage_public_url}/url(station-pictures/webp/32/{item.picture_id}.webp?v={STATION_PICTURES_VERSION})" />
+                      <div class="station-pic" style="background-image: url({$page.data.config.storage_public_url}/station-pictures/webp/32/{item.picture_id}.webp?v={STATION_PICTURES_VERSION})" />
                       <span class="station-name">{item.name}</span>
                     </a>
                   {/each}

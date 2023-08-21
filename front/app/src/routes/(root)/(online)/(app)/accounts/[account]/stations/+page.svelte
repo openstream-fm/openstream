@@ -134,7 +134,7 @@
           <a href="/accounts/{station.account_id}/stations/{station._id}" class="list-item na ripple-container" use:ripple>
             <div
               class="list-item-pic"
-              style="background-image: url({data.config.storage_public_url}/url(station-pictures/webp/64/{station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
+              style="background-image: url({data.config.storage_public_url}/station-pictures/webp/64/{station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
             />
             <span class="list-item-name">
               {station.name}

@@ -252,7 +252,7 @@
     <div class="station">
       <div class="station-btn-out">
         <button class="station-btn" class:station-selector-open={selector_open} on:click={toggle_selector}>
-          <div class="station-pic" style="background-image: url({ data.config.storage_public_url }/url(station-pictures/webp/64/{data.station.picture_id}.webp?v={STATION_PICTURES_VERSION})" />
+          <div class="station-pic" style="background-image: url({data.config.storage_public_url}/station-pictures/webp/64/{data.station.picture_id}.webp?v={STATION_PICTURES_VERSION})" />
           <div class="station-name">
             <div class="station-name-ellipsis">
               {data.station.name}
@@ -276,7 +276,7 @@
                   on:click={close_selector}
                   use:ripple
                 >
-                  <div class="station-selector-pic" style="background-image: url({ data.config.storage_public_url }/url(station-pictures/webp/64/{station.picture_id}.webp?v={STATION_PICTURES_VERSION})" />
+                  <div class="station-selector-pic" style="background-image: url({data.config.storage_public_url}/station-pictures/webp/64/{station.picture_id}.webp?v={STATION_PICTURES_VERSION})" />
                   <div class="station-selector-name">
                     <div class="station-selector-ellipsis">
                       {station.name}

@@ -184,7 +184,7 @@
 <Page>
   <PageTop>
     <div slot="icon" class="title-pic" 
-      style:background-image="url({data.config.storage_public_url}/url(station-pictures/webp/64/{data.station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
+      style:background-image="url({data.config.storage_public_url}/station-pictures/webp/64/{data.station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
     />
     
     <svelte:fragment slot="title">
