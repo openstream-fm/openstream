@@ -84,21 +84,16 @@ impl Handler for StationPicHandler {
               Ok(value) => res.headers_mut().append(CONTENT_TYPE, value),
             };
 
-            // res.headers_mut().append(
-            //   CACHE_CONTROL,
-            //   HeaderValue::from_static("public, max-age=600, immutable"), // 10 mins
-            // );
-
             if has_version_qs {
               res.headers_mut().append(
                 CACHE_CONTROL,
                 HeaderValue::from_static("public,max-age=31536000,immutable"), // 1 year
               );
+            } else {
+              res
+                .headers_mut()
+                .append(ETAG, HeaderValue::from_str(&response_etag).unwrap());
             }
-
-            res
-              .headers_mut()
-              .append(ETAG, HeaderValue::from_str(&response_etag).unwrap());
 
             res.headers_mut().append(
               CONTENT_LENGTH,
