@@ -3,7 +3,8 @@ use db::station_picture::StationPicture;
 use db::station_picture_variant::{StationPictureVariant, StationPictureVariantFormat};
 use db::Model;
 use hyper::header::{
-  CACHE_CONTROL, /*CACHE_CONTROL,*/ CONTENT_LENGTH, CONTENT_TYPE, ETAG, IF_NONE_MATCH,
+  ACCESS_CONTROL_ALLOW_ORIGIN, CACHE_CONTROL, /*CACHE_CONTROL,*/ CONTENT_LENGTH, CONTENT_TYPE,
+  ETAG, IF_NONE_MATCH,
 };
 use hyper::http::HeaderValue;
 use hyper::{Body, StatusCode};
@@ -87,11 +88,15 @@ impl Handler for StationPicHandler {
                 CACHE_CONTROL,
                 HeaderValue::from_static("public,max-age=31536000,immutable"), // 1 year
               );
-            } else {
-              res
-                .headers_mut()
-                .append(ETAG, HeaderValue::from_str(&response_etag).unwrap());
             }
+
+            res
+              .headers_mut()
+              .append(ACCESS_CONTROL_ALLOW_ORIGIN, HeaderValue::from_static("*"));
+
+            res
+              .headers_mut()
+              .append(ETAG, HeaderValue::from_str(&response_etag).unwrap());
 
             res.headers_mut().append(
               CONTENT_LENGTH,

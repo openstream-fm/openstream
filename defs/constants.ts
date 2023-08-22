@@ -59,7 +59,7 @@ export const RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS = 10;
 /** we need to update this value after making code changes to the station pictures logic or sizes
  *  changing to this value will make startup check and recreation of outdated images
  *  and invalidation of service workers station pictures caches */
-export const STATION_PICTURES_VERSION = 4.0;
+export const STATION_PICTURES_VERSION = 5.0;
 
 /** stream bust len in elements (use with STREAM_CHUNK_SIZE) */
 export const STREAM_BURST_LENGTH = 12;
