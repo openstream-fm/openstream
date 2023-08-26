@@ -50,6 +50,7 @@
         base_color: "",
         icon_bg_color: "",
         icon_rounded: false,
+        ads: false,
       }
     }
   }
