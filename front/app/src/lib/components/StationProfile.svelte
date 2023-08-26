@@ -79,6 +79,7 @@
 
 		user_metadata: {
 			mob_app: {
+				ads: boolean
 				base_color: string
 				icon_bg_color: string
 				icon_rounded: boolean
@@ -414,6 +415,11 @@
 		<div class="field">
 			<!-- TODO: locale -->
 			<BooleanField label="App icon is fully rounded" bind:value={current.user_metadata.mob_app.icon_rounded} />
+		</div>
+
+		<div class="field">
+			<!-- TODO: locale -->
+			<BooleanField label="Enable mobile app Ads" bind:value={current.user_metadata.mob_app.ads} />
 		</div>
 		
 	</div>
