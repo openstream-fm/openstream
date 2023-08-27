@@ -570,7 +570,7 @@
             <div
               class="menu-pìc"
               style:background-image="url({$page.data.config
-                .storage_public_url}/url(station-pictures/webp/64/{station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
+                .storage_public_url}/station-pictures/webp/64/{station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
             />
             <div class="menu-name">
               {station.name}

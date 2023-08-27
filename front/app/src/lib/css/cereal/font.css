@@ -1,0 +1,41 @@
+@font-face {
+  font-family: Cereal;
+  font-style: normal;
+  font-weight: 300;
+  src: url("./CerealLight.woff") format("woff");
+}
+
+@font-face {
+  font-family: Cereal;
+  font-style: normal;
+  font-weight: 400;
+  src: url("./CerealBook.woff") format("woff");
+}
+
+@font-face {
+  font-family: Cereal;
+  font-style: normal;
+  font-weight: 600;
+  src: url("./CerealMedium.woff") format("woff");
+}
+
+@font-face {
+  font-family: Cereal;
+  font-style: normal;
+  font-weight: 700;
+  src: url("./CerealBold.woff") format("woff");
+}
+
+@font-face {
+  font-family: Cereal;
+  font-style: normal;
+  font-weight: 800;
+  src: url("./CerealExtraBold.woff") format("woff");
+}
+
+@font-face {
+  font-family: Cereal;
+  font-style: normal;
+  font-weight: 900;
+  src: url("./CerealBlack.woff") format("woff");
+}
