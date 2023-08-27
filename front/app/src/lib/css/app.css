@@ -5,12 +5,12 @@
 /* @import url("./gilroy/gilroy.css"); */
 /* @import url("./g/g.css");  */
 @import url("./circular/circular.css");
-
+/* @import url("./cereal/font.css"); */
 @import url("./azeret-mono/azeret-mono.css");
 /* @import url("./chivo-mono/chivo-mono.css"); */
 
 :root {
-  --font-family: Circular, "Fira Sans", G, Cera, Jost, Overpass, sans-serif; 
+  --font-family: Circular, Cereal, "Fira Sans", G, Cera, Jost, Overpass, sans-serif; 
   --monospace: "Azeret Mono", "Chivo Mono", monospace, ui-monospace;
 
   font-family: var(--font-family);
