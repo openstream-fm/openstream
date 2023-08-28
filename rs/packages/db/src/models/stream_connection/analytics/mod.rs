@@ -190,9 +190,9 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     StreamConnectionLite::KEY_STATION_ID: {
       "$in": &query.station_ids,
     },
-    StreamConnectionLite::KEY_DURATION_MS: {
-      "$ne": null
-    },
+    // StreamConnectionLite::KEY_DURATION_MS: {
+    //   "$ne": null
+    // },
     // StreamConnectionLite::KEY_IS_OPEN: false,
     StreamConnectionLite::KEY_CREATED_AT: {
       "$gte": ser_start_date,
@@ -296,10 +296,14 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     sessions += 1;
   }
 
+  let now = time::OffsetDateTime::now_utc();
+
   #[cfg(not(feature = "test-analytics-base-measure"))]
   while let Some(conn) = cursor.try_next().await? {
     let created_at = conn.created_at.to_offset(query.start_date.offset());
-    let conn_duration_ms = conn.duration_ms.unwrap_or(0);
+    let conn_duration_ms = conn
+      .duration_ms
+      .unwrap_or_else(|| ((created_at - now).as_seconds_f64() * 1000.0) as u64);
     let conn_transfer_bytes = conn.transfer_bytes.unwrap_or(0);
     let conn_year = created_at.year() as u16;
     let conn_month = created_at.month() as u8;
