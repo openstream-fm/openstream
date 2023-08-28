@@ -374,13 +374,13 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     .context("error getting ffmpeg path (is ffmpeg installed and available in executable path?)")?;
 
   {
-  use owo_colors::OwoColorize;
+    use owo_colors::OwoColorize;
 
-  info!(
-    target: "start",
-    "using system ffmpeg from {}",
-    ffmpeg_path.to_string_lossy().yellow()
-  );
+    info!(
+      target: "start",
+      "using system ffmpeg from {}",
+      ffmpeg_path.to_string_lossy().yellow()
+    );
   }
 
   let local_ip = local_ip_address::local_ip().context("error obtaining local ip")?;

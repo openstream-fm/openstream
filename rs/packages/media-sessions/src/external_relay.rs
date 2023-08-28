@@ -5,7 +5,7 @@ use crate::{SendError, Transmitter};
 use constants::{
   EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS, EXTERNAL_RELAY_NO_DATA_START_SHUTDOWN_SECS,
   EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS, /*STREAM_BURST_LENGTH,*/
-  STREAM_CHUNK_SIZE, STREAM_KBITRATE,
+  STREAM_BURST_LENGTH, STREAM_CHUNK_SIZE, STREAM_KBITRATE,
 };
 use db::media_session::MediaSession;
 use db::{media_session::MediaSessionState, Model};
@@ -90,6 +90,7 @@ pub fn run_external_relay_session(
         input: Some(url),
         kbitrate: STREAM_KBITRATE,
         readrate: true,
+        readrate_initial_burst: STREAM_BURST_LENGTH as f64,
         ..FfmpegConfig::default()
       };
 

@@ -70,7 +70,7 @@ impl Display for Format {
   }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct FfmpegConfig {
   pub bin: &'static str,
   pub input: Option<String>,
@@ -85,6 +85,11 @@ pub struct FfmpegConfig {
   pub novideo: bool,
   pub threads: u8,
   pub readrate: bool,
+
+  /// how many SECONDS of burst to read before entering play rate
+  /// only applies if READRATE is true
+  pub readrate_initial_burst: f64,
+
   pub copycodec: bool,
 }
 
@@ -119,6 +124,10 @@ impl FfmpegConfig {
   /// whether to read input at play rate or not
   pub const READRATE: bool = false;
 
+  /// how many SECONDS of burst to read before entering play rate
+  /// only applies if READRATE is true
+  pub const READRATE_INITIAL_BURST: f64 = 0.0;
+
   /// whether to copy as is the audio codec of the source
   pub const COPYCODEC: bool = false;
 }
@@ -139,6 +148,7 @@ impl Default for FfmpegConfig {
       threads: Self::THREADS,
       novideo: Self::NOVIDEO,
       readrate: Self::READRATE,
+      readrate_initial_burst: Self::READRATE_INITIAL_BURST,
       copycodec: Self::COPYCODEC,
     }
   }
@@ -161,6 +171,10 @@ impl Ffmpeg {
 
     if self.config.readrate {
       cmd.arg("-re");
+      if self.config.readrate_initial_burst != 0.0 {
+        cmd.arg("-readrate_initial_burst");
+        cmd.arg(&self.config.readrate_initial_burst.to_string());
+      }
     }
 
     // input

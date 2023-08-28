@@ -72,6 +72,7 @@ pub async fn run_live_session<E: std::error::Error>(
 
     let ffmpeg_config = FfmpegConfig {
       readrate: true,
+      readrate_initial_burst: STREAM_BURST_LENGTH as f64,
       copycodec: true,
       ..FfmpegConfig::default()
     };
