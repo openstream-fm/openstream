@@ -39,6 +39,7 @@
 	} from '$share/formy/validate';
 	import { VALIDATE_STATION_DESC_MAX_LEN, VALIDATE_STATION_EMAIL_MAX_LEN, VALIDATE_STATION_NAME_MAX_LEN, VALIDATE_STATION_NAME_MIN_LEN, VALIDATE_STATION_PHONE_MAX_LEN, VALIDATE_STATION_SLOGAN_MAX_LEN, VALIDATE_STATION_URLS_MAX_LEN, VALIDATE_STATION_WHATSAPP_MAX_LEN } from "$server/defs/constants";
 	import CountryField from './Form/CountryField.svelte';
+	import LangField from './Form/LangField.svelte';
 	import type { CountryCode } from '$server/defs/CountryCode';
 	import TypeOfContentField from './Form/TypeOfContentField.svelte';
 	import type { StationTypeOfContent } from '$server/defs/db/StationTypeOfContent';
@@ -48,6 +49,7 @@
 	import ColorField from './Form/ColorField.svelte';
 	import BooleanField from './Form/BooleanField.svelte';
 	import { display_fly_enter } from '$share/display_transitions';
+	import type { LangCode } from '$server/defs/LangCode';
 
 	export let account_id: string;
 	export let current: {
@@ -56,7 +58,10 @@
 		name: string | null;
 		slogan: string | null;
 		description: string | null;
+		
 		country_code: CountryCode | "";
+		lang_code: LangCode | "",
+
 		type_of_content: StationTypeOfContent | "",
 		frequency: StationFrequency | null,
 
@@ -190,6 +195,7 @@
 			})}
 			/>
 		</div>
+
 		<div class="field">
 			<CountryField
 				label="{$locale.station_profile.labels.country} *"
@@ -198,10 +204,22 @@
 			/>
 			<Validator value={current.country_code} fn={_string({ required: true })} />
 		</div>
+
+		<div class="field">
+			<!-- TODO: locale -->
+			<LangField
+				label="{$locale.station_profile.labels.language} *"
+				lang_names={$locale.langs}
+				bind:value={current.lang_code}
+			/>
+			<Validator value={current.lang_code} fn={_string({ required: true })} />
+		</div>
+
+
 		<div class="field">
 			<TypeOfContentField
 				label="{$locale.station_profile.labels.type_of_content} *"
-				locale_names={$locale.station_type_of_content}
+				locale_names={$locale.type_of_content}
 				bind:value={current.type_of_content}
 			/>
 			<Validator value={current.type_of_content} fn={_string({ required: true })} />

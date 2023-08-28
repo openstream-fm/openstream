@@ -30,6 +30,7 @@ const locale: import("./station-profile.locale").StationProfileLocale = {
     "slogan": "Eslogan",
     "description": "Descripción",
     "country": "País",
+    "language": "Idioma",
     "type_of_content": "Tipo de contenido",
     "email": "Email",
     "phone": "Número de teléfono completo",

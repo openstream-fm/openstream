@@ -2,9 +2,11 @@
 import stats_map from "../share/stats-map/stats-map.de"
 import validate from "../share/validate/validate.de";
 import countries from "../share/countries/countries.de";
+import langs from "../share/langs/langs.de";
 import type_of_content from "../share/type-of-content/type-of-content.de";
 import analytics from "../share/analytics/analytics.de";
 import payments from "../share/payments/payments.de";
+import station_profile from "../share/station-profile/station-profile.de";
 import misc from "../misc/misc.de";
 
 const locale = {
@@ -21,13 +23,15 @@ const locale = {
   // @notranslate
   "app_name": "Openstream Studio",
 
-  "station_type_of_content": type_of_content,
-  "countries": countries,
-  "validate": validate,
-  "stats_map": stats_map,
-  "analytics": analytics,
-  "payments": payments,
-  "misc": misc,
+  type_of_content,
+  countries,
+  langs,
+  validate,
+  stats_map,
+  analytics,
+  payments,
+  station_profile,
+  misc,
 
   "copy_to_clipboard": "In die Zwischenablage kopieren",
   "show_password": "Passwort anzeigen",
@@ -78,56 +82,6 @@ const locale = {
     "playlist": "Playlist",
     "broadcast": "Übertragung",
     "settings": "Einstellungen",
-  },
-
-  "station_profile": {
-    "titles": {
-      "logo": "Logo",
-      "profile_info": "Profilinformationen",
-      "contact_info": "Kontaktinformationen",
-      "social": "Soziale Links",
-      "apps": "App-Links",
-    },
-    "validation": {
-      "logo_required": "Das Logo ist erforderlich",
-    },
-    "upload_image": "Bild hochladen",
-    "picture_requirement_labels": {
-      "format": "Akzeptierte Bildformate:",
-      "size": "Mindestbildgröße:",
-      "file_size": "Maximale Dateigröße:",
-      "square": "Bild muss quadratisch sein",
-    },
-
-    "frequency": {
-      "Main_frequency": "Hauptfrequenz",
-      "Frequency": "Frequenz",
-      "Web_only": "Nur Web",
-      "Frequency_AM": "AM",
-      "Frequency_FM": "FM",
-    },
-
-    "labels": {
-      "name": "Name",
-      "slogan": "Slogan",
-      "description": "Beschreibung",
-      "country": "Land",
-      "type_of_content": "Art des Inhalts",
-      "email": "E-Mail",
-      "phone": "Vollständige Telefonnummer",
-      "whatsapp": "Vollständige WhatsApp-Nummer",
-      "website": "Website-URL",
-      "twitter": "Twitter-URL",
-      "facebook": "Facebook-URL",
-      "instagram": "Instagram-URL",
-      "threads": "Threads-URL",
-      "tiktok": "TikTok-URL",
-      "youtube": "Youtube-URL",
-      "twitch": "Twitch-URL",
-      "spotify": "Spotify-URL",
-      "google_play": "Google Play-URL",
-      "app_store": "App Store-URL"
-    }
   },
 
   "plan_selector": {

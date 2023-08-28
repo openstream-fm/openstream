@@ -22,6 +22,7 @@
     slogan: null as string | null,
     description: null as string | null,
     country_code: "" as import("$server/defs/CountryCode").CountryCode | "",
+    lang_code: "" as import("$server/defs/LangCode").LangCode | "",
     type_of_content: "" as import("$server/defs/db/StationTypeOfContent").StationTypeOfContent | "",
 
 
@@ -59,6 +60,7 @@
 
   prevent_unload(() => {
     if(!equals(start, current)) {
+      // TODO: locale
       return "If you leave this page your changes will be lost. Do you want to leave anyway?";
     } else return null;
   })
@@ -77,11 +79,15 @@
     const country_code = current.country_code;
     if(country_code === "") throw new Error("Country is required");
 
+    const lang_code = current.lang_code;
+    if(lang_code === "") throw new Error("Language is required");
+
     const payload: import("$api/stations/POST/Payload").Payload = {
       ...current,
       name,
       type_of_content,
       country_code,
+      lang_code,
       account_id: data.account._id,
       picture_id,
       external_relay_url: null,

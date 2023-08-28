@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
-default = [ "analytics-max-concurrent" ]
+default = ["analytics-max-concurrent"]
 analytics-max-concurrent = []
 
 # do not enable this, is for internal benchmarking only
@@ -62,6 +62,7 @@ url = "2.4.0"
 constants = { version = "0.1.0", path = "../../config/constants" }
 paste = "1.0.12"
 image = { version = "0.24.6", features = ["webp-encoder", "webp", "rgb", "dcv-color-primitives", "mp4parse"] }
+lang = { version = "0.1.0", path = "../lang" }
 
 [dev-dependencies]
 serde_json = { version = "1.0", features = ["preserve_order"] }

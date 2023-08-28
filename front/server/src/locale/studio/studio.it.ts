@@ -2,9 +2,11 @@
 import stats_map from "../share/stats-map/stats-map.it";
 import validate from "../share/validate/validate.it";
 import countries from "../share/countries/countries.it";
+import langs from "../share/langs/langs.it";
 import type_of_content from "../share/type-of-content/type-of-content.it";
 import analytics from "../share/analytics/analytics.it";
 import payments from "../share/payments/payments.it";
+import station_profile from "../share/station-profile/station-profile.it";
 import misc from "../misc/misc.it";
 
 const locale: import("./studio.locale").StudioLocale = {
@@ -21,13 +23,15 @@ const locale: import("./studio.locale").StudioLocale = {
   // @notranslate
   "app_name": "Openstream Studio",
   
-  "station_type_of_content": type_of_content,
-  "countries": countries,
-  "validate": validate,
-  "stats_map": stats_map,
-  "analytics": analytics,
-  "payments": payments,
-  "misc": misc,
+  type_of_content,
+  countries,
+  langs,
+  validate,
+  stats_map,
+  analytics,
+  payments,
+  station_profile,
+  misc,
 
   "language": {
     "auto": "Rilevamento automatico",
@@ -79,56 +83,6 @@ const locale: import("./studio.locale").StudioLocale = {
     "playlist": "Playlist",
     "broadcast": "Trasmetti",
     "settings": "Impostazioni",
-  },
-
-  "station_profile": {
-    "titles": {
-      "logo": "Logo",
-      "profile_info": "Profilo",
-      "contact_info": "Informazioni di contatto",
-      "social": "Social network",
-      "apps": "Applicazioni",
-    },
-    "validation": {
-      "logo_required": "Il logo è obbligatorio",
-    },
-    "upload_image": "Carica immagine",
-    "picture_requirement_labels": {
-      "format": "Formati di immagine accettati:",
-      "size": "Dimensione minima dell'immagine:",
-      "file_size": "Dimensione massima del file:",
-      "square": "L'immagine deve essere quadrata",
-    },
-
-    "frequency": {
-      "Main_frequency": "Frequenza principale",
-      "Frequency": "Frequenza",
-      "Web_only": "Solo web",
-      "Frequency_AM": "AM",
-      "Frequency_FM": "FM",
-    },
-
-    "labels": {
-      "name": "Nome",
-      "slogan": "Slogan",
-      "description": "Descrizione",
-      "country": "Paese",
-      "type_of_content": "Tipo di contenuto",
-      "email": "Email",
-      "phone": "Numero di telefono completo",
-      "whatsapp": "Numero di WhatsApp completo",
-      "website": "URL del sito web",
-      "twitter": "URL di Twitter",
-      "facebook": "URL di Facebook",
-      "instagram": "URL di Instagram",
-      "threads": "URL di Threads",
-      "tiktok": "URL di TikTok",
-      "youtube": "URL di Youtube",
-      "twitch": "URL di Twitch",
-      "spotify": "URL di Spotify",
-      "google_play": "URL di Google Play",
-      "app_store": "URL di App Store"
-    }
   },
 
   "plan_selector": {

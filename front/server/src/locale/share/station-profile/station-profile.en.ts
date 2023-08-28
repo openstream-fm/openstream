@@ -30,6 +30,7 @@ const locale = {
     "slogan": "Slogan",
     "description": "Description",
     "country": "Country",
+    "language": "Language",
     "type_of_content": "Type of content",
     "email": "Email",
     "phone": "Full phone number",

@@ -32,6 +32,7 @@
     app_store_url: data.station.app_store_url,
     picture_id: data.station.picture_id as string | null,
     country_code: data.station.country_code as typeof data.station.country_code | "",
+    lang_code: data.station.lang_code as typeof data.station.lang_code | "",
     type_of_content: data.station.type_of_content as typeof data.station.type_of_content | "",
     frequency: data.station.frequency,
     user_metadata: {
@@ -75,11 +76,15 @@
     const country_code = dif.country_code;
     if(country_code === "") throw new Error("Country is required");
 
+    const lang_code = dif.lang_code;
+    if(lang_code === "") throw new Error("Language is required");
+
     const payload: import("$api/stations/[station]/PATCH/Payload").Payload = {
       ...dif,
       name,
-      type_of_content: type_of_content ,
+      type_of_content: type_of_content,
       country_code: country_code,
+      lang_code: lang_code,
       picture_id,
     }
 

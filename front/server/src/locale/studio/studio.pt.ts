@@ -1,9 +1,11 @@
 import stats_map from "../share/stats-map/stats-map.pt";
 import validate from "../share/validate/validate.pt";
 import countries from "../share/countries/countries.pt";
+import langs from "../share/langs/langs.pt";
 import type_of_content from "../share/type-of-content/type-of-content.pt";
 import analytics from "../share/analytics/analytics.pt";
 import payments from "../share/payments/payments.pt";
+import station_profile from "../share/station-profile/station-profile.pt";
 import misc from "../misc/misc.pt";
 
 const locale: import("./studio.locale").StudioLocale = {
@@ -19,13 +21,15 @@ const locale: import("./studio.locale").StudioLocale = {
   // @notranslate
   "app_name": "Openstream Studio",
 
-  "station_type_of_content": type_of_content,
-  "countries": countries,
-  "validate": validate,
-  "stats_map": stats_map,
-  "analytics": analytics,
-  "payments": payments,
-  "misc": misc,
+  type_of_content,
+  countries,
+  langs,
+  validate,
+  stats_map,
+  analytics,
+  payments,
+  station_profile,
+  misc,
 
   "language": {
     "auto": "Detecção automática",
@@ -77,56 +81,6 @@ const locale: import("./studio.locale").StudioLocale = {
     "playlist": "Playlist",
     "broadcast": "Transmitir",
     "settings": "Configurações",
-  },
-
-  "station_profile": {
-    "titles": {
-      "logo": "Logo",
-      "profile_info": "Perfil",
-      "contact_info": "Informações de contato",
-      "social": "Redes sociais",
-      "apps": "Aplicativos",
-    },
-    "validation": {
-      "logo_required": "O logo é obrigatório",
-    },
-    "upload_image": "Carregar imagem",
-    "picture_requirement_labels": {
-      "format": "Formatos de imagem aceitos:",
-      "size": "Tamanho mínimo da imagem:",
-      "file_size": "Tamanho máximo do arquivo:",
-      "square": "A imagem deve ser quadrada",
-    },
-
-    "frequency": {
-      "Main_frequency": "Frequência principal",
-      "Frequency": "Frequência",
-      "Web_only": "Somente web",
-      "Frequency_AM": "AM",
-      "Frequency_FM": "FM",
-    },
-
-    "labels": {
-      "name": "Nome",
-      "slogan": "Slogan",
-      "description": "Descrição",
-      "country": "País",
-      "type_of_content": "Tipo de conteúdo",
-      "email": "Email",
-      "phone": "Número de telefone completo",
-      "whatsapp": "Número de WhatsApp completo",
-      "website": "URL do site",
-      "twitter": "URL do Twitter",
-      "facebook": "URL do Facebook",
-      "instagram": "URL do Instagram",
-      "threads": "URL do Threads",
-      "tiktok": "URL do TikTok",
-      "youtube": "URL do Youtube",
-      "twitch": "URL do Twitch",
-      "spotify": "URL do Spotify",
-      "google_play": "URL do Google Play",
-      "app_store": "URL da App Store"
-    }
   },
 
   "plan_selector": {

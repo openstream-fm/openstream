@@ -2,9 +2,11 @@
 import stats_map from "../share/stats-map/stats-map.zh";
 import validate from "../share/validate/validate.zh";
 import countries from "../share/countries/countries.zh";
+import langs from "../share/langs/langs.zh";
 import type_of_content from "../share/type-of-content/type-of-content.zh";
 import analytics from "../share/analytics/analytics.zh";
 import payments from "../share/payments/payments.zh";
+import station_profile from "../share/station-profile/station-profile.zh";
 import misc from "../misc/misc.zh";
 
 const locale: import("./studio.locale").StudioLocale = {
@@ -21,13 +23,15 @@ const locale: import("./studio.locale").StudioLocale = {
   // @notranslate
   "app_name": "Openstream Studio",
   
-  "station_type_of_content": type_of_content,
-  "countries": countries,
-  "validate": validate,
-  "stats_map": stats_map,
-  "analytics": analytics,
-  "payments": payments,
-  "misc": misc,
+  type_of_content,
+  countries,
+  langs,
+  validate,
+  stats_map,
+  analytics,
+  payments,
+  station_profile,
+  misc,
 
   "language": {
     "auto": "自动检测",
@@ -79,56 +83,6 @@ const locale: import("./studio.locale").StudioLocale = {
     "playlist": "播放列表",
     "broadcast": "广播",
     "settings": "设置",
-  },
-
-  "station_profile": {
-    "titles": {
-      "logo": "徽标",
-      "profile_info": "个人资料",
-      "contact_info": "联系信息",
-      "social": "社交媒体",
-      "apps": "应用",
-    },
-    "validation": {
-      "logo_required": "徽标是必需的",
-    },
-    "upload_image": "上传图片",
-    "picture_requirement_labels": {
-      "format": "接受的图像格式：",
-      "size": "图像最小尺寸：",
-      "file_size": "文件最大尺寸：",
-      "square": "图像必须是正方形",
-    },
-
-    "frequency": {
-      "Main_frequency": "主频率",
-      "Frequency": "频率",
-      "Web_only": "仅限网页",
-      "Frequency_AM": "AM",
-      "Frequency_FM": "FM",
-    },
-
-    "labels": {
-      "name": "名称",
-      "slogan": "口号",
-      "description": "描述",
-      "country": "国家",
-      "type_of_content": "内容类型",
-      "email": "电子邮件",
-      "phone": "完整电话号码",
-      "whatsapp": "完整的WhatsApp号码",
-      "website": "网站URL",
-      "twitter": "Twitter URL",
-      "facebook": "Facebook URL",
-      "instagram": "Instagram URL",
-      "threads": "Threads URL",
-      "tiktok": "TikTok URL",
-      "youtube": "Youtube URL",
-      "twitch": "Twitch URL",
-      "spotify": "Spotify URL",
-      "google_play": "Google Play URL",
-      "app_store": "App Store URL"
-    }
   },
 
   "plan_selector": {
