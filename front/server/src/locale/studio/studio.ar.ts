@@ -2,9 +2,11 @@
 import stats_map from "../share/stats-map/stats-map.ar";
 import validate from "../share/validate/validate.ar";
 import countries from "../share/countries/countries.ar";
+import langs from "../share/langs/langs.ar";
 import type_of_content from "../share/type-of-content/type-of-content.ar";
 import analytics from "../share/analytics/analytics.ar";
 import payments from "../share/payments/payments.ar";
+import station_profile from "../share/station-profile/station-profile.ar";
 import misc from "../misc/misc.ar";
 
 const locale: import("./studio.locale").StudioLocale = {
@@ -21,13 +23,15 @@ const locale: import("./studio.locale").StudioLocale = {
   // @notranslate
   "app_name": "Openstream Studio",
   
-  "station_type_of_content": type_of_content,
-  "countries": countries,
-  "validate": validate,
-  "stats_map": stats_map,
-  "analytics": analytics,
-  "payments": payments,
-  "misc": misc,
+  type_of_content,
+  countries,
+  langs,
+  validate,
+  stats_map,
+  analytics,
+  payments,
+  station_profile,
+  misc,
 
   "language": {
     "auto": "الكشف التلقائي",
@@ -79,56 +83,6 @@ const locale: import("./studio.locale").StudioLocale = {
     "playlist": "قائمة التشغيل",
     "broadcast": "بث",
     "settings": "الإعدادات",
-  },
-
-  "station_profile": {
-    "titles": {
-      "logo": "الشعار",
-      "profile_info": "الملف الشخصي",
-      "contact_info": "معلومات الاتصال",
-      "social": "وسائل التواصل الاجتماعي",
-      "apps": "تطبيقات",
-    },
-    "validation": {
-      "logo_required": "الشعار مطلوب",
-    },
-    "upload_image": "تحميل الصورة",
-    "picture_requirement_labels": {
-      "format": "تنسيقات الصور المقبولة:",
-      "size": "الحجم الأدنى للصورة:",
-      "file_size": "الحجم الأقصى للملف:",
-      "square": "يجب أن تكون الصورة مربعة",
-    },
-
-    "frequency": {
-      "Main_frequency": "التردد الرئيسي",
-      "Frequency": "تردد",
-      "Web_only": "موقع الويب فقط",
-      "Frequency_AM": "AM",
-      "Frequency_FM": "FM",
-    },
-
-    "labels": {
-      "name": "الاسم",
-      "slogan": "شعار",
-      "description": "الوصف",
-      "country": "البلد",
-      "type_of_content": "نوع المحتوى",
-      "email": "البريد الإلكتروني",
-      "phone": "رقم الهاتف الكامل",
-      "whatsapp": "رقم واتساب الكامل",
-      "website": "عنوان الموقع الإلكتروني",
-      "twitter": "عنوان تويتر",
-      "facebook": "عنوان الفيسبوك",
-      "instagram": "عنوان إنستغرام",
-      "threads": "رابط Threads",
-      "tiktok": "رابط TikTok",
-      "youtube": "عنوان يوتيوب",
-      "twitch": "عنوان تويتش",
-      "spotify": "رابط Spotify",
-      "google_play": "عنوان متجر جوجل بلاي",
-      "app_store": "عنوان متجر التطبيقات"
-    }
   },
 
   "plan_selector": {

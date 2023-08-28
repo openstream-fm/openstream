@@ -157,6 +157,7 @@ pub mod post {
   use db::station::{Station, StationFrequency, StationTypeOfContent};
   use db::station_picture::StationPicture;
   use geoip::CountryCode;
+  use lang::LangCode;
   use serde_util::DateTime;
   use ts_rs::TS;
   use validate::url::patterns::*;
@@ -208,6 +209,7 @@ pub mod post {
 
     pub type_of_content: StationTypeOfContent,
     pub country_code: CountryCode,
+    pub lang_code: LangCode,
 
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim, lowercase)]
@@ -522,6 +524,7 @@ pub mod post {
 
         type_of_content,
         country_code,
+        lang_code,
 
         email,
         phone,
@@ -578,6 +581,7 @@ pub mod post {
         description,
         type_of_content,
         country_code,
+        lang_code,
 
         email,
         phone,

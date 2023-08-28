@@ -5,6 +5,7 @@ use crate::{metadata::Metadata, PublicScope};
 use constants::validate::*;
 use drop_tracer::Token;
 use geoip::CountryCode;
+use lang::LangCode;
 use mongodb::bson::{doc, Bson};
 use mongodb::options::{FindOneAndUpdateOptions, ReturnDocument};
 use mongodb::{ClientSession, IndexModel};
@@ -56,6 +57,7 @@ pub struct Station {
 
   pub type_of_content: StationTypeOfContent,
   pub country_code: CountryCode,
+  pub lang_code: LangCode,
 
   #[modify(trim)]
   #[validate(length(
@@ -332,6 +334,7 @@ pub struct UserPublicStation {
 
   pub type_of_content: StationTypeOfContent,
   pub country_code: CountryCode,
+  pub lang_code: LangCode,
   // location and language
   // pub language_id: Option<String>,
   // pub region_id: Option<String>,
@@ -465,6 +468,9 @@ pub struct StationPatch {
 
   #[ts(optional)]
   pub country_code: Option<CountryCode>,
+
+  #[ts(optional)]
+  pub lang_code: Option<LangCode>,
 
   // location and language
   // pub language_id: Option<String>,
@@ -856,6 +862,7 @@ impl Station {
     apply!(description);
     apply!(type_of_content);
     apply!(country_code);
+    apply!(lang_code);
 
     apply!(email);
     apply!(whatsapp);
@@ -911,6 +918,7 @@ impl From<Station> for UserPublicStation {
       picture_id: station.picture_id,
       type_of_content: station.type_of_content,
       country_code: station.country_code,
+      lang_code: station.lang_code,
       // language_id: station.language_id,
       // region_id: station.region_id,
       // frequencies: station.frequencies,

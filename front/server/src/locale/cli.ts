@@ -50,13 +50,13 @@ while (true) {
   break;
 }
 
-const kinds = ["studio", "admin", "misc", "wip", "countries", "stats-map", "validate", "type-of-content", "analytics", "payments"];
+const kinds = ["studio", "admin", "misc", "wip", "station-profile", "langs", "countries", "stats-map", "validate", "type-of-content", "analytics", "payments"];
 let selected_kinds: string[];
 
 while (true) {
   const s = (await rl.question(`select a kind (${kinds.join(", ")}) `)).trim();
   if (s === "share") {
-    selected_kinds = ["countries", "stats-map", "validate", "type-of-content", "analytics", "payments"];
+    selected_kinds = ["station-profile", "langs", "countries", "stats-map", "validate", "type-of-content", "analytics", "payments"];
     break;
   } else if (kinds.includes(s)) {
     selected_kinds = [s];
@@ -88,18 +88,22 @@ for (const iso of isos) {
     const src = `${__dirname}/${dir}/${kind}.${base}.ts`;
     const target = `${__dirname}/${dir}/${kind}.${iso}.ts`;
 
-    while (true) {
-      const n = (await rl.question(`\
-  Generate ${language_names[iso]} (${iso}) ${kind} locale from base ${base}
-  source = ${src}
-  target = ${target}
-  continue? y/n `)).trim().toLowerCase();
-      if (n === "y") break;
-      if (n === "n") {
-        console.log("Aborting");
-        process.exit(1);
-      }
-    }
+    // while (true) {
+    //     const n = (await rl.question(`\
+    // Generate ${language_names[iso]} (${iso}) ${kind} locale from base ${base}
+    // source = ${src}
+    // target = ${target}
+    // continue? y/n `)).trim().toLowerCase();
+    //     if (n === "y") break;
+    //     if (n === "n") {
+    //       console.log("Aborting");
+    //       process.exit(1);
+    //     }
+    //   }
+
+    logger.info(`Generate ${language_names[iso]} (${iso}) ${kind} locale from base ${base}`);
+    logger.info(`source = ${src}`);
+    logger.info(`target = ${target}`);
 
     const request_message = `\
   Generate a localization file in typescript format for the language ${language_names[iso]} (ISO code: ${iso}), based on the \

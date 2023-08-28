@@ -57,6 +57,7 @@ members = [
 
     "rs/packages/proxy-protocol",
     "rs/packages/geoip",
+    "rs/packages/lang",
 
     "rs/packages/mailer",
 

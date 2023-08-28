@@ -2,6 +2,7 @@ import stats_map from "../share/stats-map/stats-map.es";
 import validate from "../share/validate/validate.es";
 import analytics from "../share/analytics/analytics.es";
 import countries from "../share/countries/countries.es";
+import langs from "../share/langs/langs.es";
 
 const locale: import("./admin.locale").AdminLocale = {
 
@@ -21,6 +22,7 @@ const locale: import("./admin.locale").AdminLocale = {
   "stats_map": stats_map,
   "analytics": analytics,
   "countries": countries,
+  "langs": langs,
 
   "pages": {
     "me": {

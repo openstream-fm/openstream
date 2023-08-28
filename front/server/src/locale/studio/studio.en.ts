@@ -1,10 +1,11 @@
 import stats_map from "../share/stats-map/stats-map.en"
 import validate from "../share/validate/validate.en";
 import countries from "../share/countries/countries.en";
+import langs from "../share/langs/langs.en";
 import type_of_content from "../share/type-of-content/type-of-content.en";
 import analytics from "../share/analytics/analytics.en";
 import payments from "../share/payments/payments.en";
-import station_profile from "../share/station-profile/station-profile.es";
+import station_profile from "../share/station-profile/station-profile.en";
 import misc from "../misc/misc.en";
 
 const locale = {
@@ -21,14 +22,15 @@ const locale = {
   // @notranslate
   "app_name": "Openstream Studio",
 
-  "station_type_of_content": type_of_content,
-  "countries": countries,
-  "validate": validate,
-  "stats_map": stats_map,
-  "analytics": analytics,
-  "payments": payments,
-  "misc": misc,
-  "station_profile": station_profile,
+  type_of_content,
+  countries,
+  langs,
+  validate,
+  stats_map,
+  analytics,
+  payments,
+  misc,
+  station_profile,
 
   "copy_to_clipboard": "Copy to clipboard",
   "show_password": "Show password",
