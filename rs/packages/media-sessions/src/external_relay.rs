@@ -207,10 +207,17 @@ pub fn run_external_relay_session(
           loop {
             let chunk = tokio::select! {
               _ = chunk_timeout(first_chunk) => {
-                info!(
-                  "shutting down external-relay for station {} (no data received in specified start window)",
-                  station_id
-                );
+                if first_chunk {
+                  info!(
+                    "shutting down external-relay for station {} (no data received in specified start window)",
+                    station_id
+                  );
+                } else {
+                  info!(
+                    "shutting down external-relay for station {} (no data received in specified window)",
+                    station_id
+                  );
+                }
                 break;
               },
 
