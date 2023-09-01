@@ -12,8 +12,39 @@
 	import { qss } from "$share/qs";
 	import { _get } from "$share/net.client";
   import { STATION_PICTURES_VERSION } from "$defs/constants";
+	import { page } from "$app/stores";
 
   type Item = typeof data.stream_connections.items[number];
+
+  let searchParams = $page.url.searchParams;
+
+  $: qs_referer = searchParams.get("referer");
+  $: q_referer = qs_referer == null ? undefined : qs_referer === "null" ? null : qs_referer;
+  $: q_deployment_id = searchParams.get("deployment") ?? null;
+  $: q_station_id = searchParams.get("station") ?? null;
+
+  $: show_items = get_show_items(data, q_referer, q_deployment_id, q_station_id);
+  const get_show_items = (...args: any[]) => {
+    let items = data.stream_connections.items;
+    if(q_referer !== undefined) {
+      if(q_referer === null) {
+        items = items.filter(item => item.request.headers.referer == null && item.request.headers.origin == null);
+      } else {
+        const r = `//${q_referer}`;
+        items = items.filter(item => (item.request.headers.referer || item.request.headers.origin || "").includes(r))
+      }
+    }
+
+    if(q_deployment_id != null) {
+      items = items.filter(item => item.deployment_id === q_deployment_id);
+    }
+
+    if(q_station_id != null) {
+      items = items.filter(item => item.station_id === q_station_id);
+    }
+
+    return items;
+  }
 
   const item_station = (item: Item): typeof data.stations[number] | null => {
     const id = item.station_id;
@@ -37,9 +68,9 @@
   }
 
   const make_params = ({
-    deployment = data.stream_connections_query.deployment_id,
-    station = data.stream_connections_query.station_id,
-    referer = data.stream_connections_query.referer
+    deployment = q_deployment_id,
+    station = q_station_id,
+    referer = q_referer
   }: {
     deployment?: string | null,
     station?: string | null,
@@ -54,20 +85,38 @@
 
   const station_toggle_link = (item: Item): string => {
     return `/listeners${qs(make_params({
-      station: data.stream_connections_query.station_id === item.station_id ? null : item.station_id
+      station: q_station_id === item.station_id ? null : item.station_id
     }))}`
+  }
+
+  const toggle_station = (item: Item) => {
+    const target = station_toggle_link(item);
+    history.replaceState(history.state, "", target);
+    searchParams = new URLSearchParams(location.search)
   }
 
   const deployment_toggle_link = (item: Item): string => {
     return `/listeners${qs(make_params({
-      deployment: data.stream_connections_query.deployment_id === item.deployment_id ? null : item.deployment_id
+      deployment: q_deployment_id === item.deployment_id ? null : item.deployment_id
     }))}`
+  }
+  
+  const toggle_deployment = (item: Item) => {
+    const target = deployment_toggle_link(item);
+    history.replaceState(history.state, "", target);
+    searchParams = new URLSearchParams(location.search)
   }
 
   const referer_toggle_link = (ref: string | null): string => {
     return `/listeners${qs(make_params({
-      referer: data.stream_connections_query.referer === ref ? null : String(ref) 
+      referer: q_referer === ref ? null : String(ref) 
     }))}`
+  }
+
+  const toggle_referer = (ref: string | null) => {
+    const target = referer_toggle_link(ref);
+    history.replaceState(history.state, "", target);
+    searchParams = new URLSearchParams(location.search)
   }
 
   const SEC = 1_000;
@@ -136,44 +185,14 @@
                 show: "open",
                 limit: 100_000,
                 sort: "creation-desc",
-                stations: data.stream_connections_query.station_id ? [data.stream_connections_query.station_id] : undefined,
+                // stations: q_station_id ? [q_station_id] : undefined,
               };
-
 
               let stream_connections = await _get<import("$api/stream-connections/GET/Output").Output>(`/api/stream-connections${qss(params)}`);
 
               if(_token === token) {
-
-                if(data.stream_connections_query.deployment_id != null) {
-                  const items = stream_connections.items.filter(item => item.deployment_id === data.stream_connections_query.deployment_id);
-                  stream_connections = {
-                    skip: stream_connections.skip,
-                    limit: stream_connections.limit,
-                    total: items.length,
-                    items,
-                  }
-                }
-
-                if(data.stream_connections_query.referer != null) {
-                  let items = stream_connections.items;
-                  if(data.stream_connections_query.referer === "null") {
-                    items = items.filter(item => item.request.headers.referer == null && item.request.headers.origin == null);
-                  } else {
-                    const r = `//${data.stream_connections_query.referer}`;
-                    items = items.filter(item => (item.request.headers.referer || item.request.headers.origin || "").includes(r))
-                  }
-                  
-                  stream_connections = {
-                    skip: stream_connections.skip,
-                    limit: stream_connections.limit,
-                    total: items.length,
-                    items,
-                  }
-                }
-                
                 data.stream_connections = stream_connections;
                 logger.info(`stream connections updated`);
-              
               } else {
                 logger.info(`stream connection update skipped, token mismatch`)
               }
@@ -274,12 +293,15 @@
       Listeners
     </svelte:fragment>
     <svelte:fragment slot="subtitle">
-      {data.stream_connections.total} {data.stream_connections.total === 1 ? "listener" : "listeners"}
+      {show_items.length} {show_items.length === 1 ? "listener" : "listeners"}
+      {#if show_items.length !== data.stream_connections.total}
+        of {data.stream_connections.total} total
+      {/if}
     </svelte:fragment>
   </PageTop>
 
   <div class="list">
-    {#each data.stream_connections.items as item (item._id)}
+    {#each show_items as item (item._id)}
       {@const station = item_station(item)}
       {@const referer = website(item)}      
       <div class="item" class:open={item.is_open} class:closed={!item.is_open} transition:slide|local={{ duration: 400 }}>
@@ -290,8 +312,10 @@
           }
         /> 
         <div class="data">
-          <a class="na station-name" data-sveltekit-replacestate href={station_toggle_link(item)}>
-            {#if data.stream_connections_query.station_id === item.station_id}
+          <a class="na station-name" data-sveltekit-replacestate href={station_toggle_link(item)}
+            on:click|preventDefault={() => toggle_station(item)}
+          >
+            {#if q_station_id === item.station_id}
               «
             {/if}
 
@@ -304,8 +328,10 @@
           <div class="ip">
             {item.request.local_addr.ip}:{item.request.local_addr.port} » {item.request.real_ip}
           </div>
-          <a class="na deployment" data-sveltekit-replacestate href="{deployment_toggle_link(item)}">
-            {#if data.stream_connections_query.deployment_id === item.deployment_id}
+          <a class="na deployment" data-sveltekit-replacestate href="{deployment_toggle_link(item)}"
+            on:click|preventDefault={() => toggle_deployment(item)}
+          >
+            {#if q_deployment_id === item.deployment_id}
               «
             {/if}
             Deployment #{item.deployment_id}
@@ -321,8 +347,10 @@
               Unknown platform
             {/if}
           </div>
-          <a class="na referer" data-sveltekit-replacestate href={referer_toggle_link(referer)} >
-            {#if data.stream_connections_query.referer === String(referer)}
+          <a class="na referer" data-sveltekit-replacestate href={referer_toggle_link(referer)}
+            on:click|preventDefault={() => toggle_referer(referer)}
+          >
+            {#if q_referer === referer}
               «
             {/if}
             {referer ?? "Unknown referer"}
