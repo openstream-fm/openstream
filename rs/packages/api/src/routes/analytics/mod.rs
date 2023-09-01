@@ -54,13 +54,7 @@ pub mod get {
   #[ts(export)]
   #[ts(export_to = "../../../defs/api/analytics/GET/")]
   pub struct Query {
-    #[ts(type = "/** time::DateTime */ string")]
-    #[serde(with = "time::serde::iso8601")]
-    pub since: time::OffsetDateTime,
-
-    #[ts(type = "/** time::DateTime */ string")]
-    #[serde(with = "time::serde::iso8601")]
-    pub until: time::OffsetDateTime,
+    pub kind: analytics::AnalyticsQueryKind,
 
     #[serde(default)]
     #[ts(type = "string[] | undefined")]
@@ -142,8 +136,7 @@ pub mod get {
       } = input;
 
       let Query {
-        since,
-        until,
+        kind,
         stations: station_ids,
         country_code,
         browser,
@@ -208,9 +201,8 @@ pub mod get {
       };
 
       let query = analytics::AnalyticsQuery {
+        kind,
         station_ids,
-        start_date: since,
-        end_date: until,
         country_code,
         os,
         browser,

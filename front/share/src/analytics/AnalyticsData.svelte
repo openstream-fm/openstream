@@ -53,7 +53,6 @@
   import type { DataGridData, DataGridField } from "./types";
   import type { CountryCode } from "$server/defs/CountryCode";
   import type { StationItem } from "./AnalyticsFilters.svelte";
-  import Analytics from "./Analytics.svelte";
   
   const SEC = 1000;
   const MIN = SEC * 60;
@@ -68,7 +67,7 @@
     return new Intl.NumberFormat(lang, {
       maximumFractionDigits: min_digits,
       minimumFractionDigits: max_digits,
-    }).format(n)
+    }).format(n || 0)
   }
 
   const n_time = (n: number, unit: "day" | "hour" | "minute" | "second") => {
@@ -538,32 +537,16 @@
       max_concurrent_listeners?: number
     }
 
-    const max_concurrent_field = (with_max_concurrent ? {
+    const max_concurrent_field = (!data.is_now && with_max_concurrent ? {
       "max_concurrent": {
         name: locale.Max_concurrent_listeners,
         format: item => to_fixed(item.max_concurrent_listeners!, 0),
         sort: (a, b) => compare_numbers(a.max_concurrent_listeners!, b.max_concurrent_listeners!),
         numeric: true,
       }
-    } : {} as Record<string, never>) satisfies Record<string, DataGridField<Item>>
+    } : {} as Record<string, never>) satisfies Record<string, DataGridField<Item>>;
 
-    const fields = {
-      "sessions": {
-        name: locale.Sessions,
-        format: item => String(item.sessions),
-        sort: (a, b) => compare_numbers(a.sessions, b.sessions),
-        numeric: true,
-      },
-
-      "ips": {
-        name: locale.Unique_IPs,
-        format: item => String(item.ips),
-        sort: (a, b) => compare_numbers(a.ips, b.ips),
-        numeric: true,
-      },
-
-      ...max_concurrent_field,
-      
+    const not_now_fields = (!data.is_now ? {
       "avg_time": {
         name: locale.Average_listening_minutes,
         format: item => item.sessions === 0 ? "-" : format_mins(item.total_duration_ms / item.sessions),
@@ -584,6 +567,26 @@
         sort: (a, b) => compare_numbers(a.total_transfer_bytes, b.total_transfer_bytes),
         numeric: true,
       }
+    } : {} as Record<string, never>) satisfies Record<string, DataGridField<Item>>;
+
+    const fields = {
+      "sessions": {
+        name: locale.Sessions,
+        format: item => String(item.sessions || 0),
+        sort: (a, b) => compare_numbers(a.sessions, b.sessions),
+        numeric: true,
+      },
+
+      "ips": {
+        name: locale.Unique_IPs,
+        format: item => String(item.ips || 0),
+        sort: (a, b) => compare_numbers(a.ips, b.ips),
+        numeric: true,
+      },
+
+      ...max_concurrent_field,
+      
+      ...not_now_fields,
 
     } satisfies Record<string, DataGridField<Item>>;
     
@@ -806,14 +809,9 @@
   const by_country_grid_data = get_by_country_grid();
   const by_day_grid_data = get_by_day_grid();
 
-  const f = new Intl.NumberFormat(lang, {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  });
-
   const units = ["byte", "kilobyte", "megabyte", "gigabyte", "terabyte"]
   const bytes = (n: number) => {
-    const unit_i = Math.min(units.length - 1, Math.floor(Math.log(n) / Math.log(1000)));
+    const unit_i = Math.min(units.length - 1, Math.floor(Math.max(0, Math.log(n)) / Math.log(1000)));
     const unit_n = n / (1000 ** unit_i);
 
     const f = new Intl.NumberFormat(lang, {
@@ -823,7 +821,7 @@
       maximumFractionDigits: 1,
     })
     
-    return f.format(unit_n);
+    return f.format(unit_n || 0);
   }
 </script>
 
@@ -957,47 +955,57 @@
         </div>
       </div>
 
-      {#if with_max_concurrent}
+      {#if !data.is_now}
+        {#if with_max_concurrent}
+          <div class="total">
+            <div class="total-title">{locale.Max_concurrent_listeners}</div>
+            <div class="total-value">
+              {data.max_concurrent_listeners}
+              {#if data.max_concurrent_listeners_date}
+                <div class="total-max-concurrent-date">
+                  {total_date(data.max_concurrent_listeners_date)}
+                </div>
+              {/if}
+            </div>
+          </div>
+        {/if}
+      {/if}
+
+      {#if !data.is_now}
         <div class="total">
-          <div class="total-title">{locale.Max_concurrent_listeners}</div>
+          <div class="total-title">{locale.Average_listening_time}</div>
           <div class="total-value">
-            {data.max_concurrent_listeners}
-            {#if data.max_concurrent_listeners_date}
-              <div class="total-max-concurrent-date">
-                {total_date(data.max_concurrent_listeners_date)}
-              </div>
-            {/if}
+            {time(data.total_duration_ms / data.sessions)}
           </div>
         </div>
       {/if}
 
-      <div class="total">
-        <div class="total-title">{locale.Average_listening_time}</div>
-        <div class="total-value">
-          {time(data.total_duration_ms / data.sessions)}
+      {#if !data.is_now}
+        <div class="total">
+          <div class="total-title">{locale.Total_listening_time}</div>
+          <div class="total-value">
+            {time(data.total_duration_ms)}
+          </div>
         </div>
-      </div>
+      {/if}
 
-      <div class="total">
-        <div class="total-title">{locale.Total_listening_time}</div>
-        <div class="total-value">
-          {time(data.total_duration_ms)}
+      {#if !data.is_now}
+        <div class="total">
+          <div class="total-title">{locale.Total_transfer}</div>
+          <div class="total-value">
+            {bytes(data.total_transfer_bytes)}
+          </div>
         </div>
-      </div>
-
-      <div class="total">
-        <div class="total-title">{locale.Total_transfer}</div>
-        <div class="total-value">
-          {bytes(data.total_transfer_bytes)}
-        </div>
-      </div>
+      {/if}
     </div>
-
+    
     <div class="charts" style:--chart-height="{chartHeight}px">
-      <div class="chart-box">
-        <div class="chart-title">{locale.By_date}</div>
-        <div class="chart" use:chart={days_options} />
-      </div>
+      {#if !data.is_now}
+        <div class="chart-box">
+          <div class="chart-title">{locale.By_date}</div>
+          <div class="chart" use:chart={days_options} />
+        </div>
+      {/if}
 
       <div class="chart-box chart-box-map">
         <div class="chart-title">{locale.By_country}</div>
@@ -1071,12 +1079,14 @@
         </div>
       </div>
 
-      <div class="chart-box">
-        <div class="chart-title">{locale.Daily_stats}</div>
-        <div class="chart-grid chart-grid-daily">
-          <DataGrid data={by_day_grid_data} locale={locale.data_grid} />
+      {#if !data.is_now}
+        <div class="chart-box">
+          <div class="chart-title">{locale.Daily_stats}</div>
+          <div class="chart-grid chart-grid-daily">
+            <DataGrid data={by_day_grid_data} locale={locale.data_grid} />
+          </div>
         </div>
-      </div>
+      {/if}
     </div>
   {/if}
 

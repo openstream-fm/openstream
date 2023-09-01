@@ -8,8 +8,8 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Total_transfer": "Trasferimento totale",
   "Total_transfer_in_MB": "Trasferimento totale in MB",
   "Unique_IPs": "IP unici",
-  "Max_concurrent_listeners": "Max. ascoltatori simultanei",
-  
+  "Max_concurrent_listeners": "Max ascoltatori simultanei",
+
   // @example Browser: Chrome
   "Browser": "Browser",
 
@@ -68,6 +68,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
   "filters": {
     "query_kind": {
+      "now": "Adesso",
       "today": "Oggi",
       "yesterday": "Ieri",
       "last-24h": "Ultime 24 ore",

@@ -68,6 +68,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
   "filters": {
     "query_kind": {
+      "now": "Jetzt",
       "today": "Heute",
       "yesterday": "Gestern",
       "last-24h": "Letzte 24 Stunden",
