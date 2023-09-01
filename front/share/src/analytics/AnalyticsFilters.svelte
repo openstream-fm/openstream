@@ -1,5 +1,6 @@
 <script lang="ts" context="module">
   export type QueryKind =
+    | "now"
     | "today"
     | "yesterday"
     | "last-24h"
@@ -18,6 +19,7 @@
   };
 
   export type ResolvedQuery = {
+    now: boolean,
     since: Date | null;
     until: Date | null;
     stations: StationItem[];
@@ -32,14 +34,16 @@
   export const to_querystring = (
     query: ResolvedQuery
   ): URLSearchParams | null => {
-    if (query.since == null) return null;
-    if (query.until == null) return null;
-
     const qs = new URLSearchParams();
     
-    qs.append("since", formatISO(query.since));
-    
-    qs.append("until", formatISO(query.until));
+    if(query.now) {
+      qs.append("kind[now][offset_date]", formatISO(new Date));
+    } else {
+      if (query.since == null) return null;
+      if (query.until == null) return null;
+      qs.append("kind[time_range][since]", formatISO(query.since));
+      qs.append("kind[time_range][until]", formatISO(query.until));
+    }
 
     for (const station of query.stations) {
       qs.append("stations[]", station._id);
@@ -88,7 +92,9 @@
   }
 
   export const get_resolved_since = (now = new Date()) => {
-    if (kind === "today") {
+    if(kind === "now") {
+      return null;
+    } else if (kind === "today") {
       return startOfDay(now);
     } else if (kind === "last-24h") {
       return sub(now, { hours: 24 });
@@ -114,7 +120,9 @@
   };
 
   export const get_resolved_until = (now = new Date()) => {
-    if (kind === "today") {
+    if (kind === "now") {
+      return null;
+    } else if (kind === "today") {
       return now;
     } else if (kind === "last-24h") {
       return now;
@@ -144,6 +152,7 @@
   
   export const get_resolved_query = (): ResolvedQuery => {
     return {
+      now: kind === "now",
       since: get_resolved_since(),
       until: get_resolved_until(),
       stations: get_resolved_stations(),
@@ -232,6 +241,7 @@
   }
 
   const temporal_keys = [
+    "now",
     "last-24h",
     "last-7d",
     "last-30d",

@@ -67,6 +67,7 @@ const locale = {
 
   "filters": {
     "query_kind": {
+      "now": "Now",
       "today": "Today",
       "yesterday": "Yesterday",
       "last-24h": "Last 24 hours",

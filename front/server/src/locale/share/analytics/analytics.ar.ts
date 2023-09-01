@@ -68,15 +68,16 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
   "filters": {
     "query_kind": {
+      "now": "الآن",
       "today": "اليوم",
       "yesterday": "أمس",
-      "last-24h": "آخر 24 ساعة",
+      "last-24h": "الـ 24 ساعة الماضية",
       "this-week": "هذا الأسبوع",
       "previous-week": "الأسبوع الماضي",
-      "last-7d": "آخر 7 أيام",
+      "last-7d": "الـ 7 أيام الماضية",
       "this-month": "هذا الشهر",
       "previous-month": "الشهر الماضي",
-      "last-30d": "آخر 30 يوم",
+      "last-30d": "الـ 30 يوم الماضية",
       "custom": "مخصص",
     },
 

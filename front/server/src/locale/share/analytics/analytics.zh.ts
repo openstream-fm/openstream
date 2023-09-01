@@ -8,7 +8,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Total_transfer": "总传输量",
   "Total_transfer_in_MB": "总传输量（MB）",
   "Unique_IPs": "唯一IP",
-  "Max_concurrent_listeners": "最大并发监听者",
+  "Max_concurrent_listeners": "最大并发听众数",
 
   // @example Browser: Chrome
   "Browser": "浏览器",
@@ -68,6 +68,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
   "filters": {
     "query_kind": {
+      "now": "现在",
       "today": "今天",
       "yesterday": "昨天",
       "last-24h": "最近24小时",

@@ -17,6 +17,10 @@ use crate::{station::Station, stream_connection::lite::StreamConnectionLite, Mod
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/analytics/")]
 pub struct Analytics {
+  pub is_now: bool,
+
+  pub kind: AnalyticsQueryKind,
+
   pub stations: Vec<AnalyticsStation>,
 
   #[ts(type = "/** time::DateTime */ string")]
@@ -110,14 +114,35 @@ pub struct AnalyticsStation {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AnalyticsQuery {
+  pub kind: AnalyticsQueryKind,
   pub station_ids: Vec<String>,
-  pub start_date: time::OffsetDateTime,
-  pub end_date: time::OffsetDateTime,
   pub country_code: Option<Option<CountryCode>>,
   pub browser: Option<Option<String>>,
   pub os: Option<Option<String>>,
   pub domain: Option<Option<String>>,
   pub min_duration_ms: Option<u64>,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, ts_rs::TS)]
+#[ts(export, export_to = "../../../defs/analytics/")]
+pub enum AnalyticsQueryKind {
+  #[serde(rename = "now")]
+  Now {
+    #[ts(type = "/** time::DateTime */ string")]
+    #[serde(with = "time::serde::iso8601")]
+    offset_date: time::OffsetDateTime,
+  },
+
+  #[serde(rename = "time_range")]
+  TimeRange {
+    #[ts(type = "/** time::DateTime */ string")]
+    #[serde(with = "time::serde::iso8601")]
+    since: time::OffsetDateTime,
+
+    #[ts(type = "/** time::DateTime */ string")]
+    #[serde(with = "time::serde::iso8601")]
+    until: time::OffsetDateTime,
+  },
 }
 
 pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::error::Error> {
@@ -154,48 +179,78 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     stations
   };
 
-  let mut start_date = query.start_date;
-  let mut end_date = query.end_date.to_offset(start_date.offset());
-
-  let now = OffsetDateTime::now_utc();
-  let first_station_created_at = stations
-    .first()
-    .map(|station| *station.created_at)
-    .unwrap_or_else(OffsetDateTime::now_utc);
-
-  if start_date < first_station_created_at {
-    start_date = first_station_created_at.to_offset(start_date.offset());
-  }
-
-  if end_date < first_station_created_at {
-    end_date = first_station_created_at.to_offset(start_date.offset());
-  }
-
-  if end_date > now {
-    end_date = now.to_offset(end_date.offset());
-  }
-
-  if start_date > now {
-    start_date = now.to_offset(start_date.offset());
-  }
-
-  if start_date > end_date {
-    (start_date, end_date) = (end_date, start_date);
-  }
-
-  let ser_start_date: serde_util::DateTime = start_date.into();
-  let ser_end_date: serde_util::DateTime = end_date.into();
-
   let mut filter = doc! {
     StreamConnectionLite::KEY_STATION_ID: {
       "$in": &query.station_ids,
-    },
-
-    StreamConnectionLite::KEY_CREATED_AT: {
-      "$gte": ser_start_date,
-      "$lt": ser_end_date,
     }
   };
+
+  let offset_date: OffsetDateTime;
+  let kind = query.kind;
+  let is_now: bool;
+
+  match kind {
+    AnalyticsQueryKind::Now { offset_date: d } => {
+      is_now = true;
+      offset_date = OffsetDateTime::now_utc().to_offset(d.offset());
+
+      filter = doc! {
+        "$and": [
+          filter,
+          { StreamConnectionLite::KEY_IS_OPEN: true }
+        ]
+      };
+    }
+
+    AnalyticsQueryKind::TimeRange { since, until } => {
+      is_now = false;
+      let mut start_date = since;
+      let mut end_date = (until).to_offset(since.offset());
+
+      let now = OffsetDateTime::now_utc();
+      let first_station_created_at = stations
+        .first()
+        .map(|station| *station.created_at)
+        .unwrap_or_else(OffsetDateTime::now_utc);
+
+      if start_date < first_station_created_at {
+        start_date = first_station_created_at.to_offset(start_date.offset());
+      }
+
+      if end_date < first_station_created_at {
+        end_date = first_station_created_at.to_offset(start_date.offset());
+      }
+
+      if end_date > now {
+        end_date = now.to_offset(end_date.offset());
+      }
+
+      if start_date > now {
+        start_date = now.to_offset(start_date.offset());
+      }
+
+      if start_date > end_date {
+        (start_date, end_date) = (end_date, start_date);
+      }
+
+      let ser_start_date: serde_util::DateTime = start_date.into();
+      let ser_end_date: serde_util::DateTime = end_date.into();
+
+      filter = doc! {
+        "$and": [
+          filter,
+          {
+            StreamConnectionLite::KEY_CREATED_AT: {
+              "$gte": ser_start_date,
+              "$lt": ser_end_date,
+            }
+          }
+        ]
+      };
+
+      offset_date = start_date;
+    }
+  }
 
   if let Some(os) = query.os {
     filter = doc! {
@@ -300,9 +355,21 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
 
   let now = time::OffsetDateTime::now_utc();
 
+  let mut since: Option<OffsetDateTime> = None;
+  let mut until: Option<OffsetDateTime> = None;
+
   #[cfg(not(feature = "test-analytics-base-measure"))]
   while let Some(conn) = cursor.try_next().await? {
-    let created_at = conn.created_at.to_offset(query.start_date.offset());
+    let created_at = conn.created_at.to_offset(offset_date.offset());
+
+    // first (not override)
+    if since.is_none() {
+      since = Some(created_at);
+    }
+
+    // last (override)
+    until = Some(created_at);
+
     let conn_duration_ms = conn
       .duration_ms
       .unwrap_or_else(|| ((created_at - now).as_seconds_f64() * 1000.0) as u64);
@@ -466,6 +533,9 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
 
   let sort_ms = sort_start.elapsed().as_millis();
 
+  let since = since.unwrap_or(offset_date);
+  let until = until.unwrap_or(offset_date);
+
   log::info!(
     target: "analytics",
     "got analytics, processed {} connections in {}ms => {}ms acculumate | {}ms sort",
@@ -477,9 +547,11 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
 
   // render
   let out = Analytics {
-    since: start_date,
-    until: end_date,
-    utc_offset_minutes: query.start_date.offset().whole_minutes(),
+    is_now,
+    kind,
+    since,
+    until,
+    utc_offset_minutes: offset_date.offset().whole_minutes(),
     sessions,
     total_duration_ms,
     total_transfer_bytes,
