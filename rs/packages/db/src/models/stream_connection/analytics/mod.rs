@@ -389,11 +389,14 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     #[cfg(feature = "analytics-max-concurrent")]
     let start = created_at.unix_timestamp() as u32;
     #[cfg(feature = "analytics-max-concurrent")]
-    let stop = start + (conn_duration_ms / 1000) as u32;
-    #[cfg(feature = "analytics-max-concurrent")]
     start_stop_events.push((start, true));
     #[cfg(feature = "analytics-max-concurrent")]
-    start_stop_events.push((stop, false));
+    let stop = start + (conn_duration_ms / 1000) as u32;
+
+    if !conn.is_open {
+      #[cfg(feature = "analytics-max-concurrent")]
+      start_stop_events.push((stop, false));
+    }
 
     macro_rules! add {
       ($acc:ident, $key:expr) => {
@@ -405,8 +408,11 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
 
         #[cfg(feature = "analytics-max-concurrent")]
         item.start_stop_events.push((start, true));
+
         #[cfg(feature = "analytics-max-concurrent")]
-        item.start_stop_events.push((stop, false));
+        if !conn.is_open {
+          item.start_stop_events.push((stop, false));
+        }
       };
     }
 
