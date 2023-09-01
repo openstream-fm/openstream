@@ -190,10 +190,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     StreamConnectionLite::KEY_STATION_ID: {
       "$in": &query.station_ids,
     },
-    // StreamConnectionLite::KEY_DURATION_MS: {
-    //   "$ne": null
-    // },
-    // StreamConnectionLite::KEY_IS_OPEN: false,
+
     StreamConnectionLite::KEY_CREATED_AT: {
       "$gte": ser_start_date,
       "$lt": ser_end_date,
@@ -234,21 +231,26 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     }
   }
 
-  if let Some(d) = query.min_duration_ms {
-    filter = doc! {
-      "$and": [
-        filter,
-        { StreamConnectionLite::KEY_DURATION_MS: { "$gte": d as f64 } }
-      ]
-    }
-  }
-
   if let Some(domain) = query.domain {
     filter = doc! {
       "$and": [
         filter,
         {
           StreamConnectionLite::KEY_DOMAIN: domain
+        }
+      ]
+    }
+  }
+
+  if let Some(d) = query.min_duration_ms {
+    filter = doc! {
+      "$and": [
+        filter,
+        {
+          "$or": [
+            { StreamConnectionLite::KEY_DURATION_MS: null },
+            { StreamConnectionLite::KEY_DURATION_MS: { "$gte": d as f64 } },
+          ]
         }
       ]
     }
