@@ -2,6 +2,7 @@
   export let disabled: boolean = false;
   export let readonly: boolean = false;
   export let icon: string | null = null;
+  export let icon_viewbox: string | undefined = void 0;
   export let btn: { icon: string, action: () => void, label: string, tabindex?: number | undefined } | null = null;
 	import Icon from "$share/Icon.svelte";
 	import { ripple } from "$share/ripple";
@@ -104,7 +105,7 @@
 <label class="field-container" class:disabled class:readonly class:with-icon={icon != null}>
   {#if icon != null}
     <div class="icon">
-      <Icon d={icon} />
+      <Icon d={icon} viewBox={icon_viewbox} />
     </div>
   {/if}
   <div class="field">

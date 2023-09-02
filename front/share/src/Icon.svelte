@@ -2,6 +2,7 @@
   export let d: string;
   export let stroke: boolean = false;
   export let strokeWidth: number | "" = "";
+  export let viewBox: string = "0 0 24 24";
 </script>
 
 <style>
@@ -21,7 +22,7 @@
   }
 </style>
 
-<svg viewBox="0 0 24 24">
+<svg {viewBox}>
   {#if stroke}
     <path d={d} class="stroke" style="--stroke-width:{strokeWidth}" />
   {:else}

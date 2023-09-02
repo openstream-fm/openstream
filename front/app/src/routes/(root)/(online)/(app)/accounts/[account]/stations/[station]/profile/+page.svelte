@@ -42,6 +42,8 @@
         icon_bg_color: String((data.station.user_metadata.mob_app as any)?.icon_bg_color ?? ""),
         icon_rounded: !!(data.station.user_metadata.mob_app as any)?.icon_rounded ?? false,
         ads: !!(data.station.user_metadata.mob_app as any)?.ads ?? false,
+        admob_app_id: String((data.station.user_metadata.mob_app as any)?.admob_app_id ?? "") || null,
+        admob_banner_id: String((data.station.user_metadata.mob_app as any)?.admob_app_id ?? "") || null,
       }
     }
   };
