@@ -52,6 +52,8 @@
         icon_bg_color: "",
         icon_rounded: false,
         ads: false,
+        admob_app_id: null,
+        admob_banner_id: null,
       }
     }
   }
