@@ -389,11 +389,14 @@ impl Drop for MediaSessionDropper {
       tokio::spawn(async move {
         let transfer = transfer.load(Ordering::SeqCst);
 
+        let now = DateTime::now();
+
         let update = doc! {
           "$set": {
             MediaSession::KEY_STATE: MediaSessionState::KEY_ENUM_VARIANT_CLOSED,
             MediaSession::KEY_TRANSFER_BYTES: transfer as f64,
-            MediaSession::KEY_DURATION_MS: duration_ms as f64
+            MediaSession::KEY_DURATION_MS: duration_ms as f64,
+            MediaSession::KEY_CLOSED_AT: now
           }
         };
 
