@@ -112,8 +112,8 @@
       cache.set(key(item.key), item);
     }
 
-    const sessions: (number | null)[] = [];
-    const avg: (number | null)[] = [];
+    const ips: (number | null)[] = [];
+    const total_hours: (number | null)[] = [];
     const dates: Date[] = [];
 
     const start = startOfDay(new Date(data.since));
@@ -129,30 +129,30 @@
       dates.push(current);
 
       if(item == null) {
-        sessions.push(null);
-        avg.push(null);
+        ips.push(null);
+        total_hours.push(null);
       } else {
-        sessions.push(item.sessions);
-        avg.push(item.total_duration_ms / item.sessions);
+        ips.push(item.ips);
+        total_hours.push(item.total_duration_ms / 1000 / 60 / 60);
       }
 
       current = add(current, { days: 1 })
 
     } while(!isSameDay(current, end));
 
-    return { dates, sessions, avg }
+    return { dates, ips, total_hours }
   }
 
   const days_data = by_day_data(data.by_day);
   const days_options: ApexOptions = {
     series: [
       {
-        name: LocaleSessions,
-        data: days_data.sessions
+        name: locale.Unique_IPs,
+        data: days_data.ips
       },
       {
-        name: locale.Average_listening_time,
-        data: days_data.avg
+        name: locale.Total_listening_hours,
+        data: days_data.total_hours
       },
     ],
 
@@ -226,7 +226,7 @@
     yaxis: [
       {
         title: {
-          text: LocaleSessions,
+          text: locale.Unique_IPs,
           style: {
            fontSize: "1rem",
            fontWeight: 600,
@@ -238,7 +238,7 @@
       }, {
         opposite: true,
         title: {
-          text: locale.Average_listening_time,
+          text: locale.Total_listening_hours,
           style: {
            fontSize: "1rem",
            fontWeight: 600,
@@ -247,11 +247,13 @@
         labels: {
           formatter: v => {
             if(v == null) return "-";
-            let total_secs = Math.round(v / SEC);
-            let mins = Math.floor(total_secs / 60);
-            let secs = total_secs % 60;
-            const pad = (v: number) => String(v).padStart(2, "0");
-            return `${pad(mins)}:${pad(secs)}`;
+            return to_fixed(v, 1);
+            // if(v == null) return "-";
+            // let total_secs = Math.round(v / SEC);
+            // let mins = Math.floor(total_secs / 60);
+            // let secs = total_secs % 60;
+            // const pad = (v: number) => String(v).padStart(2, "0");
+            // return `${pad(mins)}:${pad(secs)}`;
           }
         }
       }
