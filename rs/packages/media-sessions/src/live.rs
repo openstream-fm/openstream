@@ -211,10 +211,10 @@ impl Drop for MediaSessionDropper {
 
         let update = doc! {
           "$set": {
-            MediaSession::KEY_UPDATED_AT: Some(now),
-            MediaSession::KEY_CLOSED_AT: Some(now),
+            MediaSession::KEY_UPDATED_AT: now,
+            MediaSession::KEY_CLOSED_AT: now,
             MediaSession::KEY_STATE: MediaSessionState::KEY_ENUM_VARIANT_CLOSED,
-            MediaSession::KEY_DURATION_MS: Some(duration_ms as f64),
+            MediaSession::KEY_DURATION_MS: duration_ms as f64,
             MediaSession::KEY_TRANSFER_BYTES: transfer_bytes as f64,
           }
         };
