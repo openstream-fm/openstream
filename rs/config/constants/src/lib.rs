@@ -55,7 +55,7 @@ pub const RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS: u64 = 10;
 
 /// delay of which if external relay produced no data, it will be cancelled
 #[const_register]
-pub const EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS: u64 = 10;
+pub const EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS: u64 = 30;
 
 /// delay of which if external doesn't produce first data chunk, it will be cancelled
 #[const_register]

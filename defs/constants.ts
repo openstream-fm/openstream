@@ -34,7 +34,7 @@ export const EMAIL_VERIFICATION_CODE_LEN = 6;
 export const EMAIL_VERIFICATION_VALIDITY_SECS = 3600;
 
 /** delay of which if external relay produced no data, it will be cancelled */
-export const EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS = 10;
+export const EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS = 30;
 
 /** delay of which if external doesn't produce first data chunk, it will be cancelled */
 export const EXTERNAL_RELAY_NO_DATA_START_SHUTDOWN_SECS = 30;
