@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { invalidate } from '$app/navigation';
 	export let data: import('./$types').PageData;
-	import TextField from '$lib/components/Form/TextField.svelte';
+	import TextField from '$share/Form/TextField.svelte';
 	import Page from '$lib/components/Page.svelte';
 	import { locale } from '$lib/locale';
 	import Dialog from '$share/Dialog.svelte';

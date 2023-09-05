@@ -8,7 +8,7 @@
   import { goto } from "$app/navigation";
   import Formy from "$share/formy/Formy.svelte";
 	import Dialog from "$share/Dialog.svelte";
-	import TextField from "$lib/components/Form/TextField.svelte";
+	import TextField from "$share/Form/TextField.svelte";
 	import Validator from "$share/formy/Validator.svelte";
 	import { mdiSwapHorizontal, mdiTrashCanOutline } from "@mdi/js";
 	import Icon from "$share/Icon.svelte";
@@ -17,7 +17,7 @@
 	import { _url } from "$share/formy/validate";
 	import CircularProgress from "$share/CircularProgress.svelte";
 	import { scale } from "svelte/transition";
-	import BooleanField from "$lib/components/Form/BooleanField.svelte";
+	import BooleanField from "$share/Form/BooleanField.svelte";
 	import TransferAccountSelector from "./TransferAccountSelector.svelte";
 
   let delete_name_input_value = "";

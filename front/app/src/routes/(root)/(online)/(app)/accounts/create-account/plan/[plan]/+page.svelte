@@ -3,7 +3,7 @@
   import "$share/LoginDashboard/login-page.css";
 
   import { ripple } from "$share/ripple";
-  import TextField from "$lib/components/Form/TextField.svelte";
+  import TextField from "$share/Form/TextField.svelte";
 	import { action, _post } from "$share/net.client";
 	import { mdiAccountOutline } from "@mdi/js";
 	import Validator from "$share/formy/Validator.svelte";
