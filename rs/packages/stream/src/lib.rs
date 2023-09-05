@@ -655,6 +655,7 @@ impl StreamHandler {
           request,
           created_at: now,
           last_transfer_at: now,
+          closed_at: None,
         }
       };
 
@@ -825,6 +826,7 @@ impl Drop for StreamConnectionDropper {
     let account_id = self.account_id.clone();
     let transfer_bytes = self.transfer_bytes.load(Ordering::SeqCst);
     let duration_ms = self.start_time.elapsed().unwrap().as_millis() as u64;
+    let now = DateTime::now();
     tokio::spawn(async move {
       {
         let update = doc! {
@@ -832,6 +834,7 @@ impl Drop for StreamConnectionDropper {
             StreamConnection::KEY_IS_OPEN: false,
             StreamConnection::KEY_DURATION_MS: duration_ms as f64,
             StreamConnection::KEY_TRANSFER_BYTES: transfer_bytes as f64,
+            StreamConnection::KEY_CLOSED_AT: now,
           }
         };
 
@@ -848,6 +851,7 @@ impl Drop for StreamConnectionDropper {
             StreamConnectionLite::KEY_IS_OPEN: false,
             StreamConnectionLite::KEY_DURATION_MS: duration_ms as f64,
             StreamConnectionLite::KEY_TRANSFER_BYTES: transfer_bytes as f64,
+            StreamConnectionLite::KEY_CLOSED_AT: now,
           }
         };
 

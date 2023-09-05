@@ -23,6 +23,9 @@
   export let domain: string | null | undefined;
   export let selected_stations: StationItem[] | "all";
 
+  let LocaleSessions = data.is_now ? locale.Listeners : locale.Sessions;
+  $: LocaleSessions = data.is_now ? locale.Listeners : locale.Sessions;
+
   const with_max_concurrent = data.max_concurrent_listeners != null;
 
   const df = new Intl.DateTimeFormat(lang, {
@@ -144,7 +147,7 @@
   const days_options: ApexOptions = {
     series: [
       {
-        name: locale.Sessions,
+        name: LocaleSessions,
         data: days_data.sessions
       },
       {
@@ -223,7 +226,7 @@
     yaxis: [
       {
         title: {
-          text: locale.Sessions,
+          text: LocaleSessions,
           style: {
            fontSize: "1rem",
            fontWeight: 600,
@@ -331,7 +334,7 @@
     },
     yaxis: {
       title: {
-        text: locale.Sessions,
+        text: LocaleSessions,
         style: {
           fontSize: "1rem",
           fontWeight: 600,
@@ -339,7 +342,7 @@
       },
     },
     series: [{ 
-      name: locale.Sessions,
+      name: LocaleSessions,
       data: data.by_os.map(item => {
         return {
           x: item.key == null ? locale.Unknown : item.key,
@@ -370,7 +373,7 @@
     }, 
     yaxis: {
       title: {
-        text: locale.Sessions,
+        text: LocaleSessions,
         style: {
           fontSize: "1rem",
           fontWeight: 600,
@@ -378,7 +381,7 @@
       },
     },
     series: [{
-      name: locale.Sessions,
+      name: LocaleSessions,
       data: data.by_browser.map(item => {
         return {
           x: item.key == null ? locale.Unknown : item.key,
@@ -409,7 +412,7 @@
     },
     yaxis: {
       title: {
-        text: locale.Sessions,
+        text: LocaleSessions,
         style: {
           fontSize: "1rem",
           fontWeight: 600,
@@ -417,7 +420,7 @@
       },
     },
     series: [{ 
-      name: locale.Sessions,
+      name: LocaleSessions,
       data: data.by_domain.map(item => {
         return {
           x: item.key == null ? locale.Unknown : item.key,
@@ -447,7 +450,7 @@
     }, 
     yaxis: {
       title: {
-        text: locale.Sessions,
+        text: LocaleSessions,
         style: {
           fontSize: "1rem",
           fontWeight: 600,
@@ -455,7 +458,7 @@
       },
     },
     series: [{
-      name: locale.Sessions,
+      name: LocaleSessions,
       data: data.by_station.map(item => {
         const station = data.stations.find(station => station._id === item.key);
         return {
@@ -571,7 +574,7 @@
 
     const fields = {
       "sessions": {
-        name: locale.Sessions,
+        name: LocaleSessions,
         format: item => String(item.sessions || 0),
         sort: (a, b) => compare_numbers(a.sessions, b.sessions),
         numeric: true,
@@ -942,7 +945,7 @@
   {:else}
     <div class="totals">
       <div class="total">
-        <div class="total-title">{locale.Sessions}</div>
+        <div class="total-title">{LocaleSessions}</div>
         <div class="total-value">
           {data.sessions}
         </div>
@@ -1015,29 +1018,32 @@
               <div class="map-tooltip-name">{country_name}</div>
               <div class="map-tooltip-stat">
                 <span class="map-tooltip-stat-name">
-                  {locale.Sessions}:
+                  {LocaleSessions}:
                 </span>
                 <span class="map-tooltip-stat-value">
                   {map_country_sessions(country_code)}
                 </span>
               </div>
-              {#if map_country_has_data(country_code)}
-                <div class="map-tooltip-stat">
-                  <span class="map-tooltip-stat-name">
-                    {locale.Average_listening_minutes}:
-                  </span>
-                  <span class="map-tooltip-stat-value">
-                    {map_country_avg_minutes(country_code)}
-                  </span>
-                </div>
-                <div class="map-tooltip-stat">
-                  <span class="map-tooltip-stat-name">
-                    {locale.Total_listening_hours}:
-                  </span>
-                  <span class="map-tooltip-stat-value">
-                    {map_country_total_hours(country_code)}
-                  </span>
-                </div>
+              
+              {#if !data.is_now}
+                {#if map_country_has_data(country_code)}
+                  <div class="map-tooltip-stat">
+                    <span class="map-tooltip-stat-name">
+                      {locale.Average_listening_minutes}:
+                    </span>
+                    <span class="map-tooltip-stat-value">
+                      {map_country_avg_minutes(country_code)}
+                    </span>
+                  </div>
+                  <div class="map-tooltip-stat">
+                    <span class="map-tooltip-stat-name">
+                      {locale.Total_listening_hours}:
+                    </span>
+                    <span class="map-tooltip-stat-value">
+                      {map_country_total_hours(country_code)}
+                    </span>
+                  </div>
+                {/if}
               {/if}
             </div>
           </Mapp>

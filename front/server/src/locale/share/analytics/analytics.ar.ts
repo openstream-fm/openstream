@@ -1,13 +1,14 @@
 /// file: analytics.ar.ts
 const locale: import("./analytics.locale").AnalyticsLocale = {
   "Sessions": "الجلسات",
+  "Listeners": "المستمعين",
+  "Unique_IPs": "عناوين الـ IP الفريدة",
   "Average_listening_minutes": "متوسط دقائق الاستماع",
   "Average_listening_time": "متوسط وقت الاستماع",
   "Total_listening_time": "إجمالي وقت الاستماع",
   "Total_listening_hours": "إجمالي ساعات الاستماع",
   "Total_transfer": "إجمالي النقل",
   "Total_transfer_in_MB": "إجمالي النقل بالميجابايت",
-  "Unique_IPs": "عناوين الـ IP الفريدة",
   "Max_concurrent_listeners": "الحد الأقصى للمستمعين المتزامنين",
 
   // @example Browser: Chrome

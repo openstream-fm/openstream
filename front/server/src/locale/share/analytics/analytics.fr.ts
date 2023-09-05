@@ -1,13 +1,14 @@
 /// file: analytics.fr.ts
 const locale: import("./analytics.locale").AnalyticsLocale = {
   "Sessions": "Sessions",
+  "Listeners": "Auditeurs",
+  "Unique_IPs": "IPs uniques",
   "Average_listening_minutes": "Minutes moyennes d'écoute",
   "Average_listening_time": "Temps moyen d'écoute",
   "Total_listening_time": "Temps total d'écoute",
   "Total_listening_hours": "Heures totales d'écoute",
   "Total_transfer": "Transfert total",
   "Total_transfer_in_MB": "Transfert total en MB",
-  "Unique_IPs": "IPs uniques",
   "Max_concurrent_listeners": "Max. auditeurs simultanés",
 
   // @example Browser: Chrome
@@ -26,7 +27,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
   "Website": "Site web",
 
-  // @example Country: France
+  // @example Coutry: Argentina
   "Country": "Pays",
 
   // @example Date: 2022/01/01
@@ -84,7 +85,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
     "submit": "Obtenir des analyses",
 
     "All_stations": "Toutes les stations",
-    "No_stations": "Sans stations",
+    "No_stations": "Pas de stations",
 
     "no_stations_message": "Ce compte n'a pas de stations",
   },

@@ -6,6 +6,7 @@ use db::{
   Model,
 };
 use log::*;
+use time::Duration;
 
 fn random_os() -> Option<String> {
   use rand::seq::SliceRandom; // 0.7.2
@@ -151,11 +152,17 @@ async fn create_random_stream_connection(
 
   let is_open = rand::random::<f64>() < (1_f64 / 30_f64);
 
-  let duration_ms = if is_open {
+  let duration_ms: Option<u64>;
+  let closed_at: Option<serde_util::DateTime>;
+
+  if is_open {
     let mul: f64 = rand::random();
-    Some((mul * 6000.0) as u64) // 10 min
+    let ms = (mul * 6000.0) as u64; // 10 min
+    duration_ms = Some(ms);
+    closed_at = Some((created_at + Duration::MILLISECOND * (ms as f64)).into());
   } else {
-    None
+    duration_ms = None;
+    closed_at = None;
   };
 
   let transfer_bytes = duration_ms.map(|s| s * 16); // 16 kbps
@@ -169,8 +176,9 @@ async fn create_random_stream_connection(
     country_code: request.country_code,
     transfer_bytes,
     duration_ms,
-    last_transfer_at: created_at.into(),
     created_at: created_at.into(),
+    last_transfer_at: created_at.into(),
+    closed_at,
     request,
   };
 

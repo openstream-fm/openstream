@@ -50,6 +50,9 @@ pub struct StreamConnectionLite {
 
   #[serde(rename = "ca")]
   pub created_at: DateTime,
+
+  #[serde(rename = "cl")]
+  pub closed_at: Option<DateTime>,
 }
 
 impl StreamConnectionLite {
@@ -76,6 +79,7 @@ impl StreamConnectionLite {
       duration_ms: full.duration_ms,
       transfer_bytes: full.transfer_bytes,
       created_at: full.created_at,
+      closed_at: full.closed_at,
     }
   }
 }
@@ -94,6 +98,7 @@ impl From<StreamConnection> for StreamConnectionLite {
       transfer_bytes: full.transfer_bytes,
       country_code: full.country_code,
       created_at: full.created_at,
+      closed_at: full.closed_at,
     }
   }
 }
