@@ -1,13 +1,14 @@
 /// file: analytics.de.ts
 const locale: import("./analytics.locale").AnalyticsLocale = {
   "Sessions": "Sitzungen",
-  "Average_listening_minutes": "Durchschnittliche Hördauer in Minuten",
-  "Average_listening_time": "Durchschnittliche Hördauer",
-  "Total_listening_time": "Gesamte Hördauer",
-  "Total_listening_hours": "Gesamte Hördauer in Stunden",
+  "Listeners": "Zuhörer",
+  "Unique_IPs": "Einzigartige IPs",
+  "Average_listening_minutes": "Durchschnittliche Zuhörminuten",
+  "Average_listening_time": "Durchschnittliche Zuhörzeit",
+  "Total_listening_time": "Gesamtzuhörzeit",
+  "Total_listening_hours": "Gesamtzuhörstunden",
   "Total_transfer": "Gesamtübertragung",
   "Total_transfer_in_MB": "Gesamtübertragung in MB",
-  "Unique_IPs": "Einzigartige IPs",
   "Max_concurrent_listeners": "Max. gleichzeitige Zuhörer",
 
   // @example Browser: Chrome

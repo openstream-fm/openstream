@@ -1,14 +1,15 @@
 /// file: analytics.zh.ts
 const locale: import("./analytics.locale").AnalyticsLocale = {
   "Sessions": "会话",
-  "Average_listening_minutes": "平均收听分钟数",
+  "Listeners": "听众",
+  "Unique_IPs": "唯一的IP",
+  "Average_listening_minutes": "平均收听分钟",
   "Average_listening_time": "平均收听时间",
   "Total_listening_time": "总收听时间",
-  "Total_listening_hours": "总收听小时数",
-  "Total_transfer": "总传输量",
+  "Total_listening_hours": "总收听小时",
+  "Total_transfer": "总传输",
   "Total_transfer_in_MB": "总传输量（MB）",
-  "Unique_IPs": "唯一IP",
-  "Max_concurrent_listeners": "最大并发听众数",
+  "Max_concurrent_listeners": "最大并发听众",
 
   // @example Browser: Chrome
   "Browser": "浏览器",
@@ -48,7 +49,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "By_website": "按网站",
   "Daily_stats": "每日统计",
 
-  "no_data_message": "没有符合指定筛选条件的数据",
+  "no_data_message": "没有找到指定过滤器的数据",
 
   "time": {
     "1_day": "1天",

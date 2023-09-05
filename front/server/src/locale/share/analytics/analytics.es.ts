@@ -1,12 +1,13 @@
 const locale: import("./analytics.locale").AnalyticsLocale = {
   "Sessions": "Sesiones",
+  "Listeners": "Oyentes",
+  "Unique_IPs": "IPs únicas",
   "Average_listening_minutes": "Minutos promedio de escucha",
   "Average_listening_time": "Tiempo promedio de escucha",
   "Total_listening_time": "Tiempo total de escucha",
   "Total_listening_hours": "Horas totales de escucha",
   "Total_transfer": "Transferencia total",
   "Total_transfer_in_MB": "Transferencia total en MB",
-  "Unique_IPs": "IPs únicas",
   "Max_concurrent_listeners": "Máx. oyentes simultáneos",
 
   // @example Browser: Chrome

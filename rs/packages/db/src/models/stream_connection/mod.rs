@@ -35,6 +35,7 @@ pub struct StreamConnection {
 
   pub request: Request,
   pub last_transfer_at: DateTime,
+  pub closed_at: Option<DateTime>,
 }
 
 impl Model for StreamConnection {

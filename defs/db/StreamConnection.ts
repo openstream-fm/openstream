@@ -15,4 +15,5 @@ export type StreamConnection = {
   ip: string;
   request: Request;
   last_transfer_at: DateTime;
+  closed_at: DateTime | null;
 };

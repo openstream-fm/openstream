@@ -22,6 +22,7 @@ pub struct PublicStreamConnection {
   pub request: Request,
   pub created_at: DateTime,
   pub last_transfer_at: DateTime,
+  pub closed_at: Option<DateTime>,
 }
 
 impl IntoPublic for StreamConnection {
