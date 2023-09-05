@@ -1,7 +1,7 @@
 <script lang="ts">
-  import ColorField from "$lib/components/Form/ColorField.svelte";
-	import BooleanField from "$lib/components/Form/BooleanField.svelte";
-	import NullNumberField from "$lib/components/Form/Nullable/NullNumberField.svelte";
+  import ColorField from "$share/Form/ColorField.svelte";
+	import BooleanField from "$share/Form/BooleanField.svelte";
+	import NullNumberField from "$share/Form/Nullable/NullNumberField.svelte";
   export let current: {
     identifier: string
     slug: string
@@ -14,7 +14,7 @@
     storage: number | null
     is_user_selectable: boolean,
   }
-  import TextField from "$lib/components/Form/TextField.svelte";
+  import TextField from "$share/Form/TextField.svelte";
 	import Validator from "$share/formy/Validator.svelte";
 	import { _number, _string } from "$share/formy/validate";
 </script>

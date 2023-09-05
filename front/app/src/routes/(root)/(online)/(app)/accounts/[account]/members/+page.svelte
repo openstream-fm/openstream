@@ -1,6 +1,6 @@
 <script lang="ts">
   export let data: import("./$types").PageData;
-	import Email from "$lib/components/Form/Email.svelte";
+	import Email from "$share/Form/Email.svelte";
   import Page from "$lib/components/Page.svelte";
 	import type { PublicInvitation } from "$server/defs/api/PublicInvitation";
 	import CircularProgress from "$share/CircularProgress.svelte";

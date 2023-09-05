@@ -4,11 +4,11 @@
 	import Formy from "$share/formy/Formy.svelte";
 	import { _post, action } from "$share/net.client";
   import { goto } from "$app/navigation";
-	import Password from "$lib/components/Form/Password.svelte";
+	import Password from "$share/Form/Password.svelte";
 	import Validator from "$share/formy/Validator.svelte";
 	import { _confirmation_password, _new_password } from "$share/formy/validate";
 	import { ripple } from "$share/ripple";
-	import Email from "$lib/components/Form/Email.svelte";
+	import Email from "$share/Form/Email.svelte";
   import { _message } from "$share/notify";
   import { default_logger } from "$share/logger";
 	import { locale } from "$lib/locale";

@@ -33,7 +33,7 @@
 	import { mdiCircleEditOutline } from "@mdi/js";
 	import Dialog from "$share/Dialog.svelte";
 	import Formy from "$share/formy/Formy.svelte";
-	import TextField from "$lib/components/Form/TextField.svelte";
+	import TextField from "$share/Form/TextField.svelte";
 	import Validator from "$share/formy/Validator.svelte";
 	import { _string } from "$share/formy/validate";
 	import AccountStationItem from "./account-station-item.svelte";

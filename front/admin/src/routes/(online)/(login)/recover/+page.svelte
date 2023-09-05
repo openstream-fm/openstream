@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Email from "$lib/components/Form/Email.svelte";
+	import Email from "$share/Form/Email.svelte";
 	import Formy from "$share/formy/Formy.svelte";
 	import Validator from "$share/formy/Validator.svelte";
 	import { _email } from "$share/formy/validate";

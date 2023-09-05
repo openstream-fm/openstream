@@ -1,9 +1,9 @@
 <script lang="ts">
   export let value: string;
   export let label: string;
-  export let required: boolean;
+  export let required: boolean = false;
 
-  import TextField from "$lib/components/Form/TextField.svelte";
+  import TextField from "$share/Form/TextField.svelte";
 	import Validator from "$share/formy/Validator.svelte";
 	
   import Color from "color";

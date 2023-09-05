@@ -1,15 +1,15 @@
 <script lang="ts">
   export let data: import("./$types").PageData;
 
-  import TextField from "$lib/components/Form/TextField.svelte";
-	// import NullTextField from "$lib/components/Form/Nullable/NullTextField.svelte";
+  import TextField from "$share/Form/TextField.svelte";
+	// import NullTextField from "$share/Form/Nullable/NullTextField.svelte";
 	import { ripple } from "$share/ripple";
 	import { clone, diff, equals } from "$server/util/collections";
 	import { _patch, action } from "$share/net.client";
 	import { _message } from "$share/notify";
 	import { invalidateAll } from "$lib/invalidate";
-	import Email from "$lib/components/Form/Email.svelte";
-	import Password from "$lib/components/Form/Password.svelte";
+	import Email from "$share/Form/Email.svelte";
+	import Password from "$share/Form/Password.svelte";
 	import { mdiAccountOutline, mdiDevices, /*mdiPhoneOutline, mdiTranslate*/ } from "@mdi/js";
 	import Icon from "$share/Icon.svelte";
   import Formy from "$share/formy/Formy.svelte";
@@ -23,7 +23,7 @@
   import { tick } from "svelte";
 	import { locale } from "$lib/locale";
 	import { VALIDATE_ADMIN_FIRST_NAME_MAX_LEN, VALIDATE_ADMIN_LAST_NAME_MAX_LEN, VALIDATE_ADMIN_PASSWORD_MAX_LEN, VALIDATE_ADMIN_PASSWORD_MIN_LEN } from "$server/defs/constants";
-	// import SelectField from "$lib/components/Form/SelectField.svelte";
+	// import SelectField from "$share/Form/SelectField.svelte";
 
   let show_change_password = true;
 

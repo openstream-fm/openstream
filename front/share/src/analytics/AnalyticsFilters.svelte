@@ -84,7 +84,7 @@
   export let country_names: import("$server/locale/share/countries/countries.locale").CountriesLocale;
 
   export let station_filter_q: string = "";
-  
+
   $: stations_filter_show = get_stations_filter_show(stations, station_filter_q);
   const get_stations_filter_show = (stations: StationItem[], filter_q: string): StationItem[] => {
     const q = filter_q.trim().replace(/\s+/, " ").toLowerCase();
@@ -190,8 +190,11 @@
   import { logical_fly } from "$share/transition";
   import { click_out } from "$share/actions";
   import CircularProgress from "$share/CircularProgress.svelte";
+  import DateTimeField from "$share/Form/DateTimeField.svelte";
   import type { CountryCode } from "$defs/CountryCode";
   import { STATION_PICTURES_VERSION } from "$defs/constants"
+  import Validator from "$share/formy/Validator.svelte";
+  import Formy from "$share/formy/Formy.svelte";
 
   const unselect_station = (id: string) => {
     if (selected_stations === "all") {
@@ -251,14 +254,21 @@
     "yesterday",
     "previous-week",
     "previous-month",
-    // TODO: add custom time frames when Date picker is ready
-    // "custom",
+    "custom",
   ] as const;
 
   const submit = () => {
     const query = get_resolved_query();
     const qs = to_querystring(query);
     on_submit({ ...query, qs });
+  }
+
+  // TODO: locale
+  const validate_date = (v: Date | null): string | null => {
+    if(v == null) {
+      return "This field is required";
+    }
+    return null;
   }
 </script>
 
@@ -503,230 +513,270 @@
   .stations-q:focus {
     box-shadow: rgba(0,0,0,0.1) 0 2px 5px 1px;
   }
+
+  .custom-dates {
+    margin-block: 1rem;
+    margin-inline: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  
+  }
+
+  @media screen and (min-width: 600px) {
+    .custom-dates {
+      flex-direction: row;
+    }
+
+    .date-field {
+      flex: 1;      
+    }
+  }
 </style>
 
-<div class="analytics-filters" class:loading>
-  <div class="field-out">
-    <button
-      class="field ripple-container"
-      use:ripple
-      on:click={() => {
-        stations_menu_open = !stations_menu_open
-      }}
-    >
-      {#if selected_stations === "all"}
-        <div class="field-text" transition:slide|local={{ duration: 200 }}>
-          {#if stations.length}
-            {locale.filters.All_stations}
-          {:else}  
-            {locale.filters.No_stations}
-          {/if}
-        </div>
-      {:else}
-        <div class="chips" transition:slide|local={{ duration: 200 }}>
-          {#each selected_stations as station (station._id)}
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <div class="chip" transition:scale|local={{ duration: 200 }}>
+<Formy let:submit={formy} action={submit}>
+  <div class="analytics-filters" class:loading>
+    <div class="field-out">
+      <button
+        class="field ripple-container"
+        use:ripple
+        on:click={() => {
+          stations_menu_open = !stations_menu_open
+        }}
+      >
+        {#if selected_stations === "all"}
+          <div class="field-text" transition:slide|local={{ duration: 200 }}>
+            {#if stations.length}
+              {locale.filters.All_stations}
+            {:else}  
+              {locale.filters.No_stations}
+            {/if}
+          </div>
+        {:else}
+          <div class="chips" transition:slide|local={{ duration: 200 }}>
+            {#each selected_stations as station (station._id)}
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <div class="chip" transition:scale|local={{ duration: 200 }}>
+                <div
+                  class="chip-pic"
+                  style:background-image="url({$page.data.config
+                    .storage_public_url}/station-pictures/webp/64/{station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
+                />
+                <div class="chip-name">
+                  {station.name}
+                </div>
+                <button class="chip-btn ripple-container" use:ripple on:click|stopPropagation|preventDefault={() => unselect_station(station._id)}>
+                  <Icon d={mdiClose} />
+                </button>
+              </div>
+            {/each}
+          </div>
+        {/if}
+      </button>
+
+      {#if stations_menu_open}
+        <div class="menu thin-scroll" transition:logical_fly={{ y: -25, duration: 200 }} use:click_out={() => stations_menu_click_out()}>
+          <div class="stations-q-out">
+            <!-- TODO: locale-->
+            <input type="text" class="stations-q" placeholder="Search..." bind:value={station_filter_q} />
+          </div>
+          {#each stations_filter_show as station (station._id)}
+            {@const selected =
+              selected_stations !== "all" &&
+              selected_stations.some(item => item._id === station._id)}
+            <button
+              class="menu-item ripple-container"
+              class:selected
+              use:ripple
+              on:click|stopPropagation|preventDefault={() => toggle_station(station)}
+            >
+              <div class="menu-check">
+                {#if selected}
+                  <div
+                    class="menu-check-icon"
+                    transition:scale|local={{ duration: 300 }}
+                  >
+                    <Icon d={mdiCheckBold} />
+                  </div>
+                {:else}
+                  <div
+                    class="menu-check-icon"
+                    transition:scale|local={{ duration: 300 }}
+                  >
+                    <Icon d={mdiCheckboxBlankOutline} />
+                  </div>
+                {/if}
+              </div>
               <div
-                class="chip-pic"
+                class="menu-pìc"
                 style:background-image="url({$page.data.config
                   .storage_public_url}/station-pictures/webp/64/{station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
               />
-              <div class="chip-name">
+              <div class="menu-name">
                 {station.name}
               </div>
-              <button class="chip-btn ripple-container" use:ripple on:click|stopPropagation|preventDefault={() => unselect_station(station._id)}>
-                <Icon d={mdiClose} />
-              </button>
+            </button>
+          {:else}
+            <div class="no-stations-message">
+              {#if station_filter_q.trim() === ""}
+                {locale.filters.no_stations_message}
+              {:else}
+                <!-- TODO: locale -->
+                There's no stations for this query
+              {/if}
             </div>
           {/each}
         </div>
       {/if}
-    </button>
+    </div>
 
-    {#if stations_menu_open}
-      <div class="menu thin-scroll" transition:logical_fly={{ y: -25, duration: 200 }} use:click_out={() => stations_menu_click_out()}>
-        <div class="stations-q-out">
-          <!-- TODO: locale-->
-          <input type="text" class="stations-q" placeholder="Search..." bind:value={station_filter_q} />
+    <div class="field-out">
+      <button
+        class="field ripple-container"
+        use:ripple
+        on:click={() => {
+          time_menu_open = !time_menu_open
+        }}
+      >
+        <div class="field-text">
+          {locale.filters.query_kind[kind]}
         </div>
-        {#each stations_filter_show as station (station._id)}
-          {@const selected =
-            selected_stations !== "all" &&
-            selected_stations.some(item => item._id === station._id)}
-          <button
-            class="menu-item ripple-container"
-            class:selected
-            use:ripple
-            on:click|stopPropagation|preventDefault={() => toggle_station(station)}
-          >
-            <div class="menu-check">
-              {#if selected}
-                <div
-                  class="menu-check-icon"
-                  transition:scale|local={{ duration: 300 }}
-                >
-                  <Icon d={mdiCheckBold} />
-                </div>
-              {:else}
-                <div
-                  class="menu-check-icon"
-                  transition:scale|local={{ duration: 300 }}
-                >
-                  <Icon d={mdiCheckboxBlankOutline} />
-                </div>
-              {/if}
-            </div>
-            <div
-              class="menu-pìc"
-              style:background-image="url({$page.data.config
-                .storage_public_url}/station-pictures/webp/64/{station.picture_id}.webp?v={STATION_PICTURES_VERSION})"
-            />
-            <div class="menu-name">
-              {station.name}
-            </div>
-          </button>
-        {:else}
-          <div class="no-stations-message">
-            {#if station_filter_q.trim() === ""}
-              {locale.filters.no_stations_message}
-            {:else}
-              <!-- TODO: locale -->
-              There's no stations for this query
-            {/if}
-          </div>
-        {/each}
-      </div>
-    {/if}
-  </div>
+      </button>
 
-  <div class="field-out">
-    <button
-      class="field ripple-container"
-      use:ripple
-      on:click={() => {
-        time_menu_open = !time_menu_open
-      }}
-    >
-      <div class="field-text">
-        {locale.filters.query_kind[kind]}
-      </div>
-    </button>
-
-    {#if time_menu_open}
-      <div class="menu thin-scroll" transition:logical_fly={{ y: -25, duration: 200 }} use:click_out={() => time_menu_click_out()}>
-        {#each temporal_keys as key (key)}
-          {@const selected = kind === key}
-          {@const name = locale.filters.query_kind[key]}
-          <button
-            class="menu-item ripple-container"
-            class:selected
-            use:ripple
-            on:click|stopPropagation|preventDefault={() => {
-              kind = key;
-              time_menu_open = false;
-            }}
-          >
-            <div class="menu-check">
-              {#if selected}
-                <div
-                  class="menu-check-icon"
-                  transition:scale|local={{ duration: 300 }}
-                >
-                  <Icon d={mdiCheckBold} />
-                </div>
-              {:else}
-                <div
-                  class="menu-check-icon"
-                  transition:scale|local={{ duration: 300 }}
-                >
-                  <Icon d={mdiRadioboxBlank} />
-                </div>
-              {/if}
-            </div>
-            <div class="menu-name">
-              {name}
-            </div>
-          </button>
-        {/each}
-      </div>
-    {/if}
-  </div>
-
-  {#if country_code !== undefined || os !== undefined || browser !== undefined || domain !== undefined}
-    <div class="more-filters" transition:slide|local={{ duration: 200 }}>
-      {#if country_code !== undefined}
-        <div class="more-chip" transition:scale|local={{ duration: 200 }}>
-          <div class="more-chip-label">
-            {locale.Country}:
-          </div>
-          <div class="more-chip-value">
-            {country_code == null ? locale.Unknown : country_names[country_code] ?? country_code}
-          </div>
-          <button class="more-chip-remove ripple-container" use:ripple on:click={() => country_code = undefined}>
-            <Icon d={mdiClose} />
-          </button>
-        </div>
-      {/if}
-
-      {#if domain !== undefined}
-        <div class="more-chip" transition:scale|local={{ duration: 200 }}>
-          <div class="more-chip-label">
-            {locale.Website}:
-          </div>
-          <div class="more-chip-value">
-            {domain == null ? locale.Unknown : domain}
-          </div>
-          <button class="more-chip-remove ripple-container" use:ripple on:click={() => domain = undefined}>
-            <Icon d={mdiClose} />
-          </button>
-        </div>
-      {/if}
-
-
-      {#if os !== undefined}
-        <div class="more-chip" transition:scale|local={{ duration: 200 }}>
-          <div class="more-chip-label">
-            {locale.Device}:
-          </div>
-          <div class="more-chip-value">
-            {os == null ? locale.Unknown : os}
-          </div>
-          <button class="more-chip-remove ripple-container" use:ripple on:click={() => os = undefined}>
-            <Icon d={mdiClose} />
-          </button>
-        </div>
-      {/if}
-
-      {#if browser !== undefined}
-        <div class="more-chip" transition:scale|local={{ duration: 200 }}>
-          <div class="more-chip-label">
-            {locale.Browser}:
-          </div>
-          <div class="more-chip-value">
-            {browser == null ? locale.Unknown : browser}
-          </div>
-          <button class="more-chip-remove ripple-container" use:ripple on:click={() => browser = undefined}>
-            <Icon d={mdiClose} />
-          </button>
+      {#if time_menu_open}
+        <div class="menu thin-scroll" transition:logical_fly={{ y: -25, duration: 200 }} use:click_out={() => time_menu_click_out()}>
+          {#each temporal_keys as key (key)}
+            {@const selected = kind === key}
+            {@const name = locale.filters.query_kind[key]}
+            <button
+              class="menu-item ripple-container"
+              class:selected
+              use:ripple
+              on:click|stopPropagation|preventDefault={() => {
+                kind = key;
+                time_menu_open = false;
+              }}
+            >
+              <div class="menu-check">
+                {#if selected}
+                  <div
+                    class="menu-check-icon"
+                    transition:scale|local={{ duration: 300 }}
+                  >
+                    <Icon d={mdiCheckBold} />
+                  </div>
+                {:else}
+                  <div
+                    class="menu-check-icon"
+                    transition:scale|local={{ duration: 300 }}
+                  >
+                    <Icon d={mdiRadioboxBlank} />
+                  </div>
+                {/if}
+              </div>
+              <div class="menu-name">
+                {name}
+              </div>
+            </button>
+          {/each}
         </div>
       {/if}
     </div>
-  {/if}
 
-  <div class="submit-out">
-    <button class="submit ripple-container" use:ripple on:click={submit}>
-      <div class="submit-icon">
-        <Icon d={mdiPoll} />
-      </div>
-      <div class="submit-text">
-        {locale.filters.submit}
-      </div>
-      {#if loading}
-        <div class="submit-loading" transition:scale|local={{ duration: 200 }}>
-          <CircularProgress />
+    {#if kind === "custom"}
+      <div class="custom-dates" transition:logical_fly|local={{ y: -15, duration: 300 }}>
+        <div class="date-field custom-date-start">
+          <DateTimeField
+            bind:value={custom_since}
+            label="Desde"
+          />
+          <Validator fn={validate_date} value={custom_since} />
         </div>
-      {/if}
-    </button>
+        <div class="date-field custom-date-end">
+          <DateTimeField
+            bind:value={custom_until}
+            label="Hasta"
+          />
+          <Validator fn={validate_date} value={custom_until} />
+        </div>
+      </div>
+    {/if}
+
+    {#if country_code !== undefined || os !== undefined || browser !== undefined || domain !== undefined}
+      <div class="more-filters" transition:slide|local={{ duration: 200 }}>
+        {#if country_code !== undefined}
+          <div class="more-chip" transition:scale|local={{ duration: 200 }}>
+            <div class="more-chip-label">
+              {locale.Country}:
+            </div>
+            <div class="more-chip-value">
+              {country_code == null ? locale.Unknown : country_names[country_code] ?? country_code}
+            </div>
+            <button class="more-chip-remove ripple-container" use:ripple on:click={() => country_code = undefined}>
+              <Icon d={mdiClose} />
+            </button>
+          </div>
+        {/if}
+
+        {#if domain !== undefined}
+          <div class="more-chip" transition:scale|local={{ duration: 200 }}>
+            <div class="more-chip-label">
+              {locale.Website}:
+            </div>
+            <div class="more-chip-value">
+              {domain == null ? locale.Unknown : domain}
+            </div>
+            <button class="more-chip-remove ripple-container" use:ripple on:click={() => domain = undefined}>
+              <Icon d={mdiClose} />
+            </button>
+          </div>
+        {/if}
+
+
+        {#if os !== undefined}
+          <div class="more-chip" transition:scale|local={{ duration: 200 }}>
+            <div class="more-chip-label">
+              {locale.Device}:
+            </div>
+            <div class="more-chip-value">
+              {os == null ? locale.Unknown : os}
+            </div>
+            <button class="more-chip-remove ripple-container" use:ripple on:click={() => os = undefined}>
+              <Icon d={mdiClose} />
+            </button>
+          </div>
+        {/if}
+
+        {#if browser !== undefined}
+          <div class="more-chip" transition:scale|local={{ duration: 200 }}>
+            <div class="more-chip-label">
+              {locale.Browser}:
+            </div>
+            <div class="more-chip-value">
+              {browser == null ? locale.Unknown : browser}
+            </div>
+            <button class="more-chip-remove ripple-container" use:ripple on:click={() => browser = undefined}>
+              <Icon d={mdiClose} />
+            </button>
+          </div>
+        {/if}
+      </div>
+    {/if}
+
+    <div class="submit-out">
+      <button class="submit ripple-container" use:ripple on:click|preventDefault={() => formy()}>
+        <div class="submit-icon">
+          <Icon d={mdiPoll} />
+        </div>
+        <div class="submit-text">
+          {locale.filters.submit}
+        </div>
+        {#if loading}
+          <div class="submit-loading" transition:scale|local={{ duration: 200 }}>
+            <CircularProgress />
+          </div>
+        {/if}
+      </button>
+    </div>
   </div>
-</div>
+</Formy>

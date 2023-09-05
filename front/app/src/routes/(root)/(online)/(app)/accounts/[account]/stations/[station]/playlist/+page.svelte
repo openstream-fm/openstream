@@ -429,7 +429,7 @@
 
   import { expoOut } from "svelte/easing";
 	import { writable } from "svelte/store";
-	import TextField from "$lib/components/Form/TextField.svelte";
+	import TextField from "$share/Form/TextField.svelte";
 	import { get_now_playing_store } from "$lib/now-playing";
 	import { sleep } from "$share/util";
 
