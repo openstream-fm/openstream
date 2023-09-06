@@ -157,8 +157,19 @@
 		text-decoration: underline;
 	}
 
+	.section-advanced-fields {
+		margin-top: 2rem;	
+	}
+
 	.section-advanced-fields:not(.open) {
 		display: none;
+	}
+
+	.advanced-sep {
+		height: 1px;
+		width: 80%;
+		margin: 0 auto;
+		background: #ccc;
 	}
 </style>
 
@@ -458,6 +469,8 @@
 				bind:value={current.user_metadata.mob_app.icon_rounded}
 			/>
 		</div>
+
+		<div class="advanced-sep" />
 
 		<div class="field">
 			<BooleanField
