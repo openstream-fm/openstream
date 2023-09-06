@@ -68,7 +68,8 @@
 	}
 
 	.name {
-		font-size: 1.1rem;
+		font-size: 1.125rem;
+		font-weight: 500;
 		margin-inline-end: 1rem;
 		white-space: nowrap;
 		overflow: hidden;
@@ -79,12 +80,12 @@
 	}
 
 	.now-playing-sessions {
-		margin-top: 0.4rem;
-		font-size: 0.8rem;
+		margin-top: 0.15rem;
+		font-size: 0.9rem;
 	}
 
 	.now-playing-state {
-		font-weight: 900;
+		font-weight: 800;
 	}
 
 	.on-air .now-playing-state {
@@ -96,11 +97,11 @@
 	}
 
   .sessions {
-    margin-top: 0.25rem;
+    margin-top: 0.15rem;
   }
 
 	.now-playing-sub {
-		margin-top: 0.25rem;
+		margin-top: 0.15rem;
 	}
 </style>
 

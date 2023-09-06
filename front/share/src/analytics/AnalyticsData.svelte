@@ -856,13 +856,13 @@
   }
 
   .total-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 
   .total-value {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 700;
-    margin-block-start: 1rem;
+    margin-block-start: 0.75rem;
   }
 
   .charts {

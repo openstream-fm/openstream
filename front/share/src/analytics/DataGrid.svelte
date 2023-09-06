@@ -91,12 +91,13 @@
     text-align: left;
     font-weight: 400;
     font-size: 0.9rem;
+    font-weight: 500;
   }
 
   td {
     font-size: 0.9rem;
   }
-
+  
   .value {
     padding: 0.5rem 1rem;
   }
@@ -163,6 +164,10 @@
   td.numeric {
     font-family: var(--monospace);
     font-size: 0.75rem;
+  }
+
+  td:not(.numeric) {
+    font-weight: 500;
   }
 
   .export-out {
