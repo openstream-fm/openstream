@@ -5,9 +5,12 @@ const locale = {
     "contact_info": "Contact information",
     "social": "Social links",
     "apps": "App links",
+    "advanced": "Advanced settings",
   },
   "validation": {
     "logo_required": "The logo is required",
+    "admob_app_id_pattern": "AdMob app Id doesn't match the pattern",
+    "admob_banner_id_pattern": "AdMob banner Id doesn't match the pattern",
   },
   "upload_image": "Upload Image",
   "picture_requirement_labels": {
@@ -45,7 +48,14 @@ const locale = {
     "twitch": "Twitch URL",
     "spotify": "Spotify URL",
     "google_play": "Google Play URL",
-    "app_store": "App Store URL"
+    "app_store": "App Store URL",
+
+    "mob_app_base_color": "App background base color",
+    "mob_app_icon_bg_color": "App icon background color",
+    "mob_app_icon_round": "App icon is fully rounded",
+    "mob_app_enable_ads": "Enable mobile app ads",
+    "mob_app_admob_app_id": "AdMob app ID",
+    "mob_app_admob_banner_id": "AdMob banner ID",
   }
 }
 

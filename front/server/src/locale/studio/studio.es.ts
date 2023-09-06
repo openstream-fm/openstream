@@ -32,6 +32,12 @@ const locale: import("./studio.locale").StudioLocale = {
   misc,
   station_profile,
 
+  "copy_to_clipboard": "Copiar al portapapeles",
+  "show_password": "Mostrar contraseña",
+  "hide_password": "Ocultar contraseña",
+
+  "prevent_unload_message":  "Si abandonas esta página los cambios que realizaste se perderán. ¿Quieres abandonar la página de todas maneras?",
+
   "language": {
     "auto": "Auto detectar",
     "en": "English (Inglés)",
@@ -44,11 +50,6 @@ const locale: import("./studio.locale").StudioLocale = {
     "zh": "简体中文 (Chino Simplificado)",
     "ar": "عربي (Árabe)",
   },
-
-  "copy_to_clipboard": "Copiar al portapapeles",
-  "show_password": "Mostrar contraseña",
-  "hide_password": "Ocultar contraseña",
-
 
   "drawer": {
     "account_selector": {

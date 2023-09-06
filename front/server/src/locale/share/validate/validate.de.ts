@@ -8,12 +8,12 @@ const locale: import("./validate.locale").ValidateLocale = {
   "min": "Dieses Feld muss @min oder mehr sein",
   "max": "Dieses Feld muss @max oder weniger sein",
   
-  "minlen": "Dieses Feld muss @minlen oder mehr Zeichen haben",
-  "maxlen": "Dieses Feld muss @maxlen oder weniger Zeichen haben",
+  "minlen": "Dieses Feld muss @minlen Zeichen oder mehr haben",
+  "maxlen": "Dieses Feld muss @maxlen Zeichen oder weniger haben",
 
   "new_password": {
-    "minlen": "Das neue Passwort muss @minlen oder mehr Zeichen haben",
-    "maxlen": "Das neue Passwort muss @maxlen oder weniger Zeichen haben"
+    "minlen": "Das neue Passwort muss @minlen Zeichen oder mehr haben",
+    "maxlen": "Das neue Passwort muss @maxlen Zeichen oder weniger haben"
   },
 
   "confirmation_password": "Die Passwortbestätigung stimmt nicht überein",
@@ -30,16 +30,18 @@ const locale: import("./validate.locale").ValidateLocale = {
 
   "email_registered": "Diese E-Mail ist bereits registriert",
 
-  "twitter_url": "Dieses Feld muss eine gültige Twitter-URL sein. Gehe zu deiner Twitter-Seite und kopiere die vollständige URL von dort",
-  "facebook_url": "Dieses Feld muss eine gültige Facebook-URL sein. Gehe zu deiner Facebook-Seite und kopiere die vollständige URL von dort",
-  "instagram_url": "Dieses Feld muss eine gültige Instagram-URL sein. Gehe zu deiner Instagram-Seite und kopiere die vollständige URL von dort",
-  "threads_url": "Dieses Feld muss eine gültige Threads-URL sein. Gehe zu deiner Threads-Seite und kopiere die vollständige URL von dort",
-  "youtube_url": "Dieses Feld muss eine gültige YouTube-URL sein. Gehe zu deiner YouTube-Seite und kopiere die vollständige URL von dort",
-  "twitch_url": "Dieses Feld muss eine gültige Twitch-URL sein. Gehe zu deiner Twitch-Seite und kopiere die vollständige URL von dort",
-  "tiktok_url": "Dieses Feld muss eine gültige TikTok-URL sein. Gehe zu deiner TikTok-Seite und kopiere die vollständige URL von dort",
-  "spotify_url": "Dieses Feld muss eine gültige Spotify-URL sein. Gehe zu deiner Spotify-Seite und kopiere die vollständige URL von dort",
-  "google_play_url": "Dieses Feld muss eine gültige Google Play-URL sein. Gehe zur Seite deiner App im Google Play Store und kopiere die vollständige URL von dort",
-  "app_store_url": "Dieses Feld muss eine gültige App Store-URL sein. Gehe zur Seite deiner App im App Store und kopiere die vollständige URL von dort",
+  "css_color": "Dieses Feld muss eine gültige CSS-Farbe sein, zum Beispiel: #ffffff oder rgba(0,0,0,0)",
+
+  "twitter_url": "Dieses Feld muss eine gültige Twitter-URL sein, navigieren Sie zu Ihrer Twitter-Seite und kopieren Sie die vollständige URL von dort",
+  "facebook_url": "Dieses Feld muss eine gültige Facebook-URL sein, navigieren Sie zu Ihrer Facebook-Seite und kopieren Sie die vollständige URL von dort",
+  "instagram_url": "Dieses Feld muss eine gültige Instagram-URL sein, navigieren Sie zu Ihrer Instagram-Seite und kopieren Sie die vollständige URL von dort",
+  "threads_url": "Dieses Feld muss eine gültige Threads-URL sein, navigieren Sie zu Ihrer Threads-Seite und kopieren Sie die vollständige URL von dort",
+  "youtube_url": "Dieses Feld muss eine gültige YouTube-URL sein, navigieren Sie zu Ihrer YouTube-Seite und kopieren Sie die vollständige URL von dort",
+  "twitch_url": "Dieses Feld muss eine gültige Twitch-URL sein, navigieren Sie zu Ihrer Twitch-Seite und kopieren Sie die vollständige URL von dort",
+  "tiktok_url": "Dieses Feld muss eine gültige TikTok-URL sein, navigieren Sie zu Ihrer TikTok-Seite und kopieren Sie die vollständige URL von dort",
+  "spotify_url": "Dieses Feld muss eine gültige Spotify-URL sein, navigieren Sie zu Ihrer Spotify-Seite und kopieren Sie die vollständige URL von dort",
+  "google_play_url": "Dieses Feld muss eine gültige Google Play-URL sein, navigieren Sie zu Ihrer App-Seite auf Google Play und kopieren Sie die vollständige URL von dort",
+  "app_store_url": "Dieses Feld muss eine gültige App Store-URL sein, navigieren Sie zu Ihrer App-Seite im App Store und kopieren Sie die vollständige URL von dort",
 }
 
 export default locale;

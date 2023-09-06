@@ -60,7 +60,6 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
     "n_minutes": "@n دقائق",
     "1_second": "1 ثانية",
     "n_seconds": "@n ثواني",
-
     /// @example 2 أيام و 1 ساعة
     /// @example 1 ساعة و 2 دقائق
     /// @example 10 دقائق و 3 ثواني
@@ -72,13 +71,13 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
       "now": "الآن",
       "today": "اليوم",
       "yesterday": "أمس",
-      "last-24h": "الـ 24 ساعة الماضية",
+      "last-24h": "آخر 24 ساعة",
       "this-week": "هذا الأسبوع",
       "previous-week": "الأسبوع الماضي",
-      "last-7d": "الـ 7 أيام الماضية",
+      "last-7d": "آخر 7 أيام",
       "this-month": "هذا الشهر",
       "previous-month": "الشهر الماضي",
-      "last-30d": "الـ 30 يوم الماضية",
+      "last-30d": "آخر 30 يوم",
       "custom": "مخصص",
     },
 
@@ -92,7 +91,11 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
   "data_grid": {
     "export_as_csv": "تصدير كـ CSV"
-  }
+  },
+
+  "Search...": "بحث...",
+  "No_stations_for_this_query": "لم يتم العثور على محطات لهذا البحث",
+  "This_field_is_required": "هذا الحقل مطلوب",
 }
 
 export default locale;

@@ -420,8 +420,7 @@
     <div class="no-owner-message">
       <p>
         {$locale.pages["account/members"].no_owner_message_p1}
-      </p>
-      <p>
+        <br />
         {$locale.pages["account/members"].no_owner_message_p2}
       </p>
     </div>

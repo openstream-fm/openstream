@@ -91,7 +91,11 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
   "data_grid": {
     "export_as_csv": "Exportar como CSV"
-  }
+  },
+
+  "Search...": "Buscar...",
+  "No_stations_for_this_query": "No se encontraron estaciones para esta búsqueda",
+  "This_field_is_required": "Este campo es requerido",
 }
 
 export default locale;

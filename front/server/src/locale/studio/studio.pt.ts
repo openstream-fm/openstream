@@ -1,3 +1,4 @@
+/// file: studio.pt.ts
 import stats_map from "../share/stats-map/stats-map.pt";
 import validate from "../share/validate/validate.pt";
 import countries from "../share/countries/countries.pt";
@@ -9,6 +10,7 @@ import station_profile from "../share/station-profile/station-profile.pt";
 import misc from "../misc/misc.pt";
 
 const locale: import("./studio.locale").StudioLocale = {
+
   "lang": "pt",
   "region": null,
 
@@ -20,7 +22,7 @@ const locale: import("./studio.locale").StudioLocale = {
 
   // @notranslate
   "app_name": "Openstream Studio",
-
+  
   type_of_content,
   countries,
   langs,
@@ -28,8 +30,14 @@ const locale: import("./studio.locale").StudioLocale = {
   stats_map,
   analytics,
   payments,
-  station_profile,
   misc,
+  station_profile,
+
+  "copy_to_clipboard": "Copiar para a área de transferência",
+  "show_password": "Mostrar senha",
+  "hide_password": "Ocultar senha",
+
+  "prevent_unload_message":  "Se você sair desta página, as alterações feitas serão perdidas. Você quer sair da página mesmo assim?",
 
   "language": {
     "auto": "Detecção automática",
@@ -44,11 +52,6 @@ const locale: import("./studio.locale").StudioLocale = {
     "ar": "عربي (Árabe)",
   },
 
-  "copy_to_clipboard": "Copiar para a área de transferência",
-  "show_password": "Mostrar senha",
-  "hide_password": "Ocultar senha",
-
-
   "drawer": {
     "account_selector": {
       "see_all_accounts": "Ver todas as contas",
@@ -56,7 +59,7 @@ const locale: import("./studio.locale").StudioLocale = {
     "dashboard": "Painel",
     "stations": "Estações",
     "members": "Membros",
-    "analytics": "Análise",
+    "analytics": "Analítica",
   },
 
   "limits": {
@@ -93,7 +96,7 @@ const locale: import("./studio.locale").StudioLocale = {
 
     "trial": {
       "30_day": "30 dias",
-      "free_trial": "de teste grátis",
+      "free_trial": "de teste gratuito",
       "tooltip": "Você não será cobrado até que seu teste termine, e você pode cancelar a qualquer momento"
     },
 
@@ -114,7 +117,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "n_stations": "Até @n estações diferentes",
       "listeners": "Até @n ouvintes simultâneos",
       "transfer": "Com @tb TB de transferência mensal, você terá capacidade para transmitir cerca de @hours horas de áudio",
-      "storage": "@gb GB de armazenamento para músicas ou episódios antigos",
+      "storage": "@gb GB de armazenamento para música ou episódios antigos",
       "staff": "Você pode adicionar usuários para toda a sua equipe sem limite",
       "auto_dj": "Transmita a partir de uma playlist quando estiver offline",
       "stats": "Estatísticas históricas e ao vivo, saiba quem está ouvindo suas estações",
@@ -148,8 +151,8 @@ const locale: import("./studio.locale").StudioLocale = {
       },
       "links": {
         "forgot": "Esqueceu sua senha?",
-        "new_user": "Usuário novo?",
-        "sign_up": "Inscrever-se",
+        "new_user": "Novo usuário?",
+        "sign_up": "Registre-se",
       },
       "submit": "Entrar"
     },
@@ -159,8 +162,8 @@ const locale: import("./studio.locale").StudioLocale = {
         "title": "Recuperar sua conta",
       },
       "title": "Recuperar",
-      "comment": "Enviaremos um e-mail para você recuperar sua conta",
-      "sent_message_html": "Enviamos um e-mail para <b>@email</b> com instruções para continuar",
+      "comment": "Enviaremos um email para você recuperar sua conta",
+      "sent_message_html": "Enviamos um email para <b>@email</b> com instruções para continuar",
       "links": {
         "login": "Voltar para Entrar",
       },
@@ -172,18 +175,18 @@ const locale: import("./studio.locale").StudioLocale = {
         "title": "Planos e Preços",
       },
       "title_1": "Ao vivo em 3... 2... 1...",
-      "title_2": "Comece sua estação em menos de 60 segundos.",
+      "title_2": "Comece sua estação de rádio em menos de 60 segundos.",
       "title_3": "Você não será cobrado até que seu teste termine. E você pode cancelar a qualquer momento.",
       "plan_selector": {
-        "select_btn_label": "Iniciar Teste",
+        "select_btn_label": "Começar Teste",
       }
     },
 
     "register": {
       "head": {
-        "title": "Inscrever-me",
+        "title": "Registre-se",
       },
-      "title": "Comece seu teste grátis",
+      "title": "Comece seu teste gratuito",
       "plan": {
         "selected_plan": "Plano selecionado",
         "n_per_month": "@n / mês",
@@ -200,7 +203,7 @@ const locale: import("./studio.locale").StudioLocale = {
       },
       "form": {
         "title": "Conte-nos sobre você",
-        "account_name_comment": "Se você está criando uma conta para uma organização, pode preencher este campo com o nome da organização",
+        "account_name_comment": "Se você está criando uma conta para uma organização, você pode preencher este campo com o nome da organização",
         "fields": {
           "first_name": "Seu nome",
           "last_name": "Seu sobrenome",
@@ -214,18 +217,18 @@ const locale: import("./studio.locale").StudioLocale = {
       },
       "pay": {
         "title": "Detalhes do pagamento",
-        "message": "Você não será cobrado até o final do seu teste de 30 dias e pode cancelar a qualquer momento."
+        "message": "Você não será cobrado até que seu teste gratuito de 30 dias termine e você pode cancelar a qualquer momento."
       },
 
-      "back": "Voltar ao passo anterior",
+      "back": "Voltar para o passo anterior",
 
       "verification": {
-        "title": "Digite o código de verificação",
+        "title": "Insira o código de verificação",
         "message_html": "Enviamos um código de verificação para <b>@email</b>",
         "submit": "Enviar",
       },
       "links": {
-        "login_comment": "Já possui uma conta?",
+        "login_comment": "Já tem uma conta?",
         "login_link": "Entrar",
       }
     },
@@ -259,9 +262,9 @@ const locale: import("./studio.locale").StudioLocale = {
         "title": "Contas",
       },
       "title": "Escolha uma conta",
-      "create_new_account": "criar uma nova conta",
+      "create_new_account": "crie uma nova conta",
       "or": "ou",
-      "no_items_message_html": "Você ainda não possui uma conta de transmissão.<br/>Para começar a transmitir, crie sua conta de transmissão.",
+      "no_items_message_html": "Você ainda não tem uma conta de transmissão.<br/>Para começar a transmitir, crie sua conta de transmissão.",
       "no_items_create": "Criar minha conta de transmissão",
     },
 

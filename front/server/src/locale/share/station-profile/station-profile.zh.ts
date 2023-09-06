@@ -6,9 +6,12 @@ const locale: import("./station-profile.locale").StationProfileLocale = {
     "contact_info": "联系信息",
     "social": "社交媒体",
     "apps": "应用程序",
+    "advanced": "高级设置",
   },
   "validation": {
     "logo_required": "需要标志",
+    "admob_app_id_pattern": "AdMob应用程序ID与模式不匹配",
+    "admob_banner_id_pattern": "AdMob横幅ID与模式不匹配",
   },
   "upload_image": "上传图片",
   "picture_requirement_labels": {
@@ -22,8 +25,8 @@ const locale: import("./station-profile.locale").StationProfileLocale = {
     "Main_frequency": "主频率",
     "Frequency": "频率",
     "Web_only": "仅网络",
-    "Frequency_AM": "调幅",
-    "Frequency_FM": "调频",
+    "Frequency_AM": "AM",
+    "Frequency_FM": "FM",
   },
 
   "labels": {
@@ -46,7 +49,14 @@ const locale: import("./station-profile.locale").StationProfileLocale = {
     "twitch": "Twitch的URL",
     "spotify": "Spotify的URL",
     "google_play": "Google Play的URL",
-    "app_store": "App Store的URL"
+    "app_store": "App Store的URL",
+
+    "mob_app_base_color": "应用程序的基础背景颜色",
+    "mob_app_icon_bg_color": "应用程序图标的背景颜色",
+    "mob_app_icon_round": "应用程序图标是完全圆形的",
+    "mob_app_enable_ads": "在应用程序中启用广告",
+    "mob_app_admob_app_id": "AdMob应用程序ID",
+    "mob_app_admob_banner_id": "AdMob横幅ID",
   }
 };
 

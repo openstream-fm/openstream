@@ -3,13 +3,13 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Sessions": "会话",
   "Listeners": "听众",
   "Unique_IPs": "唯一的IP",
-  "Average_listening_minutes": "平均收听分钟",
+  "Average_listening_minutes": "平均收听分钟数",
   "Average_listening_time": "平均收听时间",
   "Total_listening_time": "总收听时间",
-  "Total_listening_hours": "总收听小时",
-  "Total_transfer": "总传输",
+  "Total_listening_hours": "总收听小时数",
+  "Total_transfer": "总传输量",
   "Total_transfer_in_MB": "总传输量（MB）",
-  "Max_concurrent_listeners": "最大并发听众",
+  "Max_concurrent_listeners": "最大并发听众数",
 
   // @example Browser: Chrome
   "Browser": "浏览器",
@@ -61,9 +61,9 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
     "1_second": "1秒",
     "n_seconds": "@n秒",
 
-    /// @example 2天和1小时
-    /// @example 1小时和2分钟
-    /// @example 10分钟和3秒
+    /// @example 2 días y 1 hora
+    /// @example 1 hora y 2 minutos
+    /// @example 10 minutos y 3 segundos
     "join": "@time1和@time2",
   },
 
@@ -92,7 +92,11 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
   "data_grid": {
     "export_as_csv": "导出为CSV"
-  }
+  },
+
+  "Search...": "搜索...",
+  "No_stations_for_this_query": "此查询未找到电台",
+  "This_field_is_required": "此字段为必填项",
 }
 
 export default locale;

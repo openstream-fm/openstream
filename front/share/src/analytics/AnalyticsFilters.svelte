@@ -263,10 +263,9 @@
     on_submit({ ...query, qs });
   }
 
-  // TODO: locale
   const validate_date = (v: Date | null): string | null => {
     if(v == null) {
-      return "This field is required";
+      return locale.This_field_is_required;
     }
     return null;
   }
@@ -577,8 +576,7 @@
       {#if stations_menu_open}
         <div class="menu thin-scroll" transition:logical_fly={{ y: -25, duration: 200 }} use:click_out={() => stations_menu_click_out()}>
           <div class="stations-q-out">
-            <!-- TODO: locale-->
-            <input type="text" class="stations-q" placeholder="Search..." bind:value={station_filter_q} />
+            <input type="text" class="stations-q" placeholder={locale["Search..."]} bind:value={station_filter_q} />
           </div>
           {#each stations_filter_show as station (station._id)}
             {@const selected =
@@ -621,8 +619,7 @@
               {#if station_filter_q.trim() === ""}
                 {locale.filters.no_stations_message}
               {:else}
-                <!-- TODO: locale -->
-                There's no stations for this query
+                {locale.No_stations_for_this_query}
               {/if}
             </div>
           {/each}

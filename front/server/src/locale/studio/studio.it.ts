@@ -1,4 +1,4 @@
-/// file: countries.it.ts
+/// file: studio.it.ts
 import stats_map from "../share/stats-map/stats-map.it";
 import validate from "../share/validate/validate.it";
 import countries from "../share/countries/countries.it";
@@ -30,35 +30,36 @@ const locale: import("./studio.locale").StudioLocale = {
   stats_map,
   analytics,
   payments,
-  station_profile,
   misc,
-
-  "language": {
-    "auto": "Rilevamento automatico",
-    "en": "English (Inglese)",
-    "es": "Español (Spagnolo)",
-    "es-AR": "Español de Argentina (Spagnolo Argentino)",
-    "pt": "Português (Portoghese)",
-    "de": "Deutsche (Tedesco)",
-    "fr": "Française (Francese)",
-    "it": "Italiano",
-    "zh": "简体中文 (Cinese Semplificato)",
-    "ar": "عربي (Arabo)",
-  },
+  station_profile,
 
   "copy_to_clipboard": "Copia negli appunti",
   "show_password": "Mostra password",
   "hide_password": "Nascondi password",
 
+  "prevent_unload_message":  "Se lasci questa pagina, le modifiche apportate andranno perse. Vuoi abbandonare la pagina comunque?",
+
+  "language": {
+    "auto": "Détection automatique",
+    "en": "English (Anglais)",
+    "es": "Español (Espagnol)",
+    "es-AR": "Español de Argentina (Espagnol argentin)",
+    "pt": "Portugyês (Portugais)",
+    "de": "Deutsche (Allemande)",
+    "fr": "Française",
+    "it": "Italiano (Italien)",
+    "zh": "简体中文 (Chinois Simplifié)",
+    "ar": "عربي (Arabe)",
+  },
 
   "drawer": {
     "account_selector": {
-      "see_all_accounts": "Visualizza tutti gli account",
+      "see_all_accounts": "Vedi tutti gli account",
     },
     "dashboard": "Pannello di controllo",
     "stations": "Stazioni",
     "members": "Membri",
-    "analytics": "Analisi",
+    "analytics": "Analitica",
   },
 
   "limits": {
@@ -96,7 +97,7 @@ const locale: import("./studio.locale").StudioLocale = {
     "trial": {
       "30_day": "30 giorni",
       "free_trial": "di prova gratuita",
-      "tooltip": "Non ti verrà addebitato nulla fino alla fine del periodo di prova e puoi cancellare in qualsiasi momento"
+      "tooltip": "Non ti verrà addebitato nulla fino alla fine del tuo periodo di prova, e puoi cancellare in qualsiasi momento"
     },
 
     "features": {
@@ -108,7 +109,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "staff": "utenti",
       "auto_dj": "Auto DJ",
       "stats": "Statistiche avanzate",
-      "android_app": "Applicazione per Android",
+      "android_app": "App per Android",
     },
 
     "tooltips": {
@@ -120,7 +121,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "staff": "Puoi aggiungere utenti per tutto il tuo team senza limiti",
       "auto_dj": "Trasmetti da una playlist quando sei offline",
       "stats": "Statistiche storiche e in tempo reale, scopri chi sta ascoltando le tue stazioni",
-      "android_app": "Un'applicazione per Android con il tuo marchio e le tue stazioni, disponibile in tutto il mondo tramite Google Play",
+      "android_app": "Un'app per Android con il tuo marchio e le tue stazioni, disponibile in tutto il mondo tramite Google Play",
     }
   },
 
@@ -135,7 +136,7 @@ const locale: import("./studio.locale").StudioLocale = {
           "title": "Offline",
         },
         "title": "Sembra che tu sia offline",
-        "text": "È necessario l'accesso a Internet per utilizzare @app_name",
+        "text": "È necessario l'accesso a internet per utilizzare @app_name",
       }
     },
 
@@ -151,7 +152,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "links": {
         "forgot": "Hai dimenticato la password?",
         "new_user": "Nuovo utente?",
-        "sign_up": "Iscriviti",
+        "sign_up": "Registrati",
       },
       "submit": "Accedi"
     },
@@ -171,11 +172,11 @@ const locale: import("./studio.locale").StudioLocale = {
 
     "plans": {
       "head": {
-        "title": "Piani e prezzi",
+        "title": "Piani e Prezzi",
       },
       "title_1": "In diretta in 3... 2... 1...",
       "title_2": "Avvia la tua stazione radio in meno di 60 secondi.",
-      "title_3": "Non ti verrà addebitato nulla fino alla fine del periodo di prova. E puoi cancellare in qualsiasi momento.",
+      "title_3": "Non ti verrà addebitato nulla fino alla fine del tuo periodo di prova. E puoi cancellare in qualsiasi momento.",
       "plan_selector": {
         "select_btn_label": "Inizia la prova",
       }
@@ -215,11 +216,11 @@ const locale: import("./studio.locale").StudioLocale = {
         "next": "Avanti",
       },
       "pay": {
-        "title": "Dettagli del pagamento",
-        "message": "Non verrai addebitato fino alla fine del tuo periodo di prova di 30 giorni e puoi cancellare in qualsiasi momento."
+        "title": "Dettagli di pagamento",
+        "message": "Non ti verrà addebitato nulla fino alla fine del tuo periodo di prova gratuito di 30 giorni e puoi cancellare in qualsiasi momento."
       },
 
-      "back": "Torna al passo precedente",
+      "back": "Torna al passaggio precedente",
 
       "verification": {
         "title": "Inserisci il codice di verifica",
@@ -245,9 +246,9 @@ const locale: import("./studio.locale").StudioLocale = {
         "confirm_password": "Conferma password",
       },
       "error": {
-        "used_message_html": "Il link che hai utilizzato per accedere a questa pagina è già stato utilizzato. <br /> Crea un nuovo link dalla @user_recovery_page",
-        "expired_message_html": "Il link che hai utilizzato per accedere a questa pagina è scaduto. <br /> Crea un nuovo link dalla @user_recovery_page",
-        "not_found_message_html": "Il link che hai utilizzato per accedere a questa pagina non esiste. <br /> Crea un nuovo link dalla @user_recovery_page",
+        "used_message_html": "Il link che hai utilizzato per accedere a questa pagina è già stato utilizzato.<br /> Crea un nuovo link dalla @user_recovery_page",
+        "expired_message_html": "Il link che hai utilizzato per accedere a questa pagina è scaduto.<br /> Crea un nuovo link dalla @user_recovery_page",
+        "not_found_message_html": "Il link che hai utilizzato per accedere a questa pagina non esiste.<br /> Crea un nuovo link dalla @user_recovery_page",
         "user_recovery_page": "pagina di recupero",
       },
       "submit": "Invia",
@@ -263,8 +264,8 @@ const locale: import("./studio.locale").StudioLocale = {
       "title": "Scegli un account",
       "create_new_account": "crea un nuovo account",
       "or": "o",
-      "no_items_message_html": "Non hai ancora un account emittente. <br/> Per iniziare a trasmettere, crea il tuo account emittente.",
-      "no_items_create": "Crea il mio account emittente",
+      "no_items_message_html": "Non hai ancora un account di trasmissione.<br/>Per iniziare a trasmettere, crea il tuo account di trasmissione.",
+      "no_items_create": "Crea il mio account di trasmissione",
     },
 
     "accounts/create_account": {
