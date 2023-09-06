@@ -62,8 +62,7 @@
 
   prevent_unload(() => {
     if(!equals(start, current)) {
-      // TODO: locale
-      return "If you leave this page your changes will be lost. Do you want to leave anyway?";
+      return $locale.prevent_unload_message;
     } else return null;
   })
 

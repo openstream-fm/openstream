@@ -27,7 +27,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
   "Website": "Sito web",
 
-  // @example Coutry: Argentina
+  // @example Country: Italy
   "Country": "Paese",
 
   // @example Date: 2022/01/01
@@ -92,7 +92,11 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
   "data_grid": {
     "export_as_csv": "Esporta come CSV"
-  }
+  },
+
+  "Search...": "Cerca...",
+  "No_stations_for_this_query": "Nessuna stazione trovata per questa ricerca",
+  "This_field_is_required": "Questo campo è obbligatorio",
 }
 
 export default locale;

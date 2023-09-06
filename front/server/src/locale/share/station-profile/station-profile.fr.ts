@@ -6,15 +6,18 @@ const locale: import("./station-profile.locale").StationProfileLocale = {
     "contact_info": "Informations de contact",
     "social": "Réseaux sociaux",
     "apps": "Applications",
+    "advanced": "Configuration avancée",
   },
   "validation": {
     "logo_required": "Le logo est requis",
+    "admob_app_id_pattern": "L'Id de l'application AdMob ne correspond pas au modèle",
+    "admob_banner_id_pattern": "L'Id de la bannière AdMob ne correspond pas au modèle",
   },
   "upload_image": "Télécharger une image",
   "picture_requirement_labels": {
-    "format": "Formats d'image acceptés:",
-    "size": "Taille minimale de l'image:",
-    "file_size": "Taille maximale du fichier:",
+    "format": "Formats d'image acceptés :",
+    "size": "Taille minimale de l'image :",
+    "file_size": "Taille maximale du fichier :",
     "square": "L'image doit être carrée",
   },
 
@@ -46,7 +49,14 @@ const locale: import("./station-profile.locale").StationProfileLocale = {
     "twitch": "URL de Twitch",
     "spotify": "URL de Spotify",
     "google_play": "URL de Google Play",
-    "app_store": "URL de l'App Store"
+    "app_store": "URL de l'App Store",
+
+    "mob_app_base_color": "Couleur de fond de base de l'application",
+    "mob_app_icon_bg_color": "Couleur de fond de l'icône de l'application",
+    "mob_app_icon_round": "L'icône de l'application est complètement arrondie",
+    "mob_app_enable_ads": "Activer les annonces dans l'application",
+    "mob_app_admob_app_id": "Id de l'application AdMob",
+    "mob_app_admob_banner_id": "Id de la bannière AdMob",
   }
 };
 

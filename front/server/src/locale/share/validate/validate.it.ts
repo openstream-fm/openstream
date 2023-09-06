@@ -28,18 +28,20 @@ const locale: import("./validate.locale").ValidateLocale = {
     "protocol": "Questo campo deve iniziare con http:// o https://",
   },
 
-  "email_registered": "Questa email è già registrata",
+  "email_registered": "Questo email è già registrato",
 
-  "twitter_url": "Questo campo deve essere un URL di Twitter valido, vai alla tua pagina di Twitter e copia l'URL completo da lì",
-  "facebook_url": "Questo campo deve essere un URL di Facebook valido, vai alla tua pagina di Facebook e copia l'URL completo da lì",
-  "instagram_url": "Questo campo deve essere un URL di Instagram valido, vai alla tua pagina di Instagram e copia l'URL completo da lì",
-  "threads_url": "Questo campo deve essere un URL di Threads valido, vai alla tua pagina di Threads e copia l'URL completo da lì",
-  "youtube_url": "Questo campo deve essere un URL di Youtube valido, vai alla tua pagina di Youtube e copia l'URL completo da lì",
-  "twitch_url": "Questo campo deve essere un URL di Twitch valido, vai alla tua pagina di Twitch e copia l'URL completo da lì",
-  "tiktok_url": "Questo campo deve essere un URL di TikTok valido, vai alla tua pagina di TikTok e copia l'URL completo da lì",
-  "spotify_url": "Questo campo deve essere un URL di Spotify valido, vai alla tua pagina di Spotify e copia l'URL completo da lì",
-  "google_play_url": "Questo campo deve essere un URL di Google Play valido, vai alla pagina della tua applicazione su Google Play e copia l'URL completo da lì",
-  "app_store_url": "Questo campo deve essere un URL di App Store valido, vai alla pagina della tua applicazione su App Store e copia l'URL completo da lì",
+  "css_color": "Questo campo deve essere un colore CSS valido, ad esempio: #ffffff o rgba(0,0,0,0)",
+
+  "twitter_url": "Questo campo deve essere un URL di Twitter valido, vai alla tua pagina Twitter e copia l'URL completo da lì",
+  "facebook_url": "Questo campo deve essere un URL di Facebook valido, vai alla tua pagina Facebook e copia l'URL completo da lì",
+  "instagram_url": "Questo campo deve essere un URL di Instagram valido, vai alla tua pagina Instagram e copia l'URL completo da lì",
+  "threads_url": "Questo campo deve essere un URL di Threads valido, vai alla tua pagina Threads e copia l'URL completo da lì",
+  "youtube_url": "Questo campo deve essere un URL di Youtube valido, vai alla tua pagina Youtube e copia l'URL completo da lì",
+  "twitch_url": "Questo campo deve essere un URL di Twitch valido, vai alla tua pagina Twitch e copia l'URL completo da lì",
+  "tiktok_url": "Questo campo deve essere un URL di TikTok valido, vai alla tua pagina TikTok e copia l'URL completo da lì",
+  "spotify_url": "Questo campo deve essere un URL di Spotify valido, vai alla tua pagina Spotify e copia l'URL completo da lì",
+  "google_play_url": "Questo campo deve essere un URL di Google Play valido, vai alla pagina della tua app su Google Play e copia l'URL completo da lì",
+  "app_store_url": "Questo campo deve essere un URL di App Store valido, vai alla pagina della tua app su App Store e copia l'URL completo da lì",
 }
 
 export default locale;

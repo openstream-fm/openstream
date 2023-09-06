@@ -10,6 +10,7 @@ import station_profile from "../share/station-profile/station-profile.fr";
 import misc from "../misc/misc.fr";
 
 const locale: import("./studio.locale").StudioLocale = {
+
   "lang": "fr",
   "region": null,
 
@@ -21,7 +22,7 @@ const locale: import("./studio.locale").StudioLocale = {
 
   // @notranslate
   "app_name": "Openstream Studio",
-
+  
   type_of_content,
   countries,
   langs,
@@ -29,8 +30,14 @@ const locale: import("./studio.locale").StudioLocale = {
   stats_map,
   analytics,
   payments,
-  station_profile,
   misc,
+  station_profile,
+
+  "copy_to_clipboard": "Copier dans le presse-papiers",
+  "show_password": "Afficher le mot de passe",
+  "hide_password": "Masquer le mot de passe",
+
+  "prevent_unload_message":  "Si vous quittez cette page, les modifications que vous avez apportées seront perdues. Voulez-vous quitter la page quand même?",
 
   "language": {
     "auto": "Détection automatique",
@@ -44,11 +51,6 @@ const locale: import("./studio.locale").StudioLocale = {
     "zh": "简体中文 (Chinois Simplifié)",
     "ar": "عربي (Arabe)",
   },
-
-  "copy_to_clipboard": "Copier dans le presse-papiers",
-  "show_password": "Afficher le mot de passe",
-  "hide_password": "Masquer le mot de passe",
-
 
   "drawer": {
     "account_selector": {
@@ -95,7 +97,7 @@ const locale: import("./studio.locale").StudioLocale = {
     "trial": {
       "30_day": "30 jours",
       "free_trial": "d'essai gratuit",
-      "tooltip": "Vous ne serez pas facturé avant la fin de votre essai, et vous pouvez annuler à tout moment"
+      "tooltip": "Vous ne serez pas facturé jusqu'à la fin de votre essai, et vous pouvez annuler à tout moment"
     },
 
     "features": {
@@ -119,7 +121,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "staff": "Vous pouvez ajouter des utilisateurs pour toute votre équipe sans limite",
       "auto_dj": "Diffusez à partir d'une playlist lorsque vous êtes hors ligne",
       "stats": "Statistiques historiques et en direct, sachez qui écoute vos stations",
-      "android_app": "Une application Android avec votre marque et vos stations, disponible dans le monde entier via Google Play",
+      "android_app": "Une application pour Android avec votre marque et vos stations, disponible dans le monde entier via Google Play",
     }
   },
 
@@ -160,8 +162,8 @@ const locale: import("./studio.locale").StudioLocale = {
         "title": "Récupérer votre compte",
       },
       "title": "Récupérer",
-      "comment": "Nous vous enverrons un e-mail pour récupérer votre compte",
-      "sent_message_html": "Nous avons envoyé un e-mail à <b>@email</b> avec des instructions pour continuer",
+      "comment": "Nous vous enverrons un email pour que vous puissiez récupérer votre compte",
+      "sent_message_html": "Nous avons envoyé un email à <b>@email</b> avec des instructions pour continuer",
       "links": {
         "login": "Retour à la connexion",
       },
@@ -173,8 +175,8 @@ const locale: import("./studio.locale").StudioLocale = {
         "title": "Plans et tarifs",
       },
       "title_1": "En direct dans 3... 2... 1...",
-      "title_2": "Lancez votre station en moins de 60 secondes.",
-      "title_3": "Vous ne serez pas facturé avant la fin de votre essai. Et vous pouvez annuler à tout moment.",
+      "title_2": "Commencez votre station en moins de 60 secondes.",
+      "title_3": "Vous ne serez pas facturé jusqu'à la fin de votre essai. Et vous pouvez annuler à tout moment.",
       "plan_selector": {
         "select_btn_label": "Commencer l'essai",
       }
@@ -214,11 +216,11 @@ const locale: import("./studio.locale").StudioLocale = {
         "next": "Suivant",
       },
       "pay": {
-        "title": "Détails du paiement",
-        "message": "Vous ne serez pas facturé avant la fin de votre essai de 30 jours et vous pouvez annuler à tout moment."
+        "title": "Détails de paiement",
+        "message": "Vous ne serez pas facturé jusqu'à la fin de votre essai gratuit de 30 jours et vous pouvez annuler à tout moment."
       },
-      
-      "back": "Revenez à l'étape précédente",
+
+      "back": "Retour à l'étape précédente",
 
       "verification": {
         "title": "Entrez le code de vérification",
@@ -235,7 +237,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "head_page_title": {
         "expired": "Le lien a expiré",
         "used": "Le lien a déjà été utilisé",
-        "not_found": "Lien introuvable",
+        "not_found": "Lien non trouvé",
         "ok": "Réinitialisez votre mot de passe",
       },
       "fields": {
@@ -260,10 +262,10 @@ const locale: import("./studio.locale").StudioLocale = {
         "title": "Comptes",
       },
       "title": "Choisissez un compte",
-      "create_new_account": "créez un nouveau compte",
+      "create_new_account": "créer un nouveau compte",
       "or": "ou",
-      "no_items_message_html": "Vous n'avez pas encore de compte émetteur.<br/>Pour commencer à diffuser, créez votre compte émetteur.",
-      "no_items_create": "Créer mon compte émetteur",
+      "no_items_message_html": "Vous n'avez pas encore de compte de diffusion.<br/>Pour commencer à diffuser, créez votre compte de diffusion.",
+      "no_items_create": "Créer mon compte de diffusion",
     },
 
     "accounts/create_account": {

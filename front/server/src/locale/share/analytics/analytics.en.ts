@@ -91,7 +91,11 @@ const locale = {
 
   "data_grid": {
     "export_as_csv": "Export as CSV"
-  }
+  },
+
+  "Search...": "Search...",
+  "No_stations_for_this_query": "There are no stations for this query",
+  "This_field_is_required": "This field is required",
 }
 
 export default locale;

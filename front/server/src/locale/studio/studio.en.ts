@@ -36,6 +36,8 @@ const locale = {
   "show_password": "Show password",
   "hide_password": "Hide password",
 
+  "prevent_unload_message":  "If you leave this page your changes will be lost. Do you want to leave anyway?",
+
   "language": {
     "auto": "Auto detect",
     "en": "English",

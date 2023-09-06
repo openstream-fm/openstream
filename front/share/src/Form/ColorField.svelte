@@ -5,22 +5,21 @@
 
   import TextField from "$share/Form/TextField.svelte";
 	import Validator from "$share/formy/Validator.svelte";
-	
+	import { locale } from "$share/locale";
+
   import Color from "color";
 
   const _color_validation = (value: string) => {
     
     if(value === "") {
       if(required) {
-        // TODO: locale
-        return "This field is required";
+        return $locale.validate.required;
       }
     } else {
       try {
         new Color(value);
       } catch(e: any) {
-        // TODO: locale
-        return "This field must be a valid CSS color, e.g. #ffffff or rgba(0,0,0,0)"
+        return $locale.validate.css_color;
       }
     }
     

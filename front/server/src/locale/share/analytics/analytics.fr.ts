@@ -85,14 +85,18 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
     "submit": "Obtenir des analyses",
 
     "All_stations": "Toutes les stations",
-    "No_stations": "Pas de stations",
+    "No_stations": "Sans stations",
 
     "no_stations_message": "Ce compte n'a pas de stations",
   },
 
   "data_grid": {
     "export_as_csv": "Exporter en CSV"
-  }
+  },
+
+  "Search...": "Rechercher...",
+  "No_stations_for_this_query": "Aucune station trouvée pour cette recherche",
+  "This_field_is_required": "Ce champ est requis",
 }
 
 export default locale;

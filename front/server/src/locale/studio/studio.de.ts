@@ -1,5 +1,5 @@
-// de.ts
-import stats_map from "../share/stats-map/stats-map.de"
+/// file: studio.de.ts
+import stats_map from "../share/stats-map/stats-map.de";
 import validate from "../share/validate/validate.de";
 import countries from "../share/countries/countries.de";
 import langs from "../share/langs/langs.de";
@@ -9,10 +9,10 @@ import payments from "../share/payments/payments.de";
 import station_profile from "../share/station-profile/station-profile.de";
 import misc from "../misc/misc.de";
 
-const locale = {
+const locale: import("./studio.locale").StudioLocale = {
 
   "lang": "de",
-  "region": null as string | null,
+  "region": null,
 
   // @notranslate
   "logo_text": "openstream",
@@ -22,7 +22,7 @@ const locale = {
 
   // @notranslate
   "app_name": "Openstream Studio",
-
+  
   type_of_content,
   countries,
   langs,
@@ -30,12 +30,14 @@ const locale = {
   stats_map,
   analytics,
   payments,
-  station_profile,
   misc,
+  station_profile,
 
   "copy_to_clipboard": "In die Zwischenablage kopieren",
   "show_password": "Passwort anzeigen",
-  "hide_password": "Passwort ausblenden",
+  "hide_password": "Passwort verstecken",
+
+  "prevent_unload_message":  "Wenn Sie diese Seite verlassen, gehen die von Ihnen vorgenommenen Änderungen verloren. Möchten Sie die Seite trotzdem verlassen?",
 
   "language": {
     "auto": "Automatisch erkennen",
@@ -57,14 +59,14 @@ const locale = {
     "dashboard": "Dashboard",
     "stations": "Stationen",
     "members": "Mitglieder",
-    "analytics": "Analysen",
+    "analytics": "Analytik",
   },
 
   "limits": {
     "of": "von",
     "stations": "Stationen",
     "listeners": "Zuhörer",
-    "transfer": "Transfer",
+    "transfer": "Übertragung",
     "storage": "Speicher",
   },
 
@@ -94,48 +96,47 @@ const locale = {
 
     "trial": {
       "30_day": "30 Tage",
-      "free_trial": "Kostenlose Testversion",
-      "tooltip": "Sie werden erst nach Ende Ihrer Testversion in Rechnung gestellt, und Sie können jederzeit kündigen"
+      "free_trial": "kostenlose Probe",
+      "tooltip": "Es wird nichts berechnet, bis Ihr Test abgeschlossen ist, und Sie können jederzeit kündigen"
     },
 
     "features": {
       "station": "Station",
       "stations": "Stationen",
       "listeners": "Zuhörer",
-      "transfer": "Bandbreite",
+      "transfer": "Übertragung",
       "storage": "Speicher",
-      "staff": "Mitarbeiterbenutzer",
+      "staff": "Benutzer",
       "auto_dj": "Auto DJ",
       "stats": "Erweiterte Statistiken",
       "android_app": "Android-App",
     },
 
     "tooltips": {
-      "one_station": "Mit diesem Plan können Sie nur eine Station erstellen",
+      "one_station": "Sie können nur eine Station in diesem Plan erstellen",
       "n_stations": "Bis zu @n verschiedene Stationen",
       "listeners": "Bis zu @n gleichzeitige Zuhörer",
-      "transfer": "@tb TB monatlicher Transfer ermöglichen etwa @hours Hörstunden",
+      "transfer": "Mit @tb TB monatlicher Übertragung können Sie etwa @hours Stunden Audio übertragen",
       "storage": "@gb GB Speicherplatz für Musik oder alte Episoden",
-      "staff": "Fügen Sie alle gewünschten Mitarbeiterbenutzer hinzu",
-      "auto_dj": "Senden Sie aus einer Playlist, wenn Sie nicht online sind",
-      "stats": "Erweiterte Live- und historische Statistiken, sehen Sie, wer Ihre Stationen hört",
-      "android_app": "Eine Android-Anwendung, die auf Ihre Stationen zugeschnitten ist und weltweit über Google Play verfügbar ist",
-
+      "staff": "Sie können Benutzer für Ihr gesamtes Team ohne Limit hinzufügen",
+      "auto_dj": "Senden Sie von einer Playlist, wenn Sie offline sind",
+      "stats": "Historische und Live-Statistiken, wissen Sie, wer Ihre Stationen hört",
+      "android_app": "Eine Android-App mit Ihrer Marke und Ihren Stationen, weltweit verfügbar über Google Play",
     }
   },
 
   "pages": {
 
     "error": {
-      "retry": "Wiederholen",
-      "home": "Bring mich nach Hause",
+      "retry": "Erneut versuchen",
+      "home": "Zur Startseite gehen",
       "default_message": "Ein Fehler ist aufgetreten",
       "offline": {
         "head": {
           "title": "Offline",
         },
-        "title": "Es scheint, dass Sie offline sind",
-        "text": "Sie benötigen Internetzugang, um @app_name zu verwenden",
+        "title": "Es sieht so aus, als wären Sie offline",
+        "text": "Für die Nutzung von @app_name ist eine Internetverbindung erforderlich",
       }
     },
 
@@ -161,8 +162,8 @@ const locale = {
         "title": "Konto wiederherstellen",
       },
       "title": "Wiederherstellen",
-      "comment": "Wir senden Ihnen eine E-Mail, damit Sie den Zugriff wiederherstellen können",
-      "sent_message_html": "Wir haben Ihnen eine E-Mail an <b>@email</b> mit weiteren Anweisungen gesendet",
+      "comment": "Wir senden Ihnen eine E-Mail, um Ihr Konto wiederherzustellen",
+      "sent_message_html": "Wir haben eine E-Mail an <b>@email</b> mit Anweisungen zum Fortfahren gesendet",
       "links": {
         "login": "Zurück zur Anmeldung",
       },
@@ -173,11 +174,11 @@ const locale = {
       "head": {
         "title": "Pläne und Preise",
       },
-      "title_1": "Live gehen in 3... 2... 1...",
-      "title_2": "Starten Sie Ihre Radiostation in weniger als 60 Sekunden.",
-      "title_3": "Sie werden erst nach Ende Ihrer Testversion in Rechnung gestellt. UndSie können jederzeit kündigen.",
+      "title_1": "Live in 3... 2... 1...",
+      "title_2": "Starten Sie Ihren Sender in weniger als 60 Sekunden.",
+      "title_3": "Es wird nichts berechnet, bis Ihr Test abgeschlossen ist. Und Sie können jederzeit kündigen.",
       "plan_selector": {
-        "select_btn_label": "Testversion starten",
+        "select_btn_label": "Test starten",
       }
     },
 
@@ -185,7 +186,7 @@ const locale = {
       "head": {
         "title": "Registrieren",
       },
-      "title": "Testversion starten",
+      "title": "Starten Sie Ihre kostenlose Testversion",
       "plan": {
         "selected_plan": "Ausgewählter Plan",
         "n_per_month": "@n / Monat",
@@ -197,7 +198,7 @@ const locale = {
           "storage": "Speicher",
         },
         "links": {
-          "plans": "Zurück zu Plänen und Preisen"
+          "plans": "Zurück zu Pläne und Preise"
         }
       },
       "form": {
@@ -216,17 +217,16 @@ const locale = {
       },
       "pay": {
         "title": "Zahlungsdetails",
-        "message": "Sie werden erst nach Ablauf Ihrer 30-tägigen Testversion in Rechnung gestellt, und Sie können jederzeit kündigen."
+        "message": "Es wird nichts berechnet, bis Ihre kostenlose 30-Tage-Testversion abgeschlossen ist und Sie können jederzeit kündigen."
       },
 
-      "back": "Gehen Sie zurück zum vorherigen Schritt",
+      "back": "Zurück zum vorherigen Schritt",
 
       "verification": {
         "title": "Geben Sie den Bestätigungscode ein",
-        "message_html": "Wir haben Ihnen einen Bestätigungscode an <b>@email</b> gesendet",
-        "submit": "Absenden",
+        "message_html": "Wir haben einen Bestätigungscode an <b>@email</b> gesendet",
+        "submit": "Senden",
       },
-
       "links": {
         "login_comment": "Haben Sie bereits ein Konto?",
         "login_link": "Anmelden",
@@ -235,8 +235,8 @@ const locale = {
 
     "user_recovery": {
       "head_page_title": {
-        "expired": "Link ist abgelaufen",
-        "used": "Link bereits verwendet",
+        "expired": "Der Link ist abgelaufen",
+        "used": "Der Link wurde bereits verwendet",
         "not_found": "Link nicht gefunden",
         "ok": "Setzen Sie Ihr Passwort zurück",
       },
@@ -246,10 +246,10 @@ const locale = {
         "confirm_password": "Passwort bestätigen",
       },
       "error": {
-        "used_message_html": "Der Link, den Sie zum Aufrufen dieser Seite verwendet haben, ist abgelaufen.<br /> Erstellen Sie einen neuen Link von der @user_recovery_page",
-        "expired_message_html": "Der Link, den Sie zum Aufrufen dieser Seite verwendet haben, ist abgelaufen.<br /> Erstellen Sie einen neuen Link von der @user_recovery_page",
-        "not_found_message_html": "Der Link, den Sie zum Aufrufen dieser Seite verwendet haben, existiert nicht mehr.<br /> Erstellen Sie einen neuen Link von der @user_recovery_page",
-        "user_recovery_page": "Benutzer-Wiederherstellungsseite",
+        "used_message_html": "Der Link, den Sie zum Zugriff auf diese Seite verwendet haben, wurde bereits verwendet.<br /> Erstellen Sie einen neuen Link von der @user_recovery_page",
+        "expired_message_html": "Der Link, den Sie zum Zugriff auf diese Seite verwendet haben, ist abgelaufen.<br /> Erstellen Sie einen neuen Link von der @user_recovery_page",
+        "not_found_message_html": "Der Link, den Sie zum Zugriff auf diese Seite verwendet haben, existiert nicht.<br /> Erstellen Sie einen neuen Link von der @user_recovery_page",
+        "user_recovery_page": "Wiederherstellungsseite",
       },
       "submit": "Senden",
       "notifier": {
@@ -264,8 +264,8 @@ const locale = {
       "title": "Wählen Sie ein Konto",
       "create_new_account": "ein neues Konto erstellen",
       "or": "oder",
-      "no_items_message_html": "Sie haben noch kein Broadcaster-Konto.<br/>Um mit der Übertragung zu beginnen, melden Sie sich für ein Broadcaster-Konto an.",
-      "no_items_create": "Mein Broadcaster-Konto erstellen",
+      "no_items_message_html": "Sie haben noch kein Senderkonto.<br/>Um mit der Übertragung zu beginnen, erstellen Sie Ihr Senderkonto.",
+      "no_items_create": "Mein Senderkonto erstellen",
     },
 
     "accounts/create_account": {
@@ -711,4 +711,3 @@ const locale = {
 }
 
 export default locale;
-         

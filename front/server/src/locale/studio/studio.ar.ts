@@ -30,8 +30,14 @@ const locale: import("./studio.locale").StudioLocale = {
   stats_map,
   analytics,
   payments,
-  station_profile,
   misc,
+  station_profile,
+
+  "copy_to_clipboard": "نسخ إلى الحافظة",
+  "show_password": "إظهار كلمة المرور",
+  "hide_password": "إخفاء كلمة المرور",
+
+  "prevent_unload_message":  "إذا غادرت هذه الصفحة، ستفقد التغييرات التي قمت بها. هل تريد مغادرة الصفحة على أي حال؟",
 
   "language": {
     "auto": "الكشف التلقائي",
@@ -46,27 +52,22 @@ const locale: import("./studio.locale").StudioLocale = {
     "ar": "عربي",
   },
 
-  "copy_to_clipboard": "نسخ إلى الحافظة",
-  "show_password": "إظهار كلمة المرور",
-  "hide_password": "إخفاء كلمة المرور",
-
-
   "drawer": {
     "account_selector": {
       "see_all_accounts": "عرض جميع الحسابات",
     },
     "dashboard": "لوحة التحكم",
-    "stations": "محطات",
-    "members": "أعضاء",
-    "analytics": "تحليلات",
+    "stations": "المحطات",
+    "members": "الأعضاء",
+    "analytics": "التحليلات",
   },
 
   "limits": {
     "of": "من",
-    "stations": "محطات",
+    "stations": "المحطات",
     "listeners": "المستمعين",
-    "transfer": "نقل",
-    "storage": "تخزين",
+    "transfer": "النقل",
+    "storage": "التخزين",
   },
 
   "dialogs": {
@@ -81,7 +82,7 @@ const locale: import("./studio.locale").StudioLocale = {
     "dashboard": "لوحة التحكم",
     "profile": "الملف الشخصي",
     "playlist": "قائمة التشغيل",
-    "broadcast": "بث",
+    "broadcast": "البث",
     "settings": "الإعدادات",
   },
 
@@ -96,31 +97,31 @@ const locale: import("./studio.locale").StudioLocale = {
     "trial": {
       "30_day": "30 يوم",
       "free_trial": "تجربة مجانية",
-      "tooltip": "لن يتم محاسبتك حتى انتهاء فترة التجربة الخاصة بك ، ويمكنك إلغاء الاشتراك في أي وقت"
+      "tooltip": "لن يتم محاسبتك حتى انتهاء فترة التجربة الخاصة بك، ويمكنك الإلغاء في أي وقت"
     },
 
     "features": {
       "station": "محطة",
       "stations": "محطات",
       "listeners": "المستمعين",
-      "transfer": "نقل",
-      "storage": "تخزين",
+      "transfer": "النقل",
+      "storage": "التخزين",
       "staff": "المستخدمين",
       "auto_dj": "دي جي تلقائي",
       "stats": "إحصائيات متقدمة",
-      "android_app": "تطبيق أندرويد",
+      "android_app": "تطبيق للأندرويد",
     },
 
     "tooltips": {
-      "one_station": "يمكنك إنشاء محطة واحدة فقط في هذه الخطة",
+      "one_station": "يمكنك إنشاء محطة واحدة فقط في هذا الخطة",
       "n_stations": "حتى @n محطات مختلفة",
-      "listeners": "حتى @n مستمع متزامن",
-      "transfer": "مع @tb تيرابايت من نقل البيانات الشهري ، ستتمكن من بث حوالي @hours ساعة من الصوت",
-      "storage": "@gb جيجابايت من التخزين للموسيقى أو الحلقات القديمة",
-      "staff": "يمكنك إضافة المستخدمين لجميع أفراد فريقك بدون حدود",
-      "auto_dj": "يبث من قائمة التشغيل عندما تكون غير متصل أو لا تبث مباشرة",
-      "stats": "إحصائيات تاريخية ومباشرة ، اعرف من يستمع إلى محطاتك",
-      "android_app": "تطبيق أندرويد بعلامتك التجارية ومحطاتك ، متاح للجميع عبر Google Play",
+      "listeners": "حتى @n مستمعين في نفس الوقت",
+      "transfer": "مع @tb TB من النقل الشهري، ستكون لديك القدرة على بث حوالي @hours ساعات من الصوت",
+      "storage": "@gb GB من التخزين للموسيقى أو الحلقات القديمة",
+      "staff": "يمكنك إضافة المستخدمين لجميع فريقك بدون حدود",
+      "auto_dj": "بث من قائمة التشغيل عندما تكون غير متصل",
+      "stats": "إحصائيات تاريخية ومباشرة، اعرف من يستمع إلى محطاتك",
+      "android_app": "تطبيق للأندرويد بعلامتك التجارية ومحطاتك، متاح في جميع أنحاء العالم عبر Google Play",
     }
   },
 
@@ -132,9 +133,9 @@ const locale: import("./studio.locale").StudioLocale = {
       "default_message": "حدث خطأ",
       "offline": {
         "head": {
-          "title": "غير متصل",
+          "title": "بدون اتصال",
         },
-        "title": "يبدو أنك غير متصل",
+        "title": "يبدو أنك بدون اتصال",
         "text": "يتطلب الوصول إلى الإنترنت لاستخدام @app_name",
       }
     },
@@ -151,7 +152,7 @@ const locale: import("./studio.locale").StudioLocale = {
       "links": {
         "forgot": "نسيت كلمة المرور؟",
         "new_user": "مستخدم جديد؟",
-        "sign_up": "سجل",
+        "sign_up": "تسجيل",
       },
       "submit": "تسجيل الدخول"
     },
@@ -162,7 +163,7 @@ const locale: import("./studio.locale").StudioLocale = {
       },
       "title": "استعادة",
       "comment": "سنرسل لك بريدًا إلكترونيًا لاستعادة حسابك",
-      "sent_message_html": "أرسلنا بريدًا إلكترونيًا إلى <b>@email</b> بتعليمات للمتابعة",
+      "sent_message_html": "أرسلنا بريدًا إلكترونيًا إلى <b>@email</b> مع التعليمات للمتابعة",
       "links": {
         "login": "العودة إلى تسجيل الدخول",
       },
@@ -173,9 +174,9 @@ const locale: import("./studio.locale").StudioLocale = {
       "head": {
         "title": "الخطط والأسعار",
       },
-      "title_1": "مباشرة في 3 ... 2 ... 1 ...",
+      "title_1": "مباشرة في 3... 2... 1...",
       "title_2": "ابدأ محطتك في أقل من 60 ثانية.",
-      "title_3": "لن يتم محاسبتك حتى انتهاء فترة التجربة الخاصة بك. ويمكنك إلغاء الاشتراك في أي وقت.",
+      "title_3": "لن يتم محاسبتك حتى انتهاء فترة التجربة الخاصة بك. ويمكنك الإلغاء في أي وقت.",
       "plan_selector": {
         "select_btn_label": "بدء التجربة",
       }

@@ -30,6 +30,8 @@ const locale = {
 
   "email_registered": "This email is already registered",
 
+  "css_color": "This field must be a valid CSS color, e.g. #ffffff or rgba(0,0,0,0)",
+
   "twitter_url": "This field must be a valid Twitter URL, navigate to your Twitter page and copy the entire URL from there",
   "facebook_url": "This field must be a valid Facebook URL, navigate to your Facebook page and copy the entire URL from there",
   "instagram_url": "This field must be a valid Instagram URL, navigate to your Instagram page and copy the entire URL from there",

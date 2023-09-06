@@ -3,10 +3,10 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Sessions": "Sessões",
   "Listeners": "Ouvintes",
   "Unique_IPs": "IPs únicos",
-  "Average_listening_minutes": "Minutos médios de audição",
-  "Average_listening_time": "Tempo médio de audição",
-  "Total_listening_time": "Tempo total de audição",
-  "Total_listening_hours": "Horas totais de audição",
+  "Average_listening_minutes": "Minutos médios de escuta",
+  "Average_listening_time": "Tempo médio de escuta",
+  "Total_listening_time": "Tempo total de escuta",
+  "Total_listening_hours": "Horas totais de escuta",
   "Total_transfer": "Transferência total",
   "Total_transfer_in_MB": "Transferência total em MB",
   "Max_concurrent_listeners": "Máx. ouvintes simultâneos",
@@ -27,7 +27,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
   "Website": "Site",
 
-  // @example Country: Argentina
+  // @example Coutry: Argentina
   "Country": "País",
 
   // @example Date: 2022/01/01
@@ -92,7 +92,11 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
   "data_grid": {
     "export_as_csv": "Exportar como CSV"
-  }
+  },
+
+  "Search...": "Pesquisar...",
+  "No_stations_for_this_query": "Nenhuma estação encontrada para esta pesquisa",
+  "This_field_is_required": "Este campo é obrigatório",
 }
 
 export default locale;
