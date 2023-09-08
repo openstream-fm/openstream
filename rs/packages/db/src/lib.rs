@@ -4,7 +4,8 @@ use futures_util::{Future, TryStreamExt};
 use log::*;
 use mongodb::error::Result as MongoResult;
 use mongodb::options::{
-  FindOptions, ReplaceOptions, SelectionCriteria, SessionOptions, TransactionOptions,
+  CountOptions, FindOptions, Hint, ReplaceOptions, SelectionCriteria, SessionOptions,
+  TransactionOptions,
 };
 use mongodb::results::DeleteResult;
 use mongodb::{
@@ -326,14 +327,42 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
     skip: u64,
     limit: i64,
   ) -> MongoResult<Paged<Self>> {
+    Self::paged_with_optional_hint(filter, sort, skip, limit, None).await
+  }
+
+  async fn paged_with_hint(
+    filter: impl Into<Option<Document>> + Send,
+    sort: impl Into<Option<Document>> + Send,
+    skip: u64,
+    limit: i64,
+    hint: Document,
+  ) -> MongoResult<Paged<Self>> {
+    Self::paged_with_optional_hint(filter, sort, skip, limit, Some(hint)).await
+  }
+
+  async fn paged_with_optional_hint(
+    filter: impl Into<Option<Document>> + Send,
+    sort: impl Into<Option<Document>> + Send,
+    skip: u64,
+    limit: i64,
+    hint: Option<Document>,
+  ) -> MongoResult<Paged<Self>> {
     let sort = sort.into().unwrap_or_else(|| doc! { "$natural": 1 });
     let filter = filter.into();
+    let hint = hint.map(Hint::Keys);
     let options = FindOptions::builder()
       .sort(sort)
       .skip(skip)
       .limit(limit)
+      .hint(hint.clone())
       .build();
-    let total = Self::cl().count_documents(filter.clone(), None).await?;
+
+    let count_options = CountOptions::builder().hint(hint).build();
+
+    let total = Self::cl()
+      .count_documents(filter.clone(), count_options)
+      .await?;
+
     let items = Self::cl()
       .find(filter, options)
       .await?

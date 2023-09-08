@@ -164,18 +164,20 @@ pub mod get {
         }
       };
 
-      let filter = doc! { "$and": [ scope_filter, stations_query_filter, show_filter ] };
+      let filter = doc! { "$and": [ show_filter, scope_filter, stations_query_filter ] };
 
       let sort = match sort {
-        None | Some(SortQuery::CreationDesc) => {
-          doc! { StreamConnection::KEY_CREATED_AT: -1 }
-        }
-        Some(SortQuery::CreationAsc) => {
-          doc! { StreamConnection::KEY_CREATED_AT: 1 }
-        }
+        None | Some(SortQuery::CreationDesc) => doc! { StreamConnection::KEY_CREATED_AT: -1 },
+        Some(SortQuery::CreationAsc) => doc! { StreamConnection::KEY_CREATED_AT: 1 },
       };
 
-      let page = StreamConnection::paged(filter, sort, skip, limit).await?;
+      let hint = match show {
+        None | Some(ShowQuery::All | ShowQuery::Closed) => None,
+        Some(ShowQuery::Open) => Some(doc! { StreamConnection::KEY_IS_OPEN: 1 }),
+      };
+
+      let page =
+        StreamConnection::paged_with_optional_hint(filter, sort, skip, limit, hint).await?;
 
       Ok(Output(page))
     }
