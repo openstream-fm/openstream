@@ -40,6 +40,7 @@ const locale: import("./validate.locale").ValidateLocale = {
   "twitch_url": "Este campo deve ser uma URL do Twitch válida, navegue até a sua página do Twitch e copie a URL completa de lá",
   "tiktok_url": "Este campo deve ser uma URL do TikTok válida, navegue até a sua página do TikTok e copie a URL completa de lá",
   "spotify_url": "Este campo deve ser uma URL do Spotify válida, navegue até a sua página do Spotify e copie a URL completa de lá",
+  "radiocut_url": "Este campo deve ser uma URL do RadioCut válida, navegue até a sua página do RadioCut e copie a URL completa de lá",
   "google_play_url": "Este campo deve ser uma URL do Google Play válida, navegue até a página do seu aplicativo no Google Play e copie a URL completa de lá",
   "app_store_url": "Este campo deve ser uma URL da App Store válida, navegue até a página do seu aplicativo na App Store e copie a URL completa de lá",
 }

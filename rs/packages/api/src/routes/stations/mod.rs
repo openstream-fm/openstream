@@ -356,6 +356,18 @@ pub mod post {
     )]
     pub spotify_url: Option<String>,
 
+    #[modify(trim)]
+    #[validate(
+      url(message = "RadioCut URL is invalid"),
+      regex(path = "RADIOCUT", message = "RadioCut URL is invalid"),
+      length(
+        max = "VALIDATE_STATION_URLS_MAX_LEN",
+        message = "RadioCut URL is invalid"
+      ),
+      non_control_character(message = "RadioCut URL cannot have control characters")
+    )]
+    pub radiocut_url: Option<String>,
+
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
     #[validate(
@@ -539,6 +551,7 @@ pub mod post {
         twitch_url,
         tiktok_url,
         spotify_url,
+        radiocut_url,
 
         google_play_url,
         app_store_url,
@@ -596,6 +609,7 @@ pub mod post {
         twitch_url,
         tiktok_url,
         spotify_url,
+        radiocut_url,
 
         app_store_url,
         google_play_url,

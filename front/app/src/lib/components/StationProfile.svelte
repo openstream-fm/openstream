@@ -1,6 +1,7 @@
 <script lang="ts">
 	import {
 		mdiApple,
+		mdiContentCut,
 		mdiFacebook,
 		mdiGooglePlay,
 		mdiInstagram,
@@ -38,6 +39,7 @@
     _google_play_url,
 		_tiktok_url,
 		_spotify_url,
+		_radiocut_url,
 	} from '$share/formy/validate';
 	import { VALIDATE_STATION_DESC_MAX_LEN, VALIDATE_STATION_EMAIL_MAX_LEN, VALIDATE_STATION_NAME_MAX_LEN, VALIDATE_STATION_NAME_MIN_LEN, VALIDATE_STATION_PHONE_MAX_LEN, VALIDATE_STATION_SLOGAN_MAX_LEN, VALIDATE_STATION_URLS_MAX_LEN, VALIDATE_STATION_WHATSAPP_MAX_LEN } from "$server/defs/constants";
 	import CountryField from '$share/Form/CountryField.svelte';
@@ -80,10 +82,11 @@
 		twitch_url: string | null;
 		tiktok_url: string | null;
 		spotify_url: string | null;
+		radiocut_url: string | null,
 
 		google_play_url: string | null;
 		app_store_url: string | null;
-
+		
 		user_metadata: {
 			mob_app: {
 				base_color: string
@@ -409,6 +412,18 @@
 				bind:value={current.spotify_url}
 			/>
 			<Validator value={current.spotify_url} fn={_spotify_url({ maxlen: VALIDATE_STATION_URLS_MAX_LEN })} />
+		</div>
+
+		<div class="field">
+			<NullTextField
+				type="url"
+				label={$locale.station_profile.labels.radiocut}
+				trim
+				maxlength={VALIDATE_STATION_URLS_MAX_LEN}
+				icon={mdiContentCut}
+				bind:value={current.radiocut_url}
+			/>
+			<Validator value={current.radiocut_url} fn={_radiocut_url({ maxlen: VALIDATE_STATION_URLS_MAX_LEN })} />
 		</div>
 
 

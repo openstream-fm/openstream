@@ -11,6 +11,7 @@ export const YOUTUBE = /^https:\/\/www\.youtube\.com\/.+/;
 export const TWITCH = /^https:\/\/www\.twitch\.tv\/.+/;
 export const TIKTOK = /^https:\/\/www\.tiktok\.com\/.+/;
 export const SPOTIFY = /^https:\/\/open\.spotify\.com\/.+/;
+export const RADIOCUT = /^https:\/\/radiocut\.fm\/.+/;
 export const GOOGLE_PLAY = /^https:\/\/play\.google\.com\/.+/;
 export const APP_STORE = /^https:\/\/apps\.apple\.com\/.+/;
 
@@ -330,5 +331,6 @@ export const _youtube_url = Pattern(YOUTUBE, () => get(locale).validate.youtube_
 export const _twitch_url = Pattern(TWITCH, () => get(locale).validate.twitch_url);
 export const _tiktok_url = Pattern(TIKTOK, () => get(locale).validate.tiktok_url);
 export const _spotify_url = Pattern(SPOTIFY, () => get(locale).validate.spotify_url); 
+export const _radiocut_url = Pattern(RADIOCUT, () => get(locale).validate.radiocut_url); 
 export const _google_play_url = Pattern(GOOGLE_PLAY, () => get(locale).validate.google_play_url);
 export const _app_store_url = Pattern(APP_STORE, () => get(locale).validate.app_store_url);

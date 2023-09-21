@@ -40,6 +40,7 @@ const locale: import("./validate.locale").ValidateLocale = {
   "twitch_url": "此字段必须是有效的Twitch URL，导航到你的Twitch页面并从那里复制完整的URL",
   "tiktok_url": "此字段必须是有效的TikTok URL，导航到你的TikTok页面并从那里复制完整的URL",
   "spotify_url": "此字段必须是有效的Spotify URL，导航到你的Spotify页面并从那里复制完整的URL",
+  "radiocut_url": "此字段必须是有效的RadioCut URL，导航到你的RadioCut页面并从那里复制完整的URL",
   "google_play_url": "此字段必须是有效的Google Play URL，导航到你在Google Play的应用页面并从那里复制完整的URL",
   "app_store_url": "此字段必须是有效的App Store URL，导航到你在App Store的应用页面并从那里复制完整的URL",
 }

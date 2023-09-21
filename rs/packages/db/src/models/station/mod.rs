@@ -213,6 +213,18 @@ pub struct Station {
   )]
   pub spotify_url: Option<String>,
 
+  #[modify(trim)]
+  #[validate(
+    url(message = "RadioCut URL is invalid"),
+    regex(path = "RADIOCUT", message = "RadioCut URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "RadioCut URL is invalid"
+    ),
+    non_control_character(message = "RadioCut URL cannot have control characters")
+  )]
+  pub radiocut_url: Option<String>,
+
   // app links
   #[modify(trim)]
   #[validate(
@@ -355,6 +367,7 @@ pub struct UserPublicStation {
   pub tiktok_url: Option<String>,
   pub youtube_url: Option<String>,
   pub spotify_url: Option<String>,
+  pub radiocut_url: Option<String>,
 
   // app links
   pub app_store_url: Option<String>,
@@ -702,6 +715,24 @@ pub struct StationPatch {
   )]
   pub spotify_url: Option<Option<String>>,
 
+  #[ts(optional)]
+  #[serde(
+    default,
+    deserialize_with = "map_some",
+    skip_serializing_if = "Option::is_none"
+  )]
+  #[modify(trim)]
+  #[validate(
+    url(message = "RadioCut URL is invalid"),
+    regex(path = "RADIOCUT", message = "RadioCut URL is invalid"),
+    length(
+      max = "VALIDATE_STATION_URLS_MAX_LEN",
+      message = "RadioCut URL is invalid"
+    ),
+    non_control_character(message = "RadioCut URL cannot have control characters")
+  )]
+  pub radiocut_url: Option<Option<String>>,
+
   // app links
   #[ts(optional)]
   #[serde(
@@ -876,6 +907,7 @@ impl Station {
     apply!(twitch_url);
     apply!(tiktok_url);
     apply!(spotify_url);
+    apply!(radiocut_url);
 
     apply!(google_play_url);
     apply!(app_store_url);
@@ -944,6 +976,7 @@ impl From<Station> for UserPublicStation {
       tiktok_url: station.tiktok_url,
       youtube_url: station.youtube_url,
       spotify_url: station.spotify_url,
+      radiocut_url: station.radiocut_url,
 
       app_store_url: station.app_store_url,
       google_play_url: station.google_play_url,
