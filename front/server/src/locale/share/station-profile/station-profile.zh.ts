@@ -48,6 +48,7 @@ const locale: import("./station-profile.locale").StationProfileLocale = {
     "youtube": "Youtube的URL",
     "twitch": "Twitch的URL",
     "spotify": "Spotify的URL",
+    "radiocut": "RadioCut的URL",
     "google_play": "Google Play的URL",
     "app_store": "App Store的URL",
 

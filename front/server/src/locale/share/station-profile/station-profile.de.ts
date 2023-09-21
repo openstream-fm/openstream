@@ -48,6 +48,7 @@ const locale: import("./station-profile.locale").StationProfileLocale = {
     "youtube": "Youtube-URL",
     "twitch": "Twitch-URL",
     "spotify": "Spotify-URL",
+    "radiocut": "RadioCut-URL",
     "google_play": "Google Play-URL",
     "app_store": "App Store-URL",
 

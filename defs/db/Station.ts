@@ -31,6 +31,7 @@ export type Station = {
   twitch_url: string | null;
   tiktok_url: string | null;
   spotify_url: string | null;
+  radiocut_url: string | null;
   google_play_url: string | null;
   app_store_url: string | null;
   user_metadata: Metadata;
