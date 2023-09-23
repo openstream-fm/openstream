@@ -117,6 +117,22 @@ pub const STATION_PICTURES_VERSION: f64 = 5.0;
 #[const_register]
 pub const DEPLOYMENT_HEALTH_CHECK_INTERVAL_SECS: u16 = 1;
 
+/// interval in which
+/// $stations.owner_deployment_info.health_checked_at
+/// and $media_session.health_checked_at
+/// will be set to $NOW
+#[const_register]
+pub const MEDIA_SESSION_HEALTH_CHECK_INTERVAL_SECS: u16 = 6;
+
+/// time to check if a $media_session (and $station.owner_deployment_info) is healthy
+/// otherwise kill it in database
+#[const_register]
+pub const MEDIA_SESSION_HEALTH_SHUTDOWN_TIMEOUT_SECS: u16 = 33;
+
+/// interval to check if $stations.owner_deployment_info and $media_sessions are healthy
+#[const_register]
+pub const MEDIA_SESSION_HEALTH_CHECK_KILL_INTERVAL_SECS: u16 = 5;
+
 /// validation constants
 pub mod validate {
   use super::*;

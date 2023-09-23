@@ -40,13 +40,13 @@ pub(crate) fn named(
     let fields = if formatted_fields.is_empty() {
         quote!(String::new())
     } else {
-        quote!(vec![#(#formatted_fields),*].join(" "))
+        quote!([#(#formatted_fields),*].join(" "))
     };
 
     let generic_args = format_generics(&mut dependencies, generics);
 
     let inline = quote! {
-        vec![
+        [
             format!("{{ {} }}", #fields),
             #(#flattened_fields),*
         ].join("&")

@@ -22,6 +22,7 @@ pub mod post {
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {
+    pub deployment_id: String,
     pub media_sessions: MediaSessionMap,
     pub drop_tracer: DropTracer,
     pub shutdown: Shutdown,
@@ -70,7 +71,14 @@ pub mod post {
     async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
       let Self::Input { station_id } = input;
       let mut lock = self.media_sessions.write();
-      let _ = lock.restart(&station_id, self.shutdown.clone(), self.drop_tracer.clone());
+      let _ = lock
+        .restart(
+          station_id.to_string(),
+          self.deployment_id.to_string(),
+          self.shutdown.clone(),
+          self.drop_tracer.clone(),
+        )
+        .await;
       Ok(Output(EmptyStruct(())))
     }
   }

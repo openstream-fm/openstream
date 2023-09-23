@@ -612,6 +612,7 @@ impl MemIndex {
     .await
     .unwrap();
 
+    #[allow(clippy::let_and_return)]
     total
   }
 

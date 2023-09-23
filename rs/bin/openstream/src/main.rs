@@ -17,7 +17,7 @@ use log::*;
 use anyhow::{bail, Context};
 use api::ApiServer;
 use defer_lite::defer;
-use media_sessions::MediaSessionMap;
+use media_sessions::{MediaSessionMap, healthcheck};
 use mongodb::bson::doc;
 use mongodb::bson::Document;
 use serde_util::DateTime;
@@ -565,6 +565,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
 
   tokio::spawn(db::deployment::start_health_check_job(deployment_id.clone()));
   tokio::spawn(db::station_picture::upgrade_images_if_needed());
+  tokio::spawn(healthcheck::health_shutdown_job());
 
   tokio::spawn({
     let shutdown = shutdown.clone();

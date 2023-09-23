@@ -15,6 +15,7 @@ use hyper::{
 };
 use log::*;
 use media_sessions::{live::LiveError, MediaSessionKind, MediaSessionMap};
+use serde_util::DateTime;
 use shutdown::Shutdown;
 use stream_util::IntoTryBytesStream;
 use tokio::io::AsyncWriteExt;
@@ -87,9 +88,12 @@ pub async fn source(
     Some(t) => t.to_string(),
   };
 
+  let task_id = Station::random_owner_task_id();
+
   let info = OwnerDeploymentInfo {
     deployment_id: deployment_id.clone(),
-    task_id: Station::random_owner_task_id(),
+    task_id: task_id.clone(),
+    health_checked_at: Some(DateTime::now()),
     content_type: content_type.clone(),
   };
 
@@ -233,16 +237,22 @@ pub async fn source(
   let tx = {
     let mut map = media_sessions.write();
     match map.entry(&station.id) {
-      Entry::Vacant(_) => Some(map.transmit(&station.id, MediaSessionKind::Live { content_type })),
+      Entry::Vacant(_) => Some(map.transmit(
+        &station.id,
+        &task_id,
+        MediaSessionKind::Live { content_type },
+      )),
       Entry::Occupied(entry) => {
         let session = entry.get();
         match session.kind() {
           MediaSessionKind::Live { .. } => None,
           MediaSessionKind::Playlist { .. }
           | MediaSessionKind::Relay { .. }
-          | MediaSessionKind::ExternalRelay => {
-            Some(map.transmit(&station.id, MediaSessionKind::Live { content_type }))
-          }
+          | MediaSessionKind::ExternalRelay => Some(map.transmit(
+            &station.id,
+            &task_id,
+            MediaSessionKind::Live { content_type },
+          )),
         }
       }
     }

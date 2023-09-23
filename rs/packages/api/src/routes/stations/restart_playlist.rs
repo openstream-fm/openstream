@@ -107,7 +107,14 @@ pub mod post {
           MediaSessionKind::Playlist { .. } => {
             if media_session.deployment_id == self.deployment_id {
               let mut lock = self.media_sessions.write();
-              let _ = lock.restart(&station.id, self.shutdown.clone(), self.drop_tracer.clone());
+              let _ = lock
+                .restart(
+                  self.deployment_id.clone(),
+                  station.id,
+                  self.shutdown.clone(),
+                  self.drop_tracer.clone(),
+                )
+                .await;
             } else {
               #[allow(clippy::collapsible_else_if)]
               if let Some(deployment) = Deployment::get_by_id(&media_session.deployment_id).await? {

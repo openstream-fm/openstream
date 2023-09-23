@@ -30,6 +30,10 @@ pub struct MediaSession {
   #[serde(with = "serde_util::as_f64::option")]
   pub duration_ms: Option<u64>,
 
+  // TODO: this Option<> is for back compat only
+  // create a migration and change this to DateTime
+  pub health_checked_at: Option<DateTime>,
+
   pub created_at: DateTime,
   pub updated_at: DateTime,
 }
@@ -182,6 +186,7 @@ mod test {
       },
       now_playing: None,
       state: MediaSessionState::Closed,
+      health_checked_at: Some(DateTime::now()),
       closed_at: Some(DateTime::now()),
       duration_ms: Some(100),
     };

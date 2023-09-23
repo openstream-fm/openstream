@@ -321,6 +321,10 @@ pub struct OwnerDeploymentInfo {
   pub deployment_id: String,
   pub task_id: String,
   pub content_type: String,
+
+  // this Option<> is for backwards compatibility
+  // it should be removed in the future
+  pub health_checked_at: Option<DateTime>,
 }
 
 impl From<OwnerDeploymentInfo> for Bson {

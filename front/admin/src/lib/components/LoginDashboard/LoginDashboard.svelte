@@ -8,7 +8,7 @@
     padding-inline: min(20%, max(12rem, 10%));
     padding-block: 6.5rem;
     position: relative;
-    background-image: url("$lib/img/login-bg.jpg");
+    background-image: url($lib/img/login-bg.jpg);
     background-size: cover;
     background-position: center;
     --field-container-bg: rgba(0,0,0,0);

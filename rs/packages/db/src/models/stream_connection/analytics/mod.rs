@@ -400,7 +400,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
 
     macro_rules! add {
       ($acc:ident, $key:expr) => {
-        let mut item = $acc.entry($key).or_default();
+        let item = $acc.entry($key).or_default();
         item.sessions += 1;
         item.ips.insert(conn.ip);
         item.total_duration_ms += conn_duration_ms;
