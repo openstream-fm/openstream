@@ -128,6 +128,7 @@ pub fn router(
 
   app.at("/runtime/restart-playlist/:station").post(
     runtime::restart_playlist::station_id::post::Endpoint {
+      deployment_id: deployment_id.clone(),
       media_sessions: media_sessions.clone(),
       drop_tracer: drop_tracer.clone(),
       shutdown: shutdown.clone(),

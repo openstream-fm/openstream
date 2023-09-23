@@ -106,9 +106,9 @@ pub async fn get(mut data: Receiver<Bytes>) -> Result<FfMetadata, std::io::Error
     Ok(map)
   } else {
     let stderr = String::from_utf8_lossy(stderr.as_ref());
-    return Err(std::io::Error::new(
+    Err(std::io::Error::new(
       std::io::ErrorKind::Other,
       format!("ffmpeg metadata process ended with non success status: {status}, stderr: {stderr}",),
-    ));
+    ))
   }
 }

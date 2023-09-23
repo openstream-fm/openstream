@@ -415,11 +415,12 @@ impl StreamHandler {
         drop_tracer: &DropTracer,
         shutdown: &Shutdown,
       ) -> Result<(Listener, Station), StreamError> {
+        let task_id = Station::random_owner_task_id();
         let info = OwnerDeploymentInfo {
           deployment_id: deployment_id.to_string(),
-          task_id: Station::random_owner_task_id(),
-          // audio/mpeg is because we'll start a playlist media session on demand
+          task_id: task_id.clone(),
           content_type: String::from("audio/mpeg"),
+          health_checked_at: Some(DateTime::now()),
         };
 
         let (rx, station) = 'rx: {
@@ -445,6 +446,7 @@ impl StreamHandler {
                       None => {
                         break 'relay_tx lock.upgrade().transmit(
                           station_id,
+                          &task_id,
                           media_sessions::MediaSessionKind::Relay {
                             content_type: owner_info.content_type.clone(),
                           },
@@ -456,6 +458,7 @@ impl StreamHandler {
                         } else {
                           break 'relay_tx lock.upgrade().transmit(
                             station_id,
+                            &task_id,
                             media_sessions::MediaSessionKind::Relay {
                               content_type: owner_info.content_type.clone(),
                             },
@@ -583,8 +586,11 @@ impl StreamHandler {
                 let mut lock = lock.upgrade();
                 match &station.external_relay_url {
                   None => {
-                    let tx =
-                      lock.transmit(station_id, media_sessions::MediaSessionKind::Playlist {});
+                    let tx = lock.transmit(
+                      station_id,
+                      &task_id,
+                      media_sessions::MediaSessionKind::Playlist {},
+                    );
                     let rx = tx.subscribe();
                     let shutdown = shutdown.clone();
                     let deployment_id = deployment_id.to_string();
@@ -599,8 +605,11 @@ impl StreamHandler {
                   }
 
                   Some(url) => {
-                    let tx =
-                      lock.transmit(station_id, media_sessions::MediaSessionKind::ExternalRelay);
+                    let tx = lock.transmit(
+                      station_id,
+                      &task_id,
+                      media_sessions::MediaSessionKind::ExternalRelay,
+                    );
                     let rx = tx.subscribe();
                     let shutdown = shutdown.clone();
                     let deployment_id = deployment_id.to_string();

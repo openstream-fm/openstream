@@ -21,7 +21,7 @@ pub trait JsonHandler: Send + Sync + Sized + Clone + 'static {
     false
   }
 
-  fn cookies<'a, 'b>(&'a self, _output: &'b Self::Output) -> Vec<cookie::Cookie> {
+  fn cookies(&self, _output: &Self::Output) -> Vec<cookie::Cookie> {
     vec![]
   }
 

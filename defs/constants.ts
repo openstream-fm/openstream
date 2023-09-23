@@ -44,6 +44,19 @@ export const EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS = 60;
 /** Internal forwarded ip header used when openstream servers are connecting with each other */
 export const FORWARD_IP_HEADER = "x-openstream-forwarded-ip";
 
+/** interval in which
+ *  $stations.owner_deployment_info.health_checked_at
+ *  and $media_session.health_checked_at
+ *  will be set to $NOW */
+export const MEDIA_SESSION_HEALTH_CHECK_INTERVAL_SECS = 6;
+
+/** interval to check if $stations.owner_deployment_info and $media_sessions are healthy */
+export const MEDIA_SESSION_HEALTH_CHECK_KILL_INTERVAL_SECS = 5;
+
+/** time to check if a $media_session (and $station.owner_deployment_info) is healthy
+ *  otherwise kill it in database */
+export const MEDIA_SESSION_HEALTH_SHUTDOWN_TIMEOUT_SECS = 33;
+
 /** Access token header used by payments servers implementations */
 export const PAYMENTS_ACCESS_TOKEN_HEADER = "x-access-token";
 

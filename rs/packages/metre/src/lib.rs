@@ -434,6 +434,7 @@ impl<T: Config> ConfigLoader<T> {
   }
 
   /// Add a partial configuration from a file
+  #[allow(clippy::result_large_err)]
   pub fn file(&mut self, path: &str, format: Format) -> Result<&mut Self, Error> {
     let code = std::fs::read_to_string(path).map_err(|e| Error::Io {
       path: path.into(),
@@ -444,6 +445,7 @@ impl<T: Config> ConfigLoader<T> {
   }
 
   /// Add a partial configuration from a file, if it exists
+  #[allow(clippy::result_large_err)]
   pub fn file_optional(&mut self, path: &str, format: Format) -> Result<&mut Self, Error> {
     let exists = Path::new(path).try_exists().map_err(|e| Error::Io {
       path: path.into(),
@@ -459,12 +461,14 @@ impl<T: Config> ConfigLoader<T> {
 
   /// Add a partial configuration from enviroment varialbes
   #[inline(always)]
+  #[allow(clippy::result_large_err)]
   pub fn env(&mut self) -> Result<&mut Self, Error> {
     self._env(&StdEnv, None)
   }
 
   /// Add a partial configuration from enviroment variables with a prefix
   #[inline(always)]
+  #[allow(clippy::result_large_err)]
   pub fn env_with_prefix(&mut self, prefix: &str) -> Result<&mut Self, Error> {
     self._env(&StdEnv, Some(prefix))
   }
@@ -475,12 +479,14 @@ impl<T: Config> ConfigLoader<T> {
   ///
   /// The [`EnvProvider`] trait is already implemented for several kinds of Maps from the standard library
   #[inline(always)]
+  #[allow(clippy::result_large_err)]
   pub fn env_with_provider<E: EnvProvider>(&mut self, env: &E) -> Result<&mut Self, Error> {
     self._env(env, None)
   }
 
   /// See [`Self::env_with_provider`] and [`Self::env_with_prefix`]
   #[inline(always)]
+  #[allow(clippy::result_large_err)]
   pub fn env_with_provider_and_prefix<E: EnvProvider>(
     &mut self,
     env: &E,
@@ -491,6 +497,7 @@ impl<T: Config> ConfigLoader<T> {
 
   /// Add a partial configuration from in-memory code
   #[inline(always)]
+  #[allow(clippy::result_large_err)]
   pub fn code<S: AsRef<str>>(&mut self, code: S, format: Format) -> Result<&mut Self, Error> {
     self._code(code.as_ref(), format, LoadLocation::Memory)
   }
@@ -499,6 +506,7 @@ impl<T: Config> ConfigLoader<T> {
   ///
   /// Specifying the [`LoadLocation`] of the in-memory code is useful for error reporting
   #[inline(always)]
+  #[allow(clippy::result_large_err)]
   pub fn code_with_location<S: AsRef<str>>(
     &mut self,
     code: S,
@@ -509,6 +517,7 @@ impl<T: Config> ConfigLoader<T> {
   }
 
   /// Add a partial configuration from a url
+  #[allow(clippy::result_large_err)]
   pub fn url(&mut self, url: &str, format: Format) -> Result<&mut Self, Error> {
     let map_err = |e| Error::Network {
       url: url.to_string(),
@@ -541,11 +550,13 @@ impl<T: Config> ConfigLoader<T> {
   }
 
   #[inline(always)]
+  #[allow(clippy::result_large_err)]
   fn _env<E: EnvProvider>(&mut self, env: &E, prefix: Option<&str>) -> Result<&mut Self, Error> {
     let partial = T::Partial::from_env_with_provider_and_optional_prefix(env, prefix)?;
     self._add(partial)
   }
 
+  #[allow(clippy::result_large_err)]
   fn _code(
     &mut self,
     code: &str,
@@ -582,17 +593,20 @@ impl<T: Config> ConfigLoader<T> {
 
   /// Add a partial configuration from the `#[config(default = value)]` attributes
   #[inline(always)]
+  #[allow(clippy::result_large_err)]
   pub fn defaults(&mut self) -> Result<&mut Self, Error> {
     self._add(T::Partial::defaults())
   }
 
   /// Add a pre generated partial configuration
   #[inline(always)]
+  #[allow(clippy::result_large_err)]
   pub fn partial(&mut self, partial: T::Partial) -> Result<&mut Self, Error> {
     self._add(partial)
   }
 
   #[inline(always)]
+  #[allow(clippy::result_large_err)]
   fn _add(&mut self, partial: T::Partial) -> Result<&mut Self, Error> {
     self.partial.merge(partial)?;
     Ok(self)
@@ -600,12 +614,14 @@ impl<T: Config> ConfigLoader<T> {
 
   /// Get a reference to the partial configuration
   #[inline(always)]
+  #[allow(clippy::result_large_err)]
   pub fn partial_state(&self) -> &T::Partial {
     &self.partial
   }
 
   /// Get a mutable reference to the partial configuration
   #[inline(always)]
+  #[allow(clippy::result_large_err)]
   pub fn partial_state_mut(&mut self) -> &mut T::Partial {
     &mut self.partial
   }
@@ -614,6 +630,7 @@ impl<T: Config> ConfigLoader<T> {
   ///
   /// this function will error if there are missing required properties
   #[inline(always)]
+  #[allow(clippy::result_large_err)]
   pub fn finish(self) -> Result<T, Error> {
     let v = T::from_partial(self.partial)?;
     Ok(v)

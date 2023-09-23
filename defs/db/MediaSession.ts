@@ -13,6 +13,7 @@ export type MediaSession = {
   transfer_bytes: number;
   closed_at: DateTime | null;
   duration_ms: number | null;
+  health_checked_at: DateTime | null;
   created_at: DateTime;
   updated_at: DateTime;
 } & MediaSessionKind;

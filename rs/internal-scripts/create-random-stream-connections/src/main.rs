@@ -11,6 +11,7 @@ use time::Duration;
 fn random_os() -> Option<String> {
   use rand::seq::SliceRandom; // 0.7.2
 
+  #[allow(clippy::useless_vec)]
   let vs = vec![
     Some("Linux"),
     Some("Android"),
@@ -27,6 +28,7 @@ fn random_os() -> Option<String> {
 fn random_browser() -> Option<String> {
   use rand::seq::SliceRandom; // 0.7.2
 
+  #[allow(clippy::useless_vec)]
   let vs = vec![
     Some("Chrome"),
     Some("Safari"),

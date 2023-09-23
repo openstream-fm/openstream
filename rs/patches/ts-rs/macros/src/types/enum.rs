@@ -51,7 +51,7 @@ pub(crate) fn r#enum_def(s: &ItemEnum) -> syn::Result<DerivedTS> {
         inline: if formatted_variants.is_empty() {
             quote!("")
         } else {
-            quote!(vec![#(#formatted_variants),*].join(" | "))
+            quote!([#(#formatted_variants),*].join(" | "))
         },
 
         decl: quote!(format!("type {}{} = {};", #name, #generic_args, Self::inline())),

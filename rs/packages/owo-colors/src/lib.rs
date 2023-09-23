@@ -77,6 +77,7 @@
 #![cfg_attr(doc_cfg, feature(doc_cfg))]
 #![doc(html_logo_url = "https://jam1.re/img/rust_owo.svg")]
 #![warn(missing_docs)]
+#![allow(clippy::needless_lifetimes)]
 
 pub mod colors;
 mod combo;
@@ -177,7 +178,7 @@ macro_rules! style_methods {
             #[$meta]
             #[must_use]
             #[inline(always)]
-            fn $name<'a>(&'a self) -> styles::$ty<'a, Self> {
+            fn $name(&self) -> styles::$ty<Self> {
                 styles::$ty(self)
             }
          )*

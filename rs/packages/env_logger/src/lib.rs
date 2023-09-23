@@ -1,4 +1,4 @@
-#![allow(clippy::forget_ref)]
+#![allow(clippy::all)]
 
 //! error!("this is printed by default");
 //!

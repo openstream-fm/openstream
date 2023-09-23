@@ -144,6 +144,7 @@ pub mod post {
               Some(invitation) => invitation,
             };
 
+            #[allow(clippy::let_and_return)]
             invitation
           }
         };

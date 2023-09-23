@@ -1,6 +1,10 @@
 use burst::Burst;
 use constants::STREAM_CHANNEL_CAPACITY;
+use db::station::{OwnerDeploymentInfo, Station};
+use db::Model;
+use mongodb::bson::doc;
 use parking_lot::{RwLock, RwLockReadGuard, RwLockUpgradableReadGuard, RwLockWriteGuard};
+use serde_util::DateTime;
 use shutdown::Shutdown;
 use std::collections::btree_map::Entry;
 use std::collections::BTreeMap;
@@ -8,6 +12,7 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
 
 pub mod external_relay;
+pub mod healthcheck;
 pub mod live;
 pub mod playlist;
 pub mod relay;
@@ -60,6 +65,8 @@ impl Map {
 
 #[derive(Debug, thiserror::Error)]
 pub enum RestartError {
+  #[error("internal error (db)")]
+  Db(#[from] mongodb::error::Error),
   #[error("cannot restart, station is live streaming")]
   LiveStreaming,
   #[error("cannot restart, station is streaming from external relay")]
@@ -79,13 +86,14 @@ impl<'a> WriteLock<'a> {
     self.lock.inner.entry(station_id.to_string())
   }
 
-  pub fn restart(
+  pub async fn restart(
     &mut self,
-    station_id: &str,
+    deployment_id: String,
+    station_id: String,
     shutdown: Shutdown,
     drop_tracer: DropTracer,
   ) -> Result<(), RestartError> {
-    if let Some(session) = self.get(station_id) {
+    if let Some(session) = self.get(&station_id) {
       match session.kind() {
         MediaSessionKind::Live { .. } => return Err(RestartError::LiveStreaming),
         MediaSessionKind::ExternalRelay => {
@@ -96,7 +104,20 @@ impl<'a> WriteLock<'a> {
       }
     }
 
-    let tx = self.transmit(station_id, MediaSessionKind::Playlist {});
+    let task_id = Station::random_owner_task_id();
+
+    let owner_deployment_info = OwnerDeploymentInfo {
+      deployment_id: deployment_id.to_string(),
+      task_id: task_id.clone(),
+      content_type: String::from("audio/mpeg"),
+      health_checked_at: Some(DateTime::now()),
+    };
+
+    let update = doc! { "$set": { Station::KEY_OWNER_DEPLOYMENT_INFO: owner_deployment_info } };
+
+    Station::update_by_id(&station_id, update).await?;
+
+    let tx = self.transmit(&station_id, &task_id, MediaSessionKind::Playlist {});
 
     run_playlist_session(
       tx,
@@ -109,10 +130,16 @@ impl<'a> WriteLock<'a> {
     Ok(())
   }
 
-  pub fn transmit(&mut self, station_id: &str, kind: MediaSessionKind) -> Transmitter {
+  pub fn transmit(
+    &mut self,
+    station_id: &str,
+    task_id: &str,
+    kind: MediaSessionKind,
+  ) -> Transmitter {
     let info = Arc::new(MediaSessionInfo {
       uid: uid(),
       station_id: station_id.to_string(),
+      task_id: task_id.to_string(),
       kind,
     });
 
@@ -295,6 +322,7 @@ impl Drop for MediaSession {
 pub struct MediaSessionInfo {
   pub(crate) uid: u64,
   pub(crate) station_id: String,
+  pub(crate) task_id: String,
   pub(crate) kind: MediaSessionKind,
 }
 
@@ -302,6 +330,11 @@ impl MediaSessionInfo {
   #[inline]
   pub fn station_id(&self) -> &str {
     &self.station_id
+  }
+
+  #[inline]
+  pub fn task_id(&self) -> &str {
+    &self.task_id
   }
 
   #[inline]

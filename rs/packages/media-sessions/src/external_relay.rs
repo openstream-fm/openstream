@@ -1,7 +1,7 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Instant;
 
-use crate::{SendError, Transmitter};
+use crate::{healthcheck, SendError, Transmitter};
 use constants::{
   EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS, EXTERNAL_RELAY_NO_DATA_START_SHUTDOWN_SECS,
   EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS, /*STREAM_BURST_LENGTH,*/
@@ -45,21 +45,26 @@ pub fn run_external_relay_session(
 
     let fut = async move {
       let station_id = tx.info.station_id().to_string();
+      let task_id = tx.info.task_id().to_string();
+
+      let media_session_id = MediaSession::uid();
 
       let document = {
         use db::media_session::*;
+        let now = DateTime::now();
         let document = MediaSession {
-          id: MediaSession::uid(),
+          id: media_session_id.clone(),
           deployment_id,
           station_id: station_id.clone(),
-          created_at: DateTime::now(),
-          updated_at: DateTime::now(),
           kind: MediaSessionKind::ExternalRelay { url: url.clone() },
           state: MediaSessionState::Open,
           closed_at: None,
           duration_ms: None,
           now_playing: None,
           transfer_bytes: 0,
+          health_checked_at: Some(now),
+          created_at: now,
+          updated_at: now,
         };
 
         match MediaSession::insert(&document).await {
@@ -269,11 +274,20 @@ pub fn run_external_relay_session(
         }
       };
 
-      //};
-
       let status_handle = async move { child.wait().await };
 
-      let (status, _stdout, stderr) = tokio::join!(status_handle, stdout_handle, stderr_handle);
+      let health_handle = healthcheck::run_health_check_interval_for_station_and_media_session(
+        &station_id,
+        &media_session_id,
+        &task_id,
+      );
+
+      let join_fut = async { tokio::join!(status_handle, stdout_handle, stderr_handle) };
+
+      let (status, _stdout, stderr) = tokio::select! {
+        tup = join_fut => tup,
+        _ = health_handle => unreachable!()
+      };
 
       let exit = match status {
         Ok(exit) => exit,

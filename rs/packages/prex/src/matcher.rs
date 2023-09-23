@@ -213,7 +213,7 @@ mod tests {
 
   #[test]
   fn test_pattern_compiler() {
-    let urls = vec![
+    let urls = [
       ("/", "/"),
       ("/:p1", "/(?P<p1>[^/]+)"),
       ("/:p1(.+)", "/(?P<p1>.+)"),

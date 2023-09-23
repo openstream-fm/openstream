@@ -253,9 +253,11 @@ impl Builder {
       });
     }
 
+    let filter = self.filter.take();
+
     Filter {
       directives: mem::take(&mut directives),
-      filter: mem::replace(&mut self.filter, None),
+      filter,
     }
   }
 }

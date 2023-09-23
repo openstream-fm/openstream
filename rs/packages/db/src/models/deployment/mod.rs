@@ -38,7 +38,7 @@ pub struct Deployment {
   pub created_at: DateTime,
   pub updated_at: DateTime,
 
-  // TODO: this Option is for back compat only
+  // TODO: this Option<> is for back compat only
   // create a migration and change this to DateTime
   pub health_checked_at: Option<DateTime>,
 

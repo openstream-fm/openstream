@@ -3,7 +3,7 @@ use std::sync::{
   Arc,
 };
 
-use crate::{SendError, Transmitter};
+use crate::{healthcheck, SendError, Transmitter};
 use bytes::Bytes;
 use constants::STREAM_CHUNK_SIZE;
 use db::{media_session::MediaSessionState, Model};
@@ -35,22 +35,25 @@ pub async fn run_live_session<E: std::error::Error + Send + Sync + 'static>(
   drop_tracer: DropTracer,
 ) -> Result<(), LiveError<E>> {
   let station_id = tx.info.station_id().to_string();
+  let task_id = tx.info.task_id().to_string();
 
+  let media_session_id = db::media_session::MediaSession::uid();
   let document = {
     use db::media_session::*;
     let now = DateTime::now();
     let document = MediaSession {
-      id: MediaSession::uid(),
+      id: media_session_id.clone(),
       deployment_id,
       station_id: station_id.clone(),
-      created_at: now,
-      updated_at: now,
       transfer_bytes: 0,
       kind: MediaSessionKind::Live { request },
       now_playing: None,
       state: MediaSessionState::Open,
       closed_at: None,
       duration_ms: None,
+      health_checked_at: Some(now),
+      created_at: now,
+      updated_at: now,
     };
 
     match MediaSession::insert(&document).await {
@@ -85,43 +88,58 @@ pub async fn run_live_session<E: std::error::Error + Send + Sync + 'static>(
   //let output = mp3::readrate(reader).chunked(STREAM_CHUNK_SIZE);
   //tokio::pin!(output);
 
-  use stream_util::IntoTryBytesStreamRated;
-  let output = data.rated(400_000 / 8).chunked(STREAM_CHUNK_SIZE);
-  tokio::pin!(output);
+  let handle = async move {
+    use stream_util::IntoTryBytesStreamRated;
+    let output = data.rated(400_000 / 8).chunked(STREAM_CHUNK_SIZE);
+    tokio::pin!(output);
 
-  let signal = shutdown.signal();
-  let fut = async move {
-    let mut transfer = 0u64;
+    let signal = shutdown.signal();
+    let fut = async move {
+      let mut transfer = 0u64;
 
-    loop {
-      if shutdown.is_closed() || tx.is_terminated() {
-        break;
-      }
-
-      match output.next().await {
-        None => break,
-        Some(Err(e)) => {
-          warn!("live session error: {e} => {e:?}");
-          return Err(LiveError::Data(e));
+      loop {
+        if shutdown.is_closed() || tx.is_terminated() {
+          break;
         }
-        Some(Ok(bytes)) => {
-          transfer += bytes.len() as u64;
-          transfer_bytes.store(transfer, Ordering::Release);
-          match tx.send(bytes) {
-            Ok(_) => continue,
-            Err(SendError::NoListeners(_)) => continue,
-            Err(SendError::Terminated(_)) => break,
+
+        match output.next().await {
+          None => break,
+          Some(Err(e)) => {
+            warn!("live session error: {e} => {e:?}");
+            return Err(LiveError::Data(e));
+          }
+          Some(Ok(bytes)) => {
+            transfer += bytes.len() as u64;
+            transfer_bytes.store(transfer, Ordering::Release);
+            match tx.send(bytes) {
+              Ok(_) => continue,
+              Err(SendError::NoListeners(_)) => continue,
+              Err(SendError::Terminated(_)) => break,
+            }
           }
         }
       }
-    }
 
-    Ok(())
+      Ok(())
+    };
+
+    let result = tokio::select! {
+      result = fut => result,
+      _ = signal => Ok(()),
+    };
+
+    result
   };
 
+  let health_handle = healthcheck::run_health_check_interval_for_station_and_media_session(
+    &station_id,
+    &media_session_id,
+    &task_id,
+  );
+
   let result = tokio::select! {
-    result = fut => result,
-    _ = signal => Ok(()),
+    result = handle => result,
+    () = health_handle => unreachable!()
   };
 
   drop(dropper);

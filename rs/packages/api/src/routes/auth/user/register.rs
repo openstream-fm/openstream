@@ -416,6 +416,7 @@ pub mod post {
           .await
           .map_err(HandleError::PaymentSavePaymentMethod)?;
 
+        #[allow(clippy::let_and_return)]
         payment_method_response
       };
 
