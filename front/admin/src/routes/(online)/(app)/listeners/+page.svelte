@@ -101,7 +101,7 @@
     }))}`
   }
 
-  let navigating = true;
+  let navigating = false;
 
   const toggle_deployment = (item: Item) => {
     const target = deployment_toggle_link(item);
