@@ -4,7 +4,7 @@
 	import PageTop from "$lib/components/PageMenu/PageTop.svelte";
 	import { mdiConnection } from "@mdi/js";
   import { now } from "$share/now";
-	import { fly, slide } from "svelte/transition";
+	import { fly, slide, type TransitionConfig } from "svelte/transition";
 	import { onMount } from "svelte";
 	import { default_logger } from "$share/logger";
 	import { sleep } from "$share/util";
@@ -231,13 +231,8 @@
     }
    }
 
-  const enter_item = (node: HTMLElement) => {
-    return transition_item(node, true)
-  }
-
-  const leave_item = (node: HTMLElement) => {
-    return transition_item(node, false);
-  }
+  const enter_item = ((node: HTMLElement) => transition_item(node, true)) as (node: HTMLElement, args: any) => TransitionConfig;
+  const leave_item = ((node: HTMLElement) => transition_item(node, false)) as (node: HTMLElement, args: any) => TransitionConfig;
 </script>
 
 <style>
