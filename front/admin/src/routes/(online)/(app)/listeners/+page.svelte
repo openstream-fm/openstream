@@ -157,6 +157,9 @@
   afterNavigate(() => {
     token++;
     last_update = Date.now();
+    if(String(new URLSearchParams(location.search)) !== String(searchParams)) {
+      searchParams = new URLSearchParams(location.search);
+    }
   })
 
   beforeNavigate(() => {
