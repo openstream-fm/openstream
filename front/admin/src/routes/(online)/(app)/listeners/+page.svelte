@@ -107,13 +107,18 @@
     const target = deployment_toggle_link(item);
     history.replaceState(history.state, "", target);
     navigating = true;
+    token++;
+    last_update = Date.now();
     searchParams = new URLSearchParams(location.search)
+    sleep(5).then(() => navigating = false)
   }
 
   const toggle_station = (item: Item) => {
     const target = station_toggle_link(item);
     history.replaceState(history.state, "", target);
     navigating = true;
+    token++;
+    last_update = Date.now();
     searchParams = new URLSearchParams(location.search)
     sleep(5).then(() => navigating = false)
   }
@@ -122,6 +127,8 @@
     const target = referer_toggle_link(ref);
     history.replaceState(history.state, "", target);
     navigating = true;
+    token++;
+    last_update = Date.now();
     searchParams = new URLSearchParams(location.search)
     sleep(5).then(() => navigating = false)
   }
