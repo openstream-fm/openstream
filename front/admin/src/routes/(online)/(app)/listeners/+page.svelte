@@ -141,8 +141,9 @@
     const ms = item.duration_ms != null ? item.duration_ms : (+$now - +new Date(item.created_at));
     if(ms >= DAY) {
       const d = Math.floor(ms / DAY);
-      const h = Math.round((ms % DAY) / HOUR);
-      return `${d}d ${h}h`;
+      const h = Math.floor((ms % DAY) / HOUR);
+      const m = Math.round((ms % HOUR) / MIN);
+      return `${d}d ${h}h ${m}m`;
     } else if (ms >= HOUR) {
       const h = Math.floor(ms / HOUR);
       const m = Math.round((ms % HOUR) / MIN);
