@@ -4,7 +4,7 @@
 	import PageTop from "$lib/components/PageMenu/PageTop.svelte";
 	import { mdiConnection } from "@mdi/js";
   import { now } from "$share/now";
-	import { slide } from "svelte/transition";
+	import { fly, slide } from "svelte/transition";
 	import { onMount } from "svelte";
 	import { default_logger } from "$share/logger";
 	import { sleep } from "$share/util";
@@ -89,34 +89,41 @@
     }))}`
   }
 
-  const toggle_station = (item: Item) => {
-    const target = station_toggle_link(item);
-    history.replaceState(history.state, "", target);
-    searchParams = new URLSearchParams(location.search)
-  }
-
   const deployment_toggle_link = (item: Item): string => {
     return `/listeners${qs(make_params({
       deployment: q_deployment_id === item.deployment_id ? null : item.deployment_id
     }))}`
   }
   
-  const toggle_deployment = (item: Item) => {
-    const target = deployment_toggle_link(item);
-    history.replaceState(history.state, "", target);
-    searchParams = new URLSearchParams(location.search)
-  }
-
   const referer_toggle_link = (ref: string | null): string => {
     return `/listeners${qs(make_params({
       referer: q_referer === ref ? null : String(ref) 
     }))}`
   }
 
+  let navigating = true;
+
+  const toggle_deployment = (item: Item) => {
+    const target = deployment_toggle_link(item);
+    history.replaceState(history.state, "", target);
+    navigating = true;
+    searchParams = new URLSearchParams(location.search)
+  }
+
+  const toggle_station = (item: Item) => {
+    const target = station_toggle_link(item);
+    history.replaceState(history.state, "", target);
+    navigating = true;
+    searchParams = new URLSearchParams(location.search)
+    sleep(5).then(() => navigating = false)
+  }
+
   const toggle_referer = (ref: string | null) => {
     const target = referer_toggle_link(ref);
     history.replaceState(history.state, "", target);
+    navigating = true;
     searchParams = new URLSearchParams(location.search)
+    sleep(5).then(() => navigating = false)
   }
 
   const SEC = 1_000;
@@ -209,6 +216,28 @@
       mounted = false;
     }
   })
+
+  const transition_item = (node: HTMLElement, dir: boolean) => {
+    if(navigating) {    
+      node.style.opacity = dir ? "0" : "";
+      return () => {
+        sleep(3).then(() => node.style.opacity = dir ? "" : "0");
+        return {
+          duration: 500,
+        }
+      }
+    } else {
+      return slide(node, { duration: 400 }) 
+    }
+   }
+
+  const enter_item = (node: HTMLElement) => {
+    return transition_item(node, true)
+  }
+
+  const leave_item = (node: HTMLElement) => {
+    return transition_item(node, false);
+  }
 </script>
 
 <style>
@@ -231,6 +260,7 @@
     padding: 1rem 1rem;
     border-radius: 0.5rem;
     font-size: 0.9rem;
+    transition: opacity 500ms ease;
   }
 
   .pic {
@@ -304,7 +334,7 @@
     {#each show_items as item (item._id)}
       {@const station = item_station(item)}
       {@const referer = website(item)}      
-      <div class="item" class:open={item.is_open} class:closed={!item.is_open} transition:slide|local={{ duration: 400 }}>
+      <div class="item" class:open={item.is_open} class:closed={!item.is_open} in:enter_item|local out:leave_item|local>
         <div class="pic" class:empty={station == null} style:background-image={
             station != null ? 
             `url(${data.config.storage_public_url}/station-pictures/webp/128/${station?.picture_id}.webp?v=${STATION_PICTURES_VERSION})` :
