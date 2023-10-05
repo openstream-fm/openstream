@@ -313,6 +313,8 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
 
   let sort = doc! {
     StreamConnectionLite::KEY_CREATED_AT: 1,
+    // force index usage { ca: 1, st: 1 }
+    StreamConnectionLite::KEY_STATION_ID: 1,
   };
 
   let options = mongodb::options::FindOptions::builder().sort(sort).build();
