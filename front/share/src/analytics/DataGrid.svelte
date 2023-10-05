@@ -71,6 +71,8 @@
     a.download = `${data.title}.csv`;
     a.click();
   };
+
+  let scrollX = 0;
 </script>
 
 <style>
@@ -79,12 +81,16 @@
     border-collapse: collapse;
   }
 
-  thead {
-    background: rgba(0, 0, 0, 0.06);
+  thead > tr > th {
+    background-color: #f0f0f0;
   }
 
-  tbody > tr:nth-child(even) {
-    background: rgba(0, 0, 0, 0.03);
+  tbody > tr:nth-child(even) > td {
+    background-color: #f7f7f7;
+  }
+
+  tbody > tr:nth-child(odd) > td {
+    background-color: #ffffff;
   }
 
   th {
@@ -170,6 +176,26 @@
     font-weight: 500;
   }
 
+  th:first-child, td:first-child {
+    position: sticky;
+    z-index: 1;
+    left: 0;
+    max-width: min(18rem, 35vw);
+    overflow-wrap: break-word;
+    padding-inline-end: 0.5rem;
+  }
+
+  th:first-child > *, td:first-child > * {
+    max-width: 100%;
+  }
+  
+  
+  .scrolled-x th:first-child, .scrolled-x td:first-child {
+    background-image: linear-gradient(
+      to right, transparent 0%, transparent calc(100% - 0.75rem), rgba(0,0,0,0.025) 100% 
+    );
+  }
+
   .export-out {
     display: flex;
     flex-direction: column;
@@ -197,7 +223,7 @@
 </style>
 
 <div class="grid-out">
-  <div class="grid thin-scroll">
+  <div class="grid thin-scroll" class:scrolled-x={scrollX !== 0} on:scroll={event => scrollX = event.currentTarget.scrollLeft} >
     <table>
       <thead>
         <tr>
