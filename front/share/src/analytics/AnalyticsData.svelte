@@ -969,7 +969,7 @@
     const items: typeof by_hour = [];
 
     const start = startOfHour(new Date(data.since));
-    const end = add(startOfHour(new Date(data.until)), { days: 1 });
+    const end = add(startOfHour(new Date(data.until)), { hours: 1 });
 
     let current = start;
         
