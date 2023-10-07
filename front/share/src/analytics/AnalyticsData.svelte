@@ -28,6 +28,17 @@
 
   const with_max_concurrent = data.max_concurrent_listeners != null;
 
+  let selected_by_hour_chart = (() => {
+    if(!data.by_hour) return false;
+    if((new Date(data.until).getTime() - new Date(data.since).getTime()) < (1000 * 60 * 60 * 24 + 1000)) {
+      return true
+    } else {
+      return false;
+    } 
+  })()
+
+  let selected_by_hour_grid = selected_by_hour_chart;
+
   const df = new Intl.DateTimeFormat(lang, {
     day: "2-digit",
     month: "2-digit",
@@ -50,12 +61,13 @@
   import Mapp from "$share/Map/Map.svelte";
   import { chart } from "$share/apexcharts/apexcharts";
   import type { ApexOptions } from "apexcharts";
-  import { add, formatISO, isSameDay, startOfDay } from "date-fns";
+  import { add, formatISO, isSameDay, isSameHour, startOfDay, startOfHour } from "date-fns";
   import DataGrid from "./DataGrid.svelte";
   
   import type { DataGridData, DataGridField } from "./types";
   import type { CountryCode } from "$server/defs/CountryCode";
   import type { StationItem } from "./AnalyticsFilters.svelte";
+  import { ripple } from "$share/ripple";
   
   const SEC = 1000;
   const MIN = SEC * 60;
@@ -265,6 +277,180 @@
             year: "numeric",
             month: "2-digit",
             day: "2-digit",
+          })
+        }
+      },
+    }
+  };
+
+  const by_hour_data = (by_hour: Exclude<typeof data.by_hour, null>) => {
+    const key = (item: { year: number, month: number, day: number, hour: number }) => `${item.year}-${item.month}-${item.day}-${item.hour}`;
+    const cache = new Map<string, Exclude<typeof data.by_hour, null>[number]>();
+    for(const item of by_hour) {
+      cache.set(key(item.key), item);
+    }
+
+    const ips: (number | null)[] = [];
+    const total_hours: (number | null)[] = [];
+    const dates: Date[] = [];
+
+    const start = startOfHour(new Date(data.since));
+    const end = add(startOfHour(new Date(data.until)), { hours: 1 });
+
+    let current = start;
+        
+    do {
+
+      const k = key({ year: current.getFullYear(), month: current.getMonth() + 1, day: current.getDate(), hour: current.getHours() });
+      const item = cache.get(k);
+
+      dates.push(current);
+
+      if(item == null) {
+        ips.push(null);
+        total_hours.push(null);
+      } else {
+        ips.push(item.ips);
+        total_hours.push(item.total_duration_ms / 1000 / 60 / 60);
+      }
+
+      current = add(current, { hours: 1 })
+
+    } while(!isSameHour(current, end));
+
+    return { dates, ips, total_hours }
+  }
+
+  const hours_data = data.by_hour && by_hour_data(data.by_hour);
+  const hours_options: ApexOptions | null = hours_data && {
+    series: [
+      {
+        name: locale.Unique_IPs,
+        data: hours_data.ips
+      },
+      {
+        name: locale.Total_listening_hours,
+        data: hours_data.total_hours
+      },
+    ],
+
+    markers: {
+      showNullDataPoints: true,
+      size: 2,
+      hover: {
+        size: 4,
+      }
+    },
+
+    chart: {
+      animations: {
+        enabled: false,
+      },
+      fontFamily: "inherit",
+      height: chartHeight,
+      type: "area",
+      zoom: {
+        enabled: false,
+        // autoScaleYaxis: true,
+        // type: "x",
+      },
+      // events: {
+      //   beforeZoom: (...args) => {
+      //     console.log("beforeZoom", ...args);
+      //     return undefined;
+      //     const start_date = days_data.dates[0];
+      //     const end_date = days_data.dates[days_data.dates.length - 1];
+      //     // const maindifference = Number(start_date) - Number(end_date);
+      //     // const zoomdifference = xaxis.max - xaxis.min;
+      //     // if( zoomdifference > maindifference ) {
+      //       return  {
+      //         // dont zoom out any further
+      //         xaxis: {
+      //           min: formatISO(start_date),
+      //           max: formatISO(end_date),
+      //         }
+      //       }
+      //     // } else {
+      //     //   return {
+      //     //     // keep on zooming
+      //     //     xaxis: {
+      //     //       min: xaxis.min,
+      //     //       max: xaxis.max
+      //     //     }
+      //     //   }
+      //     // }
+      //   }
+      // }
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    stroke: {
+      width: 1,
+      curve: "smooth"
+    },
+    xaxis: {
+      type: "datetime",
+      categories: (() => {
+        const temp = hours_data.dates.map(date => formatISO(date))
+        console.log("hours_categories", temp);
+        return temp;
+      })(),
+      
+      labels: {
+        formatter: (v) => {
+          return new Date(v).toLocaleDateString(lang, {
+            year: "numeric",
+            day: "2-digit",
+            month: "2-digit",
+            hour: "2-digit"
+          })
+        }
+      }
+    },
+    yaxis: [
+      {
+        title: {
+          text: locale.Unique_IPs,
+          style: {
+           fontSize: "1rem",
+           fontWeight: 600,
+          }
+        },
+        labels: {
+          formatter: v => (v % 1 === 0 || v == null) ? String(v ?? 0) : to_fixed(v, 2),
+        } 
+      }, {
+        opposite: true,
+        title: {
+          text: locale.Total_listening_hours,
+          style: {
+           fontSize: "1rem",
+           fontWeight: 600,
+          }
+        },
+        labels: {
+          formatter: v => {
+            if(v == null) return "-";
+            return to_fixed(v, 1);
+            // if(v == null) return "-";
+            // let total_secs = Math.round(v / SEC);
+            // let mins = Math.floor(total_secs / 60);
+            // let secs = total_secs % 60;
+            // const pad = (v: number) => String(v).padStart(2, "0");
+            // return `${pad(mins)}:${pad(secs)}`;
+          }
+        }
+      }
+    ],
+    tooltip: {
+      x: {
+        formatter: v => {
+          return new Date(v).toLocaleString(lang, {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
           })
         }
       },
@@ -773,6 +959,49 @@
     return items;
   }
 
+  const get_by_hour_items = (by_hour: Exclude<typeof data.by_hour, null>) => {
+    const key = (item: { year: number, month: number, day: number, hour: number }) => `${item.year}-${item.month}-${item.day}-${item.hour}`;
+    const cache = new Map<string, Exclude<typeof data.by_hour, null>[number]>();
+    for(const item of by_hour) {
+      cache.set(key(item.key), item);
+    }
+
+    const items: typeof by_hour = [];
+
+    const start = startOfDay(new Date(data.since));
+    const end = add(startOfDay(new Date(data.until)), { days: 1 });
+
+    let current = start;
+        
+    do {
+
+      const k = key({ year: current.getFullYear(), month: current.getMonth() + 1, day: current.getDate(), hour: current.getHours() });
+      const item = cache.get(k);
+
+      const item_key = { year: current.getFullYear(), month: current.getMonth() + 1, day: current.getDate(), hour: current.getHours() }
+
+      if(item == null) {
+        items.push({
+          key: item_key,
+          sessions: 0,
+          ips: 0,
+          total_duration_ms: 0,
+          total_transfer_bytes: 0,
+          // max_concurrent_listeners: undefined,
+          // max_concurrent_listeners_date: undefined,
+        })
+      } else {
+        items.push(item)
+      }
+
+      current = add(current, { hours: 1 })
+
+    } while(!isSameHour(current, end));
+
+    return items;
+  }
+
+
   const get_by_day_grid = () => {
     const items = get_by_day_items(data.by_day);
     const common = get_common_grid_options();
@@ -807,12 +1036,50 @@
     } satisfies DataGridData<typeof items[number], typeof fields>;
   }
 
+  const get_by_hour_grid = () => {
+    if(!data.by_hour) return null;
+    const items = get_by_hour_items(data.by_hour);
+    const common = get_common_grid_options();
+
+    const to_num = (key: typeof items[number]["key"]): number => {
+      return (key.year * 1000000) + (key.month * 10000) + (key.day * 100) + key.hour;
+    }
+
+    const pad = (n: number, size: number = 2, str = "0") => {
+      return String(n).padStart(size, str);
+    }
+
+    const fields = {
+      "key": {
+        name: locale.Hour,
+        // non breaking space and non breaking hyphen
+        format: item => `${pad(item.key.year, 4)}/${pad(item.key.month)}/${pad(item.key.day)}\u0020\u2011\u0020${pad(item.key.hour)}`,
+        sort: (a, b) => compare_numbers(to_num(a.key), to_num(b.key))
+      },
+      ...common.fields
+    } satisfies Record<string, DataGridField<typeof items[number]>>;
+
+
+    return {
+      ...common,
+      title: locale.Stats_by_hour,
+      fields,
+      items,
+      sorted_by: {
+        key: "key",
+        direction: "asc",
+      }
+    } satisfies DataGridData<typeof items[number], typeof fields>;
+  }
+
+
   const by_browser_grid_data = get_by_browser_grid();
   const by_device_grid_data = get_by_device_grid();
   const by_domain_grid_data = get_by_domain_grid();
   const by_station_grid_data = get_by_station_grid();
   const by_country_grid_data = get_by_country_grid();
   const by_day_grid_data = get_by_day_grid();
+  const by_hour_grid_data = get_by_hour_grid();
 
   const units = ["byte", "kilobyte", "megabyte", "gigabyte", "terabyte"]
   const bytes = (n: number) => {
@@ -903,7 +1170,7 @@
     font-weight: 600;
   }
 
-  .chart-grid-daily {
+  .chart-grid-daily, .chart-grid-hourly {
     margin-top: 1rem;
   }
 
@@ -936,6 +1203,24 @@
     font-weight: 400;
     font-size: 0.9rem;
     margin-top: 0.75rem;
+  }
+
+  .chart-title.with-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .day-hour-btn {
+    padding: 0.5rem;
+    margin: -0.5rem;
+    border-radius: 0.25rem;
+    transition: background-color 250ms ease;
+    cursor: pointer;
+  }
+
+  .day-hour-btn:hover {
+    background: rgba(0,0,0,0.05);
   }
 </style>
 
@@ -1005,11 +1290,34 @@
     </div>
     
     <div class="charts" style:--chart-height="{chartHeight}px">
+
       {#if !data.is_now}
-        <div class="chart-box">
-          <div class="chart-title">{locale.By_date}</div>
-          <div class="chart" use:chart={days_options} />
-        </div>
+        {#if hours_options}
+          <div class="chart-box">
+            <div class="chart-title with-btn">
+              <button class="day-hour-btn ripple-container" use:ripple on:click={() => selected_by_hour_chart = !selected_by_hour_chart}>
+                {#if selected_by_hour_chart}
+                  {locale.By_hour}
+                {:else}
+                  {locale.By_date}
+                {/if}
+                {#if hours_options}
+                  ►
+                {/if}
+              </button>
+            </div>
+            {#if hours_options && selected_by_hour_chart}
+              <div class="chart" use:chart={hours_options} />
+            {:else}
+              <div class="chart" use:chart={days_options} />
+            {/if}
+          </div>
+        {:else}
+          <div class="chart-box">
+            <div class="chart-title with-btn">{locale.By_date}</div>
+            <div class="chart" use:chart={days_options} />
+          </div>
+        {/if}
       {/if}
 
       <div class="chart-box chart-box-map">
@@ -1088,12 +1396,38 @@
       </div>
 
       {#if !data.is_now}
-        <div class="chart-box">
-          <div class="chart-title">{locale.Daily_stats}</div>
-          <div class="chart-grid chart-grid-daily">
-            <DataGrid data={by_day_grid_data} locale={locale.data_grid} />
+        {#if by_hour_grid_data}
+          <div class="chart-box">
+            <div class="chart-title with-btn">
+              <button class="day-hour-btn ripple-container" use:ripple on:click={() => selected_by_hour_grid = !selected_by_hour_grid}>
+                {#if selected_by_hour_grid}
+                  {locale.Hourly_stats}
+                {:else}
+                  {locale.Daily_stats}
+                {/if}
+                {#if by_hour_grid_data}
+                  ►
+                {/if}
+              </button>
+            </div>
+            {#if selected_by_hour_grid}
+              <div class="chart-grid chart-grid-hourly">
+                <DataGrid data={by_hour_grid_data} locale={locale.data_grid} />
+              </div>
+            {:else}
+              <div class="chart-grid chart-grid-daily">
+                <DataGrid data={by_day_grid_data} locale={locale.data_grid} />
+              </div>
+            {/if}
           </div>
-        </div>
+        {:else}
+          <div class="chart-box">
+            <div class="chart-title">{locale.Daily_stats}</div>
+            <div class="chart-grid chart-grid-daily">
+              <DataGrid data={by_day_grid_data} locale={locale.data_grid} />
+            </div>
+          </div>
+        {/if}
       {/if}
     </div>
   {/if}

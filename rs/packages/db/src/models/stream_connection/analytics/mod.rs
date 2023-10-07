@@ -54,9 +54,8 @@ pub struct Analytics {
   #[ts(optional)]
   pub max_concurrent_listeners_date: Option<serde_util::DateTime>,
 
-  pub by_month: Vec<AnalyticsItem<YearMonth>>,
   pub by_day: Vec<AnalyticsItem<YearMonthDay>>,
-  pub by_hour: Vec<AnalyticsItem<u8>>,
+  pub by_hour: Option<Vec<AnalyticsItem<YearMonthDayHour>>>,
   pub by_browser: Vec<AnalyticsItem<Option<String>>>,
   pub by_os: Vec<AnalyticsItem<Option<String>>>,
   pub by_country: Vec<AnalyticsItem<Option<CountryCode>>>,
@@ -87,12 +86,12 @@ pub struct AnalyticsItem<K> {
   pub max_concurrent_listeners_date: Option<serde_util::DateTime>,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/analytics/")]
-pub struct YearMonth {
-  pub year: u16,
-  pub month: u8,
-}
+// #[derive(Debug, Clone, Copy, Serialize, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, TS)]
+// #[ts(export, export_to = "../../../defs/analytics/")]
+// pub struct YearMonth {
+//   pub year: u16,
+//   pub month: u8,
+// }
 
 #[derive(Debug, Clone, Copy, Serialize, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/analytics/")]
@@ -100,6 +99,15 @@ pub struct YearMonthDay {
   pub year: u16,
   pub month: u8,
   pub day: u8,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, TS)]
+#[ts(export, export_to = "../../../defs/analytics/")]
+pub struct YearMonthDayHour {
+  pub year: u16,
+  pub month: u8,
+  pub day: u8,
+  pub hour: u8,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -188,10 +196,12 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
   let offset_date: OffsetDateTime;
   let kind = query.kind;
   let is_now: bool;
+  let with_hours: bool;
 
   match kind {
     AnalyticsQueryKind::Now { offset_date: d } => {
       is_now = true;
+      with_hours = false;
       offset_date = OffsetDateTime::now_utc().to_offset(d.offset());
 
       filter = doc! {
@@ -232,6 +242,8 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
       if start_date > end_date {
         (start_date, end_date) = (end_date, start_date);
       }
+
+      with_hours = (end_date.unix_timestamp() - start_date.unix_timestamp()) < (60 * 60 * 24 * 32);
 
       let ser_start_date: serde_util::DateTime = start_date.into();
       let ser_end_date: serde_util::DateTime = end_date.into();
@@ -340,9 +352,8 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     start_stop_events: Vec<(u32, bool)>,
   }
 
-  let mut months_accumulator = HashMap::<YearMonth, AccumulatorItem>::new();
+  let mut hours_accumulator = HashMap::<YearMonthDayHour, AccumulatorItem>::new();
   let mut days_accumulator = HashMap::<YearMonthDay, AccumulatorItem>::new();
-  let mut hours_accumulator = HashMap::<u8, AccumulatorItem>::new();
   let mut browser_accumulator = HashMap::<Option<String>, AccumulatorItem>::new();
   let mut os_accumulator = HashMap::<Option<String>, AccumulatorItem>::new();
   let mut country_accumulator = HashMap::<Option<CountryCode>, AccumulatorItem>::new();
@@ -419,13 +430,6 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     }
 
     add!(
-      months_accumulator,
-      YearMonth {
-        year: conn_year,
-        month: conn_month
-      }
-    );
-    add!(
       days_accumulator,
       YearMonthDay {
         year: conn_year,
@@ -433,7 +437,19 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
         day: conn_day
       }
     );
-    add!(hours_accumulator, conn_hour);
+
+    if with_hours {
+      add!(
+        hours_accumulator,
+        YearMonthDayHour {
+          year: conn_year,
+          month: conn_month,
+          day: conn_day,
+          hour: conn_hour,
+        }
+      );
+    }
+
     add!(browser_accumulator, conn_browser);
     add!(os_accumulator, conn_os);
     add!(country_accumulator, conn.country_code);
@@ -503,7 +519,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
   }
 
   // collect
-  let mut by_month = collect!(months_accumulator);
+  // let mut by_month = collect!(months_accumulator);
   let mut by_day = collect!(days_accumulator);
   let mut by_hour = collect!(hours_accumulator);
   let mut by_browser = collect!(browser_accumulator);
@@ -525,7 +541,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     };
   }
 
-  sort_by_key!(by_month);
+  // sort_by_key!(by_month);
   sort_by_key!(by_day);
   sort_by_key!(by_hour);
 
@@ -553,6 +569,8 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     sort_ms,
   );
 
+  let by_hour = if with_hours { Some(by_hour) } else { None };
+
   // render
   let out = Analytics {
     is_now,
@@ -569,7 +587,6 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     #[cfg(feature = "analytics-max-concurrent")]
     max_concurrent_listeners_date,
     stations,
-    by_month,
     by_day,
     by_hour,
     by_browser,

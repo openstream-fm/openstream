@@ -33,6 +33,8 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   // @example Date: 2022/01/01
   "Date": "Data",
 
+  // @example Hour: 2022/01/01 12:00
+  "Hour": "Hora",
 
   "Stats_by_browser": "Estatísticas por navegador",
   "Stats_by_device": "Estatísticas por dispositivo",
@@ -40,14 +42,18 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Stats_by_country": "Estatísticas por país",
   "Stats_by_website": "Estatísticas por site",
   "Stats_by_date": "Estatísticas por data",
+  "Stats_by_hour": "Estatísticas por hora",
 
   "By_date": "Por data",
+  "By_hour": "Por hora",
   "By_country": "Por país",
   "By_device": "Por dispositivo",
   "By_browser": "Por navegador",
   "By_station": "Por estação",
   "By_website": "Por site",
+
   "Daily_stats": "Estatísticas diárias",
+  "Hourly_stats": "Estatísticas por hora",
 
   "no_data_message": "Não há dados registrados para os filtros especificados",
 

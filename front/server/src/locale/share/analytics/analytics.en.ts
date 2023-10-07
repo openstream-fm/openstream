@@ -32,21 +32,27 @@ const locale = {
   // @example Date: 2022/01/01
   "Date": "Date",
 
+  // @example Hour: 2022/01/01 12:00
+  "Hour": "Hour",
+
 
   "Stats_by_browser": "Stats by browser",
   "Stats_by_device": "Stats by device",
   "Stats_by_station": "Stats by station",
   "Stats_by_country": "Stats by country",
   "Stats_by_date": "Stats by date",
+  "Stats_by_hour": "Stats by hour",
   "Stats_by_website": "Stats_by_website",
 
   "By_date": "By date",
+  "By_hour": "By hour",
   "By_country": "By country",
   "By_device": "By device",
   "By_browser": "By browser",
   "By_station": "By station",
   "By_website": "By website",
   "Daily_stats": "Daily stats",
+  "Hourly_stats": "Hourly stats",
 
   "no_data_message": "There's no data recorded for the specified filters",
 

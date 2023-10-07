@@ -27,12 +27,14 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
   "Website": "Sito web",
 
-  // @example Country: Italy
+  // @example Coutry: Argentina
   "Country": "Paese",
 
   // @example Date: 2022/01/01
   "Date": "Data",
 
+  // @example Hour: 2022/01/01 12:00
+  "Hour": "Ora",
 
   "Stats_by_browser": "Statistiche per browser",
   "Stats_by_device": "Statistiche per dispositivo",
@@ -40,14 +42,18 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Stats_by_country": "Statistiche per paese",
   "Stats_by_website": "Statistiche per sito web",
   "Stats_by_date": "Statistiche per data",
+  "Stats_by_hour": "Statistiche per ora",
 
   "By_date": "Per data",
+  "By_hour": "Per ora",
   "By_country": "Per paese",
   "By_device": "Per dispositivo",
   "By_browser": "Per browser",
   "By_station": "Per stazione",
   "By_website": "Per sito web",
+
   "Daily_stats": "Statistiche giornaliere",
+  "Hourly_stats": "Statistiche orarie",
 
   "no_data_message": "Non ci sono dati registrati per i filtri specificati",
 

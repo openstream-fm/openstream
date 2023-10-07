@@ -33,6 +33,8 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   // @example Date: 2022/01/01
   "Date": "Date",
 
+  // @example Hour: 2022/01/01 12:00
+  "Hour": "Heure",
 
   "Stats_by_browser": "Statistiques par navigateur",
   "Stats_by_device": "Statistiques par appareil",
@@ -40,14 +42,18 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Stats_by_country": "Statistiques par pays",
   "Stats_by_website": "Statistiques par site web",
   "Stats_by_date": "Statistiques par date",
+  "Stats_by_hour": "Statistiques par heure",
 
   "By_date": "Par date",
+  "By_hour": "Par heure",
   "By_country": "Par pays",
   "By_device": "Par appareil",
   "By_browser": "Par navigateur",
   "By_station": "Par station",
   "By_website": "Par site web",
+
   "Daily_stats": "Statistiques quotidiennes",
+  "Hourly_stats": "Statistiques horaires",
 
   "no_data_message": "Aucune donnée enregistrée pour les filtres spécifiés",
 
@@ -85,7 +91,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
     "submit": "Obtenir des analyses",
 
     "All_stations": "Toutes les stations",
-    "No_stations": "Sans stations",
+    "No_stations": "Pas de stations",
 
     "no_stations_message": "Ce compte n'a pas de stations",
   },
