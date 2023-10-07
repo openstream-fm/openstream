@@ -968,8 +968,8 @@
 
     const items: typeof by_hour = [];
 
-    const start = startOfDay(new Date(data.since));
-    const end = add(startOfDay(new Date(data.until)), { days: 1 });
+    const start = startOfHour(new Date(data.since));
+    const end = add(startOfHour(new Date(data.until)), { days: 1 });
 
     let current = start;
         
