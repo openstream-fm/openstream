@@ -390,7 +390,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     let conn_year = created_at.year() as u16;
     let conn_month = created_at.month() as u8;
     let conn_day = created_at.day();
-    let conn_hour = conn.created_at.hour();
+    let conn_hour = created_at.hour();
     let conn_browser = conn.browser;
     let conn_os = conn.os;
 
