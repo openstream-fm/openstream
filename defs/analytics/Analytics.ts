@@ -4,8 +4,8 @@ import type { AnalyticsQueryKind } from "./AnalyticsQueryKind";
 import type { AnalyticsStation } from "./AnalyticsStation";
 import type { CountryCode } from "../CountryCode";
 import type { DateTime } from "../DateTime";
-import type { YearMonth } from "./YearMonth";
 import type { YearMonthDay } from "./YearMonthDay";
+import type { YearMonthDayHour } from "./YearMonthDayHour";
 
 export type Analytics = {
   is_now: boolean;
@@ -20,9 +20,8 @@ export type Analytics = {
   total_transfer_bytes: number;
   max_concurrent_listeners?: number;
   max_concurrent_listeners_date?: DateTime;
-  by_month: Array<AnalyticsItem<YearMonth>>;
   by_day: Array<AnalyticsItem<YearMonthDay>>;
-  by_hour: Array<AnalyticsItem<number>>;
+  by_hour: Array<AnalyticsItem<YearMonthDayHour>> | null;
   by_browser: Array<AnalyticsItem<string | null>>;
   by_os: Array<AnalyticsItem<string | null>>;
   by_country: Array<AnalyticsItem<CountryCode | null>>;
