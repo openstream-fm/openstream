@@ -92,7 +92,7 @@
   }
 
   .section-title {
-    font-weight: 600;
+    font-weight: var(--font-bold);
     font-size: 1.75rem;
     text-align: start;
   }
@@ -151,7 +151,7 @@
   }
 
   .station-name {
-    font-weight: 600;
+    font-weight: var(--font-bold);
     font-size: 1.1rem;
   }
 
@@ -182,7 +182,7 @@
     justify-content: center;
     background: var(--red);
     color: #fff;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     font-size: 1.75rem;
   }
 

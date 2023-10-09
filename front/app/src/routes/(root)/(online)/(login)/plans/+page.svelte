@@ -31,7 +31,7 @@
   }
 
   h2, h3 {
-    font-weight: 600;
+    font-weight: var(--font-bold);
     font-size: 1.25rem;
     text-align: center;
   }

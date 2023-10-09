@@ -104,7 +104,7 @@
 
   .send {
     padding: 0.75rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     color: #fff;
     background: var(--blue);
     border-radius: 0.25rem;

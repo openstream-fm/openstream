@@ -207,7 +207,7 @@
     background: #3d9970;
     color: #fff;
     padding: 0.75rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     border-radius: 0.25rem;
     box-shadow: var(--some-shadow);
     display: flex;

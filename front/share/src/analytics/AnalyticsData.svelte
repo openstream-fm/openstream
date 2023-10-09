@@ -1167,7 +1167,7 @@
 
   .chart-title {
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 
   .chart-grid-daily, .chart-grid-hourly {
@@ -1181,7 +1181,7 @@
   }
 
   .map-tooltip-name {
-    font-weight: 600;
+    font-weight: var(--font-bold);
     font-size: 1rem;  
     margin-block-end: 0.35rem;
   }

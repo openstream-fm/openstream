@@ -8,16 +8,20 @@
 /* @import url("./cereal/font.css"); */
 
 /* @import url("./circular/circular.css"); */
-@import url("./mada/font.css");
+/* @import url("./mada/font.css"); */
+@import url("./sofia-sans/font.css");
 @import url("./azeret-mono/azeret-mono.css");
 /* @import url("./chivo-mono/chivo-mono.css"); */
 
 :root {
-  --font-family: Mada, Circular, Lexend, Cereal, "Fira Sans", G, Cera, Jost, Overpass, sans-serif; 
+  --font-family: "Sofia Sans", Arial, Helvetica, sans-serif; 
   --monospace: "Azeret Mono", "Chivo Mono", monospace, ui-monospace;
 
   font-family: var(--font-family);
   font-size: 16px;
+
+  --font-bold: 700;
+  --font-semi: 600;
 
   --drawer-width: 250px;
   --top-h: 4.5rem;

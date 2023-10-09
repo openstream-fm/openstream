@@ -50,7 +50,7 @@
 		margin-top: 3rem;
 		margin-bottom: 4rem;
 		font-size: 2rem;
-		font-weight: 600;
+		font-weight: var(--font-bold);
 	}
 
 	.settings {
@@ -71,7 +71,7 @@
 
 	.side-title {
 		font-size: 1.2rem;
-		font-weight: 600;
+		font-weight: var(--font-bold);
 	}
 
   .urls {

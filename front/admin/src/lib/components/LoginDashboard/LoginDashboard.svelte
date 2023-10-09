@@ -19,7 +19,7 @@
     inset-block-start: 2rem;
     inset-inline-start: 2rem;
     font-size: 2rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);;
     color: var(--red);
     text-shadow: #fff 0 0 3px;
   }

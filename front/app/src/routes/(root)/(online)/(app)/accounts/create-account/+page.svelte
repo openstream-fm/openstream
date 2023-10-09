@@ -16,7 +16,7 @@
   .page-title {
     margin-top: 3rem;
     font-size: 2rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     text-align: center;
     padding: 0 2rem;
   }

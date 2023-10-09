@@ -93,12 +93,12 @@
   h1 {
     text-align: center;
     margin-top: 2rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 
   h2 {
     text-align: center;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     margin-top: 7.5rem;
   }
 
@@ -119,7 +119,7 @@
 
   .send {
     padding: 0.75rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     color: #fff;
     background: var(--blue);
     border-radius: 0.25rem;

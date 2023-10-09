@@ -91,7 +91,7 @@
   }
 
   .meter-title {
-    font-weight: 600;
+    font-weight: var(--font-bold);
     font-size: 1.4em;
     text-align: center;
     overflow: hidden;
@@ -104,7 +104,7 @@
   }
 
   .used, .avail {
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 
   .used {

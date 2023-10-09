@@ -105,7 +105,7 @@
 	.page-title {
 		margin-top: 2rem;
 		font-size: 2rem;
-		font-weight: 600;
+		font-weight: var(--font-bold);
 		text-align: center;
 	}
 
@@ -208,7 +208,7 @@
   .invitation-action.accept {
     background: var(--blue);
     color: #fff;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     box-shadow: var(--some-shadow);
   }
 </style>

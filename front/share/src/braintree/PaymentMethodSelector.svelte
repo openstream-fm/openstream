@@ -82,7 +82,7 @@
 
   .stage-title {
     font-size: 1.15rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     margin-top: 1rem;
     align-self: center;
     text-align: center;

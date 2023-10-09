@@ -27,7 +27,7 @@
   .logo-text {
     color: #000;
     font-size: 0.8em;
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 </style>
 

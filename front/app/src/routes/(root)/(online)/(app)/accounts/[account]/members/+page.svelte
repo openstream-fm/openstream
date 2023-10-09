@@ -200,7 +200,7 @@
 
 <style>
   h1, h2 {
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 
   .list {
@@ -226,7 +226,7 @@
   }
 
   .item-name {
-    font-weight: 600;
+    font-weight: var(--font-bold);
     font-size: 1.2rem;
   }
 
@@ -267,7 +267,7 @@
 
   .invite {
     color: #fff;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     background: var(--blue);
     padding: 0.75rem;
     border-radius: 0.25rem;
@@ -291,7 +291,7 @@
 
   .invite-dialog-send {
     color: #fff;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     background: var(--blue);
     padding: 0.75rem;
     border-radius: 0.25rem;
@@ -352,7 +352,7 @@
 
   .invitation-item-email {
     padding: 0.75rem 0;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     flex: 1;
     word-break: break-all;
   }

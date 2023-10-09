@@ -114,7 +114,7 @@
     margin-top: 4rem;
     margin-bottom: 2rem;
     font-size: 2rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 
   .create-box {
@@ -148,7 +148,7 @@
     cursor: pointer;
     user-select: none;
     align-self: flex-end;
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 
   /* .submit.disabled {

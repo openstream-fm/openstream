@@ -39,7 +39,7 @@
 
   .brand {
     font-size: 1.05rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     margin-bottom: 0.25rem;
   }
 

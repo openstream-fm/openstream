@@ -28,7 +28,7 @@
 
   .btn {
     color: #fff;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     background: var(--blue);
     padding: 0.75rem 1rem;
     border-radius: 0.25rem;

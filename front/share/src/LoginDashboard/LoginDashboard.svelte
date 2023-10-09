@@ -57,7 +57,7 @@
 
   .logo-text {
     font-size: 1.75rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     color: #000;
   }
 

@@ -161,7 +161,7 @@
     margin-top: 4rem;
     margin-bottom: 2rem;
     font-size: 2rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
   
   .section {
@@ -177,7 +177,7 @@
 
   h2 {
     margin-top: 3rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 
   .section-box {
@@ -284,7 +284,7 @@
 
   .relay-send {
     color: #fff;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     background: var(--blue);
     padding: 0.75rem;
     border-radius: 0.25rem;

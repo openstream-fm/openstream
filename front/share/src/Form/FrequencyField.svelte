@@ -50,7 +50,7 @@
 
 	.kind-btn {
 		padding: 0.75rem;
-		font-weight: 600;
+		font-weight: var(--font-bold);
 		background: rgba(255, 255, 255, 0.8);
 		transition: background-color 350ms ease, color 350ms ease;
     border-radius: 0.35rem;

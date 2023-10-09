@@ -88,7 +88,7 @@
 
   .top {
     height: var(--top-h);
-    font-weight: 600;
+    font-weight: var(--font-bold);
     font-size: 1.5rem;
     display: flex;
     align-items: center;
@@ -129,7 +129,7 @@
 
   .logo-text {
     font-size: 1.5rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 
   .inner {
@@ -201,7 +201,7 @@
     text-overflow: ellipsis;
     margin-inline-end: 0.5rem;
     text-align: start;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     font-size: 1.05rem;
   }
 
@@ -241,7 +241,7 @@
   }
 
   .account-switch-menu-item:not(.see-all) {
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 
   .account-switch-menu-item.see-all {

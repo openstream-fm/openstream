@@ -148,12 +148,13 @@
 
   .preview-title {
     display: flex;
-    font-size: 1.25rem;
+    font-size: 1rem;
     flex: 1;
     align-items: center;
     justify-content: center;
     text-align: center;
     margin-top: 1.5rem;
+    color: #444;
   }
 
   .top-boxes[data-air="off"] > .preview-out {
@@ -199,8 +200,7 @@
     color: var(--blue);
     font-size: 1.1rem;
     padding: 1rem 0;
-    border-radius: 0.5rem;
-    font-weight: 600;    
+    border-radius: 0.5rem;   
     text-align: center;
   } 
 </style>

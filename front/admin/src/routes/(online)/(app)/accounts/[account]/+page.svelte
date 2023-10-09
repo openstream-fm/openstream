@@ -125,7 +125,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     font-size: 1.75rem;
     text-align: start;
   }
@@ -153,7 +153,7 @@
 
   .member-name {
     font-size: 1.1rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 
   .member-relation {
@@ -175,7 +175,7 @@
   }
 
   .plan-name {
-    font-weight: 600;
+    font-weight: var(--font-bold);
     font-size: 1.1rem;
   }
 
@@ -208,7 +208,7 @@
   }
 
   .station-name {
-    font-weight: 600;
+    font-weight: var(--font-bold);
     font-size: 1.1rem;
   }
 
