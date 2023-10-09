@@ -58,7 +58,7 @@
 
 	.offline h1 {
     font-size: 2.5rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 
   .offline p {

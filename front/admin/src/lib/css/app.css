@@ -4,16 +4,18 @@
 /* @import url("./cera/cera.css"); */
 /* @import url("./gilroy/gilroy.css"); */
 /* @import url("./g/g.css");  */
-
 /* @import url("./circular/circular.css"); */
-@import url("./mada/font.css");
+/* @import url("./mada/font.css"); */
+@import url("./sofia-sans/font.css");
 @import url("./azeret-mono/azeret-mono.css");
 
 
 :root {
-  font-family: Mada, Circular, "Fira Sans", G, Cera, Jost, Overpass, sans-serif;
+  font-family: "Sofia Sans", Arial, Helvetica, sans-serif;
   font-size: 16px;
 
+  --font-bold: 700;
+  --font-semi: 600;
   --monospace: "Azeret Mono", "Chivo Mono", monospace, ui-monospace;
 
   --drawer-width: 250px;

@@ -168,7 +168,7 @@
   }
 
   h1 {
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 
   .edit-btn {
@@ -209,7 +209,7 @@
   }
 
   .meter-title {
-    font-weight: 600;
+    font-weight: var(--font-bold);
     font-size: 1.5em;
     text-align: center;
     overflow: hidden;
@@ -222,7 +222,7 @@
   }
 
   .used, .avail {
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 
   .used {
@@ -274,7 +274,7 @@
   .edit-dialog-btn {
     color: #fff;
     background: var(--blue);
-    font-weight: 600;
+    font-weight: var(--font-bold);
     padding: 0.75rem;
     box-shadow: var(--some-shadow);
   }

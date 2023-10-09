@@ -101,7 +101,7 @@
   }
 
   .section-title {
-    font-weight: 600;
+    font-weight: var(--font-bold);
     font-size: 1.75rem;
     text-align: start;
   }
@@ -129,7 +129,7 @@
 
   .account-name {
     font-size: 1.1rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 
   .account-listeners {

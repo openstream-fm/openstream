@@ -123,7 +123,7 @@
     color: #fff;
     padding: 1rem 2.5rem;
     border-radius: 5rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     box-shadow: var(--some-shadow);
     white-space: nowrap;
     --ripple-color: #fff;
@@ -218,7 +218,7 @@
   .plan-bottom-price {
     font-size: 1.1rem;
     margin-top: 0.75rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 
   .plan-bottom-btn {

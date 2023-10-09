@@ -135,7 +135,7 @@
     height: 1.85em;
     font-size: 2em;
     color: #fff;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     box-shadow: var(--some-shadow);
     border-radius: 50%;
     flex: none;
@@ -147,7 +147,7 @@
   }
 
   .page-title {
-    font-weight: 600;
+    font-weight: var(--font-bold);
     font-size: 1.5em;
     text-align: start;
   }
@@ -183,7 +183,7 @@
 
   .section-title {
     text-align: center;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     font-size: 1.5rem;
     margin: 1rem 0;
   }
@@ -214,7 +214,7 @@
     cursor: pointer;
     user-select: none;
     align-self: flex-end;
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 
   /* .submit.disabled {
@@ -227,7 +227,7 @@
   }
 
   .more-title {
-    font-weight: 600;
+    font-weight: var(--font-bold);
     font-size: 1.5rem;
     text-align: center;
   }

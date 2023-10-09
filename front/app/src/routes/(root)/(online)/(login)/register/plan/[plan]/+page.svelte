@@ -162,7 +162,7 @@
 	}
 
 	h2 {
-		font-weight: 600;
+		font-weight: var(--font-bold);
 		font-size: 1.5rem;
 		text-align: center;
 		margin: 4rem 0 3rem 0;
@@ -185,7 +185,7 @@
 	}
 
 	.plan-pretitle {
-		font-weight: 600;
+		font-weight: var(--font-bold);
 		font-size: 1.5rem;
 	}
 

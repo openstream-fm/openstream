@@ -83,7 +83,7 @@
   }
 
   .section-title {
-    font-weight: 600;
+    font-weight: var(--font-bold);;
     font-size: 1.25rem;
   }
   

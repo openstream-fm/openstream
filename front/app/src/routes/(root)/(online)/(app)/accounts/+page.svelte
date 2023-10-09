@@ -43,7 +43,7 @@
   .page-title {
     margin-top: 2rem;
     font-size: 2rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 
   .list-box {

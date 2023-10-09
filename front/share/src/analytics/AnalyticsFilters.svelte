@@ -419,7 +419,7 @@
   .submit {
     background: var(--blue);
     color: #fff;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     padding: 0.75rem;
     display: flex;
     flex-direction: row;
@@ -479,7 +479,7 @@
 
   .more-chip-value {
     margin-inline-start: 0.25rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 
   .more-chip-remove {

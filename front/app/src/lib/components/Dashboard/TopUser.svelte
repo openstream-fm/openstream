@@ -52,7 +52,7 @@
 
 
   .user-name {
-    font-weight: 600;
+    font-weight: var(--font-bold);
     font-size: 1rem;
     max-width: 12rem;
     min-width: 0;
@@ -78,7 +78,7 @@
     border-radius: 50%;
     background: var(--red);
     color: #fff;
-    font-weight: 600;
+    font-weight: var(--font-bold);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -227,7 +227,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 
   .menu-head-email {

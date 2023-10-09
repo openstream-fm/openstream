@@ -32,7 +32,7 @@
 
   .item-title {
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: var(--font-bold);
   }
 
   .item-subtitle {

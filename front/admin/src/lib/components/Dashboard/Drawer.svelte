@@ -63,7 +63,7 @@
 
   .top {
     height: var(--top-h);
-    font-weight: 600;
+    font-weight: var(--font-bold);;
     font-size: 1.5rem;
     display: flex;
     align-items: center;
