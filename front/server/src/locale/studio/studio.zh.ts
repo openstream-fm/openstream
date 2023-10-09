@@ -595,7 +595,7 @@ const locale: import("./studio.locale").StudioLocale = {
       },
       "title": "成员",
 
-      "no_owner_message_p1": "此部分仅供帐户管理员使用",
+      "no_owner_message_p1": "此部分仅供帐户管理员使用。",
       "no_owner_message_p2": "如果您需要邀请其他人参加此帐户，请与帐户管理员联系。",
 
       "Pending_invitations": "待处理的邀请",
