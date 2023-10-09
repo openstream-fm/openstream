@@ -594,7 +594,7 @@ const locale: import("./studio.locale").StudioLocale = {
       },
       "title": "الأعضاء",
 
-      "no_owner_message_p1": "هذا القسم متاح فقط لمسؤولي الحساب",
+      "no_owner_message_p1": "هذا القسم متاح فقط لمسؤولي الحساب.",
       "no_owner_message_p2": "تواصل مع مسؤولي الحساب إذا كنت بحاجة إلى دعوة أشخاص للمشاركة في هذا الحساب.",
 
       "Pending_invitations": "دعوات معلقة",

@@ -596,7 +596,7 @@ const locale: import("./studio.locale").StudioLocale = {
       },
       "title": "Miembros",
 
-      "no_owner_message_p1": "Esta sección esta disponible solo para los administradores de la cuenta",
+      "no_owner_message_p1": "Esta sección esta disponible solo para los administradores de la cuenta.",
       "no_owner_message_p2": "Contactate con los administradores de la cuenta si necesitás invitar gente a participar en esta cuenta.",
 
       "Pending_invitations": "Invitaciones pendientes",
