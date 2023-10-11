@@ -310,34 +310,6 @@ impl RelayHandler {
   }
 }
 
-#[derive(Debug, thiserror::Error)]
-pub enum RelayError {
-  #[error("relay code mismatch")]
-  RelayCodeMismatch,
-  #[error("relay not streaming")]
-  NotStreaming,
-}
-
-impl From<RelayError> for Response {
-  fn from(e: RelayError) -> Self {
-    let (status, message) = match e {
-      RelayError::RelayCodeMismatch => (StatusCode::UNAUTHORIZED, "relay code mismatch"),
-      RelayError::NotStreaming => (
-        StatusCode::SERVICE_UNAVAILABLE,
-        "station not streaming from this server",
-      ),
-    };
-
-    let mut res = Response::new(status);
-    *res.body_mut() = Body::from(message);
-    res
-      .headers_mut()
-      .append("content-type", HeaderValue::from_static("text/plain"));
-
-    res
-  }
-}
-
 #[async_trait]
 impl Handler for RelayHandler {
   async fn call(&self, req: Request, _: Next) -> Response {
