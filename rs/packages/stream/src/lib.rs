@@ -1,8 +1,6 @@
 use async_trait::async_trait;
 use db::account::Account;
-use db::audio_file::AudioFile;
-use db::deployment::Deployment;
-use db::station::{OwnerDeploymentInfo, Station};
+use db::station::Station;
 use db::stream_connection::lite::StreamConnectionLite;
 use db::stream_connection::StreamConnection;
 use db::Model;
@@ -13,13 +11,11 @@ use hyper::header::{HeaderName, ACCEPT_RANGES, CACHE_CONTROL, RETRY_AFTER};
 use hyper::{header::CONTENT_TYPE, http::HeaderValue, Body, Server, StatusCode};
 use ip_counter::IpCounter;
 use log::*;
-use media_sessions::external_relay::run_external_relay_session;
-use media_sessions::playlist::run_playlist_session;
-use media_sessions::relay::run_relay_session;
 use media_sessions::RecvError;
-use media_sessions::{Listener, MediaSessionMap};
+use media_sessions::MediaSessionMap;
 use mongodb::bson::doc;
 use prex::{handler::Handler, Next, Request, Response};
+use rx::GetRxError;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use shutdown::Shutdown;
@@ -31,12 +27,15 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::{Instant, SystemTime};
 use transfer_map::TransferTracer;
-// use url::Url;
+
+use crate::rx::{get_rx, GetRxMode};
+
+mod error;
+mod rx;
+pub mod transfer_map;
 
 #[allow(clippy::declare_interior_mutable_const)]
 const X_OPENSTREAM_RELAY_CODE: &str = "x-openstream-relay-code";
-
-pub mod transfer_map;
 
 #[allow(clippy::declare_interior_mutable_const)]
 const X_OPENSTREAM_REJECTION_CODE: HeaderName =
@@ -123,12 +122,12 @@ impl StreamServer {
 
     app.get(
       "/stream/:id.:ext(m3u8?)",
-      LinkHandler::new(LinkHandlerKind::M3u, self.media_sessions.clone()),
+      LinkHandler::new(LinkHandlerKind::M3u),
     );
 
     app.get(
       "/stream/:id.pls",
-      LinkHandler::new(LinkHandlerKind::Pls, self.media_sessions.clone()),
+      LinkHandler::new(LinkHandlerKind::Pls),
     );
 
     app.get(
@@ -145,7 +144,7 @@ impl StreamServer {
 
     app.get(
       "/relay/:id",
-      RelayHandler::new(self.deployment_id.clone(), self.media_sessions.clone()),
+      RelayHandler::new(self.deployment_id.clone(), self.media_sessions.clone(), self.drop_tracer.clone(), self.shutdown.clone()),
     );
 
     let app = app.build().expect("prex app build stream");
@@ -217,46 +216,47 @@ impl Drop for StreamServer {
 struct RelayHandler {
   deployment_id: String,
   media_sessions: MediaSessionMap,
+  drop_tracer: DropTracer,
+  shutdown: Shutdown,
 }
 
 impl RelayHandler {
-  pub fn new(deployment_id: String, media_sessions: MediaSessionMap) -> Self {
+  pub fn new(deployment_id: String, media_sessions: MediaSessionMap, drop_tracer: DropTracer, shutdown: Shutdown) -> Self {
     Self {
       deployment_id,
       media_sessions,
+      drop_tracer,
+      shutdown,
     }
   }
 
-  pub async fn handle(&self, req: Request) -> Result<Response, RelayError> {
+  pub async fn handle(&self, req: Request) -> Result<Response, StreamError> {
     let station_id = req.param("id").unwrap().to_string();
 
-    match req.headers().get(X_OPENSTREAM_RELAY_CODE) {
-      None => return Err(RelayError::RelayCodeMismatch),
-      Some(v) => match v.to_str() {
-        Err(_) => {
-          return Err(RelayError::RelayCodeMismatch);
-        }
-        Ok(v) => {
-          if v != self.deployment_id {
-            return Err(RelayError::RelayCodeMismatch);
-          }
-        }
-      },
-    }
+    // match req.headers().get(X_OPENSTREAM_RELAY_CODE) {
+    //   None => return Err(RelayError::RelayCodeMismatch),
+    //   Some(v) => match v.to_str() {
+    //     Err(_) => {
+    //       return Err(RelayError::RelayCodeMismatch);
+    //     }
+    //     Ok(v) => {
+    //       if v != self.deployment_id {
+    //         return Err(RelayError::RelayCodeMismatch);
+    //       }
+    //     }
+    //   },
+    // }
 
-    let (mut rx, content_type) = {
-      let lock = self.media_sessions.read();
-      match lock.get(&station_id) {
-        None => {
-          return Err(RelayError::NotStreaming);
-        }
-        Some(ms) => {
-          let rx = ms.subscribe();
-          let content_type = ms.info().content_type();
-          (rx, content_type.to_string())
-        }
-      }
-    };
+    let (mut rx, _station) = get_rx(
+      GetRxMode::Relay,
+      &self.deployment_id,
+      &station_id,
+      &self.media_sessions,
+      &self.drop_tracer,
+      &self.shutdown,
+    ).await?;
+
+    let content_type = rx.info().kind().content_type().to_string();
 
     let (mut sender, body) = hyper::Body::channel();
 
@@ -307,34 +307,6 @@ impl RelayHandler {
     }
 
     Ok(res)
-  }
-}
-
-#[derive(Debug, thiserror::Error)]
-pub enum RelayError {
-  #[error("relay code mismatch")]
-  RelayCodeMismatch,
-  #[error("relay not streaming")]
-  NotStreaming,
-}
-
-impl From<RelayError> for Response {
-  fn from(e: RelayError) -> Self {
-    let (status, message) = match e {
-      RelayError::RelayCodeMismatch => (StatusCode::UNAUTHORIZED, "relay code mismatch"),
-      RelayError::NotStreaming => (
-        StatusCode::SERVICE_UNAVAILABLE,
-        "station not streaming from this server",
-      ),
-    };
-
-    let mut res = Response::new(status);
-    *res.body_mut() = Body::from(message);
-    res
-      .headers_mut()
-      .append("content-type", HeaderValue::from_static("text/plain"));
-
-    res
   }
 }
 
@@ -407,239 +379,14 @@ impl StreamHandler {
     };
 
     tokio::spawn(async move {
-      async fn get_rx(
-        deployment_id: &str,
-        station_id: &str,
-        req: &Request,
-        media_sessions: &MediaSessionMap,
-        drop_tracer: &DropTracer,
-        shutdown: &Shutdown,
-      ) -> Result<(Listener, Station), StreamError> {
-        let task_id = Station::random_owner_task_id();
-        let info = OwnerDeploymentInfo {
-          deployment_id: deployment_id.to_string(),
-          task_id: task_id.clone(),
-          content_type: String::from("audio/mpeg"),
-          health_checked_at: Some(DateTime::now()),
-        };
-
-        let (rx, station) = 'rx: {
-          let (station, dropper) = 'station: {
-            match Station::try_set_owner_deployment_info(station_id, info, drop_tracer.token())
-              .await?
-            {
-              Ok((station, dropper)) => {
-                break 'station (station, Some(dropper));
-              }
-
-              Err(None) => {
-                return Err(StreamError::StationNotFound(station_id.to_string()));
-              }
-
-              Err(Some((station, owner_info))) => {
-                let relay_tx = 'relay_tx: {
-                  let lock = media_sessions.upgradable_read();
-                  if owner_info.deployment_id == deployment_id {
-                    break 'station (station, None);
-                  } else {
-                    match lock.get(station_id) {
-                      None => {
-                        break 'relay_tx lock.upgrade().transmit(
-                          station_id,
-                          &task_id,
-                          media_sessions::MediaSessionKind::Relay {
-                            content_type: owner_info.content_type.clone(),
-                          },
-                        )
-                      }
-                      Some(session) => {
-                        if session.info().kind().is_relay() {
-                          break 'station (station, None);
-                        } else {
-                          break 'relay_tx lock.upgrade().transmit(
-                            station_id,
-                            &task_id,
-                            media_sessions::MediaSessionKind::Relay {
-                              content_type: owner_info.content_type.clone(),
-                            },
-                          );
-                        }
-                      }
-                    }
-                  }
-                };
-
-                let account = match Account::get_by_id(&station.account_id).await? {
-                  Some(account) => account,
-                  None => return Err(StreamError::AccountNotFound(station.account_id)),
-                };
-
-                if account.limits.transfer.avail() == 0 {
-                  return Err(StreamError::TransferLimit);
-                }
-
-                if account.limits.listeners.avail() == 0 {
-                  return Err(StreamError::ListenersLimit);
-                }
-
-                let deployment = match Deployment::get_by_id(&owner_info.deployment_id).await? {
-                  None => return Err(StreamError::DeploymentNotFound),
-                  Some(doc) => doc,
-                };
-
-                use rand::seq::SliceRandom;
-                let stream_port = deployment.stream_ports.choose(&mut rand::thread_rng());
-
-                let port = match stream_port {
-                  None => return Err(StreamError::DeploymentNoPort),
-                  Some(port) => *port,
-                };
-
-                let destination = SocketAddr::from((deployment.local_ip, port));
-
-                let client = hyper::Client::default();
-
-                let mut hyper_req = hyper::Request::builder().uri(format!(
-                  "http://{}:{}/relay/{}",
-                  destination.ip(),
-                  destination.port(),
-                  station_id
-                ));
-
-                hyper_req = hyper_req
-                  .header(X_OPENSTREAM_RELAY_CODE, &owner_info.deployment_id)
-                  .header(
-                    "x-openstream-relay-remote-addr",
-                    format!("{}", req.remote_addr()),
-                  )
-                  .header(
-                    "x-openstream-relay-local-addr",
-                    format!("{}", req.local_addr()),
-                  )
-                  .header("x-openstream-relay-deployment-id", deployment_id)
-                  .header("x-openstream-relay-target-deployment-id", deployment_id)
-                  .header("connection", "close");
-
-                let hyper_req = match hyper_req.body(Body::empty()) {
-                  Ok(req) => req,
-                  Err(e) => return Err(StreamError::InternalHyperCreateRequest(e)),
-                };
-
-                match client.request(hyper_req).await {
-                  Err(e) => return Err(StreamError::InternalHyperClientRequest(e)),
-                  Ok(hyper_res) => {
-                    // if error return the same error to the client
-                    if !hyper_res.status().is_success() {
-                      return Err(StreamError::RelayStatus(hyper_res.status()));
-                    }
-
-                    let rx = relay_tx.subscribe();
-                    run_relay_session(
-                      relay_tx,
-                      deployment_id.to_string(),
-                      owner_info.deployment_id,
-                      hyper_res,
-                      shutdown.clone(),
-                      drop_tracer.clone(),
-                    );
-
-                    break 'rx (rx, station);
-                  }
-                }
-              }
-            }
-          };
-
-          let account = match Account::get_by_id(&station.account_id).await? {
-            Some(account) => account,
-            None => return Err(StreamError::AccountNotFound(station.account_id)),
-          };
-
-          if account.limits.transfer.avail() == 0 {
-            return Err(StreamError::TransferLimit);
-          }
-
-          if account.limits.listeners.avail() == 0 {
-            return Err(StreamError::ListenersLimit);
-          }
-
-          #[allow(clippy::collapsible_if)]
-          if media_sessions.read().get(station_id).is_none() {
-            match &station.external_relay_url {
-              None => {
-                if !AudioFile::exists(doc! { AudioFile::KEY_STATION_ID: &station.id }).await? {
-                  return Err(StreamError::NotStreaming(station.id));
-                }
-              }
-
-              Some(_) => {}
-            }
-          };
-
-          let rx = {
-            let lock = media_sessions.upgradable_read();
-
-            match lock.get(station_id) {
-              Some(session) => session.subscribe(),
-
-              None => {
-                let mut lock = lock.upgrade();
-                match &station.external_relay_url {
-                  None => {
-                    let tx = lock.transmit(
-                      station_id,
-                      &task_id,
-                      media_sessions::MediaSessionKind::Playlist {},
-                    );
-                    let rx = tx.subscribe();
-                    let shutdown = shutdown.clone();
-                    let deployment_id = deployment_id.to_string();
-                    let drop_tracer = drop_tracer.clone();
-                    tokio::spawn(async move {
-                      let _ = run_playlist_session(tx, deployment_id, shutdown, drop_tracer, true)
-                        .await
-                        .unwrap();
-                      drop(dropper);
-                    });
-                    rx
-                  }
-
-                  Some(url) => {
-                    let tx = lock.transmit(
-                      station_id,
-                      &task_id,
-                      media_sessions::MediaSessionKind::ExternalRelay,
-                    );
-                    let rx = tx.subscribe();
-                    let shutdown = shutdown.clone();
-                    let deployment_id = deployment_id.to_string();
-                    let drop_tracer = drop_tracer.clone();
-                    let url = url.clone();
-
-                    tokio::spawn(async move {
-                      let _ =
-                        run_external_relay_session(tx, deployment_id, url, shutdown, drop_tracer)
-                          .await
-                          .unwrap();
-                      drop(dropper);
-                    });
-                    rx
-                  }
-                }
-              }
-            }
-          };
-
-          (rx, station)
-        };
-
-        Ok((rx, station))
-      }
+      
+      let local_addr = req.local_addr();
+      let remote_addr = req.remote_addr();
 
       let (rx, station) = get_rx(
+        GetRxMode::Stream { local_addr, remote_addr },
         &deployment_id,
         &station_id,
-        &req,
         &media_sessions,
         &drop_tracer,
         &shutdown,
@@ -763,9 +510,9 @@ impl StreamHandler {
             // avoid creating infinite loops here
             if (loop_start.elapsed().as_secs() > 5) && rx_had_data && (loop_i <= 60) {
               let (new_rx, _) = get_rx(
+                GetRxMode::Stream { local_addr, remote_addr },
                 &deployment_id,
                 &station_id,
-                &req,
                 &media_sessions,
                 &drop_tracer,
                 &shutdown,
@@ -882,26 +629,16 @@ impl Drop for StreamConnectionDropper {
   }
 }
 
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum StreamError {
-  Db(mongodb::error::Error),
-  InternalHyperCreateRequest(hyper::http::Error),
-  InternalHyperClientRequest(hyper::Error),
-  DeploymentNotFound,
-  DeploymentNoPort,
+  #[error("db: {0}")]
+  Db(#[from] mongodb::error::Error),
+  #[error("station not found: {0}")]
   StationNotFound(String),
-  AccountNotFound(String),
-  NotStreaming(String),
+  #[error("to many open ip connections")]
   TooManyOpenIpConnections,
-  ListenersLimit,
-  TransferLimit,
-  RelayStatus(StatusCode),
-}
-
-impl From<mongodb::error::Error> for StreamError {
-  fn from(e: mongodb::error::Error) -> Self {
-    Self::Db(e)
-  }
+  #[error("get_rx: {0}")]
+  GetRx(#[from] GetRxError),
 }
 
 impl From<StreamError> for Response {
@@ -916,51 +653,9 @@ impl From<StreamError> for Response {
 
       StreamError::StationNotFound(id) => (
         StatusCode::NOT_FOUND,
-        "NO_STATION",
+        "STATION_NOT_FOUND",
         format!("station with id {id} not found"),
         None,
-      ),
-
-      StreamError::AccountNotFound(id) => (
-        StatusCode::NOT_FOUND,
-        "ACCOUNT_NOT_FOUND",
-        format!("account with id {id} not found"),
-        None,
-      ),
-
-      StreamError::NotStreaming(id) => (
-        StatusCode::MISDIRECTED_REQUEST,
-        "NOT_STREAMING",
-        format!("station with id {id} is not streaming from this server"),
-        None,
-      ),
-
-      StreamError::DeploymentNotFound => (
-        StatusCode::SERVICE_UNAVAILABLE,
-        "INTERNAL_DEPLOYMENT_NOT_FOUND",
-        "Internal server error".into(),
-        Some(5),
-      ),
-
-      StreamError::DeploymentNoPort => (
-        StatusCode::SERVICE_UNAVAILABLE,
-        "INTERNAL_DEPLOYMENT_NO_PORT",
-        "Internal server error".into(),
-        Some(5),
-      ),
-
-      StreamError::InternalHyperCreateRequest(_) => (
-        StatusCode::INTERNAL_SERVER_ERROR,
-        "INTERNAL_REQUEST_BUILDER",
-        "Internal server error".into(),
-        Some(30),
-      ),
-
-      StreamError::InternalHyperClientRequest(_) => (
-        StatusCode::SERVICE_UNAVAILABLE,
-        "INTERNAL_CLIENT_REQUEST",
-        "Internal server error".into(),
-        Some(5),
       ),
 
       StreamError::TooManyOpenIpConnections => (
@@ -971,29 +666,97 @@ impl From<StreamError> for Response {
         Some(30u32),
       ),
 
-      StreamError::ListenersLimit => (
-        StatusCode::SERVICE_UNAVAILABLE,
-        "ACCOUNT_LISTENERS_LIMIT",
-        "Account has reached its concurrent listeners limit".into(),
-        Some(30),
-      ),
+      StreamError::GetRx(e) => {
+        match e {
+          
+          GetRxError::Db(_e) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "INTERNAL_RELAY_DB",
+            "internal server error".into(),
+            None,
+          ),
 
-      StreamError::TransferLimit => (
-        StatusCode::SERVICE_UNAVAILABLE,
-        "ACCOUNT_TRANSFER_LIMIT",
-        "Account has reached its monthly transfer limit".into(),
-        Some(60 * 60 * 24),
-      ),
+          GetRxError::StationNotFound(id) => (
+            StatusCode::NOT_FOUND,
+            "STATION_NOT_FOUND",
+            format!("station with id {id} not found"),
+            None,
+          ),
+    
+          GetRxError::AccountNotFound(id) => (
+            StatusCode::NOT_FOUND,
+            "ACCOUNT_NOT_FOUND",
+            format!("account with id {id} not found"),
+            None,
+          ),
+    
+          GetRxError::StationNotStreaming(id) => (
+            StatusCode::MISDIRECTED_REQUEST,
+            "STATION_NOT_STREAMING",
+            format!("station with id {id} is not streaming from this server"),
+            None,
+          ),
+    
+          GetRxError::DeploymentNotFound(_) => (
+            StatusCode::SERVICE_UNAVAILABLE,
+            "INTERNAL_DEPLOYMENT_NOT_FOUND",
+            "Internal server error".into(),
+            Some(5),
+          ),
+    
+          GetRxError::DeploymentNoPort => (
+            StatusCode::SERVICE_UNAVAILABLE,
+            "INTERNAL_DEPLOYMENT_NO_PORT",
+            "Internal server error".into(),
+            Some(5),
+          ),
+    
+          GetRxError::RelayCreateRequest(_) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "INTERNAL_RELAY_CREATE_REQUEST",
+            "Internal server error".into(),
+            Some(30),
+          ),
+    
+          GetRxError::RelaySendRequest(_) => (
+            StatusCode::SERVICE_UNAVAILABLE,
+            "INTERNAL_RELAY_SEND_REQUEST",
+            "Internal server error".into(),
+            Some(5),
+          ),
+    
+          GetRxError::ListenersLimit => (
+            StatusCode::SERVICE_UNAVAILABLE,
+            "ACCOUNT_LISTENERS_LIMIT",
+            "Account has reached its concurrent listeners limit".into(),
+            Some(30),
+          ),
+    
+          GetRxError::TransferLimit => (
+            StatusCode::SERVICE_UNAVAILABLE,
+            "ACCOUNT_TRANSFER_LIMIT",
+            "Account has reached its monthly transfer limit".into(),
+            Some(60 * 60 * 24),
+          ),
+    
+          GetRxError::RelayStatus(s) => (
+            StatusCode::SERVICE_UNAVAILABLE,
+            "RELAY_STATUS",
+            format!(
+              "Internal error, relay responded with not ok status code: {}, try again in a few seconds",
+              s.as_u16()
+            ),
+            Some(5),
+          ),
 
-      StreamError::RelayStatus(s) => (
-        StatusCode::SERVICE_UNAVAILABLE,
-        "RELAY_STATUS",
-        format!(
-          "Internal error, relay responded with not ok status code: {}, try again in a few seconds",
-          s.as_u16()
-        ),
-        Some(5),
-      ),
+          GetRxError::StationStreamingFromOtherServer(_) => (
+            StatusCode::SERVICE_UNAVAILABLE,
+            "RELAY_STATION_STREAMING_FROM_OTHER_SERVER",
+            "Internal error, station is streaming from another server".into(),
+            Some(5)
+          )
+        }
+      }
     };
 
     let mut res = Response::new(status);
@@ -1025,15 +788,13 @@ pub enum LinkHandlerKind {
 
 #[derive(Debug, Clone)]
 pub struct LinkHandler {
-  kind: LinkHandlerKind,
-  media_sessions: MediaSessionMap,
+  kind: LinkHandlerKind
 }
 
 impl LinkHandler {
-  pub fn new(kind: LinkHandlerKind, media_sessions: MediaSessionMap) -> Self {
+  pub fn new(kind: LinkHandlerKind) -> Self {
     Self {
       kind,
-      media_sessions,
     }
   }
 
@@ -1043,26 +804,6 @@ impl LinkHandler {
     let station = match Station::get_by_id(&station_id).await? {
       Some(station) => station,
       None => return Err(StreamError::StationNotFound(station_id.to_string())),
-    };
-
-    let account = match Account::get_by_id(&station.account_id).await? {
-      Some(account) => account,
-      None => return Err(StreamError::AccountNotFound(station.account_id)),
-    };
-
-    if account.limits.transfer.avail() == 0 {
-      return Err(StreamError::TransferLimit);
-    }
-
-    if account.limits.listeners.avail() == 0 {
-      return Err(StreamError::ListenersLimit);
-    }
-
-    #[allow(clippy::collapsible_if)]
-    if self.media_sessions.read().get(&station_id).is_none() {
-      if !AudioFile::exists(doc! { AudioFile::KEY_STATION_ID: &station.id }).await? {
-        return Err(StreamError::NotStreaming(station.id));
-      }
     };
 
     let host = req.host().unwrap_or("stream.openstream.fm");
