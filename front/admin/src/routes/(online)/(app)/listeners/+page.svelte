@@ -18,12 +18,20 @@
 
   let searchParams = $page.url.searchParams;
 
-  $: qs_referer = searchParams.get("referer");
-  $: q_referer = qs_referer == null ? undefined : qs_referer === "null" ? null : qs_referer;
   $: q_deployment_id = searchParams.get("deployment") ?? null;
   $: q_station_id = searchParams.get("station") ?? null;
-
-  $: show_items = get_show_items(data, q_referer, q_deployment_id, q_station_id);
+  $: q_ip = searchParams.get("ip") ?? null;
+  
+  $: qs_referer = searchParams.get("referer");
+  $: q_referer = qs_referer == null ? undefined : qs_referer === "null" ? null : qs_referer;
+  
+  $: qs_os = searchParams.get("os");
+  $: q_os = qs_os == null ? undefined : qs_os === "null" ? null : qs_os;
+  
+  $: qs_browser = searchParams.get("browser");
+  $: q_browser = qs_browser == null ? undefined : qs_browser === "null" ? null : qs_browser;
+  
+  $: show_items = get_show_items(data, q_referer, q_deployment_id, q_station_id, q_browser, q_os, q_ip);
   const get_show_items = (...args: any[]) => {
     let items = data.stream_connections.items;
     if(q_referer !== undefined) {
@@ -33,6 +41,18 @@
         const r = `//${q_referer}`;
         items = items.filter(item => (item.request.headers.referer || item.request.headers.origin || "").includes(r))
       }
+    }
+
+    if(q_os !== undefined) {
+      items = items.filter(item => item.request.user_agent.os === q_os);
+    }
+
+    if(q_browser !== undefined) {
+      items = items.filter(item => item.request.user_agent.name === q_browser);
+    }
+
+    if(q_ip != null) {
+      items = items.filter(item => item.ip === q_ip);
     }
 
     if(q_deployment_id != null) {
@@ -70,15 +90,24 @@
   const make_params = ({
     deployment = q_deployment_id,
     station = q_station_id,
-    referer = q_referer
+    referer = q_referer,
+    os = q_os,
+    browser = q_browser,
+    ip = q_ip
   }: {
     deployment?: string | null,
     station?: string | null,
-    referer?: string | null
+    referer?: string | null | undefined,
+    os?: string | null | undefined,
+    browser?: string | null | undefined,
+    ip?: string | null,
   }) => {
     const params = new URLSearchParams();
     deployment && params.append("deployment", deployment);
     station && params.set("station", station);
+    os && params.set("os", os);
+    browser && params.set("browser", browser);
+    ip && params.set("ip", ip);
     referer && params.set("referer", referer);
     return params;
   }
@@ -91,48 +120,64 @@
 
   const deployment_toggle_link = (item: Item): string => {
     return `/listeners${qs(make_params({
-      deployment: q_deployment_id === item.deployment_id ? null : item.deployment_id
+      deployment: q_deployment_id === item.deployment_id ? null : item.deployment_id,
     }))}`
   }
   
   const referer_toggle_link = (ref: string | null): string => {
     return `/listeners${qs(make_params({
-      referer: q_referer === ref ? null : String(ref) 
+      referer: q_referer === ref ? "" : ref === null ? "null" : ref 
+    }))}`
+  }
+
+  const ip_toggle_link = (item: Item): string => {
+    return `/listeners${qs(make_params({
+      ip: q_ip === item.ip ? null : item.ip 
+    }))}`
+  }
+
+  const os_toggle_link = (item: Item): string => {
+    const v = item.request.user_agent.os;
+    return `/listeners${qs(make_params({
+      os: q_os === v ? "" : v === null ? "null" : v, 
+    }))}`
+  }
+
+  const browser_toggle_link = (item: Item): string => {
+    const v = item.request.user_agent.name;
+    return `/listeners${qs(make_params({
+      browser: q_browser === v ? "" : v === null ? "null" : v, 
     }))}`
   }
 
   let navigating = false;
 
-  const toggle_deployment = (item: Item) => {
-    const target = deployment_toggle_link(item);
+  const go = (target: string) => {
     history.replaceState(history.state, "", target);
     navigating = true;
     token++;
     last_update = Date.now();
     searchParams = new URLSearchParams(location.search)
-    sleep(5).then(() => navigating = false)
+    sleep(5).then(() => navigating = false);
   }
 
-  const toggle_station = (item: Item) => {
-    const target = station_toggle_link(item);
-    history.replaceState(history.state, "", target);
-    navigating = true;
-    token++;
-    last_update = Date.now();
-    searchParams = new URLSearchParams(location.search)
-    sleep(5).then(() => navigating = false)
+  const get_anchor = (node: Element): HTMLAnchorElement | null => {
+    if(node instanceof HTMLAnchorElement && node.href) return node;
+    if(node.parentElement) return get_anchor(node.parentElement);
+    return null;
   }
 
-  const toggle_referer = (ref: string | null) => {
-    const target = referer_toggle_link(ref);
-    history.replaceState(history.state, "", target);
-    navigating = true;
-    token++;
-    last_update = Date.now();
-    searchParams = new URLSearchParams(location.search)
-    sleep(5).then(() => navigating = false)
+  const item_click = (event: MouseEvent) => {
+    const target = event.target;
+    if(target == null) return;
+    if(!(target instanceof Element)) return;
+    const anchor = get_anchor(target);
+    if(anchor == null) return;
+    event.stopPropagation();
+    event.preventDefault();
+    go(anchor?.href);
   }
-
+ 
   const SEC = 1_000;
   const MIN = SEC * 60;
   const HOUR = MIN * 60;
@@ -335,12 +380,12 @@
       {/if}
     </svelte:fragment>
   </PageTop>
-
-  <div class="list">
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <div class="list" on:click={item_click}>
     {#each show_items as item (item._id)}
       {@const station = item_station(item)}
-      {@const referer = website(item)}      
-      <div class="item" class:open={item.is_open} class:closed={!item.is_open} in:enter_item|local out:leave_item|local>
+      {@const referer = website(item)}
+      <div class="item" class:open={item.is_open} class:closed={!item.is_open} in:enter_item|local={{}} out:leave_item|local={{}}>
         <div class="pic" class:empty={station == null} style:background-image={
             station != null ? 
             `url(${data.config.storage_public_url}/station-pictures/webp/128/${station?.picture_id}.webp?v=${STATION_PICTURES_VERSION})` :
@@ -348,9 +393,7 @@
           }
         /> 
         <div class="data">
-          <a class="na station-name" data-sveltekit-replacestate href={station_toggle_link(item)}
-            on:click|preventDefault={() => toggle_station(item)}
-          >
+          <a class="na station-name" data-sveltekit-replacestate href={station_toggle_link(item)}>
             {#if q_station_id === item.station_id}
               «
             {/if}
@@ -362,11 +405,21 @@
             {/if}
           </a>
           <div class="ip">
-            {item.request.local_addr.ip}:{item.request.local_addr.port} » {item.request.real_ip}
+            <!--
+              {item.request.local_addr.ip}:{item.request.local_addr.port}
+            -->
+            <a
+              class="na ip-link"
+              data-sveltekit-replacestate
+              href={ip_toggle_link(item)}
+            >
+              {#if item.ip === q_ip}
+                «
+              {/if}
+              {item.ip}
+            </a>
           </div>
-          <a class="na deployment" data-sveltekit-replacestate href="{deployment_toggle_link(item)}"
-            on:click|preventDefault={() => toggle_deployment(item)}
-          >
+          <a class="na deployment" data-sveltekit-replacestate href="{deployment_toggle_link(item)}">
             {#if q_deployment_id === item.deployment_id}
               «
             {/if}
@@ -374,18 +427,52 @@
           </a>
           <div class="platform">
             {#if item.request.user_agent.name && item.request.user_agent.os}
-              {item.request.user_agent.name} on {item.request.user_agent.os}
+              <a class="na browser" data-sveltekit-replacestate href="{browser_toggle_link(item)}">
+                {#if item.request.user_agent.name === q_browser}
+                  «
+                {/if}
+                {item.request.user_agent.name}
+              </a>
+                on
+              <a class="na os" data-sveltekit-replacestate href="{os_toggle_link(item)}">
+                {#if item.request.user_agent.os === q_os}
+                  «
+                {/if}
+                {item.request.user_agent.os}
+              </a>
+            
             {:else if item.request.user_agent.name}
-              {item.request.user_agent.name}
+              <a class="na browser" data-sveltekit-replacestate href="{browser_toggle_link(item)}">
+                {#if item.request.user_agent.name === q_browser}
+                  «
+                {/if}
+                {item.request.user_agent.name}
+              </a>
             {:else if item.request.user_agent.os}
-              {item.request.user_agent.name}
+              <a class="na os" data-sveltekit-replacestate href="{os_toggle_link(item)}">
+                {#if item.request.user_agent.os === q_os}
+                  «
+                {/if}
+                {item.request.user_agent.os}
+              </a>
             {:else}
-              Unknown platform
+              Unknown 
+                <a class="na browser" data-sveletkit-replacestate href="{browser_toggle_link(item)}">  
+                  {#if item.request.user_agent.name === q_browser}
+                    «
+                  {/if}
+                  browser
+                </a>
+              and
+              <a class="na os" data-sveletkit-replacestate href="{os_toggle_link(item)}">  
+                {#if item.request.user_agent.os === q_os}
+                  «
+                {/if}
+                platform
+              </a>
             {/if}
           </div>
-          <a class="na referer" data-sveltekit-replacestate href={referer_toggle_link(referer)}
-            on:click|preventDefault={() => toggle_referer(referer)}
-          >
+          <a class="na referer" data-sveltekit-replacestate href="{referer_toggle_link(referer)}">
             {#if q_referer === referer}
               «
             {/if}
