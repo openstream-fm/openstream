@@ -16,7 +16,7 @@ use futures::TryStreamExt;
 use hyper::Server;
 use log::*;
 use mailer::send::Mailer;
-use media_sessions::MediaSessionMap;
+use media::MediaSessionMap;
 use serde::{Deserialize, Serialize};
 use shutdown::Shutdown;
 use socket2::{Domain, Protocol, Socket, Type};

@@ -22,6 +22,7 @@ members = [
     "rs/packages/macros",
     "rs/packages/macros-build",
     "rs/packages/burst",
+    "rs/packages/media",
     "rs/packages/media-sessions",
     "rs/packages/ip",
     "rs/packages/config",

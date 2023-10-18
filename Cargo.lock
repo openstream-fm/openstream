@@ -159,6 +159,7 @@ dependencies = [
  "lazy-regex",
  "log",
  "mailer",
+ "media",
  "media-sessions",
  "mongodb",
  "owo-colors 3.5.0",
@@ -3243,6 +3244,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "media"
+version = "0.1.0"
+dependencies = [
+ "atomic_float",
+ "burst",
+ "bytes",
+ "const-str",
+ "constants",
+ "db",
+ "drop-tracer",
+ "ffmpeg",
+ "futures-util",
+ "hyper",
+ "log",
+ "mongodb",
+ "parking_lot 0.12.1",
+ "rand 0.8.5",
+ "regex_static",
+ "serde-util",
+ "shutdown",
+ "stream-util",
+ "thiserror",
+ "time 0.3.28",
+ "tokio",
+ "tokio-stream",
+ "url",
+]
+
+[[package]]
 name = "media-sessions"
 version = "0.1.0"
 dependencies = [
@@ -3771,6 +3801,7 @@ dependencies = [
  "log",
  "logger",
  "mailer",
+ "media",
  "media-sessions",
  "mongodb",
  "owo-colors 3.5.0",
@@ -5446,6 +5477,7 @@ dependencies = [
  "hyper",
  "lazy-regex",
  "log",
+ "media",
  "media-sessions",
  "mongodb",
  "once_cell",
@@ -5564,6 +5596,7 @@ dependencies = [
  "ip-counter",
  "ip_rfc",
  "log",
+ "media",
  "media-sessions",
  "mongodb",
  "owo-colors 3.5.0",

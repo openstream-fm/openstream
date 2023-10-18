@@ -1,10 +1,8 @@
-use std::collections::btree_map::Entry;
-
 use crate::json::JsonHandler;
 use crate::request_ext::{self, GetAccessTokenScopeError};
 
 use async_trait::async_trait;
-use media_sessions::MediaSessionMap;
+use media::{Kind, MediaSessionMap};
 use mongodb::bson::doc;
 use prex::Request;
 use serde::{Deserialize, Serialize};
@@ -14,7 +12,7 @@ pub mod post {
 
   use std::convert::Infallible;
 
-  use media_sessions::MediaSessionMap;
+  use media::MediaSessionMap;
   use serde_util::empty_struct::EmptyStruct;
 
   use super::*;
@@ -52,21 +50,25 @@ pub mod post {
 
     async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
       let Self::Input { station_id } = input;
-      perform(&self.media_sessions, station_id);
+      perform(&self.media_sessions, station_id).await;
       Ok(Output(EmptyStruct(())))
     }
   }
 }
 
-pub fn perform(media_sessions: &MediaSessionMap, station_id: String) {
-  let mut lock = media_sessions.write();
-  match lock.entry(&station_id) {
-    Entry::Vacant(..) => {}
-    Entry::Occupied(entry) => {
-      let session = entry.get();
-      if session.is_live() {
-        entry.remove();
+pub async fn perform(media_sessions: &MediaSessionMap, station_id: String) {
+  let mut lock = media_sessions.lock(&station_id).await;
+  match &*lock {
+    None => {}
+
+    Some(handle) => match handle.info().kind {
+      Kind::ExternalRelay => {}
+      Kind::InternalRelay => {}
+      Kind::Playlist => {}
+      Kind::Live => {
+        handle.terminate();
+        *lock = None;
       }
-    }
+    },
   }
 }

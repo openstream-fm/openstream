@@ -2,7 +2,7 @@ use crate::json::JsonHandler;
 use crate::request_ext::{self, GetAccessTokenScopeError};
 
 use async_trait::async_trait;
-use media_sessions::MediaSessionMap;
+use media::MediaSessionMap;
 use mongodb::bson::doc;
 use prex::Request;
 use serde::{Deserialize, Serialize};
@@ -49,13 +49,12 @@ pub mod post {
 
     async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
       let Self::Input { station_id } = input;
-      perform(&self.media_sessions, &station_id);
+      perform(&self.media_sessions, &station_id).await;
       Ok(Output(EmptyStruct(())))
     }
   }
 }
 
-pub fn perform(media_sessions: &MediaSessionMap, station_id: &str) {
-  let mut lock = media_sessions.write();
-  lock.terminate(station_id);
+pub async fn perform(media_sessions: &MediaSessionMap, station_id: &str) {
+  media_sessions.terminate(station_id).await;
 }

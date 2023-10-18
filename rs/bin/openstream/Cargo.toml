@@ -45,3 +45,4 @@ mailer = { version = "0.1.0", path = "../../packages/mailer" }
 payments = { version = "0.1.0", path = "../../packages/payments" }
 assets = { version = "0.1.0", path = "../../packages/assets" }
 console-subscriber = { version = "0.1.9", features = ["parking_lot"] }
+media = { version = "0.1.0", path = "../../packages/media" }

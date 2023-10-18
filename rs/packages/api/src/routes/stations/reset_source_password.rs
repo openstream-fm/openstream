@@ -12,7 +12,7 @@ pub mod post {
 
   use db::{deployment::Deployment, Model};
   use hyper::{http::HeaderValue, Body};
-  use media_sessions::MediaSessionMap;
+  use media::MediaSessionMap;
 
   use crate::request_ext::X_ACCESS_TOKEN;
 
@@ -90,7 +90,8 @@ pub mod post {
               crate::routes::runtime::source_password_updated::station_id::perform(
                 &media_sessions,
                 station.id,
-              );
+              )
+              .await;
             } else {
               #[allow(clippy-clippy::collapsible_else_if)]
               if let Ok(Some(deployment)) = Deployment::get_by_id(&info.deployment_id).await {
