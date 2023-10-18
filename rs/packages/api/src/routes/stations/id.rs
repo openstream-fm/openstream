@@ -76,7 +76,7 @@ pub mod delete {
   use db::{run_transaction, Model};
   use hyper::http::HeaderValue;
   use hyper::Body;
-  use media_sessions::MediaSessionMap;
+  use media::MediaSessionMap;
   use serde_util::DateTime;
   // use futures_util::TryStreamExt;
   use serde_util::empty_struct::EmptyStruct;
@@ -212,7 +212,8 @@ pub mod delete {
               crate::routes::runtime::station_deleted::station_id::perform(
                 &media_sessions,
                 &station.id,
-              );
+              )
+              .await;
             } else {
               #[allow(clippy-clippy::collapsible_else_if)]
               if let Ok(Some(deployment)) = Deployment::get_by_id(&info.deployment_id).await {
@@ -262,7 +263,7 @@ pub mod patch {
     station::StationPatch, Model,
   };
   use hyper::{http::HeaderValue, Body};
-  use media_sessions::MediaSessionMap;
+  use media::MediaSessionMap;
   use prex::request::ReadBodyJsonError;
   use validify::{ValidationErrors, Validify};
 
@@ -401,7 +402,8 @@ pub mod patch {
                   crate::routes::runtime::external_relay_updated::station_id::perform(
                     &media_sessions,
                     &station,
-                  );
+                  )
+                  .await;
                 } else {
                   #[allow(clippy-clippy::collapsible_else_if)]
                   if let Ok(Some(deployment)) = Deployment::get_by_id(&info.deployment_id).await {

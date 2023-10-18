@@ -19,7 +19,7 @@ use db::station_picture::StationPicture;
 use db::stream_connection::index::MemIndex;
 use drop_tracer::DropTracer;
 use mailer::send::Mailer;
-use media_sessions::MediaSessionMap;
+use media::MediaSessionMap;
 use prex::router::builder::Builder;
 use prex::Request;
 use shutdown::Shutdown;

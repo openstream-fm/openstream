@@ -8,8 +8,9 @@ use drop_tracer::DropTracer;
 use error::HandlerError;
 use http::RequestHead;
 use hyper::{http::HeaderValue, Method};
+use lazy_regex::{Lazy, Regex};
 use log::*;
-use media_sessions::MediaSessionMap;
+use media::MediaSessionMap;
 use owo_colors::*;
 use shutdown::Shutdown;
 use socket2::{Domain, Protocol, Socket, Type};
@@ -157,8 +158,8 @@ pub async fn handle_connection(
 }
 
 fn is_source_client_uri(head: &RequestHead) -> Option<String> {
-  let re = regex_static::static_regex!("^/?([a-zA-Z0-9]{1,20})/source/?$");
-  if let Some(caps) = re.captures(head.uri.path()) {
+  static RE: Lazy<Regex> = regex_static::lazy_regex!("^/?([a-zA-Z0-9]{1,20})/source/?$");
+  if let Some(caps) = RE.captures(head.uri.path()) {
     let id = caps.get(1).unwrap().as_str();
     Some(id.to_string())
   } else {

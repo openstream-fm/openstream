@@ -11,11 +11,11 @@ use hyper::header::{HeaderName, ACCEPT_RANGES, CACHE_CONTROL, RETRY_AFTER};
 use hyper::{header::CONTENT_TYPE, http::HeaderValue, Body, Server, StatusCode};
 use ip_counter::IpCounter;
 use log::*;
-use media_sessions::RecvError;
-use media_sessions::MediaSessionMap;
+use media::channel::RecvError;
+use media::handle::internal_relay::GetInternalRelayError;
+use media::{MediaSessionMap, SubscribeError};
 use mongodb::bson::doc;
 use prex::{handler::Handler, Next, Request, Response};
-use rx::GetRxError;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use shutdown::Shutdown;
@@ -28,14 +28,8 @@ use std::sync::Arc;
 use std::time::{Instant, SystemTime};
 use transfer_map::TransferTracer;
 
-use crate::rx::{get_rx, GetRxMode};
-
 mod error;
-mod rx;
 pub mod transfer_map;
-
-#[allow(clippy::declare_interior_mutable_const)]
-const X_OPENSTREAM_RELAY_CODE: &str = "x-openstream-relay-code";
 
 #[allow(clippy::declare_interior_mutable_const)]
 const X_OPENSTREAM_REJECTION_CODE: HeaderName =
@@ -125,10 +119,7 @@ impl StreamServer {
       LinkHandler::new(LinkHandlerKind::M3u),
     );
 
-    app.get(
-      "/stream/:id.pls",
-      LinkHandler::new(LinkHandlerKind::Pls),
-    );
+    app.get("/stream/:id.pls", LinkHandler::new(LinkHandlerKind::Pls));
 
     app.get(
       "/stream/:id",
@@ -142,10 +133,7 @@ impl StreamServer {
       ),
     );
 
-    app.get(
-      "/relay/:id",
-      RelayHandler::new(self.deployment_id.clone(), self.media_sessions.clone(), self.drop_tracer.clone(), self.shutdown.clone()),
-    );
+    app.get("/relay/:id", RelayHandler::new(self.media_sessions.clone()));
 
     let app = app.build().expect("prex app build stream");
 
@@ -214,20 +202,12 @@ impl Drop for StreamServer {
 
 #[derive(Debug, Clone)]
 struct RelayHandler {
-  deployment_id: String,
   media_sessions: MediaSessionMap,
-  drop_tracer: DropTracer,
-  shutdown: Shutdown,
 }
 
 impl RelayHandler {
-  pub fn new(deployment_id: String, media_sessions: MediaSessionMap, drop_tracer: DropTracer, shutdown: Shutdown) -> Self {
-    Self {
-      deployment_id,
-      media_sessions,
-      drop_tracer,
-      shutdown,
-    }
+  pub fn new(media_sessions: MediaSessionMap) -> Self {
+    Self { media_sessions }
   }
 
   pub async fn handle(&self, req: Request) -> Result<Response, StreamError> {
@@ -247,16 +227,9 @@ impl RelayHandler {
     //   },
     // }
 
-    let (mut rx, _station) = get_rx(
-      GetRxMode::Relay,
-      &self.deployment_id,
-      &station_id,
-      &self.media_sessions,
-      &self.drop_tracer,
-      &self.shutdown,
-    ).await?;
+    let mut rx = self.media_sessions.subscribe(&station_id).await?;
 
-    let content_type = rx.info().kind().content_type().to_string();
+    let content_type = rx.content_type().to_string();
 
     let (mut sender, body) = hyper::Body::channel();
 
@@ -378,22 +351,16 @@ impl StreamHandler {
       })
     };
 
+    let station = match Station::get_by_id(&station_id).await? {
+      Some(station) => station,
+      None => return Err(StreamError::StationNotFound(station_id.to_string())),
+    };
+
+    // TODO: check account limits
+
     tokio::spawn(async move {
-      
-      let local_addr = req.local_addr();
-      let remote_addr = req.remote_addr();
-
-      let (rx, station) = get_rx(
-        GetRxMode::Stream { local_addr, remote_addr },
-        &deployment_id,
-        &station_id,
-        &media_sessions,
-        &drop_tracer,
-        &shutdown,
-      )
-      .await?;
-
-      let content_type = rx.info().kind().content_type().to_string();
+      let rx = media_sessions.subscribe(&station.id).await?;
+      let content_type = rx.content_type().to_string();
 
       let conn_doc = {
         let now = DateTime::now();
@@ -401,7 +368,7 @@ impl StreamHandler {
 
         StreamConnection {
           id: StreamConnection::uid(),
-          station_id: station.id,
+          station_id: station.id.clone(),
           deployment_id: deployment_id.clone(),
           is_open: true,
           ip: request.real_ip,
@@ -439,7 +406,7 @@ impl StreamHandler {
         transfer_bytes: transfer_bytes.clone(),
         station_id: station_id.clone(),
         account_id: station.account_id.clone(),
-        token: media_sessions.drop_token(),
+        token: drop_tracer.token(),
         start_time,
       };
 
@@ -509,17 +476,8 @@ impl StreamHandler {
             // or had no data we abort to
             // avoid creating infinite loops here
             if (loop_start.elapsed().as_secs() > 5) && rx_had_data && (loop_i <= 60) {
-              let (new_rx, _) = get_rx(
-                GetRxMode::Stream { local_addr, remote_addr },
-                &deployment_id,
-                &station_id,
-                &media_sessions,
-                &drop_tracer,
-                &shutdown,
-              )
-              .await?;
+              let new_rx = media_sessions.subscribe(&station.id).await?;
               rx = new_rx;
-
               continue 'root;
             } else {
               break 'root;
@@ -637,8 +595,8 @@ pub enum StreamError {
   StationNotFound(String),
   #[error("to many open ip connections")]
   TooManyOpenIpConnections,
-  #[error("get_rx: {0}")]
-  GetRx(#[from] GetRxError),
+  #[error("subscribe: {0}")]
+  Subscribe(#[from] SubscribeError),
 }
 
 impl From<StreamError> for Response {
@@ -647,7 +605,7 @@ impl From<StreamError> for Response {
       StreamError::Db(_e) => (
         StatusCode::INTERNAL_SERVER_ERROR,
         "INTERNAL_DB",
-        "internal server error".into(),
+        "internal server error (db1)".into(),
         None,
       ),
 
@@ -666,97 +624,75 @@ impl From<StreamError> for Response {
         Some(30u32),
       ),
 
-      StreamError::GetRx(e) => {
-        match e {
-          
-          GetRxError::Db(_e) => (
+      StreamError::Subscribe(e) => match e {
+        SubscribeError::Db(_e) => (
+          StatusCode::INTERNAL_SERVER_ERROR,
+          "INTERNAL_RELAY_DB",
+          "internal server error (db2)".into(),
+          None,
+        ),
+
+        SubscribeError::StationNotFound(id) => (
+          StatusCode::NOT_FOUND,
+          "STATION_NOT_FOUND",
+          format!("station with id {id} not found"),
+          None,
+        ),
+
+        SubscribeError::PlaylistEmpty => (
+          StatusCode::SERVICE_UNAVAILABLE,
+          "STATION_NOT_STREAMING",
+          "station is not actively streaming, try again later".into(),
+          Some(60u32),
+        ),
+
+        SubscribeError::InternalRelay(e) => match e {
+          GetInternalRelayError::Db(_) => (
             StatusCode::INTERNAL_SERVER_ERROR,
             "INTERNAL_RELAY_DB",
-            "internal server error".into(),
+            "internal server error (db3)".into(),
             None,
           ),
 
-          GetRxError::StationNotFound(id) => (
-            StatusCode::NOT_FOUND,
-            "STATION_NOT_FOUND",
-            format!("station with id {id} not found"),
-            None,
-          ),
-    
-          GetRxError::AccountNotFound(id) => (
-            StatusCode::NOT_FOUND,
-            "ACCOUNT_NOT_FOUND",
-            format!("account with id {id} not found"),
-            None,
-          ),
-    
-          GetRxError::StationNotStreaming(id) => (
-            StatusCode::MISDIRECTED_REQUEST,
-            "STATION_NOT_STREAMING",
-            format!("station with id {id} is not streaming from this server"),
-            None,
-          ),
-    
-          GetRxError::DeploymentNotFound(_) => (
-            StatusCode::SERVICE_UNAVAILABLE,
-            "INTERNAL_DEPLOYMENT_NOT_FOUND",
-            "Internal server error".into(),
-            Some(5),
-          ),
-    
-          GetRxError::DeploymentNoPort => (
-            StatusCode::SERVICE_UNAVAILABLE,
-            "INTERNAL_DEPLOYMENT_NO_PORT",
-            "Internal server error".into(),
-            Some(5),
-          ),
-    
-          GetRxError::RelayCreateRequest(_) => (
+          GetInternalRelayError::CreateRequest(_) => (
             StatusCode::INTERNAL_SERVER_ERROR,
             "INTERNAL_RELAY_CREATE_REQUEST",
-            "Internal server error".into(),
-            Some(30),
-          ),
-    
-          GetRxError::RelaySendRequest(_) => (
-            StatusCode::SERVICE_UNAVAILABLE,
-            "INTERNAL_RELAY_SEND_REQUEST",
-            "Internal server error".into(),
-            Some(5),
-          ),
-    
-          GetRxError::ListenersLimit => (
-            StatusCode::SERVICE_UNAVAILABLE,
-            "ACCOUNT_LISTENERS_LIMIT",
-            "Account has reached its concurrent listeners limit".into(),
-            Some(30),
-          ),
-    
-          GetRxError::TransferLimit => (
-            StatusCode::SERVICE_UNAVAILABLE,
-            "ACCOUNT_TRANSFER_LIMIT",
-            "Account has reached its monthly transfer limit".into(),
-            Some(60 * 60 * 24),
-          ),
-    
-          GetRxError::RelayStatus(s) => (
-            StatusCode::SERVICE_UNAVAILABLE,
-            "RELAY_STATUS",
-            format!(
-              "Internal error, relay responded with not ok status code: {}, try again in a few seconds",
-              s.as_u16()
-            ),
-            Some(5),
+            "internal server error (cr)".into(),
+            None,
           ),
 
-          GetRxError::StationStreamingFromOtherServer(_) => (
-            StatusCode::SERVICE_UNAVAILABLE,
-            "RELAY_STATION_STREAMING_FROM_OTHER_SERVER",
-            "Internal error, station is streaming from another server".into(),
-            Some(5)
-          )
-        }
-      }
+          GetInternalRelayError::SendRequest(_) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "INTERNAL_RELAY_SEND_REQUEST",
+            "internal server error (sr)".into(),
+            None,
+          ),
+
+          GetInternalRelayError::DeploymentNoPort => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "INTERNAL_DEPLOYMENT_NO_PORT",
+            "internal server error (dnp)".into(),
+            None,
+          ),
+
+          GetInternalRelayError::DeploymentNotFound(_) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "INTERNAL_DEPLOYMENT_NOT_FOUND",
+            "internal server error (dnf)".into(),
+            None,
+          ),
+
+          GetInternalRelayError::RelayStatus(s) => {
+            let status = s.as_u16();
+            (
+              StatusCode::SERVICE_UNAVAILABLE,
+              "RELAY_STATUS",
+              format!("relay server responded with not ok status code ({status})"),
+              Some(60u32),
+            )
+          }
+        },
+      },
     };
 
     let mut res = Response::new(status);
@@ -788,14 +724,12 @@ pub enum LinkHandlerKind {
 
 #[derive(Debug, Clone)]
 pub struct LinkHandler {
-  kind: LinkHandlerKind
+  kind: LinkHandlerKind,
 }
 
 impl LinkHandler {
   pub fn new(kind: LinkHandlerKind) -> Self {
-    Self {
-      kind,
-    }
+    Self { kind }
   }
 
   async fn handle(&self, req: Request) -> Result<Response, StreamError> {

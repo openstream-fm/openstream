@@ -37,5 +37,6 @@ serde = { version = "1.0.160", features = ["derive"] }
 lazy-regex = "2.5.0"
 serde-util = { version = "0.1.0", path = "../serde-util" }
 serde_qs = "0.12.0"
+media = { version = "0.1.0", path = "../media" }
 
 [features]

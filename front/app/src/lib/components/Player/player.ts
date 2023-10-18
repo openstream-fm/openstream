@@ -134,6 +134,7 @@ export const player_subtitle = derived([player_state, now_playing], ([state, now
       } else if (artist) {
         return artist
       } else {
+        // TODO: locale
         return "Live streaming";
       }
     } else if (now_playing.kind === "playlist") {
@@ -146,9 +147,11 @@ export const player_subtitle = derived([player_state, now_playing], ([state, now
       } else if (artist) {
         return artist;
       } else {
+        // TODO: locale
         return "Playlist"
       }
     } else if(now_playing.kind === "external-relay") {
+      // TODO: locale
       return "Relay"
     } 
     
@@ -262,6 +265,7 @@ if (hasMediaSession) {
               artist = $player_state.station.name;
             } else {
               title = $player_state.station.name;
+              // TODO: locale
               artist = "Live Streaming";
             }
           } else if ($now_playing.kind === "playlist") {

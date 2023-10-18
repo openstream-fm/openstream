@@ -12,7 +12,7 @@ pub mod post {
   use std::convert::Infallible;
 
   use drop_tracer::DropTracer;
-  use media_sessions::MediaSessionMap;
+  use media::MediaSessionMap;
   use serde_util::empty_struct::EmptyStruct;
   use shutdown::Shutdown;
 
@@ -69,15 +69,9 @@ pub mod post {
     }
 
     async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
-      let Self::Input { station_id } = input;
-      let mut lock = self.media_sessions.write();
-      let _ = lock
-        .restart(
-          station_id.to_string(),
-          self.deployment_id.to_string(),
-          self.shutdown.clone(),
-          self.drop_tracer.clone(),
-        )
+      let _ = self
+        .media_sessions
+        .playlist_restart(&input.station_id)
         .await;
       Ok(Output(EmptyStruct(())))
     }

@@ -1,11 +1,9 @@
-use std::collections::btree_map::Entry;
-
 use crate::json::JsonHandler;
 use crate::request_ext::{self, GetAccessTokenScopeError};
 
 use async_trait::async_trait;
 use db::station::Station;
-use media_sessions::MediaSessionMap;
+use media::{Kind, MediaSessionMap};
 use mongodb::bson::doc;
 use prex::Request;
 use serde::{Deserialize, Serialize};
@@ -48,30 +46,22 @@ pub mod post {
 
     async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
       let Self::Input { station } = input;
-      perform(&self.media_sessions, &station);
+      perform(&self.media_sessions, &station).await;
       Ok(Output(EmptyStruct(())))
     }
   }
 }
 
-pub fn perform(media_sessions: &MediaSessionMap, station: &Station) {
-  let mut lock = media_sessions.write();
-  match lock.entry(&station.id) {
-    Entry::Vacant(..) => {}
-    Entry::Occupied(entry) => {
-      let session = entry.get();
-      match &station.external_relay_url {
-        Some(_) => {
-          if session.is_external_relay() || session.is_playlist() {
-            entry.remove();
-          }
-        }
-        None => {
-          if session.is_external_relay() {
-            entry.remove();
-          }
-        }
+pub async fn perform(media_sessions: &MediaSessionMap, station: &Station) {
+  let mut lock = media_sessions.lock(&station.id).await;
+  match &*lock {
+    None => {}
+    Some(handle) => match (&station.external_relay_url, handle.info().kind) {
+      (Some(_), Kind::ExternalRelay | Kind::Playlist) | (None, Kind::ExternalRelay) => {
+        handle.terminate();
+        *lock = None;
       }
-    }
+      _ => {}
+    },
   }
 }
