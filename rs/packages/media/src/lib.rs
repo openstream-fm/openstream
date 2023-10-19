@@ -414,6 +414,10 @@ impl MediaSessionMap {
 
         let receiver = sender.subscribe();
         let handle = Handle::new(sender);
+        if let Some(handle) = &*lock {
+          handle.terminate();
+        }
+        
         *lock = Some(handle);
 
         Ok(receiver)
