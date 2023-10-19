@@ -133,6 +133,14 @@ pub const MEDIA_SESSION_HEALTH_SHUTDOWN_TIMEOUT_SECS: u16 = 33;
 #[const_register]
 pub const MEDIA_SESSION_HEALTH_CHECK_KILL_INTERVAL_SECS: u16 = 5;
 
+/// internal interval to start new probe task if needed
+#[const_register]
+pub const PROBE_BACKGROUND_JOB_CHECK_INTERVAL_SECS: u32 = 10; // 10 secs
+
+/// interval to run a probe request (multiplied by the number of stations)
+#[const_register]
+pub const PROBE_STATION_INTERVAL_SECS: u32 = 5 * 60; // 5 min
+
 /// validation constants
 pub mod validate {
   use super::*;

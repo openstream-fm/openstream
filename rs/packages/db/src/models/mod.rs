@@ -30,3 +30,5 @@ pub mod email_verification_code;
 pub mod payment_method;
 
 pub mod account_invitations;
+
+pub mod probe;

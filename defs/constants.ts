@@ -63,6 +63,12 @@ export const PAYMENTS_ACCESS_TOKEN_HEADER = "x-access-token";
 /** delay to shutdown a playlist media session when it run out of listeners */
 export const PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY_SECS = 10;
 
+/** internal interval to start new probe task if needed */
+export const PROBE_BACKGROUND_JOB_CHECK_INTERVAL_SECS = 10;
+
+/** interval to run a probe request (multiplied by the number of stations) */
+export const PROBE_STATION_INTERVAL_SECS = 300;
+
 /** External ip header used for connecting from a reverse proxy */
 export const REAL_IP_HEADER = "x-real-ip";
 
