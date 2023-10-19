@@ -27,6 +27,10 @@ export const AUDIO_FILE_CHUNK_SIZE = 256000;
 
 export const DEPLOYMENT_HEALTH_CHECK_INTERVAL_SECS = 1;
 
+export const DEPLOYMENT_HEALTH_CHECK_SHUTDOWN_DELAY_SECS = 240;
+
+export const DEPLOYMENT_HEALTH_CHECK_SHUTDOWN_INTERVAL_SECS = 30;
+
 /** time in seconds for which an email verification code is valid */
 export const EMAIL_VERIFICATION_CODE_LEN = 6;
 
@@ -40,6 +44,8 @@ export const EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS = 30;
 export const EXTERNAL_RELAY_NO_DATA_START_SHUTDOWN_SECS = 30;
 
 export const EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS = 60;
+
+export const EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_INTERVAL_SECS = 20;
 
 /** Internal forwarded ip header used when openstream servers are connecting with each other */
 export const FORWARD_IP_HEADER = "x-openstream-forwarded-ip";
