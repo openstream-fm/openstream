@@ -165,7 +165,7 @@ pub async fn check_now() -> Result<(), mongodb::error::Error> {
         doc! {
           "$set": {
             StreamConnectionLite::KEY_TRANSFER_BYTES: {
-              "$multiply": [ KEY_DU, 128_000 / 8 ]
+              "$multiply": [ KEY_DU, 128_000 / 1000 / 8 ]
             }
           }
         },
@@ -237,7 +237,7 @@ pub async fn check_now() -> Result<(), mongodb::error::Error> {
         doc! {
           "$set": {
             StreamConnection::KEY_TRANSFER_BYTES: {
-              "$multiply": [ KEY_DURATION_MS, 128_000 / 8 ]
+              "$multiply": [ KEY_DURATION_MS, 128_000 / 1000 / 8 ]
             }
           }
         },
