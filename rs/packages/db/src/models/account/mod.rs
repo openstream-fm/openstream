@@ -1,9 +1,13 @@
+use crate::station::Station;
+use crate::stream_connection::lite::StreamConnectionLite;
 use crate::Model;
 use crate::{metadata::Metadata, PublicScope};
 use constants::validate::*;
-use mongodb::bson::doc;
+use mongodb::bson::{doc, Bson};
+use mongodb::ClientSession;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
+use std::collections::HashMap;
 use ts_rs::TS;
 
 crate::register!(Account);
@@ -168,6 +172,53 @@ impl Limit {
     self.total.saturating_sub(self.used)
   }
 }
+
+pub async fn recalculate_used_listeners_quota(
+  session: &mut ClientSession,
+) -> Result<(), mongodb::error::Error> {
+  let account_ids = Account::cl()
+    .distinct_with_session(Account::KEY_ID, None, None, session)
+    .await?;
+  let mut account_counters = account_ids
+    .into_iter()
+    .map(|bson| match bson {
+      Bson::String(v) => (v, 0),
+      _ => unreachable!(),
+    })
+    .collect::<HashMap<String, u64>>();
+
+  let mut station_account_map = HashMap::<String, String>::new();
+  {
+    let mut stations = Station::cl().find_with_session(None, None, session).await?;
+    while let Some(station) = stations.next(session).await.transpose()? {
+      station_account_map.insert(station.id.clone(), station.account_id.clone());
+    }
+  }
+
+  let filter = doc! { StreamConnectionLite::KEY_IS_OPEN: true };
+  let mut conns = StreamConnectionLite::cl()
+    .find_with_session(filter, None, session)
+    .await?;
+
+  while let Some(conn) = conns.next(session).await.transpose()? {
+    let account_id = station_account_map.get(&conn.station_id);
+    if let Some(account_id) = account_id {
+      *account_counters.entry(account_id.to_string()).or_insert(0) += 1;
+    }
+  }
+
+  for (account_id, v) in account_counters.into_iter() {
+    const KEY_LIMITS_LISTENERS_USED: &str =
+      crate::key!(Account::KEY_LIMITS, Limits::KEY_LISTENERS, Limit::KEY_USED);
+
+    let update = doc! { "$set": { KEY_LIMITS_LISTENERS_USED: v as f64 } };
+
+    Account::update_by_id_with_session(&account_id, update, session).await?;
+  }
+
+  Ok(())
+}
+
 #[cfg(test)]
 mod test {
   use super::*;

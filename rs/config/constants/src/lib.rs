@@ -49,6 +49,9 @@ pub const PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY_SECS: u64 = 10;
 #[const_register]
 pub const EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS: u64 = 60;
 
+#[const_register]
+pub const EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_INTERVAL_SECS: u64 = 20;
+
 /// delay to shutdown a relay session when it run out of listeners
 #[const_register]
 pub const RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS: u64 = 10;
@@ -116,6 +119,12 @@ pub const STATION_PICTURES_VERSION: f64 = 5.0;
 
 #[const_register]
 pub const DEPLOYMENT_HEALTH_CHECK_INTERVAL_SECS: u16 = 1;
+
+#[const_register]
+pub const DEPLOYMENT_HEALTH_CHECK_SHUTDOWN_INTERVAL_SECS: u16 = 30;
+
+#[const_register]
+pub const DEPLOYMENT_HEALTH_CHECK_SHUTDOWN_DELAY_SECS: u16 = 240;
 
 /// interval in which
 /// $stations.owner_deployment_info.health_checked_at
