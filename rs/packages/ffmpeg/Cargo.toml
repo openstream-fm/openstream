@@ -10,8 +10,10 @@ bytes = "1.2.1"
 constants = { version = "0.1.0", path = "../../config/constants" }
 log = "0.4.17"
 pin-project = "1.0.12"
+serde_json = "1.0.107"
 spsc = { version = "0.1.0", path = "../spsc" }
 stream-util = { version = "0.1.0", path = "../stream-util" }
+thiserror = "1.0.49"
 tokio = { version = "1.29.0", features = [ "full" ] }
 tokio-stream = "0.1.11"
 

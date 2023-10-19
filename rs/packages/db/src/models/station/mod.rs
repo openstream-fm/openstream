@@ -264,6 +264,9 @@ pub struct Station {
   // auth
   pub source_password: String,
 
+  // external relay probe
+  pub last_external_relay_probe_started_at: Option<DateTime>,
+
   pub created_at: DateTime,
   pub updated_at: DateTime,
   pub deleted_at: Option<DateTime>,

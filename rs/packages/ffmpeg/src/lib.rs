@@ -9,6 +9,7 @@ use tokio::sync::mpsc;
 use tokio_stream::StreamExt;
 
 pub mod metadata;
+pub mod probe;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LogLevel {

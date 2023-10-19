@@ -625,6 +625,8 @@ pub mod post {
         system_metadata,
         user_metadata,
 
+        last_external_relay_probe_started_at: None,
+
         created_at: now,
         updated_at: now,
         deleted_at: None,

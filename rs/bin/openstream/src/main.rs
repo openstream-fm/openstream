@@ -566,6 +566,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   tokio::spawn(db::deployment::start_health_check_job(deployment_id.clone()));
   tokio::spawn(db::station_picture::upgrade_images_if_needed());
   tokio::spawn(media::health::health_shutdown_job());
+  tokio::spawn(db::probe::start_probe_background_job());
 
   tokio::spawn({
     let shutdown = shutdown.clone();
