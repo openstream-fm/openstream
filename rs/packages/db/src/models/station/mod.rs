@@ -6,7 +6,7 @@ use constants::validate::*;
 use drop_tracer::Token;
 use geoip::CountryCode;
 use lang::LangCode;
-use mongodb::bson::{doc, Bson};
+use mongodb::bson::{doc, Bson, SerializerOptions};
 use mongodb::options::{FindOneAndUpdateOptions, ReturnDocument};
 use mongodb::{ClientSession, IndexModel};
 use serde::{Deserialize, Serialize};
@@ -332,7 +332,11 @@ pub struct OwnerDeploymentInfo {
 
 impl From<OwnerDeploymentInfo> for Bson {
   fn from(info: OwnerDeploymentInfo) -> Bson {
-    mongodb::bson::to_bson(&info).unwrap()
+    mongodb::bson::to_bson_with_options(
+      &info,
+      SerializerOptions::builder().human_readable(false).build(),
+    )
+    .unwrap()
   }
 }
 

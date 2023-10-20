@@ -1,6 +1,6 @@
 use crate::{storage_db, Model};
 use bytes::Bytes;
-use mongodb::bson::doc;
+use mongodb::bson::{doc, SerializerOptions};
 use mongodb::options::IndexOptions;
 use mongodb::IndexModel;
 use serde::{Deserialize, Serialize};
@@ -58,6 +58,10 @@ pub enum StationPictureVariantFormat {
 
 impl From<StationPictureVariantFormat> for mongodb::bson::Bson {
   fn from(value: StationPictureVariantFormat) -> Self {
-    mongodb::bson::to_bson(&value).unwrap()
+    mongodb::bson::to_bson_with_options(
+      &value,
+      SerializerOptions::builder().human_readable(false).build(),
+    )
+    .unwrap()
   }
 }
