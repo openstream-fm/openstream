@@ -160,7 +160,6 @@ dependencies = [
  "log",
  "mailer",
  "media",
- "media-sessions",
  "mongodb",
  "owo-colors 3.5.0",
  "parking_lot 0.12.1",
@@ -3276,34 +3275,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "media-sessions"
-version = "0.1.0"
-dependencies = [
- "atomic_float",
- "burst",
- "bytes",
- "const-str",
- "constants",
- "db",
- "drop-tracer",
- "ffmpeg",
- "futures-util",
- "hyper",
- "log",
- "mongodb",
- "parking_lot 0.12.1",
- "regex_static",
- "serde-util",
- "shutdown",
- "stream-util",
- "thiserror",
- "time 0.3.28",
- "tokio",
- "tokio-stream",
- "url",
-]
-
-[[package]]
 name = "memchr"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3805,7 +3776,6 @@ dependencies = [
  "logger",
  "mailer",
  "media",
- "media-sessions",
  "mongodb",
  "owo-colors 3.5.0",
  "payments",
@@ -5481,7 +5451,6 @@ dependencies = [
  "lazy-regex",
  "log",
  "media",
- "media-sessions",
  "mongodb",
  "once_cell",
  "owo-colors 3.5.0",
@@ -5600,7 +5569,6 @@ dependencies = [
  "ip_rfc",
  "log",
  "media",
- "media-sessions",
  "mongodb",
  "owo-colors 3.5.0",
  "parking_lot 0.12.1",

@@ -29,7 +29,6 @@ lazy-regex = "2.5.0"
 log = "0.4.17"
 mailer = { version = "0.1.0", path = "../mailer" }
 media = { version = "0.1.0", path = "../media" }
-media-sessions = { version = "0.1.0", path = "../media-sessions" }
 mongodb = "2.4.0"
 owo-colors = { version = "3.5.0", path = "../owo-colors" }
 parking_lot = "0.12.1"

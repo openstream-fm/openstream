@@ -22,7 +22,6 @@ log = "0.4.17"
 owo-colors = { version = "3.5.0", path = "../owo-colors" }
 once_cell = "1.15.0"
 drop-tracer = { version = "0.1.0", path = "../drop-tracer" }
-media-sessions = { version = "0.1.0", path = "../media-sessions" }
 shutdown = { version = "0.1.0", path = "../shutdown" }
 http-basic-auth = "0.1.2"
 db = { version = "0.1.0", path = "../db" }

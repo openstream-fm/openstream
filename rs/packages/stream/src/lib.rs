@@ -23,7 +23,7 @@ use socket2::{Domain, Protocol, Socket, Type};
 use std::fmt::Display;
 use std::future::Future;
 use std::net::SocketAddr;
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::{Instant, SystemTime};
 use transfer_map::TransferTracer;
@@ -399,21 +399,19 @@ impl StreamHandler {
       Account::increment_used_listeners(&station.account_id).await?;
 
       let transfer_bytes = Arc::new(AtomicU64::new(0));
-      let closed = Arc::new(AtomicBool::new(false));
 
-      let connection_dropper = StreamConnectionDropper {
+      let connection_dropper = StreamConnectionDropper(Some(StreamConnectionDropperInner {
         id: conn_doc.id.clone(),
         transfer_bytes: transfer_bytes.clone(),
         station_id: station_id.clone(),
         account_id: station.account_id.clone(),
         token: drop_tracer.token(),
         start_time,
-      };
+      }));
 
       let (mut body_sender, response_body) = Body::channel();
 
       tokio::spawn({
-        let shutdown = shutdown.clone();
         let transfer_map = transfer_map.clone();
         let mut rx = rx;
 
@@ -421,76 +419,70 @@ impl StreamHandler {
         let connection_id = conn_doc.id.clone();
 
         async move {
-          info!("START stream_connection {connection_id} for station {station_id}");
+          let signal = shutdown.signal();
 
-          'root: loop {
-            let loop_start = Instant::now();
-            let mut rx_had_data = false;
+          let task = async {
+            info!("START stream_connection {connection_id} for station {station_id}");
 
-            if loop_i != 0 {
-              info!("LOOP {loop_i} stream_connection {connection_id} for station {station_id}");
-            }
+            'root: loop {
+              let loop_start = Instant::now();
+              let mut rx_had_data = false;
 
-            loop_i += 1;
-
-            'recv: loop {
-              let r = rx.recv().await;
-
-              if shutdown.is_closed() {
-                break 'root;
+              if loop_i != 0 {
+                info!("LOOP {loop_i} stream_connection {connection_id} for station {station_id}");
               }
 
-              match r {
-                // if lagged we ignore the error and continue with the oldest message buffered in the channel
-                // TODO: maybe we should advance to the newest message with stream.resubscribe()
-                Err(RecvError::Lagged(_)) => continue 'recv,
+              loop_i += 1;
 
-                // Here the channel has been dropped
-                Err(RecvError::Closed) => break 'recv,
+              'recv: loop {
+                let r = rx.recv().await;
 
-                // Receive bytes and pass it to response body
-                Ok(bytes) => {
-                  if shutdown.is_closed() {
-                    break 'root;
+                match r {
+                  // if lagged we ignore the error and continue with the oldest message buffered in the channel
+                  // TODO: maybe we should advance to the newest message with stream.resubscribe()
+                  Err(RecvError::Lagged(_)) => continue 'recv,
+
+                  // Here the channel has been dropped
+                  Err(RecvError::Closed) => break 'recv,
+
+                  // Receive bytes and pass it to response body
+                  Ok(bytes) => {
+                    rx_had_data = true;
+
+                    let len = bytes.len();
+                    match body_sender.send_data(bytes).await {
+                      Err(_) => break 'root,
+                      Ok(()) => {
+                        transfer_map.increment(&station.account_id, len);
+                        transfer_bytes.fetch_add(len as u64, Ordering::SeqCst);
+                      }
+                    };
                   }
-
-                  rx_had_data = true;
-
-                  let len = bytes.len();
-                  match body_sender.send_data(bytes).await {
-                    Err(_) => break 'root,
-                    Ok(()) => {
-                      transfer_map.increment(&station.account_id, len);
-                      transfer_bytes.fetch_add(len as u64, Ordering::SeqCst);
-                    }
-                  };
                 }
               }
+
+              // if the connection had last < 5 secs
+              // or had no data we abort to
+              // avoid creating infinite loops here
+              if (loop_start.elapsed().as_secs() > 5) && rx_had_data && (loop_i <= 60) {
+                let new_rx = media_sessions.subscribe(&station.id).await?;
+                rx = new_rx;
+                continue 'root;
+              } else {
+                break 'root;
+              }
             }
 
-            if shutdown.is_closed() {
-              break 'root;
-            }
+            drop(connection_dropper);
+            drop(ip_decrementer);
 
-            // if the connection had last < 5 secs
-            // or had no data we abort to
-            // avoid creating infinite loops here
-            if (loop_start.elapsed().as_secs() > 5) && rx_had_data && (loop_i <= 60) {
-              let new_rx = media_sessions.subscribe(&station.id).await?;
-              rx = new_rx;
-              continue 'root;
-            } else {
-              break 'root;
-            }
-          }
+            Ok::<(), StreamError>(())
+          };
 
-          info!("END stream_connection {connection_id} for station {station_id}");
-
-          closed.store(true, Ordering::SeqCst);
-          drop(connection_dropper);
-          drop(ip_decrementer);
-
-          Ok::<(), StreamError>(())
+          tokio::select! {
+            _ = signal => {},
+            _ = task => {},
+          };
         }
       });
 
@@ -523,7 +515,10 @@ impl Handler for StreamHandler {
 }
 
 #[derive(Debug)]
-struct StreamConnectionDropper {
+struct StreamConnectionDropper(Option<StreamConnectionDropperInner>);
+
+#[derive(Debug)]
+struct StreamConnectionDropperInner {
   id: String,
   station_id: String,
   account_id: String,
@@ -534,13 +529,24 @@ struct StreamConnectionDropper {
 
 impl Drop for StreamConnectionDropper {
   fn drop(&mut self) {
-    let token = self.token.clone();
-    let id = self.id.clone();
-    let station_id = self.station_id.clone();
-    let account_id = self.account_id.clone();
-    let transfer_bytes = self.transfer_bytes.load(Ordering::SeqCst);
-    let duration_ms = self.start_time.elapsed().unwrap().as_millis() as u64;
+    let StreamConnectionDropperInner {
+      id,
+      station_id,
+      account_id,
+      transfer_bytes,
+      start_time,
+      token,
+    } = match self.0.take() {
+      None => return,
+      Some(v) => v,
+    };
+
+    let transfer_bytes = transfer_bytes.load(Ordering::SeqCst);
+    let duration_ms = start_time.elapsed().unwrap().as_millis() as u64;
     let now = DateTime::now();
+
+    info!("END stream_connection {id} for station {station_id}");
+
     tokio::spawn(async move {
       {
         let update = doc! {

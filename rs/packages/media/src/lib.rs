@@ -158,13 +158,13 @@ impl MediaSessionMap {
 
   pub async fn playlist_restart(&self, station_id: &str) -> Result<(), PlaylistRestartError> {
     let mut lock = self.lock(station_id).await;
-    let handle = match &*lock {
-      None => None,
+    match &*lock {
+      None => {}
       Some(handle) => match handle.info().kind {
         Kind::Live => return Err(PlaylistRestartError::Live),
         Kind::ExternalRelay => return Err(PlaylistRestartError::ExternalRelay),
         Kind::InternalRelay => return Err(PlaylistRestartError::InternalRelay),
-        Kind::Playlist => Some(handle),
+        Kind::Playlist => {}
       },
     };
 
