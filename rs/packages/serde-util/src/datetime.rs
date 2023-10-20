@@ -185,6 +185,7 @@ impl From<DateTime> for time::OffsetDateTime {
 #[cfg(test)]
 pub mod test {
   use super::*;
+  use mongodb::bson::SerializerOptions;
   use time::macros::datetime;
   #[test]
   fn serde_json() {
@@ -233,7 +234,11 @@ pub mod test {
 
     for date in dates {
       let date = DateTime::new(date);
-      let serialized = bson::to_bson(&date).unwrap();
+      let serialized = bson::to_bson_with_options(
+        &date,
+        SerializerOptions::builder().human_readable(false).build(),
+      )
+      .unwrap();
       let deserialized: DateTime = bson::from_bson(serialized).unwrap();
       assert_eq!(date, deserialized)
     }

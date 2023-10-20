@@ -18,7 +18,7 @@ hex = "0.4.3"
 log = "0.4.17"
 # logger = { version = "0.1.0", path = "../logger" }
 md-5 = "0.10.5"
-mongodb = "2.4.0"
+mongodb = "2.7.0"
 serde-util = { version = "0.1.0", path = "../serde-util" }
 sha2 = "0.10.6"
 stream-util = { version = "0.1.0", path = "../stream-util" }

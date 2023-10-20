@@ -14,7 +14,7 @@ futures-util = "0.3.25"
 geoip = { version = "0.1.0", path = "../../packages/geoip" }
 log = "0.4.17"
 logger = { version = "0.1.0", path = "../../packages/logger" }
-mongodb = "2.4.0"
+mongodb = "2.7.0"
 owo-colors = { version = "3.5.0", path = "../../packages/owo-colors" }
 rand = "0.8.5"
 serde-util = { version = "0.1.0", path = "../../packages/serde-util" }

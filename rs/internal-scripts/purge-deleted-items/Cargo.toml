@@ -19,7 +19,7 @@ futures-util = "0.3.25"
 log = "0.4.17"
 logger = { version = "0.1.0", path = "../../packages/logger" }
 macros = { version = "0.1.0", path = "../../packages/macros" }
-mongodb = "2.4.0"
+mongodb = "2.7.0"
 owo-colors = { version = "3.5.0", path = "../../packages/owo-colors" }
 serde = { version = "1.0.152", features = ["derive"] }
 serde-util = { version = "0.1.0", path = "../../packages/serde-util" }
