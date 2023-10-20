@@ -58,7 +58,6 @@ pub async fn perform(media_sessions: &MediaSessionMap, station: &Station) {
     None => {}
     Some(handle) => match (&station.external_relay_url, handle.info().kind) {
       (Some(_), Kind::ExternalRelay | Kind::Playlist) | (None, Kind::ExternalRelay) => {
-        handle.terminate();
         *lock = None;
       }
       _ => {}

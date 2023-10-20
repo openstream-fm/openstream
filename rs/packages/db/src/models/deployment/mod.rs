@@ -61,6 +61,10 @@ pub enum DeploymentState {
   Closed,
 }
 
+impl Deployment {
+  pub const KEY_MANUALLY_CLOSED: &str = "_manually_closed";
+}
+
 impl Model for Deployment {
   const UID_LEN: usize = 8;
   const CL_NAME: &'static str = "deployments";
@@ -132,6 +136,7 @@ pub async fn check_now() -> Result<(), mongodb::error::Error> {
         doc! {
           "$set": {
             StreamConnectionLite::KEY_IS_OPEN: false,
+            StreamConnection::KEY_MANUALLY_CLOSED: true,
             StreamConnectionLite::KEY_CLOSED_AT: {
               "$max": [
                 {
@@ -203,6 +208,7 @@ pub async fn check_now() -> Result<(), mongodb::error::Error> {
         doc! {
           "$set": {
             StreamConnection::KEY_IS_OPEN: false,
+            StreamConnection::KEY_MANUALLY_CLOSED: true,
             StreamConnection::KEY_CLOSED_AT: {
               "$max": [
                 {
@@ -270,6 +276,7 @@ pub async fn check_now() -> Result<(), mongodb::error::Error> {
       let update = doc! {
         "$set": {
           Deployment::KEY_STATE: DeploymentState::KEY_ENUM_VARIANT_CLOSED,
+          Deployment::KEY_MANUALLY_CLOSED: true,
           Deployment::KEY_DROPPED_AT: closed_at,
         }
       };

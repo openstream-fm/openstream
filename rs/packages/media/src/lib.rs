@@ -30,6 +30,12 @@ pub struct Handle {
   sender: Sender,
 }
 
+impl Drop for Handle {
+  fn drop(&mut self) {
+    self.terminate();
+  }
+}
+
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum Kind {
   Live,
@@ -127,7 +133,6 @@ impl MediaSessionMap {
   pub async fn terminate(&self, station_id: &str) -> Option<Handle> {
     let entry = { self.map.lock().remove(station_id)? };
     let handle = entry.lock().await.take()?;
-    handle.terminate();
     Some(handle)
   }
 
@@ -143,7 +148,6 @@ impl MediaSessionMap {
       None => None,
       Some(item) => {
         if item.info().task_id == task_id {
-          item.terminate();
           handle.take()
         } else {
           None
@@ -201,11 +205,6 @@ impl MediaSessionMap {
       );
 
       let new_handle = Handle::new(new_sender.clone());
-
-      if let Some(handle) = handle {
-        handle.terminate();
-      }
-
       *lock = Some(new_handle);
 
       let map_entry_release = MapEntryRelease::new(
@@ -414,10 +413,6 @@ impl MediaSessionMap {
 
         let receiver = sender.subscribe();
         let handle = Handle::new(sender);
-        if let Some(handle) = &*lock {
-          handle.terminate();
-        }
-        
         *lock = Some(handle);
 
         Ok(receiver)
