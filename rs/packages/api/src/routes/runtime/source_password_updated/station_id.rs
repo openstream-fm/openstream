@@ -66,7 +66,6 @@ pub async fn perform(media_sessions: &MediaSessionMap, station_id: String) {
       Kind::InternalRelay => {}
       Kind::Playlist => {}
       Kind::Live => {
-        handle.terminate();
         *lock = None;
       }
     },

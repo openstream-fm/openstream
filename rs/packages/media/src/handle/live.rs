@@ -95,14 +95,11 @@ pub async fn run_live_source<E: std::error::Error + Send + Sync + 'static>(
     tokio::pin!(output);
 
     let signal = shutdown.signal();
+
     let fut = async move {
       let mut transfer = 0u64;
 
       loop {
-        if shutdown.is_closed() {
-          break;
-        }
-
         match output.next().await {
           None => break,
           Some(Err(e)) => {

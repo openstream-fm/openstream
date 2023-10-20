@@ -449,168 +449,172 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     username: smtp.username.clone(),
   };
 
-  let shutdown = Shutdown::new();
-  let drop_tracer = DropTracer::new("main");
-  //let media_sessions = MediaSessionMap::new(deployment.id.clone(), drop_tracer.clone());
-  let media_sessions = media::MediaSessionMap::new(deployment.id.clone(), drop_tracer.clone(), shutdown.clone());
+  let r = {
+    let shutdown = Shutdown::new();
+    let drop_tracer = DropTracer::new("main");
+    //let media_sessions = MediaSessionMap::new(deployment.id.clone(), drop_tracer.clone());
+    let media_sessions = media::MediaSessionMap::new(deployment.id.clone(), drop_tracer.clone(), shutdown.clone());
 
-  let futs = futures::stream::FuturesUnordered::new();
+    let futs = futures::stream::FuturesUnordered::new();
 
-  if let Some(source_config) = source {
-    // let source = SourceServer::new(
-    //   source_config.addrs.clone(),
-    //   media_sessions.clone(),
-    //   drop_tracer.clone(),
-    //   shutdown.clone(),
-    // );
+    if let Some(source_config) = source {
+      // let source = SourceServer::new(
+      //   source_config.addrs.clone(),
+      //   media_sessions.clone(),
+      //   drop_tracer.clone(),
+      //   shutdown.clone(),
+      // );
 
-    // let fut = source.start()?;
+      // let fut = source.start()?;
 
-    // futs.push(fut.boxed());
+      // futs.push(fut.boxed());
 
-    for addr in source_config.addrs.iter().copied() {
-      let fut = source_alt::start(
+      for addr in source_config.addrs.iter().copied() {
+        let fut = source_alt::start(
+          deployment.id.clone(),
+          addr,
+          media_sessions.clone(),
+          drop_tracer.clone(),
+          shutdown.clone()
+        );
+
+        futs.push(async move {
+          fut.await?;
+          Ok::<(), crate::error::ServerStartError>(())
+        }.boxed());
+      }
+    }
+
+    if let Some(stream_config) = stream {
+      let stream = StreamServer::new(
         deployment.id.clone(),
-        addr,
-        media_sessions.clone(),
+        stream_config.addrs.clone(),
+        shutdown.clone(),
         drop_tracer.clone(),
-        shutdown.clone()
+        media_sessions.clone(),
       );
-
+      let fut = stream.start()?;
       futs.push(async move {
-        fut.await?;
-        Ok::<(), crate::error::ServerStartError>(())
+        fut.await.map_err(crate::error::ServerStartError::from)?;
+        Ok(())
       }.boxed());
     }
-  }
 
-  if let Some(stream_config) = stream {
-    let stream = StreamServer::new(
-      deployment.id.clone(),
-      stream_config.addrs.clone(),
-      shutdown.clone(),
-      drop_tracer.clone(),
-      media_sessions.clone(),
-    );
-    let fut = stream.start()?;
-    futs.push(async move {
-      fut.await.map_err(crate::error::ServerStartError::from)?;
-      Ok(())
-    }.boxed());
-  }
-
-  if let Some(api_config) = api {
-    
-    let payments_client = payments::client::PaymentsClient::new(payments.base_url.clone(), payments.access_token.clone());
-    let stream_connections_index = db::stream_connection::index::MemIndex::new().await;
-
-    let api = ApiServer::new(
-      deployment.id.clone(),
-      api_config.addrs.clone(),
-      shutdown.clone(),
-      drop_tracer.clone(),
-      media_sessions.clone(),
-      stream_connections_index,
-      payments_client,
-      mailer,
-    );
-    let fut = api.start()?;
-    futs.push(async move {
-      fut.await.map_err(crate::error::ServerStartError::from)?;
-      Ok(())
-    }.boxed());
-  }
-
-  if let Some(storage_config) = storage {
-    let storage = StorageServer::new(
-      deployment.id.clone(),
-      storage_config.addrs.clone(),
-      shutdown.clone()
-    );
-    let fut = storage.start()?;
-    futs.push(async move {
-      fut.await.map_err(crate::error::ServerStartError::from)?;
-      Ok(())
-    }.boxed());
-  }
-
-  if let Some(static_config) = assets {
-    let assets = StaticServer::new(
-      static_config.addrs.clone(),
-      shutdown.clone(),
-    );
-    let fut = assets.start()?;
-    futs.push(async move {
-      fut.await.map_err(crate::error::ServerStartError::from)?;
-      Ok(())
-    }.boxed());
-  }
-
-
-  // if let Some(router_config) = router {
-  //   let router = RouterServer::new(router_config.addrs.clone(), shutdown.clone());
-  //   let fut = router.start()?;
-  //   futs.push(fut.boxed());
-  // }
-
-  db::models::transfer_checkpoint::start_background_task();
-
-  info!(
-    target: "start",
-    "inserting deployment document: _id={} pid={} local_ip={} ", deployment.id, deployment.pid, deployment.local_ip
-  );
-
-  let deployment_id = deployment.id.clone();
-  Deployment::insert(&deployment).await?;
-
-  tokio::spawn(db::deployment::start_health_check_job(deployment_id.clone()));
-  tokio::spawn(db::station_picture::upgrade_images_if_needed());
-  tokio::spawn(media::health::health_shutdown_job());
-  tokio::spawn(db::probe::start_probe_background_job());
-
-  tokio::spawn({
-    let shutdown = shutdown.clone();
-    let deployment_id = deployment_id.clone();
-    async move {
-      tokio::signal::ctrl_c()
-        .await
-        .expect("failed to listen to SIGINT signal");
+    if let Some(api_config) = api {
       
-      {
-        use owo_colors::*;
-        info!(target: "start", "{} received, starting graceful shutdown", "SIGINT".yellow());
-      }
+      let payments_client = payments::client::PaymentsClient::new(payments.base_url.clone(), payments.access_token.clone());
+      let stream_connections_index = db::stream_connection::index::MemIndex::new().await;
 
-      let query = doc! {
-        Deployment::KEY_ID: deployment_id,
-        Deployment::KEY_STATE: DeploymentState::KEY_ENUM_VARIANT_ACTIVE, 
-      };
-
-      let update = doc! {
-        "$set": {
-          Deployment::KEY_STATE: DeploymentState::KEY_ENUM_VARIANT_CLOSING,
-        }
-      };
-
-      if let Err(e) = Deployment::cl().update_one(query, update, None).await {
-        error!(
-          target: "shutdown",
-          "error setting deployment state to 'closing' => {} => {:?}", e, e,
-        )
-      };
-
-      shutdown.shutdown();
+      let api = ApiServer::new(
+        deployment.id.clone(),
+        api_config.addrs.clone(),
+        shutdown.clone(),
+        drop_tracer.clone(),
+        media_sessions.clone(),
+        stream_connections_index,
+        payments_client,
+        mailer,
+      );
+      let fut = api.start()?;
+      futs.push(async move {
+        fut.await.map_err(crate::error::ServerStartError::from)?;
+        Ok(())
+      }.boxed());
     }
-  });
 
-  let r: Result<(), crate::error::ServerStartError> = futs.try_collect().await;
+    if let Some(storage_config) = storage {
+      let storage = StorageServer::new(
+        deployment.id.clone(),
+        storage_config.addrs.clone(),
+        shutdown.clone()
+      );
+      let fut = storage.start()?;
+      futs.push(async move {
+        fut.await.map_err(crate::error::ServerStartError::from)?;
+        Ok(())
+      }.boxed());
+    }
 
-  drop(drop_tracer);
+    if let Some(static_config) = assets {
+      let assets = StaticServer::new(
+        static_config.addrs.clone(),
+        shutdown.clone(),
+      );
+      let fut = assets.start()?;
+      futs.push(async move {
+        fut.await.map_err(crate::error::ServerStartError::from)?;
+        Ok(())
+      }.boxed());
+    }
+
+
+    // if let Some(router_config) = router {
+    //   let router = RouterServer::new(router_config.addrs.clone(), shutdown.clone());
+    //   let fut = router.start()?;
+    //   futs.push(fut.boxed());
+    // }
+
+    db::models::transfer_checkpoint::start_background_task();
+
+    info!(
+      target: "start",
+      "inserting deployment document: _id={} pid={} local_ip={} ", deployment.id, deployment.pid, deployment.local_ip
+    );
+
+    let deployment_id = deployment.id.clone();
+    Deployment::insert(&deployment).await?;
+
+    tokio::spawn(db::deployment::start_health_check_job(deployment_id.clone()));
+    tokio::spawn(db::station_picture::upgrade_images_if_needed());
+    tokio::spawn(media::health::health_shutdown_job());
+    tokio::spawn(db::probe::start_probe_background_job());
+
+    tokio::spawn({
+      let shutdown = shutdown.clone();
+      let deployment_id = deployment_id.clone();
+      async move {
+        tokio::signal::ctrl_c()
+          .await
+          .expect("failed to listen to SIGINT signal");
+        
+        {
+          use owo_colors::*;
+          info!(target: "start", "{} received, starting graceful shutdown", "SIGINT".yellow());
+        }
+
+        let query = doc! {
+          Deployment::KEY_ID: deployment_id,
+          Deployment::KEY_STATE: DeploymentState::KEY_ENUM_VARIANT_ACTIVE, 
+        };
+
+        let update = doc! {
+          "$set": {
+            Deployment::KEY_STATE: DeploymentState::KEY_ENUM_VARIANT_CLOSING,
+          }
+        };
+
+        if let Err(e) = Deployment::cl().update_one(query, update, None).await {
+          error!(
+            target: "shutdown",
+            "error setting deployment state to 'closing' => {} => {:?}", e, e,
+          )
+        };
+
+        shutdown.shutdown();
+      }
+    });
+
+    let r: Result<(), crate::error::ServerStartError> = futs.try_collect().await;
+
+    drop(drop_tracer);
+
+    r
+  };
 
   let now = DateTime::now();
 
   let query = doc! {
-    Deployment::KEY_ID: &deployment_id,
+    Deployment::KEY_ID: &deployment.id,
   };
 
   let update = doc! {
@@ -623,7 +627,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
 
   info!(
     target: "shutdown",
-    "setting deployment {} as closed", deployment_id
+    "setting deployment {} as closed", deployment.id
   );
 
   if let Err(e) = Deployment::cl().update_one(query, update, None).await {
@@ -634,7 +638,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   } else {
     info!(
       target: "shutdown",
-      "deployment {} closed in database", deployment_id
+      "deployment {} closed in database", deployment.id
     );
   }
 

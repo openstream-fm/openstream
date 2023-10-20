@@ -35,51 +35,51 @@ pub fn run_external_relay_source(
   tokio::spawn(async move {
     let signal = shutdown.signal();
 
-    let fut = async move {
-      let media_session_id = MediaSession::uid();
-      let document = {
-        use db::media_session::*;
-        let now = DateTime::now();
-        let document = MediaSession {
-          id: media_session_id.clone(),
-          deployment_id,
-          station_id: station_id.clone(),
-          kind: MediaSessionKind::ExternalRelay { url: url.clone() },
-          state: MediaSessionState::Open,
-          closed_at: None,
-          duration_ms: None,
-          now_playing: None,
-          transfer_bytes: 0,
-          health_checked_at: Some(now),
-          created_at: now,
-          updated_at: now,
-        };
-
-        match MediaSession::insert(&document).await {
-          Ok(_) => {}
-          Err(e) => {
-            error!(target: "media", "error inserting relay session document into db: {e} => {e:?}");
-            return Err(ExternalRelayError::Db(e));
-          }
-        };
-        document
+    let media_session_id = MediaSession::uid();
+    let document = {
+      use db::media_session::*;
+      let now = DateTime::now();
+      let document = MediaSession {
+        id: media_session_id.clone(),
+        deployment_id,
+        station_id: station_id.clone(),
+        kind: MediaSessionKind::ExternalRelay { url: url.clone() },
+        state: MediaSessionState::Open,
+        closed_at: None,
+        duration_ms: None,
+        now_playing: None,
+        transfer_bytes: 0,
+        health_checked_at: Some(now),
+        created_at: now,
+        updated_at: now,
       };
 
-      info!(
-        target: "media",
-        "external relay media session start {}, station {}",
-        document.id, document.station_id
-      );
+      match MediaSession::insert(&document).await {
+        Ok(_) => {}
+        Err(e) => {
+          error!(target: "media", "error inserting relay session document into db: {e} => {e:?}");
+          return Err(ExternalRelayError::Db(e));
+        }
+      };
+      document
+    };
 
-      let transfer = Arc::new(AtomicUsize::new(0));
+    info!(
+      target: "media",
+      "external relay media session start {}, station {}",
+      document.id, document.station_id
+    );
 
-      let dropper = MediaSessionDropper(Some((
-        std::time::Instant::now(),
-        document.id,
-        transfer.clone(),
-        drop_tracer.token(),
-      )));
+    let transfer = Arc::new(AtomicUsize::new(0));
 
+    let dropper = MediaSessionDropper(Some((
+      std::time::Instant::now(),
+      document.id,
+      transfer.clone(),
+      drop_tracer.token(),
+    )));
+
+    let fut = async move {
       let ffmpeg_config = FfmpegConfig {
         input: Some(url),
         kbitrate: STREAM_KBITRATE,
@@ -114,7 +114,6 @@ pub fn run_external_relay_source(
       };
 
       let stdout_handle = {
-        let shutdown = shutdown.clone();
         let station_id = station_id.clone();
 
         async move {
@@ -168,10 +167,6 @@ pub fn run_external_relay_source(
               None => break,
               Some(Err(_e)) => break,
               Some(Ok(bytes)) => {
-                if shutdown.is_closed() {
-                  break;
-                }
-
                 match sender.send(bytes) {
                   Ok(_) => {
                     no_listeners_since = None;

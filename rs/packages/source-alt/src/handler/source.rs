@@ -176,10 +176,6 @@ pub async fn source(
         },
       }
 
-      if let Some(handle) = &*lock {
-        handle.terminate();
-      }
-
       let info = Info::new(Kind::Live, task_id.clone(), content_type.clone());
       let sender = Sender::new(station_id.clone(), info);
       let handle = Handle::new(sender.clone());

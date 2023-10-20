@@ -1,8 +1,9 @@
-
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::time::Instant;
 
-use constants::{PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY_SECS, STREAM_BURST_LENGTH, STREAM_CHUNK_SIZE};
+use constants::{
+  PLAYLIST_NO_LISTENERS_SHUTDOWN_DELAY_SECS, STREAM_BURST_LENGTH, STREAM_CHUNK_SIZE,
+};
 use db::media_session::MediaSessionNowPlaying;
 use db::play_history_item::{self, PlayHistoryItem};
 use db::{audio_chunk::AudioChunk, audio_file::AudioFile, Model};
@@ -19,11 +20,11 @@ use mongodb::options::FindOneOptions;
 use atomic_float::AtomicF64;
 
 use shutdown::Shutdown;
-use tokio::task::JoinHandle;
 use std::sync::Arc;
 use stream_util::{IntoTryBytesStreamChunked, IntoTryBytesStreamRated};
+use tokio::task::JoinHandle;
 
-use crate::channel::{Sender, SendError};
+use crate::channel::{SendError, Sender};
 
 pub fn run_playlist_source(
   sender: Sender,
@@ -35,89 +36,89 @@ pub fn run_playlist_source(
   shutdown: Shutdown,
 ) -> JoinHandle<Result<(), mongodb::error::Error>> {
   tokio::spawn(async move {
+    let (resume_playlist_id, start_file_id, i, part) = if resume {
+      resume_info_for_station(&station_id).await?
+    } else {
+      let file = AudioFile::playlist_first(&station_id).await?;
+      (None, file, 0.0, 0)
+    };
 
-    let result = async { 
-      let (resume_playlist_id, start_file_id, i, part) = if resume {
-        resume_info_for_station(&station_id).await?
-      } else {
-        let file = AudioFile::playlist_first(&station_id).await?;
-        (None, file, 0.0, 0)
+    let start_file = match start_file_id {
+      None => {
+        info!(
+          target: "media",
+          "not starting playlist session for station {station_id} no files found for account"
+        );
+        return Ok(());
+      }
+      Some(id) => id,
+    };
+
+    info!(
+      target: "media",
+      "media session (playlist) start for station {} file_id={} order={} chunk={} part={}",
+      station_id, start_file.id, start_file.order, i, part
+    );
+
+    let out = PlaylistIndexInfoOut(Arc::new(Inner {
+      file_id: Mutex::new(start_file.id.clone()),
+      file_order: AtomicF64::new(start_file.order),
+      i: AtomicF64::new(i),
+      part: AtomicUsize::new(part),
+      transfer: AtomicU64::new(0),
+    }));
+
+    let now_playing = match &start_file.metadata.title {
+      None => None,
+      Some(title) => Some(MediaSessionNowPlaying {
+        title: title.clone(),
+        artist: start_file.metadata.artist.clone(),
+      }),
+    };
+
+    let media_session_id = db::media_session::MediaSession::uid();
+
+    let media_session_doc = {
+      use db::media_session::*;
+      let now = DateTime::now();
+      let media_session_doc = MediaSession {
+        id: media_session_id.clone(),
+        station_id: station_id.to_string(),
+        deployment_id: deployment_id.clone(),
+        transfer_bytes: 0,
+        now_playing,
+        kind: MediaSessionKind::Playlist {
+          resumed_from: resume_playlist_id,
+          last_audio_chunk_date: DateTime::now(),
+          last_audio_chunk_i: i,
+          last_audio_chunk_skip_parts: part,
+          last_audio_file_id: start_file.id.clone(),
+          last_audio_file_order: start_file.order,
+        },
+        state: MediaSessionState::Open,
+        closed_at: None,
+        duration_ms: None,
+        health_checked_at: Some(now),
+        created_at: now,
+        updated_at: now,
       };
 
-      let start_file = match start_file_id {
-        None => {
-          info!(
-            target: "media",
-            "not starting playlist session for station {station_id} no files found for account"
-          );
-          return Ok(());
-        }
-        Some(id) => id,
-      };
+      MediaSession::insert(&media_session_doc).await?;
+      media_session_doc
+    };
 
-      info!(
-        target: "media",
-        "media session (playlist) start for station {} file_id={} order={} chunk={} part={}",
-        station_id, start_file.id, start_file.order, i, part
-      );
+    let dropper = MediaSessionDropper {
+      id: media_session_doc.id,
+      station_id: media_session_doc.station_id,
+      out: out.clone(),
+      token: Some(drop_tracer.token()),
+      start: Instant::now(),
+    };
 
-      let out = PlaylistIndexInfoOut(Arc::new(Inner {
-        file_id: Mutex::new(start_file.id.clone()),
-        file_order: AtomicF64::new(start_file.order),
-        i: AtomicF64::new(i),
-        part: AtomicUsize::new(part),
-        transfer: AtomicU64::new(0),
-      }));
+    let signal = shutdown.signal();
 
-      let now_playing = match &start_file.metadata.title {
-        None => None,
-        Some(title) => Some(MediaSessionNowPlaying {
-          title: title.clone(),
-          artist: start_file.metadata.artist.clone(),
-        })
-      };
-
-      let media_session_id = db::media_session::MediaSession::uid();
-
-      let media_session_doc = {
-        use db::media_session::*;
-        let now = DateTime::now();
-        let media_session_doc = MediaSession {
-          id: media_session_id.clone(),
-          station_id: station_id.to_string(),
-          deployment_id: deployment_id.clone(),
-          transfer_bytes: 0,
-          now_playing,
-          kind: MediaSessionKind::Playlist {
-            resumed_from: resume_playlist_id,
-            last_audio_chunk_date: DateTime::now(),
-            last_audio_chunk_i: i,
-            last_audio_chunk_skip_parts: part,
-            last_audio_file_id: start_file.id.clone(),
-            last_audio_file_order: start_file.order,
-          },
-          state: MediaSessionState::Open,
-          closed_at: None,
-          duration_ms: None,
-          health_checked_at: Some(now),
-          created_at: now,
-          updated_at: now,
-        };
-
-        MediaSession::insert(&media_session_doc).await?;
-        media_session_doc
-      };
-
-      let dropper = MediaSessionDropper {
-        id: media_session_doc.id,
-        station_id: media_session_doc.station_id,
-        out: out.clone(),
-        token: Some(drop_tracer.token()),
-        start: Instant::now(),
-      };
-
+    let task = async {
       let handle = async {
-
         let mut first = true;
 
         // we fill the burst on start
@@ -153,10 +154,6 @@ pub fn run_playlist_source(
             (0.0, 0)
           };
 
-          if shutdown.is_closed() {
-            return Ok(());
-          }
-
           info!(
             "start playback of audio file {}: '{}' for station {}",
             current_file.id,
@@ -169,7 +166,11 @@ pub fn run_playlist_source(
           );
 
           {
-            let title = current_file.metadata.title.clone().unwrap_or_else(|| current_file.filename.clone());
+            let title = current_file
+              .metadata
+              .title
+              .clone()
+              .unwrap_or_else(|| current_file.filename.clone());
 
             let now = DateTime::now();
             let play_history_item = PlayHistoryItem {
@@ -177,7 +178,9 @@ pub fn run_playlist_source(
               deployment_id: deployment_id.clone(),
               title: title.clone(),
               artist: current_file.metadata.artist.clone(),
-              kind: play_history_item::Kind::Playlist { file_id: current_file.id.clone() },
+              kind: play_history_item::Kind::Playlist {
+                file_id: current_file.id.clone(),
+              },
               station_id: station_id.to_string(),
               created_at: now,
             };
@@ -198,13 +201,8 @@ pub fn run_playlist_source(
             PlayHistoryItem::insert(play_history_item).await?;
 
             use db::media_session::MediaSession;
-            MediaSession::set_file_chunk_part(
-              &media_session_id,
-              &current_file.id,
-              i,
-              part as f64,
-            )
-            .await?;
+            MediaSession::set_file_chunk_part(&media_session_id, &current_file.id, i, part as f64)
+              .await?;
           }
 
           out.set_file_id(current_file.id.clone());
@@ -234,10 +232,6 @@ pub fn run_playlist_source(
           tokio::pin!(stream);
           if burst_len < STREAM_BURST_LENGTH {
             'chunks: loop {
-              if shutdown.is_closed() {
-                break 'files;
-              }
-
               match stream.try_next().await? {
                 None => continue 'files,
 
@@ -246,10 +240,6 @@ pub fn run_playlist_source(
 
                   transfer += bytes.len() as u64;
                   out.set_transfer(transfer);
-
-                  if shutdown.is_closed() {
-                    return Ok(());
-                  }
 
                   let burst_filled = burst_len >= STREAM_BURST_LENGTH;
 
@@ -275,19 +265,12 @@ pub fn run_playlist_source(
           tokio::pin!(stream);
 
           'chunks: loop {
-            if shutdown.is_closed() {
-              break 'files;
-            }
-
             match stream.try_next().await? {
               None => continue 'files,
 
               Some(bytes) => {
                 transfer += bytes.len() as u64;
                 out.set_transfer(transfer);
-                if shutdown.is_closed() {
-                  return Ok(());
-                }
 
                 match sender.send(bytes) {
                   // n is the number of listeners that received the chunk
@@ -295,7 +278,7 @@ pub fn run_playlist_source(
                     no_listeners_since = None;
                     continue 'chunks;
                   }
-                  
+
                   // check if shutdown delay is elapsed
                   Err(SendError::NoSubscribers(_)) => match no_listeners_since {
                     Some(instant) => {
@@ -309,24 +292,28 @@ pub fn run_playlist_source(
                         continue 'chunks;
                       }
                     }
-                  
+
                     None => {
                       no_listeners_since = Some(Instant::now());
                       continue 'chunks;
                     }
-                  } 
+                  },
                   // here the stream has been terminated (maybe replaced with a newer transmitter)
                   Err(SendError::Terminated(_)) => break 'files,
                 }
               }
             }
           }
-        };
+        }
 
         Ok(())
       };
-      
-      let health_handle = crate::health::run_health_check_interval_for_station_and_media_session(&station_id, &media_session_id, &task_id);
+
+      let health_handle = crate::health::run_health_check_interval_for_station_and_media_session(
+        &station_id,
+        &media_session_id,
+        &task_id,
+      );
 
       let r = tokio::select! {
         r = handle => r,
@@ -336,17 +323,21 @@ pub fn run_playlist_source(
       drop(dropper);
 
       r
-    }
-    .await;
+    };
 
-    if let Err(ref e) = result {
+    let r = tokio::select! {
+      _ = signal => Ok(()),
+      r = task => r,
+    };
+
+    if let Err(ref e) = r {
       warn!(
-        target: "media", 
+        target: "media",
         "media session for station {station_id} error: {e} => {e:?}"
       );
     }
 
-    result
+    r
   })
 }
 
@@ -520,7 +511,7 @@ impl Drop for MediaSessionDropper {
         MediaSession::KEY_STATE: MediaSessionState::KEY_ENUM_VARIANT_CLOSED,
         MediaSession::KEY_DURATION_MS: duration_ms as f64,
         MediaSession::KEY_TRANSFER_BYTES: transfer_bytes as f64,
-        
+
         MediaSessionKind::KEY_LAST_AUDIO_FILE_ID: file_id.clone(),
         MediaSessionKind::KEY_LAST_AUDIO_FILE_ORDER: file_order,
         MediaSessionKind::KEY_LAST_AUDIO_CHUNK_I: i,

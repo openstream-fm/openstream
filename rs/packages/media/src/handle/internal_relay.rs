@@ -125,60 +125,65 @@ pub async fn get_internal_relay_source(
     let mut body = hyper_res.into_body();
 
     let spawn = tokio::spawn(async move {
-      'root: loop {
-        if shutdown.is_closed() {
-          break 'root;
-        }
+      let signal = shutdown.signal();
+      let task = async move {
+        'root: loop {
+          match body.try_next().await {
+            Err(e) => {
+              warn!(
+                target: "media",
+                "internal-relay media session for station {} request stream error: {} => {:?}",
+                station_id,
+                e,
+                e
+              );
+              break 'root;
+            }
 
-        match body.try_next().await {
-          Err(e) => {
-            warn!(
-              target: "media",
-              "internal-relay media session for station {} request stream error: {} => {:?}",
-              station_id,
-              e,
-              e
-            );
-            break 'root;
-          }
+            Ok(None) => {
+              warn!(
+                target: "media",
+                "internal-relay media session for station {} request stream end",
+                station_id
+              );
+              break 'root;
+            }
 
-          Ok(None) => {
-            warn!(
-              target: "media",
-              "internal-relay media session for station {} request stream end",
-              station_id
-            );
-            break 'root;
-          }
-
-          Ok(Some(bytes)) => {
-            transfer += bytes.len() as u64;
-            dropper.transfer.store(transfer, Ordering::SeqCst);
-            match sender.send(bytes) {
-              Ok(_) => {
-                no_listeners_since = None;
-                continue 'root;
-              }
-
-              Err(SendError::NoSubscribers(_)) => {
-                if let Some(since) = no_listeners_since {
-                  if since.elapsed().as_secs() > constants::RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS {
-                    break 'root;
-                  }
-                } else {
-                  no_listeners_since = Some(Instant::now());
+            Ok(Some(bytes)) => {
+              transfer += bytes.len() as u64;
+              dropper.transfer.store(transfer, Ordering::SeqCst);
+              match sender.send(bytes) {
+                Ok(_) => {
+                  no_listeners_since = None;
                   continue 'root;
                 }
-              }
 
-              // here the stream has been terminated (maybe replaced with a newer transmitter)
-              Err(SendError::Terminated(_)) => break 'root,
+                Err(SendError::NoSubscribers(_)) => {
+                  if let Some(since) = no_listeners_since {
+                    if since.elapsed().as_secs() > constants::RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS
+                    {
+                      break 'root;
+                    }
+                  } else {
+                    no_listeners_since = Some(Instant::now());
+                    continue 'root;
+                  }
+                }
+
+                // here the stream has been terminated (maybe replaced with a newer transmitter)
+                Err(SendError::Terminated(_)) => break 'root,
+              }
             }
           }
         }
-      }
 
-      drop(dropper);
+        drop(dropper);
+      };
+
+      tokio::select! {
+        _ = signal => {},
+        _ = task => {}
+      }
     });
 
     Ok(spawn)

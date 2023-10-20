@@ -1,6 +1,20 @@
 
-[workspace]
+[profile.dev]
+panic = "abort"
 
+[profile.release]
+panic = "abort"
+
+[profile.test ]
+panic = "abort"
+
+[profile.bench]
+panic = "abort"
+
+[profile.doc]
+panic = "abort"
+
+[workspace]
 resolver = "2"
 
 members = [
@@ -23,7 +37,6 @@ members = [
     "rs/packages/macros-build",
     "rs/packages/burst",
     "rs/packages/media",
-    "rs/packages/media-sessions",
     "rs/packages/ip",
     "rs/packages/config",
     "rs/packages/stream",
@@ -73,5 +86,5 @@ members = [
 ]
 
 [patch.crates-io]
-bson = { path = "./rs/patches/bson" }
+# bson = { path = "./rs/patches/bson" }
 ts-rs = { path = "./rs/patches/ts-rs/ts-rs" }

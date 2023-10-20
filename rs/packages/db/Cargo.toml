@@ -19,7 +19,7 @@ test-analytics-base-measure = []
 # syn = "1.0.103"
 # quote = "1.0.21"
 lazy_static = "1.4.0"
-mongodb = "2.4.0"
+mongodb = "2.7.0"
 serde = "1.0.145"
 tokio = { version = "1.29.0", features = [ "full" ] }
 chrono = { version = "0.4.22", features = [ "serde" ] }

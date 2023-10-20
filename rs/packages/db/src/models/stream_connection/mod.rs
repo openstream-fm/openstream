@@ -38,6 +38,10 @@ pub struct StreamConnection {
   pub closed_at: Option<DateTime>,
 }
 
+impl StreamConnection {
+  pub const KEY_MANUALLY_CLOSED: &str = "_manually_closed";
+}
+
 impl Model for StreamConnection {
   const CL_NAME: &'static str = "stream_connections";
   const UID_LEN: usize = 12;

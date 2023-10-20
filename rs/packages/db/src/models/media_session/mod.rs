@@ -1,5 +1,10 @@
 use crate::Model;
-use mongodb::{bson::doc, options::FindOneOptions, results::UpdateResult, IndexModel};
+use mongodb::{
+  bson::{doc, SerializerOptions},
+  options::FindOneOptions,
+  results::UpdateResult,
+  IndexModel,
+};
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
@@ -83,7 +88,11 @@ pub struct MediaSessionNowPlaying {
 
 impl From<MediaSessionNowPlaying> for mongodb::bson::Bson {
   fn from(value: MediaSessionNowPlaying) -> Self {
-    mongodb::bson::to_bson(&value).expect("error convering MediaSessionNowPlaying to Bson")
+    mongodb::bson::to_bson_with_options(
+      &value,
+      SerializerOptions::builder().human_readable(false).build(),
+    )
+    .expect("error convering MediaSessionNowPlaying to Bson")
   }
 }
 
