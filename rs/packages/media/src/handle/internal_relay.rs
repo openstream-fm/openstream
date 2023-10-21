@@ -28,6 +28,8 @@ pub enum GetInternalRelayError {
   CreateRequest(hyper::http::Error),
   #[error("send request: {0}")]
   SendRequest(hyper::Error),
+  #[error("relay timeout")]
+  RelayTimeout,
   #[error("relay status: {0:?}")]
   RelayStatus(StatusCode),
 }
@@ -82,9 +84,15 @@ pub async fn get_internal_relay_source(
       Err(e) => return Err(GetInternalRelayError::CreateRequest(e)),
     };
 
-    let hyper_res = match client.request(hyper_req).await {
-      Err(e) => return Err(GetInternalRelayError::SendRequest(e)),
-      Ok(res) => res,
+    let hyper_res = tokio::select! {
+      _ = tokio::time::sleep(tokio::time::Duration::from_secs(10)) => {
+        return Err(GetInternalRelayError::RelayTimeout)
+      }
+
+      res = client.request(hyper_req) => match res {
+        Err(e) => return Err(GetInternalRelayError::SendRequest(e)),
+        Ok(res) => res,
+      }
     };
 
     if !hyper_res.status().is_success() {

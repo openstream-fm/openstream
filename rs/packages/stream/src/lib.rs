@@ -691,6 +691,13 @@ impl From<StreamError> for Response {
             None,
           ),
 
+          GetInternalRelayError::RelayTimeout => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "INTERNAL_RELAY_TIMEOUT",
+            "internal server error (to)".into(),
+            None,
+          ),
+
           GetInternalRelayError::CreateRequest(_) => (
             StatusCode::INTERNAL_SERVER_ERROR,
             "INTERNAL_RELAY_CREATE_REQUEST",
