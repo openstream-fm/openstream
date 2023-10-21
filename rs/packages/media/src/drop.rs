@@ -66,12 +66,11 @@ impl Drop for OwnerDeploymentDropper {
 pub struct MapEntryRelease(Option<MapEntryReleaseInner>);
 
 impl MapEntryRelease {
-  pub fn new(station_id: String, task_id: String, map: MediaSessionMap, token: Token) -> Self {
+  pub fn new(station_id: String, task_id: String, map: MediaSessionMap) -> Self {
     Self(Some(MapEntryReleaseInner {
       station_id,
       task_id,
       map,
-      token,
     }))
   }
 }
@@ -81,7 +80,6 @@ struct MapEntryReleaseInner {
   station_id: String,
   task_id: String,
   map: MediaSessionMap,
-  token: Token,
 }
 
 impl Drop for MapEntryRelease {
@@ -92,7 +90,6 @@ impl Drop for MapEntryRelease {
           .map
           .terminate_task(&inner.station_id, &inner.task_id)
           .await;
-        drop(inner.token);
       });
     }
   }

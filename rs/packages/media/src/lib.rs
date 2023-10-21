@@ -158,6 +158,8 @@ impl MediaSessionMap {
 
   pub async fn playlist_restart(&self, station_id: &str) -> Result<(), PlaylistRestartError> {
     let mut lock = self.lock(station_id).await;
+    // TODO: allow to restart playlist even if it's live
+    // so when live transmission end the playlist starts from the top
     match &*lock {
       None => {}
       Some(handle) => match handle.info().kind {
@@ -211,7 +213,6 @@ impl MediaSessionMap {
         station_id.to_string(),
         task_id.clone(),
         self.clone(),
-        self.drop_tracer.token(),
       );
 
       let owner_deployment_dropper = OwnerDeploymentDropper::new(
@@ -250,12 +251,8 @@ impl MediaSessionMap {
       None => {
         let task_id = Station::random_owner_task_id();
 
-        let map_entry_release = MapEntryRelease::new(
-          station_id.to_string(),
-          task_id.clone(),
-          self.clone(),
-          self.drop_tracer.token(),
-        );
+        let map_entry_release =
+          MapEntryRelease::new(station_id.to_string(), task_id.clone(), self.clone());
 
         let owner_deployment_info = OwnerDeploymentInfo {
           content_type: "audio/mpeg".to_string(),
@@ -392,7 +389,7 @@ impl MediaSessionMap {
               let drop_tracer = self.drop_tracer.clone();
               let shutdown = self.shutdown.clone();
 
-              let task = get_internal_relay_source(
+              let spawn = get_internal_relay_source(
                 sender,
                 deployment_id,
                 task_id,
@@ -404,7 +401,7 @@ impl MediaSessionMap {
               .await?;
 
               tokio::spawn(async move {
-                let _ = task.await;
+                let _ = spawn.await;
                 drop(map_entry_release);
               });
             };

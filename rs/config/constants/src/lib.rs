@@ -124,7 +124,7 @@ pub const DEPLOYMENT_HEALTH_CHECK_INTERVAL_SECS: u16 = 1;
 pub const DEPLOYMENT_HEALTH_CHECK_SHUTDOWN_INTERVAL_SECS: u16 = 30;
 
 #[const_register]
-pub const DEPLOYMENT_HEALTH_CHECK_SHUTDOWN_DELAY_SECS: u16 = 240;
+pub const DEPLOYMENT_HEALTH_CHECK_SHUTDOWN_DELAY_SECS: u16 = 60 * 4; // 4 mins
 
 /// interval in which
 /// $stations.owner_deployment_info.health_checked_at
@@ -149,6 +149,9 @@ pub const PROBE_BACKGROUND_JOB_CHECK_INTERVAL_SECS: u32 = 10; // 10 secs
 /// interval to run a probe request (multiplied by the number of stations)
 #[const_register]
 pub const PROBE_STATION_INTERVAL_SECS: u32 = 5 * 60; // 5 min
+
+#[const_register]
+pub const HEADER_RELAY_SOURCE_DEPLOYMENT: &str = "x-source-deployment";
 
 /// validation constants
 pub mod validate {

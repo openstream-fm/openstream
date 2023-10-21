@@ -52,12 +52,12 @@ async fn main() {
   //   .to_string();
 
   let stream_base_url = std::env::var("STREAM_BASE_URL")
-    .unwrap_or_else(|_| String::from("https://stream.local.openstream.fm"))
+    .unwrap_or_else(|_| String::from("http://127.0.0.1"))
     .trim_end_matches('/')
     .to_string();
 
   let ports: Vec<u16> = std::env::var("STREAM_PORTS")
-    .unwrap_or_else(|_| String::from("443"))
+    .unwrap_or_else(|_| String::from("10200,10201,10202,10203,10204,10205,10206,10207"))
     .split(',')
     .map(|s| s.trim().parse().expect("invalid STREAM_PORTS env"))
     .collect();

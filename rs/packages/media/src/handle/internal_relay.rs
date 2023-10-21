@@ -74,7 +74,8 @@ pub async fn get_internal_relay_source(
 
     let hyper_req = hyper::Request::builder()
       .uri(url)
-      .header("connection", "close");
+      .header("connection", "close")
+      .header(constants::HEADER_RELAY_SOURCE_DEPLOYMENT, &deployment_id);
 
     let hyper_req = match hyper_req.body(Body::empty()) {
       Ok(req) => req,

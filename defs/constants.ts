@@ -50,6 +50,8 @@ export const EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_INTERVAL_SECS = 20;
 /** Internal forwarded ip header used when openstream servers are connecting with each other */
 export const FORWARD_IP_HEADER = "x-openstream-forwarded-ip";
 
+export const HEADER_RELAY_SOURCE_DEPLOYMENT = "x-source-deployment";
+
 /** interval in which
  *  $stations.owner_deployment_info.health_checked_at
  *  and $media_session.health_checked_at
