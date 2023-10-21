@@ -3,6 +3,7 @@ pub mod drop;
 pub mod handle;
 pub mod health;
 
+use constants::MEDIA_LOCK_TIMEOUT_SECS;
 use db::{
   audio_file::AudioFile,
   run_transaction,
@@ -127,12 +128,25 @@ impl MediaSessionMap {
       item.clone()
     };
 
-    item.lock_owned().await
+    let timeout = tokio::time::Duration::from_secs(MEDIA_LOCK_TIMEOUT_SECS);
+    tokio::time::timeout(timeout, item.lock_owned())
+      .await
+      .unwrap_or_else(|_| {
+        panic!("media lock timeout elapsed for station {station_id} on call to lock()")
+      })
   }
 
   pub async fn terminate(&self, station_id: &str) -> Option<Handle> {
     let entry = { self.map.lock().remove(station_id)? };
-    let handle = entry.lock().await.take()?;
+
+    let timeout = tokio::time::Duration::from_secs(MEDIA_LOCK_TIMEOUT_SECS);
+    let handle = tokio::time::timeout(timeout, entry.lock())
+      .await
+      .unwrap_or_else(|_| {
+        panic!("media lock timeout elapsed for station {station_id} on call to terminate()")
+      })
+      .take()?;
+
     Some(handle)
   }
 
@@ -142,7 +156,12 @@ impl MediaSessionMap {
       lock.get(station_id)?.clone()
     };
 
-    let mut handle = entry.lock().await;
+    let timeout = tokio::time::Duration::from_secs(MEDIA_LOCK_TIMEOUT_SECS);
+    let mut handle = tokio::time::timeout(timeout, entry.lock())
+      .await
+      .unwrap_or_else(|_| {
+        panic!("media lock timeout elapsed for station {station_id}, task {task_id} on call to terminate_task()")
+      });
 
     match &*handle {
       None => None,
@@ -158,6 +177,8 @@ impl MediaSessionMap {
 
   pub async fn playlist_restart(&self, station_id: &str) -> Result<(), PlaylistRestartError> {
     let mut lock = self.lock(station_id).await;
+    // TODO: allow to restart playlist even if it's live
+    // so when live transmission end the playlist starts from the top
     match &*lock {
       None => {}
       Some(handle) => match handle.info().kind {
@@ -211,7 +232,6 @@ impl MediaSessionMap {
         station_id.to_string(),
         task_id.clone(),
         self.clone(),
-        self.drop_tracer.token(),
       );
 
       let owner_deployment_dropper = OwnerDeploymentDropper::new(
@@ -250,12 +270,8 @@ impl MediaSessionMap {
       None => {
         let task_id = Station::random_owner_task_id();
 
-        let map_entry_release = MapEntryRelease::new(
-          station_id.to_string(),
-          task_id.clone(),
-          self.clone(),
-          self.drop_tracer.token(),
-        );
+        let map_entry_release =
+          MapEntryRelease::new(station_id.to_string(), task_id.clone(), self.clone());
 
         let owner_deployment_info = OwnerDeploymentInfo {
           content_type: "audio/mpeg".to_string(),
@@ -392,7 +408,7 @@ impl MediaSessionMap {
               let drop_tracer = self.drop_tracer.clone();
               let shutdown = self.shutdown.clone();
 
-              let task = get_internal_relay_source(
+              let spawn = get_internal_relay_source(
                 sender,
                 deployment_id,
                 task_id,
@@ -404,7 +420,7 @@ impl MediaSessionMap {
               .await?;
 
               tokio::spawn(async move {
-                let _ = task.await;
+                let _ = spawn.await;
                 drop(map_entry_release);
               });
             };

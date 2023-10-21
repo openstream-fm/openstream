@@ -1,3 +1,4 @@
+use constants::MEDIA_RELAY_TIMEOUT_SECS;
 use db::deployment::Deployment;
 use db::station::OwnerDeploymentInfo;
 use db::Model;
@@ -28,6 +29,8 @@ pub enum GetInternalRelayError {
   CreateRequest(hyper::http::Error),
   #[error("send request: {0}")]
   SendRequest(hyper::Error),
+  #[error("relay timeout")]
+  RelayTimeout,
   #[error("relay status: {0:?}")]
   RelayStatus(StatusCode),
 }
@@ -74,16 +77,23 @@ pub async fn get_internal_relay_source(
 
     let hyper_req = hyper::Request::builder()
       .uri(url)
-      .header("connection", "close");
+      .header("connection", "close")
+      .header(constants::HEADER_RELAY_SOURCE_DEPLOYMENT, &deployment_id);
 
     let hyper_req = match hyper_req.body(Body::empty()) {
       Ok(req) => req,
       Err(e) => return Err(GetInternalRelayError::CreateRequest(e)),
     };
 
-    let hyper_res = match client.request(hyper_req).await {
-      Err(e) => return Err(GetInternalRelayError::SendRequest(e)),
-      Ok(res) => res,
+    let hyper_res = tokio::select! {
+      _ = tokio::time::sleep(tokio::time::Duration::from_secs(MEDIA_RELAY_TIMEOUT_SECS)) => {
+        return Err(GetInternalRelayError::RelayTimeout)
+      }
+
+      res = client.request(hyper_req) => match res {
+        Err(e) => return Err(GetInternalRelayError::SendRequest(e)),
+        Ok(res) => res,
+      }
     };
 
     if !hyper_res.status().is_success() {

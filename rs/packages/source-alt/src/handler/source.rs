@@ -179,12 +179,8 @@ pub async fn source(
       let info = Info::new(Kind::Live, task_id.clone(), content_type.clone());
       let sender = Sender::new(station_id.clone(), info);
       let handle = Handle::new(sender.clone());
-      let map_entry_release = MapEntryRelease::new(
-        station_id.clone(),
-        task_id.clone(),
-        media_sessions.clone(),
-        drop_tracer.token(),
-      );
+      let map_entry_release =
+        MapEntryRelease::new(station_id.clone(), task_id.clone(), media_sessions.clone());
       *lock = Some(handle);
 
       (sender, map_entry_release)

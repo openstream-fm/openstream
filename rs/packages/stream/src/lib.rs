@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use constants::HEADER_RELAY_SOURCE_DEPLOYMENT;
 use db::account::Account;
 use db::station::Station;
 use db::stream_connection::lite::StreamConnectionLite;
@@ -133,7 +134,10 @@ impl StreamServer {
       ),
     );
 
-    app.get("/relay/:id", RelayHandler::new(self.media_sessions.clone()));
+    app.get(
+      "/relay/:id",
+      RelayHandler::new(self.deployment_id.clone(), self.media_sessions.clone()),
+    );
 
     let app = app.build().expect("prex app build stream");
 
@@ -202,16 +206,34 @@ impl Drop for StreamServer {
 
 #[derive(Debug, Clone)]
 struct RelayHandler {
+  deployment_id: String,
   media_sessions: MediaSessionMap,
 }
 
 impl RelayHandler {
-  pub fn new(media_sessions: MediaSessionMap) -> Self {
-    Self { media_sessions }
+  pub fn new(deployment_id: String, media_sessions: MediaSessionMap) -> Self {
+    Self {
+      deployment_id,
+      media_sessions,
+    }
   }
 
   pub async fn handle(&self, req: Request) -> Result<Response, StreamError> {
     let station_id = req.param("id").unwrap().to_string();
+
+    let source_deployment_id = match req.headers().get(HEADER_RELAY_SOURCE_DEPLOYMENT) {
+      None => None,
+      Some(v) => match v.to_str() {
+        Err(_) => None,
+        Ok(v) => Some(v),
+      },
+    };
+
+    if let Some(id) = source_deployment_id {
+      if id == self.deployment_id {
+        return Err(StreamError::RelayDeploymentSourceIsTarget);
+      }
+    }
 
     // match req.headers().get(X_OPENSTREAM_RELAY_CODE) {
     //   None => return Err(RelayError::RelayCodeMismatch),
@@ -603,6 +625,8 @@ pub enum StreamError {
   TooManyOpenIpConnections,
   #[error("subscribe: {0}")]
   Subscribe(#[from] SubscribeError),
+  #[error("deployment target is source")]
+  RelayDeploymentSourceIsTarget,
 }
 
 impl From<StreamError> for Response {
@@ -628,6 +652,13 @@ impl From<StreamError> for Response {
         "Too many open connections from your network, close some connections or try again later"
           .into(),
         Some(30u32),
+      ),
+
+      StreamError::RelayDeploymentSourceIsTarget => (
+        StatusCode::SERVICE_UNAVAILABLE,
+        "RELAY_SOURCE_IS_TARGET",
+        "Service temporarily unavailable, try again in a few seconds".into(),
+        Some(5u32),
       ),
 
       StreamError::Subscribe(e) => match e {
@@ -657,6 +688,13 @@ impl From<StreamError> for Response {
             StatusCode::INTERNAL_SERVER_ERROR,
             "INTERNAL_RELAY_DB",
             "internal server error (db3)".into(),
+            None,
+          ),
+
+          GetInternalRelayError::RelayTimeout => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "INTERNAL_RELAY_TIMEOUT",
+            "internal server error (to)".into(),
             None,
           ),
 

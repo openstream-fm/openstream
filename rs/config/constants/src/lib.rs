@@ -124,7 +124,7 @@ pub const DEPLOYMENT_HEALTH_CHECK_INTERVAL_SECS: u16 = 1;
 pub const DEPLOYMENT_HEALTH_CHECK_SHUTDOWN_INTERVAL_SECS: u16 = 30;
 
 #[const_register]
-pub const DEPLOYMENT_HEALTH_CHECK_SHUTDOWN_DELAY_SECS: u16 = 240;
+pub const DEPLOYMENT_HEALTH_CHECK_SHUTDOWN_DELAY_SECS: u16 = 60 * 4; // 4 mins
 
 /// interval in which
 /// $stations.owner_deployment_info.health_checked_at
@@ -149,6 +149,18 @@ pub const PROBE_BACKGROUND_JOB_CHECK_INTERVAL_SECS: u32 = 10; // 10 secs
 /// interval to run a probe request (multiplied by the number of stations)
 #[const_register]
 pub const PROBE_STATION_INTERVAL_SECS: u32 = 5 * 60; // 5 min
+
+#[const_register]
+pub const HEADER_RELAY_SOURCE_DEPLOYMENT: &str = "x-source-deployment";
+
+#[const_register]
+pub const MEDIA_RELAY_TIMEOUT_SECS: u64 = 35;
+
+/// timeout to wait to obtain a lock on a media session items
+/// if not released in this timeout, probably the item is poisoned
+/// and the process is aborted with a panic (and restarted by the process manager)
+#[const_register]
+pub const MEDIA_LOCK_TIMEOUT_SECS: u64 = 30;
 
 /// validation constants
 pub mod validate {
