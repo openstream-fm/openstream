@@ -52,6 +52,13 @@ export const FORWARD_IP_HEADER = "x-openstream-forwarded-ip";
 
 export const HEADER_RELAY_SOURCE_DEPLOYMENT = "x-source-deployment";
 
+/** timeout to wait to obtain a lock on a media session items
+ *  if not released in this timeout, probably the item is poisoned
+ *  and the process is aborted with a panic (and restarted by the process manager) */
+export const MEDIA_LOCK_TIMEOUT_SECS = 30;
+
+export const MEDIA_RELAY_TIMEOUT_SECS = 35;
+
 /** interval in which
  *  $stations.owner_deployment_info.health_checked_at
  *  and $media_session.health_checked_at

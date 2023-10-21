@@ -3,6 +3,7 @@ pub mod drop;
 pub mod handle;
 pub mod health;
 
+use constants::MEDIA_LOCK_TIMEOUT_SECS;
 use db::{
   audio_file::AudioFile,
   run_transaction,
@@ -127,12 +128,25 @@ impl MediaSessionMap {
       item.clone()
     };
 
-    item.lock_owned().await
+    let timeout = tokio::time::Duration::from_secs(MEDIA_LOCK_TIMEOUT_SECS);
+    tokio::time::timeout(timeout, item.lock_owned())
+      .await
+      .unwrap_or_else(|_| {
+        panic!("media lock timeout elapsed for station {station_id} on call to lock()")
+      })
   }
 
   pub async fn terminate(&self, station_id: &str) -> Option<Handle> {
     let entry = { self.map.lock().remove(station_id)? };
-    let handle = entry.lock().await.take()?;
+
+    let timeout = tokio::time::Duration::from_secs(MEDIA_LOCK_TIMEOUT_SECS);
+    let handle = tokio::time::timeout(timeout, entry.lock())
+      .await
+      .unwrap_or_else(|_| {
+        panic!("media lock timeout elapsed for station {station_id} on call to terminate()")
+      })
+      .take()?;
+
     Some(handle)
   }
 
@@ -142,7 +156,12 @@ impl MediaSessionMap {
       lock.get(station_id)?.clone()
     };
 
-    let mut handle = entry.lock().await;
+    let timeout = tokio::time::Duration::from_secs(MEDIA_LOCK_TIMEOUT_SECS);
+    let mut handle = tokio::time::timeout(timeout, entry.lock())
+      .await
+      .unwrap_or_else(|_| {
+        panic!("media lock timeout elapsed for station {station_id}, task {task_id} on call to terminate_task()")
+      });
 
     match &*handle {
       None => None,

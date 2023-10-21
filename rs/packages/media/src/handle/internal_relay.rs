@@ -1,3 +1,4 @@
+use constants::MEDIA_RELAY_TIMEOUT_SECS;
 use db::deployment::Deployment;
 use db::station::OwnerDeploymentInfo;
 use db::Model;
@@ -85,7 +86,7 @@ pub async fn get_internal_relay_source(
     };
 
     let hyper_res = tokio::select! {
-      _ = tokio::time::sleep(tokio::time::Duration::from_secs(10)) => {
+      _ = tokio::time::sleep(tokio::time::Duration::from_secs(MEDIA_RELAY_TIMEOUT_SECS)) => {
         return Err(GetInternalRelayError::RelayTimeout)
       }
 
