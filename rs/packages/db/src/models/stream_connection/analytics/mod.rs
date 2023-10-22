@@ -554,9 +554,13 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
       let first_ts = first.created_at;
       let last_ts = last.created_at;
 
+      let first_ms = first_ts.unix_timestamp_nanos() as u64 / 1_000_000;
+      let last_ms = first_ts.unix_timestamp_nanos() as u64 / 1_000_000;
+
       let accumulate_start = Instant::now();
 
       let batches_n = if is_now { 1 } else { 16 };
+      let step = (last_ms - first_ms) as u64 / batches_n as u64;
       let batch = {
         futures_util::stream::repeat(())
           .take(batches_n)
@@ -567,13 +571,14 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
               tokio::task::spawn_blocking(move || {
                 tokio::runtime::Handle::current().block_on(async move {
                   if !is_now {
-                    let start_ms = first_ts.unix_timestamp_nanos() as u64 / 1_000_000;
-                    let end_ms = last_ts.unix_timestamp_nanos() as u64 / 1_000_000;
-                    let step = (end_ms - start_ms) / batches_n as u64;
-                    let step = time::Duration::milliseconds(step as i64);
+                    // let step = time::Duration::milliseconds(step as i64);
+                    // let start: DateTime = (*first_ts + step * i as u16).into();
+                    // let end: DateTime = (*start + step).into();
+                    let start_ms = first_ms + step * i as u64;
+                    let end_ms = first_ms + step * (i + 1) as u64;
 
-                    let start: DateTime = (*first_ts + step * i as u16).into();
-                    let end: DateTime = (*start + step).into();
+                    let start = mongodb::bson::DateTime::from_millis(start_ms as i64);
+                    let end = mongodb::bson::DateTime::from_millis(end_ms as i64);
 
                     let is_last = i == (batches_n - 1);
 
