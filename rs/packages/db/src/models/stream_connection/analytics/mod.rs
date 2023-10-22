@@ -501,28 +501,19 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
         );
       }
 
-      let first = async {
-        let filter = doc! { "$and": &first_last_and };
-        let sort = doc! { StreamConnectionLite::KEY_CREATED_AT: 1 };
-        let options = mongodb::options::FindOneOptions::builder()
-          .sort(sort)
-          .build();
-        let item_option = StreamConnectionLite::cl().find_one(filter, options).await?;
-        Ok::<_, mongodb::error::Error>(item_option)
+      let get_bound = |direction: i32| {
+        let sort = doc! { StreamConnectionLite::KEY_CREATED_AT: direction };
+        async {
+          let filter = doc! { "$and": &first_last_and };
+          let options = mongodb::options::FindOneOptions::builder()
+            .sort(sort)
+            .build();
+          let item_option = StreamConnectionLite::cl().find_one(filter, options).await?;
+          Ok::<_, mongodb::error::Error>(item_option)
+        }
       };
 
-      let last = async {
-        let filter = doc! { "$and": &first_last_and };
-        let sort = doc! { StreamConnectionLite::KEY_CREATED_AT: -1 };
-        let options = mongodb::options::FindOneOptions::builder()
-          .sort(sort)
-          .build();
-        let item_option = StreamConnectionLite::cl().find_one(filter, options).await?;
-        Ok::<_, mongodb::error::Error>(item_option)
-      };
-
-      let (first, last) = tokio::try_join!(first, last)?;
-      let (first, last) = match (first, last) {
+      let (first, last) = match tokio::try_join!(get_bound(1), get_bound(-1))? {
         (Some(first), Some(last)) => (first, last),
         _ => {
           return Ok(Analytics {
@@ -551,16 +542,13 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
         }
       };
 
-      let first_ts = first.created_at;
-      let last_ts = last.created_at;
-
-      let first_ms = first_ts.unix_timestamp_nanos() as u64 / 1_000_000;
-      let last_ms = first_ts.unix_timestamp_nanos() as u64 / 1_000_000;
+      let first_ms = first.created_at.unix_timestamp_nanos() as u64 / 1_000_000;
+      let last_ms = last.created_at.unix_timestamp_nanos() as u64 / 1_000_000;
 
       let accumulate_start = Instant::now();
 
       let batches_n = if is_now { 1 } else { 16 };
-      let step = (last_ms - first_ms) as u64 / batches_n as u64;
+      let step = (last_ms - first_ms) / batches_n as u64;
       let batch = {
         futures_util::stream::repeat(())
           .take(batches_n)
@@ -578,11 +566,15 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
                     let end_ms = first_ms + step * (i + 1) as u64;
 
                     let start = mongodb::bson::DateTime::from_millis(start_ms as i64);
-                    let end = mongodb::bson::DateTime::from_millis(end_ms as i64);
+                    let mut end = mongodb::bson::DateTime::from_millis(end_ms as i64);
 
-                    let is_last = i == (batches_n - 1);
+                    let is_last = (i + 1) == batches_n;
 
-                    let lt = if is_last { "$lte" } else { "$lt" };
+                    let mut lt = "$lt";
+                    if is_last {
+                      lt = "$lte";
+                      end = mongodb::bson::DateTime::from_millis(last_ms as i64);
+                    }
 
                     and.push(
                       doc! { StreamConnectionLite::KEY_CREATED_AT: { "$gte": start, lt: end } },
@@ -643,8 +635,11 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
       #[cfg(feature = "analytics-max-concurrent")]
       macro_rules! max_concurrent {
         ($vec:expr) => {{
+          use rayon::prelude::*;
+
           let mut vec = $vec;
-          vec.sort_unstable_by(|a, b| a.0.cmp(&b.0));
+          //vec.sort_unstable_by(|a, b| a.0.cmp(&b.0));
+          vec.par_sort_unstable_by(|a, b| a.0.cmp(&b.0).then(b.1.cmp(&a.1)));
 
           let mut max: u32 = 0;
           let mut max_timestamp: u32 = 0;
@@ -737,8 +732,8 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
 
       let sort_ms = sort_start.elapsed().as_millis();
 
-      let since = first_ts.to_offset(offset_date.offset());
-      let until = last_ts.to_offset(offset_date.offset());
+      let since = first.created_at.to_offset(offset_date.offset());
+      let until = last.created_at.to_offset(offset_date.offset());
 
       log::info!(
         target: "analytics",
