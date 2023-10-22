@@ -1,15 +1,16 @@
 use std::{
-  collections::{HashMap, HashSet},
+  collections::{hash_map::Entry, HashMap, HashSet},
   hash::Hash,
   net::IpAddr,
   time::Instant,
 };
 
-use futures_util::TryStreamExt;
+use futures_util::{StreamExt, TryStreamExt};
 use geoip::CountryCode;
 use mongodb::bson::doc;
 use serde::{Deserialize, Serialize};
-use time::OffsetDateTime;
+use serde_util::DateTime;
+use time::{OffsetDateTime, UtcOffset};
 use ts_rs::TS;
 
 use crate::{station::Station, stream_connection::lite::StreamConnectionLite, Model};
@@ -153,239 +154,106 @@ pub enum AnalyticsQueryKind {
   },
 }
 
-pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::error::Error> {
-  let start = Instant::now();
+type KeyedAccumulatorMap<K> = HashMap<K, AccumulatorItem>;
 
-  let stations = {
-    let filter = doc! {
-      Station::KEY_ID: {
-        "$in": &query.station_ids,
-      }
-    };
-
-    let projection = doc! {
-      Station::KEY_ID: 1,
-      Station::KEY_NAME: 1,
-      Station::KEY_CREATED_AT: 1,
-    };
-
-    let sort = doc! {
-      Station::KEY_CREATED_AT: 1,
-    };
-
-    let options = mongodb::options::FindOptions::builder()
-      .projection(projection)
-      .sort(sort)
-      .build();
-
-    let stations: Vec<AnalyticsStation> = Station::cl_as::<AnalyticsStation>()
-      .find(filter, options)
-      .await?
-      .try_collect()
-      .await?;
-
-    stations
-  };
-
-  let mut filter = doc! {
-    StreamConnectionLite::KEY_STATION_ID: {
-      "$in": &query.station_ids,
-    }
-  };
-
-  let offset_date: OffsetDateTime;
-  let kind = query.kind;
-  let is_now: bool;
-  let with_hours: bool;
-
-  match kind {
-    AnalyticsQueryKind::Now { offset_date: d } => {
-      is_now = true;
-      with_hours = false;
-      offset_date = OffsetDateTime::now_utc().to_offset(d.offset());
-
-      filter = doc! {
-        "$and": [
-          filter,
-          { StreamConnectionLite::KEY_IS_OPEN: true }
-        ]
-      };
-    }
-
-    AnalyticsQueryKind::TimeRange { since, until } => {
-      is_now = false;
-      let mut start_date = since;
-      let mut end_date = (until).to_offset(since.offset());
-
-      let now = OffsetDateTime::now_utc();
-      let first_station_created_at = stations
-        .first()
-        .map(|station| *station.created_at)
-        .unwrap_or_else(OffsetDateTime::now_utc);
-
-      if start_date < first_station_created_at {
-        start_date = first_station_created_at.to_offset(start_date.offset());
-      }
-
-      if end_date < first_station_created_at {
-        end_date = first_station_created_at.to_offset(start_date.offset());
-      }
-
-      if end_date > now {
-        end_date = now.to_offset(end_date.offset());
-      }
-
-      if start_date > now {
-        start_date = now.to_offset(start_date.offset());
-      }
-
-      if start_date > end_date {
-        (start_date, end_date) = (end_date, start_date);
-      }
-
-      with_hours = (end_date.unix_timestamp() - start_date.unix_timestamp()) < (60 * 60 * 24 * 32);
-
-      let ser_start_date: serde_util::DateTime = start_date.into();
-      let ser_end_date: serde_util::DateTime = end_date.into();
-
-      filter = doc! {
-        "$and": [
-          filter,
-          {
-            StreamConnectionLite::KEY_CREATED_AT: {
-              "$gte": ser_start_date,
-              "$lt": ser_end_date,
-            }
-          }
-        ]
-      };
-
-      offset_date = start_date;
-    }
-  }
-
-  if let Some(os) = query.os {
-    filter = doc! {
-      "$and": [
-        filter,
-        {
-          StreamConnectionLite::KEY_OS: os,
-        }
-      ]
-    }
-  }
-
-  if let Some(browser) = query.browser {
-    filter = doc! {
-      "$and": [
-        filter,
-        {
-          StreamConnectionLite::KEY_BROWSER: browser,
-        }
-      ]
-    }
-  }
-
-  if let Some(cc) = query.country_code {
-    filter = doc! {
-      "$and": [
-        filter,
-        {
-          // this convertion should never fail
-          StreamConnectionLite::KEY_COUNTRY_CODE: mongodb::bson::to_bson(&cc).unwrap()
-        }
-      ]
-    }
-  }
-
-  if let Some(domain) = query.domain {
-    filter = doc! {
-      "$and": [
-        filter,
-        {
-          StreamConnectionLite::KEY_DOMAIN: domain
-        }
-      ]
-    }
-  }
-
-  if let Some(d) = query.min_duration_ms {
-    filter = doc! {
-      "$and": [
-        filter,
-        {
-          "$or": [
-            { StreamConnectionLite::KEY_DURATION_MS: null },
-            { StreamConnectionLite::KEY_DURATION_MS: { "$gte": d as f64 } },
-          ]
-        }
-      ]
-    }
-  }
-
-  let sort = doc! {
-    StreamConnectionLite::KEY_CREATED_AT: 1,
-    // force index usage { ca: 1, st: 1 }
-    StreamConnectionLite::KEY_STATION_ID: 1,
-  };
-
-  let options = mongodb::options::FindOptions::builder().sort(sort).build();
-
-  let mut cursor = StreamConnectionLite::cl().find(filter, options).await?;
-
-  let mut sessions: u64 = 0;
-  let mut ips = HashSet::<IpAddr>::new();
-  let mut total_duration_ms: u64 = 0;
-  let mut total_transfer_bytes: u64 = 0;
-
-  // u32 is the timestamp and bool is true => start, false => stop
+#[derive(Debug, Default)]
+struct AccumulatorItem {
+  sessions: u64,
+  ips: HashSet<IpAddr>,
+  total_duration_ms: u64,
+  total_transfer_bytes: u64,
   #[cfg(feature = "analytics-max-concurrent")]
-  let mut start_stop_events: Vec<(u32, bool)> = vec![];
+  start_stop_events: Vec<(u32, bool)>,
+}
 
-  #[derive(Default)]
-  struct AccumulatorItem {
-    sessions: u64,
-    ips: HashSet<IpAddr>,
-    total_duration_ms: u64,
-    total_transfer_bytes: u64,
+impl AccumulatorItem {
+  #[inline(always)]
+  #[allow(unused)]
+  pub fn new() -> Self {
+    Self::default()
+  }
+
+  #[inline(always)]
+  fn merge(&mut self, dst: Self) {
+    self.sessions += dst.sessions;
+    self.ips.extend(dst.ips);
+    self.total_duration_ms += dst.total_duration_ms;
+    self.total_transfer_bytes += dst.total_transfer_bytes;
+
     #[cfg(feature = "analytics-max-concurrent")]
-    start_stop_events: Vec<(u32, bool)>,
+    self.start_stop_events.extend(dst.start_stop_events);
   }
+}
 
-  let mut hours_accumulator = HashMap::<YearMonthDayHour, AccumulatorItem>::new();
-  let mut days_accumulator = HashMap::<YearMonthDay, AccumulatorItem>::new();
-  let mut browser_accumulator = HashMap::<Option<String>, AccumulatorItem>::new();
-  let mut os_accumulator = HashMap::<Option<String>, AccumulatorItem>::new();
-  let mut country_accumulator = HashMap::<Option<CountryCode>, AccumulatorItem>::new();
-  let mut station_accumulator = HashMap::<String, AccumulatorItem>::new();
-  let mut domain_accumulator = HashMap::<Option<String>, AccumulatorItem>::new();
-
-  // accumulate
-  #[cfg(feature = "test-analytics-base-measure")]
-  while let Some(_conn) = cursor.try_next().await? {
-    sessions += 1;
-  }
-
-  let now = time::OffsetDateTime::now_utc();
-
-  let mut since: Option<OffsetDateTime> = None;
-  let mut until: Option<OffsetDateTime> = None;
-
-  #[cfg(not(feature = "test-analytics-base-measure"))]
-  while let Some(conn) = cursor.try_next().await? {
-    let created_at = conn.created_at.to_offset(offset_date.offset());
-
-    // first (not override)
-    if since.is_none() {
-      since = Some(created_at);
+#[inline(always)]
+fn merge_accumulator_maps<K: Eq + Hash + Clone>(
+  src: &mut KeyedAccumulatorMap<K>,
+  dst: KeyedAccumulatorMap<K>,
+) {
+  for (key, value) in dst.into_iter() {
+    match src.entry(key) {
+      Entry::Vacant(entry) => {
+        entry.insert(value);
+      }
+      Entry::Occupied(mut entry) => {
+        entry.get_mut().merge(value);
+      }
     }
+  }
+}
 
-    // last (override)
-    until = Some(created_at);
+#[derive(Debug)]
+struct Batch {
+  pub offset: UtcOffset,
+  pub now_ms: u64,
+
+  pub sessions: u64,
+  pub total_duration_ms: u64,
+  pub total_transfer_bytes: u64,
+  pub ips: HashSet<IpAddr>,
+  pub by_day: KeyedAccumulatorMap<YearMonthDay>,
+  pub by_hour: KeyedAccumulatorMap<YearMonthDayHour>,
+  pub by_browser: KeyedAccumulatorMap<Option<String>>,
+  pub by_os: KeyedAccumulatorMap<Option<String>>,
+  pub by_country: KeyedAccumulatorMap<Option<CountryCode>>,
+  pub by_station: KeyedAccumulatorMap<String>,
+  pub by_domain: KeyedAccumulatorMap<Option<String>>,
+  #[cfg(feature = "analytics-max-concurrent")]
+  pub start_stop_events: Vec<(u32, bool)>,
+}
+
+impl Batch {
+  #[inline(always)]
+  pub fn new(offset: UtcOffset) -> Self {
+    Self {
+      offset,
+      now_ms: OffsetDateTime::now_utc().unix_timestamp() as u64 * 1000,
+
+      sessions: 0,
+      total_duration_ms: 0,
+      total_transfer_bytes: 0,
+      ips: Default::default(),
+
+      by_day: Default::default(),
+      by_hour: Default::default(),
+      by_browser: Default::default(),
+      by_os: Default::default(),
+      by_country: Default::default(),
+      by_station: Default::default(),
+      by_domain: Default::default(),
+      #[cfg(feature = "analytics-max-concurrent")]
+      start_stop_events: Default::default(),
+    }
+  }
+
+  #[inline(always)]
+  pub fn add(&mut self, conn: StreamConnectionLite) {
+    let created_at = conn.created_at.to_offset(self.offset);
 
     let conn_duration_ms = conn
       .duration_ms
-      .unwrap_or_else(|| ((created_at - now).as_seconds_f64() * 1000.0) as u64);
+      .unwrap_or_else(|| (self.now_ms - created_at.unix_timestamp() as u64 * 1000));
+
     let conn_transfer_bytes = conn.transfer_bytes.unwrap_or(0);
     let conn_year = created_at.year() as u16;
     let conn_month = created_at.month() as u8;
@@ -394,25 +262,25 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     let conn_browser = conn.browser;
     let conn_os = conn.os;
 
-    sessions += 1;
-    total_duration_ms += conn_duration_ms;
-    total_transfer_bytes += conn_transfer_bytes;
-    ips.insert(conn.ip);
+    self.sessions += 1;
+    self.total_duration_ms += conn_duration_ms;
+    self.total_transfer_bytes += conn_transfer_bytes;
+    self.ips.insert(conn.ip);
 
     #[cfg(feature = "analytics-max-concurrent")]
-    let start = created_at.unix_timestamp() as u32;
+    let start = conn.created_at.unix_timestamp() as u32;
     #[cfg(feature = "analytics-max-concurrent")]
-    start_stop_events.push((start, true));
+    self.start_stop_events.push((start, true));
     #[cfg(feature = "analytics-max-concurrent")]
     let stop = start + (conn_duration_ms / 1000) as u32;
 
     if !conn.is_open {
       #[cfg(feature = "analytics-max-concurrent")]
-      start_stop_events.push((stop, false));
+      self.start_stop_events.push((stop, false));
     }
 
     macro_rules! add {
-      ($acc:ident, $key:expr) => {
+      ($acc:expr, $key:expr) => {
         let item = $acc.entry($key).or_default();
         item.sessions += 1;
         item.ips.insert(conn.ip);
@@ -430,7 +298,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
     }
 
     add!(
-      days_accumulator,
+      self.by_day,
       YearMonthDay {
         year: conn_year,
         month: conn_month,
@@ -438,165 +306,476 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
       }
     );
 
-    if with_hours {
-      add!(
-        hours_accumulator,
-        YearMonthDayHour {
-          year: conn_year,
-          month: conn_month,
-          day: conn_day,
-          hour: conn_hour,
-        }
-      );
-    }
+    add!(
+      self.by_hour,
+      YearMonthDayHour {
+        year: conn_year,
+        month: conn_month,
+        day: conn_day,
+        hour: conn_hour,
+      }
+    );
 
-    add!(browser_accumulator, conn_browser);
-    add!(os_accumulator, conn_os);
-    add!(country_accumulator, conn.country_code);
-    add!(station_accumulator, conn.station_id);
-    add!(domain_accumulator, conn.domain);
+    add!(self.by_browser, conn_browser);
+    add!(self.by_os, conn_os);
+    add!(self.by_country, conn.country_code);
+    add!(self.by_station, conn.station_id);
+    add!(self.by_domain, conn.domain);
   }
 
-  let accumulate_ms = start.elapsed().as_millis();
-  let sort_start = Instant::now();
+  #[inline(always)]
+  pub fn merge(&mut self, dst: Self) {
+    self.sessions += dst.sessions;
+    self.total_duration_ms += dst.total_duration_ms;
+    self.total_transfer_bytes += dst.total_transfer_bytes;
+    self.ips.extend(dst.ips);
+    merge_accumulator_maps(&mut self.by_day, dst.by_day);
+    merge_accumulator_maps(&mut self.by_hour, dst.by_hour);
+    merge_accumulator_maps(&mut self.by_browser, dst.by_browser);
+    merge_accumulator_maps(&mut self.by_os, dst.by_os);
+    merge_accumulator_maps(&mut self.by_country, dst.by_country);
+    merge_accumulator_maps(&mut self.by_station, dst.by_station);
+    merge_accumulator_maps(&mut self.by_domain, dst.by_domain);
 
-  #[cfg(feature = "analytics-max-concurrent")]
-  macro_rules! max_concurrent {
-    ($vec:expr) => {{
-      let mut vec = $vec;
-      vec.sort_by(|a, b| a.0.cmp(&b.0));
+    #[cfg(feature = "analytics-max-concurrent")]
+    self.start_stop_events.extend(dst.start_stop_events);
+  }
+}
 
-      let mut max: u32 = 0;
-      let mut max_timestamp: u32 = 0;
-      let mut current: u32 = 0;
-      for (timestamp, start) in vec.into_iter() {
-        if start {
-          current = current.saturating_add(1);
-          if current > max {
-            max = current;
-            max_timestamp = timestamp
+pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::error::Error> {
+  tokio::task::spawn_blocking(move || {
+    tokio::runtime::Handle::current().block_on(async move {
+      let start = Instant::now();
+
+      let stations = {
+        let filter = doc! {
+          Station::KEY_ID: {
+            "$in": &query.station_ids,
           }
-        } else {
-          current = current.saturating_sub(1);
+        };
+
+        let projection = doc! {
+          Station::KEY_ID: 1,
+          Station::KEY_NAME: 1,
+          Station::KEY_CREATED_AT: 1,
+        };
+
+        let sort = doc! {
+          Station::KEY_CREATED_AT: 1,
+        };
+
+        let options = mongodb::options::FindOptions::builder()
+          .projection(projection)
+          .sort(sort)
+          .build();
+
+        let stations: Vec<AnalyticsStation> = Station::cl_as::<AnalyticsStation>()
+          .find(filter, options)
+          .await?
+          .try_collect()
+          .await?;
+
+        stations
+      };
+
+      let mut and = vec![doc! {
+        StreamConnectionLite::KEY_STATION_ID: {
+          "$in": &query.station_ids,
+        }
+      }];
+
+      let offset_date: OffsetDateTime;
+      let kind = query.kind;
+      let is_now: bool;
+      let with_hours: bool;
+
+      let mut start_end_date: Option<(OffsetDateTime, OffsetDateTime)> = None;
+
+      match kind {
+        AnalyticsQueryKind::Now { offset_date: d } => {
+          is_now = true;
+          with_hours = false;
+          offset_date = OffsetDateTime::now_utc().to_offset(d.offset());
+
+          and.push(doc! { StreamConnectionLite::KEY_IS_OPEN: true });
+        }
+
+        AnalyticsQueryKind::TimeRange { since, until } => {
+          is_now = false;
+          let mut start_date = since;
+          let mut end_date = (until).to_offset(since.offset());
+
+          let now = OffsetDateTime::now_utc();
+          let first_station_created_at = stations
+            .first()
+            .map(|station| *station.created_at)
+            .unwrap_or_else(OffsetDateTime::now_utc);
+
+          if start_date < first_station_created_at {
+            start_date = first_station_created_at.to_offset(start_date.offset());
+          }
+
+          if end_date < first_station_created_at {
+            end_date = first_station_created_at.to_offset(start_date.offset());
+          }
+
+          if end_date > now {
+            end_date = now.to_offset(end_date.offset());
+          }
+
+          if start_date > now {
+            start_date = now.to_offset(start_date.offset());
+          }
+
+          if start_date > end_date {
+            (start_date, end_date) = (end_date, start_date);
+          }
+
+          with_hours =
+            (end_date.unix_timestamp() - start_date.unix_timestamp()) < (60 * 60 * 24 * 32);
+
+          // let ser_start_date: serde_util::DateTime = start_date.into();
+          // let ser_end_date: serde_util::DateTime = end_date.into();
+
+          // and.push(doc! {
+          //   StreamConnectionLite::KEY_CREATED_AT: {
+          //     "$gte": ser_start_date,
+          //     "$lt": ser_end_date,
+          //   }
+          // });
+
+          start_end_date = Some((start_date, end_date));
+
+          offset_date = start_date;
         }
       }
 
-      let max_concurrent_listeners_date = if max_timestamp == 0 {
-        None
-      } else {
-        time::OffsetDateTime::from_unix_timestamp(max_timestamp as i64)
-          .ok()
-          .map(serde_util::DateTime::from)
+      if let Some(os) = query.os {
+        and.push(doc! { StreamConnectionLite::KEY_OS: os });
+      }
+
+      if let Some(browser) = query.browser {
+        and.push(doc! { StreamConnectionLite::KEY_BROWSER: browser });
+      }
+
+      if let Some(cc) = query.country_code {
+        and.push(doc! {
+          // this convertion should never fail
+          StreamConnectionLite::KEY_COUNTRY_CODE: mongodb::bson::to_bson(&cc).unwrap(),
+        });
+      }
+
+      if let Some(domain) = query.domain {
+        and.push(doc! { StreamConnectionLite::KEY_DOMAIN: domain });
+      }
+
+      if let Some(d) = query.min_duration_ms {
+        and.push(doc! {
+          "$or": [
+            { StreamConnectionLite::KEY_DURATION_MS: null },
+            { StreamConnectionLite::KEY_DURATION_MS: { "$gte": d as f64 } },
+          ]
+        });
+      }
+
+      // let (count, count_ms) = {
+      //   let start = Instant::now();
+      //   let filter = doc! { "$and": &and };
+      //   let count = StreamConnectionLite::cl()
+      //     .count_documents(filter, None)
+      //     .await?;
+
+      //   let ms = start.elapsed().as_millis();
+      //   (count, ms)
+      // };
+
+      // let filter = doc!{ "$and": and };
+      // let mut cursor = StreamConnectionLite::cl().find(filter, options).await?;
+
+      let mut first_last_and = and.clone();
+      if let Some((start_date, end_date)) = start_end_date {
+        let start_date: DateTime = start_date.into();
+        let end_date: DateTime = end_date.into();
+        first_last_and.push(
+          doc! { StreamConnectionLite::KEY_CREATED_AT: { "$gte": start_date, "$lt": end_date } },
+        );
+      }
+
+      let first = async {
+        let filter = doc! { "$and": &first_last_and };
+        let sort = doc! { StreamConnectionLite::KEY_CREATED_AT: 1 };
+        let options = mongodb::options::FindOneOptions::builder()
+          .sort(sort)
+          .build();
+        let item_option = StreamConnectionLite::cl().find_one(filter, options).await?;
+        Ok::<_, mongodb::error::Error>(item_option)
       };
 
-      (max as u64, max_concurrent_listeners_date)
-    }};
-  }
+      let last = async {
+        let filter = doc! { "$and": &first_last_and };
+        let sort = doc! { StreamConnectionLite::KEY_CREATED_AT: -1 };
+        let options = mongodb::options::FindOneOptions::builder()
+          .sort(sort)
+          .build();
+        let item_option = StreamConnectionLite::cl().find_one(filter, options).await?;
+        Ok::<_, mongodb::error::Error>(item_option)
+      };
 
-  macro_rules! collect {
-    ($acc:ident) => {
-      $acc
-        .into_iter()
-        .map(|(key, value)| {
-          #[cfg(feature = "analytics-max-concurrent")]
-          let (max_concurrent_listeners, max_concurrent_listeners_date) =
-            max_concurrent!(value.start_stop_events);
+      let (first, last) = tokio::try_join!(first, last)?;
+      let (first, last) = match (first, last) {
+        (Some(first), Some(last)) => (first, last),
+        _ => {
+          return Ok(Analytics {
+            is_now,
+            kind,
+            stations,
+            since: offset_date,
+            until: offset_date,
+            utc_offset_minutes: offset_date.offset().whole_minutes(),
+            sessions: 0,
+            ips: 0,
+            total_duration_ms: 0,
+            total_transfer_bytes: 0,
+            #[cfg(feature = "analytics-max-concurrent")]
+            max_concurrent_listeners: 0,
+            #[cfg(feature = "analytics-max-concurrent")]
+            max_concurrent_listeners_date: None,
+            by_day: vec![],
+            by_hour: None,
+            by_browser: vec![],
+            by_os: vec![],
+            by_country: vec![],
+            by_station: vec![],
+            by_domain: vec![],
+          })
+        }
+      };
 
-          AnalyticsItem::<_> {
-            key,
-            sessions: value.sessions,
-            ips: value.ips.len() as u64,
-            total_duration_ms: value.total_duration_ms,
-            total_transfer_bytes: value.total_transfer_bytes,
-            #[cfg(feature = "analytics-max-concurrent")]
-            max_concurrent_listeners,
-            #[cfg(feature = "analytics-max-concurrent")]
-            max_concurrent_listeners_date,
+      let first_ts = first.created_at;
+      let last_ts = last.created_at;
+
+      let accumulate_start = Instant::now();
+
+      let batches_n = if is_now { 1 } else { 16 };
+      let batch = {
+        futures_util::stream::repeat(())
+          .take(batches_n)
+          .enumerate()
+          .map(|(i, ())| {
+            let mut and = and.clone();
+            async move {
+              tokio::task::spawn_blocking(move || {
+                tokio::runtime::Handle::current().block_on(async move {
+                  if !is_now {
+                    let start_ms = first_ts.unix_timestamp_nanos() as u64 / 1_000_000;
+                    let end_ms = last_ts.unix_timestamp_nanos() as u64 / 1_000_000;
+                    let step = (end_ms - start_ms) / batches_n as u64;
+                    let step = time::Duration::milliseconds(step as i64);
+
+                    let start: DateTime = (*first_ts + step * i as u16).into();
+                    let end: DateTime = (*start + step).into();
+
+                    let is_last = i == (batches_n - 1);
+
+                    let lt = if is_last { "$lte" } else { "$lt" };
+
+                    and.push(
+                      doc! { StreamConnectionLite::KEY_CREATED_AT: { "$gte": start, lt: end } },
+                    );
+                  }
+
+                  let sort = doc! { StreamConnectionLite::KEY_CREATED_AT: 1 };
+
+                  // let options = mongodb::options::AggregateOptions::builder().build();
+
+                  // let pipeline = vec![
+                  //   doc! { "$match": { "$and": and } },
+                  //   //doc! { "$sample": { "size": 100_000 } },
+                  //   doc! { "$sort": sort },
+                  // ];
+
+                  // let mut cursor = StreamConnectionLite::cl()
+                  // .find(pipeline, options)
+                  // .await?
+                  // .with_type::<StreamConnectionLite>();
+
+                  let options = mongodb::options::FindOptions::builder().sort(sort).build();
+
+                  let filter = doc! { "$and": and };
+                  let mut cursor = StreamConnectionLite::cl().find(filter, options).await?;
+
+                  let mut batch = Batch::new(offset_date.offset());
+
+                  // accumulate
+                  #[cfg(feature = "test-analytics-base-measure")]
+                  while let Some(_conn) = cursor.try_next().await? {
+                    batch.sessions += 1;
+                  }
+
+                  #[cfg(not(feature = "test-analytics-base-measure"))]
+                  while let Some(conn) = cursor.try_next().await? {
+                    batch.add(conn);
+                  }
+
+                  Ok::<_, mongodb::error::Error>(batch)
+                })
+              })
+              .await
+              .unwrap()
+            }
+          })
+          .buffer_unordered(batches_n)
+          .try_fold(Batch::new(offset_date.offset()), |src, mut dst| async {
+            dst.merge(src);
+            Ok(dst)
+          })
+          .await?
+      };
+
+      let accumulate_ms = accumulate_start.elapsed().as_millis();
+      let sort_start = Instant::now();
+
+      #[cfg(feature = "analytics-max-concurrent")]
+      macro_rules! max_concurrent {
+        ($vec:expr) => {{
+          let mut vec = $vec;
+          vec.sort_unstable_by(|a, b| a.0.cmp(&b.0));
+
+          let mut max: u32 = 0;
+          let mut max_timestamp: u32 = 0;
+          let mut current: u32 = 0;
+          for (timestamp, start) in vec.into_iter() {
+            if start {
+              current = current.saturating_add(1);
+              if current > max {
+                max = current;
+                max_timestamp = timestamp
+              }
+            } else {
+              current = current.saturating_sub(1);
+            }
           }
-        })
-        .collect::<Vec<_>>()
-    };
-  }
 
-  // collect
-  // let mut by_month = collect!(months_accumulator);
-  let mut by_day = collect!(days_accumulator);
-  let mut by_hour = collect!(hours_accumulator);
-  let mut by_browser = collect!(browser_accumulator);
-  let mut by_os = collect!(os_accumulator);
-  let mut by_country = collect!(country_accumulator);
-  let mut by_station = collect!(station_accumulator);
-  let mut by_domain = collect!(domain_accumulator);
+          let max_concurrent_listeners_date = if max_timestamp == 0 {
+            None
+          } else {
+            time::OffsetDateTime::from_unix_timestamp(max_timestamp as i64)
+              .ok()
+              .map(serde_util::DateTime::from)
+          };
 
-  // sort
-  macro_rules! sort_by_key {
-    ($ident:ident) => {
-      $ident.sort_by(|a, b| a.key.cmp(&b.key));
-    };
-  }
+          (max as u64, max_concurrent_listeners_date)
+        }};
+      }
 
-  macro_rules! sort_by_sessions {
-    ($ident:ident) => {
-      $ident.sort_by(|a, b| b.sessions.cmp(&a.sessions));
-    };
-  }
+      macro_rules! collect {
+        ($acc:expr) => {
+          $acc
+            .into_iter()
+            .map(|(key, value)| {
+              #[cfg(feature = "analytics-max-concurrent")]
+              let (max_concurrent_listeners, max_concurrent_listeners_date) =
+                max_concurrent!(value.start_stop_events);
 
-  // sort_by_key!(by_month);
-  sort_by_key!(by_day);
-  sort_by_key!(by_hour);
+              AnalyticsItem::<_> {
+                key,
+                sessions: value.sessions,
+                ips: value.ips.len() as u64,
+                total_duration_ms: value.total_duration_ms,
+                total_transfer_bytes: value.total_transfer_bytes,
+                #[cfg(feature = "analytics-max-concurrent")]
+                max_concurrent_listeners,
+                #[cfg(feature = "analytics-max-concurrent")]
+                max_concurrent_listeners_date,
+              }
+            })
+            .collect::<Vec<_>>()
+        };
+      }
 
-  sort_by_sessions!(by_browser);
-  sort_by_sessions!(by_os);
-  sort_by_sessions!(by_country);
-  sort_by_sessions!(by_station);
-  sort_by_sessions!(by_domain);
+      // collect
+      // let mut by_month = collect!(months_accumulator);
+      let mut by_day = collect!(batch.by_day);
+      let mut by_hour = collect!(batch.by_hour);
+      let mut by_browser = collect!(batch.by_browser);
+      let mut by_os = collect!(batch.by_os);
+      let mut by_country = collect!(batch.by_country);
+      let mut by_station = collect!(batch.by_station);
+      let mut by_domain = collect!(batch.by_domain);
 
-  #[cfg(feature = "analytics-max-concurrent")]
-  let (max_concurrent_listeners, max_concurrent_listeners_date) =
-    max_concurrent!(start_stop_events);
+      // sort
+      macro_rules! sort_by_key {
+        ($ident:ident) => {
+          $ident.sort_by(|a, b| a.key.cmp(&b.key));
+        };
+      }
 
-  let sort_ms = sort_start.elapsed().as_millis();
+      macro_rules! sort_by_sessions {
+        ($ident:ident) => {
+          $ident.sort_by(|a, b| b.sessions.cmp(&a.sessions));
+        };
+      }
 
-  let since = since.unwrap_or(offset_date);
-  let until = until.unwrap_or(offset_date);
+      // sort_by_key!(by_month);
+      sort_by_key!(by_day);
+      sort_by_key!(by_hour);
 
-  log::info!(
-    target: "analytics",
-    "got analytics, processed {} connections in {}ms => {}ms acculumate | {}ms sort",
-    sessions,
-    start.elapsed().as_millis(),
-    accumulate_ms,
-    sort_ms,
-  );
+      sort_by_sessions!(by_browser);
+      sort_by_sessions!(by_os);
+      sort_by_sessions!(by_country);
+      sort_by_sessions!(by_station);
+      sort_by_sessions!(by_domain);
 
-  let by_hour = if with_hours { Some(by_hour) } else { None };
+      #[cfg(feature = "analytics-max-concurrent")]
+      let (max_concurrent_listeners, max_concurrent_listeners_date) =
+        max_concurrent!(batch.start_stop_events);
 
-  // render
-  let out = Analytics {
-    is_now,
-    kind,
-    since,
-    until,
-    utc_offset_minutes: offset_date.offset().whole_minutes(),
-    sessions,
-    total_duration_ms,
-    total_transfer_bytes,
-    ips: ips.len() as u64,
-    #[cfg(feature = "analytics-max-concurrent")]
-    max_concurrent_listeners,
-    #[cfg(feature = "analytics-max-concurrent")]
-    max_concurrent_listeners_date,
-    stations,
-    by_day,
-    by_hour,
-    by_browser,
-    by_country,
-    by_os,
-    by_station,
-    by_domain,
-  };
+      let sort_ms = sort_start.elapsed().as_millis();
 
-  Ok(out)
+      let since = first_ts.to_offset(offset_date.offset());
+      let until = last_ts.to_offset(offset_date.offset());
+
+      log::info!(
+        target: "analytics",
+        "got analytics, processed {} connections in {}ms => {}ms acculumate, {}ms sort",
+        batch.sessions,
+        start.elapsed().as_millis(),
+        accumulate_ms,
+        sort_ms,
+      );
+
+      let by_hour = if with_hours { Some(by_hour) } else { None };
+
+      // render
+      let out = Analytics {
+        is_now,
+        kind,
+        since,
+        until,
+        utc_offset_minutes: offset_date.offset().whole_minutes(),
+        sessions: batch.sessions,
+        total_duration_ms: batch.total_duration_ms,
+        total_transfer_bytes: batch.total_transfer_bytes,
+        ips: batch.ips.len() as u64,
+        #[cfg(feature = "analytics-max-concurrent")]
+        max_concurrent_listeners,
+        #[cfg(feature = "analytics-max-concurrent")]
+        max_concurrent_listeners_date,
+        stations,
+        by_day,
+        by_hour,
+        by_browser,
+        by_country,
+        by_os,
+        by_station,
+        by_domain,
+      };
+
+      Ok(out)
+    })
+  })
+  .await
+  .unwrap()
 }
 
 #[cfg(test)]
