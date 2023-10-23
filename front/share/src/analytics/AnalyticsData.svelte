@@ -190,7 +190,6 @@
       },
       // events: {
       //   beforeZoom: (...args) => {
-      //     console.log("beforeZoom", ...args);
       //     return undefined;
       //     const start_date = days_data.dates[0];
       //     const end_date = days_data.dates[days_data.dates.length - 1];
@@ -356,7 +355,6 @@
       },
       // events: {
       //   beforeZoom: (...args) => {
-      //     console.log("beforeZoom", ...args);
       //     return undefined;
       //     const start_date = days_data.dates[0];
       //     const end_date = days_data.dates[days_data.dates.length - 1];
@@ -391,12 +389,7 @@
     },
     xaxis: {
       type: "datetime",
-      categories: (() => {
-        const temp = hours_data.dates.map(date => formatISO(date))
-        console.log("hours_categories", temp);
-        return temp;
-      })(),
-      
+      categories: () => hours_data.dates.map(date => formatISO(date)),
       labels: {
         formatter: (v) => {
           return new Date(v).toLocaleDateString(lang, {

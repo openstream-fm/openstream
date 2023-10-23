@@ -29,7 +29,7 @@ export const DEPLOYMENT_HEALTH_CHECK_INTERVAL_SECS = 1;
 
 export const DEPLOYMENT_HEALTH_CHECK_SHUTDOWN_DELAY_SECS = 240;
 
-export const DEPLOYMENT_HEALTH_CHECK_SHUTDOWN_INTERVAL_SECS = 30;
+export const DEPLOYMENT_HEALTH_CHECK_SHUTDOWN_INTERVAL_SECS = 10;
 
 /** time in seconds for which an email verification code is valid */
 export const EMAIL_VERIFICATION_CODE_LEN = 6;

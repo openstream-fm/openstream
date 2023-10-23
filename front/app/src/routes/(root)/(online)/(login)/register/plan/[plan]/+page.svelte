@@ -68,7 +68,6 @@
 		try {
 			try {
 				const payment_result = await dropin.requestPaymentMethod();
-				// console.log('payment result', payment_result);
 				if (typeof payment_result?.nonce !== 'string') {
 					throw new Error('Payment internal error: invalid response');
 				} else {
