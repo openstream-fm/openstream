@@ -389,7 +389,7 @@
     },
     xaxis: {
       type: "datetime",
-      categories: () => hours_data.dates.map(date => formatISO(date)),
+      categories: hours_data.dates.map(date => formatISO(date)),
       labels: {
         formatter: (v) => {
           return new Date(v).toLocaleDateString(lang, {
