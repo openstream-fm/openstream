@@ -62,7 +62,7 @@ pub const EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS: u64 = 30;
 
 /// delay of which if external doesn't produce first data chunk, it will be cancelled
 #[const_register]
-pub const EXTERNAL_RELAY_NO_DATA_START_SHUTDOWN_SECS: u64 = 30;
+pub const EXTERNAL_RELAY_NO_DATA_START_SHUTDOWN_SECS: u64 = 90;
 
 /// limit of authotization, or other sensible api endpoints requests from the same ip
 #[const_register]
