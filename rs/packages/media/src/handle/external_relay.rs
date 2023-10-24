@@ -258,7 +258,7 @@ pub fn run_external_relay_source(
           Err(e) => {
             warn!(
               target: "media",
-              "external-releay session {station_id}: ffmpeg exit non-zero: exit={exit} stderr_error={e}"
+              "external-relay session {station_id}: ffmpeg exit non-zero: exit={exit} stderr_error={e}"
             );
             Err(ExternalRelayError::StderrError(e))
             // format!("internal error allocating stream converter (stderr 1)")
@@ -272,7 +272,7 @@ pub fn run_external_relay_source(
             } else {
               warn!(
                 target: "media",
-                "external-releay session for station {station_id}: ffmpeg exit non-zero: exit={exit} stderr={stderr}"
+                "external-relay session for station {station_id}: ffmpeg exit non-zero: exit={exit} stderr={stderr}"
               );
               Err(ExternalRelayError::ExitNotOk { stderr })
             }

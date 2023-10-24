@@ -33,10 +33,6 @@ mod error;
 pub mod transfer_map;
 
 #[allow(clippy::declare_interior_mutable_const)]
-const X_OPENSTREAM_REJECTION_CODE: HeaderName =
-  HeaderName::from_static("x-openstream-rejection-code");
-
-#[allow(clippy::declare_interior_mutable_const)]
 const CONTENT_TYPE_MPEG: HeaderValue = HeaderValue::from_static("audio/mpeg");
 
 #[allow(clippy::declare_interior_mutable_const)]
@@ -355,32 +351,31 @@ impl StreamHandler {
 
     let station_id = req.param("id").unwrap().to_string();
 
-    let ip = req.isomorphic_ip();
-
-    // we do not trace ip counts from internal net or loopback ips (not global)
-
-    let _ip_count = match ip_rfc::global(&ip) {
-      false => 0,
-      true => match ip_counter.increment_with_limit(ip, constants::STREAM_IP_CONNECTIONS_LIMIT) {
-        Some(n) => n,
-        None => return Err(StreamError::TooManyOpenIpConnections),
-      },
-    };
-
-    let ip_decrementer = {
-      defer::defer(move || {
-        ip_counter.decrement(ip);
-      })
-    };
-
-    let station = match Station::get_by_id(&station_id).await? {
-      Some(station) => station,
-      None => return Err(StreamError::StationNotFound(station_id.to_string())),
-    };
-
-    // TODO: check account limits
-
     tokio::spawn(async move {
+      let ip = req.isomorphic_ip();
+
+      // we do not trace ip counts from internal net or loopback ips (not global)
+
+      let _ip_count = match ip_rfc::global(&ip) {
+        false => 0,
+        true => match ip_counter.increment_with_limit(ip, constants::STREAM_IP_CONNECTIONS_LIMIT) {
+          Some(n) => n,
+          None => return Err(StreamError::TooManyOpenIpConnections),
+        },
+      };
+
+      let ip_decrementer = {
+        defer::defer(move || {
+          ip_counter.decrement(ip);
+        })
+      };
+
+      let station = match Station::get_by_id(&station_id).await? {
+        Some(station) => station,
+        None => return Err(StreamError::StationNotFound(station_id.to_string())),
+      };
+
+      // TODO: check account limits
       let rx = media_sessions.subscribe(&station.id).await?;
       let content_type = rx.content_type().to_string();
 
@@ -726,12 +721,12 @@ impl From<StreamError> for Response {
             None,
           ),
 
-          GetInternalRelayError::RelayStatus(s) => {
+          GetInternalRelayError::RelayStatus(s, code) => {
             let status = s.as_u16();
             (
               StatusCode::SERVICE_UNAVAILABLE,
               "RELAY_STATUS",
-              format!("relay server responded with not ok status code ({status})"),
+              format!("relay server responded with not ok status code: {status} => {code:?}"),
               Some(60u32),
             )
           }
@@ -743,9 +738,10 @@ impl From<StreamError> for Response {
 
     res.headers_mut().append(CONTENT_TYPE, TEXT_PLAIN_UTF8);
 
-    res
-      .headers_mut()
-      .append(X_OPENSTREAM_REJECTION_CODE, HeaderValue::from_static(code));
+    res.headers_mut().append(
+      HeaderName::from_static(constants::INTERNAL_RELAY_REJECTION_CODE_HEADER),
+      HeaderValue::from_static(code),
+    );
 
     if let Some(secs) = retry_after_secs {
       res.headers_mut().append(
