@@ -189,8 +189,8 @@ impl AccumulatorItem {
 struct StartStopEvent(u32);
 
 impl StartStopEvent {
-  const START: u32 = 0b1111_1111_1111_1111_1111_1111_1111_1110;
-  const STOP: u32 = 0b0000_0000_0000_0000_0000_0000_0000_0001;
+  const START: u32 = 0b_1111_1111_1111_1111_1111_1111_1111_1110;
+  const STOP: u32 = 0b_0000_0000_0000_0000_0000_0000_0000_0001;
 
   #[inline(always)]
   pub fn new(timestamp: u32, start_stop: bool) -> Self {
@@ -205,7 +205,7 @@ impl StartStopEvent {
 
   #[inline(always)]
   pub fn is_start(self) -> bool {
-    self.0 & 1 != 0
+    self.0 & 1 == 0
   }
 }
 
