@@ -163,7 +163,7 @@ struct AccumulatorItem {
   total_duration_ms: u64,
   total_transfer_bytes: u64,
   #[cfg(feature = "analytics-max-concurrent")]
-  start_stop_events: Vec<(u32, bool)>,
+  start_stop_events: Vec<StartStopEvent>,
 }
 
 impl AccumulatorItem {
@@ -182,6 +182,30 @@ impl AccumulatorItem {
 
     #[cfg(feature = "analytics-max-concurrent")]
     self.start_stop_events.extend(dst.start_stop_events);
+  }
+}
+
+#[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq, Hash)]
+struct StartStopEvent(u32);
+
+impl StartStopEvent {
+  const START: u32 = 0b1111_1111_1111_1111_1111_1111_1111_1110;
+  const STOP: u32 = 0b0000_0000_0000_0000_0000_0000_0000_0001;
+
+  #[inline(always)]
+  pub fn new(timestamp: u32, start_stop: bool) -> Self {
+    let v = if start_stop {
+      timestamp & Self::START
+    } else {
+      timestamp | Self::STOP
+    };
+
+    Self(v)
+  }
+
+  #[inline(always)]
+  pub fn is_start(self) -> bool {
+    self.0 & 1 != 0
   }
 }
 
@@ -219,7 +243,7 @@ struct Batch {
   pub by_station: KeyedAccumulatorMap<String>,
   pub by_domain: KeyedAccumulatorMap<Option<String>>,
   #[cfg(feature = "analytics-max-concurrent")]
-  pub start_stop_events: Vec<(u32, bool)>,
+  pub start_stop_events: Vec<StartStopEvent>,
 }
 
 impl Batch {
@@ -268,15 +292,18 @@ impl Batch {
     self.ips.insert(conn.ip);
 
     #[cfg(feature = "analytics-max-concurrent")]
-    let start = conn.created_at.unix_timestamp() as u32;
+    let start_s = conn.created_at.unix_timestamp() as u32;
+
     #[cfg(feature = "analytics-max-concurrent")]
-    self.start_stop_events.push((start, true));
+    let start = StartStopEvent::new(start_s, true);
     #[cfg(feature = "analytics-max-concurrent")]
-    let stop = start + (conn_duration_ms / 1000) as u32;
+    self.start_stop_events.push(start);
+    #[cfg(feature = "analytics-max-concurrent")]
+    let stop = StartStopEvent::new(start_s + (conn_duration_ms / 1000) as u32, false);
 
     if !conn.is_open {
       #[cfg(feature = "analytics-max-concurrent")]
-      self.start_stop_events.push((stop, false));
+      self.start_stop_events.push(stop);
     }
 
     macro_rules! add {
@@ -288,11 +315,11 @@ impl Batch {
         item.total_transfer_bytes += conn_transfer_bytes;
 
         #[cfg(feature = "analytics-max-concurrent")]
-        item.start_stop_events.push((start, true));
+        item.start_stop_events.push(start);
 
         #[cfg(feature = "analytics-max-concurrent")]
         if !conn.is_open {
-          item.start_stop_events.push((stop, false));
+          item.start_stop_events.push(stop);
         }
       };
     }
@@ -639,17 +666,18 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
 
           let mut vec = $vec;
           //vec.sort_unstable_by(|a, b| a.0.cmp(&b.0));
-          vec.par_sort_unstable_by(|a, b| a.0.cmp(&b.0).then(b.1.cmp(&a.1)));
+          //vec.par_sort_unstable_by(|a, b| a.0.cmp(&b.0).then(b.1.cmp(&a.1)));
+          vec.par_sort_unstable();
 
           let mut max: u32 = 0;
           let mut max_timestamp: u32 = 0;
           let mut current: u32 = 0;
-          for (timestamp, start) in vec.into_iter() {
-            if start {
+          for event in vec.into_iter() {
+            if event.is_start() {
               current = current.saturating_add(1);
               if current > max {
                 max = current;
-                max_timestamp = timestamp
+                max_timestamp = event.0
               }
             } else {
               current = current.saturating_sub(1);
