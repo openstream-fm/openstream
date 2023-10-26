@@ -5,6 +5,7 @@ edition = "2021"
 
 [features]
 default = ["analytics-max-concurrent"]
+# default = []
 analytics-max-concurrent = []
 
 # do not enable this, is for internal benchmarking only

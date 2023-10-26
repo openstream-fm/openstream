@@ -451,20 +451,30 @@ impl StreamHandler {
 
               loop_i += 1;
 
+              let mut last_recv = Instant::now();
+
               'recv: loop {
                 let r = rx.recv().await;
 
                 match r {
-                  // if lagged we ignore the error and continue with the oldest message buffered in the channel
-                  // TODO: maybe we should advance to the newest message with stream.resubscribe()
-                  Err(RecvError::Lagged(_)) => continue 'recv,
-
                   // Here the channel has been dropped
                   Err(RecvError::Closed) => break 'recv,
+
+                  // if lagged we ignore the error and continue with the oldest message buffered in the channel
+                  // TODO: maybe we should advance to the newest message with stream.resubscribe()
+                  Err(RecvError::Lagged(_)) => {
+                    // break this receiver if lagged behind more than 1 minute
+                    if last_recv.elapsed().as_millis() > 60_000 {
+                      return Ok(());
+                    }
+
+                    continue 'recv;
+                  }
 
                   // Receive bytes and pass it to response body
                   Ok(bytes) => {
                     rx_had_data = true;
+                    last_recv = Instant::now();
 
                     let len = bytes.len();
                     match body_sender.send_data(bytes).await {
