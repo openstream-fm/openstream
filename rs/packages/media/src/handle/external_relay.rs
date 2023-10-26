@@ -167,6 +167,8 @@ pub fn run_external_relay_source(
               None => break,
               Some(Err(_e)) => break,
               Some(Ok(bytes)) => {
+                transfer.fetch_add(bytes.len(), Ordering::Relaxed);
+
                 match sender.send(bytes) {
                   Ok(_) => {
                     no_listeners_since = None;
