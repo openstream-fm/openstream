@@ -31,8 +31,8 @@ pub enum GetInternalRelayError {
   SendRequest(hyper::Error),
   #[error("relay timeout")]
   RelayTimeout,
-  #[error("relay status: {0:?}")]
-  RelayStatus(StatusCode),
+  #[error("relay status: {0:?} => {1:?}")]
+  RelayStatus(StatusCode, Option<String>),
 }
 
 pub async fn get_internal_relay_source(
@@ -97,7 +97,14 @@ pub async fn get_internal_relay_source(
     };
 
     if !hyper_res.status().is_success() {
-      return Err(GetInternalRelayError::RelayStatus(hyper_res.status()));
+      let status = hyper_res.status();
+      let code = hyper_res
+        .headers()
+        .get(constants::INTERNAL_RELAY_REJECTION_CODE_HEADER)
+        .and_then(|v| v.to_str().ok())
+        .map(ToString::to_string);
+
+      return Err(GetInternalRelayError::RelayStatus(status, code));
     }
 
     let relay_session_doc = {

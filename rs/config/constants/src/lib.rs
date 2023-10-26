@@ -111,6 +111,10 @@ pub const REAL_IP_HEADER: &str = "x-real-ip";
 #[const_register]
 pub const PAYMENTS_ACCESS_TOKEN_HEADER: &str = "x-access-token";
 
+/// Internal relay rejection code header
+#[const_register]
+pub const INTERNAL_RELAY_REJECTION_CODE_HEADER: &str = "x-openstream-rejection-code";
+
 /// we need to update this value after making code changes to the station pictures logic or sizes
 /// changing to this value will make startup check and recreation of outdated images
 /// and invalidation of service workers station pictures caches
