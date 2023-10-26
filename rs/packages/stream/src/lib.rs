@@ -27,6 +27,7 @@ use std::net::SocketAddr;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::{Instant, SystemTime};
+use tokio::time::{sleep, Duration};
 use transfer_map::TransferTracer;
 
 mod error;
@@ -454,9 +455,7 @@ impl StreamHandler {
               let mut last_recv = Instant::now();
 
               'recv: loop {
-                let r = rx.recv().await;
-
-                match r {
+                match rx.recv().await {
                   // Here the channel has been dropped
                   Err(RecvError::Closed) => break 'recv,
 
@@ -465,7 +464,7 @@ impl StreamHandler {
                   Err(RecvError::Lagged(_)) => {
                     // break this receiver if lagged behind more than 1 minute
                     if last_recv.elapsed().as_millis() > 60_000 {
-                      return Ok(());
+                      break 'root;
                     }
 
                     continue 'recv;
@@ -477,7 +476,13 @@ impl StreamHandler {
                     last_recv = Instant::now();
 
                     let len = bytes.len();
-                    match body_sender.send_data(bytes).await {
+
+                    let r = tokio::select! {
+                      _ = sleep(Duration::from_millis(60_000)) => break 'root,
+                      r = body_sender.send_data(bytes) => r,
+                    };
+
+                    match r {
                       Err(_) => break 'root,
                       Ok(()) => {
                         transfer_map.increment(&station.account_id, len);
