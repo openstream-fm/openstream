@@ -515,9 +515,13 @@ impl StreamHandler {
           };
 
           let signal = shutdown.signal();
+          let max_time_timer = tokio::time::sleep(Duration::from_secs(
+            constants::STREAM_CONNECTION_MAX_DURATION_SECS,
+          ));
 
           tokio::select! {
             _ = signal => {},
+            _ = max_time_timer => {},
             _ = task => {},
           };
         }
