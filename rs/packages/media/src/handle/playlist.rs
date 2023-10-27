@@ -317,7 +317,10 @@ pub fn run_playlist_source(
 
       let r = tokio::select! {
         r = handle => r,
-        _ = health_handle => unreachable!()
+        r = health_handle => match r {
+          Ok(never) => match never {},
+          Err(e) => return Err(e),
+        }
       };
 
       drop(dropper);
