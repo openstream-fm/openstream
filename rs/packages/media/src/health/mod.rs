@@ -65,7 +65,7 @@ pub async fn run_health_check_interval_for_station_and_media_session(
   station_id: &str,
   media_session_id: &str,
   task_id: &str,
-) {
+) -> Result<std::convert::Infallible, mongodb::error::Error> {
   let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(
     constants::MEDIA_SESSION_HEALTH_CHECK_INTERVAL_SECS as u64,
   ));
@@ -88,24 +88,33 @@ pub async fn run_health_check_interval_for_station_and_media_session(
       let filter = doc! { Station::KEY_ID: station_id, KEY_TASK_ID: task_id };
       let update = doc! { "$set": { KEY_HEALTH_CHECKED_AT: now } };
 
-      match Station::cl().update_one(filter, update, None).await {
-        Ok(_) => continue,
+      match tokio::spawn(async move { Station::cl().update_one(filter, update, None).await })
+        .await
+        .unwrap()
+      {
+        Ok(_) => {}
         Err(e) => {
           log::error!(
-              target: "media-session-health",
-              "error updating station {}: {} => {}",
-              station_id,
-              e,
-              e,
-          )
+            target: "media-session-health",
+            "error updating station {}: {} => {}",
+            station_id,
+            e,
+            e,
+          );
+
+          return Err(e);
         }
-      };
+      }
     }
 
     {
       let update = doc! { "$set": { MediaSession::KEY_HEALTH_CHECKED_AT: now } };
-      match MediaSession::update_by_id(media_session_id, update).await {
-        Ok(_) => continue,
+      let id = media_session_id.to_string();
+      match tokio::spawn(async move { MediaSession::update_by_id(&id, update).await })
+        .await
+        .unwrap()
+      {
+        Ok(_) => {}
         Err(e) => {
           log::error!(
               target: "media-session-health",
@@ -113,7 +122,9 @@ pub async fn run_health_check_interval_for_station_and_media_session(
               media_session_id,
               e,
               e,
-          )
+          );
+
+          return Err(e);
         }
       };
     }

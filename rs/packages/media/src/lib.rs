@@ -347,7 +347,9 @@ impl MediaSessionMap {
                       drop_tracer,
                       shutdown,
                     )
-                    .await;
+                    .await
+                    .unwrap();
+
                     drop(owner_deployment_dropper);
                     drop(map_entry_release);
                   });

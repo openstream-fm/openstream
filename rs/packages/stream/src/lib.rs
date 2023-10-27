@@ -357,10 +357,10 @@ impl StreamHandler {
 
       // we do not trace ip counts from internal net or loopback ips (not global)
 
-      let _ip_count = match ip_rfc::global(&ip) {
-        false => 0,
+      match ip_rfc::global(&ip) {
+        false => {}
         true => match ip_counter.increment_with_limit(ip, constants::STREAM_IP_CONNECTIONS_LIMIT) {
-          Some(n) => n,
+          Some(_) => {}
           None => return Err(StreamError::TooManyOpenIpConnections),
         },
       };
@@ -437,8 +437,6 @@ impl StreamHandler {
         let connection_id = conn_doc.id.clone();
 
         async move {
-          let signal = shutdown.signal();
-
           let task = async {
             info!("START stream_connection {connection_id} for station {station_id}");
 
@@ -455,7 +453,12 @@ impl StreamHandler {
               let mut last_recv = Instant::now();
 
               'recv: loop {
-                match rx.recv().await {
+                let r = tokio::select! {
+                  r = rx.recv() => r,
+                  _ = sleep(Duration::from_millis(100_000)) => break 'root,
+                };
+
+                match r {
                   // Here the channel has been dropped
                   Err(RecvError::Closed) => break 'recv,
 
@@ -463,7 +466,7 @@ impl StreamHandler {
                   // TODO: maybe we should advance to the newest message with stream.resubscribe()
                   Err(RecvError::Lagged(_)) => {
                     // break this receiver if lagged behind more than 1 minute
-                    if last_recv.elapsed().as_millis() > 60_000 {
+                    if last_recv.elapsed().as_millis() > 100_000 {
                       break 'root;
                     }
 
@@ -478,7 +481,7 @@ impl StreamHandler {
                     let len = bytes.len();
 
                     let r = tokio::select! {
-                      _ = sleep(Duration::from_millis(60_000)) => break 'root,
+                      _ = sleep(Duration::from_millis(100_000)) => break 'root,
                       r = body_sender.send_data(bytes) => r,
                     };
 
@@ -486,7 +489,7 @@ impl StreamHandler {
                       Err(_) => break 'root,
                       Ok(()) => {
                         transfer_map.increment(&station.account_id, len);
-                        transfer_bytes.fetch_add(len as u64, Ordering::SeqCst);
+                        transfer_bytes.fetch_add(len as u64, Ordering::Relaxed);
                       }
                     };
                   }
@@ -510,6 +513,8 @@ impl StreamHandler {
 
             Ok::<(), StreamError>(())
           };
+
+          let signal = shutdown.signal();
 
           tokio::select! {
             _ = signal => {},

@@ -1,5 +1,5 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use db::media_session::MediaSession;
 use db::{media_session::MediaSessionState, Model};
@@ -33,8 +33,6 @@ pub fn run_external_relay_source(
   shutdown: Shutdown,
 ) -> JoinHandle<Result<(), ExternalRelayError>> {
   tokio::spawn(async move {
-    let signal = shutdown.signal();
-
     let media_session_id = MediaSession::uid();
     let document = {
       use db::media_session::*;
@@ -118,54 +116,45 @@ pub fn run_external_relay_source(
 
         async move {
           use stream_util::*;
+          use tokio::time::sleep;
 
           let mut chunks = stdout.into_bytes_stream(STREAM_CHUNK_SIZE);
 
           let mut no_listeners_since: Option<Instant> = None;
 
-          async fn chunk_timeout(first_chunk: bool) {
-            if first_chunk {
-              tokio::time::sleep(tokio::time::Duration::from_secs(
-                EXTERNAL_RELAY_NO_DATA_START_SHUTDOWN_SECS,
-              ))
-              .await
+          let mut is_first_chunk = true;
+
+          'chunks: loop {
+            let timeout_secs: u64;
+            let start_str: &str;
+
+            if is_first_chunk {
+              timeout_secs = EXTERNAL_RELAY_NO_DATA_START_SHUTDOWN_SECS;
+              start_str = " start ";
             } else {
-              tokio::time::sleep(tokio::time::Duration::from_secs(
-                EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS,
-              ))
-              .await
-            }
-          }
-
-          let mut first_chunk = true;
-
-          loop {
-            let chunk = tokio::select! {
-              _ = chunk_timeout(first_chunk) => {
-                if first_chunk {
-                  info!(
-                    target: "media",
-                    "shutting down external-relay for station {} (no data received in specified start window)",
-                    station_id
-                  );
-                } else {
-                  info!(
-                    target: "media",
-                    "shutting down external-relay for station {} (no data received in specified window)",
-                    station_id
-                  );
-                }
-                break;
-              },
-
-              chunk = chunks.next() => chunk
+              timeout_secs = EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS;
+              start_str = " ";
             };
 
-            first_chunk = false;
+            let chunk = tokio::select! {
+
+              chunk = chunks.next() => chunk,
+
+              _ = sleep(Duration::from_secs(timeout_secs)) => {
+                info!(
+                  target: "media",
+                  "shutting down external-relay for station {} (no data received in specified{start_str}window)",
+                  station_id
+                );
+                break 'chunks;
+              }
+            };
+
+            is_first_chunk = false;
 
             match chunk {
-              None => break,
-              Some(Err(_e)) => break,
+              None => break 'chunks,
+              Some(Err(_e)) => break 'chunks,
               Some(Ok(bytes)) => {
                 transfer.fetch_add(bytes.len(), Ordering::Relaxed);
 
@@ -184,19 +173,16 @@ pub fn run_external_relay_source(
                           "shutting down external-relay for station {} (no listeners shutdown delay elapsed)",
                           station_id
                         );
-                        break;
-                      } else {
-                        continue;
+                        break 'chunks;
                       }
                     }
 
                     None => {
                       no_listeners_since = Some(Instant::now());
-                      continue;
                     }
                   },
 
-                  Err(SendError::Terminated(_)) => break,
+                  Err(SendError::Terminated(_)) => break 'chunks,
                 };
               }
             }
@@ -215,8 +201,11 @@ pub fn run_external_relay_source(
       let join_fut = async { tokio::join!(status_handle, stdout_handle, stderr_handle) };
 
       let (status, _stdout, stderr) = tokio::select! {
-        tup = join_fut => tup,
-        _ = health_handle => unreachable!()
+        (status, stdout, stderr) = join_fut => (status, stdout, stderr),
+        r = health_handle => match r {
+          Ok(never) => match never {},
+          Err(e) => return Err(e.into()),
+        }
       };
 
       let exit = match status {
@@ -229,32 +218,11 @@ pub fn run_external_relay_source(
             e, e
           );
           return Err(ExternalRelayError::ExitIo(e));
-          // let mut headers = HeaderMap::with_capacity(1);
-          // headers.append(CONTENT_TYPE, HeaderValue::from_static("text/plain"));
-
-          // let body = Body::from("unexpected error allocating the stream converter (exit 1), please report this to the administrators");
-
-          // let mut res = Response::new(StatusCode::INTERNAL_SERVER_ERROR);
-          // *res.headers_mut() = headers;
-          // *res.body_mut() = body;
-
-          // return res;
         }
       };
 
-      drop(dropper);
-
-      // 224 is stdout broken pipe (that happens normally when the session is cancelled)
-      if exit.success() {
+      let r = if exit.success() {
         Ok(())
-
-        // let mut res = Response::new(StatusCode::OK);
-        // *res.body_mut() = Body::from("data streamed successfully");
-
-        // let mut headers = HeaderMap::with_capacity(1);
-        // headers.append(CONTENT_TYPE, HeaderValue::from_static("text/plain"));
-
-        // res
       } else {
         match stderr {
           Err(e) => {
@@ -280,8 +248,14 @@ pub fn run_external_relay_source(
             }
           }
         }
-      }
+      };
+
+      drop(dropper);
+
+      r
     };
+
+    let signal = shutdown.signal();
 
     tokio::select! {
       r = fut => r,

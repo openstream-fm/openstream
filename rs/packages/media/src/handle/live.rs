@@ -137,7 +137,10 @@ pub async fn run_live_source<E: std::error::Error + Send + Sync + 'static>(
 
   let result = tokio::select! {
     result = handle => result,
-    () = health_handle => unreachable!()
+    r = health_handle => match r {
+      Ok(never) => match never {},
+      Err(e) => return Err(e.into()),
+    }
   };
 
   drop(dropper);
