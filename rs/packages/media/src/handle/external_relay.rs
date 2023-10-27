@@ -1,3 +1,4 @@
+use std::process::ExitStatus;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
 
@@ -111,9 +112,8 @@ pub fn run_external_relay_source(
         Result::<Vec<u8>, std::io::Error>::Ok(data)
       };
 
-      let stdout_handle = {
+      let status_handle = {
         let station_id = station_id.clone();
-
         async move {
           use stream_util::*;
           use tokio::time::sleep;
@@ -170,9 +170,9 @@ pub fn run_external_relay_source(
                         > EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS
                       {
                         info!(
-                          "shutting down external-relay for station {} (no listeners shutdown delay elapsed)",
-                          station_id
-                        );
+                        "shutting down external-relay for station {} (no listeners shutdown delay elapsed)",
+                        station_id
+                      );
                         break 'chunks;
                       }
                     }
@@ -187,10 +187,14 @@ pub fn run_external_relay_source(
               }
             }
           }
+
+          child.kill().await?;
+
+          let exit = child.wait().await?;
+
+          Ok::<ExitStatus, std::io::Error>(exit)
         }
       };
-
-      let status_handle = async move { child.wait().await };
 
       let health_handle = crate::health::run_health_check_interval_for_station_and_media_session(
         &station_id,
@@ -198,10 +202,10 @@ pub fn run_external_relay_source(
         &task_id,
       );
 
-      let join_fut = async { tokio::join!(status_handle, stdout_handle, stderr_handle) };
+      let join_fut = async { tokio::join!(status_handle, stderr_handle) };
 
-      let (status, _stdout, stderr) = tokio::select! {
-        (status, stdout, stderr) = join_fut => (status, stdout, stderr),
+      let (status, stderr) = tokio::select! {
+        (status, stderr) = join_fut => (status, stderr),
         r = health_handle => match r {
           Ok(never) => match never {},
           Err(e) => return Err(e.into()),
@@ -257,10 +261,12 @@ pub fn run_external_relay_source(
 
     let signal = shutdown.signal();
 
-    tokio::select! {
+    let r = tokio::select! {
       r = fut => r,
       _ = signal => Ok(())
-    }
+    };
+
+    r
   })
 }
 

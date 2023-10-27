@@ -64,7 +64,7 @@ impl Sender {
       burst.push_back(bytes.clone()).unwrap();
     }
 
-    let n = self.sender.send(bytes)?;
+    let n: usize = self.sender.send(bytes)?;
 
     Ok(n)
   }
