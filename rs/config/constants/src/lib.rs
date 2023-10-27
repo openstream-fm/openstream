@@ -166,6 +166,10 @@ pub const MEDIA_RELAY_TIMEOUT_SECS: u64 = 35;
 #[const_register]
 pub const MEDIA_LOCK_TIMEOUT_SECS: u64 = 30;
 
+/// open connections that last more than this time in seconds will be terminated
+#[const_register]
+pub const STREAM_CONNECTION_MAX_DURATION_SECS: u64 = 60 * 60 * 6; // 6 hours
+
 /// validation constants
 pub mod validate {
   use super::*;
