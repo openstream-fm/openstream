@@ -69,7 +69,7 @@ impl Handle {
   }
 
   #[allow(clippy::bool_comparison)]
-  /// Returns true if the handle was not terminated before.
+  /// returns true if the handle was not terminated before.
   /// otherwise returns false.
   #[inline(always)]
   pub fn terminate(&self) -> bool {
