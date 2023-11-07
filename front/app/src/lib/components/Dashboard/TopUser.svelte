@@ -163,7 +163,7 @@
     overflow-y: auto;
   }
 
-  .menu-station, .menu-account {
+  .menu-account {
     display: block;
     padding: 0.75rem 1rem 0.75rem 0.75rem;
     transition: background-color 150ms ease;
@@ -174,11 +174,11 @@
     gap: 0.75rem;
   }
   
-  .menu-station.current, .menu-account.current {
+  .menu-account.current {
     background: #f6f6f6;
   }
 
-  .menu-station:hover, .menu-account:hover {
+  .menu-account:hover {
     background: #e8e8e8;
   }
 
@@ -186,7 +186,7 @@
     padding-inline-start: 2.75rem;
   }
 
-  .station-pic {
+  /* .station-pic {
     border-radius: 0.25rem;
     width: 1.25rem;
     height: 1.25rem;
@@ -200,7 +200,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     flex: 1;
-  }
+  } */
 
   .menu-head {
     padding: 0;
