@@ -641,9 +641,11 @@ impl Drop for StreamConnectionDropper {
     let duration_ms = start_time.elapsed().unwrap().as_millis() as u64;
     let now = DateTime::now();
 
+
     {
+      let s = duration_ms as f64 / 1_000.0;
       let end_reason = end_reason.lock();
-      info!("END conn {id} {ip} - station: {station_id} ({station_name}) | reason={end_reason}");
+      info!("END conn {id} {ip} - station: {station_id} ({station_name}) | reason={end_reason} - {s} s");
     }
 
     tokio::spawn(async move {
