@@ -158,8 +158,8 @@
     background-color: #f6f6f6;
   }
 
-  .station-list {
-    max-height: 15rem;
+  .item-list {
+    /* max-height: 15rem; */
     overflow-y: auto;
   }
 
@@ -239,6 +239,11 @@
     font-size: 0.95rem;
   }
 
+  .menu-section-sign-out {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+  }
 
 </style>
 
@@ -257,7 +262,7 @@
     <div class="menu-position-out">
       <div class="menu-position-in">
         {#if menu_open}
-          <div class="menu thin-scroll" transition:logical_fly|local={{ y: -25, x: 10, duration: 200 }}>
+          <div class="menu super-thin-scroll" transition:logical_fly|local={{ y: -25, x: 10, duration: 200 }}>
             <div class="menu-head menu-section">
               <div class="menu-head-icon">
                 <Icon d={mdiAccountCircleOutline} />
@@ -290,7 +295,7 @@
                 </div>
                 {$locale.user_menu.accounts}
               </a>
-              <div class="station-list thin-scroll">
+              <div class="item-list">
                 {#each accounts.items as item (item._id)}
                   <a href="/accounts/{item._id}" class="na menu-account ripple-container" class:current={item._id === account?._id} use:ripple on:click={() => menu_open = false}>
                     {item.name}
@@ -298,9 +303,10 @@
                 {/each}
               </div>
             </div>
-            {#if stations != null}
+
+            <!-- {#if stations != null}
               <div class="menu-section">
-                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                
                 {#if account != null}
                   <a href="/accounts/{account._id}/stations" class="na menu-section-link ripple-container" use:ripple on:click={() => menu_open = false}>
                     <div class="menu-icon">
@@ -316,7 +322,7 @@
                     {$locale.user_menu.stations}
                   </div>
                 {/if}
-                <div class="station-list thin-scroll">
+                <div class="station-list super-thin-scroll">
                   {#each stations.items as item (item._id)}
                     <a href="/accounts/{item.account_id}/stations/{item._id}" class="na menu-station ripple-container" class:current={item._id === station?._id} use:ripple on:click={() => menu_open = false}>
                       <div class="station-pic" style="background-image: url({$page.data.config.storage_public_url}/station-pictures/webp/32/{item.picture_id}.webp?v={STATION_PICTURES_VERSION})" />
@@ -325,8 +331,9 @@
                   {/each}
                 </div>
               </div>
-            {/if}
-            <div class="menu-section">
+            {/if} -->
+
+            <div class="menu-section menu-section-sign-out">
               <!-- svelte-ignore a11y-click-events-have-key-events -->
               <div class="menu-section-link ripple-container" use:ripple on:click={sign_out}>
                 <div class="menu-icon">

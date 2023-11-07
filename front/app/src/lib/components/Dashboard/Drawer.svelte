@@ -346,7 +346,7 @@
         </button>
         <div class="account-switch-anchor">
           {#if account_switch_open}
-            <div class="account-switch-menu thin-scroll" transition:logical_fly|local={{ y: -15, duration: 200 }} use:click_out={account_switch_click_out}>
+            <div class="account-switch-menu super-thin-scroll" transition:logical_fly|local={{ y: -15, duration: 200 }} use:click_out={account_switch_click_out}>
               {#each accounts as item (item._id)}
                 <a 
                   href={account_swtich_target(account._id, item._id, $page.url)}
@@ -377,7 +377,7 @@
       </div>
     </div>
 
-    <div class="links thin-scroll">
+    <div class="links super-thin-scroll">
       <DrawerItem href="/accounts/{account._id}" label={$locale.drawer.dashboard} icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
       <DrawerItem href="/accounts/{account._id}/stations" label={$locale.drawer.stations} icon={mdiRadioTower} on_click={close_drawer_fixed} />
       <DrawerItem href="/accounts/{account._id}/members" label={$locale.drawer.members} icon={mdiAccountMultipleOutline} on_click={close_drawer_fixed} />

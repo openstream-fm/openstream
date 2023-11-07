@@ -275,11 +275,11 @@
   let stations_menu_height = 320;
 
   const auto_height = (node: HTMLElement, set: (v: number) => void) => {
-    const pad = 7 * 16;
+    const pad = 24;
 
     const fn = () => {
       const rect = node.getBoundingClientRect();
-      const v = Math.max(100, window.innerHeight - rect.top - pad);    
+      const v = window.innerHeight - rect.top - pad;    
       set(v);
     }
 
@@ -334,7 +334,7 @@
   }
 
   .menu {
-    z-index: 1;
+    z-index: var(--z-analytics-filters-menus);
     position: absolute;
     width: 100%;
     inset-block-start: 100%;
@@ -346,7 +346,7 @@
     box-shadow: var(--some-shadow);
     background: #fff;
     gap: 0.25rem;
-    max-height: min(var(--space-y), 70vh);
+    max-height: max(10rem, min(var(--space-y), 70vh));
     overflow-x: hidden;
     overflow-y: auto;
   }
@@ -600,7 +600,7 @@
 
       {#if stations_menu_open}
         <div
-          class="menu thin-scroll"
+          class="menu super-thin-scroll"
           transition:logical_fly={{ y: -25, duration: 200 }}
           use:click_out={() => stations_menu_click_out()}
           use:auto_height={v => stations_menu_height = v}
@@ -673,7 +673,7 @@
 
       {#if time_menu_open}
         <div
-          class="menu thin-scroll"
+          class="menu super-thin-scroll"
           transition:logical_fly={{ y: -25, duration: 200 }}
           use:click_out={() => time_menu_click_out()}
           use:auto_height={v => temporal_menu_height = v}

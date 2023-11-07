@@ -10,7 +10,7 @@
   import css from "./forms.module.css"; 
 </script>
 
-<select class={css["forms-input"]} class:thin-scroll={true} {autocomplete} disabled={disabled || readonly}  bind:value on:change={event => on_change?.(event.currentTarget.value)}>
+<select class={css["forms-input"]} class:super-thin-scroll={true} {autocomplete} disabled={disabled || readonly}  bind:value on:change={event => on_change?.(event.currentTarget.value)}>
   {#each options as item}
     <option value={item.value} selected={value === item.value}>{item.label}</option>
   {/each}
