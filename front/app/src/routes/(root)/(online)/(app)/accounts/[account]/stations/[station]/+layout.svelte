@@ -262,7 +262,7 @@
         <div class="station-selector-anchor">
           {#if selector_open}
             <div
-              class="station-selector-menu thin-scroll"
+              class="station-selector-menu super-thin-scroll"
               style:--scroll-y="{scroll_y}px"
               use:click_out={selector_menu_click_out}
               transition:logical_fly|local={{ duration: 200, y: -10 }}

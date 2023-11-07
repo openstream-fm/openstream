@@ -16,6 +16,7 @@ use media::channel::RecvError;
 use media::handle::internal_relay::GetInternalRelayError;
 use media::{MediaSessionMap, SubscribeError};
 use mongodb::bson::doc;
+use parking_lot::Mutex;
 use prex::{handler::Handler, Next, Request, Response};
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
@@ -23,7 +24,7 @@ use shutdown::Shutdown;
 use socket2::{Domain, Protocol, Socket, Type};
 use std::fmt::Display;
 use std::future::Future;
-use std::net::SocketAddr;
+use std::net::{IpAddr, SocketAddr};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::{Instant, SystemTime};
@@ -418,13 +419,22 @@ impl StreamHandler {
 
       let transfer_bytes = Arc::new(AtomicU64::new(0));
 
+      let station_name = station.name;
+      let ip = conn_doc.ip;
+
+      let conn_id = conn_doc.id;
+      let end_reason = Arc::new(Mutex::new(EndReason::None));
+
       let connection_dropper = StreamConnectionDropper(Some(StreamConnectionDropperInner {
-        id: conn_doc.id.clone(),
-        transfer_bytes: transfer_bytes.clone(),
+        id: conn_id.clone(),
+        ip,
         station_id: station_id.clone(),
+        station_name: station_name.clone(),
         account_id: station.account_id.clone(),
+        transfer_bytes: transfer_bytes.clone(),
         token: drop_tracer.token(),
         start_time,
+        end_reason: end_reason.clone(),
       }));
 
       let (mut body_sender, response_body) = Body::channel();
@@ -434,28 +444,26 @@ impl StreamHandler {
         let mut rx = rx;
 
         let mut loop_i = 0usize;
-        let connection_id = conn_doc.id.clone();
 
         async move {
+          
           let task = async {
-            info!("START stream_connection {connection_id} for station {station_id}");
+            info!("START conn {conn_id} {ip} - station: {station_id} ({station_name})");
 
             'root: loop {
               let loop_start = Instant::now();
               let mut rx_had_data = false;
 
               if loop_i != 0 {
-                info!("LOOP {loop_i} stream_connection {connection_id} for station {station_id}");
+                info!("LOOP {loop_i} conn {conn_id} {ip} - station: {station_id} ({station_name})");
               }
 
               loop_i += 1;
 
-              let mut last_recv = Instant::now();
-
               'recv: loop {
                 let r = tokio::select! {
                   r = rx.recv() => r,
-                  _ = sleep(Duration::from_millis(100_000)) => break 'root,
+                  _ = sleep(Duration::from_millis(100_000)) => return EndReason::RecvTimeout,
                 };
 
                 match r {
@@ -466,27 +474,22 @@ impl StreamHandler {
                   // TODO: maybe we should advance to the newest message with stream.resubscribe()
                   Err(RecvError::Lagged(_)) => {
                     // break this receiver if lagged behind more than 1 minute
-                    if last_recv.elapsed().as_millis() > 100_000 {
-                      break 'root;
-                    }
-
                     continue 'recv;
                   }
 
                   // Receive bytes and pass it to response body
                   Ok(bytes) => {
                     rx_had_data = true;
-                    last_recv = Instant::now();
 
                     let len = bytes.len();
 
                     let r = tokio::select! {
-                      _ = sleep(Duration::from_millis(100_000)) => break 'root,
+                      _ = sleep(Duration::from_millis(100_000)) => return EndReason::BodySendTimeout,
                       r = body_sender.send_data(bytes) => r,
                     };
 
                     match r {
-                      Err(_) => break 'root,
+                      Err(_) => return EndReason::BodySendError,
                       Ok(()) => {
                         transfer_map.increment(&station.account_id, len);
                         transfer_bytes.fetch_add(len as u64, Ordering::Relaxed);
@@ -499,19 +502,25 @@ impl StreamHandler {
               // if the connection had last < 5 secs
               // or had no data we abort to
               // avoid creating infinite loops here
-              if (loop_start.elapsed().as_secs() > 5) && rx_had_data && (loop_i <= 60) {
-                let new_rx = media_sessions.subscribe(&station.id).await?;
-                rx = new_rx;
-                continue 'root;
+              // if (loop_start.elapsed().as_secs() > 5) && rx_had_data && (loop_i <= 60) {
+              // } else {
+              if loop_start.elapsed().as_secs() < 5 {
+                return EndReason::NoRestartSecs
+              } else if !rx_had_data {
+                return EndReason::NoRestartData
+              } else if loop_i > 60 {
+                return EndReason::NoRestartLoop
               } else {
-                break 'root;
+                let new_rx = match media_sessions.subscribe(&station.id).await {
+                  Ok(rx) => rx,
+                  Err(e) => {
+                    return EndReason::Resubscribe(e)
+                  }
+                };
+                rx = new_rx;
+                continue 'root;  
               }
-            }
-
-            drop(connection_dropper);
-            drop(ip_decrementer);
-
-            Ok::<(), StreamError>(())
+            };
           };
 
           let signal = shutdown.signal();
@@ -519,11 +528,20 @@ impl StreamHandler {
             constants::STREAM_CONNECTION_MAX_DURATION_SECS,
           ));
 
-          tokio::select! {
-            _ = signal => {},
-            _ = max_time_timer => {},
-            _ = task => {},
+          let end = tokio::select! {
+            _ = signal => EndReason::Shutdown,
+            _ = max_time_timer => EndReason::MaxTime,
+            end = task => end,
           };
+
+          {
+            *end_reason.lock() = end;
+          }
+
+          drop(connection_dropper);
+          drop(ip_decrementer);
+
+          Ok::<(), StreamError>(())
         }
       });
 
@@ -561,21 +579,58 @@ struct StreamConnectionDropper(Option<StreamConnectionDropperInner>);
 #[derive(Debug)]
 struct StreamConnectionDropperInner {
   id: String,
+  ip: IpAddr,
+  station_name: String,
   station_id: String,
   account_id: String,
   transfer_bytes: Arc<AtomicU64>,
   start_time: SystemTime,
+  end_reason: Arc<Mutex<EndReason>>,
   token: Token,
+}
+
+#[derive(Debug)]
+pub enum EndReason {
+  None,
+  Shutdown,
+  RecvTimeout,
+  BodySendTimeout,
+  BodySendError,
+  MaxTime,
+  NoRestartSecs,
+  NoRestartData,
+  NoRestartLoop,
+  Resubscribe(SubscribeError),
+}
+
+impl Display for EndReason {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    match self {
+      EndReason::None => f.write_str("none"),
+      EndReason::Shutdown => f.write_str("shutdown"),
+      EndReason::RecvTimeout => f.write_str("recv-timeout"),
+      EndReason::BodySendTimeout => f.write_str("body-send-timeout"),
+      EndReason::BodySendError => f.write_str("body-send-error"),
+      EndReason::MaxTime => f.write_str("max-time"),
+      EndReason::NoRestartSecs => f.write_str("no-restart-secs"),
+      EndReason::NoRestartData => f.write_str("no-restart-data"),
+      EndReason::NoRestartLoop => f.write_str("no-restart-loop"),
+      EndReason::Resubscribe(e) => write!(f, "resubscribe: {}", e),
+    }
+  }
 }
 
 impl Drop for StreamConnectionDropper {
   fn drop(&mut self) {
     let StreamConnectionDropperInner {
       id,
+      ip,
+      station_name,
       station_id,
       account_id,
       transfer_bytes,
       start_time,
+      end_reason,
       token,
     } = match self.0.take() {
       None => return,
@@ -586,7 +641,10 @@ impl Drop for StreamConnectionDropper {
     let duration_ms = start_time.elapsed().unwrap().as_millis() as u64;
     let now = DateTime::now();
 
-    info!("END stream_connection {id} for station {station_id}");
+    {
+      let end_reason = end_reason.lock();
+      info!("END conn {id} {ip} - station: {station_id} ({station_name}) | reason={end_reason}");
+    }
 
     tokio::spawn(async move {
       {

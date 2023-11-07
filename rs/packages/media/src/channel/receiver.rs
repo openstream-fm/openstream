@@ -10,7 +10,7 @@ pub enum RecvError {
   /// All senders of this channel were dropped and the burst is empty
   #[error("The channel is closed")]
   Closed,
-  #[error("The channel is lagged")]
+  #[error("This receiver is lagged")]
   Lagged(u64),
 }
 
@@ -30,7 +30,7 @@ pub struct Receiver {
   pub(crate) content_type: String,
   pub(crate) kind: Kind,
   pub(crate) receiver: broadcast::Receiver<Bytes>,
-  /// this is an owned copy of the burst at subscription time (Bytes instances are copied by reference)
+  /// this is an owned copy of the burst at subscription time (Bytes instances are copied by owned reference)
   pub(crate) burst: Burst,
 }
 

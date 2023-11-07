@@ -194,7 +194,7 @@
     <div class="stats-selector-anchor">
       {#if selector_open}
         <div 
-          class="stats-selector-menu thin-scroll"
+          class="stats-selector-menu super-thin-scroll"
           use:click_out={selector_menu_click_out}
           transition:logical_fly|local={{ duration: 125, y: -10 }}
           use:autoscroll
