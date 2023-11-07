@@ -195,6 +195,7 @@
   import { STATION_PICTURES_VERSION } from "$defs/constants"
   import Validator from "$share/formy/Validator.svelte";
   import Formy from "$share/formy/Formy.svelte";
+  import { add } from "$share/util";
 
   const unselect_station = (id: string) => {
     if (selected_stations === "all") {
@@ -269,6 +270,30 @@
     }
     return null;
   }
+
+  let temporal_menu_height = 320;
+  let stations_menu_height = 320;
+
+  const auto_height = (node: HTMLElement, set: (v: number) => void) => {
+    const pad = 7 * 16;
+
+    const fn = () => {
+      const rect = node.getBoundingClientRect();
+      const v = Math.max(100, window.innerHeight - rect.top - pad);    
+      set(v);
+    }
+
+    fn();
+    const off1 = add(window, "scroll", fn, { capture: true });
+    const off2 = add(window, "resize", fn, { capture: true });
+
+    return {
+      destroy: () => {
+        off1();
+        off2();
+      }
+    }
+  }
 </script>
 
 <style>
@@ -321,7 +346,7 @@
     box-shadow: var(--some-shadow);
     background: #fff;
     gap: 0.25rem;
-    max-height: 20rem;
+    max-height: min(var(--space-y), 70vh);
     overflow-x: hidden;
     overflow-y: auto;
   }
@@ -574,7 +599,13 @@
       </button>
 
       {#if stations_menu_open}
-        <div class="menu thin-scroll" transition:logical_fly={{ y: -25, duration: 200 }} use:click_out={() => stations_menu_click_out()}>
+        <div
+          class="menu thin-scroll"
+          transition:logical_fly={{ y: -25, duration: 200 }}
+          use:click_out={() => stations_menu_click_out()}
+          use:auto_height={v => stations_menu_height = v}
+          style:--space-y="{stations_menu_height}px"
+        >
           <div class="stations-q-out">
             <input type="text" class="stations-q" placeholder={locale["Search..."]} bind:value={station_filter_q} />
           </div>
@@ -641,7 +672,13 @@
       </button>
 
       {#if time_menu_open}
-        <div class="menu thin-scroll" transition:logical_fly={{ y: -25, duration: 200 }} use:click_out={() => time_menu_click_out()}>
+        <div
+          class="menu thin-scroll"
+          transition:logical_fly={{ y: -25, duration: 200 }}
+          use:click_out={() => time_menu_click_out()}
+          use:auto_height={v => temporal_menu_height = v}
+          style:--space-y="{temporal_menu_height}px"
+        >
           {#each temporal_keys as key (key)}
             {@const selected = kind === key}
             {@const name = locale.filters.query_kind[key]}
