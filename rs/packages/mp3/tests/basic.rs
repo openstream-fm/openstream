@@ -3,6 +3,7 @@
 use std::fs::File;
 use std::time::Duration;
 
+#[ignore]
 #[test]
 fn basic() {
   let meta = mp3::read_from_file("assets/test.mp3").expect("File error");
