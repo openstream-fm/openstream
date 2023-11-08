@@ -41,7 +41,7 @@ export const EMAIL_VERIFICATION_VALIDITY_SECS = 3600;
 export const EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS = 30;
 
 /** delay of which if external doesn't produce first data chunk, it will be cancelled */
-export const EXTERNAL_RELAY_NO_DATA_START_SHUTDOWN_SECS = 30;
+export const EXTERNAL_RELAY_NO_DATA_START_SHUTDOWN_SECS = 90;
 
 export const EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_DELAY_SECS = 60;
 
@@ -51,6 +51,9 @@ export const EXTERNAL_RELAY_NO_LISTENERS_SHUTDOWN_INTERVAL_SECS = 20;
 export const FORWARD_IP_HEADER = "x-openstream-forwarded-ip";
 
 export const HEADER_RELAY_SOURCE_DEPLOYMENT = "x-source-deployment";
+
+/** Internal relay rejection code header */
+export const INTERNAL_RELAY_REJECTION_CODE_HEADER = "x-openstream-rejection-code";
 
 /** timeout to wait to obtain a lock on a media session items
  *  if not released in this timeout, probably the item is poisoned
@@ -103,6 +106,9 @@ export const STREAM_CHANNEL_CAPACITY = 16;
 
 /** stream chunk size */
 export const STREAM_CHUNK_SIZE = 16000;
+
+/** open connections that last more than this time in seconds will be terminated */
+export const STREAM_CONNECTION_MAX_DURATION_SECS = 21600;
 
 /** limit of concurrent stream connections from the same ip */
 export const STREAM_IP_CONNECTIONS_LIMIT = 8;

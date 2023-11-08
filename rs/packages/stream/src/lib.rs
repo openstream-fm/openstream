@@ -381,6 +381,8 @@ impl StreamHandler {
       let rx = media_sessions.subscribe(&station.id).await?;
       let content_type = rx.content_type().to_string();
 
+      let is_mp3 = content_type == "audio/mpeg";
+
       let conn_doc = {
         let now = DateTime::now();
         let request = db::http::Request::from_http(&req);
@@ -448,6 +450,9 @@ impl StreamHandler {
         async move {
           
           let task = async {
+            
+            let mut is_first_chunk = true;
+
             info!("START conn {conn_id} {ip} - station: {station_id} ({station_name})");
 
             'root: loop {
@@ -482,6 +487,29 @@ impl StreamHandler {
                     rx_had_data = true;
 
                     let len = bytes.len();
+
+                    let bytes = {
+                    
+                      if is_mp3 && is_first_chunk {
+
+                        is_first_chunk = false;
+                    
+                        match find_first_frame_index(&bytes) {
+                          None => {
+                            // info!("FRAME_START_SLICE conn {conn_id} {ip} - station: {station_id} ({station_name}) | frame start index not found");
+                            bytes
+                          },
+
+                          Some(i) => {
+                            // info!("FRAME_START_SLICE conn {conn_id} {ip} - station: {station_id} ({station_name}) - {i} bytes");
+                            bytes.slice(i..)
+                          }
+                        }
+                    
+                      } else {
+                        bytes
+                      }
+                    };
 
                     let r = tokio::select! {
                       _ = sleep(Duration::from_millis(100_000)) => return EndReason::BodySendTimeout,
@@ -956,5 +984,33 @@ impl<'a> Display for PlsContents<'a> {
     writeln!(f, "Length=-1")?;
     writeln!(f, "Version=2")?;
     Ok(())
+  }
+}
+
+
+fn find_first_frame_index(data: &[u8]) -> Option<usize> {
+  match mp3::read_from_slice(data) {
+    Err(_) => None,
+    Ok(meta) => { 
+      // let offsets_str = meta.frames.windows(2).map(|fs| {
+      //   let f1 = &fs[0];
+      //   let f2 = &fs[1];
+      //   format!("{start} - {size}", start = f1.offset,  size = f2.offset - f1.offset)
+      // }).collect::<Vec<_>>().join("\n");
+      // info!("== OFFSETS ==\n {}", offsets_str);
+      meta.frames.windows(4).find_map(|w| {
+        let f1 = &w[0];
+        let f2 = &w[1];
+        let f3 = &w[2];
+        let f4 = &w[3];
+
+        let n = f2.offset - f1.offset;
+        if n == f3.offset - f2.offset && n == f4.offset - f3.offset {
+          Some(f1.offset as usize)
+        } else {
+          None
+        }
+      })
+    }
   }
 }
