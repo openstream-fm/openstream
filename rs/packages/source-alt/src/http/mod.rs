@@ -195,7 +195,7 @@ pub fn parse_head_line(line: &str) -> Result<(hyper::Method, &str, hyper::Versio
       "" => Version::HTTP_09,
       "HTTP/1.0" => Version::HTTP_10,
       "HTTP/1.1" => Version::HTTP_11,
-      _ => return Err(ReadHeadError::InvalidVersion),
+      ver => return Err(ReadHeadError::InvalidVersion(ver.to_string())),
     },
   };
 
