@@ -372,7 +372,9 @@ pub mod patch {
 
       let patch: StationPatch = Validify::validify(patch.into())?;
 
-      let prev_external_relay_url = patch.external_relay_url.clone();
+      let new_external_relay_url = patch.external_relay_url.clone();
+
+      let mut prev_external_relay_url: Option<String>;
 
       let station = run_transaction!(session => {
         fetch_and_patch!(Station, station, &id, Err(HandleError::StationNotFound(id)), session, {
@@ -385,12 +387,15 @@ pub mod patch {
               }
             }
           }
+
+          prev_external_relay_url = station.external_relay_url.clone();
+
           station.apply_patch(patch.clone(), access_token_scope.as_public_scope())?;
         })
       });
 
-      if let Some(prev_url) = prev_external_relay_url {
-        if prev_url != station.external_relay_url {
+      if let Some(new_url) = new_external_relay_url {
+        if new_url != prev_external_relay_url {
           let deployment_id = self.deployment_id.clone();
           let media_sessions = self.media_sessions.clone();
           let station = station.clone();

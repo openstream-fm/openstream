@@ -83,6 +83,7 @@
       }
 
       await _patch(`/api/stations/${data.station._id}`, payload);
+      await invalidateAll();
       _message($locale.misc.Settings_updated);
 
       saving_relay = false;
