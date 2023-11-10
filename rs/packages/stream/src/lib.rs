@@ -517,7 +517,7 @@ impl StreamHandler {
                     };
 
                     match r {
-                      Err(_) => return EndReason::BodySendError,
+                      Err(e) => return EndReason::BodySendError(e),
                       Ok(()) => {
                         transfer_map.increment(&station.account_id, len);
                         transfer_bytes.fetch_add(len as u64, Ordering::Relaxed);
@@ -623,7 +623,7 @@ pub enum EndReason {
   Shutdown,
   RecvTimeout,
   BodySendTimeout,
-  BodySendError,
+  BodySendError(hyper::Error),
   MaxTime,
   NoRestartSecs,
   NoRestartData,
@@ -638,7 +638,7 @@ impl Display for EndReason {
       EndReason::Shutdown => f.write_str("shutdown"),
       EndReason::RecvTimeout => f.write_str("recv-timeout"),
       EndReason::BodySendTimeout => f.write_str("body-send-timeout"),
-      EndReason::BodySendError => f.write_str("body-send-error"),
+      EndReason::BodySendError(e) => write!(f, "body-send-error: {e} => {e:?}"),
       EndReason::MaxTime => f.write_str("max-time"),
       EndReason::NoRestartSecs => f.write_str("no-restart-secs"),
       EndReason::NoRestartData => f.write_str("no-restart-data"),

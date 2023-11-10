@@ -13,7 +13,7 @@ pub enum ReadHeadError {
   InvalidMethod,
   NoUri,
   NoVersion,
-  InvalidVersion,
+  InvalidVersion(String),
   VersionMethodMismatch,
 }
 
@@ -29,7 +29,7 @@ impl Display for ReadHeadError {
       Self::InvalidMethod => write!(f, "request method is invalid"),
       Self::NoUri => write!(f, "request uri not found"),
       Self::NoVersion => write!(f, "request version not found"),
-      Self::InvalidVersion => write!(f, "request version is invalid"),
+      Self::InvalidVersion(ver) => write!(f, "request version is invalid, version = '{ver}'"),
       Self::VersionMethodMismatch => write!(
         f,
         "request version and method mismatch, HTTP/0.9 only allows GET requests"
