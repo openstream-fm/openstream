@@ -432,6 +432,7 @@ impl StreamHandler {
         ip,
         station_id: station_id.clone(),
         station_name: station_name.clone(),
+        domain: conn_doc_lite.domain,
         account_id: station.account_id.clone(),
         transfer_bytes: transfer_bytes.clone(),
         token: drop_tracer.token(),
@@ -608,6 +609,7 @@ struct StreamConnectionDropper(Option<StreamConnectionDropperInner>);
 struct StreamConnectionDropperInner {
   id: String,
   ip: IpAddr,
+  domain: Option<String>,
   station_name: String,
   station_id: String,
   account_id: String,
@@ -655,6 +657,7 @@ impl Drop for StreamConnectionDropper {
       ip,
       station_name,
       station_id,
+      domain,
       account_id,
       transfer_bytes,
       start_time,
@@ -669,11 +672,11 @@ impl Drop for StreamConnectionDropper {
     let duration_ms = start_time.elapsed().unwrap().as_millis() as u64;
     let now = DateTime::now();
 
-
     {
+      let domain = domain.as_deref().unwrap_or("???");
       let s = duration_ms as f64 / 1_000.0;
       let end_reason = end_reason.lock();
-      info!("END conn {id} {ip} - station: {station_id} ({station_name}) | reason={end_reason} - {s} s");
+      info!("END conn {id} {ip} - station: {station_id} ({station_name}) in {domain} | reason={end_reason} - {s} s");
     }
 
     tokio::spawn(async move {
