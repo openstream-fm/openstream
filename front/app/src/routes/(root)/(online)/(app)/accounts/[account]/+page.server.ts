@@ -21,9 +21,7 @@ export const load = (async ({ fetch, url, parent, depends, params }) => {
     const to_fetch_stations = stations
       .items
       .filter(item => item.account_id === account._id)
-      .sort((a, b) => {
-        return (sessions_by_station[b._id] || 0) - (sessions_by_station[a._id] || 0)
-      })
+      .sort((a, b) => (sessions_by_station[b._id] || 0) - (sessions_by_station[a._id] || 0))
       .slice(0, 30)
     
     // fetch the now playing of first 30 satations (approx the maximum visible ones on non-scrolled screen)

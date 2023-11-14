@@ -13,15 +13,19 @@
 		| import('$api/stations/[station]/now-playing/GET/Output').Output
 		| undefined = undefined;
 
-	$: on_air = now_playing && !(now_playing.kind === 'none' && !now_playing.start_on_connect);
+	let current_now_playing: import('$api/stations/[station]/now-playing/GET/Output').Output | null = null;
+
+	$: merged_now_playing = current_now_playing ?? now_playing;
+
+	$: on_air = merged_now_playing && !(merged_now_playing.kind === 'none' && !merged_now_playing.start_on_connect);
 
 	let store: ReturnType<typeof get_now_playing_store> | null;
 	let unsub: (() => void) | null = null;
 
 	onMount(() => {
-		store = get_now_playing_store(station._id, now_playing || null);
+		store = get_now_playing_store(station._id, current_now_playing || null);
 		unsub = store.subscribe((v) => {
-			now_playing = v?.info || undefined;
+			current_now_playing = v?.info || null;
 		});
 
 		return () => {
@@ -31,9 +35,9 @@
 
 	const enter = () => {
 		if (store != null) return;
-		store = get_now_playing_store(station._id, now_playing || null);
+		store = get_now_playing_store(station._id, current_now_playing || null);
 		unsub = store.subscribe((v) => {
-			now_playing = v?.info || undefined;
+			current_now_playing = v?.info || null;
 		});
 	};
 
@@ -122,7 +126,7 @@
 		<div class="name">{station.name}</div>
 
 		<div class="now-playing-sessions">
-			{#if now_playing}
+			{#if merged_now_playing}
 				<div class="now-playing-state">
 					{#if on_air}
 						{$locale.pages['account/dashboard'].station_item.on_air}
@@ -142,10 +146,10 @@
         </div>
     
 
-				{#if now_playing.kind === 'none'}
-					{#if now_playing.start_on_connect}
+				{#if merged_now_playing.kind === 'none'}
+					{#if merged_now_playing.start_on_connect}
 						<div class="now-playing-sub">
-							{#if now_playing.external_relay_url != null}
+							{#if merged_now_playing.external_relay_url != null}
 								{$locale.misc.Relay}
 							{:else}
 								{$locale.pages['account/dashboard'].station_item.playlist}
@@ -154,11 +158,11 @@
 					{/if}
 				{:else}
 					<div class="now-playing-sub">
-						{#if now_playing.kind === 'live'}
+						{#if merged_now_playing.kind === 'live'}
 							{$locale.pages['account/dashboard'].station_item.live}
-						{:else if now_playing.kind === 'playlist'}
+						{:else if merged_now_playing.kind === 'playlist'}
 							{$locale.pages['account/dashboard'].station_item.playlist}
-						{:else if now_playing.kind === 'external-relay'}
+						{:else if merged_now_playing.kind === 'external-relay'}
 							{$locale.misc.Relay}
 						{/if}
 					</div>

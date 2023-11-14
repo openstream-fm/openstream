@@ -461,7 +461,7 @@ impl StreamHandler {
               let mut rx_had_data = false;
 
               if loop_i != 0 {
-                info!("LOOP {loop_i} conn {conn_id} {ip} - station: {station_id} ({station_name})");
+                info!("LOOP {loop_i} conn {conn_id} {ip} - {station_id} ({station_name})");
               }
 
               loop_i += 1;
@@ -676,7 +676,7 @@ impl Drop for StreamConnectionDropper {
       let domain = domain.as_deref().unwrap_or("???");
       let s = duration_ms as f64 / 1_000.0;
       let end_reason = end_reason.lock();
-      info!("END conn {id} {ip} - station: {station_id} ({station_name}) in {domain} | reason={end_reason} - {s} s");
+      info!("END conn {id} {ip} - {station_id} ({station_name}) in {domain} | reason={end_reason} - {s} s");
     }
 
     tokio::spawn(async move {
