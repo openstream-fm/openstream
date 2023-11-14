@@ -421,18 +421,19 @@ impl StreamHandler {
 
       let transfer_bytes = Arc::new(AtomicU64::new(0));
 
-      let station_name = station.name;
-      let ip = conn_doc.ip;
-
       let conn_id = conn_doc.id;
       let end_reason = Arc::new(Mutex::new(EndReason::None));
+
+      let station_name = station.name;
+      let ip = conn_doc.ip;
+      let domain = conn_doc_lite.domain.clone();
 
       let connection_dropper = StreamConnectionDropper(Some(StreamConnectionDropperInner {
         id: conn_id.clone(),
         ip,
         station_id: station_id.clone(),
         station_name: station_name.clone(),
-        domain: conn_doc_lite.domain,
+        domain: domain.clone(),
         account_id: station.account_id.clone(),
         transfer_bytes: transfer_bytes.clone(),
         token: drop_tracer.token(),
@@ -454,7 +455,7 @@ impl StreamHandler {
             
             let mut is_first_chunk = true;
 
-            info!("START conn {conn_id} {ip} - station: {station_id} ({station_name})");
+            info!("START conn {conn_id} {ip} - {station_id} ({station_name}) in {domain}", domain = domain.as_deref().unwrap_or("???"),);
 
             'root: loop {
               let loop_start = Instant::now();
