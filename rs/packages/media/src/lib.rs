@@ -204,7 +204,7 @@ impl MediaSessionMap {
       }
 
       let owner_info = OwnerDeploymentInfo {
-        content_type: "audio/mpeg".to_string(),
+        content_type: "audio/aac".to_string(),
         deployment_id: self.deployment_id.clone(),
         task_id: task_id.clone(),
         health_checked_at: Some(DateTime::now()),
@@ -274,7 +274,7 @@ impl MediaSessionMap {
           MapEntryRelease::new(station_id.to_string(), task_id.clone(), self.clone());
 
         let owner_deployment_info = OwnerDeploymentInfo {
-          content_type: "audio/mpeg".to_string(),
+          content_type: "audio/aac".to_string(),
           deployment_id: self.deployment_id.clone(),
           task_id: task_id.clone(),
           health_checked_at: Some(DateTime::now()),
@@ -326,8 +326,9 @@ impl MediaSessionMap {
                 info = Info::new(
                   Kind::ExternalRelay,
                   task_id.clone(),
-                  "audio/mpeg".to_string(),
+                  "audio/aac".to_string(),
                 );
+
                 sender = Sender::new(station_id.to_string(), info);
 
                 {

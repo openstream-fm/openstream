@@ -5,7 +5,7 @@ use std::time::{Duration, Instant};
 use db::media_session::MediaSession;
 use db::{media_session::MediaSessionState, Model};
 use drop_tracer::{DropTracer, Token};
-use ffmpeg::{Ffmpeg, FfmpegConfig, FfmpegSpawn};
+use ffmpeg::{Ffmpeg, FfmpegConfig, FfmpegSpawn, Format};
 use futures_util::StreamExt;
 use log::*;
 use mongodb::bson::doc;
@@ -84,6 +84,7 @@ pub fn run_external_relay_source(
         kbitrate: STREAM_KBITRATE,
         readrate: true,
         readrate_initial_burst: STREAM_BURST_LENGTH as f64,
+        format: Format::AAC,
         ..FfmpegConfig::default()
       };
 
