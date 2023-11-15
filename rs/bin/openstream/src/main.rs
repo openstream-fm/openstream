@@ -21,7 +21,8 @@ use mongodb::bson::doc;
 use mongodb::bson::Document;
 use serde_util::DateTime;
 use shutdown::Shutdown;
-use stream::StreamServer;
+// use stream::StreamServer;
+use stream_alt::StreamServer;
 use assets::StaticServer;
 use tokio::runtime::Runtime;
 
@@ -493,6 +494,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
         drop_tracer.clone(),
         media_sessions.clone(),
       );
+
       let fut = stream.start()?;
       futs.push(async move {
         fut.await.map_err(crate::error::ServerStartError::from)?;

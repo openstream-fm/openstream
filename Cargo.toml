@@ -40,6 +40,7 @@ members = [
     "rs/packages/ip",
     "rs/packages/config",
     "rs/packages/stream",
+    "rs/packages/stream-alt",
     "rs/packages/source-alt",
     "rs/packages/stream",
     "rs/packages/assets",
