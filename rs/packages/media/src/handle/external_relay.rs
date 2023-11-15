@@ -84,7 +84,8 @@ pub fn run_external_relay_source(
         kbitrate: STREAM_KBITRATE,
         readrate: true,
         readrate_initial_burst: STREAM_BURST_LENGTH as f64,
-        format: Format::AAC,
+        // audio/mpeg
+        format: Format::MP3,
         ..FfmpegConfig::default()
       };
 

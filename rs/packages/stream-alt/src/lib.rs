@@ -32,7 +32,6 @@ use std::time::{Instant, SystemTime};
 use tokio::time::{sleep, Duration};
 use transfer_map::TransferTracer;
 
-mod error;
 mod server;
 mod http;
 pub mod transfer_map;
