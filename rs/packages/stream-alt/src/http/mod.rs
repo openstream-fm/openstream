@@ -10,7 +10,7 @@ use self::error::ReadHeadError;
 
 pub mod error;
 
-pub const MAX_REQUEST_HEAD_SIZE: usize = 8 * 1024;
+pub const MAX_REQUEST_HEAD_SIZE: usize = 16 * 1024;
 // pub const MAX_RESPONSE_HEAD_SIZE: usize = 8 * 1024;
 
 pub struct RequestHead {
