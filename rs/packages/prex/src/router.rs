@@ -347,6 +347,7 @@ impl Service<hyper::Request<Body>> for RouterService {
       let request = Request::from_parts(RequestParts {
         local_addr,
         remote_addr,
+        proxy_protocol_ip: None,
         method: parts.method,
         uri: parts.uri,
         headers: parts.headers,

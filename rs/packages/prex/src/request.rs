@@ -23,6 +23,7 @@ pub fn is_trusted_ip(ip: IpAddr) -> bool {
 pub struct Parts {
   pub local_addr: SocketAddr,
   pub remote_addr: SocketAddr,
+  pub proxy_protocol_ip: Option<IpAddr>,
   pub method: Method,
   pub uri: Uri,
   pub version: Version,
@@ -36,6 +37,7 @@ pub struct Parts {
 pub struct Request {
   pub(crate) local_addr: SocketAddr,
   pub(crate) remote_addr: SocketAddr,
+  pub(crate) proxy_protocol_ip: Option<IpAddr>,
   pub(crate) method: Method,
   pub(crate) uri: Uri,
   pub(crate) version: Version,
@@ -71,6 +73,7 @@ impl Request {
     Self {
       local_addr: parts.local_addr,
       remote_addr: parts.remote_addr,
+      proxy_protocol_ip: parts.proxy_protocol_ip,
       method: parts.method,
       uri: parts.uri,
       headers: parts.headers,
@@ -86,6 +89,7 @@ impl Request {
     Parts {
       local_addr: self.local_addr,
       remote_addr: self.remote_addr,
+      proxy_protocol_ip: self.proxy_protocol_ip,
       method: self.method,
       uri: self.uri,
       headers: self.headers,
@@ -203,6 +207,12 @@ impl Request {
     let mut ip = self.remote_addr().ip();
 
     if is_trusted_ip(ip) {
+      if let Some(proxy_ip) = self.proxy_protocol_ip {
+        ip = proxy_ip;
+      }
+    }
+
+    if is_trusted_ip(ip) {
       if let Some(v) = self.headers().get(X_REAL_IP) {
         if let Ok(v) = v.to_str() {
           if let Ok(client_ip) = v.parse() {
@@ -312,6 +322,7 @@ mod tests {
     Parts {
       local_addr: SocketAddr::from_str("127.0.0.1:8080").unwrap(),
       remote_addr: SocketAddr::from_str("127.0.0.1:12345").unwrap(),
+      proxy_protocol_ip: None,
       method: Method::GET,
       uri: Uri::from_static("http://localhost"),
       version: Version::HTTP_11,
@@ -419,6 +430,7 @@ mod tests {
     let parts = Parts {
       local_addr: request.local_addr,
       remote_addr: request.remote_addr,
+      proxy_protocol_ip: None,
       method: request.method,
       uri: request.uri,
       version: request.version,

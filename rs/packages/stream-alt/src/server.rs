@@ -107,7 +107,7 @@ async fn read_request<R: AsyncRead + Unpin>(
   mut read: R,
 ) -> Result<prex::Request, ReadHeadError> {
   let RequestHead {
-    proxy_protocol_ip: _,
+    proxy_protocol_ip,
     version,
     method,
     uri,
@@ -119,6 +119,7 @@ async fn read_request<R: AsyncRead + Unpin>(
   let request = Request::from_parts(Parts {
     local_addr,
     remote_addr,
+    proxy_protocol_ip,
     method,
     uri,
     version,
