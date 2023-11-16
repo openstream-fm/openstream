@@ -13,6 +13,7 @@ pub mod get {
   use db::{
     audio_file::AudioFile,
     media_session::{MediaSession, MediaSessionKind, MediaSessionNowPlaying},
+    probe::Probe,
     Model,
   };
 
@@ -36,6 +37,7 @@ pub mod get {
     None {
       start_on_connect: bool,
       external_relay_url: Option<String>,
+      external_relay_error: Option<String>,
     },
     #[serde(rename = "live")]
     Live {
@@ -72,16 +74,31 @@ pub mod get {
 
       let out = match MediaSession::get_current_for_station(&station.id).await? {
         None => match station.external_relay_url {
-          Some(url) => Output::None {
-            start_on_connect: true,
-            external_relay_url: Some(url),
-          },
+          Some(url) => {
+            let probe = Probe::last_for_url(&url).await?;
+
+            let error_display = match probe {
+              None => None,
+              Some(doc) => match doc.result {
+                db::probe::ProbeResult::Ok { .. } => None,
+                db::probe::ProbeResult::Error { error_display, .. } => Some(error_display),
+              },
+            };
+
+            Output::None {
+              start_on_connect: true,
+              external_relay_url: Some(url),
+              external_relay_error: error_display,
+            }
+          }
+
           None => {
             let filter = doc! { AudioFile::KEY_STATION_ID: &station.id };
             let exists = AudioFile::exists(filter).await?;
             Output::None {
               start_on_connect: exists,
               external_relay_url: None,
+              external_relay_error: None,
             }
           }
         },
@@ -109,6 +126,7 @@ pub mod get {
               Output::None {
                 start_on_connect: exists,
                 external_relay_url: None,
+                external_relay_error: None,
               }
             }
             Some(file) => Output::Playilist {
