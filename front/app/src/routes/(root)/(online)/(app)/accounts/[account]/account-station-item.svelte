@@ -17,7 +17,20 @@
 
 	$: merged_now_playing = current_now_playing ?? now_playing;
 
-	$: on_air = merged_now_playing && !(merged_now_playing.kind === 'none' && !merged_now_playing.start_on_connect);
+	$: on_air = is_on_air(merged_now_playing ?? null);
+	const is_on_air = (merged_now_playing: typeof current_now_playing) => {
+		if (merged_now_playing == null) return null;
+		if (merged_now_playing.kind === "external-relay") return true;
+		if (merged_now_playing.kind === "live") return true;
+		if (merged_now_playing.kind === "playlist") return true;
+		if (merged_now_playing.kind === "none") {
+			if (merged_now_playing.start_on_connect && merged_now_playing.external_relay_error == null) return true;
+			else return false;
+		};
+	}
+
+	$: console.log({ merged_now_playing, on_air });
+
 
 	let store: ReturnType<typeof get_now_playing_store> | null;
 	let unsub: (() => void) | null = null;
@@ -100,12 +113,17 @@
 		color: var(--red);
 	}
 
+
   .sessions {
     margin-top: 0.15rem;
   }
 
 	.now-playing-sub {
 		margin-top: 0.15rem;
+	}
+
+	.now-playing-sub-error {
+		color: var(--red);	
 	}
 </style>
 
@@ -135,18 +153,26 @@
 					{/if}
 				</div>
 
-        <div class="sessions">
-          {#if session_count === 0}
-            {$locale.misc['0_listeners']}
-          {:else if session_count === 1}
-            {$locale.misc['1_listener']}
-          {:else}
-            {$locale.misc.n_listeners.replace('@n', String(session_count))}
-          {/if}
-        </div>
+				{#if on_air}
+					<div class="sessions">
+						{#if session_count === 0}
+							{$locale.misc['0_listeners']}
+						{:else if session_count === 1}
+							{$locale.misc['1_listener']}
+						{:else}
+							{$locale.misc.n_listeners.replace('@n', String(session_count))}
+						{/if}
+					</div>
+				{/if}
     
 
-				{#if merged_now_playing.kind === 'none'}
+				{#if merged_now_playing.kind === "none" && merged_now_playing.external_relay_error != null}
+					<div class="now-playing-sub now-playing-sub-error">
+						<!-- TODO: locale -->
+						External relay error
+						<!-- {merged_now_playing.external_relay_error} -->
+					</div>
+				{:else if merged_now_playing.kind === 'none'}
 					{#if merged_now_playing.start_on_connect}
 						<div class="now-playing-sub">
 							{#if merged_now_playing.external_relay_url != null}

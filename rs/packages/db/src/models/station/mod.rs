@@ -925,6 +925,15 @@ impl Station {
 
     apply!(frequency);
 
+    // let prev_external_relay_url = self.external_relay_url.clone();
+    match &patch.external_relay_url {
+      None => {}
+      Some(opt) => {
+        if opt.is_some() && opt != &self.external_relay_url {
+          self.last_external_relay_probe_started_at = None;
+        }
+      }
+    }
     apply!(external_relay_url);
 
     if let Some(metadata) = patch.user_metadata {
