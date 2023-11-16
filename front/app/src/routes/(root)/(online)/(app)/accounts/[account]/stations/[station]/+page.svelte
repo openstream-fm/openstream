@@ -16,8 +16,19 @@
   const now_playing = get_now_playing_store(data.station._id, data.now_playing);
   $: if($now_playing) data.now_playing = $now_playing.info;
 
-  $: on_air = $now_playing!.info.kind === "none" ? $now_playing!.info.start_on_connect : true;
-  
+  $: on_air = is_on_air($now_playing);
+	const is_on_air = (now_playing: typeof $now_playing) => {
+		const info = now_playing?.info;
+    if (info == null) return null;
+		if (info.kind === "external-relay") return true;
+		if (info.kind === "live") return true;
+		if (info.kind === "playlist") return true;
+		if (info.kind === "none") {
+			if (info.start_on_connect && info.external_relay_error == null) return true;
+			else return false;
+		};
+	}
+
   const station_preview_state = derived(player_state, (state): "loading" | "paused" | "playing" => {
     if(state.type === "station") {
       if(data.station?._id && data.station._id === state.station._id) return state.audio_state;
@@ -162,6 +173,10 @@
     order: 3;
   }
 
+  .external-relay-error {
+    color: var(--red);
+  }
+
   @media screen and (max-width: 700px) {
     .top-boxes {
       flex-direction: column;
@@ -235,7 +250,12 @@
                 {:else if data.now_playing.kind === "live"}
                   {$locale.pages["station/dashboard"].live}
                 {:else if data.now_playing.kind === "none"}
-                  {#if data.now_playing.external_relay_url != null}
+                  {#if data.now_playing.external_relay_error != null}
+                    <!-- TODO: locale -->
+                    <span class="external-relay-error">
+                      External relay error
+                    </span>
+                  {:else if data.now_playing.external_relay_url != null}
                     {$locale.misc.Relay}
                   {:else}
                     {$locale.pages["station/dashboard"].playlist}

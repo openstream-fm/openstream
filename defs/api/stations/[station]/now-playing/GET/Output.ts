@@ -4,6 +4,7 @@ export type Output =
   | ({ kind: "none" } & {
     start_on_connect: boolean;
     external_relay_url: string | null;
+    external_relay_error: string | null;
   })
   | ({ kind: "live" } & { title: string | null; artist: string | null })
   | ({ kind: "external-relay" } & { url: string })

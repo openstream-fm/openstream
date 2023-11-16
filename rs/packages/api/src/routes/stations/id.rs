@@ -399,6 +399,7 @@ pub mod patch {
           let deployment_id = self.deployment_id.clone();
           let media_sessions = self.media_sessions.clone();
           let station = station.clone();
+
           tokio::spawn(async move {
             match &station.owner_deployment_info {
               None => {}

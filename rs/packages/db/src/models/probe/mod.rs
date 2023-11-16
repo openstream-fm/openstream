@@ -30,6 +30,13 @@ pub struct Probe {
   pub result: ProbeResult,
 }
 
+impl Probe {
+  pub async fn last_for_url(url: &str) -> Result<Option<Self>, mongodb::error::Error> {
+    let filter = doc! { Self::KEY_URL: url };
+    Self::cl().find_one(filter, None).await
+  }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(tag = "r", rename_all = "snake_case")]
 #[ts(export, export_to = "../../../defs/db/")]
