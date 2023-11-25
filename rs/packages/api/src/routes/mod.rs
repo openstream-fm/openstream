@@ -388,7 +388,7 @@ pub fn router(
 
   app
     .at("/stations/:station/files/:file/metadata")
-    .put(stations::files::metadata::patch::Endpoint {}.into_handler());
+    .put(stations::files::metadata::put::Endpoint {}.into_handler());
 
   app
     .at("/stations/:station/files/:file/order/swap")
