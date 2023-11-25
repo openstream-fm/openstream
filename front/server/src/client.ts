@@ -590,7 +590,7 @@ export class StationFiles {
     return await this.client.get_json_body(res)
   }
 
-  async put_metadata(ip: string | null, ua: string | null, token: string, station_id: string, file_id: string, payload: import("$api/stations/[station]/files/[file]/metadata/PATCH/Payload").Payload): Promise<import("$api/stations/[station]/files/[file]/metadata/PATCH/Output").Output> {
+  async put_metadata(ip: string | null, ua: string | null, token: string, station_id: string, file_id: string, payload: import("$api/stations/[station]/files/[file]/metadata/PUT/Payload").Payload): Promise<import("$api/stations/[station]/files/[file]/metadata/PUT/Output").Output> {
     return await this.client.put(ip, ua, token, `/stations/${station_id}/files/${file_id}/metadata`, payload);
   }
 
