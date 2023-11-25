@@ -24,7 +24,8 @@
     "ci:share": "cd share && npm ci",
     "ci:server": "cd server && npm ci",
     "ci:admin": "cd admin && npm ci",
-    "ci:app": "cd app && npm ci"
+    "ci:app": "cd app && npm ci",
+    "start": "cd server && npm run start"
   },
   "keywords": [],
   "author": "",
