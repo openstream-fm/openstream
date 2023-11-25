@@ -11,12 +11,12 @@
 //! ```rust
 //! use owo_colors::OwoColorize;
 //!
-//! fn main() {
+//! # fn main() {
 //!     // Foreground colors
 //!     println!("My number is {:#x}!", 10.green());
 //!     // Background colors
 //!     println!("My number is not {}!", 4.on_red());
-//! }
+//! # }
 //! ```
 //!
 //! ## Generically color
@@ -25,10 +25,10 @@
 //! use owo_colors::OwoColorize;
 //! use owo_colors::colors::*;
 //!
-//! fn main() {
+//! # fn main() {
 //!     // Generically color
 //!     println!("My number might be {}!", 4.fg::<Black>().bg::<Yellow>());
-//! }
+//! # }
 //! ```
 //!
 //! ## Stylize

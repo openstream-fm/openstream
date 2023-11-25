@@ -30,7 +30,7 @@ async fn logger(req: Request, next: Next) -> Response {
     .uri()
     .path_and_query()
     .map(ToString::to_string)
-    .unwrap_or_else(String::new);
+    .unwrap_or_default();
 
   info!("{method} {uri}");
 

@@ -223,8 +223,8 @@ pub async fn upgrade_images_if_needed() -> Result<(), CreateStationPictureError>
 
 impl StationPicture {
   pub const VERSION: f64 = constants::STATION_PICTURES_VERSION;
-  pub const PNG_SIZES: &[f64] = &[32.0, 64.0, 128.0, 192.0, 256.0, 512.0];
-  pub const WEBP_SIZES: &[f64] = &[32.0, 64.0, 128.0, 256.0, 384.0, 512.0];
+  pub const PNG_SIZES: &'static [f64] = &[32.0, 64.0, 128.0, 192.0, 256.0, 512.0];
+  pub const WEBP_SIZES: &'static [f64] = &[32.0, 64.0, 128.0, 256.0, 384.0, 512.0];
 
   pub async fn delete_with_session(
     id: &str,

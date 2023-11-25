@@ -56,7 +56,7 @@ pub struct StreamConnectionLite {
 }
 
 impl StreamConnectionLite {
-  pub const KET_MANUALLY_CLOSED: &str = "_m";
+  pub const KET_MANUALLY_CLOSED: &'static str = "_m";
 
   pub fn get_domain(full: &StreamConnection) -> Option<String> {
     match full.request.headers.get("referer") {

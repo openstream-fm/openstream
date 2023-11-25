@@ -30,7 +30,7 @@ pub enum UserAccountRelationKind {
 }
 
 impl UserAccountRelationKind {
-  pub const TAG_OWNER: &str = "owner";
+  pub const TAG_OWNER: &'static str = "owner";
 }
 
 impl Model for UserAccountRelation {
