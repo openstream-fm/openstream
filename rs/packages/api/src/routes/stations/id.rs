@@ -215,7 +215,7 @@ pub mod delete {
               )
               .await;
             } else {
-              #[allow(clippy-clippy::collapsible_else_if)]
+              #[allow(clippy::collapsible_else_if)]
               if let Ok(Some(deployment)) = Deployment::get_by_id(&info.deployment_id).await {
                 use rand::seq::SliceRandom;
                 let addr = deployment.local_ip;
@@ -411,7 +411,7 @@ pub mod patch {
                   )
                   .await;
                 } else {
-                  #[allow(clippy-clippy::collapsible_else_if)]
+                  #[allow(clippy::collapsible_else_if)]
                   if let Ok(Some(deployment)) = Deployment::get_by_id(&info.deployment_id).await {
                     use rand::seq::SliceRandom;
                     let addr = deployment.local_ip;

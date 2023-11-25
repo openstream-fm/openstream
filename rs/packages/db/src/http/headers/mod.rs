@@ -11,7 +11,7 @@ use ts_rs::TS;
 pub struct Headers(IndexMap<String, String>);
 
 impl Headers {
-  pub const REDACTED_VALUE: &str = "REDACTED";
+  pub const REDACTED_VALUE: &'static str = "REDACTED";
 
   #[inline]
   pub fn is_sensible_key(key: &str) -> bool {

@@ -39,7 +39,7 @@ pub struct StreamConnection {
 }
 
 impl StreamConnection {
-  pub const KEY_MANUALLY_CLOSED: &str = "_manually_closed";
+  pub const KEY_MANUALLY_CLOSED: &'static str = "_manually_closed";
 }
 
 impl Model for StreamConnection {

@@ -303,7 +303,7 @@ pub async fn source(
           .get("user-agent")
           .and_then(|h| h.to_str().ok())
           .map(user_agent::UserAgent::parse)
-          .unwrap_or_else(user_agent::UserAgent::default);
+          .unwrap_or_default();
 
         let request_document = db::http::Request {
           real_ip,
