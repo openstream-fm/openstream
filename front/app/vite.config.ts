@@ -14,7 +14,7 @@ const config: UserConfig = {
 		port: 3001,
 		strictPort: true,
 		proxy: {
-			"/api": "https://studio.local.openstream.fm",
+			"/api": "http://studio.dev.openstream.fm:18965",
 		},
 
 		fs: {

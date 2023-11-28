@@ -11,7 +11,7 @@ const config: UserConfig = {
 		port: 3002,
 		strictPort: true,
 		proxy: {
-			"/api": "https://admin.local.openstream.fm",
+			"/api": "https://admin.dev.openstream.fm:18865",
 		} 
 	},
 	// @ts-ignore

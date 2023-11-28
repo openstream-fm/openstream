@@ -28,9 +28,9 @@ export type PublicConfig = {
 
 export const public_config = (hosts: HostConfig & { id: string }): PublicConfig => {
   const config: PublicConfig = {
-    storage_public_url: `https://${hosts.storage.host}`,
-    stream_public_url: `https://${hosts.stream.host}`,
-    studio_public_url: `https://${hosts.studio.host}`,
+    storage_public_url: `//${hosts.storage.host}`,
+    stream_public_url: `//${hosts.stream.host}`,
+    studio_public_url: `//${hosts.studio.host}`,
     source_public_host: hosts.source.host,
     source_public_port: hosts.source.port,
   }
