@@ -25,6 +25,10 @@
     "ci:server": "cd server && npm ci",
     "ci:admin": "cd admin && npm ci",
     "ci:app": "cd app && npm ci",
+    "dev": "run-p dev:server dev:admin dev:app",
+    "dev:server": "cd server && npm run dev",
+    "dev:app": "cd app && npm run dev",
+    "dev:admin": "cd admin && npm run dev",
     "start": "cd server && npm run start"
   },
   "keywords": [],

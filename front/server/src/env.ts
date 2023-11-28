@@ -19,11 +19,23 @@ const get_log_ts = (): boolean => {
   return true;
 }
 
+const bool = (key: string, def: boolean | null = null): boolean => {
+  const v = process.env[key];
+  if(v == null) {
+    if(def != null) return def;
+    else throw new Error(`env.${key} is required`)
+  } else {
+    if(v === "1" || v === "true") return true;
+    else if(v === "0" || v === "false") return false;
+    else throw new Error(`env.${key} must be a boolean ("1", "0", "true" or "false")`)
+  }
+}
+
 export const env = {
-  SVELTEKIT_APP_DEV: ["1", "true"].includes(process.env.SVELTEKIT_APP_DEV ?? ""),
+  SVELTEKIT_APP_DEV: bool("SVELTEKIT_APP_DEV", false),
   SVELTEKIT_APP_PORT: Number(process.env.SVELTEKIT_APP_PORT) || 3100,
-  SVELTEKIT_ADMIN_DEV: ["1", "true"].includes(process.env.SVELTEKIT_ADMIN_DEV ?? ""),
-  SVELTEKIT_ADMIN_PORT: Number(process.env.SVELTEKIT_APP_PORT) || 5100,
+  SVELTEKIT_ADMIN_DEV: bool("SVELTEKIT_ADMIN_DEV", false),
+  SVELTEKIT_ADMIN_PORT: Number(process.env.SVELTEKIT_ADMIN_PORT) || 5100,
   LOG_LEVEL: get_log_level(),
   LOG_TS: get_log_ts()
 }

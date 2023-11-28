@@ -59,7 +59,7 @@ impl IntoExistFilter for &str {
 }
 
 pub fn init(client: Client, storage_db_name: Option<String>) {
-  try_init(client, storage_db_name).expect("[internal] mongodb client initialized more than once, this is a bug, please file an issue at https://github.com/ramiroaisen/openstream-rs")
+  try_init(client, storage_db_name).expect("[internal] mongodb client initialized more than once, this is a bug, please file an issue at https://github.com/ramiroaisen/openstream")
 }
 
 pub fn try_init(
