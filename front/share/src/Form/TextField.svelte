@@ -9,7 +9,7 @@
   export let maxlength: number | undefined = void 0;
   export let icon: string | null = null;
   export let icon_viewbox: string | undefined = void 0;
-    export let on_change: ((v: string) => void) | null =  null; 
+  export let on_change: ((v: string) => void) | null =  null; 
 
   export let multiline: boolean | undefined = void 0;
   export let minrows: number | undefined = void 0;
