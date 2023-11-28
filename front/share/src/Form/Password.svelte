@@ -16,8 +16,7 @@
   $: btn = {
     action,
     icon: visible ? mdiEyeOff : mdiEye,
-    label: visible ? $locale.hide_password : $locale.show_password,
-    tabindex: -1,
+    label: visible ? $locale.hide_password : $locale.show_password
   }
 
   $: type = visible ? "text" : "password";

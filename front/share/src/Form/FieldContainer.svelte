@@ -118,6 +118,7 @@
       </button> -->
       <button
         class="btn ripple-container"
+        type="button"
         use:ripple
         on:click|preventDefault={() => btn?.action()}
         tabindex={btn.tabindex}
