@@ -26,7 +26,10 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
     app.use(express.static(path.resolve(__dirname, "../../../static/studio"), { etag: true, dotfiles: "allow" }))
 
     if(env.SVELTEKIT_APP_DEV) {
-      app.use(sveltekit_dev_proxy(env.SVELTEKIT_APP_PORT))
+      app.use((req, res) => {
+        res.redirect(302, `http://${req.hostname}:${env.SVELTEKIT_APP_PORT}${req.url}`)
+      })
+      // app.use(sveltekit_dev_proxy(env.SVELTEKIT_APP_PORT))
     } else {
       process.env.APP_API_PORT = String(config.studio.port);
       const { handler }: { handler: RequestHandler } = await import("" + "../../app/build/handler.js")
@@ -50,7 +53,10 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
     app.use(express.static(path.resolve(__dirname, "../../../static/admin"), { etag: true, dotfiles: "allow" }))
 
     if(env.SVELTEKIT_ADMIN_DEV) {
-      app.use(sveltekit_dev_proxy(env.SVELTEKIT_ADMIN_PORT))
+      app.use((req, res) => {
+        res.redirect(302, `http://${req.hostname}:${env.SVELTEKIT_ADMIN_PORT}${req.url}`)
+      })
+      //app.use(sveltekit_dev_proxy(env.SVELTEKIT_ADMIN_PORT))
     } else {
       process.env.ADMIN_API_PORT = String(config.admin.port);
       const { handler }: { handler: RequestHandler } = await import("" + "../../admin/build/handler.js")
