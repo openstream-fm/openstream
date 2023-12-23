@@ -1,3 +1,4 @@
+use crate::deployment::{Deployment, DeploymentState};
 use crate::Model;
 use mongodb::{
   bson::{doc, SerializerOptions},
@@ -114,15 +115,14 @@ impl MediaSession {
   pub async fn get_current_for_station(
     station_id: &str,
   ) -> Result<Option<MediaSession>, mongodb::error::Error> {
-    
     // TODO: improve this
-    let open_deployment_ids = crate::deployment::Deployment::cl().distinct(
-      crate::deployment::Deployment::KEY_ID, 
-      doc! {
-        crate::deployment::Deployment::KEY_STATE: crate::deployment::DeploymentState::KEY_ENUM_VARIANT_ACTIVE
-      },
-      None
-    ).await?;
+    let open_deployment_ids = crate::deployment::Deployment::cl()
+      .distinct(
+        Deployment::KEY_ID,
+        doc! { Deployment::KEY_STATE: DeploymentState::KEY_ENUM_VARIANT_ACTIVE },
+        None,
+      )
+      .await?;
 
     let filter = doc! {
       MediaSession::KEY_DEPLOYMENT_ID: { "$in": open_deployment_ids },

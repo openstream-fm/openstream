@@ -3,6 +3,8 @@ use std::process::Stdio;
 use tokio::io::AsyncReadExt;
 use tokio::process::Command;
 
+use crate::headers_for_url;
+
 #[derive(Debug, thiserror::Error)]
 pub enum FfprobeError {
   #[error("io: {0}")]
@@ -24,6 +26,8 @@ pub type Object = Map<String, Value>;
 pub async fn get(url: &str) -> Result<Object, FfprobeError> {
   let mut cmd = Command::new("ffprobe");
 
+  let headers = headers_for_url(url);
+
   cmd.kill_on_drop(true);
 
   // verbosity
@@ -36,6 +40,15 @@ pub async fn get(url: &str) -> Result<Object, FfprobeError> {
 
   cmd.arg("-print_format");
   cmd.arg("json");
+
+  cmd.arg("-headers");
+  cmd.arg(
+    headers
+      .iter()
+      .map(|(k, v)| format!("{k}:{v}"))
+      .collect::<Vec<String>>()
+      .join("\r\n"),
+  );
 
   cmd.arg(url);
 
