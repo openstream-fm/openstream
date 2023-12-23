@@ -12,6 +12,9 @@
 	import { mdiContentCopy, mdiLink, mdiLockReset } from '@mdi/js';
 
   import _copy from "copy-to-clipboard";
+	import { page } from '$app/stores';
+
+  $: scheme = $page.url.protocol.split(":")[0] ?? "https";
 
   const copy = (value: string) => {
     return {
@@ -245,8 +248,8 @@
 									label=""
 									icon={mdiLink}
 									readonly
-									btn={copy(`${data.config.stream_public_url}/stream/${data.station._id}`)}
-									value="{data.config.stream_public_url}/stream/{data.station._id}"
+									btn={copy(`${scheme}:${data.config.stream_public_url}/stream/${data.station._id}`)}
+									value="{scheme}:{data.config.stream_public_url}/stream/{data.station._id}"
 								/>
 							</div>
 						</div>
@@ -257,8 +260,8 @@
 									label=""
 									icon={mdiLink}
 									readonly
-                  btn={copy(`${data.config.stream_public_url}/stream/${data.station._id}.m3u`)}
-									value="{data.config.stream_public_url}/stream/{data.station._id}.m3u"
+                  btn={copy(`${scheme}:${data.config.stream_public_url}/stream/${data.station._id}.m3u`)}
+									value="{scheme}:{data.config.stream_public_url}/stream/{data.station._id}.m3u"
 								/>
 							</div>
 						</div>
@@ -269,8 +272,8 @@
 									label=""
 									icon={mdiLink}
 									readonly
-                  btn={copy(`${data.config.stream_public_url}/stream/${data.station._id}.pls`)}
-									value="{data.config.stream_public_url}/stream/{data.station._id}.pls"
+                  btn={copy(`${scheme}:${data.config.stream_public_url}/stream/${data.station._id}.pls`)}
+									value="{scheme}:{data.config.stream_public_url}/stream/{data.station._id}.pls"
 								/>
 							</div>
 						</div>
