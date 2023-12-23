@@ -1,5 +1,6 @@
 use bytes::Bytes;
 use log::*;
+use std::collections::BTreeMap;
 use std::fmt::{self, Display, Formatter};
 use std::process::{ExitStatus, Stdio};
 use stream_util::IntoTryBytesStream;
@@ -92,6 +93,28 @@ pub struct FfmpegConfig {
   pub readrate_initial_burst: f64,
 
   pub copycodec: bool,
+  pub headers: BTreeMap<String, String>,
+}
+
+pub fn headers_for_url(url: &str) -> BTreeMap<String, String> {
+  let mut headers = BTreeMap::<String, String>::new();
+  headers.insert("user-agent".into(), "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36".into());
+  headers.insert("origin".into(), url.into());
+  headers.insert("referer".into(), url.into());
+  // if let Ok(url) = url::Url::parse(url) {
+  //   Ok(url) => headers.insert("origin".into(), url.origin().ascii_serialization()),
+  // }
+
+  headers.insert(
+    "sec-ch-ua".into(),
+    r#""Google Chrome";v="119", "Chromium";v="119", "Not?A_Brand";v="24""#.into(),
+  );
+  headers.insert("sec-ch-ua-mobile".into(), "?0".into());
+  headers.insert("sec-ch-ua-platform".into(), "Linux".into());
+  headers.insert("sec-fetch-dest".into(), "audio".into());
+  headers.insert("sec-fetch-mode".into(), "no-cors".into());
+  headers.insert("sec-fetch-site".into(), "same-origin".into());
+  headers
 }
 
 impl FfmpegConfig {
@@ -151,6 +174,7 @@ impl Default for FfmpegConfig {
       readrate: Self::READRATE,
       readrate_initial_burst: Self::READRATE_INITIAL_BURST,
       copycodec: Self::COPYCODEC,
+      headers: BTreeMap::new(),
     }
   }
 }
@@ -184,6 +208,19 @@ impl Ffmpeg {
       None => cmd.arg("-"),
       Some(input) => cmd.arg(input),
     };
+
+    if !self.config.headers.is_empty() {
+      let v = self
+        .config
+        .headers
+        .iter()
+        .map(|(k, v)| format!("{}:{}", k, v))
+        .collect::<Vec<_>>()
+        .join("\r\n");
+
+      cmd.arg("-headers");
+      cmd.arg(v);
+    }
 
     // copy codec
     if self.config.copycodec {

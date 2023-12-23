@@ -79,11 +79,14 @@ pub fn run_external_relay_source(
     )));
 
     let fut = async move {
+      let headers = ffmpeg::headers_for_url(&url);
+
       let ffmpeg_config = FfmpegConfig {
         input: Some(url),
         kbitrate: STREAM_KBITRATE,
         readrate: true,
         readrate_initial_burst: STREAM_BURST_LENGTH as f64,
+        headers,
         ..FfmpegConfig::default()
       };
 
