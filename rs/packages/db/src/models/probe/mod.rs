@@ -1,5 +1,5 @@
 use crate::Model;
-use mongodb::{bson::doc, IndexModel};
+use mongodb::{bson::doc, options::FindOneOptions, IndexModel};
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
@@ -33,7 +33,9 @@ pub struct Probe {
 impl Probe {
   pub async fn last_for_url(url: &str) -> Result<Option<Self>, mongodb::error::Error> {
     let filter = doc! { Self::KEY_URL: url };
-    Self::cl().find_one(filter, None).await
+    let sort = doc! { Self::KEY_CREATED_AT: -1 };
+    let options = FindOneOptions::builder().sort(sort).build();
+    Self::cl().find_one(filter, options).await
   }
 }
 
