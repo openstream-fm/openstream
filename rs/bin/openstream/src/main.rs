@@ -3,6 +3,7 @@ use std::process::ExitStatus;
 use std::sync::Arc;
 
 use api::storage::StorageServer;
+use api::ws_stats::WsStatsServer;
 use clap::{Parser, Subcommand};
 use config::Config;
 use db::access_token::{AccessToken, GeneratedBy};
@@ -438,6 +439,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     ref assets,
     ref smtp,
     ref payments,
+    ref ws_stats,
   } = config.as_ref();
 
   db::access_token::AccessToken::start_autoremove_job();
@@ -529,6 +531,19 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
         shutdown.clone()
       );
       let fut = storage.start()?;
+      futs.push(async move {
+        fut.await.map_err(crate::error::ServerStartError::from)?;
+        Ok(())
+      }.boxed());
+    }
+
+    if let Some(ws_stats_config) = ws_stats {
+      let ws_stats = WsStatsServer::new(
+        deployment.id.clone(),
+        ws_stats_config.addrs.clone(),
+        shutdown.clone(),
+      );
+      let fut = ws_stats.start()?;
       futs.push(async move {
         fut.await.map_err(crate::error::ServerStartError::from)?;
         Ok(())

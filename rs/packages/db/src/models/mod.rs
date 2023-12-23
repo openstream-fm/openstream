@@ -32,3 +32,5 @@ pub mod payment_method;
 pub mod account_invitations;
 
 pub mod probe;
+
+pub mod ws_stats_connection;

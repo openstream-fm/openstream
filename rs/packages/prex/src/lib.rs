@@ -11,6 +11,7 @@ pub mod path;
 pub mod request;
 pub mod response;
 pub mod router;
+pub mod ws;
 
 pub use app::prex;
 pub use next::Next;

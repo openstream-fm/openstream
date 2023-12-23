@@ -51,6 +51,10 @@ pub struct Config {
   #[garde(dive)]
   pub storage: Option<Storage>,
 
+  #[config(nested)]
+  #[garde(dive)]
+  pub ws_stats: Option<WsStats>,
+
   #[serde(rename = "static")]
   #[config(nested, rename = "static")]
   #[garde(dive)]
@@ -106,6 +110,16 @@ pub struct Mongodb {
 #[config(rename_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
 pub struct Stream {
+  #[config(parse_env = parse_addrs)]
+  #[garde(length(min = 1))]
+  pub addrs: Vec<SocketAddr>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, MetreConfig, garde::Validate)]
+#[serde(deny_unknown_fields)]
+#[config(rename_all = "snake_case")]
+#[serde(rename_all = "snake_case")]
+pub struct WsStats {
   #[config(parse_env = parse_addrs)]
   #[garde(length(min = 1))]
   pub addrs: Vec<SocketAddr>,

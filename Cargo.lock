@@ -155,7 +155,7 @@ dependencies = [
  "hex",
  "http 0.1.0",
  "http-range",
- "hyper",
+ "hyper 0.14.27",
  "lang",
  "lazy-regex",
  "log",
@@ -202,7 +202,7 @@ dependencies = [
  "derive_more",
  "geoip",
  "http 0.2.9",
- "hyper",
+ "hyper 0.14.27",
  "macros",
  "mongodb",
  "serde",
@@ -276,7 +276,7 @@ dependencies = [
  "base64-compat",
  "futures-util",
  "http 0.1.0",
- "hyper",
+ "hyper 0.14.27",
  "log",
  "mime_guess",
  "owo-colors 3.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -394,8 +394,8 @@ dependencies = [
  "bytes",
  "futures-util",
  "http 0.2.9",
- "http-body",
- "hyper",
+ "http-body 0.4.5",
+ "hyper 0.14.27",
  "itoa 1.0.5",
  "matchit",
  "memchr",
@@ -420,7 +420,7 @@ dependencies = [
  "bytes",
  "futures-util",
  "http 0.2.9",
- "http-body",
+ "http-body 0.4.5",
  "mime",
  "rustversion",
  "tower-layer",
@@ -779,7 +779,7 @@ dependencies = [
  "dotenv",
  "ffmpeg",
  "futures 0.3.25",
- "hyper",
+ "hyper 0.14.27",
  "jemallocator",
  "lazy_static",
  "rand 0.8.5",
@@ -1337,7 +1337,7 @@ dependencies = [
  "futures-util",
  "geoip",
  "human_bytes",
- "hyper",
+ "hyper 0.14.27",
  "image",
  "indexmap 1.9.2",
  "lang",
@@ -2332,7 +2332,7 @@ dependencies = [
 name = "hls-logger"
 version = "0.1.0"
 dependencies = [
- "hyper",
+ "hyper 0.14.27",
  "log",
  "logger",
  "prex",
@@ -2405,7 +2405,7 @@ name = "http"
 version = "0.1.0"
 dependencies = [
  "db",
- "hyper",
+ "hyper 0.14.27",
  "mongodb",
  "pin-project",
  "prex",
@@ -2421,6 +2421,17 @@ name = "http"
 version = "0.2.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bd6effc99afb63425aff9b05836f029929e345a6148a14b7ecd5ab67af944482"
+dependencies = [
+ "bytes",
+ "fnv",
+ "itoa 1.0.5",
+]
+
+[[package]]
+name = "http"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b32afd38673a8016f7c9ae69e5af41a58f81b1d31689040f2f1959594ce194ea"
 dependencies = [
  "bytes",
  "fnv",
@@ -2453,6 +2464,29 @@ checksum = "d5f38f16d184e36f2408a55281cd658ecbd3ca05cce6d6510a176eca393e26d1"
 dependencies = [
  "bytes",
  "http 0.2.9",
+ "pin-project-lite",
+]
+
+[[package]]
+name = "http-body"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1cac85db508abc24a2e48553ba12a996e87244a0395ce011e62b37158745d643"
+dependencies = [
+ "bytes",
+ "http 1.0.0",
+]
+
+[[package]]
+name = "http-body-util"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "41cb79eb393015dadd30fc252023adb0b2400a0caee0fa2a077e6e21a551e840"
+dependencies = [
+ "bytes",
+ "futures-util",
+ "http 1.0.0",
+ "http-body 1.0.0",
  "pin-project-lite",
 ]
 
@@ -2507,7 +2541,7 @@ dependencies = [
  "futures-util",
  "h2",
  "http 0.2.9",
- "http-body",
+ "http-body 0.4.5",
  "httparse",
  "httpdate",
  "itoa 1.0.5",
@@ -2520,13 +2554,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "hyper"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fb5aa53871fc917b1a9ed87b683a5d86db645e23acb32c2e0785a353e522fb75"
+dependencies = [
+ "bytes",
+ "http 1.0.0",
+ "http-body 1.0.0",
+ "pin-project-lite",
+ "tokio",
+]
+
+[[package]]
 name = "hyper-rustls"
 version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0646026eb1b3eea4cd9ba47912ea5ce9cc07713d105b1a14698f4e6433d348b7"
 dependencies = [
  "http 0.2.9",
- "hyper",
+ "hyper 0.14.27",
  "rustls",
  "tokio",
  "tokio-rustls",
@@ -2538,7 +2585,7 @@ version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbb958482e8c7be4bc3cf272a766a2b0bf1a6755e7a6ae777f017a31d11b13b1"
 dependencies = [
- "hyper",
+ "hyper 0.14.27",
  "pin-project-lite",
  "tokio",
  "tokio-io-timeout",
@@ -2551,10 +2598,43 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d6183ddfa99b85da61a140bea0efc93fdf56ceaa041b37d553518030827f9905"
 dependencies = [
  "bytes",
- "hyper",
+ "hyper 0.14.27",
  "native-tls",
  "tokio",
  "tokio-native-tls",
+]
+
+[[package]]
+name = "hyper-tungstenite"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7a343d17fe7885302ed7252767dc7bb83609a874b6ff581142241ec4b73957ad"
+dependencies = [
+ "http-body-util",
+ "hyper 1.1.0",
+ "hyper-util",
+ "pin-project-lite",
+ "tokio",
+ "tokio-tungstenite",
+ "tungstenite",
+]
+
+[[package]]
+name = "hyper-util"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bdea9aac0dbe5a9240d68cfd9501e2db94222c6dc06843e06640b9e07f0fdc67"
+dependencies = [
+ "bytes",
+ "futures-channel",
+ "futures-util",
+ "http 1.0.0",
+ "http-body 1.0.0",
+ "hyper 1.1.0",
+ "pin-project-lite",
+ "socket2 0.5.3",
+ "tokio",
+ "tracing",
 ]
 
 [[package]]
@@ -3158,7 +3238,7 @@ checksum = "c41e0c4fef86961ac6d6f8a82609f55f31b05e4fce149ac5710e439df7619ba4"
 name = "macros"
 version = "0.1.0"
 dependencies = [
- "hyper",
+ "hyper 0.14.27",
  "macros-build",
  "once_cell",
  "parking_lot 0.12.1",
@@ -3187,7 +3267,7 @@ dependencies = [
  "async-trait",
  "css-inline",
  "html2text",
- "hyper",
+ "hyper 0.14.27",
  "lettre",
  "nanohtml2text",
  "prex",
@@ -3279,7 +3359,7 @@ dependencies = [
  "drop-tracer",
  "ffmpeg",
  "futures-util",
- "hyper",
+ "hyper 0.14.27",
  "log",
  "mongodb",
  "parking_lot 0.12.1",
@@ -3439,7 +3519,7 @@ version = "0.1.0"
 dependencies = [
  "bytes",
  "ffmpeg",
- "hyper",
+ "hyper 0.14.27",
  "prex",
  "tokio",
 ]
@@ -3756,7 +3836,7 @@ dependencies = [
  "dotenv",
  "drop-tracer",
  "futures 0.3.25",
- "hyper",
+ "hyper 0.14.27",
  "jemallocator",
  "local-ip-address",
  "log",
@@ -4069,9 +4149,9 @@ dependencies = [
 
 [[package]]
 name = "pin-project-lite"
-version = "0.2.9"
+version = "0.2.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0a7ae3ac2f1173085d398531c705756c94a4c56843785df85a60c1a0afac116"
+checksum = "8afb450f006bf6385ca15ef45d71d2288452bc3683ce2e2cacc0d18e4be60b58"
 
 [[package]]
 name = "pin-utils"
@@ -4141,9 +4221,12 @@ dependencies = [
  "constants",
  "futures 0.3.25",
  "http-auth-basic",
- "hyper",
+ "hyper 0.14.27",
+ "hyper-tungstenite",
+ "hyper-util",
  "ip_rfc",
  "log",
+ "pin-project-lite",
  "regex",
  "serde",
  "serde_json",
@@ -4151,7 +4234,9 @@ dependencies = [
  "test-util",
  "thiserror",
  "tokio",
+ "tokio-tungstenite",
  "tower",
+ "tungstenite",
 ]
 
 [[package]]
@@ -4211,7 +4296,7 @@ dependencies = [
  "dotenv",
  "ffmpeg",
  "futures 0.1.31",
- "hyper",
+ "hyper 0.14.27",
  "multiqueue",
  "reqwest",
  "serde_json",
@@ -4611,8 +4696,8 @@ dependencies = [
  "futures-util",
  "h2",
  "http 0.2.9",
- "http-body",
- "hyper",
+ "http-body 0.4.5",
+ "hyper 0.14.27",
  "hyper-rustls",
  "hyper-tls",
  "ipnet",
@@ -4724,7 +4809,7 @@ dependencies = [
  "db",
  "futures 0.3.25",
  "http 0.1.0",
- "hyper",
+ "hyper 0.14.27",
  "log",
  "mongodb",
  "owo-colors 3.5.0",
@@ -5099,7 +5184,7 @@ dependencies = [
  "base64 0.13.1",
  "bytes",
  "chrono",
- "hyper",
+ "hyper 0.14.27",
  "iso8601-timestamp",
  "log",
  "mongodb",
@@ -5447,7 +5532,7 @@ dependencies = [
  "drop-tracer",
  "geoip",
  "http-basic-auth",
- "hyper",
+ "hyper 0.14.27",
  "lazy-regex",
  "log",
  "media",
@@ -5564,7 +5649,7 @@ dependencies = [
  "drop-tracer",
  "futures 0.3.25",
  "http 0.1.0",
- "hyper",
+ "hyper 0.14.27",
  "ip-counter",
  "ip_rfc",
  "log",
@@ -6125,6 +6210,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "tokio-tungstenite"
+version = "0.21.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c83b561d025642014097b66e6c1bb422783339e0909e4429cde4749d1990bc38"
+dependencies = [
+ "futures-util",
+ "log",
+ "tokio",
+ "tungstenite",
+]
+
+[[package]]
 name = "tokio-util"
 version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6197,8 +6294,8 @@ dependencies = [
  "futures-util",
  "h2",
  "http 0.2.9",
- "http-body",
- "hyper",
+ "http-body 0.4.5",
+ "hyper 0.14.27",
  "hyper-timeout",
  "percent-encoding",
  "pin-project",
@@ -6382,6 +6479,25 @@ name = "ttf-parser"
 version = "0.15.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7b3e06c9b9d80ed6b745c7159c40b311ad2916abb34a49e9be2653b90db0d8dd"
+
+[[package]]
+name = "tungstenite"
+version = "0.21.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9ef1a641ea34f399a848dea702823bbecfb4c486f911735368f1f137cb8257e1"
+dependencies = [
+ "byteorder",
+ "bytes",
+ "data-encoding",
+ "http 1.0.0",
+ "httparse",
+ "log",
+ "rand 0.8.5",
+ "sha1",
+ "thiserror",
+ "url",
+ "utf-8",
+]
 
 [[package]]
 name = "typed-arena"
