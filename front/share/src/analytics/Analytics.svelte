@@ -1,7 +1,9 @@
 <script lang="ts">
   export let stations: StationItem[];
   export let selected_stations: "all" | StationItem[];
+  export let type: "stream" | "app" = "stream";
   export let kind: QueryKind;
+
   //export let custom_since: Date | null = null;
   //export let custom_until: Date | null = null;
   export let loading: boolean = false;
@@ -10,13 +12,17 @@
   export let country_code: CountryCode | null | undefined;
   export let domain: string | null | undefined;
 
+  export let app_kind: string | null | undefined;
+  export let app_version: number | null | undefined;
+
   export let locale: import("$server/locale/share/analytics/analytics.locale").AnalyticsLocale;
   export let country_names: import("$server/locale/share/countries/countries.locale").CountriesLocale;
   export let stats_map_locale: import("$server/locale/share/stats-map/stats-map.locale").StatsMapLocale;
   
-  export let data: import("$server/defs/analytics/Analytics").Analytics | null;
+  export let data: Data | null = null;
   export let lang: string;
 
+  import type { Data } from "../analytics/AnalyticsData.svelte";
   import type { CountryCode } from "$server/defs/CountryCode";
   import type { StationItem, QueryKind,  } from "./AnalyticsFilters.svelte";
   export type { StationItem, QueryKind };
@@ -32,8 +38,13 @@
     if(loading) return;
     loading = true;
     try {
-      const { analytics } = await _get<import("$server/defs/api/analytics/GET/Output").Output>(`/api/analytics?${qs}`);
-      data = analytics;
+      if(type === "stream") {
+        const { analytics } = await _get<import("$server/defs/api/analytics/GET/Output").Output>(`/api/analytics?${qs}`);
+        data = { ...analytics, type }
+      } else {
+        const { analytics } = await _get<import("$server/defs/api/app-analytics/GET/Output").Output>(`/api/app-analytics?${qs}`);
+        data = { ...analytics, type }
+      }
       loading = false;
     } catch(e) {
       loading = false;
@@ -48,6 +59,7 @@
   import type { ClickEvent } from "./AnalyticsData.svelte";
   import { assert_never } from "$share/assert-never";
   import { tick } from "svelte";
+  
   const on_data_click = async (event: ClickEvent) => {
     if(event.kind === "country_code") {
       if(event.value === country_code) {
@@ -83,6 +95,20 @@
         } else {
           selected_stations = [item]
         }
+      }
+    }  else if(event.kind === "app_kind") {
+      if(event.value === app_kind) {
+        app_kind = undefined;
+      } else {
+        app_kind = event.value;
+      }
+    } else if(event.kind === "app_version") {
+      if(event.value.kind == app_kind && event.value.version === app_version) {
+        app_kind = undefined;
+        app_version = undefined;
+      } else {
+        app_kind = event.value.kind;
+        app_version = event.value.version;
       }
     } else {
       return  assert_never(event, "AnalyticsData.ClickEvent.kind")
@@ -128,8 +154,10 @@
       bind:this={filters}
       {loading}
       stations={stations}
+
       bind:selected_stations={selected_stations}
       bind:kind={kind}
+      bind:type={type}
       {on_submit}
       locale={locale}
       country_names={country_names}
@@ -137,6 +165,8 @@
       bind:os={os}
       bind:browser={browser}
       bind:domain={domain}
+      bind:app_kind={app_kind}
+      bind:app_version={app_version}
     />
   </div>
 
@@ -154,6 +184,8 @@
           lang={lang}
           locale={locale}
           stats_map_locale={stats_map_locale}
+          app_kind={app_kind}
+          app_version={app_version}
           on_click={on_data_click}
         />
       {/key}

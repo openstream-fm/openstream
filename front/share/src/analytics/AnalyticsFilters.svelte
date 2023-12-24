@@ -18,7 +18,10 @@
     picture_id: string;
   };
 
+  export type AnalyticsType = "stream" | "app";
+
   export type ResolvedQuery = {
+    type: AnalyticsType, 
     now: boolean,
     since: Date | null;
     until: Date | null;
@@ -27,6 +30,8 @@
     os: string | null | undefined,
     browser: string | null | undefined
     domain: string | null | undefined
+    app_kind: string | null | undefined
+    app_version: number | null | undefined
   };
 
   export type OnSubmitEvent = ResolvedQuery & { qs: URLSearchParams | null };
@@ -65,11 +70,20 @@
       qs.append("domain", query.domain ?? "null")
     }
 
+    if(query.app_kind !== undefined) {
+      qs.append("app_kind", query.app_kind ?? "null")
+    }
+
+    if(query.app_version !== undefined) {
+      qs.append("app_version", String(query.app_version ?? "null"))
+    }
+
     return qs;
   };
 </script>
 
 <script lang="ts">
+  export let type: AnalyticsType = "stream";
   export let stations: StationItem[];
   export let selected_stations: "all" | StationItem[];
   export let kind: QueryKind;
@@ -80,6 +94,8 @@
   export let os: string | null | undefined;
   export let domain: string | null | undefined;
   export let country_code: CountryCode | null | undefined;
+  export let app_kind: string | null | undefined;
+  export let app_version: number | null | undefined;
   export let locale: import("$server/locale/share/analytics/analytics.locale").AnalyticsLocale;
   export let country_names: import("$server/locale/share/countries/countries.locale").CountriesLocale;
 
@@ -152,6 +168,7 @@
   
   export const get_resolved_query = (): ResolvedQuery => {
     return {
+      type,
       now: kind === "now",
       since: get_resolved_since(),
       until: get_resolved_until(),
@@ -160,6 +177,8 @@
       os,
       browser,
       domain,
+      app_kind,
+      app_version,
     };
   };
 
@@ -196,6 +215,7 @@
   import Validator from "$share/formy/Validator.svelte";
   import Formy from "$share/formy/Formy.svelte";
   import { add } from "$share/util";
+  import AnalyticsTypeSelector from "./AnalyticsTypeSelector.svelte";
 
   const unselect_station = (id: string) => {
     if (selected_stations === "all") {
@@ -556,6 +576,14 @@
       flex: 1;      
     }
   }
+
+  .type-selector {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    font-size: 0.9rem;  
+  }
 </style>
 
 <Formy let:submit={formy} action={submit}>
@@ -736,6 +764,10 @@
       </div>
     {/if}
 
+    <div class="type-selector">
+      <AnalyticsTypeSelector bind:type />
+    </div>
+
     {#if country_code !== undefined || os !== undefined || browser !== undefined || domain !== undefined}
       <div class="more-filters" transition:slide|local={{ duration: 200 }}>
         {#if country_code !== undefined}
@@ -752,7 +784,7 @@
           </div>
         {/if}
 
-        {#if domain !== undefined}
+        {#if type === "stream" && domain !== undefined}
           <div class="more-chip" transition:scale|local={{ duration: 200 }}>
             <div class="more-chip-label">
               {locale.Website}:
@@ -767,7 +799,7 @@
         {/if}
 
 
-        {#if os !== undefined}
+        {#if type === "stream" && os !== undefined}
           <div class="more-chip" transition:scale|local={{ duration: 200 }}>
             <div class="more-chip-label">
               {locale.Device}:
@@ -781,7 +813,7 @@
           </div>
         {/if}
 
-        {#if browser !== undefined}
+        {#if type === "stream" && browser !== undefined}
           <div class="more-chip" transition:scale|local={{ duration: 200 }}>
             <div class="more-chip-label">
               {locale.Browser}:
@@ -790,6 +822,36 @@
               {browser == null ? locale.Unknown : browser}
             </div>
             <button class="more-chip-remove ripple-container" use:ripple on:click={() => browser = undefined}>
+              <Icon d={mdiClose} />
+            </button>
+          </div>
+        {/if}
+
+        {#if type === "app" && app_kind !== undefined}
+          <div class="more-chip" transition:scale|local={{ duration: 200 }}>
+            <div class="more-chip-label">
+              <!-- TODO: locale -->
+              App ID:
+            </div>
+            <div class="more-chip-value">
+              {app_kind == null ? locale.Unknown : app_kind}
+            </div>
+            <button class="more-chip-remove ripple-container" use:ripple on:click={() => app_kind = undefined}>
+              <Icon d={mdiClose} />
+            </button>
+          </div>
+        {/if}
+
+        {#if type === "app" && app_version !== undefined}
+          <div class="more-chip" transition:scale|local={{ duration: 200 }}>
+            <div class="more-chip-label">
+              <!-- TODO: locale -->
+              App version:
+            </div>
+            <div class="more-chip-value">
+              {app_version == null ? locale.Unknown : app_version}
+            </div>
+            <button class="more-chip-remove ripple-container" use:ripple on:click={() => app_version = undefined}>
               <Icon d={mdiClose} />
             </button>
           </div>

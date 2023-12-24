@@ -8,6 +8,7 @@ use std::net::IpAddr;
 use ts_rs::TS;
 
 pub mod analytics;
+pub mod app_analytics;
 pub mod index;
 pub mod lite;
 pub mod stats;

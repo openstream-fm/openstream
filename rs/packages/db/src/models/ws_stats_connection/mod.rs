@@ -42,7 +42,8 @@ pub struct WsStatsConnection {
   pub app_kind: Option<String>,
 
   #[serde(rename = "av")]
-  pub app_version: Option<f64>,
+  #[serde(with = "serde_util::as_f64::option")]
+  pub app_version: Option<u32>,
 
   #[serde(rename = "re")]
   #[serde(with = "serde_util::as_f64")]
@@ -73,15 +74,15 @@ impl Model for WsStatsConnection {
       .keys(doc! { Self::KEY_CREATED_AT: 1 })
       .build();
 
-    let created_at_station_id = IndexModel::builder()
-      .keys(doc! { Self::KEY_CREATED_AT: 1, Self::KEY_STATION_ID: 1 })
+    let station_id_created_at = IndexModel::builder()
+      .keys(doc! { Self::KEY_STATION_ID: 1, Self::KEY_CREATED_AT: 1 })
       .build();
 
     let is_open = IndexModel::builder()
       .keys(doc! { Self::KEY_IS_OPEN: 1 })
       .build();
 
-    vec![station_id, created_at, created_at_station_id, is_open]
+    vec![station_id, created_at, station_id_created_at, is_open]
   }
 }
 

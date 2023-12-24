@@ -305,6 +305,10 @@ export const shared_api = ({
     return await client.analytics.get(ip(req), ua(req), get_token(req), req.query as any);
   }))
 
+  api.route("/app-analytics").get(json(async req => {
+    return await client.app_analytics.get(ip(req), ua(req), get_token(req), req.query as any);
+  }))
+
   api.route("/invitations")
     .get(json(async req => {
       return await client.invitations.list(ip(req), ua(req), get_token(req), req.query as any)
