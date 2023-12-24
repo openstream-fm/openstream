@@ -254,18 +254,16 @@ pub struct Station {
   pub user_metadata: Metadata,
   pub system_metadata: Metadata,
 
-  // runtime
-  pub owner_deployment_info: Option<OwnerDeploymentInfo>,
-
-  // misc
-  pub playlist_is_randomly_shuffled: bool,
+  // external-relay
   pub external_relay_url: Option<String>,
 
   // auth
   pub source_password: String,
 
-  // external relay probe
+  // runtime
+  pub owner_deployment_info: Option<OwnerDeploymentInfo>,
   pub last_external_relay_probe_started_at: Option<DateTime>,
+  pub playlist_is_randomly_shuffled: bool,
 
   pub created_at: DateTime,
   pub updated_at: DateTime,
