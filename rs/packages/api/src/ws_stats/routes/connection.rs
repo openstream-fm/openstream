@@ -76,7 +76,6 @@ pub struct Query {
 
   #[ts(optional)]
   #[serde(skip_serializing_if = "Option::is_none")]
-  #[serde(with = "serde_util::as_f64::option")]
   app_version: Option<u32>,
 }
 
