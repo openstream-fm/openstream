@@ -157,16 +157,32 @@ impl WsConnectionHandler {
       match prev_id {
         None => create!(),
 
-        Some(prev_id) => match WsStatsConnection::get_by_id(&prev_id).await {
-          Err(_) => return,
+        Some(prev_id) => {
+          let filter = doc! {
+            WsStatsConnection::KEY_ID: prev_id,
+          };
 
-          Ok(None) => create!(),
+          let update = doc! {
+            "$set": {
+              WsStatsConnection::KEY_IS_OPEN: true,
+              WsStatsConnection::KEY_CLOSED_AT: null,
+            }
+          };
 
-          Ok(Some(connection)) => {
-            connection_id = connection.id;
-            created_at = connection.created_at;
+          match WsStatsConnection::cl()
+            .find_one_and_update(filter, update, None)
+            .await
+          {
+            Err(_) => return,
+
+            Ok(None) => create!(),
+
+            Ok(Some(connection)) => {
+              connection_id = connection.id;
+              created_at = connection.created_at;
+            }
           }
-        },
+        }
       }
 
       'start: {
