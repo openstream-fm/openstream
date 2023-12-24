@@ -372,8 +372,7 @@ pub mod patch {
 
       let patch: StationPatch = Validify::validify(patch.into())?;
 
-      let new_external_relay_url = patch.external_relay_url.clone();
-
+      let mut prev_external_relay_redirect: bool;
       let mut prev_external_relay_url: Option<String>;
 
       let station = run_transaction!(session => {
@@ -389,60 +388,73 @@ pub mod patch {
           }
 
           prev_external_relay_url = station.external_relay_url.clone();
+          prev_external_relay_redirect = station.external_relay_redirect;
 
           station.apply_patch(patch.clone(), access_token_scope.as_public_scope())?;
         })
       });
 
-      if let Some(new_url) = new_external_relay_url {
-        if new_url != prev_external_relay_url {
-          let deployment_id = self.deployment_id.clone();
-          let media_sessions = self.media_sessions.clone();
-          let station = station.clone();
+      let external_relay_reset = 'reset: {
+        if station.external_relay_url != prev_external_relay_url {
+          break 'reset true;
+        }
 
-          tokio::spawn(async move {
-            match &station.owner_deployment_info {
-              None => {}
-              Some(info) => {
-                if info.deployment_id == deployment_id {
-                  crate::routes::runtime::external_relay_updated::station_id::perform(
-                    &media_sessions,
-                    &station,
-                  )
-                  .await;
-                } else {
-                  #[allow(clippy::collapsible_else_if)]
-                  if let Ok(Some(deployment)) = Deployment::get_by_id(&info.deployment_id).await {
-                    use rand::seq::SliceRandom;
-                    let addr = deployment.local_ip;
-                    let port = deployment.api_ports.choose(&mut rand::thread_rng());
-                    if let Some(port) = port {
-                      let uri = format!(
-                        "http://{}:{}/runtime/external-relay-updated/{}",
-                        addr, port, station.id
-                      );
+        if station.external_relay_redirect
+          && station.external_relay_redirect != prev_external_relay_redirect
+        {
+          break 'reset true;
+        }
 
-                      let client = hyper::Client::default();
-                      let mut req = hyper::Request::builder()
-                        .method(hyper::http::Method::POST)
-                        .uri(uri);
+        false
+      };
 
-                      if let Some(v) = access_token_header {
-                        if let Ok(v) = v.to_str() {
-                          req = req.header(ACCESS_TOKEN_HEADER, v);
-                        }
-                      };
+      if external_relay_reset {
+        let deployment_id = self.deployment_id.clone();
+        let media_sessions = self.media_sessions.clone();
+        let station = station.clone();
 
-                      if let Ok(req) = req.body(Body::empty()) {
-                        let _ = client.request(req).await;
+        tokio::spawn(async move {
+          match &station.owner_deployment_info {
+            None => {}
+            Some(info) => {
+              if info.deployment_id == deployment_id {
+                crate::routes::runtime::external_relay_updated::station_id::perform(
+                  &media_sessions,
+                  &station,
+                )
+                .await;
+              } else {
+                #[allow(clippy::collapsible_else_if)]
+                if let Ok(Some(deployment)) = Deployment::get_by_id(&info.deployment_id).await {
+                  use rand::seq::SliceRandom;
+                  let addr = deployment.local_ip;
+                  let port = deployment.api_ports.choose(&mut rand::thread_rng());
+                  if let Some(port) = port {
+                    let uri = format!(
+                      "http://{}:{}/runtime/external-relay-updated/{}",
+                      addr, port, station.id
+                    );
+
+                    let client = hyper::Client::default();
+                    let mut req = hyper::Request::builder()
+                      .method(hyper::http::Method::POST)
+                      .uri(uri);
+
+                    if let Some(v) = access_token_header {
+                      if let Ok(v) = v.to_str() {
+                        req = req.header(ACCESS_TOKEN_HEADER, v);
                       }
+                    };
+
+                    if let Ok(req) = req.body(Body::empty()) {
+                      let _ = client.request(req).await;
                     }
                   }
                 }
               }
             }
-          });
-        }
+          }
+        });
       }
 
       let out = station.into_public(access_token_scope.as_public_scope());

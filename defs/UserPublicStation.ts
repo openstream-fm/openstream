@@ -34,8 +34,9 @@ export type UserPublicStation = {
   app_store_url: string | null;
   google_play_url: string | null;
   user_metadata: Metadata;
-  playlist_is_randomly_shuffled: boolean;
   external_relay_url: string | null;
+  external_relay_redirect: boolean;
+  playlist_is_randomly_shuffled: boolean;
   source_password: string;
   created_at: DateTime;
   updated_at: DateTime;
