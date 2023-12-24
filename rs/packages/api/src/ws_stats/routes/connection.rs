@@ -143,6 +143,7 @@ impl WsConnectionHandler {
             ip,
             app_kind: app_kind.clone(),
             app_version,
+            reconnections: 0,
             created_at,
             closed_at: None,
           };
@@ -166,6 +167,9 @@ impl WsConnectionHandler {
             "$set": {
               WsStatsConnection::KEY_IS_OPEN: true,
               WsStatsConnection::KEY_CLOSED_AT: null,
+            },
+            "$inc": {
+              WsStatsConnection::KEY_RECONNECTIONS: 1.0,
             }
           };
 
