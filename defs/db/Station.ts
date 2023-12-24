@@ -36,11 +36,11 @@ export type Station = {
   app_store_url: string | null;
   user_metadata: Metadata;
   system_metadata: Metadata;
-  owner_deployment_info: OwnerDeploymentInfo | null;
-  playlist_is_randomly_shuffled: boolean;
   external_relay_url: string | null;
   source_password: string;
+  owner_deployment_info: OwnerDeploymentInfo | null;
   last_external_relay_probe_started_at: DateTime | null;
+  playlist_is_randomly_shuffled: boolean;
   created_at: DateTime;
   updated_at: DateTime;
   deleted_at: DateTime | null;
