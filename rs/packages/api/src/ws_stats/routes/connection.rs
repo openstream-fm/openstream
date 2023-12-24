@@ -280,7 +280,8 @@ impl WsConnectionHandler {
 
       log::info!(
         target: "ws-stats",
-        "CLOSE ws-stats connection {connection_id} for station {station_id} ({reconnections})"
+        "CLOSE ws-stats connection {connection_id} for station {station_id} ({reconnections}) in {duration}",
+        duration=FormatDuration(duration_ms),
       );
     });
 
@@ -309,5 +310,28 @@ impl Handler for WsConnectionHandler {
       }
     }
     r.into()
+  }
+}
+
+struct FormatDuration(f64);
+impl core::fmt::Display for FormatDuration {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    const S: u64 = 1000;
+    const M: u64 = 60 * S;
+    const H: u64 = 60 * M;
+
+    let d = self.0.round() as u64;
+
+    let h = d / H;
+    let m = (d % H) / M;
+    let s = (d % M) / S;
+
+    if h != 0 {
+      write!(f, "{h}h {m}m {s}s")
+    } else if m != 0 {
+      write!(f, "{m}m {s}s")
+    } else {
+      write!(f, "{s}s")
+    }
   }
 }
