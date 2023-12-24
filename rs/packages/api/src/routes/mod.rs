@@ -7,6 +7,7 @@ pub mod stations;
 pub mod users;
 
 pub mod analytics;
+pub mod app_analytics;
 pub mod invitations;
 pub mod payment_methods;
 pub mod plans;
@@ -139,6 +140,10 @@ pub fn router(
   app
     .at("/analytics")
     .get(analytics::get::Endpoint {}.into_handler());
+
+  app
+    .at("/app-analytics")
+    .get(app_analytics::get::Endpoint {}.into_handler());
 
   app.at("/stream-stats").get(
     stream_stats::get::Endpoint {

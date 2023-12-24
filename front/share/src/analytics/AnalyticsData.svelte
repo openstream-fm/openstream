@@ -6,12 +6,17 @@
     | { kind: "os", value: string | null | undefined }
     | { kind: "browser", value: string | null | undefined }
     | { kind: "domain", value: string | null | undefined }
-    | { kind: "station", value: string };
+    | { kind: "station", value: string }
+    | { kind: "app_kind", value: string | null | undefined } 
+    | { kind: "app_version", value: { kind: string | null | undefined, version: number | null | undefined } } 
+
+  export type Data = 
+    | ({ type: "stream" } & import("$server/defs/analytics/Analytics").Analytics)
+    | ({ type: "app" } & import("$server/defs/app-analytics/Analytics").Analytics);
 </script>
 
 <script lang="ts">
-
-  export let data: import("$server/defs/analytics/Analytics").Analytics;
+  export let data: Data;
   export let country_names: Record<string, string | undefined>;
   export let locale: import("$server/locale/share/analytics/analytics.locale").AnalyticsLocale;
   export let stats_map_locale: import("$server/locale/share/stats-map/stats-map.locale").StatsMapLocale;
@@ -21,6 +26,8 @@
   export let country_code: CountryCode | null | undefined; 
   export let browser: string | null | undefined;
   export let domain: string | null | undefined;
+  export let app_kind: string | null | undefined;
+  export let app_version: number | null | undefined;
   export let selected_stations: StationItem[] | "all";
 
   let LocaleSessions = data.is_now ? locale.Listeners : locale.Sessions;
@@ -524,12 +531,15 @@
     },
     series: [{ 
       name: LocaleSessions,
-      data: data.by_os.map(item => {
-        return {
-          x: item.key == null ? locale.Unknown : item.key,
-          y: item.sessions,
-        }
-      })
+      data: 
+        data.type === "stream" ? 
+          data.by_os.map(item => {
+            return {
+              x: item.key == null ? locale.Unknown : item.key,
+              y: item.sessions,
+            }
+          }) : 
+          []
     }]
   };
 
@@ -563,12 +573,14 @@
     },
     series: [{
       name: LocaleSessions,
-      data: data.by_browser.map(item => {
-        return {
-          x: item.key == null ? locale.Unknown : item.key,
-          y: item.sessions,
-        }
-      })
+      data: data.type === "stream" ? 
+        data.by_browser.map(item => {
+          return {
+            x: item.key == null ? locale.Unknown : item.key,
+            y: item.sessions,
+          }
+        }) : 
+        []
     }]
   };
 
@@ -602,14 +614,97 @@
     },
     series: [{ 
       name: LocaleSessions,
-      data: data.by_domain.map(item => {
-        return {
-          x: item.key == null ? locale.Unknown : item.key,
-          y: item.sessions,
-        }
-      })
+      data: data.type === "stream" ?  
+        data.by_domain.map(item => {
+          return {
+            x: item.key == null ? locale.Unknown : item.key,
+            y: item.sessions,
+          }
+        }) : 
+      []
     }]
   };
+
+  const app_kind_options: ApexOptions = {
+    chart: {
+      type: "bar",
+      fontFamily: "inherit",
+      height: chartHeight,
+      animations: {
+        enabled: false,
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    plotOptions: {
+      bar: {
+        distributed: true,
+        columnWidth: "40%",
+      }
+    },
+    yaxis: {
+      title: {
+        text: LocaleSessions,
+        style: {
+          fontSize: "1rem",
+          fontWeight: 600,
+        }
+      },
+    },
+    series: [{ 
+      name: LocaleSessions,
+      data: data.type === "app" ?  
+        data.by_app_kind.map(item => {
+          return {
+            x: item.key == null ? locale.Unknown : item.key,
+            y: item.sessions,
+          }
+        }) : 
+      []
+    }]
+  };
+
+  const app_version_options: ApexOptions = {
+    chart: {
+      type: "bar",
+      fontFamily: "inherit",
+      height: chartHeight,
+      animations: {
+        enabled: false,
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    plotOptions: {
+      bar: {
+        distributed: true,
+        columnWidth: "40%",
+      }
+    },
+    yaxis: {
+      title: {
+        text: LocaleSessions,
+        style: {
+          fontSize: "1rem",
+          fontWeight: 600,
+        }
+      },
+    },
+    series: [{ 
+      name: LocaleSessions,
+      data: data.type === "app" ?  
+        data.by_app_version.map(item => {
+          return {
+            x: item.key == null ? locale.Unknown : `${item.key.kind} ${item.key.version}`,
+            y: item.sessions,
+          }
+        }) : 
+      []
+    }]
+  };
+
 
   const station_options: ApexOptions = {
     chart: {
@@ -730,6 +825,15 @@
       }
     } : {} as Record<string, never>) satisfies Record<string, DataGridField<Item>>;
 
+    const total_transfer_field = (data.type === "stream" ? {
+      "total_transfer": {
+        name: locale.Total_transfer_in_MB,
+        format: item => to_fixed(item.total_transfer_bytes / 1_000_000, 1),
+        sort: (a, b) => compare_numbers(a.total_transfer_bytes, b.total_transfer_bytes),
+        numeric: true,
+      }
+    } : {} as Record<string, never>) satisfies Record<string, DataGridField<Item>>;
+
     const not_now_fields = (!data.is_now ? {
       "avg_time": {
         name: locale.Average_listening_minutes,
@@ -745,12 +849,8 @@
         numeric: true,
       },
 
-      "total_transfer": {
-        name: locale.Total_transfer_in_MB,
-        format: item => to_fixed(item.total_transfer_bytes / 1_000_000, 1),
-        sort: (a, b) => compare_numbers(a.total_transfer_bytes, b.total_transfer_bytes),
-        numeric: true,
-      }
+      ...total_transfer_field,
+
     } : {} as Record<string, never>) satisfies Record<string, DataGridField<Item>>;
 
     const fields = {
@@ -782,6 +882,7 @@
   }
 
   const get_by_browser_grid = () => {
+    if(data.type !== "stream") return null;
     const items = data.by_browser;
     const common = get_common_grid_options();    
     const fields = {
@@ -805,6 +906,7 @@
   }
 
   const get_by_device_grid = () => {
+    if(data.type !== "stream") return null;
     const items = data.by_os;
     const common = get_common_grid_options();    
     const fields = {
@@ -828,6 +930,7 @@
   }
 
   const get_by_domain_grid = () => {
+    if(data.type !== "stream") return null;
     const items = data.by_domain;
     const common = get_common_grid_options();    
     const fields = {
@@ -845,6 +948,60 @@
     return {
       ...common,
       title: locale.Stats_by_device,
+      fields,
+      items,
+    } satisfies DataGridData<typeof items[number], typeof fields>;
+  }
+
+  const get_by_app_kind_grid = () => {
+    if(data.type !== "app") return null;
+    const items = data.by_app_kind;
+    const common = get_common_grid_options();    
+    const fields = {
+      "key": {
+        // TODO: locale
+        name: "App ID",
+        format: item => item.key || locale.Unknown,
+        sort: (a, b) => (a.key || "").localeCompare(b.key || ""),
+        is_selected: item => app_kind === item.key,
+        on_click: item => on_click({ kind: "app_kind", value: item.key })
+      },
+      ...common.fields
+    } satisfies Record<string, DataGridField<typeof items[number]>>;
+
+
+    return {
+      ...common,
+      // TODO: locale
+      title: "Stats by app ID",
+      fields,
+      items,
+    } satisfies DataGridData<typeof items[number], typeof fields>;
+  }
+
+  const get_by_app_version_grid = () => {
+    if(data.type !== "app") return null;
+    const items = data.by_app_version;
+    const common = get_common_grid_options();    
+    const fields = {
+      "key": {
+        // TODO: locale
+        name: "App version",
+        format: item => {
+          if(item.key.kind == null && item.key.version == null) return locale.Unknown;
+          return `${item.key.kind ?? locale.Unknown} ${item.key.version ?? locale.Unknown}`
+        },
+        sort: (a, b) => (a.key.kind || "").localeCompare(b.key.kind || "") || (a.key.version ?? 0) - (b.key.version ?? 0),
+        is_selected: item => app_kind === item.key.kind && app_version === item.key.version,
+        on_click: item => on_click({ kind: "app_version", value: { kind: item.key.kind, version: item.key.version } })
+      },
+      ...common.fields
+    } satisfies Record<string, DataGridField<typeof items[number]>>;
+
+    return {
+      ...common,
+      // TODO: locale
+      title: "Stats by app version",
       fields,
       items,
     } satisfies DataGridData<typeof items[number], typeof fields>;
@@ -1073,7 +1230,9 @@
   const by_country_grid_data = get_by_country_grid();
   const by_day_grid_data = get_by_day_grid();
   const by_hour_grid_data = get_by_hour_grid();
-
+  const by_app_kind_grid_data = get_by_app_kind_grid();
+  const by_app_version_grid_data = get_by_app_version_grid();
+  
   const units = ["byte", "kilobyte", "megabyte", "gigabyte", "terabyte"]
   const bytes = (n: number) => {
     const unit_i = Math.min(units.length - 1, Math.floor(Math.max(0, Math.log(n)) / Math.log(1000)));
@@ -1272,7 +1431,7 @@
         </div>
       {/if}
 
-      {#if !data.is_now}
+      {#if data.type === "stream" && !data.is_now}
         <div class="total">
           <div class="total-title">{locale.Total_transfer}</div>
           <div class="total-value">
@@ -1357,36 +1516,68 @@
       </div>
 
       <div class="chart-box">
-        <div class="chart-title">{locale.By_website}</div>
-        <div class="chart" use:chart={domain_options} />
-        <div class="chart-grid">
-          <DataGrid data={by_domain_grid_data} locale={locale.data_grid} />
-        </div>
-      </div>
-
-      <div class="chart-box">
-        <div class="chart-title">{locale.By_device}</div>
-        <div class="chart" use:chart={os_options} />
-        <div class="chart-grid">
-          <DataGrid data={by_device_grid_data} locale={locale.data_grid} />
-        </div>
-      </div>
-
-      <div class="chart-box">
-        <div class="chart-title">{locale.By_browser}</div>
-        <div class="chart" use:chart={browser_options} />
-        <div class="chart-grid">
-          <DataGrid data={by_browser_grid_data} locale={locale.data_grid} />
-        </div>
-      </div>
-
-      <div class="chart-box">
         <div class="chart-title">{locale.By_station}</div>
         <div class="chart" use:chart={station_options} />
         <div class="chart-grid">
           <DataGrid data={by_station_grid_data} locale={locale.data_grid} />
         </div>
       </div>
+
+      {#if by_app_kind_grid_data != null}
+        <div class="chart-box">
+          <div class="chart-title">
+            <!-- TODO: locale -->
+            By App ID
+          </div>
+          <div class="chart" use:chart={app_kind_options} />
+          <div class="chart-grid">
+            <DataGrid data={by_app_kind_grid_data} locale={locale.data_grid} />
+          </div>
+        </div>
+      {/if}
+
+      {#if by_app_version_grid_data != null}
+      <div class="chart-box">
+        <div class="chart-title">
+          <!-- TODO: locale -->
+          By App version
+        </div>
+        <div class="chart" use:chart={app_version_options} />
+        <div class="chart-grid">
+          <DataGrid data={by_app_version_grid_data} locale={locale.data_grid} />
+        </div>
+      </div>
+    {/if}
+
+      {#if by_domain_grid_data != null}
+        <div class="chart-box">
+          <div class="chart-title">{locale.By_website}</div>
+          <div class="chart" use:chart={domain_options} />
+          <div class="chart-grid">
+            <DataGrid data={by_domain_grid_data} locale={locale.data_grid} />
+          </div>
+        </div>
+      {/if}
+      
+      {#if by_device_grid_data != null}
+        <div class="chart-box">
+          <div class="chart-title">{locale.By_device}</div>
+          <div class="chart" use:chart={os_options} />
+          <div class="chart-grid">
+            <DataGrid data={by_device_grid_data} locale={locale.data_grid} />
+          </div>
+        </div>
+      {/if}
+
+      {#if by_domain_grid_data != null}
+        <div class="chart-box">
+          <div class="chart-title">{locale.By_browser}</div>
+          <div class="chart" use:chart={browser_options} />
+          <div class="chart-grid">
+            <DataGrid data={by_browser_grid_data} locale={locale.data_grid} />
+          </div>
+        </div>
+      {/if}
 
       {#if !data.is_now}
         {#if by_hour_grid_data}

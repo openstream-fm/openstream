@@ -30,6 +30,7 @@ export class Client {
   accounts: Accounts;
   stations: Stations;
   analytics: Analytics;
+  app_analytics: AppAnalytics;
   invitations: AccountInvitations;
   payment_methods: PaymentMethods;
   stream_connections: StreamConnections;
@@ -48,6 +49,7 @@ export class Client {
     this.accounts = new Accounts(this);
     this.stations = new Stations(this);
     this.analytics = new Analytics(this);
+    this.app_analytics = new AppAnalytics(this);
     this.invitations = new AccountInvitations(this);
     this.payment_methods = new PaymentMethods(this);
     this.stream_connections = new StreamConnections(this);
@@ -631,6 +633,18 @@ export class Analytics {
 
   async get(ip: string | null, ua: string | null, token: string, query: import("$api/analytics/GET/Query").Query): Promise<import("$api/analytics/GET/Output").Output> {
     const url = `/analytics${qss(query)}`;
+    return await this.client.get(ip, ua, token, url);
+  }
+}
+
+export class AppAnalytics {
+  client: Client;
+  constructor(client: Client) {
+    this.client = client;
+  }
+
+  async get(ip: string | null, ua: string | null, token: string, query: import("$api/app-analytics/GET/Query").Query): Promise<import("$api/app-analytics/GET/Output").Output> {
+    const url = `/app-analytics${qss(query)}`;
     return await this.client.get(ip, ua, token, url);
   }
 }
