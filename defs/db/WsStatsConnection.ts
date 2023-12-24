@@ -12,6 +12,7 @@ export type WsStatsConnection = {
   ip: string;
   ap: string | null;
   av: number | null;
+  re: number;
   ca: DateTime;
   cl: DateTime | null;
 };

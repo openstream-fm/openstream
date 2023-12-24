@@ -44,6 +44,10 @@ pub struct WsStatsConnection {
   #[serde(rename = "av")]
   pub app_version: Option<f64>,
 
+  #[serde(rename = "re")]
+  #[serde(with = "serde_util::as_f64")]
+  pub reconnections: u16,
+
   #[serde(rename = "ca")]
   pub created_at: DateTime,
   // pub request: Request,

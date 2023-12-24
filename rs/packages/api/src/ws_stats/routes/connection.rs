@@ -143,6 +143,7 @@ impl WsConnectionHandler {
             ip,
             app_kind: app_kind.clone(),
             app_version,
+            reconnections: 0,
             created_at,
             closed_at: None,
           };
@@ -157,16 +158,35 @@ impl WsConnectionHandler {
       match prev_id {
         None => create!(),
 
-        Some(prev_id) => match WsStatsConnection::get_by_id(&prev_id).await {
-          Err(_) => return,
+        Some(prev_id) => {
+          let filter = doc! {
+            WsStatsConnection::KEY_ID: prev_id,
+          };
 
-          Ok(None) => create!(),
+          let update = doc! {
+            "$set": {
+              WsStatsConnection::KEY_IS_OPEN: true,
+              WsStatsConnection::KEY_CLOSED_AT: null,
+            },
+            "$inc": {
+              WsStatsConnection::KEY_RECONNECTIONS: 1.0,
+            }
+          };
 
-          Ok(Some(connection)) => {
-            connection_id = connection.id;
-            created_at = connection.created_at;
+          match WsStatsConnection::cl()
+            .find_one_and_update(filter, update, None)
+            .await
+          {
+            Err(_) => return,
+
+            Ok(None) => create!(),
+
+            Ok(Some(connection)) => {
+              connection_id = connection.id;
+              created_at = connection.created_at;
+            }
           }
-        },
+        }
       }
 
       'start: {
