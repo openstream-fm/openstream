@@ -8,7 +8,7 @@ use db::Model;
 use drop_tracer::{DropTracer, Token};
 use futures::stream::FuturesUnordered;
 use futures::TryStreamExt;
-use hyper::header::{HeaderName, ACCEPT_RANGES, CACHE_CONTROL, RETRY_AFTER};
+use hyper::header::{HeaderName, ACCEPT_RANGES, CACHE_CONTROL, RETRY_AFTER, LOCATION};
 use hyper::{header::CONTENT_TYPE, http::HeaderValue, Body, Server, StatusCode};
 use ip_counter::IpCounter;
 use log::*;
@@ -743,6 +743,7 @@ pub enum StreamError {
 impl From<StreamError> for Response {
   fn from(e: StreamError) -> Self {
     let (status, code, message, retry_after_secs) = match e {
+      
       StreamError::Db(_e) => (
         StatusCode::INTERNAL_SERVER_ERROR,
         "INTERNAL_DB",
@@ -773,6 +774,15 @@ impl From<StreamError> for Response {
       ),
 
       StreamError::Subscribe(e) => match e {
+        
+        SubscribeError::ExternalRelayRedirect(url) => {
+          let mut res = Response::new(StatusCode::FOUND);
+          if let Ok(v) = HeaderValue::from_str(&url) {
+            res.headers_mut().append(LOCATION, v);
+          }
+          return res;
+        }
+
         SubscribeError::Db(_e) => (
           StatusCode::INTERNAL_SERVER_ERROR,
           "INTERNAL_RELAY_DB",

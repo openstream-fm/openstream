@@ -55,7 +55,8 @@
   let prev = typeof _prev === "string" ? _prev : ""; 
   let external_relay_enabled = data.station.external_relay_url != null;
   let external_relay_url = data.station.external_relay_url || prev;
-  
+  let external_relay_redirect = data.station.external_relay_redirect ?? false;
+
   let saving_relay = false;
   const save_external_relay = action(async () => {
     
@@ -69,6 +70,7 @@
       if(external_relay_enabled) {
         payload = {
           external_relay_url,
+          external_relay_redirect,
           user_metadata: {
             [KEY]: external_relay_url,
           },
@@ -76,6 +78,7 @@
       } else {
         payload = {
           external_relay_url: null,
+          external_relay_redirect,
           user_metadata: {
             [KEY]: external_relay_url,
           }
@@ -280,7 +283,17 @@
   }
 
   .relay-field {
-    margin-top: 1rem;
+    margin-top: 1.5rem;
+    transition: opacity 200ms ease;
+  }
+
+  .redirect-field {
+    margin-top: 0.5rem;
+  }
+
+  .redirect-field.disabled {
+    opacity: 0.5;
+    pointer-events: none;
   }
 
   .relay-send {
@@ -350,6 +363,10 @@
             <TextField label={$locale.misc.Master_Relay_URL} disabled={!external_relay_enabled} bind:value={external_relay_url}  />
             <Validator value={external_relay_url} fn={_validate_external_relay_url} />
           </div>
+          <div class="redirect-field" class:disabled={external_relay_enabled === false}>
+            <!-- TODO: locale -->
+            <BooleanField bind:value={external_relay_redirect} label={"Enable master relay redirect mode"} />
+          </div>          
 
           <button type="submit" class="relay-send ripple-container" use:ripple class:sending={saving_relay}>
             <div class="relay-send-text">

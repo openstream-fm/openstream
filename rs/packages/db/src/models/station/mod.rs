@@ -256,6 +256,7 @@ pub struct Station {
 
   // external-relay
   pub external_relay_url: Option<String>,
+  pub external_relay_redirect: bool,
 
   // auth
   pub source_password: String,
@@ -385,9 +386,12 @@ pub struct UserPublicStation {
   // metadata
   pub user_metadata: Metadata,
 
+  // external-relay
+  pub external_relay_url: Option<String>,
+  pub external_relay_redirect: bool,
+
   // misc
   pub playlist_is_randomly_shuffled: bool,
-  pub external_relay_url: Option<String>,
 
   // auth
   pub source_password: String,
@@ -797,6 +801,10 @@ pub struct StationPatch {
   )]
   pub external_relay_url: Option<Option<String>>,
 
+  #[ts(optional)]
+  #[serde(skip_serializing_if = "Option::is_none")]
+  pub external_relay_redirect: Option<bool>,
+
   //#[ts(optional)]
   //#[serde(skip_serializing_if = "Option::is_none")]
   //pub limits: Option<StationPatchLimits>,
@@ -933,6 +941,7 @@ impl Station {
       }
     }
     apply!(external_relay_url);
+    apply!(external_relay_redirect);
 
     if let Some(metadata) = patch.user_metadata {
       self.user_metadata.merge(metadata);
@@ -1000,7 +1009,10 @@ impl From<Station> for UserPublicStation {
       google_play_url: station.google_play_url,
 
       playlist_is_randomly_shuffled: station.playlist_is_randomly_shuffled,
+
       external_relay_url: station.external_relay_url,
+      external_relay_redirect: station.external_relay_redirect,
+
       source_password: station.source_password,
 
       user_metadata: station.user_metadata,

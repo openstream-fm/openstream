@@ -30,6 +30,7 @@ export type StationPatch = {
   google_play_url?: string | null;
   app_store_url?: string | null;
   external_relay_url?: string | null;
+  external_relay_redirect?: boolean;
   user_metadata?: Metadata;
   system_metadata?: Metadata;
 };

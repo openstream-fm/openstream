@@ -107,6 +107,8 @@ pub enum SubscribeError {
   PlaylistEmpty,
   #[error("internal relay error: {0}")]
   InternalRelay(#[from] GetInternalRelayError),
+  #[error("external relay redirect: {0}")]
+  ExternalRelayRedirect(String),
 }
 
 impl MediaSessionMap {
@@ -268,6 +270,18 @@ impl MediaSessionMap {
     match &*lock {
       Some(handle) => Ok(handle.sender.subscribe()),
       None => {
+        {
+          // external relay redirect
+          let station = Station::get_by_id(station_id).await?;
+          if let Some(station) = station {
+            if let Some(url) = station.external_relay_url {
+              if station.external_relay_redirect {
+                return Err(SubscribeError::ExternalRelayRedirect(url));
+              }
+            }
+          }
+        }
+
         let task_id = Station::random_owner_task_id();
 
         let map_entry_release =

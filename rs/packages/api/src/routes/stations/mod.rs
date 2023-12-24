@@ -618,7 +618,9 @@ pub mod post {
 
         source_password: Station::random_source_password(),
         playlist_is_randomly_shuffled: false,
+
         external_relay_url,
+        external_relay_redirect: false,
 
         owner_deployment_info: None,
 

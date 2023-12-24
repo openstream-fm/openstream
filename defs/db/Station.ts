@@ -37,6 +37,7 @@ export type Station = {
   user_metadata: Metadata;
   system_metadata: Metadata;
   external_relay_url: string | null;
+  external_relay_redirect: boolean;
   source_password: string;
   owner_deployment_info: OwnerDeploymentInfo | null;
   last_external_relay_probe_started_at: DateTime | null;
