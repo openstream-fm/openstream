@@ -47,7 +47,7 @@
 <div class="type-selector">
   <div class="type-selector-item" class:selected={type === "stream"}>    
     {#if type === "stream"}
-      <div class="bg" in:enter={{ key: null }} out:leave={{ key: null }} />
+      <div class="bg" in:enter|local={{ key: null }} out:leave|local={{ key: null }} />
     {/if}
     <button class="type-selector-btn" on:click={() => type = "stream"}>
       <!-- TODO: locale -->
@@ -56,7 +56,7 @@
   </div>
   <div class="type-selector-item" class:selected={type === "app"}>
     {#if type === "app"}
-      <div class="bg" in:enter={{ key: null }} out:leave={{ key: null }} />
+      <div class="bg" in:enter|local={{ key: null }} out:leave|local={{ key: null }} />
     {/if}
     <button class="type-selector-btn" on:click={() => type = "app"}>
       <!-- TODO: locale -->
