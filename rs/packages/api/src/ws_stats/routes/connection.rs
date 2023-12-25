@@ -1,4 +1,5 @@
 use db::{station::Station, ws_stats_connection::WsStatsConnection, Model};
+use drop_tracer::DropTracer;
 use futures_util::{sink::SinkExt, stream::StreamExt};
 use hyper::{Body, StatusCode};
 use mongodb::bson::doc;
@@ -15,6 +16,7 @@ use ts_rs::TS;
 #[derive(Debug, Clone)]
 pub struct WsConnectionHandler {
   pub deployment_id: String,
+  pub drop_tracer: DropTracer,
   pub shutdown: Shutdown,
 }
 
@@ -124,6 +126,7 @@ impl WsConnectionHandler {
 
     let (res, stream_future) = prex::ws::upgrade(&mut req, None)?;
 
+    let token = self.drop_tracer.token();
     tokio::spawn(async move {
       let mut stream = match stream_future.await {
         Ok(stream) => stream,
@@ -283,6 +286,8 @@ impl WsConnectionHandler {
         "CLOSE ws-stats connection {connection_id} for station {station_id} ({reconnections}) in {duration}",
         duration=FormatDuration(duration_ms),
       );
+
+      drop(token)
     });
 
     Ok(res)

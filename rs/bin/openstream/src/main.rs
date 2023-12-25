@@ -541,6 +541,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
       let ws_stats = WsStatsServer::new(
         deployment.id.clone(),
         ws_stats_config.addrs.clone(),
+        drop_tracer.clone(),
         shutdown.clone(),
       );
       let fut = ws_stats.start()?;

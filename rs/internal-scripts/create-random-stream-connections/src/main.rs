@@ -178,6 +178,7 @@ async fn create_random_stream_connection(
     country_code: request.country_code,
     transfer_bytes,
     duration_ms,
+    is_external_relay_redirect: false,
     created_at: created_at.into(),
     last_transfer_at: created_at.into(),
     closed_at,
