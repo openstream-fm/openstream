@@ -29,9 +29,6 @@
 		};
 	}
 
-	$: console.log({ merged_now_playing, on_air });
-
-
 	let store: ReturnType<typeof get_now_playing_store> | null;
 	let unsub: (() => void) | null = null;
 

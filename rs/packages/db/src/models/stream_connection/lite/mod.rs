@@ -10,6 +10,12 @@ use ts_rs::TS;
 
 crate::register!(StreamConnectionLite);
 
+#[allow(clippy::bool_comparison)]
+#[inline(always)]
+fn is_false(v: &bool) -> bool {
+  *v == false
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
@@ -51,6 +57,11 @@ pub struct StreamConnectionLite {
   #[serde(rename = "ca")]
   pub created_at: DateTime,
 
+  #[serde(rename = "re")]
+  #[serde(default)]
+  #[serde(skip_serializing_if = "is_false")]
+  pub is_external_relay_redirect: bool,
+
   #[serde(rename = "cl")]
   pub closed_at: Option<DateTime>,
 }
@@ -80,6 +91,7 @@ impl StreamConnectionLite {
       domain: Self::get_domain(full),
       duration_ms: full.duration_ms,
       transfer_bytes: full.transfer_bytes,
+      is_external_relay_redirect: full.is_external_relay_redirect,
       created_at: full.created_at,
       closed_at: full.closed_at,
     }
@@ -99,6 +111,7 @@ impl From<StreamConnection> for StreamConnectionLite {
       duration_ms: full.duration_ms,
       transfer_bytes: full.transfer_bytes,
       country_code: full.country_code,
+      is_external_relay_redirect: full.is_external_relay_redirect,
       created_at: full.created_at,
       closed_at: full.closed_at,
     }

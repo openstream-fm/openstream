@@ -34,6 +34,9 @@ pub struct StreamConnection {
   #[serde(with = "serde_util::ip")]
   pub ip: IpAddr,
 
+  #[serde(default)]
+  pub is_external_relay_redirect: bool,
+
   pub request: Request,
   pub last_transfer_at: DateTime,
   pub closed_at: Option<DateTime>,

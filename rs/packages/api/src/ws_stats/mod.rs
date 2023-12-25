@@ -1,5 +1,6 @@
 pub mod routes;
 
+use drop_tracer::DropTracer;
 use futures::stream::FuturesUnordered;
 use futures::TryStreamExt;
 use hyper::Server;
@@ -14,6 +15,7 @@ use std::net::SocketAddr;
 pub struct WsStatsServer {
   deployment_id: String,
   addrs: Vec<SocketAddr>,
+  drop_tracer: DropTracer,
   shutdown: Shutdown,
 }
 
@@ -31,10 +33,16 @@ pub struct Status {
 }
 
 impl WsStatsServer {
-  pub fn new(deployment_id: String, addrs: Vec<SocketAddr>, shutdown: Shutdown) -> Self {
+  pub fn new(
+    deployment_id: String,
+    addrs: Vec<SocketAddr>,
+    drop_tracer: DropTracer,
+    shutdown: Shutdown,
+  ) -> Self {
     Self {
       deployment_id,
       addrs,
+      drop_tracer,
       shutdown,
     }
   }
@@ -49,6 +57,7 @@ impl WsStatsServer {
 
     app.at("/").nest(routes::router(
       self.deployment_id.clone(),
+      self.drop_tracer.clone(),
       self.shutdown.clone(),
     ));
 

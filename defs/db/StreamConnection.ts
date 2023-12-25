@@ -13,6 +13,7 @@ export type StreamConnection = {
   created_at: DateTime;
   country_code: CountryCode | null;
   ip: string;
+  is_external_relay_redirect: boolean;
   request: Request;
   last_transfer_at: DateTime;
   closed_at: DateTime | null;

@@ -378,7 +378,48 @@ impl StreamHandler {
       };
 
       // TODO: check account limits
-      let rx = media_sessions.subscribe(&station.id).await?;
+      let rx = match media_sessions.subscribe(&station.id).await {
+        Ok(rx) => rx,
+        Err(e) => {
+          if matches!(e, SubscribeError::ExternalRelayRedirect(_)) {
+            let token = drop_tracer.token();
+            tokio::spawn(async move {
+              // create redirect session
+              let now = DateTime::now();
+              let doc = {
+                let request = db::http::Request::from_http(&req);
+
+                StreamConnection {
+                  id: StreamConnection::uid(),
+                  station_id: station.id.clone(),
+                  deployment_id: deployment_id.clone(),
+                  is_open: true,
+                  ip: request.real_ip,
+                  country_code: request.country_code,
+                  transfer_bytes: Some(0),
+                  duration_ms: Some(0),
+                  request,
+                  is_external_relay_redirect: true,
+                  created_at: now,
+                  last_transfer_at: now,
+                  closed_at: Some(now),
+                }
+              };
+
+              let doc_lite = StreamConnectionLite::from_stream_connection_ref(&doc);
+            
+              let insert_doc = StreamConnection::insert(doc);
+              let insert_doc_lite = StreamConnectionLite::insert(doc_lite);
+
+              let (_, _) = tokio::join!(insert_doc, insert_doc_lite);
+           
+              drop(token);
+            });
+          }
+          
+          return Err(e.into());
+        }
+      };
       let content_type = rx.content_type().to_string();
 
       let is_mp3 = content_type == "audio/mpeg";
@@ -398,6 +439,7 @@ impl StreamHandler {
           duration_ms: None,
           request,
           created_at: now,
+          is_external_relay_redirect: false,
           last_transfer_at: now,
           closed_at: None,
         }
