@@ -1,3 +1,11 @@
+use std::{
+  sync::{
+    atomic::{AtomicU64, Ordering},
+    Arc,
+  },
+  time::Instant,
+};
+
 use db::{station::Station, ws_stats_connection::WsStatsConnection, Model};
 use drop_tracer::DropTracer;
 use futures_util::{sink::SinkExt, stream::StreamExt};
@@ -120,28 +128,36 @@ impl WsConnectionHandler {
     let ip = req.isomorphic_ip();
     let country_code = geoip::ip_to_country_code(&ip);
 
-    if !Station::exists(qs.station_id.clone()).await? {
-      return Err(WsConnectionHandlerError::StationNotFound(qs.station_id));
-    }
+    let station_name = match Station::get_by_id(&qs.station_id).await? {
+      Some(station) => station.name,
+      None => return Err(WsConnectionHandlerError::StationNotFound(qs.station_id)),
+    };
 
     let (res, stream_future) = prex::ws::upgrade(&mut req, None)?;
 
     let token = self.drop_tracer.token();
     tokio::spawn(async move {
-      let mut stream = match stream_future.await {
-        Ok(stream) => stream,
-        Err(_) => {
-          // TODO: log
-          return;
-        }
-      };
-
       let Query {
         connection_id: prev_id,
         station_id,
         app_kind,
         app_version,
       } = qs;
+
+      let stream = match stream_future.await {
+        Ok(stream) => stream,
+        Err(e) => {
+          log::warn!(
+            target: "ws-stats",
+            "ERR ws-stats {station_id} ({station_name}) at {app_kind_version} => {e} {e:?}",
+            app_kind_version=AppKindVersion {
+              kind: app_kind.as_deref(),
+              version: app_version,
+            },
+          );
+          return;
+        }
+      };
 
       let reconnections: u16;
       let connection_id: String;
@@ -212,41 +228,74 @@ impl WsConnectionHandler {
 
       log::info!(
         target: "ws-stats",
-        "OPEN ws-stats connection {connection_id} for station {station_id} ({reconnections})"
+        "OPEN ws-stats conn {connection_id} for {station_id} ({station_name}) ({reconnections}) at {app_kind_version}",
+        app_kind_version=AppKindVersion {
+          kind: app_kind.as_deref(),
+          version: app_version,
+        },
       );
 
-      'start: {
-        macro_rules! send {
-          ($event:expr) => {{
-            let event = serde_json::to_string(&$event).unwrap();
-            let r = tokio::select! {
-              _ = shutdown.signal() => break 'start,
-              r = stream.send(Message::text(event)) => r
-            };
+      let (mut sink, mut stream) = stream.split();
 
-            match r {
-              Ok(_) => {}
-              _ => break 'start,
-            }
-          }};
+      let (tx, mut rx) = tokio::sync::mpsc::channel::<Message>(8);
+
+      let start = Instant::now();
+      let last_pong_timestamp = Arc::new(AtomicU64::new(0));
+
+      macro_rules! send {
+        ($event:expr) => {{
+          let event: ServerEvent = $event;
+          let text = serde_json::to_string(&event).unwrap();
+          let message = Message::Text(text);
+          match tx.send(message).await {
+            Ok(_) => {}
+            Err(_) => return,
+          };
+        }};
+      }
+
+      let write = async {
+        loop {
+          let message = match rx.recv().await {
+            None => break,
+            Some(event) => event,
+          };
+
+          // let event = serde_json::to_string(&event).unwrap();
+          match sink.send(message).await {
+            Ok(_) => {}
+            _ => return,
+          }
         }
+      };
 
+      let ping = {
+        async {
+          loop {
+            tokio::time::sleep(std::time::Duration::from_secs(10)).await;
+
+            if start.elapsed().as_secs() - last_pong_timestamp.load(Ordering::Acquire) > 60 {
+              break;
+            }
+
+            match tx.send(Message::Ping(vec![])).await {
+              Ok(_) => {}
+              Err(_) => return,
+            }
+          }
+        }
+      };
+
+      let handle = async {
         send!(ServerEvent::Start {
           connection_id: connection_id.clone(),
         });
 
         'messages: loop {
-          let msg = tokio::select! {
-            _ = shutdown.signal() => {
-              break 'messages;
-            }
-
-            msg = stream.next() => msg,
-          };
-
-          let msg = match msg {
+          let msg = match stream.next().await {
+            None => break 'messages,
+            Some(Err(_)) => break 'messages,
             Some(Ok(msg)) => msg,
-            _ => break 'messages,
           };
 
           match msg {
@@ -264,10 +313,23 @@ impl WsConnectionHandler {
               }
             }
 
+            Message::Pong(_) => {
+              last_pong_timestamp.store(start.elapsed().as_secs(), Ordering::Release);
+            }
+
+            Message::Close(_) => break 'messages,
+
             _ => continue 'messages,
           }
         }
-      }
+      };
+
+      tokio::select! {
+        _ = write => {}
+        _ = ping => {}
+        _ = handle => {}
+        _ = shutdown.signal() => {}
+      };
 
       let duration_ms = ((*DateTime::now() - *created_at).as_seconds_f64() * 1000.0).round();
 
@@ -283,7 +345,11 @@ impl WsConnectionHandler {
 
       log::info!(
         target: "ws-stats",
-        "CLOSE ws-stats connection {connection_id} for station {station_id} ({reconnections}) in {duration}",
+        "CLOSE ws-stats conn {connection_id} for {station_id} ({station_name}) ({reconnections}) at {app_kind_version} in {duration}",
+        app_kind_version=AppKindVersion {
+          kind: app_kind.as_deref(),
+          version: app_version,
+        },
         duration=FormatDuration(duration_ms),
       );
 
@@ -337,6 +403,22 @@ impl core::fmt::Display for FormatDuration {
       write!(f, "{m}m {s}s")
     } else {
       write!(f, "{s}s")
+    }
+  }
+}
+
+struct AppKindVersion<'a> {
+  kind: Option<&'a str>,
+  version: Option<u32>,
+}
+
+impl<'a> core::fmt::Display for AppKindVersion<'a> {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    match (&self.kind, &self.version) {
+      (None, None) => write!(f, "unknown"),
+      (Some(k), None) => write!(f, "{k}"),
+      (None, Some(v)) => write!(f, "@{v}"),
+      (Some(k), Some(v)) => write!(f, "{k}@{v}"),
     }
   }
 }
