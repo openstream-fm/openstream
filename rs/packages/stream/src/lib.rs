@@ -393,7 +393,7 @@ impl StreamHandler {
                   id: StreamConnection::uid(),
                   station_id: station.id.clone(),
                   deployment_id: deployment_id.clone(),
-                  is_open: true,
+                  is_open: false,
                   ip: request.real_ip,
                   country_code: request.country_code,
                   transfer_bytes: Some(0),
