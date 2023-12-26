@@ -207,7 +207,8 @@ pub mod get {
         os,
         browser,
         domain,
-        min_duration_ms: Some(min_duration_ms.unwrap_or(5_000)),
+        // min_duration_ms: Some(min_duration_ms.unwrap_or(5_000)),
+        min_duration_ms,
       };
 
       let analytics = analytics::get_analytics(query).await?;

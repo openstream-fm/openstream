@@ -232,7 +232,8 @@ pub mod get {
         // domain,
         app_kind,
         app_version,
-        min_duration_ms: Some(min_duration_ms.unwrap_or(5_000)),
+        // min_duration_ms: Some(min_duration_ms.unwrap_or(5_000)),
+        min_duration_ms,
       };
 
       let analytics = app_analytics::get_analytics(query).await?;
