@@ -269,14 +269,22 @@ impl WsConnectionHandler {
         }
       };
 
-      let ping = {
+      let pong = {
         async {
           loop {
             tokio::time::sleep(std::time::Duration::from_secs(10)).await;
 
-            if start.elapsed().as_secs() - last_pong_timestamp.load(Ordering::Acquire) > 60 {
+            if start.elapsed().as_secs() - last_pong_timestamp.load(Ordering::Acquire) > 45 {
               break;
             }
+          }
+        }
+      };
+
+      let ping = {
+        async {
+          loop {
+            tokio::time::sleep(std::time::Duration::from_secs(10)).await;
 
             match tx.send(Message::Ping(vec![])).await {
               Ok(_) => {}
@@ -325,8 +333,9 @@ impl WsConnectionHandler {
       };
 
       tokio::select! {
-        _ = write => {}
         _ = ping => {}
+        _ = pong => {}
+        _ = write => {}
         _ = handle => {}
         _ = shutdown.signal() => {}
       };
