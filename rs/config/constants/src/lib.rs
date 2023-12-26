@@ -170,6 +170,10 @@ pub const MEDIA_LOCK_TIMEOUT_SECS: u64 = 30;
 #[const_register]
 pub const STREAM_CONNECTION_MAX_DURATION_SECS: u64 = 60 * 60 * 6; // 6 hours
 
+/// header name to get the result of the stream is-hls-redirect query
+#[const_register]
+pub const IS_HLS_REDIRECT_HEADER: &str = "x-is-hls-redirect";
+
 /// validation constants
 pub mod validate {
   use super::*;
