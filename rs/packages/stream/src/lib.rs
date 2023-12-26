@@ -52,6 +52,10 @@ const CACHE_CONTROL_NO_CACHE: HeaderValue = HeaderValue::from_static("no-cache")
 #[allow(clippy::declare_interior_mutable_const)]
 const TEXT_PLAIN_UTF8: HeaderValue = HeaderValue::from_static("text/plain;charset=utf-8");
 
+#[allow(clippy::declare_interior_mutable_const)]
+const APPLICATION_JSON_UTF8: HeaderValue = HeaderValue::from_static("application/json;charset=utf-8");
+
+
 #[derive(Debug)]
 pub struct StreamServer {
   deployment_id: String,
@@ -136,6 +140,8 @@ impl StreamServer {
       "/relay/:id",
       RelayHandler::new(self.deployment_id.clone(), self.media_sessions.clone()),
     );
+
+    app.get("/stream/:id/is-hls-redirect", IsHlsRedirectHandler {});
 
     let app = app.build().expect("prex app build stream");
 
@@ -1068,5 +1074,80 @@ fn find_first_frame_index(data: &[u8]) -> Option<usize> {
         }
       })
     }
+  }
+}
+
+pub struct IsHlsRedirectHandler {}
+
+#[derive(Debug, thiserror::Error)]
+pub enum IsHlsRedirectError {
+  #[error("db: {0}")]
+  Db(#[from] mongodb::error::Error),
+
+  #[error("station with id {0} not found")]
+  StationNotFound(String),
+}
+
+impl From<IsHlsRedirectError> for Response {
+  fn from(e: IsHlsRedirectError) -> Response {
+    let (status, message) = match e {
+      IsHlsRedirectError::Db(_) => (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "internal server error (db)".into(),
+      ),
+
+      IsHlsRedirectError::StationNotFound(id) => (
+        StatusCode::NOT_FOUND,
+        format!("station with id {id} not found"),
+      ),
+    };
+
+    let mut res = Response::new(status);
+    res.headers_mut().append(CONTENT_TYPE, TEXT_PLAIN_UTF8);
+    *res.body_mut() = Body::from(message);
+    res
+  } 
+}
+
+impl IsHlsRedirectHandler {
+  async fn handle(&self, req: Request) -> Result<Response, IsHlsRedirectError> {
+    tokio::spawn(async move {
+      let station_id = req.param("id").unwrap();
+
+      let station = match Station::get_by_id(station_id).await? {
+        Some(station) => station,
+        None => return Err(IsHlsRedirectError::StationNotFound(station_id.to_string())),
+      };
+      
+      let is_hls_redirect = {
+        if !station.external_relay_redirect {
+          false
+        } else {
+          match station.external_relay_url {
+            None => false,
+            Some(u) => match url::Url::parse(&u) {
+              Err(_) => false,
+              Ok(url) => {
+                let path = url.path().to_lowercase();
+                path.ends_with(".m3u8") || path.ends_with(".m3u")
+              },
+            }
+          }
+        }
+      };
+
+      let mut res = Response::new(StatusCode::OK);
+      res.headers_mut().insert(HeaderName::from_static(constants::IS_HLS_REDIRECT_HEADER), HeaderValue::from_str(&is_hls_redirect.to_string()).unwrap());
+      res.headers_mut().insert(CONTENT_TYPE, APPLICATION_JSON_UTF8);
+      *res.body_mut() = Body::from(is_hls_redirect.to_string());
+      Ok(res)
+    }).await.unwrap()
+  }
+}
+
+#[async_trait]
+impl Handler for IsHlsRedirectHandler {
+  async fn call(&self, req: Request, _: Next) -> Response {
+    self.handle(req).await.into()
   }
 }

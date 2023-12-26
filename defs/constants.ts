@@ -55,6 +55,9 @@ export const HEADER_RELAY_SOURCE_DEPLOYMENT = "x-source-deployment";
 /** Internal relay rejection code header */
 export const INTERNAL_RELAY_REJECTION_CODE_HEADER = "x-openstream-rejection-code";
 
+/** header name to get the result of the stream is-hls-redirect query */
+export const IS_HLS_REDIRECT_HEADER = "x-is-hls-redirect";
+
 /** timeout to wait to obtain a lock on a media session items
  *  if not released in this timeout, probably the item is poisoned
  *  and the process is aborted with a panic (and restarted by the process manager) */
