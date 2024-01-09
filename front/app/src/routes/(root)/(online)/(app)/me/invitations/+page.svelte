@@ -55,9 +55,8 @@
       if(each.is_expired) continue;
       if(each.state !== "pending") continue;
       if(each.id === item.id) continue;
-      if(each.account_id !== item.account_id) {
-        ids.add(each.id);
-      }
+      if(each.account_id !== item.account_id) continue;
+      ids.add(each.id);
     } 
 
     await Promise.all([...ids].map(async id => {
@@ -180,7 +179,7 @@
   }
 
   .invitation:nth-child(even) {
-    background: rgba(0,0,0,0.05);
+    background: rgba(0,0,0,0.025);
   }
 
   .invitation-actions {
@@ -224,11 +223,11 @@
 			{$locale.pages['me/invitations'].head.title}
 		</div>
 		{#if current.length === 0}
-      <div class="empty-message">
+      <div class="empty-message" transition:slide|local={{ duration: 400 }}>
         {$locale.pages['me/invitations'].no_items_message}
       </div>
     {:else}
-      <div class="list">
+      <div class="list" transition:slide|local={{ duration: 400 }}>
         {#each current as item (item.id)}
           <div class="invitation" data-invitation-id={item.id} transition:slide|local={{ duration: 400 }}>
             <div class="invitation-data">
