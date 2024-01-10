@@ -76,6 +76,7 @@ pub enum PublicErrorCode {
   AccountNotFound,
   AudioFileNotFound,
   DeviceNotFound,
+  ApiKeyNotFound,
   PlanNotFound,
   PaymentMethodNotFound,
   InvitationNotFound,

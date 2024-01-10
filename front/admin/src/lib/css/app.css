@@ -45,10 +45,13 @@
   --z-drawer-wide: 1100;
   --z-player: 1200;
   --z-user-menu: 1375;
+  --z-analytics-filters-menus: 1380;
+
   --z-drawer-fixed: 1400;
   --z-map-tooltip: 2000;
   --z-tooltip: 2100;
   --z-overlay: 3000;
+
   
   --some-shadow: 0 4px 20px 0 rgb(0 0 0 / 20%);
 }

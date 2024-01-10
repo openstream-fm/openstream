@@ -29,6 +29,25 @@ export const shared_api = ({
       return await client.me.devices.delete(ip(req), ua(req), get_token(req), req.params.device);
     }))
 
+  api.route("/me/api-keys")
+    .get(json(async req => {
+      return await client.me.api_keys.list(ip(req), ua(req), get_token(req), req.query as any);
+    }))
+    
+    .post(json(async req => {
+      return await client.me.api_keys.post(ip(req), ua(req), get_token(req), req.body);
+    }))
+
+  api.route("/me/api-keys/:id")
+    .patch(json(async req => {
+      return await client.me.api_keys.patch(ip(req), ua(req), get_token(req), req.params.id, req.body);
+    }))
+
+    .delete(json(async req => {
+      return await client.me.api_keys.delete(ip(req), ua(req), get_token(req), req.params.id);
+    }))
+
+
 
   api.route("/auth/email-verification/send-code")
     .post(json(async req => {
