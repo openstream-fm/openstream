@@ -81,6 +81,9 @@ pub enum ApiError {
   #[error("account not found: {0}")]
   DeviceNotFound(String),
 
+  #[error("api key not found: {0}")]
+  ApiKeyNotFound(String),
+
   #[error("audio file not found: {0}")]
   AudioFileNotFound(String),
 
@@ -207,6 +210,7 @@ impl ApiError {
       StationNotFound(_) => StatusCode::NOT_FOUND,
       AdminNotFound(_) => StatusCode::NOT_FOUND,
       DeviceNotFound(_) => StatusCode::NOT_FOUND,
+      ApiKeyNotFound(_) => StatusCode::NOT_FOUND,
       AccountNotFound(_) => StatusCode::NOT_FOUND,
       PlanNotFound(_) => StatusCode::NOT_FOUND,
       PaymentMethodNotFound(_) => StatusCode::NOT_FOUND,
@@ -285,6 +289,7 @@ impl ApiError {
       PaymentMethodNotFound(id) => format!("Payment method with id {id} not found"),
       AccountNotFound(id) => format!("Account with id {id} not found"),
       DeviceNotFound(id) => format!("Device with id {id} not found"),
+      ApiKeyNotFound(id) => format!("API key with id {id} not found"),
       AudioFileNotFound(id) => format!("Audio file with id {id} not found"),
       InvitationNotFound(id) => format!("Invitation with id {id} not found"),
       
@@ -358,6 +363,7 @@ impl ApiError {
       AccountNotFound(_) => PublicErrorCode::AccountNotFound,
       AudioFileNotFound(_) => PublicErrorCode::AudioFileNotFound,
       DeviceNotFound(_) => PublicErrorCode::DeviceNotFound,
+      ApiKeyNotFound(_) => PublicErrorCode::ApiKeyNotFound,
       PaymentMethodNotFound(_) => PublicErrorCode::PaymentMethodNotFound,
       InvitationNotFound(_) => PublicErrorCode::InvitationNotFound,
 
