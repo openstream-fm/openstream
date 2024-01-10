@@ -14,7 +14,7 @@ use serde_util::DateTime;
 use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/")]
+#[ts(export, export_to = "../../../defs/api/")]
 pub struct ApiKey {
   #[serde(rename = "_id")]
   id: String,
@@ -188,6 +188,224 @@ pub mod get {
       });
 
       Ok(Output(out))
+    }
+  }
+}
+
+pub mod post {
+
+  use prex::request::ReadBodyJsonError;
+
+  use super::*;
+
+  #[derive(Debug, Clone)]
+  pub struct Endpoint {}
+
+  #[derive(Debug, Clone)]
+  pub struct Input {
+    payload: Payload,
+    access_token_scope: AccessTokenScope,
+  }
+
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export, export_to = "../../../defs/api/me/api-keys/POST/")]
+  pub struct Payload {
+    title: String,
+    password: String,
+  }
+
+  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[ts(export, export_to = "../../../defs/api/me/api-keys/POST/")]
+  pub struct Output {
+    pub api_key: ApiKey,
+    pub token: String,
+    pub media_key: String,
+  }
+
+  #[derive(Debug, thiserror::Error)]
+  pub enum ParseError {
+    #[error("access: {0}")]
+    Access(#[from] GetAccessTokenScopeError),
+    #[error("payload: {0}")]
+    Payload(#[from] ReadBodyJsonError),
+  }
+
+  impl From<ParseError> for ApiError {
+    fn from(e: ParseError) -> ApiError {
+      match e {
+        ParseError::Access(e) => e.into(),
+        ParseError::Payload(e) => e.into(),
+      }
+    }
+  }
+
+  #[derive(Debug, thiserror::Error)]
+  pub enum HandleError {
+    #[error("db: {0}")]
+    Db(#[from] mongodb::error::Error),
+    #[error("password mismatch")]
+    PasswordMismatch,
+    #[error("title empty")]
+    TitleEmpty,
+    #[error("title too long")]
+    TitleTooLong,
+    #[error("invalid global access scope ")]
+    InvalidScopeGlobal,
+  }
+
+  impl From<HandleError> for ApiError {
+    fn from(e: HandleError) -> ApiError {
+      match e {
+        HandleError::Db(e) => e.into(),
+        HandleError::PasswordMismatch => ApiError::PayloadInvalid("Password does not match".into()),
+        HandleError::InvalidScopeGlobal => {
+          ApiError::BadRequestCustom("Invalid global access scope".into())
+        }
+        HandleError::TitleEmpty => ApiError::PayloadInvalid("API key title cannot be empty".into()),
+        HandleError::TitleTooLong => {
+          ApiError::PayloadInvalid("API key title cannot exceed 100 characters".into())
+        }
+      }
+    }
+  }
+
+  #[async_trait]
+  impl JsonHandler for Endpoint {
+    type Input = Input;
+    type Output = Output;
+    type ParseError = ParseError;
+    type HandleError = HandleError;
+
+    async fn parse(&self, mut req: Request) -> Result<Self::Input, Self::ParseError> {
+      let access_token_scope = request_ext::get_access_token_scope(&req).await?;
+      let payload = req.read_body_json::<Payload>(100_000).await?;
+      // let access_token_scope = request_ext::get_scope_from_token(&req, &access_token).await?;
+
+      Ok(Self::Input {
+        access_token_scope,
+        payload,
+      })
+    }
+
+    async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
+      let Self::Input {
+        access_token_scope,
+        payload,
+      } = input;
+
+      let Payload { title, password } = payload;
+
+      let title = title.trim().to_string();
+
+      if title.is_empty() {
+        return Err(HandleError::TitleEmpty);
+      }
+
+      if title.len() > 100 {
+        return Err(HandleError::TitleTooLong);
+      }
+
+      let id: String;
+      let token: AccessToken;
+      let key: String;
+      let media_key: String;
+
+      let now = DateTime::now();
+
+      match access_token_scope {
+        AccessTokenScope::Global => return Err(HandleError::InvalidScopeGlobal),
+
+        AccessTokenScope::Admin(admin) => {
+          if !crypt::compare(&password, &admin.password) {
+            return Err(HandleError::PasswordMismatch);
+          }
+
+          id = AccessToken::uid();
+          key = AccessToken::random_key();
+          media_key = AccessToken::random_media_key();
+
+          token = AccessToken {
+            id: id.clone(),
+            hash: crypt::sha256(&key),
+            media_hash: crypt::sha256(&media_key),
+            scope: db::access_token::Scope::Admin {
+              admin_id: admin.id.clone(),
+            },
+            generated_by: GeneratedBy::Api { title },
+            hits: 0,
+            created_at: now,
+            last_used_at: None,
+            deleted_at: None,
+          };
+        }
+
+        AccessTokenScope::User(user) => {
+          match &user.password {
+            None => return Err(HandleError::PasswordMismatch),
+            Some(hashed) => {
+              if !crypt::compare(&password, hashed) {
+                return Err(HandleError::PasswordMismatch);
+              }
+            }
+          }
+
+          id = AccessToken::uid();
+          key = AccessToken::random_key();
+          media_key = AccessToken::random_media_key();
+
+          token = AccessToken {
+            id: id.clone(),
+            hash: crypt::sha256(&key),
+            media_hash: crypt::sha256(&media_key),
+            scope: db::access_token::Scope::User {
+              user_id: user.id.clone(),
+            },
+            generated_by: GeneratedBy::Api { title },
+            hits: 0,
+            created_at: now,
+            last_used_at: None,
+            deleted_at: None,
+          };
+        }
+      };
+
+      AccessToken::insert(&token).await?;
+
+      let api_key = {
+        let is_current = false;
+
+        let title = match token.generated_by {
+          GeneratedBy::Api { title } | GeneratedBy::Cli { title } => title,
+          // unreachable: the mongodb filter ensures this invariants
+          _ => unreachable!(),
+        };
+
+        let (admin_id, user_id) = match token.scope {
+          Scope::Admin { admin_id } => (Some(admin_id), None),
+          Scope::User { user_id } => (None, Some(user_id)),
+          Scope::AdminAsUser { .. } => (None, None),
+          Scope::Global => (None, None),
+        };
+
+        ApiKey {
+          id: token.id,
+          is_current,
+          user_id,
+          admin_id,
+          title,
+          created_at: token.created_at,
+          last_used_at: token.last_used_at,
+        }
+      };
+
+      let tok = format!("{}-{}", id, key);
+      let media_tok = format!("{}-{}", id, media_key);
+
+      Ok(Output {
+        api_key,
+        token: tok,
+        media_key: media_tok,
+      })
     }
   }
 }

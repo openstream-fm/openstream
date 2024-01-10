@@ -6,7 +6,7 @@
   import Icon from "$share/Icon.svelte";
 	import { ripple } from "$share/ripple";
 	import { tooltip } from "$share/tooltip";
-	import { mdiKeyOutline, mdiTrashCanOutline } from "@mdi/js";
+	import { mdiShieldKeyOutline, mdiTrashCanOutline } from "@mdi/js";
 
   import Page from "$lib/components/Page.svelte";
 	import { locale, lang } from "$lib/locale";
@@ -26,6 +26,13 @@
   $: data = get_data(key);
   const get_data = (..._args: any[]): Array<{ label: string, value: string }> => {
     const data: Array<{ label: string, value: string }> = [];
+   
+    data.push({
+      // TODO: locale
+      label: "Id",
+      value: key._id,
+    })
+   
     
     data.push({
       // TODO: locale
@@ -99,12 +106,7 @@
 <Page compact>
   <div class="key" class:current={key.is_current}>
     <div class="icon">
-      <Icon d={mdiKeyOutline} />
-    </div>
-    <div class="id">
-      <span class="id-box">
-        {key._id}-...
-      </span>
+      <Icon d={mdiShieldKeyOutline} />
     </div>
     <div class="info">
       {#each data as item}

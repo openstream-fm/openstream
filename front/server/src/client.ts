@@ -182,9 +182,12 @@ export class Client {
 export class Me {
   client: Client;
   devices: MeDevices;
+  api_keys: MeApiKeys;
+
   constructor(client: Client) {
     this.client = client;
     this.devices = new MeDevices(client);
+    this.api_keys = new MeApiKeys(client);
   }
 
   async me(ip: string | null, ua: string | null, token: string): Promise<import("$api/me/GET/Output").Output> {
@@ -207,6 +210,31 @@ export class MeDevices {
     return await this.client.delete(ip, ua, token, `/me/devices/${id}`);
   }
 }
+
+export class MeApiKeys {
+  client: Client;
+
+  constructor(client: Client) {
+    this.client = client;
+  }
+
+  async list(ip: string | null, ua: string | null, token: string, query: import("$api/me/api-keys/GET/Query").Query): Promise<import("$api/me/devices/GET/Output").Output> {
+    return await this.client.get(ip, ua, token, `/me/api-keys${qss(query)}`);
+  }
+
+  async post(ip: string | null, ua: string | null, token: string, payload: import("$api/me/api-keys/POST/Payload").Payload): Promise<import("$api/me/api-keys/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, `/me/api-keys`, payload);
+  }
+  
+  async patch(ip: string | null, ua: string | null, token: string, id: string, payload: import("$api/me/api-keys/[id]/PATCH/Payload").Payload): Promise<import("$api/me/api-keys/[id]/PATCH/Output").Output> {
+    return await this.client.patch(ip, ua, token, `/me/api-keys/${id}`, payload);
+  }
+    
+  async delete(ip: string | null, ua: string | null, token: string, id: string): Promise<import("$api/me/api-keys/[id]/DELETE/Output").Output> {
+    return await this.client.delete(ip, ua, token, `/me/api-keys/${id}`);
+  }
+}
+
 
 export class Auth {
   client: Client;

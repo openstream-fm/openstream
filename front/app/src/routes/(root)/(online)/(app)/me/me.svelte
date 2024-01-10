@@ -10,7 +10,7 @@
 	import { invalidateAll } from "$lib/invalidate";
 	import Email from "$share/Form/Email.svelte";
 	import Password from "$share/Form/Password.svelte";
-	import { mdiAccountOutline, mdiDevices, mdiKeyOutline, mdiPhoneOutline, mdiTranslate } from "@mdi/js";
+	import { mdiAccountOutline, mdiDevices, mdiPhoneOutline, mdiShieldKeyOutline, mdiTranslate } from "@mdi/js";
 	import Icon from "$share/Icon.svelte";
   import Formy from "$share/formy/Formy.svelte";
   import Validator from "$share/formy/Validator.svelte";
@@ -426,7 +426,7 @@
 
       <a href="/me/api-keys" class="na more-link ripple-container" use:ripple>
         <div class="more-link-icon">
-          <Icon d={mdiKeyOutline} />
+          <Icon d={mdiShieldKeyOutline} />
         </div>
         <span class="more-link-text">
           <!-- TODO: locale-->

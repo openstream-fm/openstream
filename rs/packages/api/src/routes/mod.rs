@@ -55,10 +55,12 @@ pub fn router(
 
   app
     .at("/me/api-keys")
-    .get(me::api_keys::get::Endpoint {}.into_handler());
+    .get(me::api_keys::get::Endpoint {}.into_handler())
+    .post(me::api_keys::post::Endpoint {}.into_handler());
 
   app
-    .at("/me/api-keys/:key")
+    .at("/me/api-keys/:id")
+    .patch(me::api_keys::id::patch::Endpoint {}.into_handler())
     .delete(me::api_keys::id::delete::Endpoint {}.into_handler());
 
   app.at("/auth/email-verification/send-code").post(
