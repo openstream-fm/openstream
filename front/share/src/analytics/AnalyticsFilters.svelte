@@ -765,7 +765,7 @@
     {/if}
 
     <div class="type-selector">
-      <AnalyticsTypeSelector bind:type />
+      <AnalyticsTypeSelector bind:type {locale} />
     </div>
 
     {#if country_code !== undefined || os !== undefined || browser !== undefined || domain !== undefined}
@@ -830,8 +830,7 @@
         {#if type === "app" && app_kind !== undefined}
           <div class="more-chip" transition:scale|local={{ duration: 200 }}>
             <div class="more-chip-label">
-              <!-- TODO: locale -->
-              App ID:
+              {locale.App_ID}:
             </div>
             <div class="more-chip-value">
               {app_kind == null ? locale.Unknown : app_kind}
@@ -845,8 +844,7 @@
         {#if type === "app" && app_version !== undefined}
           <div class="more-chip" transition:scale|local={{ duration: 200 }}>
             <div class="more-chip-label">
-              <!-- TODO: locale -->
-              App version:
+              {locale.App_version}:
             </div>
             <div class="more-chip-value">
               {app_version == null ? locale.Unknown : app_version}

@@ -28,29 +28,23 @@
     const data: Array<{ label: string, value: string }> = [];
    
     data.push({
-      // TODO: locale
-      label: "Id",
+      label: $locale.misc.Id,
       value: key._id,
     })
    
     
     data.push({
-      // TODO: locale
-      label: "Title",
+      label: $locale.misc.Title,
       value: key.title,
     })
    
     data.push({
-      // TODO: locale
-      // label: $locale.pages["me/devices"].device.connected,
-      label: "Created",
+      label: $locale.misc.Created,
       value: format_date(key.created_at),
     })
 
     data.push({
-      // TODO: locale,
-      // label: $locale.pages["me/devices"].device.last_used,
-      label: "Last used",
+      label: $locale.misc.Last_used,
       value: format_date(key.last_used_at || key.created_at)
     })
     
@@ -120,16 +114,8 @@
       <button 
         class="disconnect ripple-container"
         use:ripple
-        use:tooltip={
-          // TODO: locale
-          // $locale.pages["me/devices"].device.tooltips.disconnect
-          "Delete"
-        }
-        aria-label={
-          // TODO: locale
-          // $locale.pages["me/devices"].device.tooltips.disconnect
-          "Delete API key"
-        }
+        use:tooltip={$locale.misc.Delete}
+        aria-label={$locale.misc.Delete}
         on:click={on_remove}
       >
         <Icon d={mdiTrashCanOutline} />

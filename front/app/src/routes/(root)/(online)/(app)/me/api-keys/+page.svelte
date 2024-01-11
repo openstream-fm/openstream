@@ -20,7 +20,7 @@
 	import Password from '$share/Form/Password.svelte';
 	import Email from '$share/Form/Email.svelte';
 	import copy from 'copy-to-clipboard';
-	// import { locale } from '$lib/locale';
+	import { locale } from '$lib/locale';
 
 	$: current = data.api_keys.items.find(item => item.is_current);
 	
@@ -31,8 +31,7 @@
 	const delete_key = action(async () => {
 		if (delete_item == null) return;
 		await _delete(`/api/me/api-keys/${delete_item._id}`);
-		// TODO: locale
-		_message("API key deleted");
+		_message($locale.misc.api_keys.API_key_deleted);
 		delete_item = null;
 		invalidate('resource:api-keys');
 	});
@@ -55,7 +54,6 @@
 			api_key
 		} = await _post<import("$api/me/api-keys/POST/Output").Output>(`/api/me/api-keys`, payload);
 
-		// TODO: locale
 		invalidate('resource:api-keys');
 		create_title = "";
 		create_password = "";
@@ -221,33 +219,22 @@
 
 
 <svelte:head>
-		<!-- TODO: locale -->
-		<!-- {$locale.pages['me/devices'].head.title}</title> -->
 	<title>
-		API keys
+		{$locale.misc.api_keys.API_Keys}
 	</title>
 </svelte:head>
 
 <Page compact>
 	<div class="page">
 		<div class="page-title">
-			<!-- TODO: locale -->
-			<!-- {$locale.pages['me/devices'].title} -->
-			API keys
+			{$locale.misc.api_keys.API_Keys}
 		</div>
 		<div class="note">
-			<!-- TODO: locale -->
-			<!-- {$locale.pages['me/devices'].note} -->
-			Create API keys to access your openstream accounts programatically or to grant access to third party apps and services.
+			{$locale.misc.api_keys.API_keys_page_message}
 		</div>
 
 		{#if current == null && keys.length === 0}
-			<!--
-				<div class="empty" transition:slide|local={{ duration: 400 }}>
-					<-- TODO: locale 
-					You didn't create any API key yet.
-				</div>
-			-->
+			<!-- -- -->
 		{:else}
 		
 			<div class="list" transition:slide|local={{ duration: 400 }}>
@@ -266,8 +253,7 @@
 
 		<div class="create-out">
 			<button class="create-btn ripple-container" use:ripple on:click={() => create_open = true}>
-				Create a new API key
-				<!-- TODO: locale -->
+				{$locale.misc.api_keys.Create_a_new_API_key}
 			</button>
 		</div>
 	</div>
@@ -275,19 +261,13 @@
 
 {#if delete_item != null}
 	<Dialog
-		title={
-			// TODO: locale
-			// $locale.pages['me/devices'].dialogs.disconnect.title
-			"Remove API key"
-		}
+		title={$locale.misc.api_keys.Remove_API_key}
 		width="400px"
 		on_close={() => (delete_item = null)}
 	>
 		<div class="delete-dialog">
 			<div class="delete-dialog-text">
-				<!-- TODO: locale -->
-				<!-- {$locale.pages['me/devices'].dialogs.disconnect.message} -->
-				This action is permanent
+				{$locale.misc.This_action_is_permanent}
 			</div>
 			<div class="delete-dialog-btns">
 				<button
@@ -295,18 +275,14 @@
 					use:ripple
 					on:click={() => (delete_item = null)}
 				>
-					<!-- TODO: locale  -->
-					<!-- {$locale.pages['me/devices'].dialogs.disconnect.cancel} -->
-					Cancel
+					{$locale.misc.Cancel}
 				</button>
 
 				<button class="delete-dialog-btn-delete ripple-container" use:ripple on:click={delete_key}>
 					<div class="delete-dialog-btn-icon">
 						<Icon d={mdiTrashCanOutline} />
 					</div>
-					<!-- TODO: locale -->
-					<!-- {$locale.pages['me/devices'].dialogs.disconnect.submit} -->
-					Delete
+					{$locale.misc.Delete}
 				</button>
 			</div>
 		</div>
@@ -320,10 +296,7 @@
 			api_key_show_to_save = null;
 			create_open = false
 		}}
-		title={
-			// TODO: locale
-			"Create a new API key"
-		}
+		title={$locale.misc.api_keys.Create_a_new_API_key}
 	>
 		{#if api_key_show_to_save == null}
 			<Formy action={create} let:submit>
@@ -331,10 +304,7 @@
 					<div class="create-dialog-fields">
 						<div class="create-dialog-field">
 							<TextField
-								label={
-									// $locale.pages["account/dashboard"].edit.dialog.field_label
-									"API key title"
-								}
+								label={$locale.misc.api_keys.API_key_title}
 								maxlength={
 									// TODO: validate and const
 									100
@@ -350,23 +320,19 @@
 								})}
 							/>
 							<div class="title-explain">
-								<!-- TODO: locale -->
-								The title will be used by you to identify this API key.
+								{$locale.misc.api_keys.API_key_title_explain}
 							</div>
 						</div>
 
 						<div class="create-dialog-user">
 							<div class="create-dialog-user-explain">
-								<!-- TODO: locale -->
-								Type your password to proceed with this action.
+								{$locale.misc.Type_password_proceed}
 							</div>
 							<div class="create-dialog-user-field">
-								<!-- TODO: locale -->
-								<Email label="You" readonly value={data.user.email} />
+								<Email label={$locale.misc.Your_email} readonly value={data.user.email} />
 							</div>
 							<div class="create-dialog-user-field">
-								<!-- TODO: locale -->
-								<Password label="Your password" autocomplete="off" bind:value={create_password} />
+								<Password label={$locale.misc.Your_password} autocomplete="off" bind:value={create_password} />
 								<Validator
 									value={create_password}
 									fn={_string({
@@ -383,15 +349,11 @@
 							type="button"
 							on:click|preventDefault={() => (create_open = false)}
 						>
-							<!-- TODO: locale  -->
-							<!-- {$locale.pages['me/devices'].dialogs.disconnect.cancel} -->
-							Cancel
+							{$locale.misc.Cancel}
 						</button>
 			
 						<button type="submit" class="create-dialog-btn ripple-container" use:ripple>
-							<!-- TODO: locale -->
-							<!-- {$locale.pages["account/dashboard"].edit.dialog.save} -->
-							Create
+							{$locale.misc.Create}
 						</button>
 					</div>
 				</form>
@@ -399,23 +361,19 @@
 		{:else}
 			<div class="copy-dialog" transition:slide|local={{ duration: 300 }}>
 				<div class="copy-dialog-text">
-					<!-- TODO: locale -->
-					Copy the API key contents. This code will not be shown again.
+					{$locale.misc.api_keys.Copy_contents_message}
 				</div>
 				<div class="copy-dialog-field">
-					<!-- TODO: locale -->
 					<TextField
-						label="API key contents"
+						label={$locale.misc.api_keys.API_key_contents}
 						readonly
 						value={api_key_show_to_save}
 						btn={{
-							// TODO: locale
-							label: "Copy",
+							label: $locale.misc.Copy,
 							icon: mdiContentCopy,
 							action: () => {
 								copy(api_key_show_to_save ?? "");
-								// TODO: locale
-								_message("Copied to clipboard");
+								_message($locale.misc.Copied_to_clipboard);
 							}
 						}}
 					/>
@@ -426,8 +384,7 @@
 						api_key_show_to_save = null;
 						create_open = false
 					}}>
-						<!-- TODO: locale -->
-						Done
+						{$locale.misc.Done}
 					</button>
 				</div>
 			</div>

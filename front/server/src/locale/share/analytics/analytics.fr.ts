@@ -1,4 +1,3 @@
-/// file: analytics.fr.ts
 const locale: import("./analytics.locale").AnalyticsLocale = {
   "Sessions": "Sessions",
   "Listeners": "Auditeurs",
@@ -8,8 +7,11 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Total_listening_time": "Temps total d'écoute",
   "Total_listening_hours": "Heures totales d'écoute",
   "Total_transfer": "Transfert total",
-  "Total_transfer_in_MB": "Transfert total en MB",
+  "Total_transfer_in_MB": "Transfert total en Mo",
   "Max_concurrent_listeners": "Max. auditeurs simultanés",
+
+  "App_ID": "ID de l'application",
+  "App_version": "Version de l'application",
 
   // @example Browser: Chrome
   "Browser": "Navigateur",
@@ -43,6 +45,8 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Stats_by_website": "Statistiques par site web",
   "Stats_by_date": "Statistiques par date",
   "Stats_by_hour": "Statistiques par heure",
+  "Stats_by_app_ID": "Statistiques par ID d'application",
+  "Stats_by_app_version": "Statistiques par version d'application",
 
   "By_date": "Par date",
   "By_hour": "Par heure",
@@ -51,6 +55,8 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "By_browser": "Par navigateur",
   "By_station": "Par station",
   "By_website": "Par site web",
+  "By_app_ID": "Par ID d'application",
+  "By_app_version": "Par version d'application",
 
   "Daily_stats": "Statistiques quotidiennes",
   "Hourly_stats": "Statistiques horaires",
@@ -82,7 +88,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
       "this-week": "Cette semaine",
       "previous-week": "Semaine précédente",
       "last-7d": "7 derniers jours",
-      "this-month": "Ce mois",
+      "this-month": "Ce mois-ci",
       "previous-month": "Mois précédent",
       "last-30d": "30 derniers jours",
       "custom": "Personnalisé",
@@ -91,7 +97,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
     "submit": "Obtenir des analyses",
 
     "All_stations": "Toutes les stations",
-    "No_stations": "Pas de stations",
+    "No_stations": "Aucune station",
 
     "no_stations_message": "Ce compte n'a pas de stations",
   },
@@ -103,6 +109,9 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Search...": "Rechercher...",
   "No_stations_for_this_query": "Aucune station trouvée pour cette recherche",
   "This_field_is_required": "Ce champ est requis",
+
+  "apps": "applications",
+  "stream": "flux",
 }
 
 export default locale;

@@ -251,9 +251,8 @@
                   {$locale.pages["station/dashboard"].live}
                 {:else if data.now_playing.kind === "none"}
                   {#if data.now_playing.external_relay_error != null}
-                    <!-- TODO: locale -->
                     <span class="external-relay-error">
-                      External relay error
+                      {$locale.misc.External_relay_error}
                     </span>
                   {:else if data.now_playing.external_relay_url != null}
                     {$locale.misc.Relay}

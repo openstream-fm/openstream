@@ -959,8 +959,7 @@
     const common = get_common_grid_options();    
     const fields = {
       "key": {
-        // TODO: locale
-        name: "App ID",
+        name: locale.App_ID,
         format: item => item.key || locale.Unknown,
         sort: (a, b) => (a.key || "").localeCompare(b.key || ""),
         is_selected: item => app_kind === item.key,
@@ -972,8 +971,7 @@
 
     return {
       ...common,
-      // TODO: locale
-      title: "Stats by app ID",
+      title: locale.Stats_by_app_ID,
       fields,
       items,
     } satisfies DataGridData<typeof items[number], typeof fields>;
@@ -985,8 +983,7 @@
     const common = get_common_grid_options();    
     const fields = {
       "key": {
-        // TODO: locale
-        name: "App version",
+        name: locale.App_version,
         format: item => {
           if(item.key.kind == null && item.key.version == null) return locale.Unknown;
           return `${item.key.kind ?? locale.Unknown} ${item.key.version ?? locale.Unknown}`
@@ -1000,8 +997,7 @@
 
     return {
       ...common,
-      // TODO: locale
-      title: "Stats by app version",
+      title: locale.Stats_by_app_version,
       fields,
       items,
     } satisfies DataGridData<typeof items[number], typeof fields>;
@@ -1526,8 +1522,7 @@
       {#if by_app_kind_grid_data != null}
         <div class="chart-box">
           <div class="chart-title">
-            <!-- TODO: locale -->
-            By App ID
+            {locale.By_app_ID}
           </div>
           <div class="chart" use:chart={app_kind_options} />
           <div class="chart-grid">
@@ -1539,8 +1534,7 @@
       {#if by_app_version_grid_data != null}
       <div class="chart-box">
         <div class="chart-title">
-          <!-- TODO: locale -->
-          By App version
+          {locale.By_app_version}
         </div>
         <div class="chart" use:chart={app_version_options} />
         <div class="chart-grid">

@@ -165,9 +165,7 @@
 
 				{#if merged_now_playing.kind === "none" && merged_now_playing.external_relay_error != null}
 					<div class="now-playing-sub now-playing-sub-error">
-						<!-- TODO: locale -->
-						External relay error
-						<!-- {merged_now_playing.external_relay_error} -->
+						{$locale.misc.External_relay_error}
 					</div>
 				{:else if merged_now_playing.kind === 'none'}
 					{#if merged_now_playing.start_on_connect}

@@ -10,6 +10,9 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Total_transfer_in_MB": "Transferencia total en MB",
   "Max_concurrent_listeners": "Máx. oyentes simultáneos",
 
+  "App_ID": "ID de aplicación",
+  "App_version": "Version de aplicación",
+
   // @example Browser: Chrome
   "Browser": "Navegador",
 
@@ -42,6 +45,8 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Stats_by_website": "Estadisticas por sitio web",
   "Stats_by_date": "Estadísticas por fecha",
   "Stats_by_hour": "Estadísticas por hora",
+  "Stats_by_app_ID": "Estadísticas por ID de aplicación",
+  "Stats_by_app_version": "Estadísticas por versión de aplicación",
 
   "By_date": "Por fecha",
   "By_hour": "Por hora",
@@ -50,6 +55,8 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "By_browser": "Por navegador",
   "By_station": "Por estación",
   "By_website": "Por sitio web",
+  "By_app_ID": "Por ID de aplicación",
+  "By_app_version": "Por versión de aplicación",
 
   "Daily_stats": "Estadísticas diarias",
   "Hourly_stats": "Estadísticas por hora",
@@ -102,6 +109,9 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Search...": "Buscar...",
   "No_stations_for_this_query": "No se encontraron estaciones para esta búsqueda",
   "This_field_is_required": "Este campo es requerido",
+
+  "apps": "apps",
+  "stream": "stream",
 }
 
 export default locale;

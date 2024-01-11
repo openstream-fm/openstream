@@ -1,4 +1,3 @@
-/// file: analytics.it.ts
 const locale: import("./analytics.locale").AnalyticsLocale = {
   "Sessions": "Sessioni",
   "Listeners": "Ascoltatori",
@@ -10,6 +9,9 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Total_transfer": "Trasferimento totale",
   "Total_transfer_in_MB": "Trasferimento totale in MB",
   "Max_concurrent_listeners": "Max ascoltatori simultanei",
+
+  "App_ID": "ID dell'applicazione",
+  "App_version": "Versione dell'applicazione",
 
   // @example Browser: Chrome
   "Browser": "Browser",
@@ -43,6 +45,8 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Stats_by_website": "Statistiche per sito web",
   "Stats_by_date": "Statistiche per data",
   "Stats_by_hour": "Statistiche per ora",
+  "Stats_by_app_ID": "Statistiche per ID dell'applicazione",
+  "Stats_by_app_version": "Statistiche per versione dell'applicazione",
 
   "By_date": "Per data",
   "By_hour": "Per ora",
@@ -51,11 +55,13 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "By_browser": "Per browser",
   "By_station": "Per stazione",
   "By_website": "Per sito web",
+  "By_app_ID": "Per ID dell'applicazione",
+  "By_app_version": "Per versione dell'applicazione",
 
   "Daily_stats": "Statistiche giornaliere",
   "Hourly_stats": "Statistiche orarie",
 
-  "no_data_message": "Non ci sono dati registrati per i filtri specificati",
+  "no_data_message": "Nessun dato registrato per i filtri specificati",
 
   "time": {
     "1_day": "1 giorno",
@@ -103,6 +109,9 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Search...": "Cerca...",
   "No_stations_for_this_query": "Nessuna stazione trovata per questa ricerca",
   "This_field_is_required": "Questo campo è obbligatorio",
+
+  "apps": "app",
+  "stream": "stream",
 }
 
 export default locale;

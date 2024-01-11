@@ -9,7 +9,19 @@ const locale: typeof import("./misc.en").default = {
   delete_station_not_owner_message_html: "Solo los administradores de la cuenta pueden eliminar estaciones.<br/><br/>Contacta a los administradores de la cuenta si deseas eliminar esta estación.",
 
   Cancel: "Cancelar",
-  OK: "Aceptar",
+  OK: "OK",
+  Delete: "Eliminar",
+  Create: "Crear",
+  Copy: "Copiar",
+  Done: "Listo",
+
+  Copied_to_clipboard: "Copiado al portapapeles",
+
+  Id: "Id",
+  Title: "Título",
+  Created: "Creado",
+  Last_used: "Usado por última vez",
+
   Transfer_station: "Transferir estación",
   Station_name: "Nombre de la estación",
   station_transfer_title: "Transferí estación @station a otra de tus cuentas",
@@ -21,6 +33,8 @@ const locale: typeof import("./misc.en").default = {
   Station_transferred: "Estación tranferida",
   Select_a_target_account: "Seleccioná una cuenta de destino",
 
+  Type_password_proceed: "Ingresá tu contraseña para proceder con esta acción.",
+
   Welcome: "Bienvenido",
 
   account_welcome_title_html: "Hola <b>@name</b>",
@@ -30,9 +44,35 @@ const locale: typeof import("./misc.en").default = {
 
   Create_my_first_station: "Crear mi primera estación",
 
+  Your_email: "Tu email",
+  Your_password: "Tu contraseña",
+
   "0_listeners": "0 oyentes",
   "1_listener": "1 oyente",
   "n_listeners": "@n oyentes",
+
+  Enable_master_relay_redirect_mode: "Habilitar modo de redirección en el relay maestro",
+  External_relay_error: "Error en el relay maestro",
+
+  player: {
+    Relay: "Relay",
+    Live_Streaming: "En vivo",
+    Playlist: "Playlist",
+  },
+
+  This_action_is_permanent: "Esta acción es permanente.",
+  
+  api_keys: {
+    API_Keys: "Claves de acceso",
+    API_key_deleted: "Clave de acceso eliminada",
+    API_keys_page_message: "Creá claves de acceso para acceder a tus cuentas en openstream programaticamente o para dar acceso a aplicaciones y servicios de terceros.",
+		Create_a_new_API_key: "Crear nueva clave de acceso",
+    Remove_API_key: "Eliminar clave de acceso",
+    API_key_title: "Título de la clave de acceso",
+    API_key_title_explain: "El título será usado por vos para identificar esta clave de acceso",							
+    Copy_contents_message: "Copiá el contenido de la clave de acceso. Este códifo no será mostrado nuevamente.",
+    API_key_contents: "Contenido de la clave de acceso",
+  }
 }
 
 export default locale;
