@@ -12,8 +12,8 @@ const frontdir = {
 };
 
 const binfile = {
-  src: `${basedir}/target/release/openstream`,
-  target: `${tmpdir}/target/release/openstream`,
+  src: `${basedir}/target/x86_64-unknown-linux-gnu/release/openstream`,
+  target: `${tmpdir}/targetrelease/openstream`,
 }
 
 const info = { target: `${tmpdir}/info.txt` };
@@ -30,7 +30,7 @@ const revision = (await $`git rev-parse HEAD`).stdout.trim();
 const branch = (await $`git branch --show-current`).stdout.trim();
 const comment = (await $`git --no-pager log -1 --format=%s`).stdout.trim();
 
-await $`cargo build --release --bin openstream --color always`;
+await $`cross build --release --bin openstream --color always --target x86_64-unknown-linux-gnu`;
 
 await within(async () => {
   cd(frontdir.src);
