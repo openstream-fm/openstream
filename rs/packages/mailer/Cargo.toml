@@ -16,7 +16,16 @@ async-trait = "0.1.68"
 css-inline = "0.8.5"
 html2text = "0.5.1"
 hyper = { version = "0.14.27", features = ["server", "full"] }
-lettre = { version = "0.10.4", features = ["tokio1_rustls", "smtp-transport", "tokio1", "tokio1-rustls-tls", "native-tls", "builder", "tokio1-native-tls", "rustls-tls"], default-features = false }
+lettre = { version = "0.10.4", features = [
+  "tokio1_rustls",
+  "smtp-transport",
+  "tokio1",
+  "tokio1-rustls-tls",
+  # "native-tls",
+  "builder",
+  # "tokio1-native-tls",
+  "rustls-tls"
+], default-features = false }
 nanohtml2text = "0.1.4"
 prex = { version = "0.1.0", path = "../prex" }
 serde = { version = "1.0.162", features = ["derive"] }
