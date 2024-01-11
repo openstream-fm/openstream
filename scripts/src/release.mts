@@ -13,7 +13,7 @@ const frontdir = {
 
 const binfile = {
   src: `${basedir}/target/x86_64-unknown-linux-gnu/release/openstream`,
-  target: `${tmpdir}/targetrelease/openstream`,
+  target: `${tmpdir}/target/release/openstream`,
 }
 
 const info = { target: `${tmpdir}/info.txt` };
