@@ -364,8 +364,7 @@
             <Validator value={external_relay_url} fn={_validate_external_relay_url} />
           </div>
           <div class="redirect-field" class:disabled={external_relay_enabled === false}>
-            <!-- TODO: locale -->
-            <BooleanField bind:value={external_relay_redirect} label={"Enable master relay redirect mode"} />
+            <BooleanField bind:value={external_relay_redirect} label={$locale.misc.Enable_master_relay_redirect_mode} />
           </div>          
 
           <button type="submit" class="relay-send ripple-container" use:ripple class:sending={saving_relay}>

@@ -40,7 +40,7 @@
     "@types/node-fetch": "^2.6.2",
     "ava": "^5.2.0",
     "nodemon": "^2.0.22",
-    "openai": "^3.2.1",
+    "openai": "^4.24.3",
     "ts-patch": "^2.1.0",
     "ttypescript": "^1.5.15",
     "type-fest": "^3.8.0",

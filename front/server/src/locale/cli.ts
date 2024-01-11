@@ -1,8 +1,7 @@
 import { fileURLToPath } from "url";
 import fs from "fs";
-import openai, { ChatCompletionRequestMessage } from "openai";
+import openai from "openai";
 import path from "path";
-import util from "util";
 import readline from "readline/promises";
 import type { Readable } from "stream";
 
@@ -110,53 +109,37 @@ for (const iso of isos) {
   file provided in ${base === "es" ? "Spanish" : "English"}.
   Keep variables starting with "@" as is.
   The context of the translation is a user interface for a radio broadcasting application.
+  Do not include anything else appart from the translation.
+  Do not include text that is not part of the translated typescript file.
+  Do not include the "\`\`\`typescript start or end delimiter.
 
-  /// file: ${kind}.${base}.ts
   ${fs.readFileSync(src, "utf8")}`;
 
-    const client = new openai.OpenAIApi(new openai.Configuration({
+    const client = new openai.OpenAI({
       apiKey: AI_KEY
-    }))
+    })
 
     const createChatCompletion = async function* (params: {
-      model: "gpt-4" | "gpt-3.5-turbo" | "gpt-3.5-turbo-16k",
-      messages: ChatCompletionRequestMessage[]
+      model: "gpt-4" | "gpt-3.5-turbo" | "gpt-3.5-turbo-16k" | "gpt-4-1106-preview",
+      messages: openai.ChatCompletionMessageParam[]
     }) {
-      const res = await client.createChatCompletion({
-        ...params,
+      const res = await client.chat.completions.create({
+        model: params.model,
+        messages: params.messages,
         frequency_penalty: 0,
         temperature: 0,
         presence_penalty: 0,
         stream: true,
-      }, {
-        responseType: "stream",
       })
 
-      // @ts-ignore
-      const stream = res.data as Readable & AsyncIterable<Buffer>;
-
       try {
-        for await (const buffer of stream) {
-          const lines = buffer.toString().split("\n");
-          if (lines.length === 0) {
-            continue;
-          }
-
-          for (const line of lines) {
-            if (line.trim() === "") continue;
-            const event = line.trim().replace(/^data\:/, "").trim();
-            if (event === "[DONE]") {
-              break;
-            }
-            const json = JSON.parse(event);
-            const token = json?.choices?.[0]?.delta?.content;
-            if (typeof token === "string") {
-              yield token;
-            }
+        for await (const part of res) {
+          const token = part?.choices?.[0]?.delta?.content;
+          if (typeof token === "string") {
+            yield token;
           }
         }
       } catch (e) {
-        stream.destroy();
         throw e;
       }
     }
@@ -173,7 +156,7 @@ for (const iso of isos) {
       logger.info(`sending request #${request_i}`);
       process.stdout.write(buf);
 
-      const messages: ChatCompletionRequestMessage[] = [{
+      const messages: openai.ChatCompletionMessageParam[] = [{
         role: "user",
         content: request_message,
       }];
@@ -193,7 +176,7 @@ for (const iso of isos) {
       }
 
       const stream = createChatCompletion({
-        model: "gpt-4",
+        model: "gpt-4-1106-preview",
         messages
       })
 

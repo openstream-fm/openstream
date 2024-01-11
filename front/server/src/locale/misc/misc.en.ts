@@ -9,6 +9,18 @@ const locale = {
   
   Cancel: "Cancel",
   OK: "OK",
+  Delete: "Delete",
+  Create: "Create",
+  Copy: "Copy",
+  Done: "Done",
+
+  Copied_to_clipboard: "Copied to clipboard",
+
+  Id: "Id",
+  Title: "Title",
+  Created: "Created",
+  Last_used: "Last used",
+  
   Transfer_station: "Transfer station",
   Station_name: "Station name",
   station_transfer_title: "Transfer station @station to another of your accounts",
@@ -20,6 +32,8 @@ const locale = {
   Station_transferred: "Station transferred",
   Select_a_target_account: "Select a target account",
 
+  Type_password_proceed: "Type your password to proceed with this action.",
+
   Welcome: "Welcome",
 
   account_welcome_title_html: "Hello <b>@name</b>",
@@ -29,9 +43,35 @@ const locale = {
 
   Create_my_first_station: "Create my first station",
 
+  Your_email: "Your email",
+  Your_password: "Your_password",
+
   "0_listeners": "0 listeners",
   "1_listener": "1 listener",
   "n_listeners": "@n listeners",
+
+  Enable_master_relay_redirect_mode: "Enable master relay redirect mode",
+  External_relay_error: "External relay error",
+
+  player: {
+    Relay: "Relay",
+    Live_Streaming: "Live Streaming",
+    Playlist: "Playlist",
+  },
+
+  This_action_is_permanent: "This action is permanent.",
+  
+  api_keys: {
+    API_Keys: "API Keys",
+    API_key_deleted: "Api key deleted",
+    API_keys_page_message: "Create API keys to access your openstream accounts programatically or to grant access to third party apps and services.",
+		Create_a_new_API_key: "Create a new API key",
+    Remove_API_key: "Remove API key",
+    API_key_title: "API key title",
+    API_key_title_explain: "The title will be used by you to identify this API key",							
+    Copy_contents_message: "Copy the API key contents. This code will not be shown again.",
+    API_key_contents: "API key contents",
+  }
 }
 
 export default locale;

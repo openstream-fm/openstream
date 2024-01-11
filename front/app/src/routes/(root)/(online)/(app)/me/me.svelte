@@ -429,8 +429,7 @@
           <Icon d={mdiShieldKeyOutline} />
         </div>
         <span class="more-link-text">
-          <!-- TODO: locale-->
-          API Keys
+          {$locale.misc.api_keys.API_Keys}
         </span>
       </a>
     </div>

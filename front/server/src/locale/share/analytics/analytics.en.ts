@@ -10,6 +10,9 @@ const locale = {
   "Total_transfer_in_MB": "Total transfer in MB",
   "Max_concurrent_listeners": "Max. concurrent listeners",
 
+  "App_ID": "App ID",
+  "App_version": "App version",
+
   // @example Browser: Chrome
   "Browser": "Browser",
 
@@ -42,7 +45,9 @@ const locale = {
   "Stats_by_country": "Stats by country",
   "Stats_by_date": "Stats by date",
   "Stats_by_hour": "Stats by hour",
-  "Stats_by_website": "Stats_by_website",
+  "Stats_by_website": "Stats by website",
+  "Stats_by_app_ID": "Stats by app ID",
+  "Stats_by_app_version": "Stats by app version",
 
   "By_date": "By date",
   "By_hour": "By hour",
@@ -51,6 +56,8 @@ const locale = {
   "By_browser": "By browser",
   "By_station": "By station",
   "By_website": "By website",
+  "By_app_ID": "By app ID",
+  "By_app_version": "By app version",
   "Daily_stats": "Daily stats",
   "Hourly_stats": "Hourly stats",
 
@@ -102,6 +109,9 @@ const locale = {
   "Search...": "Search...",
   "No_stations_for_this_query": "There are no stations for this query",
   "This_field_is_required": "This field is required",
+
+  "stream": "stream",
+  "apps": "apps",
 }
 
 export default locale;

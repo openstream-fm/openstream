@@ -1,15 +1,17 @@
-/// file: analytics.de.ts
 const locale: import("./analytics.locale").AnalyticsLocale = {
   "Sessions": "Sitzungen",
   "Listeners": "Zuhörer",
-  "Unique_IPs": "Einzigartige IPs",
-  "Average_listening_minutes": "Durchschnittliche Zuhörminuten",
-  "Average_listening_time": "Durchschnittliche Zuhörzeit",
-  "Total_listening_time": "Gesamtzuhörzeit",
-  "Total_listening_hours": "Gesamtzuhörstunden",
+  "Unique_IPs": "Eindeutige IPs",
+  "Average_listening_minutes": "Durchschnittliche Hördauer in Minuten",
+  "Average_listening_time": "Durchschnittliche Hördauer",
+  "Total_listening_time": "Gesamte Hördauer",
+  "Total_listening_hours": "Gesamte Hördauer in Stunden",
   "Total_transfer": "Gesamtübertragung",
   "Total_transfer_in_MB": "Gesamtübertragung in MB",
   "Max_concurrent_listeners": "Max. gleichzeitige Zuhörer",
+
+  "App_ID": "App-ID",
+  "App_version": "App-Version",
 
   // @example Browser: Chrome
   "Browser": "Browser",
@@ -23,7 +25,7 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Unknown": "Unbekannt",
 
   // @context Radio Station
-  "Station": "Station",
+  "Station": "Sender",
 
   "Website": "Webseite",
 
@@ -34,28 +36,32 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Date": "Datum",
 
   // @example Hour: 2022/01/01 12:00
-  "Hour": "Stunde",
+  "Hour": "Uhr",
 
   "Stats_by_browser": "Statistiken nach Browser",
   "Stats_by_device": "Statistiken nach Gerät",
-  "Stats_by_station": "Statistiken nach Station",
+  "Stats_by_station": "Statistiken nach Sender",
   "Stats_by_country": "Statistiken nach Land",
   "Stats_by_website": "Statistiken nach Webseite",
   "Stats_by_date": "Statistiken nach Datum",
   "Stats_by_hour": "Statistiken nach Stunde",
+  "Stats_by_app_ID": "Statistiken nach App-ID",
+  "Stats_by_app_version": "Statistiken nach App-Version",
 
   "By_date": "Nach Datum",
   "By_hour": "Nach Stunde",
   "By_country": "Nach Land",
   "By_device": "Nach Gerät",
   "By_browser": "Nach Browser",
-  "By_station": "Nach Station",
+  "By_station": "Nach Sender",
   "By_website": "Nach Webseite",
+  "By_app_ID": "Nach App-ID",
+  "By_app_version": "Nach App-Version",
 
   "Daily_stats": "Tägliche Statistiken",
   "Hourly_stats": "Stündliche Statistiken",
 
-  "no_data_message": "Es sind keine Daten für die angegebenen Filter vorhanden",
+  "no_data_message": "Keine Daten für die angegebenen Filter vorhanden",
 
   "time": {
     "1_day": "1 Tag",
@@ -67,9 +73,9 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
     "1_second": "1 Sekunde",
     "n_seconds": "@n Sekunden",
 
-    /// @example 2 Tage und 1 Stunde
-    /// @example 1 Stunde und 2 Minuten
-    /// @example 10 Minuten und 3 Sekunden
+    /// @example 2 días y 1 hora
+    /// @example 1 hora y 2 minutos
+    /// @example 10 minutos y 3 segundos
     "join": "@time1 und @time2",
   },
 
@@ -90,10 +96,10 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
     "submit": "Analysen abrufen",
 
-    "All_stations": "Alle Stationen",
-    "No_stations": "Keine Stationen",
+    "All_stations": "Alle Sender",
+    "No_stations": "Keine Sender",
 
-    "no_stations_message": "Dieses Konto hat keine Stationen",
+    "no_stations_message": "Dieses Konto hat keine Sender",
   },
 
   "data_grid": {
@@ -101,8 +107,11 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   },
 
   "Search...": "Suchen...",
-  "No_stations_for_this_query": "Für diese Abfrage wurden keine Stationen gefunden",
+  "No_stations_for_this_query": "Keine Sender für diese Anfrage gefunden",
   "This_field_is_required": "Dieses Feld ist erforderlich",
+
+  "apps": "Apps",
+  "stream": "Stream",
 }
 
 export default locale;

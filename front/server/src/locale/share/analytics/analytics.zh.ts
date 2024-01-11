@@ -1,15 +1,17 @@
-/// file: analytics.zh.ts
 const locale: import("./analytics.locale").AnalyticsLocale = {
   "Sessions": "会话",
   "Listeners": "听众",
-  "Unique_IPs": "唯一的IP",
-  "Average_listening_minutes": "平均收听分钟",
+  "Unique_IPs": "独立IP",
+  "Average_listening_minutes": "平均收听分钟数",
   "Average_listening_time": "平均收听时间",
   "Total_listening_time": "总收听时间",
-  "Total_listening_hours": "总收听小时",
+  "Total_listening_hours": "总收听小时数",
   "Total_transfer": "总传输",
   "Total_transfer_in_MB": "总传输量（MB）",
-  "Max_concurrent_listeners": "最大并发听众",
+  "Max_concurrent_listeners": "最大并发听众数",
+
+  "App_ID": "应用ID",
+  "App_version": "应用版本",
 
   // @example Browser: Chrome
   "Browser": "浏览器",
@@ -43,6 +45,8 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "Stats_by_website": "按网站统计",
   "Stats_by_date": "按日期统计",
   "Stats_by_hour": "按小时统计",
+  "Stats_by_app_ID": "按应用ID统计",
+  "Stats_by_app_version": "按应用版本统计",
 
   "By_date": "按日期",
   "By_hour": "按小时",
@@ -51,11 +55,13 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
   "By_browser": "按浏览器",
   "By_station": "按电台",
   "By_website": "按网站",
+  "By_app_ID": "按应用ID",
+  "By_app_version": "按应用版本",
 
   "Daily_stats": "每日统计",
   "Hourly_stats": "每小时统计",
 
-  "no_data_message": "没有找到指定过滤器的数据",
+  "no_data_message": "指定过滤器没有注册数据",
 
   "time": {
     "1_day": "1天",
@@ -67,9 +73,9 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
     "1_second": "1秒",
     "n_seconds": "@n秒",
 
-    /// @example 2天和1小时
-    /// @example 1小时和2分钟
-    /// @example 10分钟和3秒
+    /// @example 2 días y 1 hora
+    /// @example 1 hora y 2 minutos
+    /// @example 10 minutos y 3 segundos
     "join": "@time1和@time2",
   },
 
@@ -91,9 +97,9 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
     "submit": "获取分析",
 
     "All_stations": "所有电台",
-    "No_stations": "无电台",
+    "No_stations": "没有电台",
 
-    "no_stations_message": "此账户没有电台",
+    "no_stations_message": "该账户没有电台",
   },
 
   "data_grid": {
@@ -102,7 +108,10 @@ const locale: import("./analytics.locale").AnalyticsLocale = {
 
   "Search...": "搜索...",
   "No_stations_for_this_query": "此查询没有找到电台",
-  "This_field_is_required": "此字段是必需的",
+  "This_field_is_required": "此字段为必填项",
+
+  "apps": "应用",
+  "stream": "流",
 }
 
 export default locale;

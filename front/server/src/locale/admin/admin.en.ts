@@ -3,6 +3,7 @@ import validate from "../share/validate/validate.en";
 import analytics from "../share/analytics/analytics.en";
 import countries from "../share/countries/countries.en";
 import langs from "../share/langs/langs.en";
+import misc from "../misc/misc.en";
 
 const locale = {
 
@@ -23,6 +24,7 @@ const locale = {
   "analytics": analytics,
   "countries": countries,
   "langs": langs,
+  "misc": misc,
 
   "pages": {
     "me": {

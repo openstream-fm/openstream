@@ -1,4 +1,5 @@
 <script lang="ts">
+  export let locale: import("$server/locale/share/analytics/analytics.locale").AnalyticsLocale;
   import { crossfade, fade } from "svelte/transition";
 
   export let type: "stream" | "app" = "stream";
@@ -50,8 +51,7 @@
       <div class="bg" in:enter|local={{ key: null }} out:leave|local={{ key: null }} />
     {/if}
     <button class="type-selector-btn" on:click={() => type = "stream"}>
-      <!-- TODO: locale -->
-      stream
+      {locale.stream}
     </button>
   </div>
   <div class="type-selector-item" class:selected={type === "app"}>
@@ -59,8 +59,7 @@
       <div class="bg" in:enter|local={{ key: null }} out:leave|local={{ key: null }} />
     {/if}
     <button class="type-selector-btn" on:click={() => type = "app"}>
-      <!-- TODO: locale -->
-      apps
+      {locale.apps}
     </button>
   </div>
 </div>

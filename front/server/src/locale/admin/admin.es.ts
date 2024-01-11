@@ -3,6 +3,7 @@ import validate from "../share/validate/validate.es";
 import analytics from "../share/analytics/analytics.es";
 import countries from "../share/countries/countries.es";
 import langs from "../share/langs/langs.es";
+import misc from "../misc/misc.es";
 
 const locale: import("./admin.locale").AdminLocale = {
 
@@ -23,6 +24,7 @@ const locale: import("./admin.locale").AdminLocale = {
   "analytics": analytics,
   "countries": countries,
   "langs": langs,
+  "misc": misc,
 
   "pages": {
     "me": {

@@ -5,6 +5,7 @@ import { _get } from "$share/net.client";
 import { derived, get, writable } from "svelte/store";
 import { page } from "$app/stores";
 import { equals } from "$server/util/collections";
+import { locale } from "$share/locale";
 import { STATION_PICTURES_VERSION } from "$server/defs/constants";
 
 export type PlayerState = PlayerState.Closed | PlayerState.Station | PlayerState.AudioFile;
@@ -134,8 +135,7 @@ export const player_subtitle = derived([player_state, now_playing], ([state, now
       } else if (artist) {
         return artist
       } else {
-        // TODO: locale
-        return "Live streaming";
+        return get(locale).misc.player.Live_Streaming;
       }
     } else if (now_playing.kind === "playlist") {
       const title = now_playing.title?.trim() || now_playing.filename.trim() || null;
@@ -147,12 +147,10 @@ export const player_subtitle = derived([player_state, now_playing], ([state, now
       } else if (artist) {
         return artist;
       } else {
-        // TODO: locale
-        return "Playlist"
+        return get(locale).misc.player.Playlist;
       }
     } else if(now_playing.kind === "external-relay") {
-      // TODO: locale
-      return "Relay"
+      return get(locale).misc.player.Relay;
     } 
     
     else {
@@ -265,8 +263,7 @@ if (hasMediaSession) {
               artist = $player_state.station.name;
             } else {
               title = $player_state.station.name;
-              // TODO: locale
-              artist = "Live Streaming";
+              artist = get(locale).misc.player.Live_Streaming
             }
           } else if ($now_playing.kind === "playlist") {
             if($now_playing.artist) {
