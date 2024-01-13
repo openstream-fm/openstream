@@ -115,6 +115,8 @@ pub mod post {
         return Err(HandleError::IpLimit);
       }
 
+      ip_limit::hit(ip);
+
       if !crypt::compare(&current_password, &admin.password) {
         return Err(HandleError::CurrentPasswordMismatch);
       }

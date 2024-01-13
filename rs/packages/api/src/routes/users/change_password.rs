@@ -118,6 +118,8 @@ pub mod post {
         return Err(HandleError::IpLimit);
       }
 
+      ip_limit::hit(ip);
+
       match &user.password {
         None => return Err(HandleError::CurrentPasswordMismatch),
         Some(user_password) => {
