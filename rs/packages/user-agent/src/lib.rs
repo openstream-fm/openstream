@@ -1,4 +1,5 @@
 use prex::Request;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use static_init::dynamic;
 use ts_rs::TS;
@@ -10,10 +11,9 @@ static PARSER: Parser = Parser::default();
 /// UserAgent is an owned value
 /// it does allocate in favor of simplicity
 #[derive(
-  Debug, Default, Clone, Serialize, Deserialize, Eq, PartialEq, TS, deepsize::DeepSizeOf,
+  Debug, Default, Clone, Serialize, Deserialize, Eq, PartialEq, TS, JsonSchema, deepsize::DeepSizeOf,
 )]
-#[ts(export)]
-#[ts(export_to = "../../../defs/")]
+#[ts(export, export_to = "../../../defs/")]
 // #[serde(rename_all = "camelCase")]
 pub struct UserAgent {
   pub ua: Option<String>,

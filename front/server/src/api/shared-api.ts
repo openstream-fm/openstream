@@ -66,6 +66,11 @@ export const shared_api = ({
     .patch(json(async req => {
       return await client.users.patch(ip(req), ua(req), get_token(req), req.params.user, req.body);
     }))
+
+  api.route("/users/:user/change-password")
+    .post(json(async req => {
+      return await client.users.change_password(ip(req), ua(req), get_token(req), req.params.user, req.body);
+    }))
   
 
   api.route("/accounts")

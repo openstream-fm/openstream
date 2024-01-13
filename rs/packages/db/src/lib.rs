@@ -15,6 +15,7 @@ use mongodb::{
   Client, ClientSession, Collection, Database, IndexModel,
 };
 use once_cell::sync::OnceCell;
+use schemars::JsonSchema;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_util::DateTime;
 use std::borrow::Borrow;
@@ -424,7 +425,7 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
   }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export)]
 #[ts(export_to = "../../../defs/")]
 #[serde(rename_all = "snake_case")]

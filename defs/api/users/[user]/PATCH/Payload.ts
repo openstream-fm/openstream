@@ -5,5 +5,4 @@ export type Payload = {
   last_name: string | null;
   phone: string | null | null;
   language: string | null | null;
-  password: string | null;
 };

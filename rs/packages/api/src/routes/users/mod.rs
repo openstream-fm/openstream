@@ -1,3 +1,6 @@
+pub mod change_password;
+pub mod id;
+
 use crate::json::JsonHandler;
 use crate::request_ext::{self, AccessTokenScope, GetAccessTokenScopeError};
 
@@ -13,8 +16,6 @@ use prex::Request;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use validate::email::is_valid_email;
-
-pub mod id;
 
 pub mod get {
 

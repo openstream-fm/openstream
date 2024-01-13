@@ -228,6 +228,10 @@ pub fn router(
     .delete(users::id::delete::Endpoint {}.into_handler());
 
   app
+    .at("/users/:user/change-password")
+    .post(users::change_password::post::Endpoint {}.into_handler());
+
+  app
     .at("/accounts")
     .get(accounts::get::Endpoint {}.into_handler())
     .post(accounts::post::Endpoint {}.into_handler());
@@ -471,6 +475,10 @@ pub fn router(
     .at("/admins/:admin")
     .get(admins::id::get::Endpoint {}.into_handler())
     .patch(admins::id::patch::Endpoint {}.into_handler());
+
+  app
+    .at("/admins/:admin/change-password")
+    .post(admins::change_password::post::Endpoint {}.into_handler());
 
   app
     .at("/invitations")

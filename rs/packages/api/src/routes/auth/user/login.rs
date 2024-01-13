@@ -143,9 +143,7 @@ pub mod post {
         Some(ref v) => v.as_str(),
       };
 
-      let is_match = crypt::compare(&password, user_password);
-
-      if !is_match {
+      if !crypt::compare(&password, user_password) {
         return Err(HandleError::NoMatchPassword);
       }
 

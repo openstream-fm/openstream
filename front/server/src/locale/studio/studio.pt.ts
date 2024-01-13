@@ -535,6 +535,7 @@ const locale: import("./studio.locale").StudioLocale = {
         "first_name": "Seu nome",
         "last_name": "Seu sobrenome",
         "phone": "Seu telefone",
+        "current_password": "Senha atual",
         "new_password": "Nova senha",
         "confirm_password": "Confirmar senha",
         "language": "Idioma preferido",

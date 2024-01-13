@@ -137,9 +137,7 @@ pub mod post {
         Some(admin) => admin,
       };
 
-      let is_match = crypt::compare(&password, &admin.password);
-
-      if !is_match {
+      if !crypt::compare(&password, &admin.password) {
         return Err(HandleError::NoMatchPassword);
       }
 

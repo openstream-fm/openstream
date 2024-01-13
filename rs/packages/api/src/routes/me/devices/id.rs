@@ -12,6 +12,7 @@ use ts_rs::TS;
 
 pub mod delete {
 
+  use schemars::JsonSchema;
   use serde_util::empty_struct::EmptyStruct;
 
   use super::*;
@@ -25,9 +26,11 @@ pub mod delete {
     access_token_scope: AccessTokenScope,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/me/devices/[device]/DELETE/")]
   pub struct Output(EmptyStruct);
+
+  crate::export_schema!(Output);
 
   #[derive(Debug, thiserror::Error)]
   pub enum ParseError {

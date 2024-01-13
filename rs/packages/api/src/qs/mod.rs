@@ -1,12 +1,14 @@
 use db::{current_filter_doc, deleted_filter_doc};
 use mongodb::bson::{doc, Document};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, DisplayFromStr};
+use ts_rs::TS;
 
 // serde_as is needed because of a serde limitation on flattened types
 // see https://docs.rs/serde_qs/latest/serde_qs/ too se where this workaround is described
 #[serde_as]
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize, ts_rs::TS)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/qs/")]
 pub struct PaginationQs {
   #[ts(optional)]
@@ -17,6 +19,35 @@ pub struct PaginationQs {
   #[serde(default = "PaginationQs::default_limit")]
   #[serde_as(as = "DisplayFromStr")]
   pub limit: i64,
+}
+
+#[derive(JsonSchema)]
+#[schemars(rename = "PaginationQs")]
+struct PaginationQsSchema {
+  #[serde(default = "PaginationQs::default_skip")]
+  #[allow(unused)]
+  pub skip: u64,
+  #[serde(default = "PaginationQs::default_limit")]
+  #[allow(unused)]
+  pub limit: i64,
+}
+
+impl JsonSchema for PaginationQs {
+  fn is_referenceable() -> bool {
+    PaginationQsSchema::is_referenceable()
+  }
+
+  fn schema_id() -> std::borrow::Cow<'static, str> {
+    PaginationQsSchema::schema_id()
+  }
+
+  fn json_schema(gen: &mut schemars::gen::SchemaGenerator) -> schemars::schema::Schema {
+    PaginationQsSchema::json_schema(gen)
+  }
+
+  fn schema_name() -> String {
+    PaginationQsSchema::schema_name()
+  }
 }
 
 impl Default for PaginationQs {
@@ -41,7 +72,9 @@ impl PaginationQs {
   }
 }
 
-#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, Serialize, Deserialize, ts_rs::TS)]
+#[derive(
+  Debug, Clone, Copy, Default, Eq, PartialEq, Hash, Serialize, Deserialize, TS, JsonSchema,
+)]
 #[ts(export, export_to = "../../../defs/qs/")]
 pub struct VisibilityQs {
   #[ts(optional)]
@@ -49,7 +82,7 @@ pub struct VisibilityQs {
   pub show: VisibilityKind,
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize, ts_rs::TS)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/qs/")]
 #[serde(rename_all = "kebab-case")]
 pub enum VisibilityKind {

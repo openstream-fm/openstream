@@ -9,19 +9,22 @@ use db::access_token::{AccessToken, GeneratedBy, Scope};
 use db::{Model, Paged};
 use mongodb::bson::doc;
 use prex::Request;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use std::net::IpAddr;
 use ts_rs::TS;
 use user_agent::UserAgent;
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+crate::export_schema!(Device);
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/")]
 pub struct Device {
   #[serde(rename = "_id")]
   id: String,
   is_current: bool,
-  #[serde(with = "serde_util::ip")]
+  #[serde(deserialize_with = "serde_util::ip::deserialize")]
+  #[serde(serialize_with = "serde_util::ip::serialize")]
   ip: IpAddr,
   ua: UserAgent,
   created_at: DateTime,
@@ -39,7 +42,8 @@ pub mod get {
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
+  crate::export_schema!(Query);
+  #[derive(Debug, Clone, Default, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/me/devices/GET/")]
   pub struct Query {
     #[serde(flatten)]
@@ -62,9 +66,16 @@ pub mod get {
     query: Query,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  crate::export_schema!(Output);
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/me/devices/GET/")]
   pub struct Output(Paged<Device>);
+
+  #[cfg(test)]
+  #[test]
+  fn export_output_schema() {
+    crate::openapi::export_schema_from_ts::<Output>().unwrap();
+  }
 
   #[derive(Debug, thiserror::Error)]
   pub enum ParseError {

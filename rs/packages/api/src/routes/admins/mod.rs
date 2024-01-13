@@ -1,3 +1,4 @@
+pub mod change_password;
 pub mod id;
 
 use crate::json::JsonHandler;

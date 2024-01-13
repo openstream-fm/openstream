@@ -534,6 +534,7 @@ const locale: import("./studio.locale").StudioLocale = {
         "first_name": "اسمك الأول",
         "last_name": "اسم العائلة",
         "phone": "هاتفك",
+        "current_password": "كلمة المرور الحالية",
         "new_password": "كلمة مرور جديدة",
         "confirm_password": "تأكيد كلمة المرور",
         "language": "اللغة المفضلة",
