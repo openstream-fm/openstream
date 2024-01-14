@@ -8,13 +8,14 @@ use image::{ImageBuffer, EncodableLayout};
 use mongodb::bson::doc;
 use mongodb::{ClientSession, IndexModel};
 use ril::{Encoder, Paste, Rgba};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
 
 crate::register!(StationPicture);
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]

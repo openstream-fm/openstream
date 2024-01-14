@@ -6,6 +6,7 @@ pub mod delete {
 
   use super::*;
   use db::models::user_account_relation::UserAccountRelation;
+  use schemars::JsonSchema;
   use serde_util::empty_struct::EmptyStruct;
 
   #[derive(Debug, Clone)]
@@ -17,9 +18,10 @@ pub mod delete {
     account_id: String,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export)]
   #[ts(export_to = "../../../defs/api/accounts/[account]/members/[member]/DELETE/")]
+  #[macros::schema_ts_export]
   pub struct Output(EmptyStruct);
 
   #[derive(Debug, thiserror::Error)]
@@ -90,6 +92,7 @@ pub mod set_role {
       user_account_relation::UserAccountRelationKind,
     };
     use prex::request::ReadBodyJsonError;
+    use schemars::JsonSchema;
     use serde_util::empty_struct::EmptyStruct;
 
     #[derive(Debug, Clone)]
@@ -102,16 +105,18 @@ pub mod set_role {
       payload: Payload,
     }
 
-    #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+    #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
     #[ts(export)]
     #[ts(export_to = "../../../defs/api/accounts/[account]/members/[member]/set-role/POST/")]
+    #[macros::schema_ts_export]
     pub struct Payload {
       role: AccessKind,
     }
 
-    #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+    #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
     #[ts(export)]
     #[ts(export_to = "../../../defs/api/accounts/[account]/members/[member]/set-role/POST/")]
+    #[macros::schema_ts_export]
     pub enum AccessKind {
       #[serde(rename = "owner")]
       Owner,
@@ -119,9 +124,12 @@ pub mod set_role {
       Staff,
     }
 
-    #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-    #[ts(export)]
-    #[ts(export_to = "../../../defs/api/accounts/[account]/members/[member]/set-role/POST/")]
+    #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+    #[ts(
+      export,
+      export_to = "../../../defs/api/accounts/[account]/members/[member]/set-role/POST/"
+    )]
+    #[macros::schema_ts_export]
     pub struct Output(EmptyStruct);
 
     #[derive(Debug, thiserror::Error)]

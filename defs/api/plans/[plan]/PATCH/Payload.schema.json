@@ -1,0 +1,59 @@
+{
+  "type": "object",
+  "properties": {
+    "price": {
+      "type": "number",
+      "format": "double",
+      "minimum": 0.0,
+      "nullable": true
+    },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "nullable": true
+    },
+    "slug": {
+      "type": "string",
+      "minLength": 1,
+      "nullable": true
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1,
+      "nullable": true
+    },
+    "color": {
+      "type": "string",
+      "minLength": 1,
+      "nullable": true
+    },
+    "stations": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0,
+      "nullable": true
+    },
+    "listeners": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0,
+      "nullable": true
+    },
+    "transfer": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0,
+      "nullable": true
+    },
+    "storage": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0,
+      "nullable": true
+    },
+    "is_user_selectable": {
+      "type": "boolean",
+      "nullable": true
+    }
+  }
+}

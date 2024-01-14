@@ -12,6 +12,8 @@ use ts_rs::TS;
 
 pub mod post {
 
+  use schemars::JsonSchema;
+
   use super::*;
 
   #[derive(Debug, Clone)]
@@ -24,9 +26,12 @@ pub mod post {
     station_id: String,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../../defs/api/runtime/station-deleted/[station]/POST/")]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[ts(
+    export,
+    export_to = "../../../defs/api/runtime/station-deleted/[station]/POST/"
+  )]
+  #[macros::schema_ts_export]
   pub struct Output(EmptyStruct);
 
   #[async_trait]

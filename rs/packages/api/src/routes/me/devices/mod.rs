@@ -16,7 +16,6 @@ use std::net::IpAddr;
 use ts_rs::TS;
 use user_agent::UserAgent;
 
-crate::export_schema!(Device);
 #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/")]
 pub struct Device {
@@ -42,9 +41,9 @@ pub mod get {
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  crate::export_schema!(Query);
   #[derive(Debug, Clone, Default, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/me/devices/GET/")]
+  #[macros::schema_ts_export]
   pub struct Query {
     #[serde(flatten)]
     page: PaginationQs,
@@ -66,16 +65,10 @@ pub mod get {
     query: Query,
   }
 
-  crate::export_schema!(Output);
   #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/me/devices/GET/")]
+  #[macros::schema_ts_export]
   pub struct Output(Paged<Device>);
-
-  #[cfg(test)]
-  #[test]
-  fn export_output_schema() {
-    crate::openapi::export_schema_from_ts::<Output>().unwrap();
-  }
 
   #[derive(Debug, thiserror::Error)]
   pub enum ParseError {

@@ -13,6 +13,7 @@ pub mod get {
 
   use crate::{error::ApiError, request_ext::AccessTokenScope};
   use db::plan::Plan;
+  use schemars::JsonSchema;
 
   use super::*;
 
@@ -25,9 +26,9 @@ pub mod get {
     optional_access_token_scope: Option<AccessTokenScope>,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/plans/by-slug/[slug]/GET/")]
-  // #[serde(rename_all = "camelCase")]
+  #[macros::schema_ts_export]
   pub struct Output {
     plan: Plan,
   }

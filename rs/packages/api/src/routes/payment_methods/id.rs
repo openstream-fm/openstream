@@ -12,6 +12,8 @@ use ts_rs::TS;
 
 pub mod get {
 
+  use schemars::JsonSchema;
+
   use super::*;
 
   pub struct Input {
@@ -50,11 +52,12 @@ pub mod get {
     }
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/payment-methods/[payment-method]/GET/"
   )]
+  #[macros::schema_ts_export]
   pub struct Output {
     pub payment_method: PublicPaymentMethod,
   }

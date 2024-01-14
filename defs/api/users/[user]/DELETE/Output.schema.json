@@ -1,0 +1,64 @@
+{
+  "type": "object",
+  "required": [
+    "user"
+  ],
+  "properties": {
+    "user": {
+      "type": "object",
+      "required": [
+        "_id",
+        "created_at",
+        "email",
+        "first_name",
+        "last_name",
+        "system_metadata",
+        "updated_at",
+        "user_metadata"
+      ],
+      "properties": {
+        "_id": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string",
+          "nullable": true
+        },
+        "language": {
+          "type": "string",
+          "nullable": true
+        },
+        "user_metadata": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "system_metadata": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": "string",
+          "format": "date-time",
+          "nullable": true
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "properties": {
+    "listeners": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0,
+      "nullable": true
+    },
+    "transfer": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0,
+      "nullable": true
+    },
+    "storage": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0,
+      "nullable": true
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "required": [
+    "target_account_id"
+  ],
+  "properties": {
+    "target_account_id": {
+      "type": "string"
+    }
+  }
+}

@@ -8,14 +8,15 @@ use std::{
 use futures_util::{StreamExt, TryStreamExt};
 use geoip::CountryCode;
 use mongodb::bson::doc;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use serde_util::DateTime;
+use serde_util::{timezone_datetime::TimezoneDateTime, DateTime};
 use time::{OffsetDateTime, UtcOffset};
 use ts_rs::TS;
 
 use crate::{station::Station, ws_stats_connection::WsStatsConnection, Model};
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/app-analytics/")]
 pub struct Analytics {
   pub is_now: bool,
@@ -24,29 +25,29 @@ pub struct Analytics {
 
   pub stations: Vec<AnalyticsStation>,
 
-  #[ts(type = "/** time::DateTime */ string")]
-  #[serde(with = "time::serde::iso8601")]
-  pub since: time::OffsetDateTime,
+  pub since: TimezoneDateTime,
 
-  #[ts(type = "/** time::DateTime */ string")]
-  #[serde(with = "time::serde::iso8601")]
-  pub until: time::OffsetDateTime,
+  pub until: TimezoneDateTime,
 
   pub utc_offset_minutes: i16,
 
-  #[serde(with = "serde_util::as_f64")]
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub sessions: u64,
 
-  #[serde(with = "serde_util::as_f64")]
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub ips: u64,
 
-  #[serde(with = "serde_util::as_f64")]
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub total_duration_ms: u64,
 
   // #[serde(with = "serde_util::as_f64")]
   // pub total_transfer_bytes: u64,
   #[cfg(feature = "analytics-max-concurrent")]
-  #[serde(with = "serde_util::as_f64")]
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   #[ts(optional)]
   pub max_concurrent_listeners: u64,
 
@@ -65,21 +66,26 @@ pub struct Analytics {
   pub by_app_version: Vec<AnalyticsItem<AppKindVersion>>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/app-analytics/")]
 pub struct AnalyticsItem<K> {
   pub key: K,
-  #[serde(with = "serde_util::as_f64")]
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub sessions: u64,
-  #[serde(with = "serde_util::as_f64")]
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub ips: u64,
-  #[serde(with = "serde_util::as_f64")]
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub total_duration_ms: u64,
-  #[serde(with = "serde_util::as_f64")]
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub total_transfer_bytes: u64,
 
   #[cfg(feature = "analytics-max-concurrent")]
-  #[serde(with = "serde_util::as_f64")]
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   #[ts(optional)]
   pub max_concurrent_listeners: u64,
 
@@ -95,7 +101,9 @@ pub struct AnalyticsItem<K> {
 //   pub month: u8,
 // }
 
-#[derive(Debug, Clone, Copy, Serialize, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, TS)]
+#[derive(
+  Debug, Clone, Copy, Serialize, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, TS, JsonSchema,
+)]
 #[ts(export, export_to = "../../../defs/app-analytics/")]
 pub struct YearMonthDay {
   pub year: u16,
@@ -103,7 +111,9 @@ pub struct YearMonthDay {
   pub day: u8,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, TS)]
+#[derive(
+  Debug, Clone, Copy, Serialize, Eq, PartialEq, Hash, Ord, PartialOrd, Deserialize, TS, JsonSchema,
+)]
 #[ts(export, export_to = "../../../defs/app-analytics/")]
 pub struct YearMonthDayHour {
   pub year: u16,
@@ -112,14 +122,16 @@ pub struct YearMonthDayHour {
   pub hour: u8,
 }
 
-#[derive(Debug, Clone, Serialize, Ord, PartialOrd, Eq, PartialEq, Hash, Deserialize, TS)]
+#[derive(
+  Debug, Clone, Serialize, Ord, PartialOrd, Eq, PartialEq, Hash, Deserialize, TS, JsonSchema,
+)]
 #[ts(export, export_to = "../../../defs/app-analytics/")]
 pub struct AppKindVersion {
   pub kind: Option<String>,
   pub version: Option<u32>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/app-analytics/")]
 #[macros::keys]
 pub struct AnalyticsStation {
@@ -142,25 +154,16 @@ pub struct AnalyticsQuery {
   pub min_duration_ms: Option<u64>,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, ts_rs::TS)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/app-analytics/")]
 pub enum AnalyticsQueryKind {
   #[serde(rename = "now")]
-  Now {
-    #[ts(type = "/** time::DateTime */ string")]
-    #[serde(with = "time::serde::iso8601")]
-    offset_date: time::OffsetDateTime,
-  },
+  Now { offset_date: TimezoneDateTime },
 
   #[serde(rename = "time_range")]
   TimeRange {
-    #[ts(type = "/** time::DateTime */ string")]
-    #[serde(with = "time::serde::iso8601")]
-    since: time::OffsetDateTime,
-
-    #[ts(type = "/** time::DateTime */ string")]
-    #[serde(with = "time::serde::iso8601")]
-    until: time::OffsetDateTime,
+    since: TimezoneDateTime,
+    until: TimezoneDateTime,
   },
 }
 
@@ -451,7 +454,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
 
         AnalyticsQueryKind::TimeRange { since, until } => {
           is_now = false;
-          let mut start_date = since;
+          let mut start_date = *since;
           let mut end_date = (until).to_offset(since.offset());
 
           let now = OffsetDateTime::now_utc();
@@ -577,8 +580,8 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
             is_now,
             kind,
             stations,
-            since: offset_date,
-            until: offset_date,
+            since: offset_date.into(),
+            until: offset_date.into(),
             utc_offset_minutes: offset_date.offset().whole_minutes(),
             sessions: 0,
             ips: 0,
@@ -813,8 +816,8 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
       let out = Analytics {
         is_now,
         kind,
-        since,
-        until,
+        since: since.into(),
+        until: until.into(),
         utc_offset_minutes: offset_date.offset().whole_minutes(),
         sessions: batch.sessions,
         total_duration_ms: batch.total_duration_ms,

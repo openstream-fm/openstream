@@ -12,6 +12,7 @@ use ts_rs::TS;
 
 pub mod delete {
 
+  use schemars::JsonSchema;
   use serde_util::empty_struct::EmptyStruct;
 
   use super::*;
@@ -25,8 +26,9 @@ pub mod delete {
     access_token_scope: AccessTokenScope,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/me/api-keys/[id]/DELETE/")]
+  #[macros::schema_ts_export]
   pub struct Output(EmptyStruct);
 
   #[derive(Debug, thiserror::Error)]
@@ -134,6 +136,7 @@ pub mod delete {
 pub mod patch {
 
   use prex::request::ReadBodyJsonError;
+  use schemars::JsonSchema;
   use serde_util::empty_struct::EmptyStruct;
 
   use super::*;
@@ -141,8 +144,9 @@ pub mod patch {
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/me/api-keys/[id]/PATCH/")]
+  #[macros::schema_ts_export]
   pub struct Payload {
     title: Option<String>,
   }
@@ -154,8 +158,9 @@ pub mod patch {
     access_token_scope: AccessTokenScope,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/me/api-keys/[id]/PATCH/")]
+  #[macros::schema_ts_export]
   pub struct Output(EmptyStruct);
 
   #[derive(Debug, thiserror::Error)]

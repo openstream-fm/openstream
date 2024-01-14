@@ -1,15 +1,17 @@
 use super::{Headers, Method, SocketAddr, Uri, Version};
 use geoip::CountryCode;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::net::IpAddr;
 use ts_rs::TS;
 use user_agent::{UserAgent, UserAgentExt};
 
-#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/db/http/")]
 #[macros::keys]
 pub struct Request {
-  #[serde(with = "serde_util::ip")]
+  #[serde(serialize_with = "serde_util::ip::serialize")]
+  #[serde(deserialize_with = "serde_util::ip::deserialize")]
   pub real_ip: IpAddr,
   pub country_code: Option<CountryCode>,
   pub local_addr: SocketAddr,

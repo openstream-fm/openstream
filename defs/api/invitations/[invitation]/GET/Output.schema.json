@@ -1,0 +1,192 @@
+{
+  "type": "object",
+  "required": [
+    "invitation"
+  ],
+  "properties": {
+    "invitation": {
+      "type": "object",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "state"
+          ],
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": [
+                "pending"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "state",
+            "used_at"
+          ],
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": [
+                "accepted"
+              ]
+            },
+            "used_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "state",
+            "used_at"
+          ],
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": [
+                "rejected"
+              ]
+            },
+            "used_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      ],
+      "required": [
+        "account_id",
+        "created_at",
+        "expires_at",
+        "id",
+        "is_expired",
+        "receiver_email"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "user_sender_id": {
+          "type": "string",
+          "nullable": true
+        },
+        "admin_sender_id": {
+          "type": "string",
+          "nullable": true
+        },
+        "account_id": {
+          "type": "string"
+        },
+        "receiver_email": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": "string",
+          "format": "date-time",
+          "nullable": true
+        },
+        "is_expired": {
+          "type": "boolean"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "account": {
+          "type": "object",
+          "required": [
+            "_id",
+            "name"
+          ],
+          "properties": {
+            "_id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "nullable": true
+        },
+        "user_sender": {
+          "type": "object",
+          "required": [
+            "_id",
+            "email",
+            "first_name",
+            "last_name"
+          ],
+          "properties": {
+            "_id": {
+              "type": "string"
+            },
+            "first_name": {
+              "type": "string"
+            },
+            "last_name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            }
+          },
+          "nullable": true
+        },
+        "admin_sender": {
+          "type": "object",
+          "required": [
+            "_id",
+            "first_name",
+            "last_name"
+          ],
+          "properties": {
+            "_id": {
+              "type": "string"
+            },
+            "first_name": {
+              "type": "string"
+            },
+            "last_name": {
+              "type": "string"
+            }
+          },
+          "nullable": true
+        },
+        "receiver": {
+          "type": "object",
+          "required": [
+            "_id",
+            "email",
+            "first_name",
+            "last_name"
+          ],
+          "properties": {
+            "_id": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "first_name": {
+              "type": "string"
+            },
+            "last_name": {
+              "type": "string"
+            }
+          },
+          "nullable": true
+        }
+      }
+    }
+  }
+}

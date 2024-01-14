@@ -9,6 +9,7 @@ pub mod post {
   use db::{admin::Admin, Model};
   use mongodb::bson::doc;
   use prex::{request::ReadBodyJsonError, Request};
+  use schemars::JsonSchema;
   use serde::{Deserialize, Serialize};
   use serde_util::empty_struct::EmptyStruct;
   use std::net::IpAddr;
@@ -17,11 +18,12 @@ pub mod post {
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/admins/[admin]/change-password/POST/"
   )]
+  #[macros::schema_ts_export]
   pub struct Payload {
     pub current_password: String,
     pub new_password: String,
@@ -34,11 +36,12 @@ pub mod post {
     ip: IpAddr,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/admins/[admin]/change-password/POST/"
   )]
+  #[macros::schema_ts_export]
   pub struct Output(EmptyStruct);
 
   #[derive(Debug, thiserror::Error)]

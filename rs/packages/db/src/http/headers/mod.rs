@@ -3,10 +3,11 @@ use indexmap::{
   map::{IntoIter, Iter, Keys, Values},
   IndexMap,
 };
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize, TS, Eq, PartialEq)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize, TS, Eq, PartialEq, JsonSchema)]
 #[ts(export, export_to = "../../../defs/db/http/")]
 pub struct Headers(IndexMap<String, String>);
 

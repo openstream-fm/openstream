@@ -32,23 +32,7 @@ struct PaginationQsSchema {
   pub limit: i64,
 }
 
-impl JsonSchema for PaginationQs {
-  fn is_referenceable() -> bool {
-    PaginationQsSchema::is_referenceable()
-  }
-
-  fn schema_id() -> std::borrow::Cow<'static, str> {
-    PaginationQsSchema::schema_id()
-  }
-
-  fn json_schema(gen: &mut schemars::gen::SchemaGenerator) -> schemars::schema::Schema {
-    PaginationQsSchema::json_schema(gen)
-  }
-
-  fn schema_name() -> String {
-    PaginationQsSchema::schema_name()
-  }
-}
+openapi::impl_schema_from!(PaginationQs, PaginationQsSchema);
 
 impl Default for PaginationQs {
   fn default() -> Self {

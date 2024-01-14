@@ -45,15 +45,17 @@ pub mod swap {
 
   pub mod post {
 
+    use schemars::JsonSchema;
     use serde_util::empty_struct::EmptyStruct;
 
     use super::*;
 
-    #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+    #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
     #[ts(
       export,
       export_to = "../../../defs/api/stations/[station]/files/[file]/order/swap/POST/"
     )]
+    #[macros::schema_ts_export]
     #[serde(rename_all = "snake_case")]
     pub struct Payload {
       anchor_file_id: String,
@@ -69,11 +71,12 @@ pub mod swap {
       other_file_id: String,
     }
 
-    #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+    #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
     #[ts(
       export,
       export_to = "../../../defs/api/stations/[station]/files/[file]/order/swap/POST/"
     )]
+    #[macros::schema_ts_export]
     pub struct Output(EmptyStruct);
 
     impl From<ParseError> for ApiError {
@@ -165,6 +168,8 @@ pub mod move_to_first {
 
   pub mod post {
 
+    use schemars::JsonSchema;
+
     use super::*;
 
     #[derive(Debug, Clone)]
@@ -176,11 +181,12 @@ pub mod move_to_first {
       file_id: String,
     }
 
-    #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+    #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
     #[ts(
       export,
       export_to = "../../../defs/api/stations/[station]/files/[file]/order/move-to-first/POST/"
     )]
+    #[macros::schema_ts_export]
     #[serde(rename_all = "snake_case")]
     pub struct Output {
       order: f64,
@@ -225,6 +231,8 @@ pub mod move_to_last {
 
   pub mod post {
 
+    use schemars::JsonSchema;
+
     use super::*;
 
     #[derive(Debug, Clone)]
@@ -236,11 +244,12 @@ pub mod move_to_last {
       file_id: String,
     }
 
-    #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+    #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
     #[ts(
       export,
       export_to = "../../../defs/api/stations/[station]/files/[file]/order/move-to-last/POST/"
     )]
+    #[macros::schema_ts_export]
     #[serde(rename_all = "snake_case")]
     pub struct Output {
       order: f64,
@@ -285,6 +294,7 @@ pub mod move_before {
 
   pub mod post {
     use db::audio_file::OrderDocument;
+    use schemars::JsonSchema;
 
     use super::*;
     #[derive(Debug, Clone)]
@@ -297,22 +307,24 @@ pub mod move_before {
       anchor_file_id: String,
     }
 
-    #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+    #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
     #[ts(
       export,
       export_to = "../../../defs/api/stations/[station]/files/[file]/order/move-before/POST/"
     )]
+    #[macros::schema_ts_export]
     #[serde(rename_all = "snake_case")]
     pub struct Output {
       order: f64,
     }
 
-    #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+    #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
     #[ts(
       export,
       export_to = "../../../defs/api/stations/[station]/files/[file]/order/move-before/POST/"
     )]
     #[serde(rename_all = "snake_case")]
+    #[macros::schema_ts_export]
     pub struct Payload {
       anchor_file_id: String,
     }
@@ -389,6 +401,8 @@ pub mod move_after {
   use super::*;
 
   pub mod post {
+    use schemars::JsonSchema;
+
     use super::*;
     #[derive(Debug, Clone)]
     pub struct Endpoint {}
@@ -400,21 +414,23 @@ pub mod move_after {
       anchor_file_id: String,
     }
 
-    #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+    #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
     #[ts(
       export,
       export_to = "../../../defs/api/stations/[station]/files/[file]/order/move-after/POST/"
     )]
+    #[macros::schema_ts_export]
     #[serde(rename_all = "snake_case")]
     pub struct Output {
       order: f64,
     }
 
-    #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+    #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
     #[ts(
       export,
       export_to = "../../../defs/api/stations/[station]/files/[file]/order/move-after/POST/"
     )]
+    #[macros::schema_ts_export]
     #[serde(rename_all = "snake_case")]
     pub struct Payload {
       anchor_file_id: String,

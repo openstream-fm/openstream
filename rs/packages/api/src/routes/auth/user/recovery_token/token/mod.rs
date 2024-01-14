@@ -15,6 +15,8 @@ pub mod get {
 
   use std::net::IpAddr;
 
+  use schemars::JsonSchema;
+
   use crate::ip_limit;
 
   use super::*;
@@ -28,11 +30,12 @@ pub mod get {
     token: String,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/auth/user/recovery-token/[token]/GET/"
   )]
+  #[macros::schema_ts_export]
   #[serde(tag = "kind", rename_all = "snake_case")]
   pub enum Output {
     Found {

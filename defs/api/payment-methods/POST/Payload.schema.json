@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "required": [
+    "device_data",
+    "nonce"
+  ],
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "nullable": true
+    },
+    "nonce": {
+      "type": "string"
+    },
+    "device_data": {
+      "type": "string"
+    }
+  }
+}

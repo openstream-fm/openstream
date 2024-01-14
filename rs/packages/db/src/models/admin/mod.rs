@@ -1,6 +1,7 @@
 use crate::Model;
 use crate::{error::ApplyPatchError, metadata::Metadata};
 use mongodb::{bson::doc, options::IndexOptions, IndexModel};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
@@ -24,7 +25,7 @@ pub struct Admin {
   pub deleted_at: Option<DateTime>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/")]
 #[serde(rename_all = "snake_case")]
 pub struct PublicAdmin {
@@ -54,10 +55,9 @@ impl Admin {
   }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/ops/")]
-#[serde(rename_all = "snake_case")]
-#[serde(deny_unknown_fields)]
+#[serde(rename_all = "snake_case", deny_unknown_fields)]
 pub struct AdminPatch {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub first_name: Option<String>,

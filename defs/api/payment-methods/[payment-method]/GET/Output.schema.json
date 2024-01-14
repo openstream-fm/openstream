@@ -1,0 +1,70 @@
+{
+  "type": "object",
+  "required": [
+    "payment_method"
+  ],
+  "properties": {
+    "payment_method": {
+      "type": "object",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "card_type",
+            "kind",
+            "last_4"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "card"
+              ]
+            },
+            "card_type": {
+              "type": "string"
+            },
+            "last_4": {
+              "type": "string"
+            },
+            "expiration_year": {
+              "type": "string",
+              "nullable": true
+            },
+            "expiration_month": {
+              "type": "string",
+              "nullable": true
+            }
+          }
+        }
+      ],
+      "required": [
+        "_id",
+        "created_at",
+        "updated_at",
+        "user_id"
+      ],
+      "properties": {
+        "_id": {
+          "type": "string"
+        },
+        "user_id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": "string",
+          "format": "date-time",
+          "nullable": true
+        }
+      }
+    }
+  }
+}

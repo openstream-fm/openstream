@@ -1,12 +1,14 @@
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::net::IpAddr;
 use ts_rs::TS;
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, Eq, PartialEq, TS)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, Eq, PartialEq, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/db/http/")]
 // #[serde(rename_all = "camelCase")]
 pub struct SocketAddr {
-  #[serde(with = "serde_util::ip")]
+  #[serde(serialize_with = "serde_util::ip::serialize")]
+  #[serde(deserialize_with = "serde_util::ip::deserialize")]
   pub ip: IpAddr,
   pub port: u16,
 }

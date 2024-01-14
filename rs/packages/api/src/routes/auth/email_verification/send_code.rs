@@ -8,6 +8,7 @@ pub mod post {
   use mailer::send::{Address, Email, Mailer, SendError};
   use mongodb::bson::doc;
   use prex::{request::ReadBodyJsonError, Request};
+  use schemars::JsonSchema;
   use serde::{Deserialize, Serialize};
   use serde_util::empty_struct::EmptyStruct;
   use serde_util::DateTime;
@@ -19,12 +20,12 @@ pub mod post {
   use crate::ip_limit::{hit, should_reject};
   use crate::json::JsonHandler;
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/auth/email-verification/send-code/POST/"
   )]
-  // #[serde(rename_all = "camelCase")]
+  #[macros::schema_ts_export]
   #[serde(deny_unknown_fields)]
   pub struct Payload {
     email: String,
@@ -36,11 +37,12 @@ pub mod post {
     payload: Payload,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/auth/email-verification/send-code/POST/"
   )]
+  #[macros::schema_ts_export]
   pub struct Output(EmptyStruct);
 
   #[derive(Debug, Clone)]

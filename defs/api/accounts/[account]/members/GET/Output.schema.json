@@ -1,0 +1,42 @@
+{
+  "type": "object",
+  "required": [
+    "members"
+  ],
+  "properties": {
+    "members": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "_id",
+          "email",
+          "first_name",
+          "last_name",
+          "relation"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "relation": {
+            "type": "string",
+            "enum": [
+              "owner",
+              "staff"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

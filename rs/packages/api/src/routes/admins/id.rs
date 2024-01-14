@@ -9,6 +9,7 @@ use ts_rs::TS;
 pub mod get {
 
   use db::admin::{Admin, PublicAdmin};
+  use schemars::JsonSchema;
   use std::convert::Infallible;
 
   use super::*;
@@ -21,9 +22,9 @@ pub mod get {
     admin: Admin,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/admins/[admin]/GET/")]
-  // #[serde(rename_all = "camelCase")]
+  #[macros::schema_ts_export]
   pub struct Output {
     admin: PublicAdmin,
   }
@@ -66,12 +67,14 @@ pub mod patch {
     fetch_and_patch, run_transaction, Model,
   };
   use prex::request::ReadBodyJsonError;
+  use schemars::JsonSchema;
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/admins/[admin]/PATCH/")]
+  #[macros::schema_ts_export]
   pub struct Payload(pub AdminPatch);
 
   #[derive(Debug, Clone)]
@@ -80,8 +83,9 @@ pub mod patch {
     admin: Admin,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/admins/[admin]/PATCH/")]
+  #[macros::schema_ts_export]
   pub struct Output(pub PublicAdmin);
 
   #[derive(Debug, thiserror::Error)]

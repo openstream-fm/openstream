@@ -1,7 +1,8 @@
 use hyper::http::method::InvalidMethod;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, JsonSchema)]
 pub enum Method {
   HEAD,
   GET,

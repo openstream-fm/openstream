@@ -1,10 +1,11 @@
 use std::collections::BTreeMap;
 
 use geoip::CountryCode;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/stream-connection-stats/")]
 pub struct Stats {
   pub now: StatsItem,
@@ -13,7 +14,7 @@ pub struct Stats {
   pub last_30d: StatsItem,
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/stream-connection-stats/")]
 pub struct StatsItem {
   pub sessions: f64,

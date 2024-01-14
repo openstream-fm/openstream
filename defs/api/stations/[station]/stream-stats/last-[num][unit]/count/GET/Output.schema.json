@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "required": [
+    "total"
+  ],
+  "properties": {
+    "total": {
+      "type": "integer",
+      "format": "uint",
+      "minimum": 0.0
+    }
+  }
+}

@@ -1,12 +1,13 @@
 use std::collections::BTreeMap;
 use std::ops::{Deref, DerefMut};
 
+use schemars::JsonSchema;
 //use serde::de::Visitor;
 //use serde::ser::SerializeMap;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-#[derive(Debug, Clone, Default, Eq, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Default, Eq, PartialEq, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export)]
 #[ts(export_to = "../../../defs/db/")]
 pub struct Metadata(Document);
@@ -14,12 +15,12 @@ pub struct Metadata(Document);
 #[derive(Debug, Clone, Default, Eq, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
 #[ts(export_to = "../../../defs/db/")]
-// Record<string, Value> cannot reference itself in typescript
 pub struct Document(BTreeMap<String, Value>);
 
-#[derive(Debug, Clone, TS, Serialize, Deserialize)]
-#[ts(export)]
-#[ts(export_to = "../../../defs/db/")]
+openapi::impl_schema_from!(Document, DocumentSchema);
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+#[ts(export, export_to = "../../../defs/db/")]
 #[serde(untagged)]
 pub enum Value {
   Null,
@@ -89,3 +90,7 @@ impl Metadata {
     self
   }
 }
+
+#[derive(JsonSchema)]
+#[schemars(rename = "JsonDocument")]
+pub struct DocumentSchema(BTreeMap<String, serde_json::Value>);

@@ -9,6 +9,7 @@ pub mod get {
   use db::Paged;
   use mongodb::bson::doc;
   use prex::Request;
+  use schemars::JsonSchema;
   use serde::{Deserialize, Serialize};
   use ts_rs::TS;
 
@@ -20,8 +21,9 @@ pub mod get {
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
+  #[derive(Debug, Clone, Default, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/plans/GET/")]
+  #[macros::schema_ts_export]
   /// TODO: add pagination
   pub struct Query {
     #[serde(flatten)]
@@ -36,8 +38,9 @@ pub mod get {
     query: Query,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/plans/GET/")]
+  #[macros::schema_ts_export]
   pub struct Output(Paged<Plan>);
 
   #[derive(Debug, thiserror::Error)]
@@ -121,6 +124,7 @@ pub mod post {
   use mongodb::bson::doc;
   use mongodb::options::FindOneOptions;
   use prex::{request::ReadBodyJsonError, Request};
+  use schemars::JsonSchema;
   use serde::{Deserialize, Serialize};
   use serde_util::DateTime;
   use ts_rs::TS;
@@ -132,8 +136,9 @@ pub mod post {
     request_ext::{self, GetAccessTokenScopeError},
   };
 
-  #[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/plans/POST/")]
+  #[macros::schema_ts_export]
   #[validify]
   #[serde(rename_all = "snake_case")]
   #[serde(deny_unknown_fields)]
@@ -170,8 +175,9 @@ pub mod post {
     payload: Payload,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/plans/POST/")]
+  #[macros::schema_ts_export]
   pub struct Output(pub Plan);
 
   #[derive(Debug, thiserror::Error)]

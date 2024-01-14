@@ -16,6 +16,7 @@ pub mod get {
     probe::Probe,
     Model,
   };
+  use schemars::JsonSchema;
 
   use super::*;
 
@@ -28,9 +29,12 @@ pub mod get {
   }
 
   #[allow(clippy::large_enum_variant)]
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../../defs/api/stations/[station]/now-playing/GET/")]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[ts(
+    export,
+    export_to = "../../../defs/api/stations/[station]/now-playing/GET/"
+  )]
+  #[macros::schema_ts_export]
   #[serde(tag = "kind")]
   pub enum Output {
     #[serde(rename = "none")]

@@ -1,0 +1,42 @@
+{
+  "type": "object",
+  "required": [
+    "email",
+    "first_name",
+    "last_name",
+    "password"
+  ],
+  "properties": {
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string",
+      "nullable": true
+    },
+    "password": {
+      "type": "string"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "nullable": true
+    },
+    "user_metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "nullable": true
+    },
+    "system_metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "nullable": true
+    }
+  },
+  "additionalProperties": false
+}

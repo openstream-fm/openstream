@@ -5,6 +5,7 @@ import type { AnalyticsStation } from "./AnalyticsStation";
 import type { AppKindVersion } from "./AppKindVersion";
 import type { CountryCode } from "../CountryCode";
 import type { DateTime } from "../DateTime";
+import type { TimezoneDateTime } from "../TimezoneDateTime";
 import type { YearMonthDay } from "./YearMonthDay";
 import type { YearMonthDayHour } from "./YearMonthDayHour";
 
@@ -12,8 +13,8 @@ export type Analytics = {
   is_now: boolean;
   kind: AnalyticsQueryKind;
   stations: Array<AnalyticsStation>;
-  since: /** time::DateTime */ string;
-  until: /** time::DateTime */ string;
+  since: TimezoneDateTime;
+  until: TimezoneDateTime;
   utc_offset_minutes: number;
   sessions: number;
   ips: number;

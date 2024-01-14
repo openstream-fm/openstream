@@ -13,6 +13,8 @@ use std::convert::Infallible;
 use ts_rs::TS;
 
 pub mod get {
+  use schemars::JsonSchema;
+
   use super::*;
 
   #[derive(Debug)]
@@ -20,8 +22,9 @@ pub mod get {
     access_token_scope: AccessTokenScope,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/me/GET/")]
+  #[macros::schema_ts_export]
   pub struct Output(pub Me);
 
   #[derive(Debug, Clone)]

@@ -13,6 +13,7 @@ pub mod post {
   use db::{deployment::Deployment, Model};
   use hyper::{http::HeaderValue, Body};
   use media::MediaSessionMap;
+  use schemars::JsonSchema;
 
   use crate::request_ext::X_ACCESS_TOKEN;
 
@@ -30,9 +31,12 @@ pub mod post {
     station: Station,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../../defs/api/stations/[station]/reset-source-password/POST/")]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[ts(
+    export,
+    export_to = "../../../defs/api/stations/[station]/reset-source-password/POST/"
+  )]
+  #[macros::schema_ts_export]
   pub struct Output {
     new_password: String,
   }

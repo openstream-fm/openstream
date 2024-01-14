@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "first_name": {
+      "type": "string",
+      "nullable": true
+    },
+    "last_name": {
+      "type": "string",
+      "nullable": true
+    },
+    "system_metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "nullable": true
+    }
+  },
+  "additionalProperties": false
+}

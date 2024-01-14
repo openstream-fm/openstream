@@ -1,6 +1,7 @@
 pub mod post {
 
   use mongodb::bson::doc;
+  use schemars::JsonSchema;
   use std::net::IpAddr;
 
   use crate::{
@@ -20,11 +21,12 @@ pub mod post {
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/users/[user]/change-password/POST/"
   )]
+  #[macros::schema_ts_export]
   pub struct Payload {
     pub current_password: String,
     pub new_password: String,
@@ -37,11 +39,12 @@ pub mod post {
     ip: IpAddr,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/users/[user]/change-password/POST/"
   )]
+  #[macros::schema_ts_export]
   pub struct Output(EmptyStruct);
 
   #[derive(Debug, thiserror::Error)]

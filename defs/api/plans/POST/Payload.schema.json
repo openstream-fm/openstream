@@ -1,0 +1,62 @@
+{
+  "type": "object",
+  "required": [
+    "color",
+    "display_name",
+    "identifier",
+    "is_user_selectable",
+    "listeners",
+    "price",
+    "slug",
+    "stations",
+    "storage",
+    "transfer"
+  ],
+  "properties": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1
+    },
+    "slug": {
+      "type": "string",
+      "minLength": 1
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "is_user_selectable": {
+      "type": "boolean"
+    },
+    "price": {
+      "type": "number",
+      "format": "double",
+      "minimum": 0.0
+    },
+    "color": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stations": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
+    },
+    "listeners": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
+    },
+    "transfer": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
+    },
+    "storage": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
+    }
+  },
+  "additionalProperties": false
+}

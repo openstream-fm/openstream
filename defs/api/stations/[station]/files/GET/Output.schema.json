@@ -1,0 +1,148 @@
+{
+  "type": "object",
+  "required": [
+    "files",
+    "playlist_is_randomly_shuffled"
+  ],
+  "properties": {
+    "files": {
+      "type": "object",
+      "required": [
+        "items",
+        "limit",
+        "skip",
+        "total"
+      ],
+      "properties": {
+        "total": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "skip": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "_id",
+              "bytes_sec",
+              "chunk_count",
+              "chunk_duration_ms",
+              "chunk_len",
+              "created_at",
+              "duration_ms",
+              "filename",
+              "len",
+              "metadata",
+              "order",
+              "sha256",
+              "station_id"
+            ],
+            "properties": {
+              "_id": {
+                "type": "string"
+              },
+              "station_id": {
+                "type": "string"
+              },
+              "sha256": {
+                "type": "string"
+              },
+              "len": {
+                "type": "integer",
+                "format": "uint64",
+                "minimum": 0.0
+              },
+              "duration_ms": {
+                "type": "number",
+                "format": "double"
+              },
+              "bytes_sec": {
+                "type": "integer",
+                "format": "uint",
+                "minimum": 0.0
+              },
+              "chunk_count": {
+                "type": "integer",
+                "format": "uint",
+                "minimum": 0.0
+              },
+              "chunk_len": {
+                "type": "integer",
+                "format": "uint",
+                "minimum": 0.0
+              },
+              "chunk_duration_ms": {
+                "type": "number",
+                "format": "double"
+              },
+              "filename": {
+                "type": "string"
+              },
+              "metadata": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "artist": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "album": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "album_artist": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "genre": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "year": {
+                    "type": "integer",
+                    "format": "int32",
+                    "nullable": true
+                  },
+                  "comment": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "track": {
+                    "type": "integer",
+                    "format": "uint16",
+                    "minimum": 0.0,
+                    "nullable": true
+                  }
+                }
+              },
+              "order": {
+                "type": "number",
+                "format": "double"
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      }
+    },
+    "playlist_is_randomly_shuffled": {
+      "type": "boolean"
+    }
+  }
+}

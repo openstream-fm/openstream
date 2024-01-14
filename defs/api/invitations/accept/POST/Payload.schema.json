@@ -1,0 +1,42 @@
+{
+  "anyOf": [
+    {
+      "type": "object",
+      "required": [
+        "first_name",
+        "last_name",
+        "password",
+        "token"
+      ],
+      "properties": {
+        "token": {
+          "type": "string"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string",
+          "nullable": true
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "invitation_id"
+      ],
+      "properties": {
+        "invitation_id": {
+          "type": "string"
+        }
+      }
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 use crate::Model;
 use mongodb::IndexModel;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
@@ -39,7 +40,7 @@ pub enum PaymentMethodKind {
   },
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/")]
 pub struct PublicPaymentMethod {
   #[serde(rename = "_id")]
@@ -76,7 +77,7 @@ impl From<PaymentMethod> for PublicPaymentMethod {
   }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/")]
 #[serde(tag = "kind")]
 pub enum PublicPaymentMethodKind {

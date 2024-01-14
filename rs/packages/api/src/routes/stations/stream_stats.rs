@@ -13,6 +13,7 @@ use ts_rs::TS;
 pub mod get {
 
   use db::stream_connection::index::{AllFilter, StationQuery};
+  use schemars::JsonSchema;
 
   use super::*;
 
@@ -26,9 +27,12 @@ pub mod get {
     station_id: String,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../../defs/api/stations/[station]/stream-stats/GET/")]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[ts(
+    export,
+    export_to = "../../../defs/api/stations/[station]/stream-stats/GET/"
+  )]
+  #[macros::schema_ts_export]
   pub struct Output {
     pub stats: Stats,
   }
@@ -73,6 +77,7 @@ pub mod now {
       index::{IsOpenFilter, StationQuery},
       stats::StatsItem,
     };
+    use schemars::JsonSchema;
 
     #[derive(Debug, Clone)]
     pub struct Endpoint {
@@ -84,9 +89,12 @@ pub mod now {
       station_id: String,
     }
 
-    #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-    #[ts(export)]
-    #[ts(export_to = "../../../defs/api/stations/[station]/stream-stats/now/GET/")]
+    #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+    #[ts(
+      export,
+      export_to = "../../../defs/api/stations/[station]/stream-stats/now/GET/"
+    )]
+    #[macros::schema_ts_export]
     pub struct Output {
       pub stats: StatsItem,
     }
@@ -125,6 +133,7 @@ pub mod now {
       use super::*;
 
       use db::stream_connection::index::{IsOpenFilter, StationQuery};
+      use schemars::JsonSchema;
 
       #[derive(Debug, Clone)]
       pub struct Endpoint {
@@ -136,9 +145,12 @@ pub mod now {
         station_id: String,
       }
 
-      #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-      #[ts(export)]
-      #[ts(export_to = "../../../defs/api/stations/[station]/stream-stats/now/count/GET/")]
+      #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+      #[ts(
+        export,
+        export_to = "../../../defs/api/stations/[station]/stream-stats/now/count/GET/"
+      )]
+      #[macros::schema_ts_export]
       pub struct Output {
         pub total: usize,
       }
@@ -184,6 +196,7 @@ pub mod since {
       index::{SinceFilter, StationQuery},
       stats::StatsItem,
     };
+    use schemars::JsonSchema;
 
     #[derive(Debug, Clone)]
     pub struct Endpoint {
@@ -196,9 +209,12 @@ pub mod since {
       station_id: String,
     }
 
-    #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-    #[ts(export)]
-    #[ts(export_to = "../../../defs/api/stations/[station]/stream-stats/last-[num][unit]/GET/")]
+    #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+    #[ts(
+      export,
+      export_to = "../../../defs/api/stations/[station]/stream-stats/last-[num][unit]/GET/"
+    )]
+    #[macros::schema_ts_export]
     pub struct Output {
       pub stats: StatsItem,
     }
@@ -281,6 +297,7 @@ pub mod since {
       use super::*;
       use crate::error::ApiError;
       use db::stream_connection::index::{SinceFilter, StationQuery};
+      use schemars::JsonSchema;
 
       #[derive(Debug, Clone)]
       pub struct Endpoint {
@@ -293,11 +310,12 @@ pub mod since {
         station_id: String,
       }
 
-      #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-      #[ts(export)]
+      #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
       #[ts(
+        export,
         export_to = "../../../defs/api/stations/[station]/stream-stats/last-[num][unit]/count/GET/"
       )]
+      #[macros::schema_ts_export]
       pub struct Output {
         pub total: usize,
       }

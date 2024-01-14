@@ -5,6 +5,7 @@ use mongodb::{
   options::{FindOptions, IndexOptions},
   IndexModel,
 };
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
@@ -13,7 +14,7 @@ use crate::current_filter_doc;
 
 crate::register!(Plan);
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
@@ -75,16 +76,20 @@ impl Plan {
   }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 pub struct PlanLimits {
-  #[serde(with = "serde_util::as_f64")]
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub stations: u64,
-  #[serde(with = "serde_util::as_f64")]
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub listeners: u64,
-  #[serde(with = "serde_util::as_f64")]
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub transfer: u64,
-  #[serde(with = "serde_util::as_f64")]
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub storage: u64,
 }

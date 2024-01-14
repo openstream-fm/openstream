@@ -1,0 +1,34 @@
+{
+  "type": "object",
+  "required": [
+    "name",
+    "payment_method_id",
+    "plan_id"
+  ],
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "plan_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string",
+      "nullable": true
+    },
+    "user_metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "nullable": true
+    },
+    "system_metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "nullable": true
+    },
+    "payment_method_id": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

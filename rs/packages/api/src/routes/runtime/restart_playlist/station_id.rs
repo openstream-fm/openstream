@@ -13,6 +13,7 @@ pub mod post {
 
   use drop_tracer::DropTracer;
   use media::MediaSessionMap;
+  use schemars::JsonSchema;
   use serde_util::empty_struct::EmptyStruct;
   use shutdown::Shutdown;
 
@@ -33,9 +34,12 @@ pub mod post {
     station_id: String,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../../defs/api/runtime/restart-playlist/[station]/POST/")]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[ts(
+    export,
+    export_to = "../../../defs/api/runtime/restart-playlist/[station]/POST/"
+  )]
+  #[macros::schema_ts_export]
   pub struct Output(EmptyStruct);
 
   #[derive(Debug, thiserror::Error)]

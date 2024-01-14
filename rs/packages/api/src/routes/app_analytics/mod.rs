@@ -15,6 +15,7 @@ pub mod get {
   use db::{station::Station, stream_connection::app_analytics::Analytics};
   use geoip::CountryCode;
   use mongodb::bson::Bson;
+  use schemars::JsonSchema;
 
   use super::*;
 
@@ -27,32 +28,32 @@ pub mod get {
     pub query: Query,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../../defs/api/app-analytics/GET/")]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[ts(export, export_to = "../../../defs/api/app-analytics/GET/")]
+  #[macros::schema_ts_export]
   pub struct Output {
     pub analytics: Analytics,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../../defs/api/app-analytics/GET/")]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[ts(export, export_to = "../../../defs/api/app-analytics/GET/")]
+  #[macros::schema_ts_export]
   #[serde(untagged)]
   pub enum CountryCodeOrZZ {
     ZZ(ZZ),
     CC(CountryCode),
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../../defs/api/app-analytics/GET/")]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[ts(export, export_to = "../../../defs/api/app-analytics/GET/")]
+  #[macros::schema_ts_export]
   pub enum ZZ {
     ZZ,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../../defs/api/app-analytics/GET/")]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[ts(export, export_to = "../../../defs/api/app-analytics/GET/")]
+  #[macros::schema_ts_export]
   pub struct Query {
     pub kind: app_analytics::AnalyticsQueryKind,
 

@@ -2,14 +2,11 @@ pub mod error;
 pub mod ip_limit;
 pub mod json;
 pub mod me;
-pub mod openapi;
 pub mod qs;
 pub mod request_ext;
 pub mod routes;
 pub mod storage;
 pub mod ws_stats;
-
-pub use export_schema_macro as export_schema;
 
 use payments::client::PaymentsClient;
 

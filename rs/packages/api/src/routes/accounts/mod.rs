@@ -21,13 +21,16 @@ use ts_rs::TS;
 
 pub mod get {
 
+  use schemars::JsonSchema;
+
   use super::*;
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
+  #[derive(Debug, Clone, Serialize, Deserialize, Default, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/accounts/GET/")]
+  #[macros::schema_ts_export]
   pub struct Query {
     #[serde(flatten)]
     page: PaginationQs,
@@ -45,8 +48,9 @@ pub mod get {
     query: Query,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/accounts/GET/")]
+  #[macros::schema_ts_export]
   pub struct Output(Paged<PublicAccount>);
 
   #[derive(Debug, thiserror::Error)]
@@ -159,15 +163,16 @@ pub mod post {
   use db::plan::Plan;
   use db::user::User;
   use db::{current_filter_doc, run_transaction};
+  use schemars::JsonSchema;
   use serde_util::DateTime;
   use ts_rs::TS;
 
   use super::*;
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/accounts/POST/")]
-  #[serde(rename_all = "snake_case")]
-  #[serde(deny_unknown_fields)]
+  #[macros::schema_ts_export]
+  #[serde(rename_all = "snake_case", deny_unknown_fields)]
   pub struct Payload {
     pub name: String,
     pub plan_id: String,
@@ -186,8 +191,9 @@ pub mod post {
     payload: Payload,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/accounts/POST/")]
+  #[macros::schema_ts_export]
   pub struct Output {
     account: PublicAccount,
   }

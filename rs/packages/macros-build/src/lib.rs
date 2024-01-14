@@ -28,6 +28,11 @@ pub fn status(tokens: TokenStream) -> TokenStream {
   impls::status::status(tokens)
 }
 
+#[proc_macro_attribute]
+pub fn schema_ts_export(args: TokenStream, tokens: TokenStream) -> TokenStream {
+  impls::schema_ts_export::schema_ts_export(args, tokens)
+}
+
 // #[proc_macro_attribute]
 // pub fn validate(args: TokenStream, tokens: TokenStream) -> TokenStream {
 //   todo!();

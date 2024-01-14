@@ -6,23 +6,7 @@ use ts_rs::TS;
 #[ts(export, export_to = "../../../defs/")]
 pub struct EmptyStruct(#[ts(type = "Record<string, never>")] pub ());
 
-impl JsonSchema for EmptyStruct {
-  fn schema_id() -> std::borrow::Cow<'static, str> {
-    EmptyStructSchema::schema_id()
-  }
-
-  fn json_schema(gen: &mut schemars::gen::SchemaGenerator) -> schemars::schema::Schema {
-    EmptyStructSchema::json_schema(gen)
-  }
-
-  fn is_referenceable() -> bool {
-    EmptyStructSchema::is_referenceable()
-  }
-
-  fn schema_name() -> String {
-    EmptyStructSchema::schema_name()
-  }
-}
+openapi::impl_schema_from!(EmptyStruct, EmptyStructSchema);
 
 #[derive(JsonSchema)]
 #[schemars(rename = "EmptyObjectw")]

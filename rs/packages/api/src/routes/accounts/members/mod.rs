@@ -18,6 +18,7 @@ pub mod get {
   };
   use futures_util::TryStreamExt;
   use mongodb::options::FindOptions;
+  use schemars::JsonSchema;
 
   use super::*;
 
@@ -29,9 +30,12 @@ pub mod get {
     account_id: String,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../../defs/api/accounts/[account]/members/GET/")]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[ts(
+    export,
+    export_to = "../../../defs/api/accounts/[account]/members/GET/"
+  )]
+  #[macros::schema_ts_export]
   pub struct Member {
     #[serde(rename = "_id")]
     id: String,
@@ -41,9 +45,10 @@ pub mod get {
     relation: UserAccountRelationKind,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export)]
   #[ts(export_to = "../../../defs/api/accounts/[account]/members/GET/")]
+  #[macros::schema_ts_export]
   // #[serde(rename_all = "camelCase")]
   pub struct Output {
     pub members: Vec<Member>,

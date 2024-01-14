@@ -32,6 +32,7 @@ members = [
 
     "rs/config/constants",
 
+    "rs/packages/openapi",
     "rs/packages/ip-counter",
     "rs/packages/macros",
     "rs/packages/macros-build",

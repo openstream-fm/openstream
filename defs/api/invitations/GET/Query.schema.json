@@ -1,0 +1,41 @@
+{
+  "type": "object",
+  "properties": {
+    "user_sender_id": {
+      "type": "string",
+      "nullable": true
+    },
+    "admin_sender_id": {
+      "type": "string",
+      "nullable": true
+    },
+    "receiver_email": {
+      "type": "string",
+      "nullable": true
+    },
+    "account_id": {
+      "type": "string",
+      "nullable": true
+    },
+    "skip": {
+      "default": 0,
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
+    },
+    "limit": {
+      "default": 60,
+      "type": "integer",
+      "format": "int64"
+    },
+    "show": {
+      "default": "active",
+      "type": "string",
+      "enum": [
+        "all",
+        "active",
+        "deleted"
+      ]
+    }
+  }
+}

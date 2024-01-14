@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "maxLength": 60,
+      "minLength": 1,
+      "nullable": true
+    },
+    "plan_id": {
+      "type": "string",
+      "nullable": true
+    },
+    "user_metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "nullable": true
+    },
+    "system_metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "nullable": true
+    }
+  },
+  "additionalProperties": false
+}

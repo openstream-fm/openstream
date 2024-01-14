@@ -29,29 +29,13 @@ pub fn local_offset() -> UtcOffset {
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, TS)]
 #[ts(export)]
 #[ts(export_to = "../../../defs/")]
-pub struct DateTime(#[ts(type = "string")] OffsetDateTime);
+pub struct DateTime(#[ts(type = "/* DateTime */ string")] OffsetDateTime);
+
+openapi::impl_schema_from!(DateTime, DateTimeSchema);
 
 #[derive(JsonSchema)]
 #[schemars(rename = "DateTime")]
-struct DateTimeSchemars(chrono::DateTime<Utc>);
-
-impl JsonSchema for DateTime {
-  fn is_referenceable() -> bool {
-    DateTimeSchemars::is_referenceable()
-  }
-
-  fn schema_id() -> std::borrow::Cow<'static, str> {
-    DateTimeSchemars::schema_id()
-  }
-
-  fn json_schema(gen: &mut schemars::gen::SchemaGenerator) -> schemars::schema::Schema {
-    DateTimeSchemars::json_schema(gen)
-  }
-
-  fn schema_name() -> String {
-    DateTimeSchemars::schema_name()
-  }
-}
+struct DateTimeSchema(chrono::DateTime<Utc>);
 
 impl Display for DateTime {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

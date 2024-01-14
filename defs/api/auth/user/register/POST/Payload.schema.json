@@ -1,0 +1,76 @@
+{
+  "type": "object",
+  "required": [
+    "account_name",
+    "device_id",
+    "email",
+    "email_verification_code",
+    "first_name",
+    "last_name",
+    "password",
+    "payment_method_nonce",
+    "plan_id"
+  ],
+  "properties": {
+    "plan_id": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "password": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string",
+      "nullable": true
+    },
+    "language": {
+      "type": "string",
+      "nullable": true
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "account_name": {
+      "type": "string"
+    },
+    "user_user_metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "nullable": true
+    },
+    "user_system_metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "nullable": true
+    },
+    "account_user_metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "nullable": true
+    },
+    "account_system_metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "nullable": true
+    },
+    "email_verification_code": {
+      "type": "string"
+    },
+    "device_id": {
+      "type": "string"
+    },
+    "payment_method_nonce": {
+      "type": "string"
+    },
+    "payment_device_data": {
+      "type": "string",
+      "nullable": true
+    }
+  },
+  "additionalProperties": false
+}

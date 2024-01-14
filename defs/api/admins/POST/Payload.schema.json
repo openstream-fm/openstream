@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "required": [
+    "email",
+    "first_name",
+    "last_name",
+    "password"
+  ],
+  "properties": {
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "password": {
+      "type": "string"
+    },
+    "system_metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "nullable": true
+    }
+  },
+  "additionalProperties": false
+}

@@ -5,6 +5,7 @@ use crate::{metadata::Metadata, PublicScope};
 use constants::validate::*;
 use mongodb::bson::{doc, Bson};
 use mongodb::ClientSession;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use std::collections::HashMap;
@@ -12,7 +13,7 @@ use ts_rs::TS;
 
 crate::register!(Account);
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
@@ -30,7 +31,7 @@ pub struct Account {
   pub deleted_at: Option<DateTime>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/")]
 #[serde(rename_all = "snake_case")]
 pub struct UserPublicAccount {
@@ -46,11 +47,11 @@ pub struct UserPublicAccount {
   pub deleted_at: Option<DateTime>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/")]
 pub struct AdminPublicAccount(pub Account);
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/")]
 #[serde(untagged)]
 pub enum PublicAccount {
@@ -58,7 +59,7 @@ pub enum PublicAccount {
   User(UserPublicAccount),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/ops/")]
 #[serde(rename_all = "snake_case")]
 #[serde(deny_unknown_fields)]
@@ -145,7 +146,7 @@ impl Model for Account {
   const CL_NAME: &'static str = "accounts";
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/", rename = "AccountLimits")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
@@ -156,14 +157,16 @@ pub struct Limits {
   pub storage: Limit,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, TS)]
+#[derive(Debug, Clone, Deserialize, Serialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/", rename = "AccountLimit")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct Limit {
-  #[serde(with = "serde_util::as_f64")]
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub used: u64,
-  #[serde(with = "serde_util::as_f64")]
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub total: u64,
 }
 

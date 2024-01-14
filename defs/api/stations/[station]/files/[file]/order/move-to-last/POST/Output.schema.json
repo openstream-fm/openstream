@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "required": [
+    "order"
+  ],
+  "properties": {
+    "order": {
+      "type": "number",
+      "format": "double"
+    }
+  }
+}

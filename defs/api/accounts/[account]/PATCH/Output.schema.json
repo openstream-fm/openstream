@@ -1,0 +1,271 @@
+{
+  "anyOf": [
+    {
+      "type": "object",
+      "required": [
+        "_id",
+        "created_at",
+        "limits",
+        "name",
+        "plan_id",
+        "system_metadata",
+        "updated_at",
+        "user_metadata"
+      ],
+      "properties": {
+        "_id": {
+          "type": "string"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "payment_method_id": {
+          "type": "string",
+          "nullable": true
+        },
+        "name": {
+          "type": "string"
+        },
+        "limits": {
+          "type": "object",
+          "required": [
+            "listeners",
+            "stations",
+            "storage",
+            "transfer"
+          ],
+          "properties": {
+            "stations": {
+              "type": "object",
+              "required": [
+                "total",
+                "used"
+              ],
+              "properties": {
+                "used": {
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                },
+                "total": {
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                }
+              }
+            },
+            "listeners": {
+              "type": "object",
+              "required": [
+                "total",
+                "used"
+              ],
+              "properties": {
+                "used": {
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                },
+                "total": {
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                }
+              }
+            },
+            "transfer": {
+              "type": "object",
+              "required": [
+                "total",
+                "used"
+              ],
+              "properties": {
+                "used": {
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                },
+                "total": {
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                }
+              }
+            },
+            "storage": {
+              "type": "object",
+              "required": [
+                "total",
+                "used"
+              ],
+              "properties": {
+                "used": {
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                },
+                "total": {
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                }
+              }
+            }
+          }
+        },
+        "user_metadata": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "system_metadata": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deleted_at": {
+          "type": "string",
+          "format": "date-time",
+          "nullable": true
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "_id",
+        "created_at",
+        "limits",
+        "name",
+        "plan_id",
+        "updated_at",
+        "user_metadata"
+      ],
+      "properties": {
+        "_id": {
+          "type": "string"
+        },
+        "plan_id": {
+          "type": "string"
+        },
+        "payment_method_id": {
+          "type": "string",
+          "nullable": true
+        },
+        "name": {
+          "type": "string"
+        },
+        "limits": {
+          "type": "object",
+          "required": [
+            "listeners",
+            "stations",
+            "storage",
+            "transfer"
+          ],
+          "properties": {
+            "stations": {
+              "type": "object",
+              "required": [
+                "total",
+                "used"
+              ],
+              "properties": {
+                "used": {
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                },
+                "total": {
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                }
+              }
+            },
+            "listeners": {
+              "type": "object",
+              "required": [
+                "total",
+                "used"
+              ],
+              "properties": {
+                "used": {
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                },
+                "total": {
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                }
+              }
+            },
+            "transfer": {
+              "type": "object",
+              "required": [
+                "total",
+                "used"
+              ],
+              "properties": {
+                "used": {
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                },
+                "total": {
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                }
+              }
+            },
+            "storage": {
+              "type": "object",
+              "required": [
+                "total",
+                "used"
+              ],
+              "properties": {
+                "used": {
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                },
+                "total": {
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                }
+              }
+            }
+          }
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "user_metadata": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "deleted_at": {
+          "type": "string",
+          "format": "date-time",
+          "nullable": true
+        }
+      }
+    }
+  ]
+}

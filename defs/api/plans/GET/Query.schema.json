@@ -1,0 +1,26 @@
+{
+  "description": "TODO: add pagination",
+  "type": "object",
+  "properties": {
+    "skip": {
+      "default": 0,
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
+    },
+    "limit": {
+      "default": 60,
+      "type": "integer",
+      "format": "int64"
+    },
+    "show": {
+      "default": "active",
+      "type": "string",
+      "enum": [
+        "all",
+        "active",
+        "deleted"
+      ]
+    }
+  }
+}
