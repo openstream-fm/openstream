@@ -30,6 +30,8 @@ const security = [
 
 const paths = {};
 
+const public_error_payload = JSON.parse(fs.readFileSync(`${__dirname}/defs/error/PublicErrorPayload.schema.json`));
+
 const process_dir = (target) => {
   const full_target = `${basedir}${target == null ? "" : `/${target}`}`;
   const filenames = fs.readdirSync(full_target).sort();
@@ -97,12 +99,22 @@ const process_dir = (target) => {
 
         responses: {
           200: {
+            description: "A successful response",
             content: {
               "application/json": {
                 schema: output,
               },
             },
           },
+
+          default: {
+            description: "An error response with status, code and message fields",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              }
+            }
+          }
         },
       };
     }
@@ -150,12 +162,12 @@ const document = {
   info: {
     title: "Openstream Media Server API",
   
-    termsOfService: "https://openstream.fm/api-terms/",
+    // termsOfService: "https://openstream.fm/api-terms/",
     
-    license: {
-      name: "Apache 2.0",
-      url: "https://www.apache.org/licenses/LICENSE-2.0.html"
-    },
+    // license: {
+    //   name: "Apache 2.0",
+    //   url: "https://www.apache.org/licenses/LICENSE-2.0.html"
+    // },
   
     version: "0.1.0",
   },
@@ -170,7 +182,11 @@ const document = {
   paths,
 
   components: {
-    securitySchemes,  
+    securitySchemes,
+
+    schemas: {
+      Error: public_error_payload,
+    }
   }
 }
 

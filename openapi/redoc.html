@@ -4,9 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Openstream API docs</title>
-    <redoc spec-url="/openapi.json"></redoc>
-    <script src="https://cdn.jsdelivr.net/npm/redoc/bundles/redoc.standalone.js"></script>
+    <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
   </head>
   <body>
+    <div id="docs"></div>
+    <script>
+      Redoc.init("/openapi.json", {
+        expandResponses: "200",
+      }, document.getElementById("docs"));
+    </script>
   </body>
 </html>
