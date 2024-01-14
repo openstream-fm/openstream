@@ -13,27 +13,11 @@ pub struct TimezoneDateTime(
   pub OffsetDateTime,
 );
 
+openapi::impl_schema_from!(TimezoneDateTime, DateTimeSchema);
+
 #[derive(JsonSchema)]
 #[schemars(rename = "TimezoneDateTime")]
-struct DateTimeSchemars(chrono::DateTime<Utc>);
-
-impl JsonSchema for TimezoneDateTime {
-  fn is_referenceable() -> bool {
-    DateTimeSchemars::is_referenceable()
-  }
-
-  fn schema_id() -> std::borrow::Cow<'static, str> {
-    DateTimeSchemars::schema_id()
-  }
-
-  fn json_schema(gen: &mut schemars::gen::SchemaGenerator) -> schemars::schema::Schema {
-    DateTimeSchemars::json_schema(gen)
-  }
-
-  fn schema_name() -> String {
-    DateTimeSchemars::schema_name()
-  }
-}
+struct DateTimeSchema(chrono::DateTime<Utc>);
 
 impl Display for TimezoneDateTime {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

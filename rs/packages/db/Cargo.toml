@@ -66,6 +66,8 @@ image = { version = "0.24.6", features = ["webp-encoder", "webp", "rgb", "dcv-co
 lang = { version = "0.1.0", path = "../lang" }
 ffmpeg = { version = "0.1.0", path = "../ffmpeg" }
 schemars = "0.8.16"
+serde_json = "1.0"
+openapi = { version = "0.1.0", path = "../openapi" }
 
 [dev-dependencies]
 serde_json = { version = "1.0", features = ["preserve_order"] }

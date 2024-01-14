@@ -81,3 +81,26 @@ macro_rules! export_schema_ts {
     }
   };
 }
+
+#[macro_export]
+macro_rules! impl_schema_from {
+  ($target:ident, $source:ident) => {
+    impl ::schemars::JsonSchema for $target {
+      fn is_referenceable() -> bool {
+        $source::is_referenceable()
+      }
+
+      fn schema_id() -> ::std::borrow::Cow<'static, str> {
+        $source::schema_id()
+      }
+
+      fn json_schema(gen: &mut ::schemars::gen::SchemaGenerator) -> ::schemars::schema::Schema {
+        $source::json_schema(gen)
+      }
+
+      fn schema_name() -> String {
+        $source::schema_name()
+      }
+    }
+  };
+}

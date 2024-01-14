@@ -53,32 +53,7 @@
             },
             "system_metadata": {
               "type": "object",
-              "additionalProperties": {
-                "anyOf": [
-                  {
-                    "type": "null"
-                  },
-                  {
-                    "type": "boolean"
-                  },
-                  {
-                    "type": "number",
-                    "format": "double"
-                  },
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/Value"
-                    }
-                  },
-                  {
-                    "$ref": "#/components/schemas/Document"
-                  }
-                ]
-              }
+              "additionalProperties": true
             },
             "created_at": {
               "type": "string",
@@ -147,61 +122,11 @@
                 },
                 "user_metadata": {
                   "type": "object",
-                  "additionalProperties": {
-                    "anyOf": [
-                      {
-                        "type": "null"
-                      },
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "number",
-                        "format": "double"
-                      },
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "array",
-                        "items": {
-                          "$ref": "#/components/schemas/Value"
-                        }
-                      },
-                      {
-                        "$ref": "#/components/schemas/Document"
-                      }
-                    ]
-                  }
+                  "additionalProperties": true
                 },
                 "system_metadata": {
                   "type": "object",
-                  "additionalProperties": {
-                    "anyOf": [
-                      {
-                        "type": "null"
-                      },
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "number",
-                        "format": "double"
-                      },
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "array",
-                        "items": {
-                          "$ref": "#/components/schemas/Value"
-                        }
-                      },
-                      {
-                        "$ref": "#/components/schemas/Document"
-                      }
-                    ]
-                  }
+                  "additionalProperties": true
                 },
                 "created_at": {
                   "type": "string",
@@ -252,32 +177,7 @@
                 },
                 "user_metadata": {
                   "type": "object",
-                  "additionalProperties": {
-                    "anyOf": [
-                      {
-                        "type": "null"
-                      },
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "number",
-                        "format": "double"
-                      },
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "array",
-                        "items": {
-                          "$ref": "#/components/schemas/Value"
-                        }
-                      },
-                      {
-                        "$ref": "#/components/schemas/Document"
-                      }
-                    ]
-                  }
+                  "additionalProperties": true
                 },
                 "created_at": {
                   "type": "string",

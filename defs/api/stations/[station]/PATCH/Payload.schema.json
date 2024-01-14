@@ -605,62 +605,12 @@
     },
     "user_metadata": {
       "type": "object",
-      "additionalProperties": {
-        "anyOf": [
-          {
-            "type": "null"
-          },
-          {
-            "type": "boolean"
-          },
-          {
-            "type": "number",
-            "format": "double"
-          },
-          {
-            "type": "string"
-          },
-          {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Value"
-            }
-          },
-          {
-            "$ref": "#/components/schemas/Document"
-          }
-        ]
-      },
+      "additionalProperties": true,
       "nullable": true
     },
     "system_metadata": {
       "type": "object",
-      "additionalProperties": {
-        "anyOf": [
-          {
-            "type": "null"
-          },
-          {
-            "type": "boolean"
-          },
-          {
-            "type": "number",
-            "format": "double"
-          },
-          {
-            "type": "string"
-          },
-          {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Value"
-            }
-          },
-          {
-            "$ref": "#/components/schemas/Document"
-          }
-        ]
-      },
+      "additionalProperties": true,
       "nullable": true
     }
   },

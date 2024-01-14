@@ -40,122 +40,22 @@
     },
     "user_user_metadata": {
       "type": "object",
-      "additionalProperties": {
-        "anyOf": [
-          {
-            "type": "null"
-          },
-          {
-            "type": "boolean"
-          },
-          {
-            "type": "number",
-            "format": "double"
-          },
-          {
-            "type": "string"
-          },
-          {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Value"
-            }
-          },
-          {
-            "$ref": "#/components/schemas/Document"
-          }
-        ]
-      },
+      "additionalProperties": true,
       "nullable": true
     },
     "user_system_metadata": {
       "type": "object",
-      "additionalProperties": {
-        "anyOf": [
-          {
-            "type": "null"
-          },
-          {
-            "type": "boolean"
-          },
-          {
-            "type": "number",
-            "format": "double"
-          },
-          {
-            "type": "string"
-          },
-          {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Value"
-            }
-          },
-          {
-            "$ref": "#/components/schemas/Document"
-          }
-        ]
-      },
+      "additionalProperties": true,
       "nullable": true
     },
     "account_user_metadata": {
       "type": "object",
-      "additionalProperties": {
-        "anyOf": [
-          {
-            "type": "null"
-          },
-          {
-            "type": "boolean"
-          },
-          {
-            "type": "number",
-            "format": "double"
-          },
-          {
-            "type": "string"
-          },
-          {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Value"
-            }
-          },
-          {
-            "$ref": "#/components/schemas/Document"
-          }
-        ]
-      },
+      "additionalProperties": true,
       "nullable": true
     },
     "account_system_metadata": {
       "type": "object",
-      "additionalProperties": {
-        "anyOf": [
-          {
-            "type": "null"
-          },
-          {
-            "type": "boolean"
-          },
-          {
-            "type": "number",
-            "format": "double"
-          },
-          {
-            "type": "string"
-          },
-          {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Value"
-            }
-          },
-          {
-            "$ref": "#/components/schemas/Document"
-          }
-        ]
-      },
+      "additionalProperties": true,
       "nullable": true
     },
     "email_verification_code": {
