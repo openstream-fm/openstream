@@ -19,10 +19,12 @@ pub mod stream_stats;
 use db::station_picture::StationPicture;
 use db::stream_connection::index::MemIndex;
 use drop_tracer::DropTracer;
+use hyper::header::{HeaderValue, CONTENT_TYPE};
+use hyper::{Body, StatusCode};
 use mailer::send::Mailer;
 use media::MediaSessionMap;
 use prex::router::builder::Builder;
-use prex::Request;
+use prex::{Request, Response};
 use shutdown::Shutdown;
 
 use crate::error::ApiError;
@@ -42,6 +44,28 @@ pub fn router(
   mailer: Mailer,
 ) -> Builder {
   let mut app = prex::prex();
+
+  app.at("/openapi.json").get(|_, _| async move {
+    let html = include_str!("../../../../../openapi.json");
+    let mut res = Response::new(StatusCode::OK);
+    res.headers_mut().insert(
+      CONTENT_TYPE,
+      HeaderValue::from_static("application/json;charset=utf-8"),
+    );
+    *res.body_mut() = Body::from(html);
+    res
+  });
+
+  app.at("/docs").get(|_, _| async move {
+    let html = include_str!("../../../../../openapi/redoc.html");
+    let mut res = Response::new(StatusCode::OK);
+    res.headers_mut().insert(
+      CONTENT_TYPE,
+      HeaderValue::from_static("text/html;charset=utf-8"),
+    );
+    *res.body_mut() = Body::from(html);
+    res
+  });
 
   app.at("/me").get(me::get::Endpoint {}.into_handler());
 

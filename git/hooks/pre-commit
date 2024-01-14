@@ -43,6 +43,10 @@ await within(async () => {
 	await $`git add defs`
 	check();
 
+	write("Creating openapi.json file...");
+	await $`node openapi-generator.js`
+	check();
+
 	await within(async () => {
 		write(`Running front npm ci...`);
 		cd("front");
