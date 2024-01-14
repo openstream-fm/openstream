@@ -24,10 +24,10 @@ pub struct PaginationQs {
 #[derive(JsonSchema)]
 #[schemars(rename = "PaginationQs")]
 struct PaginationQsSchema {
-  #[schemars(default = "PaginationQs::default_skip")]
+  #[serde(default = "PaginationQs::default_skip")]
   #[allow(unused)]
   pub skip: u64,
-  #[schemars(default = "PaginationQs::default_limit")]
+  #[serde(default = "PaginationQs::default_limit")]
   #[allow(unused)]
   pub limit: i64,
 }
