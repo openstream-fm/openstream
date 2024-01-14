@@ -9,7 +9,7 @@
       "minimum": 0.0
     },
     "limit": {
-      "default": 0,
+      "default": 60,
       "type": "integer",
       "format": "int64"
     },
