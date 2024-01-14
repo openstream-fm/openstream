@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "properties": {
+    "first_name": {
+      "type": "string",
+      "nullable": true
+    },
+    "last_name": {
+      "type": "string",
+      "nullable": true
+    },
+    "phone": {
+      "type": "string",
+      "nullable": true
+    },
+    "language": {
+      "type": "string",
+      "nullable": true
+    }
+  }
+}

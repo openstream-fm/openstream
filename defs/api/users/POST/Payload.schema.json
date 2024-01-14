@@ -1,0 +1,92 @@
+{
+  "type": "object",
+  "required": [
+    "email",
+    "first_name",
+    "last_name",
+    "password"
+  ],
+  "properties": {
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string",
+      "nullable": true
+    },
+    "password": {
+      "type": "string"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "nullable": true
+    },
+    "user_metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "number",
+            "format": "double"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Value"
+            }
+          },
+          {
+            "$ref": "#/components/schemas/Document"
+          }
+        ]
+      },
+      "nullable": true
+    },
+    "system_metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "number",
+            "format": "double"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Value"
+            }
+          },
+          {
+            "$ref": "#/components/schemas/Document"
+          }
+        ]
+      },
+      "nullable": true
+    }
+  },
+  "additionalProperties": false
+}

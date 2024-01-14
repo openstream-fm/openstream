@@ -13,6 +13,7 @@ use db::{Model, Paged};
 use mongodb::bson::doc;
 use prex::request::ReadBodyJsonError;
 use prex::Request;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
@@ -22,7 +23,7 @@ pub mod get_by_token;
 pub mod id;
 pub mod reject;
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/api/")]
 pub struct PublicInvitation {
   pub id: String,
@@ -43,7 +44,7 @@ pub struct PublicInvitation {
   pub receiver: Option<InvitationReceiver>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/api/")]
 pub struct InvitationAccount {
   #[serde(rename = "_id")]
@@ -60,7 +61,7 @@ impl From<Account> for InvitationAccount {
   }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/api/")]
 pub struct InvitationUserSender {
   #[serde(rename = "_id")]
@@ -81,7 +82,7 @@ impl From<User> for InvitationUserSender {
   }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/api/")]
 pub struct InvitationAdminSender {
   #[serde(rename = "_id")]
@@ -100,7 +101,7 @@ impl From<Admin> for InvitationAdminSender {
   }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/api/")]
 pub struct InvitationReceiver {
   #[serde(rename = "_id")]
@@ -135,8 +136,9 @@ pub mod get {
     pub access_token_scope: AccessTokenScope,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/invitations/GET/")]
+  #[macros::schema_ts_export]
   pub struct Query {
     #[serde(flatten)]
     pub page: PaginationQs,
@@ -153,8 +155,9 @@ pub mod get {
     pub account_id: Option<String>,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/invitations/GET/")]
+  #[macros::schema_ts_export]
   pub struct Output(Paged<PublicInvitation>);
 
   #[derive(Debug, Clone)]
@@ -331,8 +334,9 @@ pub mod post {
 
   use super::*;
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/invitations/POST/")]
+  #[macros::schema_ts_export]
   pub struct Payload {
     pub account_id: String,
     pub email: String,
@@ -344,8 +348,9 @@ pub mod post {
     pub payload: Payload,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/invitations/POST/")]
+  #[macros::schema_ts_export]
   pub struct Output {
     pub invitation: PublicInvitation,
   }

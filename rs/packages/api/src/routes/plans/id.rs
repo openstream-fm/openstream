@@ -12,6 +12,7 @@ pub mod get {
 
   use crate::{error::ApiError, request_ext::AccessTokenScope};
   use db::plan::Plan;
+  use schemars::JsonSchema;
 
   use super::*;
 
@@ -24,9 +25,9 @@ pub mod get {
     optional_access_token_scope: Option<AccessTokenScope>,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/plans/[plan]/GET/")]
-  // #[serde(rename_all = "camelCase")]
+  #[macros::schema_ts_export]
   pub struct Output {
     plan: Plan,
   }
@@ -98,6 +99,7 @@ pub mod delete {
 
   use crate::error::ApiError;
   use db::plan::Plan;
+  use schemars::JsonSchema;
 
   use super::*;
 
@@ -109,9 +111,9 @@ pub mod delete {
     plan_id: String,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/plans/[plan]/DELETE/")]
-  // #[serde(rename_all = "camelCase")]
+  #[macros::schema_ts_export]
   pub struct Output {
     plan: Plan,
   }
@@ -178,15 +180,17 @@ pub mod patch {
     run_transaction, Model,
   };
   use prex::request::ReadBodyJsonError;
+  use schemars::JsonSchema;
   use serde_util::DateTime;
   use validify::{validify, ValidationErrors, Validify};
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[validify]
   #[ts(export, export_to = "../../../defs/api/plans/[plan]/PATCH/")]
+  #[macros::schema_ts_export]
   pub struct Payload {
     #[ts(optional)]
     #[validate(range(min = 0.0))]
@@ -234,8 +238,9 @@ pub mod patch {
     payload: Payload,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/plans/[plan]/PATCH/")]
+  #[macros::schema_ts_export]
   pub struct Output(Plan);
 
   #[derive(Debug, thiserror::Error)]

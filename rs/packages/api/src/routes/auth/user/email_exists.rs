@@ -3,6 +3,7 @@ pub mod get {
   use db::user::User;
   use mongodb::bson::doc;
   use prex::Request;
+  use schemars::JsonSchema;
   use serde::{Deserialize, Serialize};
   use std::convert::Infallible;
   use std::net::IpAddr;
@@ -18,11 +19,12 @@ pub mod get {
     ip: IpAddr,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/auth/user/email-exists/[email]/GET/"
   )]
+  #[macros::schema_ts_export]
   pub struct Output {
     exists: bool,
   }

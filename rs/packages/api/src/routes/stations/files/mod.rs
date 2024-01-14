@@ -20,6 +20,8 @@ use ts_rs::TS;
 
 pub mod get {
 
+  use schemars::JsonSchema;
+
   use crate::qs::PaginationQs;
 
   use super::*;
@@ -27,15 +29,17 @@ pub mod get {
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Serialize, Deserialize, Clone, TS)]
+  #[derive(Debug, Serialize, Deserialize, Clone, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/stations/[station]/files/GET/")]
+  #[macros::schema_ts_export]
   pub struct Output {
     files: Paged<AudioFile>,
     playlist_is_randomly_shuffled: bool,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, Default, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, Default, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/stations/[station]/files/GET/")]
+  #[macros::schema_ts_export]
   pub struct Query {
     #[serde(flatten)]
     pub page: PaginationQs,
@@ -115,6 +119,7 @@ pub mod post {
   use bytes::Bytes;
   use futures::Stream;
   use hyper::header::CONTENT_LENGTH;
+  use schemars::JsonSchema;
   use serde::de::Error;
   use upload::UploadError;
 
@@ -127,8 +132,9 @@ pub mod post {
     pub deployment_id: String,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/stations/[station]/files/POST/")]
+  #[macros::schema_ts_export]
   pub struct Query {
     pub filename: String,
   }
@@ -141,8 +147,9 @@ pub mod post {
     pub size_hint: Option<u64>,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/stations/[station]/files/POST/")]
+  #[macros::schema_ts_export]
   #[serde(rename_all = "snake_case")]
   pub struct Output {
     file: AudioFile,

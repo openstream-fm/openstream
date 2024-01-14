@@ -8,13 +8,14 @@ use mongodb::{
   options::FindOneOptions,
   ClientSession, IndexModel,
 };
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use serde_util::{as_f64, DateTime};
+use serde_util::DateTime;
 use ts_rs::TS;
 
 crate::register!(AudioFile);
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
@@ -24,18 +25,22 @@ pub struct AudioFile {
   pub station_id: String,
   pub sha256: String,
 
-  #[serde(with = "as_f64")]
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub len: u64,
 
   pub duration_ms: f64,
 
-  #[serde(with = "as_f64")]
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub bytes_sec: usize,
 
-  #[serde(with = "as_f64")]
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub chunk_count: usize,
 
-  #[serde(with = "as_f64")]
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub chunk_len: usize,
 
   pub chunk_duration_ms: f64,
@@ -230,7 +235,7 @@ impl Model for AudioFile {
   }
 }
 
-#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone, TS)]
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/db/", rename = "AudioMetadata")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
@@ -242,7 +247,8 @@ pub struct Metadata {
   pub genre: Option<String>,
   pub year: Option<i32>,
   pub comment: Option<String>,
-  #[serde(with = "as_f64::option")]
+  #[serde(serialize_with = "serde_util::as_f64::option::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::option::deserialize")]
   pub track: Option<u16>,
 }
 

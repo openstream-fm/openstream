@@ -3,6 +3,7 @@ use crate::{current_filter_doc, deleted_filter_doc, Model, PublicScope};
 use mongodb::error::Result as MongoResult;
 use mongodb::ClientSession;
 use mongodb::{bson::doc, options::IndexOptions, IndexModel};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
@@ -44,7 +45,7 @@ pub struct User {
   pub deleted_at: Option<DateTime>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 pub struct UserPublicUser {
@@ -61,7 +62,7 @@ pub struct UserPublicUser {
   pub deleted_at: Option<DateTime>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 pub struct AdminPublicUser {
@@ -79,7 +80,7 @@ pub struct AdminPublicUser {
   pub deleted_at: Option<DateTime>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(untagged)]
 pub enum PublicUser {

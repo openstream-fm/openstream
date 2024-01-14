@@ -14,6 +14,8 @@ pub mod get {
 
   use std::convert::Infallible;
 
+  use schemars::JsonSchema;
+
   use super::*;
 
   #[derive(Debug, Clone)]
@@ -25,10 +27,10 @@ pub mod get {
     access_token_scope: AccessTokenScope,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export)]
   #[ts(export_to = "../../../defs/api/stations/[station]/GET/")]
-  // #[serde(rename_all = "camelCase")]
+  #[macros::schema_ts_export]
   pub struct Output {
     pub station: PublicStation,
   }
@@ -77,6 +79,7 @@ pub mod delete {
   use hyper::http::HeaderValue;
   use hyper::Body;
   use media::MediaSessionMap;
+  use schemars::JsonSchema;
   use serde_util::DateTime;
   // use futures_util::TryStreamExt;
   use serde_util::empty_struct::EmptyStruct;
@@ -97,10 +100,9 @@ pub mod delete {
     station_id: String,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../../defs/api/stations/[station]/DELETE/")]
-  // #[serde(rename_all = "camelCase")]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[ts(export, export_to = "../../../defs/api/stations/[station]/DELETE/")]
+  #[macros::schema_ts_export]
   pub struct Output(EmptyStruct);
 
   #[derive(Debug, thiserror::Error)]
@@ -265,6 +267,7 @@ pub mod patch {
   use hyper::{http::HeaderValue, Body};
   use media::MediaSessionMap;
   use prex::request::ReadBodyJsonError;
+  use schemars::JsonSchema;
   use validify::{ValidationErrors, Validify};
 
   #[derive(Debug, Clone)]
@@ -273,8 +276,9 @@ pub mod patch {
     pub media_sessions: MediaSessionMap,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/stations/[station]/PATCH/")]
+  #[macros::schema_ts_export]
   pub struct Payload(pub StationPatch);
 
   #[derive(Debug, Clone)]
@@ -285,8 +289,9 @@ pub mod patch {
     station: Station,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/stations/[station]/PATCH/")]
+  #[macros::schema_ts_export]
   pub struct Output(pub PublicStation);
 
   #[derive(Debug, thiserror::Error)]

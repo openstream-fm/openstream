@@ -13,6 +13,7 @@ pub mod put {
 
   use db::run_transaction;
   use prex::request::ReadBodyJsonError;
+  use schemars::JsonSchema;
   use ts_rs::TS;
 
   use crate::error::ApiError;
@@ -20,11 +21,12 @@ pub mod put {
 
   use super::*;
 
-  #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone, TS)]
+  #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/stations/[station]/files/[file]/metadata/PUT/"
   )]
+  #[macros::schema_ts_export]
   #[serde(rename_all = "snake_case")]
   pub struct Payload {
     #[ts(optional)]
@@ -104,11 +106,12 @@ pub mod put {
     payload: Payload,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/stations/[station]/files/[file]/metadata/PUT/"
   )]
+  #[macros::schema_ts_export]
   #[serde(rename_all = "snake_case")]
   pub struct Output {
     item: AudioFile,

@@ -16,17 +16,19 @@ pub mod post {
   use async_trait::async_trait;
   use db::token_user_recovery::TokenUserRecovery;
   use prex::Request;
+  use schemars::JsonSchema;
 
   use super::*;
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/auth/user/recovery-token/[token]/set-password/POST/"
   )]
+  #[macros::schema_ts_export]
   pub struct Payload {
     new_password: String,
   }
@@ -38,11 +40,12 @@ pub mod post {
     ip: IpAddr,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/auth/user/recovery-token/[token]/set-password/POST/"
   )]
+  #[macros::schema_ts_export]
   pub struct Output {
     user_id: String,
     user_email: String,

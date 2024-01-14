@@ -1,3 +1,4 @@
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::net::IpAddr;
 use std::str::FromStr;
@@ -38,7 +39,6 @@ fn it_works() {
   PartialOrd,
   Serialize,
   Deserialize,
-  TS,
   strum::Display,
   AsRefStr,
   EnumCount,
@@ -46,6 +46,8 @@ fn it_works() {
   FromRepr,
   EnumString,
   IntoStaticStr,
+  TS,
+  JsonSchema,
   deepsize::DeepSizeOf,
 )]
 #[ts(export, export_to = "../../../defs/")]

@@ -1,0 +1,56 @@
+{
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "already_used",
+        "expired",
+        "kind",
+        "user_email",
+        "user_first_name",
+        "user_id",
+        "user_last_name"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "found"
+          ]
+        },
+        "user_id": {
+          "type": "string"
+        },
+        "user_first_name": {
+          "type": "string"
+        },
+        "user_last_name": {
+          "type": "string"
+        },
+        "user_email": {
+          "type": "string"
+        },
+        "already_used": {
+          "type": "boolean"
+        },
+        "expired": {
+          "type": "boolean"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "not_found"
+          ]
+        }
+      }
+    }
+  ]
+}

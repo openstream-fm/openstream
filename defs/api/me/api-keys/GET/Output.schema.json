@@ -1,0 +1,65 @@
+{
+  "type": "object",
+  "required": [
+    "items",
+    "limit",
+    "skip",
+    "total"
+  ],
+  "properties": {
+    "total": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
+    },
+    "skip": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
+    },
+    "limit": {
+      "type": "integer",
+      "format": "int64"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "_id",
+          "created_at",
+          "is_current",
+          "title"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "is_current": {
+            "type": "boolean"
+          },
+          "title": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "admin_id": {
+            "type": "string",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "last_used_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      }
+    }
+  }
+}

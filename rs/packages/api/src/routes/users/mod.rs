@@ -19,6 +19,7 @@ use validate::email::is_valid_email;
 
 pub mod get {
 
+  use schemars::JsonSchema;
   use ts_rs::TS;
 
   use crate::qs::{PaginationQs, VisibilityQs};
@@ -34,12 +35,14 @@ pub mod get {
     query: Query,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/users/GET/")]
+  #[macros::schema_ts_export]
   pub struct Output(pub Paged<PublicUser>);
 
-  #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Default, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/users/GET/")]
+  #[macros::schema_ts_export]
   pub struct Query {
     #[serde(flatten)]
     pub page: PaginationQs,
@@ -116,13 +119,14 @@ pub mod get {
 pub mod post {
 
   use db::run_transaction;
+  use schemars::JsonSchema;
   use ts_rs::TS;
 
   use super::*;
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/users/POST/")]
-  #[serde(rename_all = "snake_case")]
+  #[macros::schema_ts_export]
   #[serde(deny_unknown_fields)]
   pub struct Payload {
     email: String,
@@ -147,8 +151,9 @@ pub mod post {
     access_token_scope: AccessTokenScope,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/users/POST/")]
+  #[macros::schema_ts_export]
   pub struct Output {
     user: PublicUser,
   }

@@ -9,6 +9,7 @@ use lang::LangCode;
 use mongodb::bson::{doc, Bson, SerializerOptions};
 use mongodb::options::{FindOneAndUpdateOptions, ReturnDocument};
 use mongodb::{ClientSession, IndexModel};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_util::map_some;
 use serde_util::DateTime;
@@ -18,7 +19,7 @@ use validify::validify;
 
 crate::register!(Station);
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 #[validify]
@@ -277,12 +278,13 @@ pub struct Station {
   Copy,
   Serialize,
   Deserialize,
-  ts_rs::TS,
   strum::AsRefStr,
   strum::Display,
   strum::EnumCount,
   strum::EnumIter,
   strum::EnumVariantNames,
+  TS,
+  JsonSchema,
 )]
 #[serde(rename_all = "lowercase")]
 #[strum(serialize_all = "lowercase")]
@@ -315,7 +317,7 @@ impl StationTypeOfContent {
   }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
@@ -339,7 +341,7 @@ impl From<OwnerDeploymentInfo> for Bson {
   }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/")]
 #[serde(rename_all = "snake_case")]
 pub struct UserPublicStation {
@@ -401,7 +403,7 @@ pub struct UserPublicStation {
   pub deleted_at: Option<DateTime>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/")]
 #[serde(rename_all = "snake_case")]
 #[validify]
@@ -416,7 +418,7 @@ pub struct StationFrequency {
   freq: f64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/")]
 #[serde(rename_all = "kebab-case")]
 pub enum StationFrequencyKind {
@@ -424,11 +426,11 @@ pub enum StationFrequencyKind {
   Fm,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/")]
 pub struct AdminPublicStation(pub Station);
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/")]
 #[serde(untagged)]
 pub enum PublicStation {
@@ -436,7 +438,7 @@ pub enum PublicStation {
   User(UserPublicStation),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/ops/")]
 #[serde(rename_all = "snake_case")]
 #[serde(deny_unknown_fields)]

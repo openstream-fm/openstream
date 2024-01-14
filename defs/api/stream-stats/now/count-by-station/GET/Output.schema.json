@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "required": [
+    "by_station"
+  ],
+  "properties": {
+    "by_station": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "format": "uint32",
+        "minimum": 0.0
+      }
+    }
+  }
+}

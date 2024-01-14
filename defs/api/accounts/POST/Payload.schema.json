@@ -1,0 +1,84 @@
+{
+  "type": "object",
+  "required": [
+    "name",
+    "payment_method_id",
+    "plan_id"
+  ],
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "plan_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string",
+      "nullable": true
+    },
+    "user_metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "number",
+            "format": "double"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Value"
+            }
+          },
+          {
+            "$ref": "#/components/schemas/Document"
+          }
+        ]
+      },
+      "nullable": true
+    },
+    "system_metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "number",
+            "format": "double"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Value"
+            }
+          },
+          {
+            "$ref": "#/components/schemas/Document"
+          }
+        ]
+      },
+      "nullable": true
+    },
+    "payment_method_id": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

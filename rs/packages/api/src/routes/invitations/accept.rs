@@ -27,19 +27,22 @@ use crate::request_ext::get_optional_access_token_scope;
 pub mod post {
 
   use db::account::Account;
+  use schemars::JsonSchema;
 
   use super::*;
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/invitations/accept/POST/")]
+  #[macros::schema_ts_export]
   #[serde(untagged)]
   pub enum Payload {
     Unauthenticated(UnauthenticatedAcceptPayloadData),
     Authenticated { invitation_id: String },
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/invitations/accept/POST/")]
+  #[macros::schema_ts_export]
   pub struct UnauthenticatedAcceptPayloadData {
     pub token: String,
     pub first_name: String,
@@ -54,8 +57,9 @@ pub mod post {
     pub payload: Payload,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/invitations/accept/POST/")]
+  #[macros::schema_ts_export]
   #[serde(tag = "result", rename_all = "kebab-case")]
   pub enum Output {
     Ok,

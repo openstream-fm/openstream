@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "required": [
+    "stats"
+  ],
+  "properties": {
+    "stats": {
+      "type": "object",
+      "required": [
+        "country_sessions",
+        "sessions"
+      ],
+      "properties": {
+        "sessions": {
+          "type": "number",
+          "format": "double"
+        },
+        "country_sessions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      }
+    }
+  }
+}

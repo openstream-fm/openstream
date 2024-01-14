@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 pub mod get {
 
   use super::*;
+  use schemars::JsonSchema;
   use std::convert::Infallible;
   use ts_rs::TS;
 
@@ -24,9 +25,9 @@ pub mod get {
     public_scope: PublicScope,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/users/[user]/GET/")]
-  // #[serde(rename_all = "camelCase")]
+  #[macros::schema_ts_export]
   pub struct Output {
     user: PublicUser,
   }
@@ -62,15 +63,16 @@ pub mod patch {
   use super::*;
   use db::{fetch_and_patch, run_transaction};
   use prex::request::ReadBodyJsonError;
+  use schemars::JsonSchema;
   use serde_util::DateTime;
   use ts_rs::TS;
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/users/[user]/PATCH/")]
-  // #[serde(rename_all = "camelCase")]
+  #[macros::schema_ts_export]
   pub struct Payload {
     first_name: Option<String>,
     last_name: Option<String>,
@@ -95,9 +97,9 @@ pub mod patch {
     public_scope: PublicScope,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/users/[user]/PATCH/")]
-  // #[serde(rename_all = "camelCase")]
+  #[macros::schema_ts_export]
   pub struct Output {
     user: PublicUser,
   }
@@ -249,6 +251,7 @@ pub mod delete {
 
   use super::*;
   use db::{run_transaction, user::AdminPublicUser, user_account_relation::UserAccountRelation};
+  use schemars::JsonSchema;
   use ts_rs::TS;
 
   #[derive(Debug, Clone)]
@@ -259,8 +262,9 @@ pub mod delete {
     user_id: String,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/users/[user]/DELETE/")]
+  #[macros::schema_ts_export]
   pub struct Output {
     user: AdminPublicUser,
   }

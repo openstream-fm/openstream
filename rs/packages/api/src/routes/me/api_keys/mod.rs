@@ -9,11 +9,12 @@ use db::access_token::{AccessToken, GeneratedBy, Scope};
 use db::{Model, Paged};
 use mongodb::bson::doc;
 use prex::Request;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/api/")]
 pub struct ApiKey {
   #[serde(rename = "_id")]
@@ -35,8 +36,9 @@ pub mod get {
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
+  #[derive(Debug, Clone, Default, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/me/api-keys/GET/")]
+  #[macros::schema_ts_export]
   pub struct Query {
     #[serde(flatten)]
     page: PaginationQs,
@@ -58,8 +60,9 @@ pub mod get {
     query: Query,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/me/api-keys/GET/")]
+  #[macros::schema_ts_export]
   pub struct Output(Paged<ApiKey>);
 
   #[derive(Debug, thiserror::Error)]
@@ -197,6 +200,7 @@ pub mod post {
   use std::net::IpAddr;
 
   use prex::request::ReadBodyJsonError;
+  use schemars::JsonSchema;
 
   use crate::ip_limit;
 
@@ -212,15 +216,17 @@ pub mod post {
     access_token_scope: AccessTokenScope,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/me/api-keys/POST/")]
+  #[macros::schema_ts_export]
   pub struct Payload {
     title: String,
     password: String,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/me/api-keys/POST/")]
+  #[macros::schema_ts_export]
   pub struct Output {
     pub api_key: ApiKey,
     pub token: String,

@@ -10,8 +10,9 @@ pub mod get {
     access_token_scope: AccessTokenScope,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/invitations/[invitation]/GET/")]
+  #[macros::schema_ts_export]
   pub struct Output {
     pub invitation: PublicInvitation,
   }
@@ -155,11 +156,12 @@ pub mod delete {
     access_token_scope: AccessTokenScope,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/invitations/[invitation]/DELETE/"
   )]
+  #[macros::schema_ts_export]
   pub struct Output(EmptyStruct);
 
   #[derive(Debug, Clone)]

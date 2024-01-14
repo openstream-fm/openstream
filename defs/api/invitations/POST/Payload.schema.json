@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "required": [
+    "account_id",
+    "email"
+  ],
+  "properties": {
+    "account_id": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    }
+  }
+}

@@ -4,6 +4,8 @@ use super::*;
 /// if we decide to save the requests to a mongodb collection  
 pub mod get {
 
+  use schemars::JsonSchema;
+
   use super::*;
 
   #[derive(Debug)]
@@ -11,11 +13,12 @@ pub mod get {
     token: String,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/invitations/get-by-token/[token]/GET/"
   )]
+  #[macros::schema_ts_export]
   #[serde(tag = "kind")]
   #[allow(clippy::large_enum_variant)]
   pub enum Output {

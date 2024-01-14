@@ -19,13 +19,15 @@ pub mod id;
 
 pub mod get {
   use db::Paged;
+  use schemars::JsonSchema;
 
   use crate::qs::{PaginationQs, VisibilityQs};
 
   use super::*;
 
-  #[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/payment-methods/GET/")]
+  #[macros::schema_ts_export]
   pub struct Query {
     #[serde(flatten)]
     pub page: PaginationQs,
@@ -72,8 +74,9 @@ pub mod get {
     }
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/payment-methods/GET/")]
+  #[macros::schema_ts_export]
   pub struct Output(Paged<PublicPaymentMethod>);
 
   #[derive(Debug, Clone)]
@@ -133,10 +136,13 @@ pub mod get {
 }
 
 pub mod post {
+  use schemars::JsonSchema;
+
   use super::*;
 
-  #[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/payment-methods/POST/")]
+  #[macros::schema_ts_export]
   pub struct Payload {
     #[ts(optional)]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -197,8 +203,9 @@ pub mod post {
     }
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/payment-methods/POST/")]
+  #[macros::schema_ts_export]
   pub struct Output {
     pub payment_method: PublicPaymentMethod,
   }

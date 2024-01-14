@@ -15,6 +15,7 @@ pub mod get {
     user_account_relation::{UserAccountRelation, UserAccountRelationKind},
     Model,
   };
+  use schemars::JsonSchema;
 
   use super::*;
 
@@ -27,9 +28,9 @@ pub mod get {
     access_token_scope: AccessTokenScope,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../../defs/api/accounts/[account]/GET/")]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[ts(export, export_to = "../../../defs/api/accounts/[account]/GET/")]
+  #[macros::schema_ts_export]
   // #[serde(rename_all = "camelCase")]
   pub struct Output {
     pub is_owner: bool,
@@ -93,13 +94,15 @@ pub mod patch {
     run_transaction, Model,
   };
   use prex::request::ReadBodyJsonError;
+  use schemars::JsonSchema;
   use validify::{ValidationErrors, Validify};
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/accounts/[account]/PATCH/")]
+  #[macros::schema_ts_export]
   pub struct Payload(pub AccountPatch);
 
   #[derive(Debug, Clone)]
@@ -109,8 +112,9 @@ pub mod patch {
     access_token_scope: AccessTokenScope,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/accounts/[account]/PATCH/")]
+  #[macros::schema_ts_export]
   pub struct Output(pub PublicAccount);
 
   #[derive(Debug, thiserror::Error)]
@@ -290,6 +294,7 @@ pub mod delete {
     station::Station,
     Model,
   };
+  use schemars::JsonSchema;
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
@@ -300,8 +305,9 @@ pub mod delete {
     account_id: String,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/accounts/[account]/DELETE/")]
+  #[macros::schema_ts_export]
   pub struct Output(pub PublicAccount);
 
   #[derive(Debug, thiserror::Error)]

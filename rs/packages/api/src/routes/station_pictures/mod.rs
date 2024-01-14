@@ -126,11 +126,13 @@ pub mod post {
   use bytes::Bytes;
   use db::station_picture::{CreateStationPictureError, StationPicture};
   use prex::request::ReadBodyBytesError;
+  use schemars::JsonSchema;
   use serde::{Deserialize, Serialize};
   use ts_rs::TS;
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/station-pictures/POST/")]
+  #[macros::schema_ts_export]
   pub struct Query {
     pub account_id: String,
     pub filename: String,
@@ -146,8 +148,9 @@ pub mod post {
     data: Bytes,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/station-pictures/POST/")]
+  #[macros::schema_ts_export]
   pub struct Output(StationPicture);
 
   #[derive(Debug, thiserror::Error)]

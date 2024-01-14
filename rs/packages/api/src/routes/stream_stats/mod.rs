@@ -12,6 +12,7 @@ use ts_rs::TS;
 pub mod get {
 
   use db::stream_connection::index::StationQuery;
+  use schemars::JsonSchema;
 
   use super::*;
 
@@ -23,9 +24,9 @@ pub mod get {
   #[derive(Debug, Clone)]
   pub struct Input {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../../defs/api/stream-stats/GET/")]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[ts(export, export_to = "../../../defs/api/stream-stats/GET/")]
+  #[macros::schema_ts_export]
   pub struct Output {
     pub stats: Stats,
   }
@@ -61,6 +62,7 @@ pub mod now {
       index::{IsOpenFilter, StationQuery},
       stats::StatsItem,
     };
+    use schemars::JsonSchema;
 
     use super::*;
 
@@ -72,9 +74,9 @@ pub mod now {
     #[derive(Debug, Clone)]
     pub struct Input {}
 
-    #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-    #[ts(export)]
-    #[ts(export_to = "../../../defs/api/stream-stats/now/GET/")]
+    #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+    #[ts(export, export_to = "../../../defs/api/stream-stats/now/GET/")]
+    #[macros::schema_ts_export]
     pub struct Output {
       pub stats: StatsItem,
     }
@@ -109,6 +111,7 @@ pub mod now {
     pub mod get {
 
       use db::stream_connection::index::{IsOpenFilter, StationQuery};
+      use schemars::JsonSchema;
 
       use super::*;
       #[derive(Debug, Clone)]
@@ -119,9 +122,9 @@ pub mod now {
       #[derive(Debug, Clone)]
       pub struct Input {}
 
-      #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-      #[ts(export)]
-      #[ts(export_to = "../../../defs/api/stream-stats/now/count/GET/")]
+      #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+      #[ts(export, export_to = "../../../defs/api/stream-stats/now/count/GET/")]
+      #[macros::schema_ts_export]
       pub struct Output {
         pub total: usize,
       }
@@ -159,6 +162,7 @@ pub mod now {
       use std::collections::{HashMap, HashSet};
 
       use db::{station::Station, stream_connection::index::IsOpenFilter, Model};
+      use schemars::JsonSchema;
 
       use super::*;
       #[derive(Debug, Clone)]
@@ -169,9 +173,12 @@ pub mod now {
       #[derive(Debug, Clone)]
       pub struct Input {}
 
-      #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-      #[ts(export)]
-      #[ts(export_to = "../../../defs/api/stream-stats/now/count-by-station/GET/")]
+      #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+      #[ts(
+        export,
+        export_to = "../../../defs/api/stream-stats/now/count-by-station/GET/"
+      )]
+      #[macros::schema_ts_export]
       pub struct Output {
         pub by_station: HashMap<String, u32>,
       }
@@ -218,6 +225,7 @@ pub mod since {
       index::{SinceFilter, StationQuery},
       stats::StatsItem,
     };
+    use schemars::JsonSchema;
 
     use crate::error::ApiError;
 
@@ -233,9 +241,12 @@ pub mod since {
       duration: time::Duration,
     }
 
-    #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-    #[ts(export)]
-    #[ts(export_to = "../../../defs/api/stream-stats/last-[num][unit]/GET/")]
+    #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+    #[ts(
+      export,
+      export_to = "../../../defs/api/stream-stats/last-[num][unit]/GET/"
+    )]
+    #[macros::schema_ts_export]
     pub struct Output {
       pub stats: StatsItem,
     }
@@ -308,6 +319,7 @@ pub mod since {
     use super::*;
     pub mod get {
       use db::stream_connection::index::{SinceFilter, StationQuery};
+      use schemars::JsonSchema;
 
       use crate::error::ApiError;
 
@@ -323,9 +335,12 @@ pub mod since {
         duration: time::Duration,
       }
 
-      #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-      #[ts(export)]
-      #[ts(export_to = "../../../defs/api/stream-stats/last-[num][unit]/count/GET/")]
+      #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+      #[ts(
+        export,
+        export_to = "../../../defs/api/stream-stats/last-[num][unit]/count/GET/"
+      )]
+      #[macros::schema_ts_export]
       pub struct Output {
         pub total: usize,
       }

@@ -14,6 +14,7 @@ pub mod post {
   use mongodb::bson::doc;
   use payments::query::save_payment_method::SavePaymentMethodResponse;
   use prex::{request::ReadBodyJsonError, Request};
+  use schemars::JsonSchema;
   use serde::{Deserialize, Serialize};
   use serde_util::DateTime;
   use ts_rs::TS;
@@ -153,9 +154,9 @@ pub mod post {
     }
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/auth/user/register/POST/")]
-  // #[serde(rename_all = "camelCase")]
+  #[macros::schema_ts_export]
   #[serde(deny_unknown_fields)]
   pub struct Payload {
     plan_id: String,
@@ -199,9 +200,9 @@ pub mod post {
     pub payload: Payload,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/auth/user/register/POST/")]
-  // #[serde(rename_all = "camelCase")]
+  #[macros::schema_ts_export]
   pub struct Output {
     pub user: PublicUser,
     pub account: PublicAccount,

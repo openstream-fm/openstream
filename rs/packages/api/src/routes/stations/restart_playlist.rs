@@ -13,6 +13,7 @@ pub mod post {
   use db::{deployment::Deployment, Model};
   use drop_tracer::DropTracer;
   use hyper::http::HeaderValue;
+  use schemars::JsonSchema;
   use serde_util::empty_struct::EmptyStruct;
   use shutdown::Shutdown;
 
@@ -34,9 +35,12 @@ pub mod post {
     station: Station,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../../defs/api/stations/[station]/restart-playlist/POST/")]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[ts(
+    export,
+    export_to = "../../../defs/api/stations/[station]/restart-playlist/POST/"
+  )]
+  #[macros::schema_ts_export]
   pub struct Output(EmptyStruct);
 
   #[derive(Debug, thiserror::Error)]

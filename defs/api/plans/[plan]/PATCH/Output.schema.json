@@ -1,0 +1,88 @@
+{
+  "type": "object",
+  "required": [
+    "_id",
+    "color",
+    "created_at",
+    "display_name",
+    "identifier",
+    "is_user_selectable",
+    "limits",
+    "order",
+    "price",
+    "slug",
+    "updated_at"
+  ],
+  "properties": {
+    "_id": {
+      "type": "string"
+    },
+    "identifier": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "price": {
+      "type": "number",
+      "format": "double"
+    },
+    "limits": {
+      "type": "object",
+      "required": [
+        "listeners",
+        "stations",
+        "storage",
+        "transfer"
+      ],
+      "properties": {
+        "stations": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "listeners": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "transfer": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "storage": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        }
+      }
+    },
+    "color": {
+      "type": "string"
+    },
+    "order": {
+      "type": "number",
+      "format": "double"
+    },
+    "is_user_selectable": {
+      "type": "boolean"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "deleted_at": {
+      "type": "string",
+      "format": "date-time",
+      "nullable": true
+    }
+  }
+}

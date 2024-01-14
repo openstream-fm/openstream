@@ -1,8 +1,11 @@
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 #[allow(non_camel_case_types)]
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Serialize, Deserialize, TS, PartialOrd, Ord)]
+#[derive(
+  Debug, Clone, Copy, Eq, PartialEq, Hash, Ord, PartialOrd, Serialize, Deserialize, TS, JsonSchema,
+)]
 #[ts(export, export_to = "../../../defs/db/http/")]
 pub enum Version {
   #[serde(rename = "0.9")]

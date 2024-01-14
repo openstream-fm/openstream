@@ -1,5 +1,6 @@
 use mongodb::IndexModel;
 use mongodb::{bson::doc, options::IndexOptions};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
@@ -20,7 +21,7 @@ pub struct UserAccountRelation {
   pub created_at: DateTime,
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "lowercase")]
 #[macros::keys]

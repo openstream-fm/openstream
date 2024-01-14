@@ -1,0 +1,100 @@
+{
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "kind",
+        "start_on_connect"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "none"
+          ]
+        },
+        "start_on_connect": {
+          "type": "boolean"
+        },
+        "external_relay_url": {
+          "type": "string",
+          "nullable": true
+        },
+        "external_relay_error": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "live"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "nullable": true
+        },
+        "artist": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "kind",
+        "url"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "external-relay"
+          ]
+        },
+        "url": {
+          "type": "string"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "file_id",
+        "filename",
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "playlist"
+          ]
+        },
+        "file_id": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string",
+          "nullable": true
+        },
+        "artist": {
+          "type": "string",
+          "nullable": true
+        }
+      }
+    }
+  ]
+}

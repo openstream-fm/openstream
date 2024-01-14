@@ -16,17 +16,19 @@ use ts_rs::TS;
 pub mod post {
 
   use db::station::PublicStation;
+  use schemars::JsonSchema;
 
   use super::*;
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, ts_rs::TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/stations/[station]/transfer/POST/"
   )]
+  #[macros::schema_ts_export]
   pub struct Payload {
     target_account_id: String,
   }
@@ -38,9 +40,12 @@ pub mod post {
     payload: Payload,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../../defs/api/stations/[station]/transfer/POST/")]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[ts(
+    export,
+    export_to = "../../../defs/api/stations/[station]/transfer/POST/"
+  )]
+  #[macros::schema_ts_export]
   pub struct Output {
     station: PublicStation,
   }

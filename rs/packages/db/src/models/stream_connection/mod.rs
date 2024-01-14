@@ -2,6 +2,7 @@ use crate::{http::Request, Model};
 use geoip::CountryCode;
 use mongodb::bson::doc;
 use mongodb::IndexModel;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use std::net::IpAddr;
@@ -15,7 +16,7 @@ pub mod stats;
 
 crate::register!(StreamConnection);
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
 #[macros::keys]
@@ -24,14 +25,17 @@ pub struct StreamConnection {
   pub id: String,
   pub station_id: String,
   pub deployment_id: String,
-  #[serde(with = "serde_util::as_f64::option")]
+  #[serde(serialize_with = "serde_util::as_f64::option::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::option::deserialize")]
   pub transfer_bytes: Option<u64>,
-  #[serde(with = "serde_util::as_f64::option")]
+  #[serde(serialize_with = "serde_util::as_f64::option::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::option::deserialize")]
   pub duration_ms: Option<u64>,
   pub is_open: bool,
   pub created_at: DateTime,
   pub country_code: Option<CountryCode>,
-  #[serde(with = "serde_util::ip")]
+  #[serde(serialize_with = "serde_util::ip::serialize")]
+  #[serde(deserialize_with = "serde_util::ip::deserialize")]
   pub ip: IpAddr,
 
   #[serde(default)]

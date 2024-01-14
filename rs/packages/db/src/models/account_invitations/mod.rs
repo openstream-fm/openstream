@@ -1,6 +1,7 @@
 use crate::Model;
 use mongodb::IndexModel;
 use mongodb::{bson::doc, ClientSession};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
@@ -38,7 +39,7 @@ pub struct AccountInvitation {
   pub deleted_at: Option<DateTime>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(tag = "state")]
 #[macros::keys]

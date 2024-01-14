@@ -26,6 +26,8 @@ use ts_rs::TS;
 
 pub mod get {
 
+  use schemars::JsonSchema;
+
   use crate::qs::{PaginationQs, VisibilityQs};
 
   use super::*;
@@ -33,8 +35,9 @@ pub mod get {
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
+  #[derive(Debug, Clone, Default, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/stations/GET/")]
+  #[macros::schema_ts_export]
   struct Query {
     #[serde(flatten)]
     pub page: PaginationQs,
@@ -52,8 +55,9 @@ pub mod get {
     query: Query,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/stations/GET/")]
+  #[macros::schema_ts_export]
   pub struct Output(Paged<PublicStation>);
 
   #[derive(Debug, thiserror::Error)]
@@ -158,6 +162,7 @@ pub mod post {
   use db::station_picture::StationPicture;
   use geoip::CountryCode;
   use lang::LangCode;
+  use schemars::JsonSchema;
   use serde_util::DateTime;
   use ts_rs::TS;
   use validate::url::patterns::*;
@@ -165,10 +170,10 @@ pub mod post {
 
   use super::*;
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/stations/POST/")]
-  #[serde(rename_all = "snake_case")]
-  #[serde(deny_unknown_fields)]
+  #[macros::schema_ts_export]
+  #[serde(rename_all = "snake_case", deny_unknown_fields)]
   #[validify]
   pub struct Payload {
     pub account_id: String,
@@ -419,10 +424,10 @@ pub mod post {
     pub system_metadata: Option<Metadata>,
   }
 
-  #[derive(Debug, Clone, Default, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Default, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/stations/POST/")]
-  #[serde(rename_all = "snake_case")]
-  #[serde(deny_unknown_fields)]
+  #[macros::schema_ts_export]
+  #[serde(rename_all = "snake_case", deny_unknown_fields)]
   pub struct PayloadLimits {
     #[serde(skip_serializing_if = "Option::is_none")]
     listeners: Option<u64>,
@@ -440,8 +445,9 @@ pub mod post {
     payload: Payload,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/stations/POST/")]
+  #[macros::schema_ts_export]
   pub struct Output {
     station: PublicStation,
   }

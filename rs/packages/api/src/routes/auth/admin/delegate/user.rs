@@ -7,6 +7,7 @@ pub mod post {
   use mongodb::bson::doc;
   use prex::request::ReadBodyJsonError;
   use prex::Request;
+  use schemars::JsonSchema;
   use serde::{Deserialize, Serialize};
   use serde_util::DateTime;
   use ts_rs::TS;
@@ -22,20 +23,22 @@ pub mod post {
     access_token: AccessToken,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/auth/admin/delegate/[user]/POST/"
   )]
+  #[macros::schema_ts_export]
   pub struct Payload {
     title: String,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/auth/admin/delegate/[user]/POST/"
   )]
+  #[macros::schema_ts_export]
   pub struct Output {
     user: AdminPublicUser,
     token: String,

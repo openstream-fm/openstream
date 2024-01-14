@@ -11,6 +11,7 @@ deepsize = "0.2.0"
 ip2geo = "0.1.0"
 log = "0.4.17"
 macros = { version = "0.1.0", path = "../macros" }
+schemars = "0.8.16"
 serde = { version = "1.0.160", features = ["derive"] }
 strum = { version = "0.24.1", features = ["phf", "derive", "strum_macros"] }
 ts-rs = "6.2.0"

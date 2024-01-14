@@ -5,6 +5,7 @@ pub mod post {
   use db::{current_filter_doc, run_transaction, Model};
   use mongodb::bson::doc;
   use prex::{request::ReadBodyJsonError, Request};
+  use schemars::JsonSchema;
   use serde::{Deserialize, Serialize};
   use serde_util::DateTime;
   use std::net::IpAddr;
@@ -15,9 +16,9 @@ pub mod post {
   use crate::ip_limit::{hit, should_reject};
   use crate::json::JsonHandler;
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/auth/user/login/POST/")]
-  // #[serde(rename_all = "camelCase")]
+  #[macros::schema_ts_export]
   #[serde(deny_unknown_fields)]
   pub struct Payload {
     email: String,
@@ -32,9 +33,9 @@ pub mod post {
     user_agent: UserAgent,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/auth/user/login/POST/")]
-  // #[serde(rename_all = "camelCase")]
+  #[macros::schema_ts_export]
   pub struct Output {
     user: UserPublicUser,
     token: String,

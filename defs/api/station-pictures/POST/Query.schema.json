@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "required": [
+    "account_id",
+    "content_type",
+    "filename"
+  ],
+  "properties": {
+    "account_id": {
+      "type": "string"
+    },
+    "filename": {
+      "type": "string"
+    },
+    "content_type": {
+      "type": "string"
+    }
+  }
+}

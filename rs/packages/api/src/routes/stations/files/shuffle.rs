@@ -7,6 +7,7 @@ pub mod post {
   use mongodb::options::{FindOneAndReplaceOptions, FindOptions};
   use prex::Request;
   use rand::seq::SliceRandom;
+  use schemars::JsonSchema;
   use serde::{Deserialize, Serialize};
   use serde_util::empty_struct::EmptyStruct;
   use serde_util::DateTime;
@@ -23,11 +24,12 @@ pub mod post {
     station_id: String,
   }
 
-  #[derive(Debug, Clone, Copy, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Copy, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/stations/[station]/files/suffle/POST/"
   )]
+  #[macros::schema_ts_export]
   pub struct Output(EmptyStruct);
 
   #[derive(Debug, thiserror::Error)]

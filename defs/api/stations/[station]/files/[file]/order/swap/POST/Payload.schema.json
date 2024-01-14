@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "required": [
+    "anchor_file_id"
+  ],
+  "properties": {
+    "anchor_file_id": {
+      "type": "string"
+    }
+  }
+}

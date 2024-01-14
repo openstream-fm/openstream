@@ -1,0 +1,54 @@
+{
+  "type": "object",
+  "required": [
+    "email",
+    "first_name",
+    "last_name",
+    "password"
+  ],
+  "properties": {
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "password": {
+      "type": "string"
+    },
+    "system_metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "number",
+            "format": "double"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Value"
+            }
+          },
+          {
+            "$ref": "#/components/schemas/Document"
+          }
+        ]
+      },
+      "nullable": true
+    }
+  },
+  "additionalProperties": false
+}

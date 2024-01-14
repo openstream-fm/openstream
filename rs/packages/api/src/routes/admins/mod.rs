@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 pub mod get {
 
   use db::admin::{Admin, PublicAdmin};
+  use schemars::JsonSchema;
   use ts_rs::TS;
 
   use crate::qs::{PaginationQs, VisibilityQs};
@@ -23,8 +24,9 @@ pub mod get {
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
+  #[derive(Debug, Clone, Default, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/admins/GET/")]
+  #[macros::schema_ts_export]
   pub struct Query {
     #[serde(flatten)]
     pub page: PaginationQs,
@@ -37,8 +39,9 @@ pub mod get {
     query: Query,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/admins/GET/")]
+  #[macros::schema_ts_export]
   pub struct Output(Paged<PublicAdmin>);
 
   #[derive(Debug, thiserror::Error)]
@@ -105,16 +108,17 @@ pub mod post {
   use db::metadata::Metadata;
   use db::run_transaction;
   use prex::request::ReadBodyJsonError;
+  use schemars::JsonSchema;
   use serde_util::DateTime;
   use ts_rs::TS;
   use validate::email::is_valid_email;
 
   use super::*;
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/admins/POST/")]
-  #[serde(rename_all = "snake_case")]
-  #[serde(deny_unknown_fields)]
+  #[macros::schema_ts_export]
+  #[serde(rename_all = "snake_case", deny_unknown_fields)]
   pub struct Payload {
     pub first_name: String,
     pub last_name: String,
@@ -129,8 +133,9 @@ pub mod post {
     payload: Payload,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/admins/POST/")]
+  #[macros::schema_ts_export]
   pub struct Output {
     admin: PublicAdmin,
   }

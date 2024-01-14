@@ -29,7 +29,7 @@ pub fn local_offset() -> UtcOffset {
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, TS)]
 #[ts(export)]
 #[ts(export_to = "../../../defs/")]
-pub struct DateTime(#[ts(type = "string")] OffsetDateTime);
+pub struct DateTime(#[ts(type = "/* DateTime */ string")] OffsetDateTime);
 
 #[derive(JsonSchema)]
 #[schemars(rename = "DateTime")]

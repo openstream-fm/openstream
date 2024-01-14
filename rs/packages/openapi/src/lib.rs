@@ -69,14 +69,14 @@ pub fn export_schema_from_ts<T: JsonSchema + TS>() -> Result<(), ExportError> {
 }
 
 #[macro_export]
-macro_rules! export_schema_macro {
+macro_rules! export_schema_ts {
   ($ident:ident) => {
     paste::paste! {
       #[cfg(test)]
       #[test]
       #[allow(non_snake_case)]
       fn [<export_schema_ $ident>]() {
-        $crate::openapi::export_schema_from_ts::<$ident>().unwrap();
+        $crate::export_schema_from_ts::<$ident>().unwrap();
       }
     }
   };

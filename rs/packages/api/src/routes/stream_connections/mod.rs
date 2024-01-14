@@ -8,6 +8,7 @@ pub mod get {
   use db::Paged;
   use mongodb::bson::doc;
   use prex::Request;
+  use schemars::JsonSchema;
   use serde::{Deserialize, Serialize};
   use ts_rs::TS;
 
@@ -18,8 +19,9 @@ pub mod get {
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/stream-connections/GET/")]
+  #[macros::schema_ts_export]
   #[serde(rename_all = "kebab-case")]
   pub enum ShowQuery {
     All,
@@ -27,16 +29,18 @@ pub mod get {
     Closed,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/stream-connections/GET/")]
+  #[macros::schema_ts_export]
   #[serde(rename_all = "kebab-case")]
   pub enum SortQuery {
     CreationAsc,
     CreationDesc,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, Default)]
+  #[derive(Debug, Clone, Default, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/stream-connections/GET/")]
+  #[macros::schema_ts_export]
   pub struct Query {
     #[serde(flatten)]
     pub page: PaginationQs,
@@ -54,8 +58,9 @@ pub mod get {
     pub query: Query,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/stream-connections/GET/")]
+  #[macros::schema_ts_export]
   pub struct Output(Paged<StreamConnection>);
 
   #[derive(Debug, thiserror::Error)]

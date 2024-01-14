@@ -26,6 +26,7 @@ const CONTENT_TYPE_AUDIO_MPEG: HeaderValue = HeaderValue::from_static("audio/mpe
 
 pub mod get {
 
+  use schemars::JsonSchema;
   use ts_rs::TS;
 
   use crate::error::ApiError;
@@ -43,11 +44,12 @@ pub mod get {
     file_id: String,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/stations/[station]/files/[file]/GET/"
   )]
+  #[macros::schema_ts_export]
   #[serde(rename_all = "snake_case")]
   pub struct Output {
     item: AudioFile,
@@ -278,6 +280,7 @@ pub mod stream {
 }
 
 pub mod delete {
+  use schemars::JsonSchema;
   use ts_rs::TS;
 
   use crate::error::ApiError;
@@ -309,11 +312,12 @@ pub mod delete {
     }
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
     export_to = "../../../defs/api/stations/[station]/files/[file]/DELETE/"
   )]
+  #[macros::schema_ts_export]
   pub struct Output(AudioFile);
 
   #[async_trait]

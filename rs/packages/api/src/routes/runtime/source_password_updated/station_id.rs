@@ -13,6 +13,7 @@ pub mod post {
   use std::convert::Infallible;
 
   use media::MediaSessionMap;
+  use schemars::JsonSchema;
   use serde_util::empty_struct::EmptyStruct;
 
   use super::*;
@@ -27,9 +28,12 @@ pub mod post {
     station_id: String,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS)]
-  #[ts(export)]
-  #[ts(export_to = "../../../defs/api/runtime/source-password-updated/[station]/POST/")]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[ts(
+    export,
+    export_to = "../../../defs/api/runtime/source-password-updated/[station]/POST/"
+  )]
+  #[macros::schema_ts_export]
   pub struct Output(EmptyStruct);
 
   #[async_trait]

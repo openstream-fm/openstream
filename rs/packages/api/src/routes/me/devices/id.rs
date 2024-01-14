@@ -28,9 +28,8 @@ pub mod delete {
 
   #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/me/devices/[device]/DELETE/")]
+  #[macros::schema_ts_export]
   pub struct Output(EmptyStruct);
-
-  crate::export_schema!(Output);
 
   #[derive(Debug, thiserror::Error)]
   pub enum ParseError {

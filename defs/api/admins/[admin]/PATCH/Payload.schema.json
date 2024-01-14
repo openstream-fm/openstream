@@ -1,0 +1,44 @@
+{
+  "type": "object",
+  "properties": {
+    "first_name": {
+      "type": "string",
+      "nullable": true
+    },
+    "last_name": {
+      "type": "string",
+      "nullable": true
+    },
+    "system_metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "number",
+            "format": "double"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Value"
+            }
+          },
+          {
+            "$ref": "#/components/schemas/Document"
+          }
+        ]
+      },
+      "nullable": true
+    }
+  },
+  "additionalProperties": false
+}
