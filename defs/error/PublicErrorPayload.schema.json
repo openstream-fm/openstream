@@ -1,0 +1,86 @@
+{
+  "type": "object",
+  "required": [
+    "error"
+  ],
+  "properties": {
+    "error": {
+      "type": "object",
+      "required": [
+        "code",
+        "message",
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "integer",
+          "format": "uint16",
+          "maximum": 599.0,
+          "minimum": 400.0
+        },
+        "message": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string",
+          "enum": [
+            "INTERNAL",
+            "RESOURCE_NOT_FOUND",
+            "TOO_MANY_REQUESTS",
+            "BAD_REQUEST",
+            "INTERNAL_DB",
+            "INTERNAL_SERIALIZE",
+            "IO_REQUEST",
+            "TOKEN_MISSING",
+            "TOKEN_MALFORMED",
+            "TOKEN_NOT_FOUND",
+            "TOKEN_USER_NOT_FOUND",
+            "TOKEN_STATION_NOT_FOUND",
+            "TOKEN_ADMIN_NOT_FOUND",
+            "TOKEN_OUT_OF_SCOPE",
+            "TOKEN_USER_ACCOUNT_NOT_OWNER",
+            "STATION_NOT_FOUND",
+            "ADMIN_NOT_FOUND",
+            "USER_NOT_FOUND",
+            "ACCOUNT_NOT_FOUND",
+            "AUDIO_FILE_NOT_FOUND",
+            "DEVICE_NOT_FOUND",
+            "API_KEY_NOT_FOUND",
+            "PLAN_NOT_FOUND",
+            "PAYMENT_METHOD_NOT_FOUND",
+            "INVITATION_NOT_FOUND",
+            "QUERY_STRING_INVALID",
+            "PAYLOAD_IO",
+            "PAYLOAD_JSON",
+            "PAYLOAD_TOO_LARGE",
+            "PAYLOAD_INVALID",
+            "USER_AUTH_FAILED",
+            "ADMIN_AUTH_FAILED",
+            "USER_EMAIL_EXISTS",
+            "ADMIN_EMAIL_EXISTS",
+            "UPLOAD_EMPTY",
+            "UPLOAD_QUOTA_EXCEEDED",
+            "UPLOAD_INTERNAL_SPAWN",
+            "UPLOAD_INTENRAL_IO",
+            "UPLOAD_EXIT",
+            "RANGE_INVALID",
+            "RANGE_NO_OVERLAP",
+            "PATCH_EMPTY",
+            "PATCH_INVALID",
+            "PATCH_OUT_OF_SCOPE",
+            "CONTENT_LENGTH_REQUIRED",
+            "UNRESOLVABLE_ADMIN_ME",
+            "UNRESOLVABLE_USER_ME",
+            "PLAYLIST_START_IS_LIVE",
+            "PLAYLIST_START_IS_EXTERNAL_RELAY",
+            "PLAYLIST_START_NO_FILES",
+            "RENDER_MAIL",
+            "SEND_MAIL",
+            "CREATE_STATION_ACCOUNT_LIMIT",
+            "PAYMENTS_PERFORM"
+          ]
+        }
+      }
+    }
+  }
+}
