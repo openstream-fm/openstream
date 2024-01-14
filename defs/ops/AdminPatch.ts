@@ -4,6 +4,5 @@ import type { Metadata } from "../db/Metadata";
 export type AdminPatch = {
   first_name?: string;
   last_name?: string;
-  password?: string;
   system_metadata?: Metadata;
 };

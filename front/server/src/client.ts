@@ -531,11 +531,14 @@ export class Admins {
     return await this.client.post(ip, ua, token, `/admins`, payload);
   }
 
-  async patch(ip: string | null, ua: string | null, token: string, id: string, payload: import("$api/admins/[admin]/PATCH/Payload").Payload): Promise<import("$api/admins/[admin]/PATCH/Output").Output> {
-    return await this.client.patch(ip, ua, token, `/admins/${id}`, payload);
+  async patch(ip: string | null, ua: string | null, token: string, admin_id: string, payload: import("$api/admins/[admin]/PATCH/Payload").Payload): Promise<import("$api/admins/[admin]/PATCH/Output").Output> {
+    return await this.client.patch(ip, ua, token, `/admins/${admin_id}`, payload);
+  }
+
+  async change_password(ip: string | null, ua: string | null, token: string, admin_id: string, payload: import("$api/admins/[admin]/change-password/POST/Payload").Payload): Promise<import("$api/admins/[admin]/change-password/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, `/admins/${admin_id}/change-password`, payload);
   }
 }
-
 
 export class Users {
   client: Client;
@@ -564,6 +567,10 @@ export class Users {
 
   async delete(ip: string | null, ua: string | null, token: string, user_id: string): Promise<import("$api/users/[user]/DELETE/Output").Output> {
     return await this.client.delete(ip, ua, token, `/users/${user_id}`);
+  }
+
+  async change_password(ip: string | null, ua: string | null, token: string, user_id: string, payload: import("$api/users/[user]/change-password/POST/Payload").Payload): Promise<import("$api/users/[user]/change-password/POST/Output").Output> {
+    return await this.client.post(ip, ua, token, `/users/${user_id}/change-password`, payload);
   }
 }
 

@@ -34,6 +34,7 @@ const locale = {
         "first_name": "Your first name",
         "last_name": "Your last name",
         "phone": "Your phone number",
+        "current_password": "Current password",
         "new_password": "New password",
         "confirm_password": "Confirm password",
         "language": "Preferred language",

@@ -194,7 +194,11 @@ pub mod get {
 
 pub mod post {
 
+  use std::net::IpAddr;
+
   use prex::request::ReadBodyJsonError;
+
+  use crate::ip_limit;
 
   use super::*;
 
@@ -203,6 +207,7 @@ pub mod post {
 
   #[derive(Debug, Clone)]
   pub struct Input {
+    ip: IpAddr,
     payload: Payload,
     access_token_scope: AccessTokenScope,
   }
@@ -251,6 +256,8 @@ pub mod post {
     TitleTooLong,
     #[error("invalid global access scope ")]
     InvalidScopeGlobal,
+    #[error("ip limit")]
+    IpLimit,
   }
 
   impl From<HandleError> for ApiError {
@@ -265,6 +272,7 @@ pub mod post {
         HandleError::TitleTooLong => {
           ApiError::PayloadInvalid("API key title cannot exceed 100 characters".into())
         }
+        HandleError::IpLimit => ApiError::TooManyRequests,
       }
     }
   }
@@ -277,11 +285,12 @@ pub mod post {
     type HandleError = HandleError;
 
     async fn parse(&self, mut req: Request) -> Result<Self::Input, Self::ParseError> {
+      let ip = req.isomorphic_ip();
       let access_token_scope = request_ext::get_access_token_scope(&req).await?;
       let payload = req.read_body_json::<Payload>(100_000).await?;
-      // let access_token_scope = request_ext::get_scope_from_token(&req, &access_token).await?;
 
       Ok(Self::Input {
+        ip,
         access_token_scope,
         payload,
       })
@@ -289,9 +298,16 @@ pub mod post {
 
     async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
       let Self::Input {
+        ip,
         access_token_scope,
         payload,
       } = input;
+
+      if ip_limit::should_reject(ip) {
+        return Err(HandleError::IpLimit);
+      }
+
+      ip_limit::hit(ip);
 
       let Payload { title, password } = payload;
 

@@ -64,18 +64,12 @@ pub struct AdminPatch {
   #[serde(skip_serializing_if = "Option::is_none")]
   pub last_name: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
-  pub password: Option<String>,
-  #[serde(skip_serializing_if = "Option::is_none")]
   pub system_metadata: Option<Metadata>,
 }
 
 impl Admin {
   pub fn apply_patch(&mut self, patch: AdminPatch) -> Result<(), ApplyPatchError> {
-    if patch.first_name.is_none()
-      && patch.last_name.is_none()
-      && patch.system_metadata.is_none()
-      && patch.password.is_none()
-    {
+    if patch.first_name.is_none() && patch.last_name.is_none() && patch.system_metadata.is_none() {
       return Err(ApplyPatchError::PatchEmpty);
     }
 
@@ -95,16 +89,6 @@ impl Admin {
       }
 
       self.last_name = last_name.into();
-    }
-
-    if let Some(ref password) = patch.password {
-      if password.len() < 8 {
-        return Err(ApplyPatchError::invalid(
-          "Password must have 8 characters or more",
-        ));
-      }
-
-      self.password = crypt::hash(password);
     }
 
     if let Some(metadata) = patch.system_metadata {

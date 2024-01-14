@@ -1,5 +1,5 @@
 use crate::metadata::Metadata;
-use crate::{Model, PublicScope};
+use crate::{current_filter_doc, deleted_filter_doc, Model, PublicScope};
 use mongodb::error::Result as MongoResult;
 use mongodb::ClientSession;
 use mongodb::{bson::doc, options::IndexOptions, IndexModel};
@@ -130,10 +130,19 @@ impl User {
     }
   }
 
-  pub async fn find_by_email(email: &str) -> MongoResult<Option<Self>> {
-    Self::cl()
-      .find_one(doc! { Self::KEY_EMAIL: email }, None)
-      .await
+  pub async fn find_by_email(email: &str, active: Option<bool>) -> MongoResult<Option<Self>> {
+    let filter = match active {
+      None => doc! { Self::KEY_EMAIL: email },
+      Some(active) => {
+        if active {
+          current_filter_doc! { Self::KEY_EMAIL: email }
+        } else {
+          deleted_filter_doc! { Self::KEY_EMAIL: email }
+        }
+      }
+    };
+
+    Self::cl().find_one(filter, None).await
   }
 
   pub async fn email_exists(email: &str) -> MongoResult<bool> {
@@ -149,10 +158,19 @@ impl User {
 
   pub async fn find_by_email_with_session(
     email: &str,
+    active: Option<bool>,
     session: &mut ClientSession,
   ) -> MongoResult<Option<Self>> {
+    let email_filter = doc! { Self::KEY_EMAIL: email };
+
+    let filter = match active {
+      None => email_filter,
+      Some(true) => current_filter_doc!(email_filter),
+      Some(false) => deleted_filter_doc!(email_filter),
+    };
+
     Self::cl()
-      .find_one_with_session(doc! { Self::KEY_EMAIL: email }, None, session)
+      .find_one_with_session(filter, None, session)
       .await
   }
 }

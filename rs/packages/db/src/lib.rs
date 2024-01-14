@@ -15,6 +15,7 @@ use mongodb::{
   Client, ClientSession, Collection, Database, IndexModel,
 };
 use once_cell::sync::OnceCell;
+use schemars::JsonSchema;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_util::DateTime;
 use std::borrow::Borrow;
@@ -424,7 +425,7 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
   }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export)]
 #[ts(export_to = "../../../defs/")]
 #[serde(rename_all = "snake_case")]
@@ -709,14 +710,14 @@ impl IdDocument {
 #[macro_export]
 macro_rules! current_filter_doc {
   () => {
-    ::mongodb::bson::doc!{ $crate::KEY_DELETED_AT: ::mongodb::bson::Bson::Null }
+    ::mongodb::bson::doc!{ $crate::KEY_DELETED_AT: null }
   };
 
   ($filter:ident) => {
     ::mongodb::bson::doc!{
       "$and": [
-        { $crate::KEY_DELETED_AT: ::mongodb::bson::Bson::Null },
-        filter,
+        { $crate::KEY_DELETED_AT: null },
+        $filter,
       ]
     }
   };
@@ -724,7 +725,7 @@ macro_rules! current_filter_doc {
   ($($tt:tt)*) => {
     ::mongodb::bson::doc! {
       "$and": [
-        { $crate::KEY_DELETED_AT: ::mongodb::bson::Bson::Null },
+        { $crate::KEY_DELETED_AT: null },
         { $($tt)* },
       ]
     }
@@ -734,14 +735,14 @@ macro_rules! current_filter_doc {
 #[macro_export]
 macro_rules! deleted_filter_doc {
   () => {
-    ::mongodb::bson::doc!{ $crate::KEY_DELETED_AT: { "$ne": ::mongodb::bson::Bson::Null } }
+    ::mongodb::bson::doc!{ $crate::KEY_DELETED_AT: { "$ne": null } }
   };
 
   ($filter:ident) => {
     ::mongodb::bson::doc!{
       "$and": [
-        { $crate::KEY_DELETED_AT: { "$ne" ::mongodb::bson::Bson::Null } },
-        filter,
+        { $crate::KEY_DELETED_AT: { "$ne": null } },
+       $filter,
       ]
     }
   };
@@ -749,7 +750,7 @@ macro_rules! deleted_filter_doc {
   ($($tt:tt)*) => {
     ::mongodb::bson::doc! {
       "$and": [
-        { $crate::KEY_DELETED_AT: { "$ne" ::mongodb::bson::Bson::Null } },
+        { $crate::KEY_DELETED_AT: { "$ne": null } },
         { $($tt)* },
       ]
     }

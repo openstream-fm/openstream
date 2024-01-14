@@ -95,7 +95,7 @@ pub mod get {
         Some(id) => Admin::get_by_id(id).await?.map(From::from),
       };
 
-      let receiver = User::find_by_email(&invitation.receiver_email)
+      let receiver = User::find_by_email(&invitation.receiver_email, Some(true))
         .await?
         .map(From::from);
 

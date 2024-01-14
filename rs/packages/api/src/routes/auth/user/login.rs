@@ -133,7 +133,7 @@ pub mod post {
 
       hit(ip);
 
-      let user = match User::find_by_email(&email).await? {
+      let user = match User::find_by_email(&email, Some(true)).await? {
         None => return Err(HandleError::NoMatchEmail),
         Some(user) => user,
       };
@@ -143,9 +143,7 @@ pub mod post {
         Some(ref v) => v.as_str(),
       };
 
-      let is_match = crypt::compare(&password, user_password);
-
-      if !is_match {
+      if !crypt::compare(&password, user_password) {
         return Err(HandleError::NoMatchPassword);
       }
 

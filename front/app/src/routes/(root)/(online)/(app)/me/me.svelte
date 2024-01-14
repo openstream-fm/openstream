@@ -5,7 +5,7 @@
 	import NullTextField from "$share/Form/Nullable/NullTextField.svelte";
 	import { ripple } from "$share/ripple";
 	import { clone, diff, equals } from "$server/util/collections";
-	import { _patch, action } from "$share/net.client";
+	import { _patch, _post, action } from "$share/net.client";
 	import { _message } from "$share/notify";
 	import { invalidateAll } from "$lib/invalidate";
 	import Email from "$share/Form/Email.svelte";
@@ -20,8 +20,7 @@
     _string,
     _phone,
   } from "$share/formy/validate";
-  import Page from "$lib/components/Page.svelte";
-	import { tick } from "svelte";
+  import { tick } from "svelte";
 	import { locale } from "$lib/locale";
 	import SelectField from "$share/Form/SelectField.svelte";
 	import { VALIDATE_USER_FIRST_NAME_MAX_LEN, VALIDATE_USER_LAST_NAME_MAX_LEN, VALIDATE_USER_PASSWORD_MAX_LEN, VALIDATE_USER_PASSWORD_MIN_LEN, VALIDATE_USER_PHONE_MAX_LEN } from "$server/defs/constants";
@@ -76,18 +75,21 @@
     invalidateAll(); 
   });
 
+  let current_password = "";
   let new_password = "";
   let confirm_new_password = "";
 
   const change_password = action(async () => {
     if(new_password === "") throw new Error("New password is required");
+    if(current_password === "") throw new Error("Current password is required");
     if(new_password !== confirm_new_password) throw new Error("Confirmation password doesn't match");
-    // TODO: remove this partial
-    const payload: Partial<import("$api/users/[user]/PATCH/Payload").Payload> = {
-      password: new_password,
+    const payload: import("$api/users/[user]/change-password/POST/Payload").Payload = {
+      current_password,
+      new_password,
     };
 
-    await _patch(`/api/users/${data.user._id}`, payload);
+    await _post(`/api/users/${data.user._id}/change-password`, payload);
+    current_password = "";
     new_password = "";
     confirm_new_password = "";
     _message($locale.pages.me.notifier.password_updated);
@@ -388,6 +390,10 @@
         </div>
         <div class="section-title">{$locale.pages.me.change_password.title}</div>
         <div class="fields">
+          <div class="field">
+            <Password label={$locale.pages.me.fields.current_password} bind:value={current_password} />
+            <Validator value={current_password} fn={_string({ required: true })} />
+          </div>
           <div class="field">
             <Password label={$locale.pages.me.fields.new_password} autocomplete="new-password" bind:value={new_password} />
             <Validator value={new_password} fn={_new_password({

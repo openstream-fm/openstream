@@ -86,7 +86,6 @@ pub mod patch {
       deserialize_with = "serde_util::map_some"
     )]
     language: Option<Option<String>>,
-    password: Option<String>,
   }
 
   #[derive(Debug, Clone)]
@@ -171,7 +170,6 @@ pub mod patch {
         first_name,
         last_name,
         phone,
-        password,
         language,
       } = payload;
 
@@ -207,22 +205,6 @@ pub mod patch {
         }
       };
 
-      if let Some(password) = &password {
-        if password.len() > 100 {
-          return Err(HandleError::Payload(
-            "Password must be of 50 characters or less".into(),
-          ));
-        }
-
-        if password.len() < 8 {
-          return Err(HandleError::Payload(
-            "Password must be of 8 characters or more".into(),
-          ));
-        }
-      }
-
-      let password_hash = password.map(crypt::hash);
-
       let user = run_transaction!(session => {
         fetch_and_patch!(User, up_user, &user.id, Err(HandleError::UserNotFound(user.id)), session, {
           if let Some(first_name) = &first_name {
@@ -247,10 +229,6 @@ pub mod patch {
               Some("") => None,
               Some(v) => Some(v.to_string()),
             }
-          }
-
-          if let Some(password_hash) = &password_hash {
-            up_user.password = Some(password_hash.clone());
           }
 
           up_user.updated_at = DateTime::now();

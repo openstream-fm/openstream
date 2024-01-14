@@ -65,6 +65,7 @@ paste = "1.0.12"
 image = { version = "0.24.6", features = ["webp-encoder", "webp", "rgb", "dcv-color-primitives", "mp4parse"] }
 lang = { version = "0.1.0", path = "../lang" }
 ffmpeg = { version = "0.1.0", path = "../ffmpeg" }
+schemars = "0.8.16"
 
 [dev-dependencies]
 serde_json = { version = "1.0", features = ["preserve_order"] }
