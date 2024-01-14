@@ -133,7 +133,7 @@ pub mod post {
 
       hit(ip);
 
-      let user = match User::find_by_email(&email).await? {
+      let user = match User::find_by_email(&email, Some(true)).await? {
         None => return Err(HandleError::NoMatchEmail),
         Some(user) => user,
       };

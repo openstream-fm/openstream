@@ -2,7 +2,7 @@ pub mod post {
   use async_trait::async_trait;
   use db::access_token::{AccessToken, GeneratedBy, Scope};
   use db::admin::{Admin, PublicAdmin};
-  use db::Model;
+  use db::{current_filter_doc, Model};
   use mongodb::bson::doc;
   use prex::{request::ReadBodyJsonError, Request};
   use serde::{Deserialize, Serialize};
@@ -132,7 +132,7 @@ pub mod post {
 
       let email = email.trim().to_lowercase();
 
-      let admin = match Admin::get(doc! { Admin::KEY_EMAIL: email }).await? {
+      let admin = match Admin::get(current_filter_doc! { Admin::KEY_EMAIL: email }).await? {
         None => return Err(HandleError::NoMatchEmail),
         Some(admin) => admin,
       };

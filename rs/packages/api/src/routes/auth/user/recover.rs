@@ -96,7 +96,7 @@ pub mod post {
 
       let email = email.trim().to_lowercase();
 
-      let user = match User::find_by_email(&email).await? {
+      let user = match User::find_by_email(&email, Some(true)).await? {
         // if we return an error here, we will be showing the
         // users addresses we have in the database to a possible attacker
         None => {

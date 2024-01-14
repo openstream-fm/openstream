@@ -291,7 +291,7 @@ pub mod get {
               .map(InvitationAdminSender::from),
           };
 
-          let receiver = User::find_by_email(&item.receiver_email)
+          let receiver = User::find_by_email(&item.receiver_email, Some(true))
             .await?
             .map(InvitationReceiver::from);
 
@@ -449,7 +449,7 @@ pub mod post {
         (_, Some(user)) => Some(user.first_name.clone()),
       };
 
-      let receiver = User::find_by_email(&email).await?;
+      let receiver = User::find_by_email(&email, Some(true)).await?;
       if let Some(ref user) = receiver {
         let filter = current_filter_doc! {
           UserAccountRelation::KEY_ACCOUNT_ID: &account.id,
