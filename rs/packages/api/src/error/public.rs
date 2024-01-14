@@ -33,7 +33,7 @@ pub struct PublicError {
   #[ts(type = "number")]
   #[serde(serialize_with = "serde_util::status_code::serialize")]
   #[serde(deserialize_with = "serde_util::status_code::deserialize")]
-  #[schemars(schema_with = "u16::json_schema")]
+  #[schemars(schema_with = "u16::json_schema", range(min = 400, max = 599))]
   pub status: StatusCode,
   pub message: String,
   pub code: PublicErrorCode,

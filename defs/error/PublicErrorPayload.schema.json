@@ -15,7 +15,8 @@
         "status": {
           "type": "integer",
           "format": "uint16",
-          "minimum": 0.0
+          "maximum": 599.0,
+          "minimum": 400.0
         },
         "message": {
           "type": "string"
