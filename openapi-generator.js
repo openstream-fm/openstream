@@ -107,8 +107,17 @@ const process_dir = (target) => {
             },
           },
 
-          default: {
-            description: "An error response with status, code and message fields",
+          "4xx": {
+            description: "A client error",
+            content: {
+              "application/json": {
+                schema: { $ref: "#/components/schemas/Error" },
+              }
+            }
+          },
+
+          "5xx": {
+            description: "A server error",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/Error" },
