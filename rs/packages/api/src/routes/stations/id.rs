@@ -266,9 +266,10 @@ pub mod patch {
   };
   use hyper::{http::HeaderValue, Body};
   use media::MediaSessionMap;
+  use modify::Modify;
   use prex::request::ReadBodyJsonError;
   use schemars::JsonSchema;
-  use validify::{ValidationErrors, Validify};
+  use validator::Validate;
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {
@@ -276,10 +277,14 @@ pub mod patch {
     pub media_sessions: MediaSessionMap,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(export, export_to = "../../../defs/api/stations/[station]/PATCH/")]
   #[macros::schema_ts_export]
-  pub struct Payload(pub StationPatch);
+  pub struct Payload {
+    #[validate]
+    #[serde(flatten)]
+    pub patch: StationPatch,
+  }
 
   #[derive(Debug, Clone)]
   pub struct Input {
@@ -321,8 +326,6 @@ pub mod patch {
     StationNotFound(String),
     #[error("picture not found {0}")]
     PictureNotFound(String),
-    #[error("validation: {0}")]
-    Validation(#[from] ValidationErrors),
   }
 
   impl From<HandleError> for ApiError {
@@ -331,7 +334,6 @@ pub mod patch {
         HandleError::Db(e) => Self::from(e),
         HandleError::Patch(e) => Self::from(e),
         HandleError::StationNotFound(id) => Self::StationNotFound(id),
-        HandleError::Validation(e) => Self::PayloadInvalid(format!("{e}")),
         HandleError::PictureNotFound(id) => {
           Self::PayloadInvalid(format!("Picture with id {id} not found"))
         }
@@ -367,15 +369,13 @@ pub mod patch {
 
     async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
       let Self::Input {
-        payload: Payload(patch),
+        payload: Payload { patch },
         access_token_scope,
         access_token_header,
         station,
       } = input;
 
       let id = station.id;
-
-      let patch: StationPatch = Validify::validify(patch.into())?;
 
       let mut prev_external_relay_redirect: bool;
       let mut prev_external_relay_url: Option<String>;

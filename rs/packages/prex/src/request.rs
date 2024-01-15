@@ -5,9 +5,11 @@ use hyper::header::{HeaderName, AUTHORIZATION, HOST};
 use hyper::http::Extensions;
 use hyper::{self, HeaderMap, Uri, Version};
 use hyper::{Body, Method};
+use modify::Modify;
 use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use std::net::{IpAddr, SocketAddr};
+use validator::{Validate, ValidationErrors};
 
 #[allow(clippy::declare_interior_mutable_const)]
 const X_OPENSTREAM_FORWARDED_IP: HeaderName = HeaderName::from_static(constants::FORWARD_IP_HEADER);
@@ -53,8 +55,8 @@ pub enum ReadBodyJsonError {
   Hyper(#[from] hyper::Error),
   #[error("json deserialize: {0}")]
   Json(#[from] serde_json::Error),
-  #[error("payload invalid: {0}")]
-  PayloadInvalid(String),
+  #[error("validation errors: {0}")]
+  Validation(#[from] ValidationErrors),
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -240,7 +242,17 @@ impl Request {
     })
   }
 
-  pub async fn read_body_json<T: DeserializeOwned>(
+  pub async fn read_body_json<T: DeserializeOwned + Validate + Modify>(
+    &mut self,
+    maxlen: usize,
+  ) -> Result<T, ReadBodyJsonError> {
+    let mut v: T = self.read_body_json_no_validate(maxlen).await?;
+    v.modify();
+    v.validate()?;
+    Ok(v)
+  }
+
+  pub async fn read_body_json_no_validate<T: DeserializeOwned>(
     &mut self,
     maxlen: usize,
   ) -> Result<T, ReadBodyJsonError> {
@@ -334,7 +346,7 @@ mod tests {
     *request.body_mut() = Body::from(r#"{"key": "value"}"#);
 
     let json: std::collections::HashMap<String, String> =
-      request.read_body_json(1024).await.unwrap();
+      request.read_body_json_no_validate(1024).await.unwrap();
     assert_eq!(json.get("key").unwrap(), "value");
   }
 
@@ -448,7 +460,7 @@ mod tests {
     *request.body_mut() = Body::from(r#"{"key": "value"}"#);
 
     let json: Result<std::collections::HashMap<String, String>, _> =
-      request.read_body_json(5).await;
+      request.read_body_json_no_validate(5).await;
     assert!(matches!(json.unwrap_err(), ReadBodyJsonError::TooLarge(5)));
   }
 
@@ -470,7 +482,7 @@ mod tests {
     *request.body_mut() = Body::from(r#"{"key": "value",}"#); // Note the extra comma
 
     let json: Result<std::collections::HashMap<String, String>, _> =
-      request.read_body_json(1024).await;
+      request.read_body_json_no_validate(1024).await;
     assert!(matches!(json.unwrap_err(), ReadBodyJsonError::Json(_)));
   }
 }

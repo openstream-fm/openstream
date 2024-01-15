@@ -14,22 +14,30 @@ pub mod post {
 
   use crate::{ip_limit, json::JsonHandler};
   use async_trait::async_trait;
+  use constants::validate::*;
   use db::token_user_recovery::TokenUserRecovery;
+  use modify::Modify;
   use prex::Request;
   use schemars::JsonSchema;
+  use validator::Validate;
 
   use super::*;
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(
     export,
     export_to = "../../../defs/api/auth/user/recovery-token/[token]/set-password/POST/"
   )]
   #[macros::schema_ts_export]
   pub struct Payload {
+    #[validate(length(
+      min = "VALIDATE_USER_PASSWORD_MIN_LEN",
+      max = "VALIDATE_USER_PASSWORD_MAX_LEN",
+      message = "New password is either too short or too long",
+    ))]
     new_password: String,
   }
 

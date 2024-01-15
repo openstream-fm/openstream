@@ -3,18 +3,26 @@
   "properties": {
     "first_name": {
       "type": "string",
+      "maxLength": 100,
+      "minLength": 1,
       "nullable": true
     },
     "last_name": {
       "type": "string",
+      "maxLength": 100,
+      "minLength": 1,
       "nullable": true
     },
     "phone": {
       "type": "string",
+      "maxLength": 40,
+      "minLength": 1,
       "nullable": true
     },
     "language": {
       "type": "string",
+      "maxLength": 100,
+      "minLength": 1,
       "nullable": true
     }
   }

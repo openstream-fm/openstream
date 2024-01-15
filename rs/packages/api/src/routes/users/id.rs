@@ -61,31 +61,73 @@ pub mod patch {
   use crate::error::ApiError;
 
   use super::*;
+  use constants::validate::*;
   use db::{fetch_and_patch, run_transaction};
+  use modify::Modify;
   use prex::request::ReadBodyJsonError;
   use schemars::JsonSchema;
   use serde_util::DateTime;
   use ts_rs::TS;
+  use validator::Validate;
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(export, export_to = "../../../defs/api/users/[user]/PATCH/")]
   #[macros::schema_ts_export]
   pub struct Payload {
+    #[modify(trim)]
+    #[validate(
+      length(
+        min = 1,
+        max = "VALIDATE_USER_FIRST_NAME_MAX_LEN",
+        message = "First name is either too long or too short"
+      ),
+      non_control_character(message = "First name contains invalid characters")
+    )]
     first_name: Option<String>,
+
+    #[modify(trim)]
+    #[validate(
+      length(
+        min = 1,
+        max = "VALIDATE_USER_LAST_NAME_MAX_LEN",
+        message = "Last name is either too long or too short"
+      ),
+      non_control_character(message = "Last name contains invalid characters")
+    )]
     last_name: Option<String>,
+
     #[serde(
       default,
       skip_serializing_if = "Option::is_none",
       deserialize_with = "serde_util::map_some"
     )]
+    #[modify(trim)]
+    #[validate(
+      phone(message = "Phone is invalid"),
+      length(
+        min = 1,
+        max = "VALIDATE_USER_PHONE_MAX_LEN",
+        message = "Phone is either too long or too short"
+      )
+    )]
     phone: Option<Option<String>>,
+
     #[serde(
       default,
       skip_serializing_if = "Option::is_none",
       deserialize_with = "serde_util::map_some"
+    )]
+    #[modify(trim)]
+    #[validate(
+      length(
+        min = 1,
+        max = "VALIDATE_USER_LANGUAGE_MAX_LEN",
+        message = "Language is either too long or too short"
+      ),
+      non_control_character(message = "Language contains invalid characters")
     )]
     language: Option<Option<String>>,
   }

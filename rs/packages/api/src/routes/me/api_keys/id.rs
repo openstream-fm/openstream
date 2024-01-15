@@ -135,19 +135,31 @@ pub mod delete {
 
 pub mod patch {
 
+  use constants::validate::*;
+  use modify::Modify;
   use prex::request::ReadBodyJsonError;
   use schemars::JsonSchema;
   use serde_util::empty_struct::EmptyStruct;
+  use validator::Validate;
 
   use super::*;
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(export, export_to = "../../../defs/api/me/api-keys/[id]/PATCH/")]
   #[macros::schema_ts_export]
   pub struct Payload {
+    #[modify(trim)]
+    #[validate(
+      length(
+        min = 1,
+        max = "VALIDATE_ACCESS_TOKEN_TITLE_MAX_LEN",
+        message = "Title is either too short or too long"
+      ),
+      non_control_character(message = "Title contains invalid characters")
+    )]
     title: Option<String>,
   }
 

@@ -3,6 +3,8 @@
   "properties": {
     "title": {
       "type": "string",
+      "maxLength": 150,
+      "minLength": 1,
       "nullable": true
     }
   }

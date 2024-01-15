@@ -326,19 +326,33 @@ pub mod get {
 
 pub mod post {
 
+  use constants::validate::*;
   use db::{current_filter_doc, user_account_relation::UserAccountRelation};
   use mailer::{
     error::RenderError,
     send::{Address, Email, Mailer, SendError},
   };
+  use modify::Modify;
+  use validator::Validate;
 
   use super::*;
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(export, export_to = "../../../defs/api/invitations/POST/")]
   #[macros::schema_ts_export]
   pub struct Payload {
     pub account_id: String,
+
+    #[modify(trim)]
+    #[validate(
+      email(message = "Email is invalid"),
+      length(
+        min = 1,
+        max = "VALIDATE_USER_EMAIL_MAX_LEN",
+        message = "Email is either too short or too long",
+      ),
+      non_control_character(message = "Email contains invalid characters")
+    )]
     pub email: String,
   }
 

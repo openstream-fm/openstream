@@ -7,7 +7,9 @@
   ],
   "properties": {
     "name": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 60,
+      "minLength": 1
     },
     "plan_id": {
       "type": "string"

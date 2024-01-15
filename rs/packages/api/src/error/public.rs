@@ -86,10 +86,12 @@ pub enum PublicErrorCode {
   InvitationNotFound,
 
   QueryStringInvalid,
+
   PayloadIo,
   PayloadJson,
   PayloadTooLarge,
   PayloadInvalid,
+  PayloadValidationFailed,
 
   UserAuthFailed,
   AdminAuthFailed,

@@ -1,9 +1,11 @@
 pub mod post {
 
   use async_trait::async_trait;
+  use constants::validate::*;
   use db::access_token::{AccessToken, GeneratedBy, Scope};
   use db::user::{AdminPublicUser, User};
   use db::Model;
+  use modify::Modify;
   use mongodb::bson::doc;
   use prex::request::ReadBodyJsonError;
   use prex::Request;
@@ -11,6 +13,7 @@ pub mod post {
   use serde::{Deserialize, Serialize};
   use serde_util::DateTime;
   use ts_rs::TS;
+  use validator::Validate;
 
   use crate::error::ApiError;
   use crate::json::JsonHandler;
@@ -23,13 +26,19 @@ pub mod post {
     access_token: AccessToken,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(
     export,
     export_to = "../../../defs/api/auth/admin/delegate/[user]/POST/"
   )]
   #[macros::schema_ts_export]
   pub struct Payload {
+    #[modify(trim)]
+    #[validate(length(
+      min = 1,
+      max = "VALIDATE_ACCESS_TOKEN_TITLE_MAX_LEN",
+      message = "Title is either too short or too long"
+    ))]
     title: String,
   }
 

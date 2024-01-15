@@ -136,11 +136,13 @@ pub mod get {
 }
 
 pub mod post {
+  use modify::Modify;
   use schemars::JsonSchema;
+  use validator::Validate;
 
   use super::*;
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(export, export_to = "../../../defs/api/payment-methods/POST/")]
   #[macros::schema_ts_export]
   pub struct Payload {

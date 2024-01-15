@@ -54,6 +54,7 @@
             "PAYLOAD_JSON",
             "PAYLOAD_TOO_LARGE",
             "PAYLOAD_INVALID",
+            "PAYLOAD_VALIDATION_FAILED",
             "USER_AUTH_FAILED",
             "ADMIN_AUTH_FAILED",
             "USER_EMAIL_EXISTS",

@@ -10,6 +10,7 @@ use mailer::send::SendError;
 use prex::request::{ReadBodyBytesError, ReadBodyJsonError};
 use prex::*;
 use serde_json;
+use validator::ValidationErrors;
 use std::convert::Infallible;
 use std::process::ExitStatus;
 
@@ -107,6 +108,9 @@ pub enum ApiError {
 
   #[error("payload invalid: {0}")]
   PayloadInvalid(String),
+
+  #[error("payload validation failed: {0}")]
+  PayloadValidation(ValidationErrors),
 
   #[error("user auth failed")]
   UserAuthFailed,
@@ -224,6 +228,7 @@ impl ApiError {
       PayloadJson(_) => StatusCode::BAD_REQUEST,
       PayloadTooLarge(_) => StatusCode::BAD_REQUEST,
       PayloadInvalid(_) => StatusCode::BAD_REQUEST,
+      PayloadValidation(_) => StatusCode::BAD_REQUEST,
 
       UserAuthFailed => StatusCode::BAD_REQUEST,
       AdminAuthFailed => StatusCode::BAD_REQUEST,
@@ -299,6 +304,7 @@ impl ApiError {
       PayloadJson(e) => format!("Invalid JSON payload: {e}"),
       PayloadTooLarge(_) => format!("Payload size exceeded"),
       PayloadInvalid(e) => format!("{e}"),
+      PayloadValidation(e) => format!("{e}"),
       UserAuthFailed => format!("There's no user with that email and password"),
       AdminAuthFailed => format!("There's no admin with that email and password"),
       UserEmailExists => format!("User email already exists"),
@@ -369,10 +375,13 @@ impl ApiError {
 
       QueryString(_) => PublicErrorCode::QueryStringInvalid,
       QueryStringCustom(_) => PublicErrorCode::QueryStringInvalid,
+      
       PayloadIo(_) => PublicErrorCode::PayloadIo,
       PayloadJson(_) => PublicErrorCode::PayloadJson,
       PayloadTooLarge(_) => PublicErrorCode::PayloadTooLarge,
       PayloadInvalid(_) => PublicErrorCode::PayloadInvalid,
+      PayloadValidation(_) => PublicErrorCode::PayloadValidationFailed,
+
       UserAuthFailed => PublicErrorCode::UserAuthFailed,
       AdminAuthFailed => PublicErrorCode::AdminAuthFailed,
       UserEmailExists => PublicErrorCode::UserEmailExists,
@@ -446,7 +455,7 @@ impl From<ReadBodyJsonError> for ApiError {
       ReadBodyJsonError::Hyper(e) => Self::PayloadIo(e),
       ReadBodyJsonError::Json(e) => Self::PayloadJson(e),
       ReadBodyJsonError::TooLarge(maxlen) => Self::PayloadTooLarge(maxlen),
-      ReadBodyJsonError::PayloadInvalid(s) => Self::PayloadInvalid(s),
+      ReadBodyJsonError::Validation(s) => Self::PayloadValidation(s),
     }
   }
 }

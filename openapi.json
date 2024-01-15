@@ -420,7 +420,9 @@
                 ],
                 "properties": {
                   "name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 60,
+                    "minLength": 1
                   },
                   "plan_id": {
                     "type": "string"
@@ -1412,29 +1414,37 @@
             "application/json": {
               "schema": {
                 "type": "object",
+                "required": [
+                  "patch"
+                ],
                 "properties": {
-                  "name": {
-                    "type": "string",
-                    "maxLength": 60,
-                    "minLength": 1,
-                    "nullable": true
-                  },
-                  "plan_id": {
-                    "type": "string",
-                    "nullable": true
-                  },
-                  "user_metadata": {
+                  "patch": {
                     "type": "object",
-                    "additionalProperties": true,
-                    "nullable": true
-                  },
-                  "system_metadata": {
-                    "type": "object",
-                    "additionalProperties": true,
-                    "nullable": true
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "maxLength": 60,
+                        "minLength": 1,
+                        "nullable": true
+                      },
+                      "plan_id": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "user_metadata": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "nullable": true
+                      },
+                      "system_metadata": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "nullable": true
+                      }
+                    },
+                    "additionalProperties": false
                   }
-                },
-                "additionalProperties": false
+                }
               }
             }
           }
@@ -2608,16 +2618,24 @@
                 ],
                 "properties": {
                   "first_name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
                   },
                   "last_name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
                   },
                   "email": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
                   },
                   "password": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 60,
+                    "minLength": 8
                   },
                   "system_metadata": {
                     "type": "object",
@@ -2825,10 +2843,14 @@
                 "properties": {
                   "first_name": {
                     "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
                     "nullable": true
                   },
                   "last_name": {
                     "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
                     "nullable": true
                   },
                   "system_metadata": {
@@ -2836,8 +2858,7 @@
                     "additionalProperties": true,
                     "nullable": true
                   }
-                },
-                "additionalProperties": false
+                }
               }
             }
           }
@@ -2943,7 +2964,9 @@
                     "type": "string"
                   },
                   "new_password": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 60,
+                    "minLength": 8
                   }
                 }
               }
@@ -5420,7 +5443,9 @@
                 ],
                 "properties": {
                   "title": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 150,
+                    "minLength": 1
                   }
                 }
               }
@@ -6140,7 +6165,9 @@
                 ],
                 "properties": {
                   "new_password": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 60,
+                    "minLength": 8
                   }
                 }
               }
@@ -6214,31 +6241,43 @@
                   "plan_id"
                 ],
                 "properties": {
+                  "first_name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                  },
+                  "last_name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                  },
+                  "account_name": {
+                    "type": "string",
+                    "maxLength": 60,
+                    "minLength": 1
+                  },
                   "plan_id": {
                     "type": "string"
                   },
                   "email": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
                   },
                   "password": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 60,
+                    "minLength": 8
                   },
                   "phone": {
                     "type": "string",
+                    "maxLength": 40,
                     "nullable": true
                   },
                   "language": {
                     "type": "string",
+                    "maxLength": 100,
                     "nullable": true
-                  },
-                  "first_name": {
-                    "type": "string"
-                  },
-                  "last_name": {
-                    "type": "string"
-                  },
-                  "account_name": {
-                    "type": "string"
                   },
                   "user_user_metadata": {
                     "type": "object",
@@ -7064,7 +7103,9 @@
                     "type": "string"
                   },
                   "email": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
                   }
                 }
               }
@@ -7595,17 +7636,25 @@
                         "type": "string"
                       },
                       "first_name": {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 100,
+                        "minLength": 1
                       },
                       "last_name": {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 100,
+                        "minLength": 1
                       },
                       "phone": {
                         "type": "string",
+                        "maxLength": 40,
+                        "minLength": 1,
                         "nullable": true
                       },
                       "password": {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 60,
+                        "minLength": 8
                       }
                     }
                   },
@@ -8604,7 +8653,9 @@
                 ],
                 "properties": {
                   "title": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 150,
+                    "minLength": 1
                   },
                   "password": {
                     "type": "string"
@@ -8763,6 +8814,8 @@
                 "properties": {
                   "title": {
                     "type": "string",
+                    "maxLength": 150,
+                    "minLength": 1,
                     "nullable": true
                   }
                 }
@@ -9697,14 +9750,17 @@
                 "properties": {
                   "identifier": {
                     "type": "string",
+                    "maxLength": 100,
                     "minLength": 1
                   },
                   "slug": {
                     "type": "string",
+                    "maxLength": 100,
                     "minLength": 1
                   },
                   "display_name": {
                     "type": "string",
+                    "maxLength": 100,
                     "minLength": 1
                   },
                   "is_user_selectable": {
@@ -10165,16 +10221,19 @@
                   },
                   "identifier": {
                     "type": "string",
+                    "maxLength": 100,
                     "minLength": 1,
                     "nullable": true
                   },
                   "slug": {
                     "type": "string",
+                    "maxLength": 100,
                     "minLength": 1,
                     "nullable": true
                   },
                   "display_name": {
                     "type": "string",
+                    "maxLength": 100,
                     "minLength": 1,
                     "nullable": true
                   },
@@ -16221,8 +16280,7 @@
                     "additionalProperties": true,
                     "nullable": true
                   }
-                },
-                "additionalProperties": false
+                }
               }
             }
           }
@@ -18295,22 +18353,27 @@
                 "properties": {
                   "title": {
                     "type": "string",
+                    "maxLength": 100,
                     "nullable": true
                   },
                   "artist": {
                     "type": "string",
+                    "maxLength": 100,
                     "nullable": true
                   },
                   "album": {
                     "type": "string",
+                    "maxLength": 100,
                     "nullable": true
                   },
                   "album_artist": {
                     "type": "string",
+                    "maxLength": 100,
                     "nullable": true
                   },
                   "genre": {
                     "type": "string",
+                    "maxLength": 100,
                     "nullable": true
                   },
                   "year": {
@@ -18320,6 +18383,7 @@
                   },
                   "comment": {
                     "type": "string",
+                    "maxLength": 100,
                     "nullable": true
                   },
                   "track": {
@@ -22521,23 +22585,35 @@
                 ],
                 "properties": {
                   "email": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
                   },
                   "phone": {
                     "type": "string",
+                    "maxLength": 40,
+                    "minLength": 1,
                     "nullable": true
                   },
                   "password": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 60,
+                    "minLength": 8
                   },
                   "first_name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
                   },
                   "last_name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
                   },
                   "language": {
                     "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
                     "nullable": true
                   },
                   "user_metadata": {
@@ -22992,18 +23068,26 @@
                 "properties": {
                   "first_name": {
                     "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
                     "nullable": true
                   },
                   "last_name": {
                     "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
                     "nullable": true
                   },
                   "phone": {
                     "type": "string",
+                    "maxLength": 40,
+                    "minLength": 1,
                     "nullable": true
                   },
                   "language": {
                     "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1,
                     "nullable": true
                   }
                 }
@@ -23188,7 +23272,9 @@
                     "type": "string"
                   },
                   "new_password": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 60,
+                    "minLength": 8
                   }
                 }
               }
@@ -23295,6 +23381,7 @@
                   "PAYLOAD_JSON",
                   "PAYLOAD_TOO_LARGE",
                   "PAYLOAD_INVALID",
+                  "PAYLOAD_VALIDATION_FAILED",
                   "USER_AUTH_FAILED",
                   "ADMIN_AUTH_FAILED",
                   "USER_EMAIL_EXISTS",

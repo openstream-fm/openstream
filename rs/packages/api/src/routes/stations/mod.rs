@@ -162,19 +162,19 @@ pub mod post {
   use db::station_picture::StationPicture;
   use geoip::CountryCode;
   use lang::LangCode;
+  use modify::Modify;
   use schemars::JsonSchema;
   use serde_util::DateTime;
   use ts_rs::TS;
   use validate::url::patterns::*;
-  use validify::{validify, ValidationErrors, Validify};
+  use validator::Validate;
 
   use super::*;
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(export, export_to = "../../../defs/api/stations/POST/")]
   #[macros::schema_ts_export]
   #[serde(rename_all = "snake_case", deny_unknown_fields)]
-  #[validify]
   pub struct Payload {
     pub account_id: String,
 
@@ -477,8 +477,6 @@ pub mod post {
     Token(#[from] GetAccessTokenScopeError),
     #[error("account not found ({0})")]
     AccountNotFound(String),
-    #[error("validation error: {0}")]
-    ValidationError(#[from] ValidationErrors),
     #[error("Invalid name (slug)")]
     InvalidNameSlug,
     #[error("Picture with id {0} not found")]
@@ -493,7 +491,6 @@ pub mod post {
         HandleError::Db(e) => ApiError::from(e),
         HandleError::Token(e) => ApiError::from(e),
         HandleError::AccountNotFound(id) => ApiError::AccountNotFound(id),
-        HandleError::ValidationError(e) => ApiError::PayloadInvalid(format!("{e}")),
         HandleError::PictureNotFound(id) => {
           ApiError::PayloadInvalid(format!("Picture with id {id} not found"))
         }
@@ -529,9 +526,6 @@ pub mod post {
         access_token_scope,
         payload,
       } = input;
-
-      //use validify::Validify;
-      //let payload = Validify::validify(payload.into())?;
 
       let Payload {
         account_id,
@@ -639,9 +633,6 @@ pub mod post {
         updated_at: now,
         deleted_at: None,
       };
-
-      // we validate directly the station and not the payload
-      let station: Station = Validify::validify(station.into())?;
 
       run_transaction!(session => {
         {

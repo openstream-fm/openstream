@@ -16,14 +16,16 @@ use ts_rs::TS;
 pub mod post {
 
   use db::station::PublicStation;
+  use modify::Modify;
   use schemars::JsonSchema;
+  use validator::Validate;
 
   use super::*;
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(
     export,
     export_to = "../../../defs/api/stations/[station]/transfer/POST/"

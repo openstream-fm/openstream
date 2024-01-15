@@ -2,14 +2,14 @@
 import type { Metadata } from "../../../../../db/Metadata";
 
 export type Payload = {
+  first_name: string;
+  last_name: string;
+  account_name: string;
   plan_id: string;
   email: string;
   password: string;
   phone: string | null;
   language?: string;
-  first_name: string;
-  last_name: string;
-  account_name: string;
   user_user_metadata?: Metadata;
   user_system_metadata?: Metadata;
   account_user_metadata?: Metadata;

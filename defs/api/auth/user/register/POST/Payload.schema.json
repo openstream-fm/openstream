@@ -12,31 +12,43 @@
     "plan_id"
   ],
   "properties": {
+    "first_name": {
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1
+    },
+    "last_name": {
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1
+    },
+    "account_name": {
+      "type": "string",
+      "maxLength": 60,
+      "minLength": 1
+    },
     "plan_id": {
       "type": "string"
     },
     "email": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1
     },
     "password": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 60,
+      "minLength": 8
     },
     "phone": {
       "type": "string",
+      "maxLength": 40,
       "nullable": true
     },
     "language": {
       "type": "string",
+      "maxLength": 100,
       "nullable": true
-    },
-    "first_name": {
-      "type": "string"
-    },
-    "last_name": {
-      "type": "string"
-    },
-    "account_name": {
-      "type": "string"
     },
     "user_user_metadata": {
       "type": "object",

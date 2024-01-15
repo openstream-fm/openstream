@@ -6,6 +6,7 @@ pub mod post {
   use log::warn;
   use mailer::error::RenderError;
   use mailer::send::{Address, Email, Mailer, SendError};
+  use modify::Modify;
   use mongodb::bson::doc;
   use prex::{request::ReadBodyJsonError, Request};
   use schemars::JsonSchema;
@@ -15,12 +16,13 @@ pub mod post {
   use std::net::IpAddr;
   use ts_rs::TS;
   use validate::email::is_valid_email;
+  use validator::Validate;
 
   use crate::error::ApiError;
   use crate::ip_limit::{hit, should_reject};
   use crate::json::JsonHandler;
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(
     export,
     export_to = "../../../defs/api/auth/email-verification/send-code/POST/"

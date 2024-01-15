@@ -21,6 +21,5 @@
       "additionalProperties": true,
       "nullable": true
     }
-  },
-  "additionalProperties": false
+  }
 }

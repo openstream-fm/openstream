@@ -13,16 +13,15 @@ use prex::Request;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
-use validify::ValidationErrors;
 
 use crate::request_ext::get_optional_access_token_scope;
 
 pub mod post {
 
+  use super::*;
   use schemars::JsonSchema;
 
-  use super::*;
-
+  // TODO: add modify (works in enums?)
   #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/invitations/reject/POST/")]
   #[macros::schema_ts_export]
@@ -76,8 +75,6 @@ pub mod post {
     Db(#[from] mongodb::error::Error),
     #[error("token: {0}")]
     Token(#[from] GetAccessTokenScopeError),
-    #[error("validate")]
-    Validate(#[from] ValidationErrors),
   }
 
   impl From<HandleError> for ApiError {
@@ -85,7 +82,6 @@ pub mod post {
       match e {
         HandleError::Db(e) => e.into(),
         HandleError::Token(e) => e.into(),
-        HandleError::Validate(errors) => ApiError::PayloadInvalid(format!("{}", errors)),
       }
     }
   }
@@ -99,7 +95,7 @@ pub mod post {
 
     async fn parse(&self, mut req: Request) -> Result<Input, ParseError> {
       let optional_access_token_scope = get_optional_access_token_scope(&req).await?;
-      let payload = req.read_body_json(5_000).await?;
+      let payload = req.read_body_json_no_validate(5_000).await?;
       Ok(Input {
         optional_access_token_scope,
         payload,

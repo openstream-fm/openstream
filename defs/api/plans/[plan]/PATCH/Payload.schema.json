@@ -9,16 +9,19 @@
     },
     "identifier": {
       "type": "string",
+      "maxLength": 100,
       "minLength": 1,
       "nullable": true
     },
     "slug": {
       "type": "string",
+      "maxLength": 100,
       "minLength": 1,
       "nullable": true
     },
     "display_name": {
       "type": "string",
+      "maxLength": 100,
       "minLength": 1,
       "nullable": true
     },

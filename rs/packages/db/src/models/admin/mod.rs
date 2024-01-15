@@ -1,10 +1,13 @@
 use crate::Model;
 use crate::{error::ApplyPatchError, metadata::Metadata};
+use constants::validate::*;
+use modify::Modify;
 use mongodb::{bson::doc, options::IndexOptions, IndexModel};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
+use validator::Validate;
 
 crate::register!(Admin);
 
@@ -55,13 +58,31 @@ impl Admin {
   }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
 #[ts(export, export_to = "../../../defs/ops/")]
 #[serde(rename_all = "snake_case", deny_unknown_fields)]
 pub struct AdminPatch {
   #[serde(skip_serializing_if = "Option::is_none")]
+  #[modify(trim)]
+  #[validate(
+    length(
+      min = 1,
+      max = "VALIDATE_ADMIN_FIRST_NAME_MAX_LEN",
+      message = "First name is either too short or too long",
+    ),
+    non_control_character(message = "Fist name cannot contain control characters")
+  )]
   pub first_name: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
+  #[modify(trim)]
+  #[validate(
+    length(
+      min = 1,
+      max = "VALIDATE_ADMIN_LAST_NAME_MAX_LEN",
+      message = "Last name is either too short or too long",
+    ),
+    non_control_character(message = "Last name cannot contain control characters")
+  )]
   pub last_name: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
   pub system_metadata: Option<Metadata>,

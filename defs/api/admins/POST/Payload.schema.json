@@ -8,16 +8,24 @@
   ],
   "properties": {
     "first_name": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1
     },
     "last_name": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1
     },
     "email": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1
     },
     "password": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 60,
+      "minLength": 8
     },
     "system_metadata": {
       "type": "object",

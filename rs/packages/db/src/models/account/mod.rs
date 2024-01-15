@@ -11,6 +11,9 @@ use serde_util::DateTime;
 use std::collections::HashMap;
 use ts_rs::TS;
 
+use modify::Modify;
+use validator::Validate;
+
 crate::register!(Account);
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
@@ -59,11 +62,10 @@ pub enum PublicAccount {
   User(UserPublicAccount),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
 #[ts(export, export_to = "../../../defs/ops/")]
 #[serde(rename_all = "snake_case")]
 #[serde(deny_unknown_fields)]
-#[validify::validify]
 pub struct AccountPatch {
   #[serde(skip_serializing_if = "Option::is_none")]
   #[modify(trim)]
