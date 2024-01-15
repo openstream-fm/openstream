@@ -170,11 +170,11 @@ export class Client {
     return await this.get(ip, ua, token, `/stream-stats/now/count-by-station`);
   }
 
-  async get_stream_stats_item_since(ip: string | null, ua: string | null, token: string, num: number | string, unit: string): Promise<import("$api/stream-stats/last-[num][unit]/GET/Output").Output> {
+  async get_stream_stats_item_since(ip: string | null, ua: string | null, token: string, num: number | string, unit: string): Promise<import("$api/stream-stats/[last-unitvalue]/GET/Output").Output> {
     return await this.get(ip, ua, token, `/stream-stats/last-${num}${unit}`);
   }
 
-  async get_stream_stats_item_since_count(ip: string | null, ua: string | null, token: string, num: number | string, unit: string): Promise<import("$api/stream-stats/last-[num][unit]/count/GET/Output").Output> {
+  async get_stream_stats_item_since_count(ip: string | null, ua: string | null, token: string, num: number | string, unit: string): Promise<import("$api/stream-stats/[last-unitvalue]/count/GET/Output").Output> {
     return await this.get(ip, ua, token, `/stream-stats/last-${num}${unit}/count`);
   }
 }
@@ -404,11 +404,11 @@ export class Accounts {
     return await this.client.get(ip, ua, token, `/accounts/${account_id}/stream-stats/now/count-by-station`);
   }
 
-  async get_stream_stats_item_since(ip: string | null, ua: string | null, token: string, account_id: string, num: number | string, unit: string): Promise<import("$api/accounts/[account]/stream-stats/last-[num][unit]/GET/Output").Output> {
+  async get_stream_stats_item_since(ip: string | null, ua: string | null, token: string, account_id: string, num: number | string, unit: string): Promise<import("$api/accounts/[account]/stream-stats/[last-unitvalue]/GET/Output").Output> {
     return await this.client.get(ip, ua, token, `/accounts/${account_id}/stream-stats/last-${num}${unit}`);
   }
 
-  async get_stream_stats_item_since_count(ip: string | null, ua: string | null, token: string, account_id: string, num: number | string, unit: string): Promise<import("$api/accounts/[account]/stream-stats/last-[num][unit]/count/GET/Output").Output> {
+  async get_stream_stats_item_since_count(ip: string | null, ua: string | null, token: string, account_id: string, num: number | string, unit: string): Promise<import("$api/accounts/[account]/stream-stats/[last-unitvalue]/count/GET/Output").Output> {
     return await this.client.get(ip, ua, token, `/accounts/${account_id}/stream-stats/last-${num}${unit}/count`);
   }
 }
@@ -463,11 +463,11 @@ export class Stations {
     return await this.client.get(ip, ua, token, `/stations/${id}/stream-stats/now/count`);
   }
 
-  async get_stream_stats_item_since(ip: string | null, ua: string | null, token: string, id: string, num: number | string, unit: string): Promise<import("$api/stations/[station]/stream-stats/last-[num][unit]/GET/Output").Output> {
+  async get_stream_stats_item_since(ip: string | null, ua: string | null, token: string, id: string, num: number | string, unit: string): Promise<import("$api/stations/[station]/stream-stats/[last-unitvalue]/GET/Output").Output> {
     return await this.client.get(ip, ua, token, `/stations/${id}/stream-stats/last-${num}${unit}`);
   }
 
-  async get_stream_stats_item_since_count(ip: string | null, ua: string | null, token: string, id: string, num: number | string, unit: string): Promise<import("$api/stations/[station]/stream-stats/last-[num][unit]/count/GET/Output").Output> {
+  async get_stream_stats_item_since_count(ip: string | null, ua: string | null, token: string, id: string, num: number | string, unit: string): Promise<import("$api/stations/[station]/stream-stats/[last-unitvalue]/count/GET/Output").Output> {
     return await this.client.get(ip, ua, token, `/stations/${id}/stream-stats/last-${num}${unit}/count`);
   }
 

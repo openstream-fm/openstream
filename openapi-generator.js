@@ -107,7 +107,7 @@ const process_dir = (target) => {
             },
           },
 
-          "4xx": {
+          "4XX": {
             description: "A client error",
             content: {
               "application/json": {
@@ -116,16 +116,16 @@ const process_dir = (target) => {
             }
           },
 
-          "5xx": {
+          "5XX": {
             description: "A server error",
             content: {
               "application/json": {
                 schema: { $ref: "#/components/schemas/Error" },
               }
             }
-          }
-        },
-      };
+          },
+        }
+      }
     }
 
     for (const name of filenames) {
@@ -166,7 +166,7 @@ process_dir(null)
 
 const document = {
   
-  openapi: "3.0.0",
+  openapi: "3.0.3",
 
   info: {
     title: "Openstream Media Server API",
