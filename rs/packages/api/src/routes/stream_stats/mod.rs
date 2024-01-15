@@ -244,7 +244,7 @@ pub mod since {
     #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
     #[ts(
       export,
-      export_to = "../../../defs/api/stream-stats/last-[num][unit]/GET/"
+      export_to = "../../../defs/api/stream-stats/[last-unitvalue]/GET/"
     )]
     #[macros::schema_ts_export]
     pub struct Output {
@@ -338,7 +338,7 @@ pub mod since {
       #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
       #[ts(
         export,
-        export_to = "../../../defs/api/stream-stats/last-[num][unit]/count/GET/"
+        export_to = "../../../defs/api/stream-stats/[last-unitvalue]/count/GET/"
       )]
       #[macros::schema_ts_export]
       pub struct Output {
