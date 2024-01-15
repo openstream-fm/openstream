@@ -70,7 +70,7 @@ pub struct AdminPatch {
       max = "VALIDATE_ADMIN_FIRST_NAME_MAX_LEN",
       message = "First name is either too short or too long",
     ),
-    non_control_character(message = "Fist name cannot contain control characters")
+    // non_control_character(message = "Fist name cannot contain control characters")
   )]
   pub first_name: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]
@@ -81,7 +81,7 @@ pub struct AdminPatch {
       max = "VALIDATE_ADMIN_LAST_NAME_MAX_LEN",
       message = "Last name is either too short or too long",
     ),
-    non_control_character(message = "Last name cannot contain control characters")
+    // non_control_character(message = "Last name cannot contain control characters")
   )]
   pub last_name: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]

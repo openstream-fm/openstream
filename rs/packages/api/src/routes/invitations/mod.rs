@@ -351,7 +351,7 @@ pub mod post {
         max = "VALIDATE_USER_EMAIL_MAX_LEN",
         message = "Email is either too short or too long",
       ),
-      non_control_character(message = "Email contains invalid characters")
+      // non_control_character(message = "Email contains invalid characters")
     )]
     pub email: String,
   }

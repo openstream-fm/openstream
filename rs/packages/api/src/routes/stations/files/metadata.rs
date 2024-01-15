@@ -45,7 +45,7 @@ pub mod put {
         max = "VALIDATE_AUDIO_FILE_METADATA_TITLE_MAX_LEN",
         message = "Title is too long"
       ),
-      non_control_character(message = "Title contains invalid characters")
+      // non_control_character(message = "Title contains invalid characters")
     )]
     pub title: Option<Option<String>>,
 
@@ -61,7 +61,7 @@ pub mod put {
         max = "VALIDATE_AUDIO_FILE_METADATA_ARTIST_MAX_LEN",
         message = "Artist is too long"
       ),
-      non_control_character(message = "Artist contains invalid characters")
+      // non_control_character(message = "Artist contains invalid characters")
     )]
     pub artist: Option<Option<String>>,
 
@@ -77,7 +77,7 @@ pub mod put {
         max = "VALIDATE_AUDIO_FILE_METADATA_ALBUM_MAX_LEN",
         message = "Album is too long"
       ),
-      non_control_character(message = "Album contains invalid characters")
+      // non_control_character(message = "Album contains invalid characters")
     )]
     pub album: Option<Option<String>>,
 
@@ -93,7 +93,7 @@ pub mod put {
         max = "VALIDATE_AUDIO_FILE_METADATA_ALBUM_ARTIST_MAX_LEN",
         message = "Album artist is too long"
       ),
-      non_control_character(message = "Album artist contains invalid characters")
+      // non_control_character(message = "Album artist contains invalid characters")
     )]
     pub album_artist: Option<Option<String>>,
 
@@ -109,7 +109,7 @@ pub mod put {
         max = "VALIDATE_AUDIO_FILE_METADATA_GENRE_MAX_LEN",
         message = "Genre is too long"
       ),
-      non_control_character(message = "Genre contains invalid characters")
+      // non_control_character(message = "Genre contains invalid characters")
     )]
     pub genre: Option<Option<String>>,
 
@@ -133,7 +133,7 @@ pub mod put {
         max = "VALIDATE_AUDIO_FILE_METADATA_COMMENT_MAX_LEN",
         message = "Comment is too long"
       ),
-      non_control_character(message = "Comment contains invalid characters")
+      // non_control_character(message = "Comment contains invalid characters")
     )]
     pub comment: Option<Option<String>>,
 

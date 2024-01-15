@@ -61,7 +61,7 @@ pub mod post {
         max = "VALIDATE_USER_FIRST_NAME_MAX_LEN",
         message = "First name is either too short or too long"
       ),
-      non_control_character(message = "First name contains invalid characters")
+      // non_control_character(message = "First name contains invalid characters")
     )]
     pub first_name: String,
 
@@ -72,7 +72,7 @@ pub mod post {
         max = "VALIDATE_USER_LAST_NAME_MAX_LEN",
         message = "Last name is either too short or too long"
       ),
-      non_control_character(message = "Last name contains invalid characters")
+      // non_control_character(message = "Last name contains invalid characters")
     )]
     pub last_name: String,
 
@@ -84,7 +84,7 @@ pub mod post {
         max = "VALIDATE_USER_PHONE_MAX_LEN",
         message = "Phone number is either too short or too long"
       ),
-      non_control_character(message = "Phone number contains invalid characters")
+      // non_control_character(message = "Phone number contains invalid characters")
     )]
     pub phone: Option<String>,
 

@@ -130,7 +130,7 @@ pub mod post {
         max = "VALIDATE_ADMIN_FIRST_NAME_MAX_LEN",
         message = "First name is either too short or too long",
       ),
-      non_control_character(message = "First name contains invalid characters")
+      // non_control_character(message = "First name contains invalid characters")
     )]
     pub first_name: String,
 
@@ -141,7 +141,7 @@ pub mod post {
         max = "VALIDATE_ADMIN_LAST_NAME_MAX_LEN",
         message = "Last name is either too short or too long",
       ),
-      non_control_character(message = "Last name contains invalid characters")
+      // non_control_character(message = "Last name contains invalid characters")
     )]
     pub last_name: String,
 
@@ -153,7 +153,7 @@ pub mod post {
         max = "VALIDATE_ADMIN_EMAIL_MAX_LEN",
         message = "Email is either too short or too long",
       ),
-      non_control_character(message = "Email contains invalid characters")
+      // non_control_character(message = "Email contains invalid characters")
     )]
     pub email: String,
 
