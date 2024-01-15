@@ -2,6 +2,7 @@ pub mod post {
   use std::net::IpAddr;
 
   use async_trait::async_trait;
+  use constants::validate::*;
   use db::access_token::{AccessToken, GeneratedBy, Scope};
   use db::account::{Account, Limit, Limits, PublicAccount};
   use db::email_verification_code::EmailVerificationCode;
@@ -11,6 +12,7 @@ pub mod post {
   use db::user::{PublicUser, User};
   use db::user_account_relation::{UserAccountRelation, UserAccountRelationKind};
   use db::{run_transaction, Model};
+  use modify::Modify;
   use mongodb::bson::doc;
   use payments::query::save_payment_method::SavePaymentMethodResponse;
   use prex::{request::ReadBodyJsonError, Request};
@@ -20,6 +22,7 @@ pub mod post {
   use ts_rs::TS;
   use user_agent::{UserAgent, UserAgentExt};
   use validate::email::is_valid_email;
+  use validator::Validate;
 
   use crate::error::ApiError;
   use crate::json::JsonHandler;
@@ -154,22 +157,83 @@ pub mod post {
     }
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(export, export_to = "../../../defs/api/auth/user/register/POST/")]
   #[macros::schema_ts_export]
   #[serde(deny_unknown_fields)]
   pub struct Payload {
+    #[modify(trim)]
+    #[validate(
+      length(
+        min = 1,
+        max = "VALIDATE_USER_FIRST_NAME_MAX_LEN",
+        message = "First name is either too short or too long"
+      ),
+      non_control_character(message = "First name contains invalid characters")
+    )]
+    first_name: String,
+
+    #[modify(trim)]
+    #[validate(
+      length(
+        min = 1,
+        max = "VALIDATE_USER_LAST_NAME_MAX_LEN",
+        message = "Last name is either too short or too long"
+      ),
+      non_control_character(message = "Last name contains invalid characters")
+    )]
+    last_name: String,
+
+    #[modify(trim)]
+    #[validate(
+      length(
+        min = 1,
+        max = "VALIDATE_ACCOUNT_NAME_MAX_LEN",
+        message = "Account name is either too short or too long"
+      ),
+      non_control_character(message = "Account name contains invalid characters")
+    )]
+    account_name: String,
+
     plan_id: String,
+
+    #[modify(trim)]
+    #[validate(
+      email(message = "Email is invalid"),
+      length(
+        min = 1,
+        max = "VALIDATE_USER_EMAIL_MAX_LEN",
+        message = "Email is either too short or too long"
+      ),
+      non_control_character(message = "Email contains invalid characters")
+    )]
     email: String,
+
+    #[validate(length(
+      min = "VALIDATE_USER_PASSWORD_MIN_LEN",
+      max = "VALIDATE_USER_PASSWORD_MAX_LEN",
+      message = "Password is either too short or too long"
+    ))]
     password: String,
+
+    #[modify(trim)]
+    #[validate(
+      phone(message = "Phone is invalid"),
+      length(max = "VALIDATE_USER_PHONE_MAX_LEN", message = "Phone is too long"),
+      non_control_character(message = "Phone name contains invalid characters")
+    )]
     phone: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[modify(trim)]
+    #[validate(
+      length(
+        max = "VALIDATE_USER_LANGUAGE_MAX_LEN",
+        message = "Language is too long"
+      ),
+      non_control_character(message = "Language contains invalid characters")
+    )]
     language: Option<String>,
-
-    first_name: String,
-    last_name: String,
-    account_name: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     user_user_metadata: Option<Metadata>,

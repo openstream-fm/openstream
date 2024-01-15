@@ -11,17 +11,21 @@ use serde::{Deserialize, Serialize};
 
 pub mod put {
 
+  use crate::error::ApiError;
+  use constants::validate::*;
   use db::run_transaction;
+  use modify::Modify;
   use prex::request::ReadBodyJsonError;
   use schemars::JsonSchema;
-  use ts_rs::TS;
-
-  use crate::error::ApiError;
   use serde_util::map_some;
+  use ts_rs::TS;
+  use validator::Validate;
 
   use super::*;
 
-  #[derive(Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone, TS, JsonSchema)]
+  #[derive(
+    Debug, Default, Serialize, Deserialize, PartialEq, Eq, Clone, TS, JsonSchema, Validate, Modify,
+  )]
   #[ts(
     export,
     export_to = "../../../defs/api/stations/[station]/files/[file]/metadata/PUT/"
@@ -35,6 +39,14 @@ pub mod put {
       deserialize_with = "map_some",
       skip_serializing_if = "Option::is_none"
     )]
+    #[modify(trim)]
+    #[validate(
+      length(
+        max = "VALIDATE_AUDIO_FILE_METADATA_TITLE_MAX_LEN",
+        message = "Title is too long"
+      ),
+      non_control_character(message = "Title contains invalid characters")
+    )]
     pub title: Option<Option<String>>,
 
     #[ts(optional)]
@@ -42,6 +54,14 @@ pub mod put {
       default,
       deserialize_with = "map_some",
       skip_serializing_if = "Option::is_none"
+    )]
+    #[modify(trim)]
+    #[validate(
+      length(
+        max = "VALIDATE_AUDIO_FILE_METADATA_ARTIST_MAX_LEN",
+        message = "Artist is too long"
+      ),
+      non_control_character(message = "Artist contains invalid characters")
     )]
     pub artist: Option<Option<String>>,
 
@@ -51,6 +71,14 @@ pub mod put {
       deserialize_with = "map_some",
       skip_serializing_if = "Option::is_none"
     )]
+    #[modify(trim)]
+    #[validate(
+      length(
+        max = "VALIDATE_AUDIO_FILE_METADATA_ALBUM_MAX_LEN",
+        message = "Album is too long"
+      ),
+      non_control_character(message = "Album contains invalid characters")
+    )]
     pub album: Option<Option<String>>,
 
     #[ts(optional)]
@@ -59,6 +87,14 @@ pub mod put {
       deserialize_with = "map_some",
       skip_serializing_if = "Option::is_none"
     )]
+    #[modify(trim)]
+    #[validate(
+      length(
+        max = "VALIDATE_AUDIO_FILE_METADATA_ALBUM_ARTIST_MAX_LEN",
+        message = "Album artist is too long"
+      ),
+      non_control_character(message = "Album artist contains invalid characters")
+    )]
     pub album_artist: Option<Option<String>>,
 
     #[ts(optional)]
@@ -66,6 +102,14 @@ pub mod put {
       default,
       deserialize_with = "map_some",
       skip_serializing_if = "Option::is_none"
+    )]
+    #[modify(trim)]
+    #[validate(
+      length(
+        max = "VALIDATE_AUDIO_FILE_METADATA_GENRE_MAX_LEN",
+        message = "Genre is too long"
+      ),
+      non_control_character(message = "Genre contains invalid characters")
     )]
     pub genre: Option<Option<String>>,
 
@@ -82,6 +126,14 @@ pub mod put {
       default,
       deserialize_with = "map_some",
       skip_serializing_if = "Option::is_none"
+    )]
+    #[modify(trim)]
+    #[validate(
+      length(
+        max = "VALIDATE_AUDIO_FILE_METADATA_COMMENT_MAX_LEN",
+        message = "Comment is too long"
+      ),
+      non_control_character(message = "Comment contains invalid characters")
     )]
     pub comment: Option<Option<String>>,
 

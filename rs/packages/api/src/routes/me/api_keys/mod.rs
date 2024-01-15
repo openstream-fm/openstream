@@ -197,12 +197,13 @@ pub mod get {
 
 pub mod post {
 
-  use std::net::IpAddr;
-
+  use crate::ip_limit;
+  use constants::validate::*;
+  use modify::Modify;
   use prex::request::ReadBodyJsonError;
   use schemars::JsonSchema;
-
-  use crate::ip_limit;
+  use std::net::IpAddr;
+  use validator::Validate;
 
   use super::*;
 
@@ -216,10 +217,19 @@ pub mod post {
     access_token_scope: AccessTokenScope,
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(export, export_to = "../../../defs/api/me/api-keys/POST/")]
   #[macros::schema_ts_export]
   pub struct Payload {
+    #[modify(trim)]
+    #[validate(
+      length(
+        min = 1,
+        max = "VALIDATE_ACCESS_TOKEN_TITLE_MAX_LEN",
+        message = "API key title is either too short or too long",
+      ),
+      non_control_character(message = "API key title contains invalid characters")
+    )]
     title: String,
     password: String,
   }

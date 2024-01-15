@@ -104,26 +104,66 @@ pub mod get {
 
 pub mod post {
 
+  use constants::validate::*;
   use db::admin::{Admin, PublicAdmin};
   use db::metadata::Metadata;
   use db::run_transaction;
+  use modify::Modify;
   use prex::request::ReadBodyJsonError;
   use schemars::JsonSchema;
   use serde_util::DateTime;
   use ts_rs::TS;
   use validate::email::is_valid_email;
+  use validator::Validate;
 
   use super::*;
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(export, export_to = "../../../defs/api/admins/POST/")]
   #[macros::schema_ts_export]
   #[serde(rename_all = "snake_case", deny_unknown_fields)]
   pub struct Payload {
+    #[modify(trim)]
+    #[validate(
+      length(
+        min = 1,
+        max = "VALIDATE_ADMIN_FIRST_NAME_MAX_LEN",
+        message = "First name is either too short or too long",
+      ),
+      non_control_character(message = "First name contains invalid characters")
+    )]
     pub first_name: String,
+
+    #[modify(trim)]
+    #[validate(
+      length(
+        min = 1,
+        max = "VALIDATE_ADMIN_LAST_NAME_MAX_LEN",
+        message = "Last name is either too short or too long",
+      ),
+      non_control_character(message = "Last name contains invalid characters")
+    )]
     pub last_name: String,
+
+    #[modify(trim)]
+    #[validate(
+      email(message = "Email is invalid"),
+      length(
+        min = 1,
+        max = "VALIDATE_ADMIN_EMAIL_MAX_LEN",
+        message = "Email is either too short or too long",
+      ),
+      non_control_character(message = "Email contains invalid characters")
+    )]
     pub email: String,
+
+    #[validate(length(
+      min = "VALIDATE_ADMIN_PASSWORD_MIN_LEN",
+      max = "VALIDATE_ADMIN_PASSWORD_MAX_LEN",
+      message = "Password is either too short or too long",
+    ))]
     pub password: String,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub system_metadata: Option<Metadata>,
   }

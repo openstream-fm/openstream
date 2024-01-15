@@ -3,10 +3,14 @@
   "properties": {
     "first_name": {
       "type": "string",
+      "maxLength": 100,
+      "minLength": 1,
       "nullable": true
     },
     "last_name": {
       "type": "string",
+      "maxLength": 100,
+      "minLength": 1,
       "nullable": true
     },
     "system_metadata": {
@@ -14,6 +18,5 @@
       "additionalProperties": true,
       "nullable": true
     }
-  },
-  "additionalProperties": false
+  }
 }

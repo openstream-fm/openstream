@@ -6,6 +6,7 @@ use constants::validate::*;
 use drop_tracer::Token;
 use geoip::CountryCode;
 use lang::LangCode;
+use modify::Modify;
 use mongodb::bson::{doc, Bson, SerializerOptions};
 use mongodb::options::{FindOneAndUpdateOptions, ReturnDocument};
 use mongodb::{ClientSession, IndexModel};
@@ -15,14 +16,13 @@ use serde_util::map_some;
 use serde_util::DateTime;
 use ts_rs::TS;
 use validate::url::patterns::*;
-use validify::validify;
+use validator::Validate;
 
 crate::register!(Station);
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
-#[validify]
 #[macros::keys]
 pub struct Station {
   #[serde(rename = "_id")]
@@ -403,10 +403,9 @@ pub struct UserPublicStation {
   pub deleted_at: Option<DateTime>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
 #[ts(export, export_to = "../../../defs/")]
 #[serde(rename_all = "snake_case")]
-#[validify]
 #[macros::keys]
 pub struct StationFrequency {
   kind: StationFrequencyKind,
@@ -438,11 +437,10 @@ pub enum PublicStation {
   User(UserPublicStation),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
 #[ts(export, export_to = "../../../defs/ops/")]
 #[serde(rename_all = "snake_case")]
 #[serde(deny_unknown_fields)]
-#[validify]
 pub struct StationPatch {
   #[ts(optional)]
   #[serde(skip_serializing_if = "Option::is_none")]

@@ -157,23 +157,35 @@ pub mod get {
 
 pub mod post {
 
+  use constants::validate::*;
   use db::account::{Limit, Limits};
   use db::models::user_account_relation::UserAccountRelationKind;
   use db::payment_method::PaymentMethod;
   use db::plan::Plan;
   use db::user::User;
   use db::{current_filter_doc, run_transaction};
+  use modify::Modify;
   use schemars::JsonSchema;
   use serde_util::DateTime;
   use ts_rs::TS;
+  use validator::Validate;
 
   use super::*;
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(export, export_to = "../../../defs/api/accounts/POST/")]
   #[macros::schema_ts_export]
   #[serde(rename_all = "snake_case", deny_unknown_fields)]
   pub struct Payload {
+    #[modify(trim)]
+    #[validate(
+      length(
+        min = "VALIDATE_ACCOUNT_NAME_MIN_LEN",
+        max = "VALIDATE_ACCOUNT_NAME_MAX_LEN",
+        message = "Account name is either too long or empty"
+      ),
+      non_control_character(message = "Account name contains invalid characters")
+    )]
     pub name: String,
     pub plan_id: String,
     #[serde(skip_serializing_if = "Option::is_none")]

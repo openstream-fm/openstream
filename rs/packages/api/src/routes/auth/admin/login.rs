@@ -3,6 +3,7 @@ pub mod post {
   use db::access_token::{AccessToken, GeneratedBy, Scope};
   use db::admin::{Admin, PublicAdmin};
   use db::{current_filter_doc, Model};
+  use modify::Modify;
   use mongodb::bson::doc;
   use prex::{request::ReadBodyJsonError, Request};
   use schemars::JsonSchema;
@@ -11,16 +12,18 @@ pub mod post {
   use std::net::IpAddr;
   use ts_rs::TS;
   use user_agent::{UserAgent, UserAgentExt};
+  use validator::Validate;
 
   use crate::error::ApiError;
   use crate::ip_limit::{hit, should_reject};
   use crate::json::JsonHandler;
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(export, export_to = "../../../defs/api/auth/admin/login/POST/")]
   #[macros::schema_ts_export]
   #[serde(rename_all = "snake_case", deny_unknown_fields)]
   pub struct Payload {
+    #[modify(trim)]
     email: String,
     password: String,
     device_id: String,

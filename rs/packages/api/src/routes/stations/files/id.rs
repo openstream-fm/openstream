@@ -173,7 +173,7 @@ pub mod stream {
           None => None,
           Some(v) => match http_range::HttpRange::parse(v, file.len) {
             Err(e) => return ApiError::from(e).into_json_response(),
-            Ok(ranges) => ranges.get(0).copied(),
+            Ok(ranges) => ranges.first().copied(),
           },
         };
 

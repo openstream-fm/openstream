@@ -3,22 +3,27 @@
   "properties": {
     "title": {
       "type": "string",
+      "maxLength": 100,
       "nullable": true
     },
     "artist": {
       "type": "string",
+      "maxLength": 100,
       "nullable": true
     },
     "album": {
       "type": "string",
+      "maxLength": 100,
       "nullable": true
     },
     "album_artist": {
       "type": "string",
+      "maxLength": 100,
       "nullable": true
     },
     "genre": {
       "type": "string",
+      "maxLength": 100,
       "nullable": true
     },
     "year": {
@@ -28,6 +33,7 @@
     },
     "comment": {
       "type": "string",
+      "maxLength": 100,
       "nullable": true
     },
     "track": {

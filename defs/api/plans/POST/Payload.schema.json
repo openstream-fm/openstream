@@ -15,14 +15,17 @@
   "properties": {
     "identifier": {
       "type": "string",
+      "maxLength": 100,
       "minLength": 1
     },
     "slug": {
       "type": "string",
+      "maxLength": 100,
       "minLength": 1
     },
     "display_name": {
       "type": "string",
+      "maxLength": 100,
       "minLength": 1
     },
     "is_user_selectable": {

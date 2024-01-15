@@ -1,5 +1,6 @@
 use crate::metadata::Metadata;
 use crate::{current_filter_doc, deleted_filter_doc, Model, PublicScope};
+use modify::Modify;
 use mongodb::error::Result as MongoResult;
 use mongodb::ClientSession;
 use mongodb::{bson::doc, options::IndexOptions, IndexModel};
@@ -7,13 +8,13 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use ts_rs::TS;
+use validator::Validate;
 
 crate::register!(User);
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, Modify, Validate)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
-#[validify::validify]
 #[macros::keys]
 pub struct User {
   #[serde(rename = "_id")]

@@ -93,17 +93,21 @@ pub mod patch {
     plan::Plan,
     run_transaction, Model,
   };
+  use modify::Modify;
   use prex::request::ReadBodyJsonError;
   use schemars::JsonSchema;
-  use validify::{ValidationErrors, Validify};
+  use validator::Validate;
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(export, export_to = "../../../defs/api/accounts/[account]/PATCH/")]
   #[macros::schema_ts_export]
-  pub struct Payload(pub AccountPatch);
+  pub struct Payload {
+    #[validate]
+    pub patch: AccountPatch,
+  }
 
   #[derive(Debug, Clone)]
   pub struct Input {
@@ -140,8 +144,6 @@ pub mod patch {
     Db(#[from] mongodb::error::Error),
     #[error("mongodb: {0}")]
     Token(#[from] GetAccessTokenScopeError),
-    #[error("mongodb: {0}")]
-    Validate(#[from] ValidationErrors),
     #[error("plan not found: {0}")]
     PlanNotFound(String),
     #[error("station not found: {0}")]
@@ -157,7 +159,6 @@ pub mod patch {
         HandleError::PlanNotFound(id) => {
           Self::BadRequestCustom(format!("Plan with {} not found", id))
         }
-        HandleError::Validate(e) => ApiError::BadRequestCustom(format!("{e}")),
       }
     }
   }
@@ -185,12 +186,10 @@ pub mod patch {
 
     async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
       let Self::Input {
-        payload: Payload(payload),
+        payload: Payload { patch },
         access_token_scope,
         account_id,
       } = input;
-
-      let payload: AccountPatch = AccountPatch::validify(payload.into())?;
 
       let account = match access_token_scope {
         AccessTokenScope::Global | AccessTokenScope::Admin(_) => {
@@ -200,26 +199,26 @@ pub mod patch {
               Some(account) => account,
             };
 
-            if let Some(ref name) = payload.name {
+            if let Some(ref name) = patch.name {
               account.name = name.clone();
             }
 
-            if let Some(ref user_metadata) = payload.user_metadata {
+            if let Some(ref user_metadata) = patch.user_metadata {
               account.user_metadata.merge(user_metadata.clone());
             }
 
-            if let Some(ref system_metadata) = payload.system_metadata {
+            if let Some(ref system_metadata) = patch.system_metadata {
               account.system_metadata.merge(system_metadata.clone());
             }
 
-            if let Some(ref plan_id) = payload.plan_id {
+            if let Some(plan_id) = &patch.plan_id {
               let plan = match tx_try!(Plan::get_by_id(plan_id).await) {
-                None => return Err(HandleError::PlanNotFound(plan_id.clone())),
+                None => return Err(HandleError::PlanNotFound(plan_id.to_string())),
                 Some(plan_id) => plan_id,
               };
 
               if plan.deleted_at.is_some() {
-                return Err(HandleError::PlanNotFound(plan_id.clone()));
+                return Err(HandleError::PlanNotFound(plan_id.to_string()));
               }
 
               account.plan_id = plan.id.clone();
@@ -244,22 +243,22 @@ pub mod patch {
               Some(account) => account,
             };
 
-            if let Some(ref name) = payload.name {
-              account.name = name.clone();
+            if let Some(name) = &patch.name {
+              account.name = name.to_string();
             }
 
-            if let Some(ref user_metadata) = payload.user_metadata {
+            if let Some(user_metadata) = &patch.user_metadata {
               account.user_metadata.merge(user_metadata.clone());
             }
 
-            if let Some(ref plan_id) = payload.plan_id {
+            if let Some(plan_id) = &patch.plan_id {
               let plan = match tx_try!(Plan::get_by_id(plan_id).await) {
-                None => return Err(HandleError::PlanNotFound(plan_id.clone())),
+                None => return Err(HandleError::PlanNotFound(plan_id.to_string())),
                 Some(plan_id) => plan_id,
               };
 
               if plan.deleted_at.is_some() || !plan.is_user_selectable {
-                return Err(HandleError::PlanNotFound(plan_id.clone()));
+                return Err(HandleError::PlanNotFound(plan_id.to_string()));
               }
 
               account.plan_id = plan.id.clone();

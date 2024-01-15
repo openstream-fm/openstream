@@ -66,16 +66,22 @@ pub mod patch {
     error::ApplyPatchError,
     fetch_and_patch, run_transaction, Model,
   };
+  use modify::Modify;
   use prex::request::ReadBodyJsonError;
   use schemars::JsonSchema;
+  use validator::Validate;
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(export, export_to = "../../../defs/api/admins/[admin]/PATCH/")]
   #[macros::schema_ts_export]
-  pub struct Payload(pub AdminPatch);
+  pub struct Payload {
+    #[serde(flatten)]
+    #[validate]
+    pub patch: AdminPatch,
+  }
 
   #[derive(Debug, Clone)]
   pub struct Input {
@@ -146,7 +152,7 @@ pub mod patch {
 
     async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
       let Self::Input {
-        payload: Payload(payload),
+        payload: Payload { patch },
         admin,
       } = input;
 
@@ -154,7 +160,7 @@ pub mod patch {
 
       let admin = run_transaction!(session => {
         fetch_and_patch!(Admin, admin, &id, Err(HandleError::AdminNotFound(id)), session, {
-          admin.apply_patch(payload.clone())?
+          admin.apply_patch(patch.clone())?
         })
       });
 

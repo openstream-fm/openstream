@@ -91,9 +91,11 @@ pub mod set_role {
       models::user_account_relation::UserAccountRelation,
       user_account_relation::UserAccountRelationKind,
     };
+    use modify::Modify;
     use prex::request::ReadBodyJsonError;
     use schemars::JsonSchema;
     use serde_util::empty_struct::EmptyStruct;
+    use validator::Validate;
 
     #[derive(Debug, Clone)]
     pub struct Endpoint {}
@@ -105,9 +107,11 @@ pub mod set_role {
       payload: Payload,
     }
 
-    #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
-    #[ts(export)]
-    #[ts(export_to = "../../../defs/api/accounts/[account]/members/[member]/set-role/POST/")]
+    #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
+    #[ts(
+      export,
+      export_to = "../../../defs/api/accounts/[account]/members/[member]/set-role/POST/"
+    )]
     #[macros::schema_ts_export]
     pub struct Payload {
       role: AccessKind,

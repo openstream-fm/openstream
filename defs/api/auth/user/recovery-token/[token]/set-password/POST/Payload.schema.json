@@ -5,7 +5,9 @@
   ],
   "properties": {
     "new_password": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 60,
+      "minLength": 8
     }
   }
 }

@@ -8,23 +8,35 @@
   ],
   "properties": {
     "email": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1
     },
     "phone": {
       "type": "string",
+      "maxLength": 40,
+      "minLength": 1,
       "nullable": true
     },
     "password": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 60,
+      "minLength": 8
     },
     "first_name": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1
     },
     "last_name": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1
     },
     "language": {
       "type": "string",
+      "maxLength": 100,
+      "minLength": 1,
       "nullable": true
     },
     "user_metadata": {

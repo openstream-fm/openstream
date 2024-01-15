@@ -4,6 +4,7 @@ use crate::{
   request_ext::{AccessTokenScope, GetAccessTokenScopeError},
 };
 use async_trait::async_trait;
+use constants::validate::*;
 use db::account_invitations::{AccountInvitation, AccountInvitationState};
 use db::user::User;
 use db::Model;
@@ -13,14 +14,14 @@ use prex::Request;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 
-use validify::Validify;
+use modify::Modify;
+use validator::Validate;
 
 use db::{
   run_transaction,
   user_account_relation::{UserAccountRelation, UserAccountRelationKind},
 };
 use ts_rs::TS;
-use validify::ValidationErrors;
 
 use crate::request_ext::get_optional_access_token_scope;
 
@@ -31,23 +32,67 @@ pub mod post {
 
   use super::*;
 
+  // TODO: add modify (works in enums?)
   #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/invitations/accept/POST/")]
   #[macros::schema_ts_export]
   #[serde(untagged)]
   pub enum Payload {
-    Unauthenticated(UnauthenticatedAcceptPayloadData),
-    Authenticated { invitation_id: String },
+    Unauthenticated {
+      // #[validate]
+      #[serde(flatten)]
+      unauthenticated: UnauthenticatedAcceptPayloadData,
+    },
+    Authenticated {
+      invitation_id: String,
+    },
   }
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(export, export_to = "../../../defs/api/invitations/accept/POST/")]
   #[macros::schema_ts_export]
   pub struct UnauthenticatedAcceptPayloadData {
     pub token: String,
+
+    #[modify(trim)]
+    #[validate(
+      length(
+        min = 1,
+        max = "VALIDATE_USER_FIRST_NAME_MAX_LEN",
+        message = "First name is either too short or too long"
+      ),
+      non_control_character(message = "First name contains invalid characters")
+    )]
     pub first_name: String,
+
+    #[modify(trim)]
+    #[validate(
+      length(
+        min = 1,
+        max = "VALIDATE_USER_LAST_NAME_MAX_LEN",
+        message = "Last name is either too short or too long"
+      ),
+      non_control_character(message = "Last name contains invalid characters")
+    )]
     pub last_name: String,
+
+    #[modify(trim)]
+    #[validate(
+      phone(message = "Phone number is invalid"),
+      length(
+        min = 1,
+        max = "VALIDATE_USER_PHONE_MAX_LEN",
+        message = "Phone number is either too short or too long"
+      ),
+      non_control_character(message = "Phone number contains invalid characters")
+    )]
     pub phone: Option<String>,
+
+    #[validate(length(
+      min = "VALIDATE_USER_PASSWORD_MIN_LEN",
+      max = "VALIDATE_USER_PASSWORD_MAX_LEN",
+      message = "Password is either too short or too long"
+    ))]
     pub password: String,
   }
 
@@ -99,8 +144,6 @@ pub mod post {
     Db(#[from] mongodb::error::Error),
     #[error("token: {0}")]
     Token(#[from] GetAccessTokenScopeError),
-    #[error("validate")]
-    Validate(#[from] ValidationErrors),
     #[error("password too short")]
     PasswordTooShort,
     #[error("password too long")]
@@ -112,7 +155,6 @@ pub mod post {
       match e {
         HandleError::Db(e) => e.into(),
         HandleError::Token(e) => e.into(),
-        HandleError::Validate(errors) => ApiError::PayloadInvalid(format!("{}", errors)),
         HandleError::PasswordTooShort => {
           ApiError::PayloadInvalid(String::from("password must have 8 characters or more"))
         }
@@ -132,7 +174,7 @@ pub mod post {
 
     async fn parse(&self, mut req: Request) -> Result<Input, ParseError> {
       let optional_access_token_scope = get_optional_access_token_scope(&req).await?;
-      let payload = req.read_body_json(5_000).await?;
+      let payload = req.read_body_json_no_validate(10_000).await?;
       Ok(Input {
         optional_access_token_scope,
         payload,
@@ -222,14 +264,14 @@ pub mod post {
           Ok(Output::Ok)
         }
 
-        Payload::Unauthenticated(data) => {
+        Payload::Unauthenticated { unauthenticated } => {
           let UnauthenticatedAcceptPayloadData {
             token,
             first_name,
             last_name,
             password,
             phone,
-          } = data;
+          } = unauthenticated;
 
           if password.len() < 8 {
             return Err(HandleError::PasswordTooShort);
@@ -283,8 +325,6 @@ pub mod post {
               updated_at: now,
               deleted_at: None,
             };
-
-            let user = User::validify(user.into())?;
 
             let user_account_relation = UserAccountRelation {
               id: UserAccountRelation::uid(),

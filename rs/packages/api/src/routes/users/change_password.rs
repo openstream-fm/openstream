@@ -1,8 +1,10 @@
 pub mod post {
 
+  use modify::Modify;
   use mongodb::bson::doc;
   use schemars::JsonSchema;
   use std::net::IpAddr;
+  use validator::Validate;
 
   use crate::{
     error::ApiError,
@@ -13,6 +15,7 @@ pub mod post {
 
   use db::{user::User, Model};
 
+  use constants::validate::*;
   use prex::{request::ReadBodyJsonError, Request};
   use serde::{Deserialize, Serialize};
   use serde_util::empty_struct::EmptyStruct;
@@ -21,7 +24,7 @@ pub mod post {
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(
     export,
     export_to = "../../../defs/api/users/[user]/change-password/POST/"
@@ -29,6 +32,12 @@ pub mod post {
   #[macros::schema_ts_export]
   pub struct Payload {
     pub current_password: String,
+
+    #[validate(length(
+      min = "VALIDATE_USER_PASSWORD_MIN_LEN",
+      max = "VALIDATE_USER_PASSWORD_MAX_LEN",
+      message = "New password is either too short or too long",
+    ))]
     pub new_password: String,
   }
 

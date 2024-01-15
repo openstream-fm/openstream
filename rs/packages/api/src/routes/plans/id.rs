@@ -174,21 +174,22 @@ pub mod patch {
   use crate::error::ApiError;
 
   use super::*;
+  use constants::validate::*;
   use db::{
     account::{Account, Limit, Limits},
     plan::Plan,
     run_transaction, Model,
   };
+  use modify::Modify;
   use prex::request::ReadBodyJsonError;
   use schemars::JsonSchema;
   use serde_util::DateTime;
-  use validify::{validify, ValidationErrors, Validify};
+  use validator::Validate;
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
-  #[validify]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(export, export_to = "../../../defs/api/plans/[plan]/PATCH/")]
   #[macros::schema_ts_export]
   pub struct Payload {
@@ -198,22 +199,43 @@ pub mod patch {
 
     #[ts(optional)]
     #[modify(trim)]
-    #[validate(length(min = 1))]
+    #[validate(
+      length(
+        min = 1,
+        max = "VALIDATE_PLAN_IDENTIFIER_MAX_LEN",
+        message = "Identifier is either too short or too long"
+      ),
+      non_control_character(message = "Identifier contains invalid characters")
+    )]
     identifier: Option<String>,
 
     #[ts(optional)]
     #[modify(trim)]
-    #[validate(length(min = 1))]
+    #[validate(
+      length(
+        min = 1,
+        max = "VALIDATE_PLAN_SLUG_MAX_LEN",
+        message = "Slug is either too short or too long"
+      ),
+      non_control_character(message = "Slug contains invalid characters")
+    )]
     slug: Option<String>,
 
     #[ts(optional)]
     #[modify(trim)]
-    #[validate(length(min = 1))]
+    #[validate(
+      length(
+        min = 1,
+        max = "VALIDATE_PLAN_NAME_MAX_LEN",
+        message = "Display name is either too short or too long"
+      ),
+      non_control_character(message = "Display name contains invalid characters")
+    )]
     display_name: Option<String>,
 
     #[ts(optional)]
     #[modify(trim)]
-    #[validate(length(min = 1))]
+    #[validate(length(min = 1, message = "Color cannot be empty"))]
     color: Option<String>,
 
     #[ts(optional)]
@@ -268,8 +290,6 @@ pub mod patch {
     PlanNotFound(String),
     #[error("slug exists")]
     SlugExists,
-    #[error("validfy payload: {0}")]
-    Validify(#[from] ValidationErrors),
   }
 
   impl From<HandleError> for ApiError {
@@ -278,7 +298,6 @@ pub mod patch {
         HandleError::Db(e) => e.into(),
         HandleError::PlanNotFound(id) => ApiError::PlanNotFound(id),
         HandleError::SlugExists => ApiError::BadRequestCustom("The slug already exists".into()),
-        HandleError::Validify(errors) => ApiError::PayloadInvalid(format!("{}", errors)),
       }
     }
   }
@@ -306,8 +325,6 @@ pub mod patch {
 
     async fn perform(&self, input: Self::Input) -> Result<Self::Output, Self::HandleError> {
       let Self::Input { plan_id, payload } = input;
-
-      let payload = Payload::validify(payload.into())?;
 
       let Payload {
         display_name,

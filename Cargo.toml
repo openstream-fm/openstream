@@ -82,6 +82,9 @@ members = [
 
     "rs/packages/payments",
 
+    "rs/packages/modify",
+    "rs/packages/modify_derive",
+
     "rs/packages/metre",
     "rs/packages/metre-macros",
 ]

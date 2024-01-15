@@ -115,12 +115,14 @@ pub mod get {
 pub mod post {
 
   use async_trait::async_trait;
+  use constants::validate::*;
   use db::Model;
   use db::{
     current_filter_doc,
     plan::{Plan, PlanLimits},
     run_transaction,
   };
+  use modify::Modify;
   use mongodb::bson::doc;
   use mongodb::options::FindOneOptions;
   use prex::{request::ReadBodyJsonError, Request};
@@ -128,7 +130,7 @@ pub mod post {
   use serde::{Deserialize, Serialize};
   use serde_util::DateTime;
   use ts_rs::TS;
-  use validify::{validify, ValidationErrors, Validify};
+  use validator::Validate;
 
   use crate::{
     error::ApiError,
@@ -136,23 +138,42 @@ pub mod post {
     request_ext::{self, GetAccessTokenScopeError},
   };
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(export, export_to = "../../../defs/api/plans/POST/")]
   #[macros::schema_ts_export]
-  #[validify]
-  #[serde(rename_all = "snake_case")]
-  #[serde(deny_unknown_fields)]
+  #[serde(rename_all = "snake_case", deny_unknown_fields)]
   pub struct Payload {
     #[modify(trim)]
-    #[validate(length(min = 1))]
+    #[validate(
+      length(
+        min = 1,
+        max = "VALIDATE_PLAN_IDENTIFIER_MAX_LEN",
+        message = "Identifier is either too short or too long"
+      ),
+      non_control_character(message = "Identifier contains invalid characters")
+    )]
     pub identifier: String,
 
     #[modify(trim, lowercase)]
-    #[validate(length(min = 1))]
+    #[validate(
+      length(
+        min = 1,
+        max = "VALIDATE_PLAN_SLUG_MAX_LEN",
+        message = "Slug is either too short or too long"
+      ),
+      non_control_character(message = "Slug contains invalid characters")
+    )]
     pub slug: String,
 
     #[modify(trim)]
-    #[validate(length(min = 1))]
+    #[validate(
+      length(
+        min = 1,
+        max = "VALIDATE_PLAN_NAME_MAX_LEN",
+        message = "Display name is either too short or too long"
+      ),
+      non_control_character(message = "Display name contains invalid characters")
+    )]
     pub display_name: String,
 
     pub is_user_selectable: bool,
@@ -161,7 +182,7 @@ pub mod post {
     pub price: f64,
 
     #[modify(trim)]
-    #[validate(length(min = 1))]
+    #[validate(length(min = 1, message = "Color cannot be empty"))]
     pub color: String,
 
     pub stations: u64,
@@ -203,8 +224,6 @@ pub mod post {
     Db(#[from] mongodb::error::Error),
     #[error("slug exists")]
     SlugExists,
-    #[error("validify: {0}")]
-    Validify(#[from] ValidationErrors),
   }
 
   impl From<HandleError> for ApiError {
@@ -212,7 +231,6 @@ pub mod post {
       match e {
         HandleError::Db(e) => e.into(),
         HandleError::SlugExists => ApiError::BadRequestCustom("The slug is already taken".into()),
-        HandleError::Validify(errors) => ApiError::PayloadInvalid(format!("{}", errors)),
       }
     }
   }
@@ -240,8 +258,6 @@ pub mod post {
 
     async fn perform(&self, input: Input) -> Result<Output, HandleError> {
       let Input { payload } = input;
-
-      let payload = Payload::validify(payload.into())?;
 
       let Payload {
         ref identifier,

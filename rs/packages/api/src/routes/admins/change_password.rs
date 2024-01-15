@@ -6,7 +6,9 @@ pub mod post {
     json::JsonHandler,
     request_ext::{self, GetAccessTokenScopeError},
   };
+  use constants::validate::*;
   use db::{admin::Admin, Model};
+  use modify::Modify;
   use mongodb::bson::doc;
   use prex::{request::ReadBodyJsonError, Request};
   use schemars::JsonSchema;
@@ -14,11 +16,12 @@ pub mod post {
   use serde_util::empty_struct::EmptyStruct;
   use std::net::IpAddr;
   use ts_rs::TS;
+  use validator::Validate;
 
   #[derive(Debug, Clone)]
   pub struct Endpoint {}
 
-  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
+  #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema, Modify, Validate)]
   #[ts(
     export,
     export_to = "../../../defs/api/admins/[admin]/change-password/POST/"
@@ -26,6 +29,11 @@ pub mod post {
   #[macros::schema_ts_export]
   pub struct Payload {
     pub current_password: String,
+    #[validate(length(
+      min = "VALIDATE_ADMIN_PASSWORD_MIN_LEN",
+      max = "VALIDATE_ADMIN_PASSWORD_MAX_LEN",
+      message = "New password is either too short or too long",
+    ))]
     pub new_password: String,
   }
 

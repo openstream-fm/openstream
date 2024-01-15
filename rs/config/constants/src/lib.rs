@@ -232,7 +232,10 @@ pub mod validate {
   pub const VALIDATE_ACCOUNT_NAME_MAX_LEN: usize = 60;
 
   #[const_register]
-  pub const VALIDATE_USER_EMAIL_MAX_LEN: usize = 80;
+  pub const VALIDATE_USER_EMAIL_MAX_LEN: usize = 100;
+
+  #[const_register]
+  pub const VALIDATE_ADMIN_EMAIL_MAX_LEN: usize = 100;
 
   #[const_register]
   pub const VALIDATE_USER_FIRST_NAME_MAX_LEN: usize = 100;
@@ -260,6 +263,42 @@ pub mod validate {
 
   #[const_register]
   pub const VALIDATE_ADMIN_PASSWORD_MAX_LEN: usize = 60;
+
+  #[const_register]
+  pub const VALIDATE_ACCESS_TOKEN_TITLE_MAX_LEN: usize = 150;
+
+  #[const_register]
+  pub const VALIDATE_USER_LANGUAGE_MAX_LEN: usize = 100;
+
+  #[const_register]
+  pub const VALIDATE_ADMIN_LANGUAGE_MAX_LEN: usize = 100;
+
+  #[const_register]
+  pub const VALIDATE_PLAN_IDENTIFIER_MAX_LEN: usize = 100;
+
+  #[const_register]
+  pub const VALIDATE_PLAN_SLUG_MAX_LEN: usize = 100;
+
+  #[const_register]
+  pub const VALIDATE_PLAN_NAME_MAX_LEN: usize = 100;
+
+  #[const_register]
+  pub const VALIDATE_AUDIO_FILE_METADATA_TITLE_MAX_LEN: usize = 100;
+
+  #[const_register]
+  pub const VALIDATE_AUDIO_FILE_METADATA_ARTIST_MAX_LEN: usize = 100;
+
+  #[const_register]
+  pub const VALIDATE_AUDIO_FILE_METADATA_ALBUM_MAX_LEN: usize = 100;
+
+  #[const_register]
+  pub const VALIDATE_AUDIO_FILE_METADATA_ALBUM_ARTIST_MAX_LEN: usize = 100;
+
+  #[const_register]
+  pub const VALIDATE_AUDIO_FILE_METADATA_GENRE_MAX_LEN: usize = 100;
+
+  #[const_register]
+  pub const VALIDATE_AUDIO_FILE_METADATA_COMMENT_MAX_LEN: usize = 100;
 }
 
 #[cfg(test)]

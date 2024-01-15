@@ -6,7 +6,9 @@
   ],
   "properties": {
     "title": {
-      "type": "string"
+      "type": "string",
+      "maxLength": 150,
+      "minLength": 1
     },
     "password": {
       "type": "string"
