@@ -140,7 +140,7 @@ pub mod post {
         max = "VALIDATE_USER_EMAIL_MAX_LEN",
         message = "Email is either too short or too long"
       ),
-      non_control_character(message = "Email contains invalid characters")
+      // non_control_character(message = "Email contains invalid characters")
     )]
     email: String,
 
@@ -169,7 +169,7 @@ pub mod post {
         max = "VALIDATE_USER_FIRST_NAME_MAX_LEN",
         message = "First name is either too short or too long"
       ),
-      non_control_character(message = "First name contains invalid characters")
+      // non_control_character(message = "First name contains invalid characters")
     )]
     first_name: String,
 
@@ -180,7 +180,7 @@ pub mod post {
         max = "VALIDATE_USER_LAST_NAME_MAX_LEN",
         message = "Last name is either too short or too long"
       ),
-      non_control_character(message = "Last name contains invalid characters")
+      // non_control_character(message = "Last name contains invalid characters")
     )]
     last_name: String,
 
@@ -192,7 +192,7 @@ pub mod post {
         max = "VALIDATE_USER_LANGUAGE_MAX_LEN",
         message = "Language is either too short or too long"
       ),
-      non_control_character(message = "Language contains invalid characters")
+      // non_control_character(message = "Language contains invalid characters")
     )]
     language: Option<String>,
 

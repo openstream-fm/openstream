@@ -75,7 +75,7 @@ pub struct AccountPatch {
       max = "VALIDATE_ACCOUNT_NAME_MAX_LEN",
       message = "Account name is either too short or too long",
     ),
-    non_control_character(message = "Account name cannot have control characters")
+    // non_control_character(message = "Account name cannot have control characters")
   )]
   pub name: Option<String>,
   #[serde(skip_serializing_if = "Option::is_none")]

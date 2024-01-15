@@ -169,7 +169,7 @@ pub mod post {
         max = "VALIDATE_USER_FIRST_NAME_MAX_LEN",
         message = "First name is either too short or too long"
       ),
-      non_control_character(message = "First name contains invalid characters")
+      // non_control_character(message = "First name contains invalid characters")
     )]
     first_name: String,
 
@@ -180,7 +180,7 @@ pub mod post {
         max = "VALIDATE_USER_LAST_NAME_MAX_LEN",
         message = "Last name is either too short or too long"
       ),
-      non_control_character(message = "Last name contains invalid characters")
+      // non_control_character(message = "Last name contains invalid characters")
     )]
     last_name: String,
 
@@ -191,7 +191,7 @@ pub mod post {
         max = "VALIDATE_ACCOUNT_NAME_MAX_LEN",
         message = "Account name is either too short or too long"
       ),
-      non_control_character(message = "Account name contains invalid characters")
+      // non_control_character(message = "Account name contains invalid characters")
     )]
     account_name: String,
 
@@ -205,7 +205,7 @@ pub mod post {
         max = "VALIDATE_USER_EMAIL_MAX_LEN",
         message = "Email is either too short or too long"
       ),
-      non_control_character(message = "Email contains invalid characters")
+      // non_control_character(message = "Email contains invalid characters")
     )]
     email: String,
 
@@ -220,7 +220,7 @@ pub mod post {
     #[validate(
       phone(message = "Phone is invalid"),
       length(max = "VALIDATE_USER_PHONE_MAX_LEN", message = "Phone is too long"),
-      non_control_character(message = "Phone name contains invalid characters")
+      // non_control_character(message = "Phone name contains invalid characters")
     )]
     phone: Option<String>,
 
@@ -231,7 +231,7 @@ pub mod post {
         max = "VALIDATE_USER_LANGUAGE_MAX_LEN",
         message = "Language is too long"
       ),
-      non_control_character(message = "Language contains invalid characters")
+      // non_control_character(message = "Language contains invalid characters")
     )]
     language: Option<String>,
 

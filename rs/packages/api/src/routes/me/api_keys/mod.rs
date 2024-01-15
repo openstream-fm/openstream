@@ -228,7 +228,7 @@ pub mod post {
         max = "VALIDATE_ACCESS_TOKEN_TITLE_MAX_LEN",
         message = "API key title is either too short or too long",
       ),
-      non_control_character(message = "API key title contains invalid characters")
+      // non_control_character(message = "API key title contains invalid characters")
     )]
     title: String,
     password: String,

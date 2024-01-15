@@ -184,7 +184,7 @@ pub mod post {
         max = "VALIDATE_ACCOUNT_NAME_MAX_LEN",
         message = "Account name is either too long or empty"
       ),
-      non_control_character(message = "Account name contains invalid characters")
+      // non_control_character(message = "Account name contains invalid characters")
     )]
     pub name: String,
     pub plan_id: String,
