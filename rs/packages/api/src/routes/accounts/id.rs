@@ -106,6 +106,7 @@ pub mod patch {
   #[macros::schema_ts_export]
   pub struct Payload {
     #[validate]
+    #[serde(flatten)]
     pub patch: AccountPatch,
   }
 
