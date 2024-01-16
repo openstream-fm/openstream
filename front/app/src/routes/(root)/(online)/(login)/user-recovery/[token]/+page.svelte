@@ -68,7 +68,7 @@
     $locale.pages.user_recovery.head_page_title.not_found;
 
   const error_message = (base: string, link: string): string => {
-    return base.replace("@user_recovery_page", `<a class="na" href="recover">${link}</a>`)
+    return base.replace("@user_recovery_page", `<a class="na" href="/recover">${link}</a>`)
   }
 </script>
 
