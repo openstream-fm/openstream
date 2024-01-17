@@ -5,7 +5,7 @@ use std::time::{Duration, Instant};
 use db::media_session::MediaSession;
 use db::{media_session::MediaSessionState, Model};
 use drop_tracer::{DropTracer, Token};
-use ffmpeg::{Ffmpeg, FfmpegConfig, FfmpegSpawn};
+use ffmpeg::{Ffmpeg, FfmpegConfig, FfmpegSpawn, Format};
 use futures_util::StreamExt;
 use log::*;
 use mongodb::bson::doc;
@@ -17,6 +17,7 @@ use tokio::task::JoinHandle;
 
 use crate::channel::{SendError, Sender};
 use crate::handle::util::PrettyDuration;
+use crate::ProbeCodec;
 
 use constants::{
   EXTERNAL_RELAY_NO_DATA_SHUTDOWN_SECS, EXTERNAL_RELAY_NO_DATA_START_SHUTDOWN_SECS,
@@ -24,12 +25,14 @@ use constants::{
   STREAM_BURST_LENGTH, STREAM_CHUNK_SIZE, STREAM_KBITRATE,
 };
 
+#[allow(clippy::too_many_arguments)]
 pub fn run_external_relay_source(
   sender: Sender,
   deployment_id: String,
   task_id: String,
   station_id: String,
   url: String,
+  codec_info: Option<(ProbeCodec, usize)>,
   drop_tracer: DropTracer,
   shutdown: Shutdown,
 ) -> JoinHandle<Result<(), ExternalRelayError>> {
@@ -81,13 +84,43 @@ pub fn run_external_relay_source(
     let fut = async move {
       let headers = ffmpeg::headers_for_url(&url);
 
-      let ffmpeg_config = FfmpegConfig {
-        input: Some(url),
-        kbitrate: STREAM_KBITRATE,
-        readrate: true,
-        readrate_initial_burst: STREAM_BURST_LENGTH as f64,
-        headers,
-        ..FfmpegConfig::default()
+      let (ffmpeg_config, chunk_size) = match codec_info {
+        Some((codec, bitrate)) => {
+          let format = match codec {
+            ProbeCodec::Mp3 => Format::MP3,
+            ProbeCodec::Aac => Format::AAC,
+          };
+
+          let config = FfmpegConfig {
+            input: Some(url),
+            kbitrate: bitrate / 1000,
+            readrate: true,
+            readrate_initial_burst: STREAM_BURST_LENGTH as f64,
+            copycodec: true,
+            headers,
+            format,
+            ..FfmpegConfig::default()
+          };
+
+          let chunk_size = STREAM_CHUNK_SIZE;
+
+          (config, chunk_size)
+        }
+
+        None => {
+          let config = FfmpegConfig {
+            input: Some(url),
+            kbitrate: STREAM_KBITRATE,
+            readrate: true,
+            readrate_initial_burst: STREAM_BURST_LENGTH as f64,
+            headers,
+            ..FfmpegConfig::default()
+          };
+
+          let chunk_size = STREAM_CHUNK_SIZE;
+
+          (config, chunk_size)
+        }
       };
 
       let ff_spawn = match Ffmpeg::new(ffmpeg_config).spawn() {
@@ -121,7 +154,7 @@ pub fn run_external_relay_source(
           use stream_util::*;
           use tokio::time::sleep;
 
-          let mut chunks = stdout.into_bytes_stream(STREAM_CHUNK_SIZE);
+          let mut chunks = stdout.into_bytes_stream(chunk_size);
 
           let mut no_listeners_since: Option<Instant> = None;
 

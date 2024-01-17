@@ -6,6 +6,7 @@ pub mod health;
 use constants::MEDIA_LOCK_TIMEOUT_SECS;
 use db::{
   audio_file::AudioFile,
+  probe::{Probe, ProbeResult},
   run_transaction,
   station::{OwnerDeploymentInfo, Station},
   Model,
@@ -25,6 +26,12 @@ use tokio::sync::{Mutex as AsyncMutex, OwnedMutexGuard};
 use channel::{Receiver, Sender};
 use handle::internal_relay::GetInternalRelayError;
 use handle::{get_internal_relay_source, run_external_relay_source, run_playlist_source};
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum ProbeCodec {
+  Mp3,
+  Aac,
+}
 
 #[derive(Debug)]
 pub struct Handle {
@@ -270,16 +277,78 @@ impl MediaSessionMap {
     match &*lock {
       Some(handle) => Ok(handle.sender.subscribe()),
       None => {
-        {
-          // external relay redirect
-          let station = Station::get_by_id(station_id).await?;
-          if let Some(station) = station {
-            if let Some(url) = station.external_relay_url {
+        // external relay redirect
+        let station: Station;
+        match Station::get_by_id(station_id).await? {
+          None => return Err(SubscribeError::StationNotFound(station_id.to_string())),
+          Some(s) => {
+            station = s;
+            if let Some(url) = &station.external_relay_url {
               if station.external_relay_redirect {
-                return Err(SubscribeError::ExternalRelayRedirect(url));
+                return Err(SubscribeError::ExternalRelayRedirect(url.clone()));
               }
             }
           }
+        }
+
+        let probe_result: Option<(ProbeCodec, usize)>;
+
+        if station.external_relay_url.is_some() {
+          let filter = doc! {
+            ProbeResult::KEY_ENUM_TAG: ProbeResult::KEY_ENUM_VARIANT_OK,
+            Probe::KEY_STATION_ID: station_id,
+          };
+
+          let sort = doc! {
+            Probe::KEY_CREATED_AT: -1
+          };
+
+          let options = mongodb::options::FindOneOptions::builder()
+            .sort(sort)
+            .build();
+
+          let last_probe = Probe::cl().find_one(filter, options).await?;
+
+          match last_probe {
+            None => {
+              probe_result = None;
+            }
+
+            Some(doc) => {
+              let mut streams = doc
+                .streams()
+                .into_iter()
+                .filter_map(|(codec, bitrate)| match codec?.as_ref() {
+                  "mp3" => Some((ProbeCodec::Mp3, bitrate)),
+                  "aac" => Some((ProbeCodec::Aac, bitrate)),
+                  _ => None,
+                })
+                .collect::<Vec<(ProbeCodec, Option<usize>)>>();
+
+              streams.sort_by(|(_, br1), (_, br2)| {
+                use std::cmp::Ordering;
+
+                match (br1, br2) {
+                  (Some(br1), Some(br2)) => br2.cmp(br1),
+                  (Some(_), None) => Ordering::Less,
+                  (None, Some(_)) => Ordering::Greater,
+                  (None, None) => Ordering::Equal,
+                }
+              });
+
+              let first = streams.first();
+
+              match first {
+                None => probe_result = None,
+                Some((codec, br)) => {
+                  let bitrate = br.unwrap_or(128_000).max(64_000).min(320_000);
+                  probe_result = Some((*codec, bitrate));
+                }
+              }
+            }
+          }
+        } else {
+          probe_result = None;
         }
 
         let task_id = Station::random_owner_task_id();
@@ -287,8 +356,16 @@ impl MediaSessionMap {
         let map_entry_release =
           MapEntryRelease::new(station_id.to_string(), task_id.clone(), self.clone());
 
+        let content_type = match probe_result {
+          None => "audio/mpeg".to_string(),
+          Some((codec, _)) => match codec {
+            ProbeCodec::Mp3 => "audio/mpeg".to_string(),
+            ProbeCodec::Aac => "audio/aac".to_string(),
+          },
+        };
+
         let owner_deployment_info = OwnerDeploymentInfo {
-          content_type: "audio/mpeg".to_string(),
+          content_type: content_type.clone(),
           deployment_id: self.deployment_id.clone(),
           task_id: task_id.clone(),
           health_checked_at: Some(DateTime::now()),
@@ -337,11 +414,7 @@ impl MediaSessionMap {
             match station.external_relay_url {
               // 1) external relay
               Some(url) => {
-                info = Info::new(
-                  Kind::ExternalRelay,
-                  task_id.clone(),
-                  "audio/mpeg".to_string(),
-                );
+                info = Info::new(Kind::ExternalRelay, task_id.clone(), content_type);
                 sender = Sender::new(station_id.to_string(), info);
 
                 {
@@ -351,6 +424,7 @@ impl MediaSessionMap {
                   let station_id = station_id.to_string();
                   let drop_tracer = self.drop_tracer.clone();
                   let shutdown = self.shutdown.clone();
+                  let codec_info = probe_result;
                   tokio::spawn(async move {
                     let _ = run_external_relay_source(
                       sender,
@@ -358,6 +432,7 @@ impl MediaSessionMap {
                       task_id,
                       station_id,
                       url,
+                      codec_info,
                       drop_tracer,
                       shutdown,
                     )
