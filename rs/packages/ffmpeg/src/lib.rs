@@ -209,6 +209,51 @@ impl Ffmpeg {
       Some(input) => cmd.arg(input),
     };
 
+    // copy codec
+    if self.config.copycodec {
+      cmd.arg("-c:a");
+      cmd.arg("copy");
+    } else {
+      // bitrate
+      cmd.arg("-ab");
+      cmd.arg(format!("{}k", self.config.kbitrate));
+
+      cmd.arg("-minrate");
+      cmd.arg(format!("{}k", self.config.kbitrate));
+
+      cmd.arg("-maxrate");
+      cmd.arg(format!("{}k", self.config.kbitrate));
+
+      cmd.arg("-bufsize");
+      cmd.arg(format!("{}k", self.config.kbitrate));
+
+      // channels
+      cmd.arg("-ac");
+      cmd.arg(self.config.channels.to_string());
+
+      // frequency
+      cmd.arg("-ar");
+      cmd.arg(self.config.freq.to_string());
+    }
+
+    // format
+    cmd.arg("-f");
+    cmd.arg(self.config.format.as_str());
+
+    // no video
+    if self.config.novideo {
+      cmd.arg("-vn");
+    }
+
+    // threads
+    cmd.arg("-threads");
+    cmd.arg(self.config.threads.to_string());
+
+    // loglevel
+    cmd.arg("-loglevel");
+    cmd.arg(self.config.loglevel.as_str());
+
+    // headers
     if !self.config.headers.is_empty() {
       let v = self
         .config
@@ -221,50 +266,6 @@ impl Ffmpeg {
       cmd.arg("-headers");
       cmd.arg(v);
     }
-
-    // copy codec
-    if self.config.copycodec {
-      cmd.arg("-c:a");
-      cmd.arg("copy");
-    }
-
-    // format
-    cmd.arg("-f");
-    cmd.arg(self.config.format.as_str());
-
-    // no video
-    if self.config.novideo {
-      cmd.arg("-vn");
-    }
-
-    // channels
-    cmd.arg("-ac");
-    cmd.arg(self.config.channels.to_string());
-
-    // frequency
-    cmd.arg("-ar");
-    cmd.arg(self.config.freq.to_string());
-
-    // bitrate
-    cmd.arg("-ab");
-    cmd.arg(format!("{}k", self.config.kbitrate));
-
-    cmd.arg("-minrate");
-    cmd.arg(format!("{}k", self.config.kbitrate));
-
-    cmd.arg("-maxrate");
-    cmd.arg(format!("{}k", self.config.kbitrate));
-
-    cmd.arg("-bufsize");
-    cmd.arg(format!("{}k", self.config.kbitrate));
-
-    // threads
-    cmd.arg("-threads");
-    cmd.arg(self.config.threads.to_string());
-
-    // loglevel
-    cmd.arg("-loglevel");
-    cmd.arg(self.config.loglevel.as_str());
 
     // output
     cmd.arg("-");

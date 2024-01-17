@@ -1,6 +1,7 @@
 use crate::Model;
 use mongodb::{bson::doc, options::FindOneOptions, IndexModel};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use serde_util::DateTime;
 use ts_rs::TS;
 
@@ -37,11 +38,48 @@ impl Probe {
     let options = FindOneOptions::builder().sort(sort).build();
     Self::cl().find_one(filter, options).await
   }
+
+  pub fn streams(&self) -> Vec<(Option<String>, Option<usize>)> {
+    match &self.result {
+      ProbeResult::Error { .. } => vec![],
+
+      ProbeResult::Ok { document } => {
+        let streams = match document.get("streams") {
+          Some(streams) => streams,
+          None => return vec![],
+        };
+
+        match streams {
+          Value::Array(streams) => streams
+            .iter()
+            .map(|stream| {
+              let codec = stream["codec_name"].as_str().map(ToString::to_string);
+
+              let bit_rate = match stream["bit_rate"]
+                .as_str()
+                .and_then(|s| s.parse::<usize>().ok())
+              {
+                Some(n) => Some(n),
+                None => stream["tags"]["variant_bitrate"]
+                  .as_str()
+                  .and_then(|s| s.parse::<usize>().ok()),
+              };
+
+              (codec, bit_rate)
+            })
+            .collect(),
+
+          _ => vec![],
+        }
+      }
+    }
+  }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(tag = "r", rename_all = "snake_case")]
 #[ts(export, export_to = "../../../defs/db/")]
+#[macros::keys]
 pub enum ProbeResult {
   Ok {
     #[ts(type = "Record<string, any>")]
