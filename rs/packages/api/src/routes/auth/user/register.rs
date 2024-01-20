@@ -7,14 +7,15 @@ pub mod post {
   use db::account::{Account, Limit, Limits, PublicAccount};
   use db::email_verification_code::EmailVerificationCode;
   use db::metadata::Metadata;
-  use db::payment_method::{PaymentMethod, PaymentMethodKind};
+  // TODO: payments
+  // use db::payment_method::{PaymentMethod, PaymentMethodKind};
+  // use payments::query::save_payment_method::SavePaymentMethodResponse;
   use db::plan::Plan;
   use db::user::{PublicUser, User};
   use db::user_account_relation::{UserAccountRelation, UserAccountRelationKind};
   use db::{run_transaction, Model};
   use modify::Modify;
   use mongodb::bson::doc;
-  use payments::query::save_payment_method::SavePaymentMethodResponse;
   use prex::{request::ReadBodyJsonError, Request};
   use schemars::JsonSchema;
   use serde::{Deserialize, Serialize};
@@ -250,10 +251,9 @@ pub mod post {
     email_verification_code: String,
 
     device_id: String,
-
-    payment_method_nonce: String,
-
-    payment_device_data: Option<String>,
+    // TODO: payments
+    // payment_method_nonce: String,
+    // payment_device_data: Option<String>,
   }
 
   #[derive(Debug, Clone)]
@@ -322,8 +322,9 @@ pub mod post {
         user_system_metadata,
         email_verification_code,
         device_id,
-        payment_method_nonce,
-        payment_device_data,
+        // TODO: payments
+        // payment_method_nonce,
+        // payment_device_data,
       } = payload;
 
       if !AccessToken::is_device_id_valid(&device_id) {
@@ -451,42 +452,41 @@ pub mod post {
 
       let user_id = User::uid();
 
-      let customer_id = {
-        let query = payments::query::ensure_customer::EnsureCustomer {
-          customer_id: user_id.clone(),
-          first_name: first_name.clone(),
-          last_name: last_name.clone(),
-          email: email.clone(),
-        };
+      // TODO: payments
+      // let customer_id = {
+      //   let query = payments::query::ensure_customer::EnsureCustomer {
+      //     customer_id: user_id.clone(),
+      //     first_name: first_name.clone(),
+      //     last_name: last_name.clone(),
+      //     email: email.clone(),
+      //   };
 
-        let res = self
-          .payments_client
-          .perform(query)
-          .await
-          .map_err(HandleError::PaymentsEnsureCustomer)?;
+      //   let res = self
+      //     .payments_client
+      //     .perform(query)
+      //     .await
+      //     .map_err(HandleError::PaymentsEnsureCustomer)?;
 
-        res.customer_id
-      };
+      //   res.customer_id
+      // };
 
-      let payment_method_response = {
-        let query = payments::query::save_payment_method::SavePaymentMethod {
-          customer_id,
-          payment_method_nonce,
-          device_data: payment_device_data,
-        };
+      // let payment_method_response = {
+      //   let query = payments::query::save_payment_method::SavePaymentMethod {
+      //     customer_id,
+      //     payment_method_nonce,
+      //     device_data: payment_device_data,
+      //   };
 
-        let payment_method_response = self
-          .payments_client
-          .perform(query)
-          .await
-          .map_err(HandleError::PaymentSavePaymentMethod)?;
+      //   let payment_method_response = self
+      //     .payments_client
+      //     .perform(query)
+      //     .await
+      //     .map_err(HandleError::PaymentSavePaymentMethod)?;
 
-        #[allow(clippy::let_and_return)]
-        payment_method_response
-      };
-
-      let payment_method_id = PaymentMethod::uid();
-      // log::info!("payment method created: {payment_method:?}");
+      //   #[allow(clippy::let_and_return)]
+      //   payment_method_response
+      // };
+      // let payment_method_id = PaymentMethod::uid();
 
       let password = crypt::hash(password);
 
@@ -529,7 +529,9 @@ pub mod post {
       let account = Account {
         id: Account::uid(),
         plan_id,
-        payment_method_id: Some(payment_method_id.clone()),
+        // TODO: payments
+        // payment_method_id: Some(payment_method_id.clone()),
+        payment_method_id: None,
         limits,
         name: account_name,
         user_metadata: account_user_metadata,
@@ -568,30 +570,31 @@ pub mod post {
         deleted_at: None,
       };
 
-      let payment_method = {
-        let SavePaymentMethodResponse {
-          payment_method_token,
-          card_type,
-          last_4,
-          expiration_month,
-          expiration_year,
-        } = payment_method_response;
+      // TODO: payments
+      // let payment_method = {
+      //   let SavePaymentMethodResponse {
+      //     payment_method_token,
+      //     card_type,
+      //     last_4,
+      //     expiration_month,
+      //     expiration_year,
+      //   } = payment_method_response;
 
-        PaymentMethod {
-          id: payment_method_id,
-          user_id,
-          kind: PaymentMethodKind::Card {
-            token: payment_method_token,
-            card_type,
-            last_4,
-            expiration_month,
-            expiration_year,
-          },
-          created_at: now,
-          updated_at: now,
-          deleted_at: None,
-        }
-      };
+      //   PaymentMethod {
+      //     id: payment_method_id,
+      //     user_id,
+      //     kind: PaymentMethodKind::Card {
+      //       token: payment_method_token,
+      //       card_type,
+      //       last_4,
+      //       expiration_month,
+      //       expiration_year,
+      //     },
+      //     created_at: now,
+      //     updated_at: now,
+      //     deleted_at: None,
+      //   }
+      // };
 
       run_transaction!(session => {
         let email_exists = tx_try!(User::email_exists_with_session(user.email.as_str(), &mut session).await);
@@ -603,7 +606,8 @@ pub mod post {
         tx_try!(Account::insert_with_session(&account, &mut session).await);
         tx_try!(UserAccountRelation::insert_with_session(&relation, &mut session).await);
         tx_try!(AccessToken::insert_with_session(&token, &mut session).await);
-        tx_try!(PaymentMethod::insert_with_session(&payment_method, &mut session).await);
+        // TODO: payments
+        // tx_try!(PaymentMethod::insert_with_session(&payment_method, &mut session).await);
         tx_try!(EmailVerificationCode::update_by_id_with_session(&verification_code_document.id, doc! { "$set": { EmailVerificationCode::KEY_USED_AT: now } }, &mut session).await)
       });
 

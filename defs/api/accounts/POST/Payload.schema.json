@@ -2,7 +2,6 @@
   "type": "object",
   "required": [
     "name",
-    "payment_method_id",
     "plan_id"
   ],
   "properties": {
@@ -27,9 +26,6 @@
       "type": "object",
       "additionalProperties": true,
       "nullable": true
-    },
-    "payment_method_id": {
-      "type": "string"
     }
   },
   "additionalProperties": false
