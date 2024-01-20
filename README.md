@@ -18,7 +18,7 @@ Modern being scalable, multi-tenant and API-controlled.
 
 You can choose to run your own openstream server on-premise or to create a broadcaster account at [Openstream Studio](https://studio.openstream.fm)
 
-You can also acess the API documentation at [Openstream API Documentation](https://api.openstream.fm/docs). If you are running Openstream on-premise just change the `baseUrl` of the API server.
+You can also access the API documentation at [Openstream API Documentation](https://api.openstream.fm/docs). If you are running Openstream on-premise just change the `baseUrl` of the API server.
 
 
 ## Scalable
@@ -45,7 +45,7 @@ Access Tokens can be obtained with a username-password pair of and admin or user
 Currently Openstream is meant to run in Linux systems but it's written in a portable language and can be ported to another Operative Systems with ease. 
 
 ## Open Source
-Openstream is licensed under the European Union Public License, version 1.2
+Openstream is licensed under the GNU General Public License v3.0
 
 ## Contact
 You can reach us at opensource@openstream.fm if in need for help or advice.

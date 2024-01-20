@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-use std::process::ExitStatus;
 use std::sync::Arc;
 
 use api::storage::StorageServer;
@@ -11,7 +10,6 @@ use db::Model;
 use db::admin::Admin;
 use db::registry::Registry;
 use drop_tracer::DropTracer;
-use futures::stream::FuturesUnordered;
 use futures::{FutureExt, TryStreamExt};
 use log::*;
 
@@ -45,7 +43,7 @@ struct Cli {
 #[derive(Debug, Subcommand)]
 enum Command {
   Start(Start),
-  Cluster(Cluster),
+  // Cluster(Cluster),
   CreateConfig(CreateConfig),
   CreateToken(CreateToken),
   CreateAdmin(CreateAdmin),
@@ -68,17 +66,17 @@ struct CheckDb {
   config: String,
 }
 
-#[derive(Debug, Parser)]
-#[command(about = "Create a cluster of n --instances of `openstream start` processes")]
-struct Cluster {
-  /// Number of instances to spawn
-  #[clap(short, long)]
-  instances: u16,
+// #[derive(Debug, Parser)]
+// #[command(about = "Create a cluster of n --instances of `openstream start` processes")]
+// struct Cluster {
+//   /// Number of instances to spawn
+//   #[clap(short, long)]
+//   instances: u16,
 
-  /// Path to the configuration file (relative to cwd)
-  #[clap(short, long, default_value_t = String::from("./openstream.toml"))]
-  config: String,
-}
+//   /// Path to the configuration file (relative to cwd)
+//   #[clap(short, long, default_value_t = String::from("./openstream.toml"))]
+//   config: String,
+// }
 
 #[derive(Debug, Parser)]
 #[command(
@@ -144,7 +142,7 @@ fn main() -> Result<(), anyhow::Error> {
 fn cmd() -> Result<(), anyhow::Error> {
   let cli = Cli::parse();
   match cli.command {
-    Command::Cluster(opts) => cluster(opts),
+    // Command::Cluster(opts) => cluster(opts),
     Command::Start(opts) => start(opts),
     Command::CreateConfig(opts) => create_config(opts),
     Command::CreateToken(opts) => token(opts),
@@ -664,52 +662,52 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
   
 }
 
-fn cluster(opts: Cluster) -> Result<(), anyhow::Error> {
-  runtime().block_on(cluster_async(opts))
-}
+// fn cluster(opts: Cluster) -> Result<(), anyhow::Error> {
+//   runtime().block_on(cluster_async(opts))
+// }
 
-async fn cluster_async(Cluster { instances, config }: Cluster) -> Result<(), anyhow::Error> {
-  logger::init();
-  println!("======== cluster start ========");
+// async fn cluster_async(Cluster { instances, config }: Cluster) -> Result<(), anyhow::Error> {
+//   logger::init();
+//   println!("======== cluster start ========");
 
-  let futs = FuturesUnordered::new();
+//   let futs = FuturesUnordered::new();
 
-  if instances == 0 {
-    anyhow::bail!("instances must be greater than 0")
-  }
+//   if instances == 0 {
+//     anyhow::bail!("instances must be greater than 0")
+//   }
 
-  let exe = std::env::current_exe().context("failed to get curret exe")?;
+//   let exe = std::env::current_exe().context("failed to get curret exe")?;
 
-  for i in 0..instances {
-    let exe = exe.clone();
-    let config = config.clone();
-    //let config = config.clone();
-    futs.push(async move {
-      let mut cmd = tokio::process::Command::new(exe);
-      cmd.arg("start");
-      cmd.arg("--config");
-      cmd.arg(&config);
-      cmd.env("INSTANCE_ID", &format!("{}", i));
+//   for i in 0..instances {
+//     let exe = exe.clone();
+//     let config = config.clone();
+//     //let config = config.clone();
+//     futs.push(async move {
+//       let mut cmd = tokio::process::Command::new(exe);
+//       cmd.arg("start");
+//       cmd.arg("--config");
+//       cmd.arg(&config);
+//       cmd.env("INSTANCE_ID", &format!("{}", i));
 
-      cmd.stdin(std::process::Stdio::inherit());
-      cmd.stdout(std::process::Stdio::inherit());
-      cmd.stderr(std::process::Stdio::inherit());
+//       cmd.stdin(std::process::Stdio::inherit());
+//       cmd.stdout(std::process::Stdio::inherit());
+//       cmd.stderr(std::process::Stdio::inherit());
 
-      let mut child = cmd.spawn()?;
+//       let mut child = cmd.spawn()?;
 
-      let status = child.wait().await?;
+//       let status = child.wait().await?;
 
-      Ok::<_, std::io::Error>(status)
-    })
-  }
+//       Ok::<_, std::io::Error>(status)
+//     })
+//   }
 
-  let results: Vec<ExitStatus> = futs.try_collect().await.context("spawn processes")?;
+//   let results: Vec<ExitStatus> = futs.try_collect().await.context("spawn processes")?;
 
-  println!("======== cluster end ========");
-  println!("{:#?}", results);
+//   println!("======== cluster end ========");
+//   println!("{:#?}", results);
 
-  Ok(())
-}
+//   Ok(())
+// }
 
 fn token(
   CreateToken {
