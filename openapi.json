@@ -415,7 +415,6 @@
                 "type": "object",
                 "required": [
                   "name",
-                  "payment_method_id",
                   "plan_id"
                 ],
                 "properties": {
@@ -440,9 +439,6 @@
                     "type": "object",
                     "additionalProperties": true,
                     "nullable": true
-                  },
-                  "payment_method_id": {
-                    "type": "string"
                   }
                 },
                 "additionalProperties": false
@@ -6212,7 +6208,6 @@
                   "first_name",
                   "last_name",
                   "password",
-                  "payment_method_nonce",
                   "plan_id"
                 ],
                 "properties": {
@@ -6279,13 +6274,6 @@
                   },
                   "device_id": {
                     "type": "string"
-                  },
-                  "payment_method_nonce": {
-                    "type": "string"
-                  },
-                  "payment_device_data": {
-                    "type": "string",
-                    "nullable": true
                   }
                 },
                 "additionalProperties": false
