@@ -13,6 +13,12 @@
 
 # Openstream Radio Streaming Server
 
+#### A modern radio streaming server
+
+![Openstream Server Screenshot](./openstream-screenshot.png)
+
+
+
 Openstream is a modern radio streaming server.
 Modern being scalable, multi-tenant and API-controlled.
 
