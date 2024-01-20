@@ -18,7 +18,7 @@ Modern being scalable, multi-tenant and API-controlled.
 
 You can choose to run your own openstream server on-premise or to create a broadcaster account at [Openstream Studio](https://studio.openstream.fm)
 
-You can also acess the API documentation at [Openstream API Documentation](https://api.openstream.fm/docs). If you are running Openstream on-premise just change the `baseUrl` of the API server.
+You can also access the API documentation at [Openstream API Documentation](https://api.openstream.fm/docs). If you are running Openstream on-premise just change the `baseUrl` of the API server.
 
 
 ## Scalable
