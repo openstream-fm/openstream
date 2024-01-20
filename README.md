@@ -15,7 +15,7 @@
 
 #### A modern radio streaming server
 
-![Openstream Server Screenshot](./openstream-screenshot.png)
+![Openstream Studio Screenshot](./screenshot.png)
 
 
 
