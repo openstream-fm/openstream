@@ -16,6 +16,4 @@ export type Payload = {
   account_system_metadata?: Metadata;
   email_verification_code: string;
   device_id: string;
-  payment_method_nonce: string;
-  payment_device_data: string | null;
 };

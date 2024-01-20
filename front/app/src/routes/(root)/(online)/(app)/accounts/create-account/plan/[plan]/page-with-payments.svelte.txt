@@ -15,74 +15,59 @@
 	import { invalidate_siblings } from "$lib/invalidate";
 	import { lang, locale } from "$lib/locale";
 	import { logical_fly } from "$share/transition";
-  // TODO: payments
-  // import PaymentMethodSelector from "$share/braintree/PaymentMethodSelector.svelte";
+  import PaymentMethodSelector from "$share/braintree/PaymentMethodSelector.svelte";
 	import { display_fly_enter } from "$share/display_transitions";
 	import { VALIDATE_ACCOUNT_NAME_MAX_LEN } from "$server/defs/constants";
   
   let account_name = "";
   // let sending_data = false;
 
-  // TODO: payments
-  // let selector: PaymentMethodSelector;
-  // let payment_method_id: string | null = null;
-    
+  let selector: PaymentMethodSelector;
+  let payment_method_id: string | null = null;
   // let payment_nonce: string | null = null;
   // let payment_device_data: string | null = null;
   // let dropin: Dropin;
 
-  // TODO: payments
-  // let view: "data" | "pay" = "data";
-  let view = "data";
-
-  // TODO: payments
-  // const send_data = action(async () => {
-  //   view = "pay";
-  // })
-  // const back_to_data = () => {
-  //   view = "data"; 
-  // }
-  // let sending_pay = false;
-  let sending_data = false;
-
-  // TODO: payments
-  // const send_pay = action(async () => {
+  let view: "data" | "pay" = "data";
+  
   const send_data = action(async () => {
-    //  TODO: payments
-    // if (sending_pay) return;
-		// sending_pay = true;
-    if (sending_data) return;
-    sending_data = true;
+    view = "pay";
+  })
+
+  const back_to_data = () => {
+    view = "data"; 
+  }
+  
+  let sending_pay = false;
+  
+  const send_pay = action(async () => {
+    
+    if (sending_pay) return;
+		sending_pay = true;
 
     try {
-      // TODO: payments
-      // try {
-      //   payment_method_id = await selector.requestMethodId();
-      // } catch(e) {
-      //   sending_pay = false;
-      //   // we dont log a notifier message here as it automatically shows the error in the UI
-      //   return;
-      // }
+      try {
+        payment_method_id = await selector.requestMethodId();
+      } catch(e) {
+        sending_pay = false;
+        // we dont log a notifier message here as it automatically shows the error in the UI
+        return;
+      }
 
       const payload: import("$api/accounts/POST/Payload").Payload = {
         plan_id: data.plan._id,
-        // TODO: payments
-        // payment_method_id,
+        payment_method_id,
         name: account_name,
       };
 
       const { account } = await _post<import("$api/accounts/POST/Output").Output>("/api/accounts", payload);
 
-      // TODO: payments
-      // sending_pay = false;
-      sending_data = false;
+      sending_pay = false;
 
       goto(`/accounts/${account._id}`, { invalidateAll: true });
       invalidate_siblings();
     } catch (e) {
-      // TODO: payments
-      // sending_pay = false;
-      sending_data = false;
+      sending_pay = false;
       throw e;
     }
   })
@@ -131,11 +116,9 @@
     padding: 0 1.5rem;
   }
 
-  /* TODO: payments
   .view-pay h2 {
     margin-bottom: 1rem;
   }
-  */
 
   .org-explain {
     color: #999;
@@ -201,7 +184,6 @@
     background: rgba(0,0,0,0.05); 
   }
 
-  /* TODO: payments 
   .back-to {
 		margin-top: 1rem;
 		font-size: 0.9rem;
@@ -216,7 +198,7 @@
 		min-height: 10rem;
 		padding: 0 2.5rem;
 		width: 100%;
-	} */
+	}
 </style>
 
 <svelte:head>
@@ -308,8 +290,7 @@
       </form>
     </Formy>
 
-  <!-- TODO: payments
-   <Formy action={send_pay} let:submit>
+    <Formy action={send_pay} let:submit>
       <form
         novalidate
         class="view view-pay"
@@ -327,7 +308,7 @@
             bind:saved_methods={data.payment_methods.items}
             bind:this={selector}
           />
-          <-- <Dropin authorization="sandbox_d58xyrp3_xbw6cq92jcgfmzdh" bind:this={dropin}  /> ->
+          <!--<Dropin authorization="sandbox_d58xyrp3_xbw6cq92jcgfmzdh" bind:this={dropin}  />-->
         </div>
 
         <button class="back-to" on:click|preventDefault={() => back_to_data()}>
@@ -338,6 +319,6 @@
           {$locale.pages["accounts/create_account/plan"].form.submit}
         </button>
       </form>
-    </Formy> -->
+    </Formy>
   </div>
 </div>

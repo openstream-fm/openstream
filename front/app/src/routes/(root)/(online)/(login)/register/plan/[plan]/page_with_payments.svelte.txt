@@ -1,17 +1,17 @@
 <script lang="ts">
-	export let data: import("./$types").PageData;
-	import "$share/LoginDashboard/login-page.css";
+	export let data: import('./$types').PageData;
+	import '$share/LoginDashboard/login-page.css';
 
-	import { ripple } from "$share/ripple";
-	import Email from "$share/Form/Email.svelte";
-	import Password from "$share/Form/Password.svelte";
-	import TextField from "$share/Form/TextField.svelte";
-	import { action, _post } from "$share/net.client";
+	import { ripple } from '$share/ripple';
+	import Email from '$share/Form/Email.svelte';
+	import Password from '$share/Form/Password.svelte';
+	import TextField from '$share/Form/TextField.svelte';
+	import { action, _post } from '$share/net.client';
 	import { 
 		mdiAccountOutline,
 		// mdiPhoneOutline
-	} from "@mdi/js";
-	import Validator from "$share/formy/Validator.svelte";
+	} from '@mdi/js';
+	import Validator from '$share/formy/Validator.svelte';
 	import {
 		_confirmation_password,
 		_email,
@@ -19,100 +19,88 @@
 		_new_user_email,
 		_string
 		// _phone,
-	} from "$share/formy/validate";
-	import Formy from "$share/formy/Formy.svelte";
-	import "$share/LoginDashboard/login-page.css";
-	import { goto } from "$app/navigation";
-	import Color from "color";
-	import { scale } from "svelte/transition";
-	import CircularProgress from "$share/CircularProgress.svelte";
-	import { lang, locale } from "$lib/locale";
-	import { invalidate_siblings } from "$lib/invalidate";
-	import { logical_fly } from "$share/transition";
-	// TODO: payments
-	// import Dropin from "$share/braintree/Dropin.svelte";
+	} from '$share/formy/validate';
+	import Formy from '$share/formy/Formy.svelte';
+	import '$share/LoginDashboard/login-page.css';
+	import { goto } from '$app/navigation';
+	import Color from 'color';
+	import { scale } from 'svelte/transition';
+	import CircularProgress from '$share/CircularProgress.svelte';
+	import { lang, locale } from '$lib/locale';
+	import { invalidate_siblings } from '$lib/invalidate';
+	import { logical_fly } from '$share/transition';
+	import Dropin from "$share/braintree/Dropin.svelte";
 
-	// TODO: payments
-	// let dropin: Dropin;
-	// let payment_nonce: string | null = null;
-	// let payment_device_data: string | null = null;
+	let dropin: Dropin;
+	let payment_nonce: string | null = null;
+	let payment_device_data: string | null = null;
 
-	let first_name = "";
-	let last_name = "";
-	let account_name = "";
-	// let phone = "";
-	let email = "";
-	let password = "";
-	let confirm_password = "";
+	let first_name = '';
+	let last_name = '';
+	let account_name = '';
+	// let phone = '';
+	let email = '';
+	let password = '';
+	let confirm_password = '';
 
-	let email_verification_code = "";
+	let email_verification_code = '';
 
-	// TODO: payments
-	// let view: "data" | "code" | "pay" = "data";
-	let view: "data" | "code" = "data";
+	let view: 'data' | 'code' | 'pay' = 'data';
 
 	const back_to_data = () => {
-		view = "data";
+		view = 'data';
 	};
 
-	// TODO: payments
-	// const back_to_pay = () => {
-	// 	email_verification_code = "";
-	// 	view = "pay";
-	// };
+	const back_to_pay = () => {
+		email_verification_code = '';
+		view = 'pay';
+	};
 
 	let sending_data = false;
 	const submit_data = action(async () => {
-		// TODO: payments
-		// view = "pay";
-		view = "code"
-		
-		// TODO: payments added lines
-		let payload: import("$api/auth/email-verification/send-code/POST/Payload").Payload = { email };
-		await _post(`/api/auth/email-verification/send-code`, payload);
-
+		view = 'pay';
 	});
 
-	// TODO: payments
-	// let sending_pay = false;
-	// const submit_pay = action(async () => {
-	// 	if (sending_pay) return;
-	// 	sending_pay = true;
-	// 	try {
-	// 		try {
-	// 			const payment_result = await dropin.requestPaymentMethod();
-	// 			if (typeof payment_result?.nonce !== "string") {
-	// 				throw new Error("Payment internal error: invalid response");
-	// 			} else {
-	// 				payment_nonce = payment_result.nonce;
-	// 				payment_device_data = payment_result.deviceData || null;
-	// 			}
-	// 		} catch (e) {
-	// 			sending_pay = false;
-	// 			console.warn("dropin.requestPaymentMethod() error", e);
-	// 			// we dont log a notifier message here as it automatically shows the error in the UI
-	// 			return;
-	// 		}
+	let sending_pay = false;
+	const submit_pay = action(async () => {
+		if (sending_pay) return;
+		sending_pay = true;
+		try {
+			try {
+				const payment_result = await dropin.requestPaymentMethod();
+				if (typeof payment_result?.nonce !== 'string') {
+					throw new Error('Payment internal error: invalid response');
+				} else {
+					payment_nonce = payment_result.nonce;
+					payment_device_data = payment_result.deviceData || null;
+				}
+			} catch (e) {
+				sending_pay = false;
+				console.warn('dropin.requestPaymentMethod() error', e);
+				// we dont log a notifier message here as it automatically shows the error in the UI
+				return;
+			}
 
-	// 		let payload: import("$api/auth/email-verification/send-code/POST/Payload").Payload = {
-	// 			email
-	// 		};
-	// 		await _post(`/api/auth/email-verification/send-code`, payload);
+			let payload: import('$api/auth/email-verification/send-code/POST/Payload').Payload = {
+				email
+			};
 
-	// 		sending_pay = false;
-	// 		view = "code";
-	// 	} catch (e) {
-	// 		sending_pay = false;
-	// 		throw e;
-	// 	}
-	// });
+			await _post(`/api/auth/email-verification/send-code`, payload);
+
+			sending_pay = false;
+			view = 'code';
+		} catch (e) {
+			sending_pay = false;
+			throw e;
+		}
+	});
 
 	let sending_code = false;
 	const submit_code = action(async () => {
 		if (sending_code) return;
 		sending_code = true;
 		try {
-			const payload: Omit<import("$api/auth/user/register/POST/Payload").Payload, "device_id"> = {
+			const payload: Omit<import('$api/auth/user/register/POST/Payload').Payload, 'device_id'> = {
 				plan_id: data.plan._id,
 				first_name,
 				last_name,
@@ -121,13 +109,12 @@
 				email,
 				password,
 				email_verification_code: email_verification_code.trim(),
-				// TODO: payments
-				// payment_method_nonce: payment_nonce!,
-				// payment_device_data: payment_device_data,
+				payment_method_nonce: payment_nonce!,
+				payment_device_data: payment_device_data,
 			};
 
-			const { account } = await _post<import("$api/auth/user/register/POST/Output").Output>(
-				"/api/auth/user/register",
+			const { account } = await _post<import('$api/auth/user/register/POST/Output').Output>(
+				'/api/auth/user/register',
 				payload
 			);
 			sending_code = false;
@@ -143,14 +130,14 @@
 	try {
 		color = new Color(data.plan.color);
 	} catch (e) {
-		color = new Color("#000");
+		color = new Color('#000');
 	}
 
 	const bg_color = color.alpha(0.1).toString();
 
-	import { form } from "../../../transitions";
-	import { display_fly_enter } from "$share/display_transitions";
-	import { VALIDATE_ACCOUNT_NAME_MAX_LEN, VALIDATE_ACCOUNT_NAME_MIN_LEN, VALIDATE_USER_EMAIL_MAX_LEN, VALIDATE_USER_FIRST_NAME_MAX_LEN, VALIDATE_USER_LAST_NAME_MAX_LEN, VALIDATE_USER_PASSWORD_MAX_LEN, VALIDATE_USER_PASSWORD_MIN_LEN } from "$server/defs/constants";
+	import { form } from '../../../transitions';
+	import { display_fly_enter } from '$share/display_transitions';
+	import { VALIDATE_ACCOUNT_NAME_MAX_LEN, VALIDATE_ACCOUNT_NAME_MIN_LEN, VALIDATE_USER_EMAIL_MAX_LEN, VALIDATE_USER_FIRST_NAME_MAX_LEN, VALIDATE_USER_LAST_NAME_MAX_LEN, VALIDATE_USER_PASSWORD_MAX_LEN, VALIDATE_USER_PASSWORD_MIN_LEN } from '$server/defs/constants';
 
   const format_price = (price: number): string => {
     return new Intl.NumberFormat($lang, {
@@ -286,8 +273,6 @@
 		text-decoration: underline;
 	}
 
-  /**
-	TODO: payments
 	.payment-message {
 		text-align: center;
 		max-width: 80%;
@@ -303,7 +288,6 @@
 		padding: 0 2.5rem;
 		width: 100%;
 	}
-	*/
 </style>
 
 <svelte:head>
@@ -311,9 +295,7 @@
 </svelte:head>
 
 <div class="login-page-box" in:form>
-	<!-- TODO: payments  -->
-	<!-- {#if view === "data" || view === "pay"} -->
-	{#if view === "data"}
+	{#if view === 'data' || view === 'pay'}
 		<div class="login-page-title" in:logical_fly|local={{ duration: 250, x: -25 }}>
 			{$locale.pages.register.title}
 		</div>
@@ -331,7 +313,7 @@
 				{data.plan.display_name}
 			</div>
 			<div class="plan-price">
-				{$locale.pages.register.plan.n_per_month.replace("@n", format_price(data.plan.price))}
+				{$locale.pages.register.plan.n_per_month.replace('@n', format_price(data.plan.price))}
 			</div>
 			<div class="plan-features">
 				<div class="plan-feature">
@@ -367,7 +349,7 @@
 			novalidate
 			on:submit={submit}
 			class="view view-data"
-			class:active={view === "data"}
+			class:active={view === 'data'}
 			use:display_fly_enter={{ start: false, show: view === "data", x: -25, duration: 200 }}
 		>
 			<h2>{$locale.pages.register.form.title}</h2>
@@ -478,13 +460,12 @@
 		</form>
 	</Formy>
 
-	<!-- TODO: payments -->
-	<!-- <Formy action={submit_pay} let:submit>
+	<Formy action={submit_pay} let:submit>
 		<form
 			novalidate
 			on:submit={submit}
 			class="view view-pay"
-			class:active={view === "pay"}
+			class:active={view === 'pay'}
 			use:display_fly_enter={{ start: false, show: view === "pay", x: -25, duration: 200 }}
 		>
 			<h2>{$locale.pages.register.pay.title}</h2>
@@ -515,14 +496,14 @@
 				{$locale.pages.register.form.next}
 			</button>
 		</form>
-	</Formy> -->
+	</Formy>
 
 	<Formy action={submit_code} let:submit>
 		<form
 			novalidate
 			on:submit={submit}
 			class="view view-code"
-			class:active={view === "code"}
+			class:active={view === 'code'}
 			use:display_fly_enter={{ start: false, show: view === "code", x: -25, duration: 200 }}
 		>
 			<h2>
@@ -541,10 +522,10 @@
 			</div>
 
 			<div class="code-message">
-				{@html $locale.pages.register.verification.message_html.replace("@email", email)}
+				{@html $locale.pages.register.verification.message_html.replace('@email', email)}
 			</div>
 
-			<button class="back-to ripple-container" use:ripple on:click|preventDefault={back_to_data}>
+			<button class="back-to ripple-container" use:ripple on:click|preventDefault={back_to_pay}>
 				{$locale.pages.register.back}
 			</button>
 

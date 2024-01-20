@@ -160,10 +160,12 @@ pub mod post {
   use constants::validate::*;
   use db::account::{Limit, Limits};
   use db::models::user_account_relation::UserAccountRelationKind;
-  use db::payment_method::PaymentMethod;
+  // TODO: payments
+  // use db::payment_method::PaymentMethod;
+  // use db::current_filter_doc;
   use db::plan::Plan;
+  use db::run_transaction;
   use db::user::User;
-  use db::{current_filter_doc, run_transaction};
   use modify::Modify;
   use schemars::JsonSchema;
   use serde_util::DateTime;
@@ -194,7 +196,8 @@ pub mod post {
     pub user_metadata: Option<Metadata>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub system_metadata: Option<Metadata>,
-    pub payment_method_id: String,
+    // TODO: payments
+    // pub payment_method_id: String,
   }
 
   #[derive(Debug, Clone)]
@@ -294,7 +297,8 @@ pub mod post {
         user_id,
         user_metadata,
         system_metadata,
-        payment_method_id,
+        // TODO: payments
+        // payment_method_id,
       } = payload;
 
       let name = name.trim().to_string();
@@ -357,7 +361,9 @@ pub mod post {
       let account = Account {
         id: Account::uid(),
         plan_id,
-        payment_method_id: Some(payment_method_id.clone()),
+        // TODO: payments
+        // payment_method_id: Some(payment_method_id.clone()),
+        payment_method_id: None,
         name,
         limits,
         system_metadata,
@@ -380,13 +386,14 @@ pub mod post {
         if !tx_try!(User::exists_with_session(filter, &mut session).await) {
           return Err(HandleError::UserNotFound(user_id.clone()));
         }
-        {
-          let filter = current_filter_doc!{ PaymentMethod::KEY_ID: &payment_method_id, PaymentMethod::KEY_USER_ID: &user_id };
-          let exists = tx_try!(PaymentMethod::exists_with_session(filter, &mut session).await);
-          if !exists {
-            return Err(HandleError::PaymentMethodNotFound(payment_method_id.clone()));
-          }
-        }
+        // TODO: payments
+        // {
+        //   let filter = current_filter_doc!{ PaymentMethod::KEY_ID: &payment_method_id, PaymentMethod::KEY_USER_ID: &user_id };
+        //   let exists = tx_try!(PaymentMethod::exists_with_session(filter, &mut session).await);
+        //   if !exists {
+        //     return Err(HandleError::PaymentMethodNotFound(payment_method_id.clone()));
+        //   }
+        // }
 
         tx_try!(Account::insert_with_session(&account, &mut session).await);
         tx_try!(UserAccountRelation::insert_with_session(&relation, &mut session).await);
