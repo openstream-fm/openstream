@@ -45,7 +45,7 @@ Access Tokens can be obtained with a username-password pair of and admin or user
 Currently Openstream is meant to run in Linux systems but it's written in a portable language and can be ported to another Operative Systems with ease. 
 
 ## Open Source
-Openstream is licensed under the European Union Public License, version 1.2
+Openstream is licensed under the GNU General Public License v3.0
 
 ## Contact
 You can reach us at opensource@openstream.fm if in need for help or advice.
