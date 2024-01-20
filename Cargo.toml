@@ -20,16 +20,6 @@ resolver = "2"
 members = [
     "rs/bin/openstream",
 
-    "rs/internal-scripts/migrations",
-    "rs/internal-scripts/create-test-accounts",
-    "rs/internal-scripts/producer",
-    "rs/internal-scripts/client",
-    "rs/internal-scripts/mixed",
-    "rs/internal-scripts/ffstress",
-    "rs/internal-scripts/hls-logger",
-    "rs/internal-scripts/create-random-stream-connections",
-    "rs/internal-scripts/purge-deleted-items",
-
     "rs/config/constants",
 
     "rs/packages/openapi",
