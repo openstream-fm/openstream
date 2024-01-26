@@ -477,7 +477,7 @@
 			<!-- TODO: locale -->
 			<NullTextField
 				icon={mdiGooglePlay}
-				label={"App title in Google Play"}
+				label={"App title for Google Play"}
 				bind:value={current.user_metadata.mob_app.google_play_title}
 			/>
 			<Validator value={current.user_metadata.mob_app.google_play_title} fn={_string({ maxlen: 30 })} />
@@ -487,7 +487,7 @@
 			<!-- TODO: locale -->
 			<NullTextField
 				icon={mdiGooglePlay}	
-				label={"App subtitle in Google Play"}
+				label={"App subtitle for Google Play"}
 				bind:value={current.user_metadata.mob_app.google_play_subtitle}
 			/>
 			<Validator value={current.user_metadata.mob_app.google_play_subtitle} fn={_string({ maxlen: 80 })} />
@@ -495,7 +495,8 @@
 
 		<div class="field">
 			<NullTextField
-				label={"App description in Google Play"}
+				icon={mdiGooglePlay}
+				label={"App description for Google Play"}
 				multiline={true}
 				minrows={5}
 				bind:value={current.user_metadata.mob_app.google_play_description}
@@ -505,7 +506,7 @@
 
 		<div class="field">
 			<GooglePlayLangField
-				label={"App language in Google Play"}
+				label={"App language for Google Play"}
 				bind:value={current.user_metadata.mob_app.google_play_lang}
 			/>
 		</div>
