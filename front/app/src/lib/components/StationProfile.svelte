@@ -495,7 +495,6 @@
 
 		<div class="field">
 			<NullTextField
-				icon={mdiGooglePlay}
 				label={"App description for Google Play"}
 				multiline={true}
 				minrows={5}
