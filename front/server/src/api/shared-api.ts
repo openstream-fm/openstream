@@ -1,7 +1,7 @@
 import { type Request, Router } from "express";
 import type { Logger } from "../logger";
 import { json } from "../handler";
-import type { Client } from "../client";
+import type { Client } from "../client.server";
 import { ua } from "../ua";
 import { ip } from "../ip";
 import { ACCESS_TOKEN_HEADER, FORWARD_IP_HEADER } from "../constants";

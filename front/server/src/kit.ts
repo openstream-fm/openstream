@@ -1,4 +1,4 @@
-import { RequestHandler } from "express";
+import type { RequestHandler } from "express";
 import { ip } from "./ip";
 import { REAL_IP_HEADER } from "./constants";
 

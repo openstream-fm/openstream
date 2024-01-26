@@ -14,6 +14,7 @@ const config: UserConfig = {
 			"/api": "https://admin.dev.openstream.fm:18865",
 		} 
 	},
+
 	// @ts-ignore
 	plugins: [sveltekit()]
 };

@@ -1,5 +1,5 @@
 import StatusCode from "http-status-codes";
-import { ClientError } from "./client-error";
+import { ClientError } from "./client.server";
 import type { Logger } from "./logger";
 import type { Request, Response, NextFunction } from "express";
 import type { ErrorCode } from "./types";

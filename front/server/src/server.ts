@@ -1,28 +1,30 @@
-import express, { RequestHandler } from "express";
+import express, { type RequestHandler } from "express";
 import type { Config } from "./config";
 import type { Logger } from "./logger";
 import { studio_api } from "./api/studio-api";
 
 import path from "path";
 import { env } from "./env";
-import { sveltekit_dev_proxy } from "./sveltekit-dev-proxy";
 import { color } from "./color";
 import { kit } from "./kit";
 
 import { fileURLToPath } from "url";
 import { admin_api } from "./api/admin-api";
 import { payments_api } from "./payments/payments";
+import { get_client } from "./client.server";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const start = async ({ config, logger }: { config: Config, logger: Logger }) => {
 
   process.title = "openstream-front";
 
+  const client = get_client(config.openstream.api_base_url);
+
   if(config.studio?.enabled) {
 
     let app = express();
-
-    app.use("/api", studio_api({ config, logger }))
+    
+    app.use("/api", studio_api({ client, config, logger }))
     app.use(express.static(path.resolve(__dirname, "../../../static/studio"), { etag: true, dotfiles: "allow" }))
 
     if(env.SVELTEKIT_APP_DEV) {
@@ -49,7 +51,7 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
 
     let app = express();
 
-    app.use("/api", admin_api({ config, logger }))
+    app.use("/api", admin_api({ client, config, logger }))
     app.use(express.static(path.resolve(__dirname, "../../../static/admin"), { etag: true, dotfiles: "allow" }))
 
     if(env.SVELTEKIT_ADMIN_DEV) {

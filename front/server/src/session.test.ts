@@ -1,5 +1,5 @@
 import test from "ava";
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { type SessionData, decrypt, encrypt, session, get_cookie_session } from "./session";
 import { type Config } from "./config";
 import { ConsoleLogger } from "./logger";

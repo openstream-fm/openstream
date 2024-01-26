@@ -4,7 +4,7 @@
   "description": "openstream-front nodejs server",
   "type": "module",
   "scripts": {
-    "prepare": "ts-patch install -s",
+    "prepare": "ts-patch install -s & typia patch",
     "start": "node --no-warnings --experimental-specifier-resolution=node dist/cli.js start",
     "dev:run": "SVELTEKIT_APP_DEV=1 SVELTEKIT_APP_PORT=3100 SVELTEKIT_ADMIN_DEV=1 SVELTEKIT_ADMIN_PORT=5100 nodemon --no-warnings --experimental-specifier-resolution=node dist/cli.js start",
     "dev:compile": "tsc -w",
@@ -16,6 +16,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@openstream/client": "0.0.5",
     "accept-language-parser": "^1.5.0",
     "braintree": "^3.15.0",
     "commander": "^9.4.1",
@@ -28,11 +29,11 @@
     "kleur": "^4.1.5",
     "node-fetch": "^2.6.7",
     "qs": "^6.11.0",
-    "toml": "^3.0.0",
-    "ts-node-dev": "^2.0.0",
-    "typia": "^3.4.18"
+    "toml": "^3.0.0"
   },
   "devDependencies": {
+    "ts-node-dev": "^2.0.0",
+    "typia": "^5.4.1",
     "@types/accept-language-parser": "^1.5.3",
     "@types/braintree": "^3.3.8",
     "@types/cookie-parser": "^1.4.3",
@@ -41,10 +42,11 @@
     "ava": "^5.2.0",
     "nodemon": "^2.0.22",
     "openai": "^4.24.3",
-    "ts-patch": "^2.1.0",
+    "ts-node": "^10.9.2",
+    "ts-patch": "^3.1.2",
     "ttypescript": "^1.5.15",
     "type-fest": "^3.8.0",
-    "typescript": "^4.9.4"
+    "typescript": "^5.3.2"
   },
   "ava": {
     "nodeArguments": [

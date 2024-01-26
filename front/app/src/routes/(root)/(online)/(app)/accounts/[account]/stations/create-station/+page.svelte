@@ -16,6 +16,7 @@
   import { locale } from "$lib/locale";
 	import { invalidate_siblings } from "$lib/invalidate";
 	import type { StationFrequency } from "$server/defs/StationFrequency";
+	import type { GooglePlayLang } from "$lib/components/google-play-lang";
 
   let start = {
     name: null as string | null,
@@ -55,6 +56,11 @@
         ads: false,
         admob_app_id: null,
         admob_banner_id: null,
+
+        google_play_title: null,
+        google_play_subtitle: null,
+        google_play_description: null,
+        google_play_lang: "" as GooglePlayLang | "",
       }
     }
   }

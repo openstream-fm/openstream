@@ -3,7 +3,6 @@ import { Router, json as json_body_parser } from "express";
 import { ApiError, json_catch_handler } from "../error";
 import type { Logger } from "../logger";
 import { json } from "../handler";
-import { Client } from "../client";
 import { session } from "../session";
 import { ip } from "../ip";
 import { admin_token } from "../token";
@@ -13,6 +12,7 @@ import { shared_api } from "./shared-api";
 import { admin_media_key } from "../media_key";
 import { admin_id } from "../admin-id";
 import { host } from "../host";
+import type { Client } from "../client.server";
 
 export type PublicConfig = {
   studio_public_url: string
@@ -36,14 +36,14 @@ export const public_config = (hosts: HostConfig & { id: string }): PublicConfig 
 
 
 export const admin_api = ({
+  client,
   config,
   logger: _logger,
 }: {
+  client: Client,
   config: Config,
   logger: Logger,
 }) => {
-
-  const client = new Client(config.openstream.api_base_url, { logger: _logger });
 
   const logger = _logger.scoped("admin-api");
 

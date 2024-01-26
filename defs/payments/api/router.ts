@@ -1,7 +1,7 @@
 // This file was automatically generated from its Rust definition, do not manually edit
 // @ts-ignore
 import typia from "typia"
-import { PaymentsClient } from "./payments-client"
+import type { PaymentsClient } from "./payments-client"
 import type * as generate_client_token from "./generate-client-token/endpoint"
 import type * as ensure_customer from "./ensure-customer/endpoint"
 import type * as save_payment_method from "./save-payment-method/endpoint"

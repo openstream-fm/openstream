@@ -5,6 +5,7 @@
 		mdiFacebook,
 		mdiGooglePlay,
 		mdiInstagram,
+		mdiPaletteOutline,
 		mdiPhoneOutline,
 		mdiSpotify,
 		mdiTwitch,
@@ -54,6 +55,8 @@
 	import BooleanField from '$share/Form/BooleanField.svelte';
 	import { display_fly_enter } from '$share/display_transitions';
 	import type { LangCode } from '$server/defs/LangCode';
+	import type { GooglePlayLang } from './google-play-lang';
+	import GooglePlayLangField from './GooglePlayLangField.svelte';
 
 	export let account_id: string;
 	export let current: {
@@ -95,6 +98,11 @@
 				ads: boolean
 				admob_app_id: string | null
 				admob_banner_id: string | null
+				
+				google_play_title: string | null
+				google_play_subtitle: string | null
+				google_play_description: string | null
+				google_play_lang: GooglePlayLang | ""
 			}
 		}
 	};
@@ -464,6 +472,44 @@
 	</button>
 
 	<div class="fields section-advanced-fields" class:open={advanced_open} use:display_fly_enter={{ show: advanced_open, start: false, duration: 300, y: -25 }}>
+
+		<div class="field">
+			<!-- TODO: locale -->
+			<NullTextField
+				icon={mdiGooglePlay}
+				label={"App title for Google Play"}
+				bind:value={current.user_metadata.mob_app.google_play_title}
+			/>
+			<Validator value={current.user_metadata.mob_app.google_play_title} fn={_string({ maxlen: 30 })} />
+		</div>
+
+		<div class="field">
+			<!-- TODO: locale -->
+			<NullTextField
+				icon={mdiGooglePlay}	
+				label={"App subtitle for Google Play"}
+				bind:value={current.user_metadata.mob_app.google_play_subtitle}
+			/>
+			<Validator value={current.user_metadata.mob_app.google_play_subtitle} fn={_string({ maxlen: 80 })} />
+		</div>
+
+		<div class="field">
+			<NullTextField
+				label={"App description for Google Play"}
+				multiline={true}
+				minrows={5}
+				bind:value={current.user_metadata.mob_app.google_play_description}
+			/>
+			<Validator value={current.user_metadata.mob_app.google_play_description} fn={_string({ maxlen: 4000 })} />
+		</div>
+
+		<div class="field">
+			<GooglePlayLangField
+				label={"App language for Google Play"}
+				bind:value={current.user_metadata.mob_app.google_play_lang}
+			/>
+		</div>
+
 		<div class="field">
 			<ColorField
 				label={$locale.station_profile.labels.mob_app_base_color}

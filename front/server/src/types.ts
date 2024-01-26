@@ -1,4 +1,4 @@
-import type { PublicErrorCode } from "./defs/error/PublicErrorCode";
+import type { ClientErrorCode } from "./client.server";
 
 export type ErrorCodeMore = 
   "FRONT_INTERNAL" |
@@ -11,4 +11,5 @@ export type ErrorCodeMore =
   "FRONT_SESSION_EXPIRED" |
   "FRONT_RESOURCE_NOT_FOUND";
 
-export type ErrorCode = PublicErrorCode | ErrorCodeMore;
+// ClientErrorCode includes PublicErrorCode
+export type ErrorCode = ClientErrorCode | ErrorCodeMore;
