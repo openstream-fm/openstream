@@ -128,7 +128,7 @@ mod test {
         String::from("// This file was automatically generated from its Rust definition, do not manually edit"),
         String::from("// @ts-ignore"),
         String::from(r#"import typia from "typia""#),
-        String::from(r#"import { PaymentsClient } from "./payments-client""#),
+        String::from(r#"import type { PaymentsClient } from "./payments-client""#),
       ];
 
       $(

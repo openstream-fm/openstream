@@ -5,6 +5,7 @@
 		mdiFacebook,
 		mdiGooglePlay,
 		mdiInstagram,
+		mdiPaletteOutline,
 		mdiPhoneOutline,
 		mdiSpotify,
 		mdiTwitch,
@@ -475,6 +476,7 @@
 		<div class="field">
 			<!-- TODO: locale -->
 			<NullTextField
+				icon={mdiGooglePlay}
 				label={"App title in Google Play"}
 				bind:value={current.user_metadata.mob_app.google_play_title}
 			/>
@@ -484,6 +486,7 @@
 		<div class="field">
 			<!-- TODO: locale -->
 			<NullTextField
+				icon={mdiGooglePlay}	
 				label={"App subtitle in Google Play"}
 				bind:value={current.user_metadata.mob_app.google_play_subtitle}
 			/>
