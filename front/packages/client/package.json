@@ -1,14 +1,15 @@
 {
   "name": "@openstream/client",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "Openstream Radio Server Client",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "node": "./dist/index.js",
+      "types": "./dist/index.d.ts",
       "browser": "./browser.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
   "type": "module",
