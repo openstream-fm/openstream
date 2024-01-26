@@ -105,7 +105,5 @@
       "$defs/*": ["../server/src/defs/*"],
 			"$api/*": ["../server/src/defs/api/*"],
     },
-
-    "verbatimModuleSyntax": true,
   }
 }
