@@ -3,7 +3,7 @@ import { Router, json as json_body_parser } from "express";
 import { ApiError, json_catch_handler } from "../error";
 import type { Logger } from "../logger";
 import { handler, json } from "../handler";
-import { Client } from "../client";
+import type { Client } from "../client.server";
 import { session } from "../session";
 import { ip } from "../ip";
 import { user_token } from "../token";
@@ -44,13 +44,13 @@ export type LocalePayload = {
 
 export const studio_api = ({
   config,
+  client,
   logger: _logger,
 }: {
   config: Config,
+  client: Client,
   logger: Logger,
 }) => {
-
-  const client = new Client(config.openstream.api_base_url, { logger: _logger });
 
   const logger = _logger.scoped("studio-api");
 

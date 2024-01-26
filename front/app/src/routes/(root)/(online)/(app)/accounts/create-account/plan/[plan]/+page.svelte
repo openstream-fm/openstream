@@ -303,7 +303,10 @@
           </div>
         </div>
         <button type="submit" class="ripple-container login-page-button" use:ripple>
+          <!--
           {$locale.pages["accounts/create_account/plan"].form.next}
+          -->
+          {$locale.pages["accounts/create_account/plan"].form.submit}
         </button>
       </form>
     </Formy>

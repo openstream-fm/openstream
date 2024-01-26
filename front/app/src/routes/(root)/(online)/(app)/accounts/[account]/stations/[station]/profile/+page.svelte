@@ -11,6 +11,7 @@
 	import StationProfile from "$lib/components/StationProfile.svelte";
   import Formy from "$share/formy/Formy.svelte";
 	import { locale } from "$lib/locale";
+	import type { GooglePlayLang } from "$lib/components/google-play-lang";
 
   let db = {
     name: data.station.name,
@@ -46,6 +47,11 @@
         ads: !!(data.station.user_metadata.mob_app as any)?.ads ?? false,
         admob_app_id: String((data.station.user_metadata.mob_app as any)?.admob_app_id ?? "") || null,
         admob_banner_id: String((data.station.user_metadata.mob_app as any)?.admob_banner_id ?? "") || null,
+        
+        google_play_title: String((data.station.user_metadata.mob_app as any)?.google_play_title || "") || null,
+        google_play_subtitle: String((data.station.user_metadata.mob_app as any)?.google_play_subtitle || "") || null,
+        google_play_description: String((data.station.user_metadata.mob_app as any)?.google_play_description || "") || null,
+        google_play_lang: String((data.station.user_metadata.mob_app as any)?.google_play_lang ?? "") as GooglePlayLang | "",
       }
     }
   };

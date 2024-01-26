@@ -1,7 +1,7 @@
 import { fileURLToPath } from "url";
 import { load } from "../config";
 import { default_logger } from "../logger";
-import { Client } from "../client";
+import { Client } from "../client.server";
 import readline from "readline/promises";
 import { random_device_id } from "../session";
 
@@ -13,9 +13,10 @@ const __dirname = fileURLToPath(import.meta.url);
 
 const toml = "../../openstream-front.toml";
 
-const config = await load(toml, { logger });
+const config = load(toml, { logger });
 
-const client = new Client(config.openstream.api_base_url, { logger });
+// const client = new Client(config.openstream.api_base_url, { logger });
+const client = new Client(config.openstream.api_base_url);
 
 logger.info("Authenticate to proceed");
 const admin_email = await rl.question("Admin username: ");

@@ -17,12 +17,11 @@
 	import { click_out } from "$share/actions";
 	import { action, _post } from "$share/net.client";
 	import Icon from "$share/Icon.svelte";
-	import { mdiAccountCircleOutline, mdiAccountMultipleOutline, mdiAccountPlusOutline, mdiCastAudioVariant, mdiLogout } from "@mdi/js";
+	import { mdiAccountCircleOutline, mdiAccountMultipleOutline, mdiAccountPlusOutline, mdiLogout } from "@mdi/js";
 	import { goto } from "$app/navigation";
 	import { locale } from "$lib/locale";
 	import { invalidate_siblings } from "$lib/invalidate";
 	import { logical_fly } from "$share/transition";
-  import { STATION_PICTURES_VERSION } from "$defs/constants";
 
   const sign_out = action(async () => {
     await _post("/api/auth/user/logout", {});

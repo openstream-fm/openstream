@@ -1,0 +1,45 @@
+{
+  "name": "@openstream/client",
+  "version": "0.0.3",
+  "description": "Openstream Radio Server Client",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "node": "./dist/index.js",
+      "browser": "./browser.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "dev": "tsc -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openstream-fm/ts-client.git"
+  },
+  "keywords": [
+    "openstream",
+    "radio",
+    "client"
+  ],
+  "author": "Openstream.fm <opensource@openstream.fm>",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/openstream-fm/ts-client/issues"
+  },
+  "homepage": "https://github.com/openstream-fm/ts-client#readme",
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/qs": "^6.9.11",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "http-status-codes": "^2.3.0",
+    "node-fetch": "^3.3.2",
+    "qs": "^6.11.2"
+  }
+}

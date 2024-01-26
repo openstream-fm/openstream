@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import type { PaymentsErrorKind } from "../defs/payments/api/PaymentsErrorKind";
-import { PaymentsErrorPayload } from "../defs/payments/api/PaymentsErrorPayload";
-import { Logger } from "../logger";
+import type { PaymentsErrorPayload } from "../defs/payments/api/PaymentsErrorPayload";
+import type { Logger } from "../logger";
 import { StatusCodes } from "http-status-codes";
 
 export const ERROR_STATUS_CODE = StatusCodes.IM_A_TEAPOT;

@@ -1,6 +1,6 @@
-import { RequestHandler, Router } from "express"
-import { Config } from "../config";
-import { Logger } from "../logger";
+import { type RequestHandler, Router } from "express"
+import type { Config } from "../config";
+import type { Logger } from "../logger";
 import { BraintreePaymentsClient } from "./braintree-payments-client";
 import { add_all } from "../defs/payments/api/router";
 import body_parser from "body-parser";
