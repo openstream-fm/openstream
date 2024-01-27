@@ -182,6 +182,10 @@
 		margin: 0 auto;
 		background: #ccc;
 	}
+
+	.sep-one {
+		margin: 2rem auto;
+	}
 </style>
 
 
@@ -475,6 +479,14 @@
 
 		<div class="field">
 			<!-- TODO: locale -->
+			<GooglePlayLangField
+				label={"App language for Google Play"}
+				bind:value={current.user_metadata.mob_app.google_play_lang}
+			/>
+		</div>
+
+		<div class="field">
+			<!-- TODO: locale -->
 			<NullTextField
 				icon={mdiGooglePlay}
 				label={"App title for Google Play"}
@@ -495,20 +507,16 @@
 
 		<div class="field">
 			<NullTextField
+				icon={mdiGooglePlay}
 				label={"App description for Google Play"}
-				multiline={true}
+				multiline
 				minrows={5}
 				bind:value={current.user_metadata.mob_app.google_play_description}
 			/>
 			<Validator value={current.user_metadata.mob_app.google_play_description} fn={_string({ maxlen: 4000 })} />
 		</div>
 
-		<div class="field">
-			<GooglePlayLangField
-				label={"App language for Google Play"}
-				bind:value={current.user_metadata.mob_app.google_play_lang}
-			/>
-		</div>
+		<div class="advanced-sep sep-one" />
 
 		<div class="field">
 			<ColorField
