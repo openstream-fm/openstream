@@ -7,9 +7,9 @@
   export let on_change: ((v: string) => void) | null =  null; 
   export let lang_names: Record<GooglePlayLang, string> = google_play_langs;  
 
-  $: lang_options = Object.entries(lang_names).map(([ value, label ]) => {
-    return { value, label: lang_names[value as GooglePlayLang] || label }
-  }).sort((a, b) => a.label.localeCompare(b.label));
+  $: lang_options = Object.entries(lang_names).sort((a, b) => a[1].localeCompare(b[1])).map(([ value, label ]) => {
+    return { value, label: `${lang_names[value as GooglePlayLang] || label}, ${value}` }
+  })
 
   $: empty = value == null || value === "";
   $: options = empty ? [ {label: "", value: ""}, ...lang_options ] : lang_options;

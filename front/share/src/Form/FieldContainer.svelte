@@ -3,8 +3,10 @@
   export let readonly: boolean = false;
   export let icon: string | null = null;
   export let icon_viewbox: string | undefined = void 0;
+  export let multiline: boolean = false;
   export let btn: { icon: string, action: () => void, label: string, tabindex?: number | undefined } | null = null;
-	import Icon from "$share/Icon.svelte";
+	
+  import Icon from "$share/Icon.svelte";
 	import { ripple } from "$share/ripple";
 
   // let btn_click_token = false;
@@ -56,8 +58,15 @@
     font-size: 1.25rem;
     margin-inline-start: 0.5rem;
     margin-block-start: 0.45rem;
-    margin-inline-end: 0.15;
     transition: color 250ms ease;
+  }
+
+  .multiline .icon {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 1.75rem;
   }
 
   .field-container:not(.disabled):not(.readonly):focus-within > .icon {
@@ -102,7 +111,7 @@
   }
 </style>
 
-<label class="field-container" class:disabled class:readonly class:with-icon={icon != null}>
+<label class="field-container" class:disabled class:readonly class:multiline class:with-icon={icon != null}>
   {#if icon != null}
     <div class="icon">
       <Icon d={icon} viewBox={icon_viewbox} />
