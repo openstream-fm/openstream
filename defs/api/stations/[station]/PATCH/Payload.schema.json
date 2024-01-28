@@ -523,80 +523,80 @@
     },
     "website_url": {
       "type": "string",
-      "maxLength": 150,
-      "pattern": "^https?://.+",
+      "maxLength": 200,
+      "pattern": "^https?://(([a-z0-9-_]+)\\.)+([a-z0-9-_]+)",
       "nullable": true
     },
     "twitter_url": {
       "type": "string",
-      "maxLength": 150,
-      "pattern": "^https://twitter\\.com/.+",
+      "maxLength": 200,
+      "pattern": "^https?://(www\\.)?twitter\\.com/.+",
       "nullable": true
     },
     "facebook_url": {
       "type": "string",
-      "maxLength": 150,
-      "pattern": "^https://www\\.facebook\\.com/.+",
+      "maxLength": 200,
+      "pattern": "^https?://(www\\.)?facebook\\.com/.+",
       "nullable": true
     },
     "instagram_url": {
       "type": "string",
-      "maxLength": 150,
-      "pattern": "^https://www\\.instagram\\.com/.+",
+      "maxLength": 200,
+      "pattern": "^https?://(www\\.)?instagram\\.com/.+",
       "nullable": true
     },
     "threads_url": {
       "type": "string",
-      "maxLength": 150,
-      "pattern": "^https://www\\.threads\\.net/.+",
+      "maxLength": 200,
+      "pattern": "^https?://(www\\.)?threads\\.net/.+",
       "nullable": true
     },
     "youtube_url": {
       "type": "string",
-      "maxLength": 150,
-      "pattern": "^https://www\\.youtube\\.com/.+",
+      "maxLength": 200,
+      "pattern": "^https?://(www\\.)?youtube\\.com/.+",
       "nullable": true
     },
     "twitch_url": {
       "type": "string",
-      "maxLength": 150,
-      "pattern": "^https://www\\.twitch\\.tv/.+",
+      "maxLength": 200,
+      "pattern": "^https?://(www\\.)?twitch\\.tv/.+",
       "nullable": true
     },
     "tiktok_url": {
       "type": "string",
-      "maxLength": 150,
-      "pattern": "^https://www\\.tiktok\\.com/.+",
+      "maxLength": 200,
+      "pattern": "^https?://(www\\.)?tiktok\\.com/.+",
       "nullable": true
     },
     "spotify_url": {
       "type": "string",
-      "maxLength": 150,
-      "pattern": "^https://open\\.spotify\\.com/.+",
+      "maxLength": 200,
+      "pattern": "^https?://((open|www)\\.)?spotify\\.com/.+",
       "nullable": true
     },
     "radiocut_url": {
       "type": "string",
-      "maxLength": 150,
-      "pattern": "^https://radiocut\\.fm/.+",
+      "maxLength": 200,
+      "pattern": "^https?://(www\\.)?radiocut\\.fm/.+",
       "nullable": true
     },
     "google_play_url": {
       "type": "string",
-      "maxLength": 150,
-      "pattern": "^https://play\\.google\\.com/.+",
+      "maxLength": 200,
+      "pattern": "^https?://play\\.google\\.com/.+",
       "nullable": true
     },
     "app_store_url": {
       "type": "string",
-      "maxLength": 150,
-      "pattern": "^https://apps\\.apple\\.com/.+",
+      "maxLength": 200,
+      "pattern": "^https?://apps\\.apple\\.com/.+",
       "nullable": true
     },
     "external_relay_url": {
       "type": "string",
-      "maxLength": 200,
-      "pattern": "^https?://.+",
+      "maxLength": 2000,
+      "pattern": "^https?://(([a-z0-9-_]+)\\.)+([a-z0-9-_]+)",
       "nullable": true
     },
     "external_relay_redirect": {

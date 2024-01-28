@@ -6381,10 +6381,12 @@ checksum = "b92f40481c04ff1f4f61f304d61793c7b56ff76ac1469f1beb199b1445b253bd"
 dependencies = [
  "idna 0.4.0",
  "lazy_static",
+ "phonenumber",
  "regex",
  "serde",
  "serde_derive",
  "serde_json",
+ "unic-ucd-common",
  "url",
  "validator_derive",
 ]

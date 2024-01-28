@@ -84,7 +84,7 @@ pub mod patch {
         max = "VALIDATE_USER_FIRST_NAME_MAX_LEN",
         message = "First name is either too long or too short"
       ),
-      // non_control_character(message = "First name contains invalid characters")
+      non_control_character(message = "First name contains invalid characters")
     )]
     first_name: Option<String>,
 
@@ -95,7 +95,7 @@ pub mod patch {
         max = "VALIDATE_USER_LAST_NAME_MAX_LEN",
         message = "Last name is either too long or too short"
       ),
-      // non_control_character(message = "Last name contains invalid characters")
+      non_control_character(message = "Last name contains invalid characters")
     )]
     last_name: Option<String>,
 
@@ -127,7 +127,7 @@ pub mod patch {
         max = "VALIDATE_USER_LANGUAGE_MAX_LEN",
         message = "Language is either too long or too short"
       ),
-      // non_control_character(message = "Language contains invalid characters")
+      non_control_character(message = "Language contains invalid characters")
     )]
     language: Option<Option<String>>,
   }

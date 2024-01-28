@@ -113,12 +113,17 @@ fn generate_imports<T: TS + ?Sized>(out: &mut String) -> Result<(), ExportError>
 fn import_path(from: &Path, import: &Path) -> String {
     let rel_path =
         diff_paths(import, from.parent().unwrap()).expect("failed to calculate import path");
-    match rel_path.components().next() {
+
+    let mut str = match rel_path.components().next() {
         Some(Component::Normal(_)) => format!("./{}", rel_path.to_string_lossy()),
         _ => rel_path.to_string_lossy().into(),
     }
     .trim_end_matches(".ts")
-    .to_owned()
+    .to_owned();
+
+    str.push_str(".js");
+
+    str
 }
 
 // Construct a relative path from a provided base directory path to the provided path.
