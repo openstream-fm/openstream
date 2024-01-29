@@ -213,11 +213,13 @@ pub mod validate {
 
   // urls
   #[const_register]
-  pub const VALIDATE_STATION_URLS_MAX_LEN: usize = 150;
+  pub const VALIDATE_STATION_URLS_MAX_LEN: usize = 200;
 
+  // see https://stackoverflow.com/questions/417142/what-is-the-maximum-length-of-a-url-in-different-browsers
+  // for limits on the url length
   // external relay url
   #[const_register]
-  pub const VALIDATE_STATION_EXTERNAL_RELAY_URL_MAX_LEN: usize = 200;
+  pub const VALIDATE_STATION_EXTERNAL_RELAY_URL_MAX_LEN: usize = 2_000;
 
   #[const_register]
   pub const VALIDATE_STATION_FREQUENCY_MAX: f64 = 100_000.0;

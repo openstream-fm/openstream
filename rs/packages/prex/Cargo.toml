@@ -26,7 +26,7 @@ tungstenite = "0.21.0"
 pin-project-lite = "0.2.13"
 hyper-util = "0.1.2"
 modify = { path = "../modify" }
-validator = { version = "0.16.1", features = ["derive"] }
+validator = { version = "0.16.1", features = ["derive", "phone", "unic"] }
 
 [dev-dependencies]
 test-util = { version = "0.1.0", path = "../test-util" }

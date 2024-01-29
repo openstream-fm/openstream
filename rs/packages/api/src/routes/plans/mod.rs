@@ -150,7 +150,7 @@ pub mod post {
         max = "VALIDATE_PLAN_IDENTIFIER_MAX_LEN",
         message = "Identifier is either too short or too long"
       ),
-      // non_control_character(message = "Identifier contains invalid characters")
+      non_control_character(message = "Identifier contains invalid characters")
     )]
     pub identifier: String,
 
@@ -161,7 +161,7 @@ pub mod post {
         max = "VALIDATE_PLAN_SLUG_MAX_LEN",
         message = "Slug is either too short or too long"
       ),
-      // non_control_character(message = "Slug contains invalid characters")
+      non_control_character(message = "Slug contains invalid characters")
     )]
     pub slug: String,
 
@@ -172,7 +172,7 @@ pub mod post {
         max = "VALIDATE_PLAN_NAME_MAX_LEN",
         message = "Display name is either too short or too long"
       ),
-      // non_control_character(message = "Display name contains invalid characters")
+      non_control_character(message = "Display name contains invalid characters")
     )]
     pub display_name: String,
 

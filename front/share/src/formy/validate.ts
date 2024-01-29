@@ -3,17 +3,17 @@ import { _get } from "$share/net.client";
 import { get } from "svelte/store";
 
 export const EMAIL = /^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/i
-export const TWITTER = /^https:\/\/twitter\.com\/.+/;
-export const FACEBOOK = /^https:\/\/www\.facebook\.com\/.+/;
-export const INSTAGRAM = /^https:\/\/www\.instagram\.com\/.+/;
-export const THREADS = /^https:\/\/www\.threads\.net\/.+/;
-export const YOUTUBE = /^https:\/\/www\.youtube\.com\/.+/;
-export const TWITCH = /^https:\/\/www\.twitch\.tv\/.+/;
-export const TIKTOK = /^https:\/\/www\.tiktok\.com\/.+/;
-export const SPOTIFY = /^https:\/\/open\.spotify\.com\/.+/;
-export const RADIOCUT = /^https:\/\/radiocut\.fm\/.+/;
-export const GOOGLE_PLAY = /^https:\/\/play\.google\.com\/.+/;
-export const APP_STORE = /^https:\/\/apps\.apple\.com\/.+/;
+export const TWITTER = /^https?:\/\/(www\.)?twitter\.com\/.+/;
+export const FACEBOOK = /^https?:\/\/(www\.)?facebook\.com\/.+/;
+export const INSTAGRAM = /^https?:\/\/(www\.)?instagram\.com\/.+/;
+export const THREADS = /^https?:\/\/(www\.)?threads\.net\/.+/;
+export const YOUTUBE = /^https?:\/\/(www\.)?youtube\.com\/.+/;
+export const TWITCH = /^https?:\/\/(www\.)?twitch\.tv\/.+/;
+export const TIKTOK = /^https?:\/\/(www\.)?tiktok\.com\/.+/;
+export const SPOTIFY = /^https?:\/\/((open|www)\.)?spotify\.com\/.+/;
+export const RADIOCUT = /^https?:\/\/(www\.)?radiocut\.fm\/.+/;
+export const GOOGLE_PLAY = /^https?:\/\/play\.google\.com\/.+/;
+export const APP_STORE = /^https?:\/\/apps\.apple\.com\/.+/;
 
 export const is_valid_email = (str: string) => EMAIL.test(str);
 

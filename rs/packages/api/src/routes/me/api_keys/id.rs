@@ -158,7 +158,7 @@ pub mod patch {
         max = "VALIDATE_ACCESS_TOKEN_TITLE_MAX_LEN",
         message = "Title is either too short or too long"
       ),
-      // non_control_character(message = "Title contains invalid characters")
+      non_control_character(message = "Title contains invalid characters")
     )]
     title: Option<String>,
   }
