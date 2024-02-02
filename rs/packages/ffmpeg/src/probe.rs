@@ -42,13 +42,13 @@ pub async fn get(url: &str) -> Result<Object, FfprobeError> {
   cmd.arg("json");
 
   cmd.arg("-headers");
-  cmd.arg(
-    headers
-      .iter()
-      .map(|(k, v)| format!("{k}:{v}"))
-      .collect::<Vec<String>>()
-      .join("\r\n"),
-  );
+  cmd.arg(headers.iter().fold(String::new(), |mut acc, (k, v)| {
+    acc.push_str(k);
+    acc.push_str(": ");
+    acc.push_str(v);
+    acc.push_str("\r\n");
+    acc
+  }));
 
   cmd.arg(url);
 
