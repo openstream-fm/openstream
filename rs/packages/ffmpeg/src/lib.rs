@@ -98,22 +98,54 @@ pub struct FfmpegConfig {
 
 pub fn headers_for_url(url: &str) -> BTreeMap<String, String> {
   let mut headers = BTreeMap::<String, String>::new();
-  headers.insert("user-agent".into(), "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36".into());
-  headers.insert("origin".into(), url.into());
-  headers.insert("referer".into(), url.into());
-  // if let Ok(url) = url::Url::parse(url) {
-  //   Ok(url) => headers.insert("origin".into(), url.origin().ascii_serialization()),
-  // }
+  headers.insert("user-agent".into(), "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36".into());
 
-  headers.insert(
-    "sec-ch-ua".into(),
-    r#""Google Chrome";v="119", "Chromium";v="119", "Not?A_Brand";v="24""#.into(),
-  );
-  headers.insert("sec-ch-ua-mobile".into(), "?0".into());
-  headers.insert("sec-ch-ua-platform".into(), "Linux".into());
-  headers.insert("sec-fetch-dest".into(), "audio".into());
-  headers.insert("sec-fetch-mode".into(), "no-cors".into());
-  headers.insert("sec-fetch-site".into(), "same-origin".into());
+  match url::Url::parse(url) {
+    Ok(url) => match url.host_str() {
+      Some(host) if host.ends_with("edge-access.net") => {
+        headers.insert("origin".into(), "https://vmf.edge-apps.net".into());
+        headers.insert("referer".into(), "https://vmf.edge-apps.net/".into());
+        headers.insert(
+          "sec-ch-ua".into(),
+          r#""Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120""#.into(),
+        );
+        headers.insert("sec-ch-ua-mobile".into(), "?0".into());
+        headers.insert("sec-ch-ua-platform".into(), r#""Linux""#.into());
+        headers.insert("sec-fetch-dest".into(), "empty".into());
+        headers.insert("sec-fetch-mode".into(), "cors".into());
+        headers.insert("sec-fetch-site".into(), "cross-site".into());
+      }
+
+      _ => {
+        headers.insert("origin".into(), url.origin().ascii_serialization());
+        headers.insert("referer".into(), url.to_string());
+        headers.insert(
+          "sec-ch-ua".into(),
+          r#""Google Chrome";v="119", "Chromium";v="119", "Not?A_Brand";v="24""#.into(),
+        );
+        headers.insert("sec-ch-ua-mobile".into(), "?0".into());
+        headers.insert("sec-ch-ua-platform".into(), "Linux".into());
+        headers.insert("sec-fetch-dest".into(), "audio".into());
+        headers.insert("sec-fetch-mode".into(), "no-cors".into());
+        headers.insert("sec-fetch-site".into(), "same-origin".into());
+      }
+    },
+
+    Err(_) => {
+      headers.insert("origin".into(), url.into());
+      headers.insert("referer".into(), url.into());
+      headers.insert(
+        "sec-ch-ua".into(),
+        r#""Google Chrome";v="119", "Chromium";v="119", "Not?A_Brand";v="24""#.into(),
+      );
+      headers.insert("sec-ch-ua-mobile".into(), "?0".into());
+      headers.insert("sec-ch-ua-platform".into(), "Linux".into());
+      headers.insert("sec-fetch-dest".into(), "audio".into());
+      headers.insert("sec-fetch-mode".into(), "no-cors".into());
+      headers.insert("sec-fetch-site".into(), "same-origin".into());
+    }
+  };
+
   headers
 }
 
@@ -202,6 +234,25 @@ impl Ffmpeg {
       }
     }
 
+    // headers
+    if !self.config.headers.is_empty() {
+      cmd.arg("-headers");
+
+      cmd.arg(
+        self
+          .config
+          .headers
+          .iter()
+          .fold(String::new(), |mut acc, (k, v)| {
+            acc.push_str(k);
+            acc.push_str(": ");
+            acc.push_str(v);
+            acc.push_str("\r\n");
+            acc
+          }),
+      );
+    }
+
     // input
     cmd.arg("-i");
     match &self.config.input {
@@ -252,20 +303,6 @@ impl Ffmpeg {
     // loglevel
     cmd.arg("-loglevel");
     cmd.arg(self.config.loglevel.as_str());
-
-    // headers
-    if !self.config.headers.is_empty() {
-      let v = self
-        .config
-        .headers
-        .iter()
-        .map(|(k, v)| format!("{}:{}", k, v))
-        .collect::<Vec<_>>()
-        .join("\r\n");
-
-      cmd.arg("-headers");
-      cmd.arg(v);
-    }
 
     // output
     cmd.arg("-");
