@@ -16,7 +16,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@openstream/client": "0.0.5",
+    "@openstream/client": "^0.1.4",
     "accept-language-parser": "^1.5.0",
     "braintree": "^3.15.0",
     "commander": "^9.4.1",
@@ -33,7 +33,6 @@
     "typia": "^5.4.1"
   },
   "devDependencies": {
-    "ts-node-dev": "^2.0.0",
     "@types/accept-language-parser": "^1.5.3",
     "@types/braintree": "^3.3.8",
     "@types/cookie-parser": "^1.4.3",
@@ -43,6 +42,7 @@
     "nodemon": "^2.0.22",
     "openai": "^4.24.3",
     "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
     "ts-patch": "^3.1.2",
     "ttypescript": "^1.5.15",
     "type-fest": "^3.8.0",

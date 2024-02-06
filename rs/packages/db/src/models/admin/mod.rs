@@ -22,6 +22,7 @@ pub struct Admin {
   pub last_name: String,
   pub email: String,
   pub password: String,
+  pub language: Option<String>,
   pub system_metadata: Metadata,
   pub created_at: DateTime,
   pub updated_at: DateTime,
@@ -37,6 +38,7 @@ pub struct PublicAdmin {
   pub first_name: String,
   pub last_name: String,
   pub email: String,
+  pub language: Option<String>,
   pub system_metadata: Metadata,
   pub created_at: DateTime,
   pub updated_at: DateTime,
@@ -50,6 +52,7 @@ impl Admin {
       first_name: self.first_name,
       last_name: self.last_name,
       email: self.email,
+      language: self.language,
       system_metadata: self.system_metadata,
       created_at: self.created_at,
       updated_at: self.updated_at,
@@ -73,6 +76,7 @@ pub struct AdminPatch {
     non_control_character(message = "Fist name cannot contain control characters")
   )]
   pub first_name: Option<String>,
+
   #[serde(skip_serializing_if = "Option::is_none")]
   #[modify(trim)]
   #[validate(
@@ -84,33 +88,46 @@ pub struct AdminPatch {
     non_control_character(message = "Last name cannot contain control characters")
   )]
   pub last_name: Option<String>,
+
+  #[serde(skip_serializing_if = "Option::is_none")]
+  #[serde(default)]
+  #[serde(deserialize_with = "serde_util::map_some")]
+  #[modify(trim)]
+  #[validate(
+    length(
+      min = 1,
+      max = 60,
+      message = "Language is either too short or too long",
+    ),
+    non_control_character(message = "Language cannot contain control characters")
+  )]
+  pub language: Option<Option<String>>,
+
   #[serde(skip_serializing_if = "Option::is_none")]
   pub system_metadata: Option<Metadata>,
 }
 
 impl Admin {
   pub fn apply_patch(&mut self, patch: AdminPatch) -> Result<(), ApplyPatchError> {
-    if patch.first_name.is_none() && patch.last_name.is_none() && patch.system_metadata.is_none() {
+    if patch.first_name.is_none()
+      && patch.last_name.is_none()
+      && patch.language.is_none()
+      && patch.system_metadata.is_none()
+    {
       return Err(ApplyPatchError::PatchEmpty);
     }
 
-    if let Some(ref first_name) = patch.first_name {
-      let first_name = first_name.trim();
-      if first_name.is_empty() {
-        return Err(ApplyPatchError::invalid("firstName cannot be empty"));
-      }
-
-      self.first_name = first_name.into();
+    macro_rules! apply {
+      ($key:ident) => {{
+        if let Some($key) = patch.$key {
+          self.$key = $key;
+        }
+      }};
     }
 
-    if let Some(ref last_name) = patch.last_name {
-      let last_name = last_name.trim();
-      if last_name.is_empty() {
-        return Err(ApplyPatchError::invalid("lastName cannot be empty"));
-      }
-
-      self.last_name = last_name.into();
-    }
+    apply!(first_name);
+    apply!(last_name);
+    apply!(language);
 
     if let Some(metadata) = patch.system_metadata {
       self.system_metadata.merge(metadata);

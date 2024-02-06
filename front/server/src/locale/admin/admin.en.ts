@@ -4,11 +4,12 @@ import analytics from "../share/analytics/analytics.en";
 import countries from "../share/countries/countries.en";
 import langs from "../share/langs/langs.en";
 import misc from "../misc/misc.en";
+import language from "../share/language/language.en";
 
 const locale = {
 
   "lang": "en",
-  "region": null,
+  "region": null as string | null,
 
   // @notranslate
   "logo_text": "openstream",
@@ -25,7 +26,8 @@ const locale = {
   "countries": countries,
   "langs": langs,
   "misc": misc,
-
+  "language": language,
+  
   "pages": {
     "me": {
       "title": "Profile",

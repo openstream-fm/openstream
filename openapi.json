@@ -2526,6 +2526,10 @@
                           "email": {
                             "type": "string"
                           },
+                          "language": {
+                            "type": "string",
+                            "nullable": true
+                          },
                           "system_metadata": {
                             "type": "object",
                             "additionalProperties": true
@@ -2654,6 +2658,10 @@
                         "email": {
                           "type": "string"
                         },
+                        "language": {
+                          "type": "string",
+                          "nullable": true
+                        },
                         "system_metadata": {
                           "type": "object",
                           "additionalProperties": true
@@ -2748,6 +2756,10 @@
                         "email": {
                           "type": "string"
                         },
+                        "language": {
+                          "type": "string",
+                          "nullable": true
+                        },
                         "system_metadata": {
                           "type": "object",
                           "additionalProperties": true
@@ -2824,6 +2836,12 @@
                     "minLength": 1,
                     "nullable": true
                   },
+                  "language": {
+                    "type": "string",
+                    "maxLength": 60,
+                    "minLength": 1,
+                    "nullable": true
+                  },
                   "system_metadata": {
                     "type": "object",
                     "additionalProperties": true,
@@ -2862,6 +2880,10 @@
                     },
                     "email": {
                       "type": "string"
+                    },
+                    "language": {
+                      "type": "string",
+                      "nullable": true
                     },
                     "system_metadata": {
                       "type": "object",
@@ -5593,6 +5615,10 @@
                         "email": {
                           "type": "string"
                         },
+                        "language": {
+                          "type": "string",
+                          "nullable": true
+                        },
                         "system_metadata": {
                           "type": "object",
                           "additionalProperties": true
@@ -8259,6 +8285,10 @@
                             },
                             "email": {
                               "type": "string"
+                            },
+                            "language": {
+                              "type": "string",
+                              "nullable": true
                             },
                             "system_metadata": {
                               "type": "object",

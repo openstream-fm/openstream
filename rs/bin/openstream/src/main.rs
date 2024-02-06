@@ -811,6 +811,7 @@ fn create_admin(
         last_name,
         email,
         password: hash,
+        language: None,
         system_metadata: Default::default(),
         created_at: now,
         updated_at: now,

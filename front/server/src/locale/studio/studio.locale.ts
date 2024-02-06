@@ -11,7 +11,7 @@ import zh from "./studio.zh";
 import ar from "./studio.ar";
 
 export const studio_locales: StudioLocale[] = [ en, es, es_AR, pt, de, fr, it, zh, ar ];
-export const locales_map = new Map<string, StudioLocale>(Object.entries({
+export const studio_locales_map = new Map<string, StudioLocale>(Object.entries({
   en,
   es, 
   "es-AR": es_AR,
