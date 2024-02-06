@@ -13,7 +13,7 @@ import { user_media_key } from "../media_key";
 import { ua } from "../ua";
 import { shared_api } from "./shared-api";
 import { host } from "../host";
-import { default_studio_locale, locales_map, studio_locales } from "../locale/studio/studio.locale";
+import { default_studio_locale, studio_locales_map, studio_locales } from "../locale/studio/studio.locale";
 import type { StudioLocale } from "../locale/studio/studio.locale";
 import acceptLanguageParser from "accept-language-parser";
 import { LOCALE_DIR_HEADER, LOCALE_LANG_HEADER } from "../constants";
@@ -127,7 +127,7 @@ export const studio_api = ({
   api.route("/locale/:code.json")
     .get(json(async (req, res): Promise<LocalePayload> => {
       const code = req.params.code;
-      const locale = locales_map.get(code);
+      const locale = studio_locales_map.get(code);
       if(locale == null) {
         throw new ApiError(StatusCodes.NOT_FOUND, "FRONT_RESOURCE_NOT_FOUND", `Locale with code ${code} not found`);
       }

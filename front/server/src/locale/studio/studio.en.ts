@@ -7,6 +7,7 @@ import analytics from "../share/analytics/analytics.en";
 import payments from "../share/payments/payments.en";
 import station_profile from "../share/station-profile/station-profile.en";
 import misc from "../misc/misc.en";
+import language from "../share/language/language.en";
 
 const locale = {
 
@@ -31,25 +32,13 @@ const locale = {
   payments,
   misc,
   station_profile,
+  language,
 
   "copy_to_clipboard": "Copy to clipboard",
   "show_password": "Show password",
   "hide_password": "Hide password",
 
   "prevent_unload_message":  "If you leave this page your changes will be lost. Do you want to leave anyway?",
-
-  "language": {
-    "auto": "Auto detect",
-    "en": "English",
-    "es": "Español (Spanish)",
-    "es-AR": "Español de Argentina (Argentinian Spanish)" ,
-    "pt": "Português (Portuguese)",
-    "de": "Deutsche (German)",
-    "fr": "Française (French)",
-    "it": "Italiano (Italian)",
-    "zh": "简体中文 (Simplified Chinese)",
-    "ar": "عربي (Arabic)",
-  },
 
   "drawer": {
     "account_selector": {

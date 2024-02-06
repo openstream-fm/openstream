@@ -8,6 +8,7 @@ import analytics from "../share/analytics/analytics.fr";
 import payments from "../share/payments/payments.fr";
 import station_profile from "../share/station-profile/station-profile.fr";
 import misc from "../misc/misc.fr";
+import language from "../share/language/language.fr";
 
 const locale: import("./studio.locale").StudioLocale = {
 
@@ -32,25 +33,13 @@ const locale: import("./studio.locale").StudioLocale = {
   payments,
   misc,
   station_profile,
+  language,
 
   "copy_to_clipboard": "Copier dans le presse-papiers",
   "show_password": "Afficher le mot de passe",
   "hide_password": "Masquer le mot de passe",
 
   "prevent_unload_message":  "Si vous quittez cette page, les modifications que vous avez apportées seront perdues. Voulez-vous quitter la page quand même?",
-
-  "language": {
-    "auto": "Détection automatique",
-    "en": "English (Anglais)",
-    "es": "Español (Espagnol)",
-    "es-AR": "Español de Argentina (Espagnol argentin)",
-    "pt": "Portugyês (Portugais)",
-    "de": "Deutsche (Allemande)",
-    "fr": "Française",
-    "it": "Italiano (Italien)",
-    "zh": "简体中文 (Chinois Simplifié)",
-    "ar": "عربي (Arabe)",
-  },
 
   "drawer": {
     "account_selector": {

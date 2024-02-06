@@ -8,6 +8,7 @@ export type Admin = {
   last_name: string;
   email: string;
   password: string;
+  language: string | null;
   system_metadata: Metadata;
   created_at: DateTime;
   updated_at: DateTime;

@@ -3,13 +3,14 @@ import validate from "../share/validate/validate.es";
 import analytics from "../share/analytics/analytics.es";
 import countries from "../share/countries/countries.es";
 import langs from "../share/langs/langs.es";
-import misc from "../misc/misc.es";
+import misc from "../misc/misc.es-AR";
 import language from "../share/language/language.es";
+
 
 const locale: import("./admin.locale").AdminLocale = {
 
   "lang": "es",
-  "region": null,
+  "region": "AR",
 
   // @notranslate
   "logo_text": "openstream",

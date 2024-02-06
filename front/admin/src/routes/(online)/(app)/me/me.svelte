@@ -10,11 +10,12 @@
 	import { invalidateAll } from "$lib/invalidate";
 	import Email from "$share/Form/Email.svelte";
 	import Password from "$share/Form/Password.svelte";
-	import { mdiAccountOutline, mdiDevices, mdiShieldKeyOutline } from "@mdi/js";
+	import { mdiAccountOutline, mdiDevices, mdiShieldKeyOutline, mdiTranslate } from "@mdi/js";
 	import Icon from "$share/Icon.svelte";
   import Formy from "$share/formy/Formy.svelte";
   import Validator from "$share/formy/Validator.svelte";
-  import {
+  import SelectField from "$share/Form/SelectField.svelte";
+	import {
     _new_password,
     _confirmation_password,
     _string,
@@ -32,16 +33,16 @@
   let profile_db = {
     first_name: data.admin.first_name,
     last_name: data.admin.last_name,
+    language: data.admin.language ?? "auto",
     // phone: data.user.phone,
-    // language
   };
 
-  // $: language_options = [
-  //   { label: $locale.language.auto, value: "auto" },
-  //   ...Object.entries($locale.language).filter(([code, value]) => code !== "auto").map(([code, name]) => {
-  //     return { label: name, value: code };
-  //   }).sort((a, b) => a.label.localeCompare(b.label) ),
-  // ];
+  $: language_options = [
+    { label: $locale.language.auto, value: "auto" },
+    ...Object.entries($locale.language).filter(([code, value]) => code !== "auto").map(([code, name]) => {
+      return { label: name, value: code };
+    }).sort((a, b) => a.label.localeCompare(b.label) ),
+  ];
 
   let profile_current = clone(profile_db);
 
@@ -55,18 +56,18 @@
     
     const dif = diff(profile_db, profile_current);
     
-    // let language: string | null | undefined = undefined;
-    // if(dif.language != null) {
-    //   if(dif.language === "auto") language = null;
-    //   else language = dif.language;
-    // }
+    let language: string | null | undefined = undefined;
+    if(dif.language != null) {
+      if(dif.language === "auto") language = null;
+      else language = dif.language;
+    }
 
     // TODO: remove this partial
     const payload: Partial<import("$api/admins/[admin]/PATCH/Payload").Payload> = {
       first_name: dif.first_name,
       last_name: dif.last_name,
+      language,
       // phone: dif.phone,
-      // language,
     };
 
     await _patch(`/api/admins/${data.admin._id}`, payload);
@@ -343,14 +344,15 @@
           />
           <Validator value={profile_current.phone} fn={_phone()} />
         </div> -->
-        <!-- <div class="field">
+
+        <div class="field">
           <SelectField
             label={$locale.pages.me.fields.language}
             icon={mdiTranslate}
             bind:value={profile_current.language}
             options={language_options}
           />
-        </div> -->
+        </div>
       </div>
       <div class="submit-wrap">
         <button class="submit ripple-container" type="submit" use:ripple>

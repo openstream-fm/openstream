@@ -28,6 +28,10 @@
         "email": {
           "type": "string"
         },
+        "language": {
+          "type": "string",
+          "nullable": true
+        },
         "system_metadata": {
           "type": "object",
           "additionalProperties": true

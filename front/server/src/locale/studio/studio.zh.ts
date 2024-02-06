@@ -8,6 +8,7 @@ import analytics from "../share/analytics/analytics.zh";
 import payments from "../share/payments/payments.zh";
 import station_profile from "../share/station-profile/station-profile.zh";
 import misc from "../misc/misc.zh";
+import language from "../share/language/language.zh";
 
 const locale: import("./studio.locale").StudioLocale = {
 
@@ -32,25 +33,13 @@ const locale: import("./studio.locale").StudioLocale = {
   payments,
   misc,
   station_profile,
+  language,
 
   "copy_to_clipboard": "复制到剪贴板",
   "show_password": "显示密码",
   "hide_password": "隐藏密码",
 
   "prevent_unload_message":  "如果你离开此页面，你所做的更改将会丢失。你确定要离开此页面吗？",
-
-  "language": {
-    "auto": "自动检测",
-    "en": "English (英语)",
-    "es": "Español (西班牙语)",
-    "es-AR": "Español de Argentina (阿根廷西班牙语)",
-    "pt": "Português (葡萄牙语)",
-    "de": "Deutsche (德语)",
-    "fr": "Française (法语)",
-    "it": "Italiano (意大利语)",
-    "zh": "简体中文",
-    "ar": "عربي (阿拉伯)",
-  },
 
   "drawer": {
     "account_selector": {

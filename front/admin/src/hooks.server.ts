@@ -1,6 +1,6 @@
 import type { Handle, HandleFetch } from "@sveltejs/kit";
 import { env } from "./env.server";
-import { FORWARD_IP_HEADER, PROTOCOL_HEADER, REAL_IP_HEADER } from "$server/constants";
+import { FORWARD_IP_HEADER, LOCALE_DIR_HEADER, LOCALE_LANG_HEADER, PROTOCOL_HEADER, REAL_IP_HEADER } from "$server/constants";
 import { server_logger } from "$lib/logger.server";
 
 export const handle: Handle = async ({ event, resolve }) => {
@@ -29,11 +29,19 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   event.locals.protocol = proto;
 
-  const res = await resolve(event);
-
-  // for(const cookie of event.locals.set_cookie) {
-  //   res.headers.append("set-cookie", cookie);
-  // }
+  let buffer = "";
+  const res = await resolve(event, {
+    transformPageChunk: ({ html, done }) => {
+      buffer += html;
+      if(done) {
+        const lang = event.locals.lang  || "en";
+        const dir = event.locals.dir || "ltr";
+        return buffer.replace("%html_attrs%", `lang="${lang}" dir="${dir}"`);
+      } else {
+        return undefined;
+      }
+    }
+  });
 
   const ms = Date.now() - start;
 
@@ -84,6 +92,12 @@ export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
       // mode: "same-origin"
     });
 
+    const lang = res.headers.get(LOCALE_LANG_HEADER);
+    if(lang != null) event.locals.lang = lang;
+
+    const dir = res.headers.get(LOCALE_DIR_HEADER);
+    if(dir != null) event.locals.dir = dir;
+    
     // const set_cookie = res.headers.get("set-cookie");
     // if(set_cookie) {
     //   event.locals.set_cookie.add(set_cookie);

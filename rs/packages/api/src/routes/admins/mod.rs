@@ -302,6 +302,7 @@ pub mod post {
         last_name,
         email,
         password,
+        language: None,
         system_metadata,
         created_at: now,
         updated_at: now,

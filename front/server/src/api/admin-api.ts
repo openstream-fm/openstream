@@ -2,7 +2,7 @@ import type { Config, HostConfig } from "../config";
 import { Router, json as json_body_parser } from "express";
 import { ApiError, json_catch_handler } from "../error";
 import type { Logger } from "../logger";
-import { json } from "../handler";
+import { handler, json } from "../handler";
 import { session } from "../session";
 import { ip } from "../ip";
 import { admin_token } from "../token";
@@ -13,6 +13,10 @@ import { admin_media_key } from "../media_key";
 import { admin_id } from "../admin-id";
 import { host } from "../host";
 import type { Client } from "../client.server";
+import type { AdminLocale } from "../locale/admin/admin.locale";
+import acceptLanguageParser from "accept-language-parser";
+import { LOCALE_DIR_HEADER, LOCALE_LANG_HEADER } from "../constants";
+import { default_admin_locale, admin_locales_map, admin_locales } from "../locale/admin/admin.locale";
 
 export type PublicConfig = {
   studio_public_url: string
@@ -34,6 +38,9 @@ export const public_config = (hosts: HostConfig & { id: string }): PublicConfig 
   return config;
 }
 
+export type LocalePayload = {
+  locale: AdminLocale
+}
 
 export const admin_api = ({
   client,
@@ -61,6 +68,74 @@ export const admin_api = ({
       const hosts = host("admin", config.hosts, req);
       return public_config(hosts);
     }))
+
+    api.route("/locale")
+    .get(handler(async (req, res) => {
+      let langs: ReturnType<typeof acceptLanguageParser.parse> | null = null;
+      if(req.cookie_session.admin) {
+        try {
+          const { admin } = await client.admins.get(ip(req), ua(req), admin_token(req), req.cookie_session.admin._id);
+          if(admin.language != null) {
+            langs = acceptLanguageParser.parse(admin.language);
+          }
+        } catch(e) { }
+      }
+
+      if(langs == null) {
+        const header = req.header("accept-language");
+        if(header != null) {
+          try {
+            langs = acceptLanguageParser.parse(header);
+          } catch(e) { }
+        }
+      }
+
+      let locale: AdminLocale | null = null;
+
+      locale: if(langs != null) {
+        for(const lang of langs) {
+          for(const item of admin_locales) {
+            if(lang.code.toLowerCase() == item.lang.toLowerCase() && lang.region?.toLowerCase() == item.region?.toLowerCase()) {
+              locale = item;
+              break locale;
+            }
+          }
+        }
+
+        for(const lang of langs) {
+          for(const item of admin_locales) {
+            if(item.lang.toLowerCase() === lang.code.toLowerCase()) {
+              locale = item;
+              break locale;
+            }
+          }
+        }
+      }
+
+      if(locale == null) locale = default_admin_locale;
+
+      const dir = locale.lang === "ar" ? "rtl" : "ltr";
+      const lang = locale.region ? `${locale.lang}-${locale.region}` : locale.lang;
+      
+      res.header(LOCALE_LANG_HEADER, lang);
+      res.header(LOCALE_DIR_HEADER, dir);
+      res.vary("accept-language");
+      res.redirect(302, `/api/locale/${lang}.json`);
+    }));
+
+    api.route("/locale/:code.json")
+      .get(json(async (req, res): Promise<LocalePayload> => {
+        const code = req.params.code;
+        const locale = admin_locales_map.get(code);
+        if(locale == null) {
+          throw new ApiError(StatusCodes.NOT_FOUND, "FRONT_RESOURCE_NOT_FOUND", `Locale with code ${code} not found`);
+        }
+        const dir = locale.lang === "ar" ? "rtl" : "ltr";
+        const lang = locale.region ? `${locale.lang}-${locale.region}` : locale.lang;
+        res.header(LOCALE_LANG_HEADER, lang);
+        res.header(LOCALE_DIR_HEADER, dir);
+        return { locale }
+      }))
 
   api.route("/auth/admin/login")
     .post(json(async (req, res) => {

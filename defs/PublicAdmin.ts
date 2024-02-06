@@ -7,6 +7,7 @@ export type PublicAdmin = {
   first_name: string;
   last_name: string;
   email: string;
+  language: string | null;
   system_metadata: Metadata;
   created_at: DateTime;
   updated_at: DateTime;

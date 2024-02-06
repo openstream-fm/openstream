@@ -4,5 +4,6 @@ import type { Metadata } from "../db/Metadata.js";
 export type AdminPatch = {
   first_name?: string;
   last_name?: string;
+  language?: string | null;
   system_metadata?: Metadata;
 };
