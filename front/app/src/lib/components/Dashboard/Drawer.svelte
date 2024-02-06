@@ -1,13 +1,15 @@
 <script lang="ts">
   export let fixed_open: boolean;
-  export let close_drawer_fixed: () => void;
-  export let open_drawer_fixed: () => void;
+  export let static_open: boolean;
+  export let close: () => void;
+  // svelte-ignore unused-export-let
+  export let open: () => void;
+  // svelte-ignore unused-export-let
+  export let toggle: () => void;
 
   import { page } from "$app/stores";
 
-  const HTML_OPEN_CLASSNAME = "station-drawer-fixed-open";
-
-  const toggle = () => fixed_open ? close_drawer_fixed() : open_drawer_fixed();
+  const HTML_OPEN_FIXED_CLASSNAME = "station-drawer-fixed-open";
 
   import DrawerItem from "./DrawerItem.svelte";
   import { 
@@ -31,7 +33,7 @@
 	import { logical_fly } from "$share/transition";
 
   $: if(browser) {
-    document.documentElement.classList[fixed_open ? "add" : "remove"](HTML_OPEN_CLASSNAME);
+    document.documentElement.classList[fixed_open ? "add" : "remove"](HTML_OPEN_FIXED_CLASSNAME);
   }
 
   onMount(() => {
@@ -39,12 +41,12 @@
     let media = window.matchMedia("screen and (max-width: 900px)");
     
     media.onchange = () => {
-      if(!media.matches) close_drawer_fixed();
+      if(!media.matches) fixed_open = false;
     }
 
     return () => {
       media.onchange = null;
-      document.documentElement.classList.remove(HTML_OPEN_CLASSNAME);
+      document.documentElement.classList.remove(HTML_OPEN_FIXED_CLASSNAME);
     }
   })
 
@@ -134,15 +136,15 @@
 
   .inner {
     position: sticky;
-    top: 0;
-    height: 100vh;
+    top: var(--top-h);
+    height: calc(100vh - var(--top-h));
     /*transition: height 350ms cubic-bezier(0.85, 0, 0.15, 1); /* expoInOut: same as player */
     display: flex;
     flex-direction: column;
   }
 
   .player-open .inner {
-    height: calc(100vh - var(--player-h));
+    height: calc(100vh - var(--top-h) - var(--player-h));
   }
 
   .links {
@@ -158,6 +160,7 @@
     background: rgba(0,0,0,0.5);
     z-index: calc(var(--z-drawer-fixed) - 1);
   }
+  
   .account-switch {
     display: flex;
     flex-direction: column;
@@ -273,6 +276,8 @@
 
     .drawer {
       position: fixed;
+      top: 0;
+      left: 0;
       z-index: var(--z-drawer-fixed);
     }
 
@@ -307,7 +312,20 @@
 
   @media not screen and (max-width: 900px) {
     .player-open .account-switch-menu {
-      max-height: calc(100vh - 13.5rem);
+      max-height: calc(100vh - 14.5rem);
+    }
+
+    .account-switch {
+      margin-top: 1rem;
+    }
+  
+    .drawer:not(.static-open) {
+      margin-inline-start: calc(var(--drawer-width) * -1);
+      box-shadow: none;
+    }
+
+    .top {
+      display: none;
     }
   }
 
@@ -315,13 +333,13 @@
 
 {#if fixed_open}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="drawer-overlay" transition:fade|local={{ duration: 250 }} on:click={close_drawer_fixed} />
+  <div class="drawer-overlay" transition:fade|local={{ duration: 250 }} on:click={close} />
 {/if}
 
-<div class="drawer" class:player-open={$player_state.type !== "closed"} class:fixed-open={fixed_open}>
+<div class="drawer" class:player-open={$player_state.type !== "closed"} class:fixed-open={fixed_open} class:static-open={static_open}>
   <div class="inner">
     <div class="top">
-      <button class="toggle ripple-container" use:ripple aria-label="Toogle drawer" on:click={close_drawer_fixed}>
+      <button class="toggle ripple-container" use:ripple aria-label="Toogle drawer" on:click={close}>
         <Icon d={mdiMenu} />
       </button>
       <div class="logo">
@@ -377,11 +395,13 @@
       </div>
     </div>
 
-    <div class="links super-thin-scroll">
-      <DrawerItem href="/accounts/{account._id}" label={$locale.drawer.dashboard} icon={mdiViewDashboardOutline} on_click={close_drawer_fixed} />
-      <DrawerItem href="/accounts/{account._id}/stations" label={$locale.drawer.stations} icon={mdiRadioTower} on_click={close_drawer_fixed} />
-      <DrawerItem href="/accounts/{account._id}/members" label={$locale.drawer.members} icon={mdiAccountMultipleOutline} on_click={close_drawer_fixed} />
-      <DrawerItem href="/accounts/{account._id}/analytics" label={$locale.drawer.analytics} icon={mdiPoll} on_click={close_drawer_fixed} />
+
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div class="links super-thin-scroll" on:click={() => fixed_open = false}>
+      <DrawerItem href="/accounts/{account._id}" label={$locale.drawer.dashboard} icon={mdiViewDashboardOutline} />
+      <DrawerItem href="/accounts/{account._id}/stations" label={$locale.drawer.stations} icon={mdiRadioTower} />
+      <DrawerItem href="/accounts/{account._id}/members" label={$locale.drawer.members} icon={mdiAccountMultipleOutline} />
+      <DrawerItem href="/accounts/{account._id}/analytics" label={$locale.drawer.analytics} icon={mdiPoll} />
     </div>
   </div>
 </div>
