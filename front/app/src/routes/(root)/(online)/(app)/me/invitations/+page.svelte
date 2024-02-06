@@ -209,6 +209,7 @@
     color: #fff;
     font-weight: var(--font-bold);
     box-shadow: var(--some-shadow);
+    border-radius: 0.25rem;
   }
 </style>
 

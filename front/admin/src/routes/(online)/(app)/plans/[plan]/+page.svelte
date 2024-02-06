@@ -125,6 +125,7 @@
     border-radius: 0.25rem;
     box-shadow: var(--some-shadow);
     margin: 1rem 1rem 0 0;
+    border-radius: 0.25rem;
   }
 
   .actions {

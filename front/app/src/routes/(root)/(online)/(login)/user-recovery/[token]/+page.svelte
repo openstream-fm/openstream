@@ -115,6 +115,7 @@
     color: #fff;
     box-shadow: var(--some-shadow);
     background: var(--blue);
+    border-radius: 0.25rem;
   }
 
   .error {
