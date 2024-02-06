@@ -207,6 +207,12 @@
     display: flex;
     flex-direction: row;
     align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: #fff;
+    border-bottom: #ddd 1px solid;
+    margin-bottom: -1px;
   }
 
   .menu-head-icon {

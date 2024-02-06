@@ -18,7 +18,7 @@
   export let icon: string | null = null;
   export let iconStroke: boolean = false;
   export let iconStrokeWidth: number | "" = "";
-  export let on_click: () => void;
+  export let on_click: () => void = () => {};
   $: current = is_current(href, $page.url);
 
   import { page } from "$app/stores";
@@ -42,6 +42,10 @@
     --h: 3.5rem;
     height: var(--h);
     /*border-radius: 0 5rem 5rem 0;*/
+  }
+
+  a:hover {
+    background: rgba(0,0,0,0.025);
   }
 
   .current {

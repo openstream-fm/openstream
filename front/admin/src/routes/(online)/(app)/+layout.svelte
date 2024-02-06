@@ -1,12 +1,34 @@
 <script>
-  import { onMount } from "svelte";
   import Top from "$lib/components/Dashboard/Top.svelte";
 	import Drawer from "$lib/components/Dashboard/Drawer.svelte";
 	import { logical_fly } from "$share/transition";
   
   let drawer_fixed_open = false;
-  const open_drawer_fixed = () => drawer_fixed_open = true;
-  const close_drawer_fixed = () => drawer_fixed_open = false;
+  let drawer_static_open = true;
+
+  const open = () => {
+    if(window.innerWidth > 900) {
+      drawer_static_open = true;
+    } else {
+      drawer_fixed_open = true;
+    }
+  }
+
+  const close = () => {
+    if(window.innerWidth > 900) {
+      drawer_static_open = false;
+    } else {
+      drawer_fixed_open = false;
+    }
+  }
+
+  const toggle = () => {
+    if(window.innerWidth > 900) {
+      drawer_static_open  = !drawer_static_open; 
+    } else {
+      drawer_fixed_open = !drawer_fixed_open;
+    }
+  }
 </script>
 
 <style>
@@ -25,14 +47,13 @@
   }
 
   .dashboard {
-    height: 100%;
-    width: 100%;
+    flex: 1;
     display: flex;
     flex-direction: column;
     background: var(--bg-gray);
   }
 
-  .start {
+  .bottom {
     flex: 1;
     display: flex;
     flex-direction: row;
@@ -40,9 +61,9 @@
   }
 
   .content {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    flex: 1;
   }
 
   .page {
@@ -53,15 +74,15 @@
 <div class="player-layout">
   <div class="player-layout-dashboard">
     <div class="dashboard" in:logical_fly={{ duration: 300, x: -25 }}>
-      <div class="start">
-        <Drawer fixed_open={drawer_fixed_open} {close_drawer_fixed} {open_drawer_fixed} />
+      <Top toggle_drawer={toggle} with_drawer={true} />
+      <div class="bottom">
+        <Drawer bind:fixed_open={drawer_fixed_open} bind:static_open={drawer_static_open} {open} {close} {toggle}  />
         <div class="content">
-          <Top {drawer_fixed_open} {close_drawer_fixed} {open_drawer_fixed} />
           <div class="page">
             <slot />
           </div>
         </div>
-      </div>
+      </div>    
     </div>
   </div>
 </div>

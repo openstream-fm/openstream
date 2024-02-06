@@ -21395,6 +21395,9 @@
                             "default": false,
                             "type": "boolean"
                           },
+                          "_manually_closed": {
+                            "type": "boolean"
+                          },
                           "request": {
                             "type": "object",
                             "required": [

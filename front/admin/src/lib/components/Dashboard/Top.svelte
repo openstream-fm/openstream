@@ -1,18 +1,16 @@
 <script lang="ts">
-  import { page } from "$app/stores";
-  
-  export let drawer_fixed_open: boolean;
-  export let close_drawer_fixed: () => void;
-  export let open_drawer_fixed: () => void;
+  export let toggle_drawer: () => void;
+  export let with_drawer: boolean;
 
   import Icon from "$share/Icon.svelte";
   import { ripple } from "$share/ripple";
 	import { mdiMenu } from "@mdi/js";
 
-  const toggle_drawer = () => drawer_fixed_open ? close_drawer_fixed() : open_drawer_fixed();
-
   import TopUser from "./TopUser.svelte";
-  // import { STATION_PICTURES_VERSION } from "$defs/constants";
+
+  // @ts-ignore
+  import logo from "$share/img/logo-trans-128.png?w=40&format=webp";
+  import { locale } from "$lib/locale";
 </script>
 
 <style>
@@ -39,11 +37,11 @@
 
   .drawer-toggle {
     display: none;
+    flex: none;
     align-items: center;
     justify-content: center;
     font-size: 1.75rem;
     width: var(--top-h);
-    flex: none;
     color: #333;
     transition: background-color 150ms ease;
     justify-self: flex-start;
@@ -52,6 +50,42 @@
   .drawer-toggle:hover {
     background-color: rgba(0,0,0,0.05);
   }
+
+  .logo {
+    margin-inline-start: 1.5rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .with-drawer .drawer-toggle {
+    display: flex;
+  }
+
+  .with-drawer .logo {
+    margin-inline-start: 0;
+  }
+
+  @media screen and (max-width: 540px) {
+    .logo {
+      display: none;
+    }
+  }
+
+  .logo-icon {
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 2rem;
+    height: 2rem;
+    margin-inline-end: 0.75rem;
+  }
+
+  .logo-text {
+    font-size: 1.5rem;
+    font-weight: var(--font-bold);
+  }
+
 
   /* .station {
     display: flex;
@@ -86,24 +120,25 @@
     min-width: 0;
   } */
 
-  @media screen and (max-width: 900px) {
-    .drawer-toggle {
-      display: flex;
-    }
-  } 
-
   /* @media screen and (max-width: 460px) {
     .station-name {
       display: none;
     }
   } */
 </style>
-
-<div class="top">
+<div class="top" class:with-drawer={with_drawer}>
   <div class="box">
     <button class="drawer-toggle ripple-container" use:ripple aria-label="Toggle drawer" on:click={toggle_drawer}>
       <Icon d={mdiMenu} />
     </button>
+
+    <div class="logo">
+      <div class="logo-icon" style="background-image: url({logo})">
+      </div>
+      <div class="logo-text">
+        {$locale.logo_text}
+      </div>
+    </div>
 
     <!--
     {#if $page.data.station}
