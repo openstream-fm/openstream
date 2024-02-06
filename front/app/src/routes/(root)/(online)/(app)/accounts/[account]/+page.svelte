@@ -277,6 +277,7 @@
     font-weight: var(--font-bold);
     padding: 0.75rem;
     box-shadow: var(--some-shadow);
+    border-radius: 0.25rem;
   }
 
   .stations {

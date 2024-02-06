@@ -216,6 +216,7 @@
     user-select: none;
     align-self: flex-end;
     font-weight: var(--font-bold);
+    border-radius: 0.25rem;
   }
 
   /* .submit.disabled {
