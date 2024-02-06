@@ -350,13 +350,18 @@ export const shared_api = ({
     }))
 
   api.route("/invitations/accept")
+
     .post(json(async req => {
-      return await client.invitations.accept(ip(req), ua(req), get_token(req), req.body)
+      let token: string | null = null;
+      try { token = get_token(req) } finally {}
+      return await client.invitations.accept(ip(req), ua(req), token, req.body)
     }))
 
   api.route("/invitations/reject")
     .post(json(async req => {
-      return await client.invitations.reject(ip(req), ua(req), get_token(req), req.body)
+      let token: string | null = null;
+      try { token = get_token(req) } finally {}
+      return await client.invitations.reject(ip(req), ua(req), token, req.body)
     }))
 
   api.route("/invitations/get-by-token/:token")
