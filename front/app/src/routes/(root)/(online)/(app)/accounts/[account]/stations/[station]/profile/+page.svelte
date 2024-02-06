@@ -141,6 +141,11 @@
     flex-direction: column;
     align-items: flex-end;
     padding: 2rem;
+    position: sticky;
+    bottom: -1rem;
+    border-radius: 0 0 0.5rem 0.5rem;
+    background: linear-gradient(to top, #fff 5%, rgba(255,255,255,0.75) 65%, transparent);
+    pointer-events: none;
   }
 
   .submit {
@@ -155,11 +160,14 @@
     user-select: none;
     align-self: flex-end;
     font-weight: var(--font-bold);
+    transition: background-color 200ms ease;
+    pointer-events: all;
+    border-radius: 0.25rem;
   }
 
-  /* .submit.disabled {
+  .submit:disabled {
     background: #999;
-  } */
+  }
 </style>
 
 <svelte:head>
@@ -175,7 +183,7 @@
         <StationProfile account_id={data.account._id} bind:current />
         
         <div class="submit-wrap">
-          <button class="submit ripple-container" use:ripple type="submit">
+          <button class="submit ripple-container" disabled={!can_save} use:ripple type="submit">
             {$locale.pages["station/profile"].submit}
           </button>
         </div>
