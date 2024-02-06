@@ -14,6 +14,11 @@ pub mod index;
 pub mod lite;
 pub mod stats;
 
+#[allow(clippy::bool_comparison)]
+fn is_false(b: &bool) -> bool {
+  *b == false
+}
+
 crate::register!(StreamConnection);
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
@@ -41,13 +46,14 @@ pub struct StreamConnection {
   #[serde(default)]
   pub is_external_relay_redirect: bool,
 
+  #[serde(default)]
+  #[serde(skip_serializing_if = "is_false")]
+  #[serde(rename = "_manually_closed")]
+  pub manually_closed: bool,
+
   pub request: Request,
   pub last_transfer_at: DateTime,
   pub closed_at: Option<DateTime>,
-}
-
-impl StreamConnection {
-  pub const KEY_MANUALLY_CLOSED: &'static str = "_manually_closed";
 }
 
 impl Model for StreamConnection {

@@ -16,6 +16,93 @@ use ts_rs::TS;
 
 use crate::{station::Station, stream_connection::lite::StreamConnectionLite, Model};
 
+#[derive(Debug, Serialize, Deserialize)]
+#[macros::keys]
+pub struct Item {
+  // #[serde(rename = "_id")]
+  // pub id: String,
+  #[serde(rename = "st")]
+  pub station_id: String,
+
+  //#[serde(rename = "op")]
+  //pub is_open: bool,
+  #[serde(rename = "ip")]
+  #[serde(with = "serde_util::ip")]
+  pub ip: IpAddr,
+
+  #[serde(rename = "cc")]
+  pub country_code: Option<CountryCode>,
+
+  #[serde(rename = "du")]
+  #[serde(with = "serde_util::as_f64::option")]
+  pub duration_ms: Option<u64>,
+
+  #[serde(rename = "by")]
+  #[serde(with = "serde_util::as_f64::option")]
+  pub transfer_bytes: Option<u64>,
+
+  #[serde(rename = "br")]
+  pub browser: Option<String>,
+
+  #[serde(rename = "do")]
+  pub domain: Option<String>,
+
+  #[serde(rename = "os")]
+  pub os: Option<String>,
+
+  #[serde(rename = "ca")]
+  pub created_at: DateTime,
+  // #[serde(rename = "re")]
+  // #[serde(default)]
+  // #[serde(skip_serializing_if = "is_false")]
+  // pub is_external_relay_redirect: bool,
+
+  // #[serde(rename = "_m")]
+  // #[serde(default)]
+  // #[serde(skip_serializing_if = "is_false")]
+  // pub manually_closed: bool,
+
+  // #[serde(rename = "cl")]
+  // pub closed_at: Option<DateTime>,
+}
+
+impl Item {
+  fn projection() -> mongodb::bson::Document {
+    doc! {
+      crate::KEY_ID: 0,
+      Item::KEY_STATION_ID: 1,
+      Item::KEY_IP: 1,
+      Item::KEY_COUNTRY_CODE: 1,
+      Item::KEY_DURATION_MS: 1,
+      Item::KEY_TRANSFER_BYTES: 1,
+      Item::KEY_BROWSER: 1,
+      Item::KEY_DOMAIN: 1,
+      Item::KEY_OS: 1,
+      Item::KEY_CREATED_AT: 1,
+    }
+  }
+}
+
+#[cfg(test)]
+#[test]
+fn stream_connection_analytics_item_keys() {
+  assert_eq!(StreamConnectionLite::KEY_STATION_ID, Item::KEY_STATION_ID);
+  assert_eq!(StreamConnectionLite::KEY_IP, Item::KEY_IP);
+  assert_eq!(
+    StreamConnectionLite::KEY_COUNTRY_CODE,
+    Item::KEY_COUNTRY_CODE
+  );
+  assert_eq!(StreamConnectionLite::KEY_DURATION_MS, Item::KEY_DURATION_MS);
+  assert_eq!(
+    StreamConnectionLite::KEY_TRANSFER_BYTES,
+    Item::KEY_TRANSFER_BYTES
+  );
+  assert_eq!(StreamConnectionLite::KEY_BROWSER, Item::KEY_BROWSER);
+  assert_eq!(StreamConnectionLite::KEY_DOMAIN, Item::KEY_DOMAIN);
+  assert_eq!(StreamConnectionLite::KEY_OS, Item::KEY_OS);
+  assert_eq!(StreamConnectionLite::KEY_CREATED_AT, Item::KEY_CREATED_AT);
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/analytics/")]
 pub struct Analytics {
@@ -273,7 +360,7 @@ impl Batch {
   }
 
   #[inline(always)]
-  pub fn add(&mut self, conn: StreamConnectionLite) {
+  pub fn add(&mut self, conn: Item) {
     let created_at = conn.created_at.to_offset(self.offset);
 
     let conn_duration_ms = conn
@@ -303,8 +390,9 @@ impl Batch {
     #[cfg(feature = "analytics-max-concurrent")]
     let stop = StartStopEvent::new(start_s + (conn_duration_ms / 1000) as u32, false);
 
-    if !conn.is_open {
-      #[cfg(feature = "analytics-max-concurrent")]
+    // duration_ms is None if the connection is still open
+    #[cfg(feature = "analytics-max-concurrent")]
+    if conn.duration_ms.is_some() {
       self.start_stop_events.push(stop);
     }
 
@@ -320,7 +408,7 @@ impl Batch {
         item.start_stop_events.push(start);
 
         #[cfg(feature = "analytics-max-concurrent")]
-        if !conn.is_open {
+        if conn.duration_ms.is_some() {
           item.start_stop_events.push(stop);
         }
       };
@@ -625,10 +713,15 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
                   // .await?
                   // .with_type::<StreamConnectionLite>();
 
-                  let options = mongodb::options::FindOptions::builder().sort(sort).build();
+                  let options = mongodb::options::FindOptions::builder()
+                    .sort(sort)
+                    .projection(Item::projection())
+                    .build();
 
                   let filter = doc! { "$and": and };
-                  let mut cursor = StreamConnectionLite::cl().find(filter, options).await?;
+                  let mut cursor = StreamConnectionLite::cl_as::<Item>()
+                    .find(filter, options)
+                    .await?;
 
                   let mut batch = Batch::new(offset_date.offset());
 

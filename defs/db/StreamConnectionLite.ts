@@ -15,5 +15,6 @@ export type StreamConnectionLite = {
   os: string | null;
   ca: DateTime;
   re: boolean;
+  _m: boolean;
   cl: DateTime | null;
 };
