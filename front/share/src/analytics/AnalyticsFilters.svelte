@@ -463,14 +463,14 @@
 
   .submit {
     background: var(--blue);
-    color: #fff;
     font-weight: var(--font-bold);
+    box-shadow: var(--some-shadow);
+    color: #fff;
     padding: 0.75rem;
     display: flex;
     flex-direction: row;
     align-items: center;
     border-radius: 0.25rem;
-    box-shadow: var(--some-shadow); 
     position: relative;
   }
 
