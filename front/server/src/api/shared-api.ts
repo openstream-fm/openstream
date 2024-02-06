@@ -7,6 +7,7 @@ import { ip } from "../ip";
 import { ACCESS_TOKEN_HEADER, FORWARD_IP_HEADER } from "../constants";
 import { pipeline } from "stream/promises";
 import { BadRequest } from "../error";
+import { optional_token } from "../token";
 
 export const shared_api = ({
   logger,
@@ -350,18 +351,13 @@ export const shared_api = ({
     }))
 
   api.route("/invitations/accept")
-
     .post(json(async req => {
-      let token: string | null = null;
-      try { token = get_token(req) } finally {}
-      return await client.invitations.accept(ip(req), ua(req), token, req.body)
+      return await client.invitations.accept(ip(req), ua(req), optional_token(() => get_token(req)), req.body)
     }))
 
   api.route("/invitations/reject")
     .post(json(async req => {
-      let token: string | null = null;
-      try { token = get_token(req) } finally {}
-      return await client.invitations.reject(ip(req), ua(req), token, req.body)
+      return await client.invitations.reject(ip(req), ua(req), optional_token(() => get_token(req)), req.body)
     }))
 
   api.route("/invitations/get-by-token/:token")
