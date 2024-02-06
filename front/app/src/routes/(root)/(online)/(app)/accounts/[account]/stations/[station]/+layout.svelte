@@ -184,14 +184,18 @@
   }
 
   .station-name, .station-selector-name {
-    max-width: 10rem;
     display: flex;
     flex-shrink: 1;
     margin-inline-start: 0.75rem;
   }
 
+  .station-name {
+    max-width: 10rem;
+  }
+
   .station-selector-name {
-    min-width: 4rem;
+    min-width: 6rem;
+    max-width: 15rem;
   }
 
   .station-name-ellipsis, .station-selector-ellipsis {
