@@ -16,6 +16,78 @@ use ts_rs::TS;
 
 use crate::{station::Station, ws_stats_connection::WsStatsConnection, Model};
 
+#[derive(Debug, Serialize, Deserialize)]
+#[macros::keys]
+pub struct Item {
+  // #[serde(rename = "_id")]
+  // pub id: String,
+  #[serde(rename = "st")]
+  pub station_id: String,
+
+  // #[serde(rename = "dp")]
+  // pub deployment_id: String,
+
+  // #[serde(with = "serde_util::as_f64::option")]
+  // pub transfer_bytes: Option<u64>,
+  #[serde(rename = "du")]
+  #[serde(with = "serde_util::as_f64::option")]
+  pub duration_ms: Option<u64>,
+
+  // #[serde(rename = "op")]
+  // pub is_open: bool,
+  #[serde(rename = "cc")]
+  pub country_code: Option<CountryCode>,
+
+  #[serde(rename = "ip")]
+  #[serde(with = "serde_util::ip")]
+  pub ip: IpAddr,
+
+  #[serde(rename = "ap")]
+  pub app_kind: Option<String>,
+
+  #[serde(rename = "av")]
+  #[serde(with = "serde_util::as_f64::option")]
+  pub app_version: Option<u32>,
+
+  // #[serde(rename = "re")]
+  // #[serde(with = "serde_util::as_f64")]
+  // pub reconnections: u16,
+  #[serde(rename = "ca")]
+  pub created_at: DateTime,
+  // pub request: Request,
+  // pub last_transfer_at: DateTime,
+
+  // #[serde(rename = "cl")]
+  // pub closed_at: Option<DateTime>,
+}
+
+impl Item {
+  pub fn projection() -> mongodb::bson::Document {
+    doc! {
+      crate::KEY_ID: 0,
+      WsStatsConnection::KEY_STATION_ID: 1,
+      WsStatsConnection::KEY_DURATION_MS: 1,
+      WsStatsConnection::KEY_COUNTRY_CODE: 1,
+      WsStatsConnection::KEY_IP: 1,
+      WsStatsConnection::KEY_APP_KIND: 1,
+      WsStatsConnection::KEY_APP_VERSION: 1,
+      WsStatsConnection::KEY_CREATED_AT: 1,
+    }
+  }
+}
+
+#[cfg(test)]
+#[test]
+fn ws_stat_item_keys() {
+  assert_eq!(Item::KEY_STATION_ID, WsStatsConnection::KEY_STATION_ID);
+  assert_eq!(Item::KEY_DURATION_MS, WsStatsConnection::KEY_DURATION_MS);
+  assert_eq!(Item::KEY_COUNTRY_CODE, WsStatsConnection::KEY_COUNTRY_CODE);
+  assert_eq!(Item::KEY_IP, WsStatsConnection::KEY_IP);
+  assert_eq!(Item::KEY_APP_KIND, WsStatsConnection::KEY_APP_KIND);
+  assert_eq!(Item::KEY_APP_VERSION, WsStatsConnection::KEY_APP_VERSION);
+  assert_eq!(Item::KEY_CREATED_AT, WsStatsConnection::KEY_CREATED_AT);
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/app-analytics/")]
 pub struct Analytics {
@@ -288,7 +360,7 @@ impl Batch {
   }
 
   #[inline(always)]
-  pub fn add(&mut self, conn: WsStatsConnection) {
+  pub fn add(&mut self, conn: Item) {
     let created_at = conn.created_at.to_offset(self.offset);
 
     let conn_duration_ms = conn
@@ -322,7 +394,7 @@ impl Batch {
     #[cfg(feature = "analytics-max-concurrent")]
     let stop = StartStopEvent::new(start_s + (conn_duration_ms / 1000) as u32, false);
 
-    if !conn.is_open {
+    if conn.duration_ms.is_some() {
       #[cfg(feature = "analytics-max-concurrent")]
       self.start_stop_events.push(stop);
     }
@@ -339,7 +411,7 @@ impl Batch {
         item.start_stop_events.push(start);
 
         #[cfg(feature = "analytics-max-concurrent")]
-        if !conn.is_open {
+        if conn.duration_ms.is_some() {
           item.start_stop_events.push(stop);
         }
       };
@@ -657,10 +729,15 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
                   // .await?
                   // .with_type::<StreamConnectionLite>();
 
-                  let options = mongodb::options::FindOptions::builder().sort(sort).build();
+                  let options = mongodb::options::FindOptions::builder()
+                    .sort(sort)
+                    .projection(Item::projection())
+                    .build();
 
                   let filter = doc! { "$and": and };
-                  let mut cursor = WsStatsConnection::cl().find(filter, options).await?;
+                  let mut cursor = WsStatsConnection::cl_as::<Item>()
+                    .find(filter, options)
+                    .await?;
 
                   let mut batch = Batch::new(offset_date.offset());
 

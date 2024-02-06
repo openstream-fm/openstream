@@ -62,13 +62,16 @@ pub struct StreamConnectionLite {
   #[serde(skip_serializing_if = "is_false")]
   pub is_external_relay_redirect: bool,
 
+  #[serde(rename = "_m")]
+  #[serde(default)]
+  #[serde(skip_serializing_if = "is_false")]
+  pub manually_closed: bool,
+
   #[serde(rename = "cl")]
   pub closed_at: Option<DateTime>,
 }
 
 impl StreamConnectionLite {
-  pub const KET_MANUALLY_CLOSED: &'static str = "_m";
-
   pub fn get_domain(full: &StreamConnection) -> Option<String> {
     match full.request.headers.get("referer") {
       None => None,
@@ -92,6 +95,7 @@ impl StreamConnectionLite {
       duration_ms: full.duration_ms,
       transfer_bytes: full.transfer_bytes,
       is_external_relay_redirect: full.is_external_relay_redirect,
+      manually_closed: full.manually_closed,
       created_at: full.created_at,
       closed_at: full.closed_at,
     }
@@ -112,6 +116,7 @@ impl From<StreamConnection> for StreamConnectionLite {
       transfer_bytes: full.transfer_bytes,
       country_code: full.country_code,
       is_external_relay_redirect: full.is_external_relay_redirect,
+      manually_closed: full.manually_closed,
       created_at: full.created_at,
       closed_at: full.closed_at,
     }

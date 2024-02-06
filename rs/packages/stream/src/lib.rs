@@ -406,6 +406,7 @@ impl StreamHandler {
                   duration_ms: Some(0),
                   request,
                   is_external_relay_redirect: true,
+                  manually_closed: false,
                   created_at: now,
                   last_transfer_at: now,
                   closed_at: Some(now),
@@ -446,6 +447,7 @@ impl StreamHandler {
           request,
           created_at: now,
           is_external_relay_redirect: false,
+          manually_closed: false,
           last_transfer_at: now,
           closed_at: None,
         }
