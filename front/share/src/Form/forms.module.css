@@ -2,11 +2,23 @@
   display: block;
   flex: 1;
   width: 1rem; /* fix min-width issue */
+  min-width: 0;
   border: 0;
   outline: 0;
   padding: 0.75rem;
-  min-width: 0;
   background: transparent;
   resize: none;
   color: #000;
+  appearance: none;
+}
+
+.forms-input:-webkit-autofill,
+.forms-input:-webkit-autofill:active,
+.forms-input:-webkit-autofill:hover,
+.forms-input:-webkit-autofill:focus {
+  font: inherit !important;
+  /* TODO: overriding of chrome font is not working */
+  appearance: none !important;
+  -webkit-text-fill-color: #000 !important;
+  -webkit-background-clip: text !important;
 }
