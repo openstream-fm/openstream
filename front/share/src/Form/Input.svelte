@@ -23,6 +23,8 @@
 
   export let on_change: ((v: string) => void) | null = null; 
 
+  import css from "./forms.module.css"; 
+
   $: empty = display_value === "";
 
   $: text_lines = display_value.split("\n").length;
@@ -49,11 +51,18 @@
     on_change?.(h);
   }
 
-  import css from "./forms.module.css"; 
+  const mount = (el: HTMLInputElement | HTMLTextAreaElement) => {
+    setTimeout(() => {
+      if(el.value !== "") {
+        on_input(el.value);
+      }
+    }, 500)
+  }
 </script>
 
+
 {#if multiline}
-  <textarea class={css["forms-input"]} {maxlength} {rows} {autocomplete} {disabled} {readonly} value={display_value} on:input={event => on_input(event.currentTarget.value)} on:input />
+  <textarea use:mount class={css["forms-input"]} {maxlength} {rows} {autocomplete} {disabled} {readonly} value={display_value} on:input={event => on_input(event.currentTarget.value)} on:input />
 {:else}
-  <input {type} class={css["forms-input"]} {min} {max} {step} {autocomplete} {disabled} {readonly} value={display_value} on:input={event => on_input(event.currentTarget.value)} on:input />
+  <input use:mount {type} class={css["forms-input"]} {min} {max} {step} {autocomplete} {disabled} {readonly} value={display_value} on:input={event => on_input(event.currentTarget.value)} on:input />
 {/if}

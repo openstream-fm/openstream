@@ -47,6 +47,7 @@
   font-weight: 600;
   position: relative;
   transition: color 200ms ease;
+  border-radius: 0.25rem;
 }
 
 .login-page-button.sending {
