@@ -3,7 +3,7 @@ import type { Paged } from "$server/defs/Paged";
 import { qss } from "$share/qs";
 import { redirect } from "@sveltejs/kit";
 
-const unpage = <T extends { deleted_at: string | null }>(page: Paged<T>): [all: T[], current: T[], deleted: T[]] =>  {
+const unpage = <T extends { deleted_at: string | null | undefined }>(page: Paged<T>): [all: T[], current: T[], deleted: T[]] =>  {
   const all = page.items;
   const current: T[] = [];
   const deleted: T[] = [];
