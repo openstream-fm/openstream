@@ -1,10 +1,10 @@
-import stats_map from "../share/stats-map/stats-map.en"
-import validate from "../share/validate/validate.en";
-import analytics from "../share/analytics/analytics.en";
-import countries from "../share/countries/countries.en";
-import langs from "../share/langs/langs.en";
-import misc from "../misc/misc.en";
-import language from "../share/language/language.en";
+import stats_map from "../share/stats-map/stats-map.en.js"
+import validate from "../share/validate/validate.en.js";
+import analytics from "../share/analytics/analytics.en.js";
+import countries from "../share/countries/countries.en.js";
+import langs from "../share/langs/langs.en.js";
+import misc from "../misc/misc.en.js";
+import language from "../share/language/language.en.js";
 
 const locale = {
 

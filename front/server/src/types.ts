@@ -1,4 +1,4 @@
-import type { ClientErrorCode } from "./client.server";
+import type { ClientErrorCode } from "./client.server.js";
 
 export type ErrorCodeMore = 
   "FRONT_INTERNAL" |

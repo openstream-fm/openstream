@@ -1,5 +1,5 @@
 import type { Request } from "express";
-import { FORWARD_IP_HEADER, LOCALHOST, REAL_IP_HEADER } from "./constants";
+import { FORWARD_IP_HEADER, LOCALHOST, REAL_IP_HEADER } from "./constants.js";
 
 export const ip = (req: Request): string => {
   let ip = req.ip;

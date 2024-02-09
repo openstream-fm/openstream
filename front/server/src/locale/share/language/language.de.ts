@@ -1,4 +1,4 @@
-const locale: import("./language.locale").LanguageLocale = {
+const locale: import("./language.locale.js").LanguageLocale = {
   "auto": "Automatisch erkennen",
   "en": "English (Englisch)",
   "es": "Español (Spanisch)",

@@ -88,7 +88,7 @@
   </div>
   <div class="selected-icon-out">
     {#if selected}
-      <div class="selected-icon" transition:scale|local={{ duration: 300, delay: 100 }}>
+      <div class="selected-icon" transition:scale={{ duration: 300, delay: 100 }}>
         <Icon d={mdiCheckBold} />
       </div>
     {/if}

@@ -1,16 +1,16 @@
 /// file: studio.ar.ts
-import stats_map from "../share/stats-map/stats-map.ar";
-import validate from "../share/validate/validate.ar";
-import countries from "../share/countries/countries.ar";
-import langs from "../share/langs/langs.ar";
-import type_of_content from "../share/type-of-content/type-of-content.ar";
-import analytics from "../share/analytics/analytics.ar";
-import payments from "../share/payments/payments.ar";
-import station_profile from "../share/station-profile/station-profile.ar";
-import misc from "../misc/misc.ar";
-import language from "../share/language/language.ar";
+import stats_map from "../share/stats-map/stats-map.ar.js";
+import validate from "../share/validate/validate.ar.js";
+import countries from "../share/countries/countries.ar.js";
+import langs from "../share/langs/langs.ar.js";
+import type_of_content from "../share/type-of-content/type-of-content.ar.js";
+import analytics from "../share/analytics/analytics.ar.js";
+import payments from "../share/payments/payments.ar.js";
+import station_profile from "../share/station-profile/station-profile.ar.js";
+import misc from "../misc/misc.ar.js";
+import language from "../share/language/language.ar.js";
 
-const locale: import("./studio.locale").StudioLocale = {
+const locale: import("./studio.locale.js").StudioLocale = {
 
   "lang": "ar",
   "region": null,

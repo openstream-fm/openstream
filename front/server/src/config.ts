@@ -1,11 +1,11 @@
 import typia, { assertEquals } from "typia";
 import toml from "toml"
 import { readFileSync } from "fs";
-import { color } from "./color"
-import type { Logger } from "./logger"
+import { color } from "./color.js"
+import type { Logger } from "./logger.js"
 import type { PartialDeep } from "type-fest";
 import * as dot from "dot-prop";
-import { clone } from "./util/collections";
+import { clone } from "./util/collections.js";
 import CommentJSON from "comment-json";
 import { findUp } from "find-up";
 import path from "path";

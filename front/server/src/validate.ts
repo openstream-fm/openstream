@@ -1,5 +1,5 @@
-import { BadRequest } from "./error";
-import type { ErrorCode } from "./types";
+import { BadRequest } from "./error.js";
+import type { ErrorCode } from "./types.js";
 
 export const validate = <T>(fn: () => T, code: ErrorCode = "PAYLOAD_INVALID"): T => {
   try {

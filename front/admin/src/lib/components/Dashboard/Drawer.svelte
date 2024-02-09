@@ -310,7 +310,7 @@
 
 {#if fixed_open}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="drawer-overlay" transition:fade|local={{ duration: 250 }} on:click={close} />
+  <div class="drawer-overlay" transition:fade={{ duration: 250 }} on:click={close} />
 {/if}
 
 <div class="drawer" class:player-open={false}  class:fixed-open={fixed_open} class:static-open={static_open}>

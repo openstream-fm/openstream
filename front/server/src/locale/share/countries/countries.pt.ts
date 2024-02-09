@@ -1,4 +1,4 @@
-const locale: import("./countries.locale").CountriesLocale = {
+const locale: import("./countries.locale.js").CountriesLocale = {
   _u2: "Chipre do Norte",
   _u4: "Kosovo",
   _u5: "Somalilândia",

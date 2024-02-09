@@ -3,9 +3,8 @@ import fs from "fs";
 import openai from "openai";
 import path from "path";
 import readline from "readline/promises";
-import type { Readable } from "stream";
 
-import { default_logger } from "../logger";
+import { default_logger } from "../logger.js";
 const logger = default_logger.scoped("locale-gen");
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));

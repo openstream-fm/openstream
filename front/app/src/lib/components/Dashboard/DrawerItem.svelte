@@ -85,6 +85,6 @@
   </a>
 
   {#if current}
-    <div class="current-line" out:send|local={{ key: null }} in:receive|local={{ key: null }} />
+    <div class="current-line" out:send={{ key: null }} in:receive={{ key: null }} />
   {/if}
 </div>

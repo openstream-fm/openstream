@@ -1,5 +1,5 @@
 // file: type-of-content.es.ts
-import type { StationTypeOfContentLocale } from "./type-of-content.locale";
+import type { StationTypeOfContentLocale } from "./type-of-content.locale.js";
 
 /// @translation-context: Tipo de contenido de una estación de radio
 const locale: StationTypeOfContentLocale = {

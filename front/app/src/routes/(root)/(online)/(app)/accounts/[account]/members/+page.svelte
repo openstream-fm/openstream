@@ -431,7 +431,7 @@
         {@const is_self = data.user._id === item._id}
         {@const menu_open = member_menu_open_id === item._id}
         {@const relation_name = relation_names[item.relation]}
-        <div class="item" class:me={is_self} transition:slide|local={{ duration: 400 }}>
+        <div class="item" class:me={is_self} transition:slide={{ duration: 400 }}>
           <div class="item-data">
             <div class="item-name">{item.first_name} {item.last_name}</div>
             <div class="item-email">{item.email}</div>
@@ -450,7 +450,7 @@
               {#if menu_open}
                 <div
                   class="menu"
-                  transition:logical_fly|local={{ duration: 200, y: -15, x: 15 }}
+                  transition:logical_fly={{ duration: 200, y: -15, x: 15 }}
                   use:click_out={member_menu_click_out}
                 >
                   {#if item.relation === "owner"}
@@ -506,10 +506,10 @@
     {@const invitations = filter_invitations(data.access.invitations.items)}
     
     {#if invitations.length}
-      <div class="invitations" transition:slide|local={{ duration: 400 }}>
+      <div class="invitations" transition:slide={{ duration: 400 }}>
         {#each invitations as item (item.id)}
           {@const menu_open = invitation_menu_open_id == item.id}
-          <div class="invitation-item" transition:slide|local={{ duration: 400 }}>
+          <div class="invitation-item" transition:slide={{ duration: 400 }}>
             <div class="invitation-item-email">{item.receiver_email}</div>
             <div class="menu-anchor">
               <button
@@ -523,7 +523,7 @@
               {#if menu_open}
                 <div
                   class="menu"
-                  transition:logical_fly|local={{ duration: 200, y: -15, x: 15 }}
+                  transition:logical_fly={{ duration: 200, y: -15, x: 15 }}
                   use:click_out={invitation_menu_click_out}
                 >
                   <button
@@ -543,7 +543,7 @@
         {/each}
       </div>
     {:else}
-      <p class="invitations-empty" transition:slide|local={{ duration: 400 }}>
+      <p class="invitations-empty" transition:slide={{ duration: 400 }}>
         {$locale.pages["account/members"].no_pending_invitations_message}
       </p>
     {/if}
@@ -583,7 +583,7 @@
               {$locale.pages["account/members"].dialogs.invite.submit}
             </div>
             {#if sending}
-              <div class="invite-dialog-send-sending-icon" transition:scale|local={{ duration: 300 }}>
+              <div class="invite-dialog-send-sending-icon" transition:scale={{ duration: 300 }}>
                 <CircularProgress />
               </div>
             {/if}

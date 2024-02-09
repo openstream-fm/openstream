@@ -1,5 +1,5 @@
 import { error } from "@sveltejs/kit"
-import type { ClientError } from "./net.client";
+import type { ClientError } from "./net.client.js";
 
 export const load_catch_all = async () => {
   const status = 404;

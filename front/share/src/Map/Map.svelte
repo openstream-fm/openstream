@@ -331,7 +331,7 @@
         <Icon d={mdiMenu} />
       </button>
       {#if menu_open}
-        <div class="menu" transition:logical_fly|local={{ y: -15, x: 15, duration: 200 }} use:click_out={menu_click_out}>
+        <div class="menu" transition:logical_fly={{ y: -15, x: 15, duration: 200 }} use:click_out={menu_click_out}>
           <button class="menu-item menu-item-svg ripple-container" use:ripple on:click={export_svg}>
             <div class="menu-item-icon">
               <Icon d={mdiDownload} />
@@ -355,7 +355,7 @@
     <div
       class="map-tooltip"
       class:to-left={tooltip_to_left}
-      in:fade|local={{ duration: 200 }}
+      in:fade={{ duration: 200 }}
       style:--pointer-x="{pointerX}px"
       style:--pointer-y="{pointerY}px"
       use:tooltip_mount

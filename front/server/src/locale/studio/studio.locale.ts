@@ -1,14 +1,14 @@
-export type StudioLocale = typeof import("./studio.en").default;
+export type StudioLocale = typeof import("./studio.en.js").default;
 
-import en from "./studio.en";
-import es from "./studio.es";
-import es_AR from "./studio.es-AR";
-import pt from "./studio.pt";
-import de from "./studio.de";
-import fr from "./studio.fr";
-import it from "./studio.it";
-import zh from "./studio.zh";
-import ar from "./studio.ar";
+import en from "./studio.en.js";
+import es from "./studio.es.js";
+import es_AR from "./studio.es-AR.js";
+import pt from "./studio.pt.js";
+import de from "./studio.de.js";
+import fr from "./studio.fr.js";
+import it from "./studio.it.js";
+import zh from "./studio.zh.js";
+import ar from "./studio.ar.js";
 
 export const studio_locales: StudioLocale[] = [ en, es, es_AR, pt, de, fr, it, zh, ar ];
 export const studio_locales_map = new Map<string, StudioLocale>(Object.entries({

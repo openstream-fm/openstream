@@ -1,9 +1,9 @@
 /// config.test.ts
 import test from "ava";
-import { load, load_from_string, merge_env } from "./config";
-import type { Config } from "./config";
-import { ConsoleLogger } from "./logger";
-import { LogLevel } from "./log-level";
+import { load, load_from_string, merge_env } from "./config.js";
+import type { Config } from "./config.js";
+import { ConsoleLogger } from "./logger.js";
+import { LogLevel } from "./log-level.js";
 import path from "path"
 import { fileURLToPath } from "url"
 

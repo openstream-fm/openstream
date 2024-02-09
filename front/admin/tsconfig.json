@@ -30,7 +30,6 @@
       ]
     },
     "ignoreDeprecations": "5.0",
-    "importsNotUsedAsValues": "error",
     "plugins": [
       {
         "transform": "typia/lib/transform"

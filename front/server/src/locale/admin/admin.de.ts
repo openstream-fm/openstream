@@ -1,12 +1,12 @@
-import stats_map from "../share/stats-map/stats-map.de";
-import validate from "../share/validate/validate.de";
-import analytics from "../share/analytics/analytics.de";
-import countries from "../share/countries/countries.de";
-import langs from "../share/langs/langs.de";
-import misc from "../misc/misc.de";
-import language from "../share/language/language.de";
+import stats_map from "../share/stats-map/stats-map.de.js";
+import validate from "../share/validate/validate.de.js";
+import analytics from "../share/analytics/analytics.de.js";
+import countries from "../share/countries/countries.de.js";
+import langs from "../share/langs/langs.de.js";
+import misc from "../misc/misc.de.js";
+import language from "../share/language/language.de.js";
 
-const locale: import("./admin.locale").AdminLocale = {
+const locale: import("./admin.locale.js").AdminLocale = {
 
   "lang": "de",
   "region": null,

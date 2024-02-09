@@ -1,7 +1,7 @@
 import braintree from "braintree";
-import type { PaymentsClient } from "../defs/payments/api/payments-client";
-import { assert_never } from "../assert_never";
-import { operation_rethrow } from "./error";
+import type { PaymentsClient } from "../defs/payments/api/payments-client.js";
+import { assert_never } from "../assert_never.js";
+import { operation_rethrow } from "./error.js";
 
 export const map_environment = (kind: "sandbox" | "production"): braintree.Environment => {
   if(kind === "sandbox") {

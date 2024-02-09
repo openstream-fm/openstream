@@ -1,9 +1,9 @@
 import { fileURLToPath } from "url";
-import { load } from "../config";
-import { default_logger } from "../logger";
-import { Client } from "../client.server";
+import { load } from "../config.js";
+import { default_logger } from "../logger.js";
+import { Client } from "../client.server.js";
 import readline from "readline/promises";
-import { random_device_id } from "../session";
+import { random_device_id } from "../session.js";
 
 const rl = readline.createInterface(process.stdin, process.stdout, void 0, true);
 

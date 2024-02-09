@@ -1,4 +1,4 @@
-import type { CountryCode } from "../../../defs/CountryCode";
+import type { CountryCode } from "../../../defs/CountryCode.js";
 
 const locale = ({
   _u2: "North Cyprus",

@@ -1,5 +1,5 @@
 /// file: payments.ar.ts
-const locale: import("./payments.locale").PaymentsLocale = {
+const locale: import("./payments.locale.js").PaymentsLocale = {
   Expires_at_MM_YYYY_html: "تنتهي في <b>@MM/@YYYY</b>",
   Ending_in_XXXX_html: "تنتهي بـ <b>@XXXX</b>",
 

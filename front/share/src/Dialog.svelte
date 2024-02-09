@@ -80,14 +80,14 @@
 <div
   class="overlay"
   on:click={on_close}
-  transition:fade|local={{ duration: 200 }}
+  transition:fade={{ duration: 200 }}
 >
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <div
     class="dialog elev3"
     style="--width: {width}; --padding: {padding}"
     on:click|stopPropagation={() => {}}
-    transition:custom|local
+    transition:custom
   >
     {#if title}
       <div class="title">{title}</div>

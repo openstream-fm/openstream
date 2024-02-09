@@ -1,1 +1,1 @@
-export type StationProfileLocale = typeof import("./station-profile.en").default;
+export type StationProfileLocale = typeof import("./station-profile.en.js").default;

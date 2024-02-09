@@ -1,5 +1,5 @@
 import type { Request } from "express";
-import { Unauthorized } from "./error";
+import { Unauthorized } from "./error.js";
 
 export const user_token = (req: Request): string => {
   const token = req.cookie_session.user?.token;

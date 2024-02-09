@@ -128,7 +128,7 @@
 
     {#if open}
       <div class="menu"
-        transition:fly|local={{ y: -20, duration: 200 }}
+        transition:fly={{ y: -20, duration: 200 }}
         use:click_out={menu_click_out}
       >
         {#each show_accounts as account (account._id)}

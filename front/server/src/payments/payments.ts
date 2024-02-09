@@ -1,11 +1,11 @@
 import { type RequestHandler, Router } from "express"
-import type { Config } from "../config";
-import type { Logger } from "../logger";
-import { BraintreePaymentsClient } from "./braintree-payments-client";
-import { add_all } from "../defs/payments/api/router";
+import type { Config } from "../config.js";
+import type { Logger } from "../logger.js";
+import { BraintreePaymentsClient } from "./braintree-payments-client.js";
+import { add_all } from "../defs/payments/api/router.js";
 import body_parser from "body-parser";
-import { access_token_error, catch_handler, not_found_handler, validate_rethrow } from "./error";
-import { PAYMENTS_ACCESS_TOKEN_HEADER } from "../constants";
+import { access_token_error, catch_handler, not_found_handler, validate_rethrow } from "./error.js";
+import { PAYMENTS_ACCESS_TOKEN_HEADER } from "../constants.js";
 
 export const access_token_auth = (access_token: string): RequestHandler => { 
   return (req, res, next) => { 

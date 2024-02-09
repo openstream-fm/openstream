@@ -1,5 +1,5 @@
 /// file: validate.ar.ts
-const locale: import("./validate.locale").ValidateLocale = {
+const locale: import("./validate.locale.js").ValidateLocale = {
   "required": "هذا الحقل مطلوب",
 
   "number": "يجب أن يكون هذا الحقل رقمًا صالحًا",

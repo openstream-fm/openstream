@@ -1,4 +1,4 @@
-const locale: typeof import("./misc.en").default = {
+const locale: typeof import("./misc.en.js").default = {
   Relay: "Relais",
   Settings_updated: "Paramètres mis à jour",
   Master_relay: "Relais maître",

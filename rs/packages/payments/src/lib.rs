@@ -60,10 +60,10 @@ pub fn export_query<T: Query>() {
         "// This file was automatically generated from its Rust definition, do not manually edit",
       ),
       String::from(""),
-      String::from(r#"export { path } from "./Path" "#),
-      String::from(r#"export type { Path } from "./Path" "#),
-      String::from(r#"export type { Query } from "./Query" "#),
-      String::from(r#"export type { Response } from "./Response" "#),
+      String::from(r#"export { path } from "./Path.js" "#),
+      String::from(r#"export type { Path } from "./Path.js" "#),
+      String::from(r#"export type { Query } from "./Query.js" "#),
+      String::from(r#"export type { Response } from "./Response.js" "#),
     ]
     .join("\n");
 
@@ -82,7 +82,7 @@ mod test {
   fn interface_endpoint_import<T: Query>() -> String {
     let name = T::PATH.trim_matches('/').replace('-', "_");
     format!(
-      r#"import type * as {} from "./{}/endpoint""#,
+      r#"import type * as {} from "./{}/endpoint.js""#,
       name,
       T::PATH.trim_start_matches('/')
     )
@@ -128,7 +128,7 @@ mod test {
         String::from("// This file was automatically generated from its Rust definition, do not manually edit"),
         String::from("// @ts-ignore"),
         String::from(r#"import typia from "typia""#),
-        String::from(r#"import type { PaymentsClient } from "./payments-client""#),
+        String::from(r#"import type { PaymentsClient } from "./payments-client.js""#),
       ];
 
       $(

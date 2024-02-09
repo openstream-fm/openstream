@@ -1,4 +1,4 @@
-import { add, tick } from "./util";
+import { add, tick } from "./util.js";
 
 export const tooltip = (node: HTMLElement, _params: null | string | {tip: string}) => {
 

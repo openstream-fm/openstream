@@ -144,7 +144,7 @@
   <title>{$locale.pages.accounts.head.title}</title>
 </svelte:head>
 
-<div class="layout" in:logical_fly={{ x: -25, duration: 200 }}>
+<div class="layout" in:logical_fly|global={{ x: -25, duration: 200 }}>
   <div class="top">
     <div class="logo">
       <SimpleLogo />

@@ -1,6 +1,6 @@
 /// file: langs.ar.ts
 // قائمة أكواد اللغة ISO-2 وأسمائها
-const locale: import("./countries.locale").LangsLocale = {
+const locale: import("./countries.locale.js").LangsLocale = {
   aa: "أفار",
   ab: "أبخازي",
   ae: "أفستا",

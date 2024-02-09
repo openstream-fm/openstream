@@ -1,5 +1,5 @@
 import test from 'ava';
-import { clone, equals, diff, to_str_hash, hash, hash_str } from './collections';
+import { clone, equals, diff, to_str_hash, hash, hash_str } from "./collections.js";
 
 test('clone - should return null when null is passed in', t => {
   t.deepEqual(clone(null), null);

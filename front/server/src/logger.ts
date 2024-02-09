@@ -1,6 +1,6 @@
-import { color } from "./color";
-import { env } from "./env";
-import { LogLevel } from "./log-level";
+import { color } from "./color.js";
+import { env } from "./env.js";
+import { LogLevel } from "./log-level.js";
 
 export interface Logger {
   error: (error: string | Error) => void,

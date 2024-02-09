@@ -1,9 +1,9 @@
 import test from "ava";
 import type { Request, Response } from "express";
-import { type SessionData, decrypt, encrypt, session, get_cookie_session } from "./session";
-import { type Config } from "./config";
-import { ConsoleLogger } from "./logger";
-import { LogLevel } from "./log-level";
+import { type SessionData, decrypt, encrypt, session, get_cookie_session } from "./session.js";
+import { type Config } from "./config.js";
+import { ConsoleLogger } from "./logger.js";
+import { LogLevel } from "./log-level.js";
 import crypto from "crypto";
 
 // @ts-ignore

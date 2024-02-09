@@ -88,7 +88,7 @@
 		{/each}
 	</div>
 	{#if kind === 'am' || kind === 'fm'}
-		<div class="freq-field" transition:slide|local={{ duration: 200 }}>
+		<div class="freq-field" transition:slide={{ duration: 200 }}>
 			<NullNumberField
 				label={$locale.station_profile.frequency.Frequency}
 				icon={mdiSineWave}

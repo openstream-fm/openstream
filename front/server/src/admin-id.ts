@@ -1,5 +1,5 @@
 import type { Request } from "express";
-import { Unauthorized } from "./error";
+import { Unauthorized } from "./error.js";
 
 export const admin_id = (req: Request): string => {
   const adminId = req.cookie_session.admin?._id;

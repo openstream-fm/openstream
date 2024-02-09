@@ -1,7 +1,7 @@
 import { Router } from "express"
 import { Readable } from "stream";
-import { PROTOCOL_HEADER, REAL_IP_HEADER } from "./constants";
-import { ip } from "./ip";
+import { PROTOCOL_HEADER, REAL_IP_HEADER } from "./constants.js";
+import { ip } from "./ip.js";
 
 export const sveltekit_dev_proxy = (port: number) => {
   

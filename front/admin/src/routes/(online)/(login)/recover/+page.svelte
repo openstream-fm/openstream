@@ -89,10 +89,10 @@
 </svelte:head>
 
 
-<div class="login-page-box" in:form>
+<div class="login-page-box" in:form|global>
   <div class="login-page-title">Recover</div>
   {#if sent_to != null}
-    <div class="sent" in:slide|local={{ duration: 300 }}>
+    <div class="sent" in:slide={{ duration: 300 }}>
       <div class="sent-icon">
         <Icon d={mdiCheck} />
       </div>
@@ -111,7 +111,7 @@
       </div>
       <button use:ripple class="ripple-container login-page-button" class:sending>
         {#if sending}
-          <div class="login-page-btn-sending-progress" transition:scale|local={{ duration: 300 }}>
+          <div class="login-page-btn-sending-progress" transition:scale={{ duration: 300 }}>
             <CircularProgress />
           </div>
         {/if}

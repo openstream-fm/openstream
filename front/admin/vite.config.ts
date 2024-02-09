@@ -6,7 +6,7 @@ const config: UserConfig = {
 		dedupe: ["@sveltejs/kit", "svelte", "@mdi/js", "http-status-codes", "kleur"],
 	},
 	server: {
-		https: false,
+		// https: false,
 		host: "0.0.0.0",
 		port: 3002,
 		strictPort: true,

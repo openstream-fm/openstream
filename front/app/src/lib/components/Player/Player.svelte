@@ -156,7 +156,7 @@
 
 {#if state.type !== "closed"}
   <div class="player-holder">
-    <div class="player" aria-label="Player" transition:transition|local>
+    <div class="player" aria-label="Player" transition:transition>
 
       <div class="toggle-out">
         <button use:ripple class="toggle ripple-container" aria-label={toggle_aria_label} data-audio-state={audio_state} on:click={toggle}>
@@ -180,7 +180,7 @@
             </span>
           </div>
           {#if subtitle}
-            <div class="subtitle" transition:slide|local={{ duration: 200 }}>
+            <div class="subtitle" transition:slide={{ duration: 200 }}>
               <span>{subtitle}</span>
             </div>
           {/if}

@@ -1,4 +1,4 @@
-import { LogLevel } from "./log-level"
+import { LogLevel } from "./log-level.js"
 
 const get_log_level = (): LogLevel => {
   let env = process.env.LOG_LEVEL?.toLowerCase();

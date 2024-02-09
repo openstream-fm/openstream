@@ -1,5 +1,5 @@
 /// file: payments.zh.ts
-const locale: import("./payments.locale").PaymentsLocale = {
+const locale: import("./payments.locale.js").PaymentsLocale = {
   Expires_at_MM_YYYY_html: "有效期至 <b>@MM/@YYYY</b>",
   Ending_in_XXXX_html: "尾号 <b>@XXXX</b>",
 

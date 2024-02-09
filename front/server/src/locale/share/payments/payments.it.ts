@@ -1,5 +1,5 @@
 /// file: payments.it.ts
-const locale: import("./payments.locale").PaymentsLocale = {
+const locale: import("./payments.locale.js").PaymentsLocale = {
   Expires_at_MM_YYYY_html: "Scade il <b>@MM/@YYYY</b>",
   Ending_in_XXXX_html: "Termina con <b>@XXXX</b>",
 

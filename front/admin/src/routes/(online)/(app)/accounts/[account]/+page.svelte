@@ -409,7 +409,7 @@
           <Icon d={mdiDotsVertical} />
         </button>
         {#if plan_selector_open}
-          <div class="plan-selector-menu" transition:logical_fly={{ y: -15, x: 15, duration: 200 }} use:click_out={plan_selector_click_out}>
+          <div class="plan-selector-menu" transition:logical_fly|global={{ y: -15, x: 15, duration: 200 }} use:click_out={plan_selector_click_out}>
             {#each data.all_plans.filter(item => item._id !== data.plan?._id) as plan (plan._id)}
               <button class="plan-selector-item" on:click={() => { plan_selector_open = false; selected_plan = plan }}>
                 Set plan to <b>{plan.display_name}</b> - <b>$ {plan.price}</b>

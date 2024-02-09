@@ -1,5 +1,5 @@
 /// file: station-profile.zh.ts
-const locale: import("./station-profile.locale").StationProfileLocale = {
+const locale: import("./station-profile.locale.js").StationProfileLocale = {
   "titles": {
     "logo": "标志",
     "profile_info": "个人资料",

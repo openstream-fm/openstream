@@ -1,6 +1,6 @@
 /// file: type-of-content.ar.ts
 // file: type-of-content.ar.ts
-import type { StationTypeOfContentLocale } from "./type-of-content.locale";
+import type { StationTypeOfContentLocale } from "./type-of-content.locale.js";
 
 /// @translation-context: نوع المحتوى لمحطة الإذاعة
 const locale: StationTypeOfContentLocale = {

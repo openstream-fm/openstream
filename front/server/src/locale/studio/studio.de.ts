@@ -1,17 +1,17 @@
 /// file: studio.de.ts
-import stats_map from "../share/stats-map/stats-map.de";
-import validate from "../share/validate/validate.de";
-import countries from "../share/countries/countries.de";
-import langs from "../share/langs/langs.de";
-import type_of_content from "../share/type-of-content/type-of-content.de";
-import analytics from "../share/analytics/analytics.de";
-import payments from "../share/payments/payments.de";
-import station_profile from "../share/station-profile/station-profile.de";
-import misc from "../misc/misc.de";
-import language from "../share/language/language.de";
+import stats_map from "../share/stats-map/stats-map.de.js";
+import validate from "../share/validate/validate.de.js";
+import countries from "../share/countries/countries.de.js";
+import langs from "../share/langs/langs.de.js";
+import type_of_content from "../share/type-of-content/type-of-content.de.js";
+import analytics from "../share/analytics/analytics.de.js";
+import payments from "../share/payments/payments.de.js";
+import station_profile from "../share/station-profile/station-profile.de.js";
+import misc from "../misc/misc.de.js";
+import language from "../share/language/language.de.js";
 
 
-const locale: import("./studio.locale").StudioLocale = {
+const locale: import("./studio.locale.js").StudioLocale = {
 
   "lang": "de",
   "region": null,

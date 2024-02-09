@@ -44,7 +44,7 @@
   <title>{$locale.pages.login.head.title}</title>
 </svelte:head>
 
-<div class="login-page-box" in:form>
+<div class="login-page-box" in:form|global>
   <div class="login-page-title">{$locale.pages.login.title}</div>
   <Formy action={login} let:submit>
     <form novalidate class="login-page-fields" on:submit={submit}>

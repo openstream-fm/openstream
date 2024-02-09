@@ -1,6 +1,6 @@
 /// file: type-of-content.zh.ts
 // file: type-of-content.zh.ts
-import type { StationTypeOfContentLocale } from "./type-of-content.locale";
+import type { StationTypeOfContentLocale } from "./type-of-content.locale.js";
 
 /// @translation-context: 电台内容类型
 const locale: StationTypeOfContentLocale = {

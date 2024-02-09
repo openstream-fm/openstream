@@ -8,7 +8,7 @@ export const load = (async ({ parent, params, fetch, url }) => {
 
   const user = all_users.find(item => item._id === params.user);
 
-  if(user == null) throw error(404, { status: 404, message: "User not found", code: "FRONT_RESOURCE_NOT_FOUND" })
+  if(user == null) error(404, { status: 404, message: "User not found", code: "FRONT_RESOURCE_NOT_FOUND" });
 
   const query = ({
     show: "all",

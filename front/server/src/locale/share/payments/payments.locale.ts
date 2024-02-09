@@ -1,1 +1,1 @@
-export type PaymentsLocale = typeof import("./payments.en").default;
+export type PaymentsLocale = typeof import("./payments.en.js").default;

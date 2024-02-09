@@ -1,6 +1,6 @@
 import { browser } from "$app/environment";
 import { ApiError } from "$server/error";
-import { error, redirect, type LoadEvent } from "@sveltejs/kit";
+import { error, redirect, type LoadEvent, type NumericRange } from "@sveltejs/kit";
 import StatusCode from "http-status-codes";
 
 export type User = import("$server/defs/db/PublicUser").PublicUser & { media_key: string };
@@ -30,25 +30,25 @@ export const load_get = async <T>(
 
   const res = await fetch(target).catch((_e) => {
     const e = new ApiError(StatusCode.BAD_GATEWAY, "FRONT_GATEWAY_FETCH", "Bad gateway (fetch)");
-    throw error(e.status, e.toJSON().error);
+    error(e.status as NumericRange<400, 599>, e.toJSON().error);
   }) 
   
   const body: any = await res.json().catch((_e) => {
     const e = new ApiError(StatusCode.BAD_GATEWAY, "FRONT_GATEWAY_JSON", "Bad gateway (json)");
-    throw error(e.status, e.toJSON().error);
+    error(e.status as NumericRange<400, 599>, e.toJSON().error);
   })
 
   if(redirectToLoginOnAuthErrors) {
     if(res.status === StatusCode.UNAUTHORIZED) {
       const to = `${url.pathname}${url.search}`;
       const login_url = to === "/" ? "/login" : `/login#${target}`
-      throw redirect(302, login_url);
+      redirect(302, login_url);
     }
   }
 
   if(body.error) {
     const e = ApiError.from_error_payload(body.error);
-    throw error(e.status, e.toJSON().error)
+    error(e.status as NumericRange<400, 599>, e.toJSON().error);
   }
 
   return body as T
@@ -70,30 +70,30 @@ export const load_with_payload = async <T>(
     body: JSON.stringify(payload),
   }).catch((_e) => {
     const e = new ApiError(StatusCode.BAD_GATEWAY, "FRONT_GATEWAY_FETCH", "Bad gateway (fetch)");
-    throw error(e.status, e.toJSON().error);
+    error(e.status as NumericRange<400, 599>, e.toJSON().error);
   }) 
   
   const body: any = await res.json().catch((_e) => {
     const e = new ApiError(StatusCode.BAD_GATEWAY, "FRONT_GATEWAY_JSON", "Bad gateway (json)");
-    throw error(e.status, e.toJSON().error);
+    error(e.status as NumericRange<400, 599>, e.toJSON().error);
   })
 
   if(redirectToLoginOnAuthErrors) {
     if(res.status === StatusCode.UNAUTHORIZED) {
       const to = `${url.pathname}${url.search}`;
       const login_url = to === "/" ? "/login" : `/login#${target}`
-      throw redirect(302, login_url);
+      redirect(302, login_url);
     }
   }
 
   if(body.error) {
     const e = ApiError.from_error_payload(body.error);
-    throw error(e.status, e.toJSON().error)
+    error(e.status as NumericRange<400, 599>, e.toJSON().error);
   }
 
   return body as T
 }
 
 export const not_found_load = () => {
-  throw error(404, { status: 404, message: "Page not found", code: "CLIENT_PAGE_NOT_FOUND" });
+  error(404, { status: 404, message: "Page not found", code: "CLIENT_PAGE_NOT_FOUND" });
 }

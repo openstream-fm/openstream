@@ -1,17 +1,17 @@
 import express, { type RequestHandler } from "express";
-import type { Config } from "./config";
-import type { Logger } from "./logger";
-import { studio_api } from "./api/studio-api";
+import type { Config } from "./config.js";
+import type { Logger } from "./logger.js";
+import { studio_api } from "./api/studio-api.js";
 
 import path from "path";
-import { env } from "./env";
-import { color } from "./color";
-import { kit } from "./kit";
+import { env } from "./env.js";
+import { color } from "./color.js";
+import { kit } from "./kit.js";
 
 import { fileURLToPath } from "url";
-import { admin_api } from "./api/admin-api";
-import { payments_api } from "./payments/payments";
-import { get_client } from "./client.server";
+import { admin_api } from "./api/admin-api.js";
+import { payments_api } from "./payments/payments.js";
+import { get_client } from "./client.server.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const start = async ({ config, logger }: { config: Config, logger: Logger }) => {

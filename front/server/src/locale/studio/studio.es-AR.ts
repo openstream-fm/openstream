@@ -1,15 +1,15 @@
-import stats_map from "../share/stats-map/stats-map.es";
-import validate from "../share/validate/validate.es";
-import countries from "../share/countries/countries.es";
-import langs from "../share/langs/langs.es";
-import type_of_content from "../share/type-of-content/type-of-content.es";
-import analytics from "../share/analytics/analytics.es";
-import payments from "../share/payments/payments.es-AR";
-import station_profile from "../share/station-profile/station-profile.es";
-import misc from "../misc/misc.es-AR";
-import language from "../share/language/language.es";
+import stats_map from "../share/stats-map/stats-map.es.js";
+import validate from "../share/validate/validate.es.js";
+import countries from "../share/countries/countries.es.js";
+import langs from "../share/langs/langs.es.js";
+import type_of_content from "../share/type-of-content/type-of-content.es.js";
+import analytics from "../share/analytics/analytics.es.js";
+import payments from "../share/payments/payments.es-AR.js";
+import station_profile from "../share/station-profile/station-profile.es.js";
+import misc from "../misc/misc.es-AR.js";
+import language from "../share/language/language.es.js";
 
-const locale: import("./studio.locale").StudioLocale = {
+const locale: import("./studio.locale.js").StudioLocale = {
 
   "lang": "es",
   "region": "AR",

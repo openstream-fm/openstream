@@ -1425,7 +1425,7 @@
                     class="upload-icon-done"
                     aria-label={$locale.pages["station/playlist"].uploading.success}
                     use:tooltip={$locale.pages["station/playlist"].uploading.success}
-                    in:fade|local={{ duration: 200 }}
+                    in:fade={{ duration: 200 }}
                   >
                     <Icon d={mdiCheck} />
                   </div>
@@ -1434,7 +1434,7 @@
                     class="upload-icon-waiting"
                     aria-label={$locale.pages["station/playlist"].uploading.waiting}
                     use:tooltip={$locale.pages["station/playlist"].uploading.waiting}
-                    in:fade|local={{ duration: 200 }}
+                    in:fade={{ duration: 200 }}
                   >
                     <Icon d={mdiTimerPauseOutline} />
                   </div>
@@ -1444,7 +1444,7 @@
                     aria-current={true}
                     aria-label={$locale.pages["station/playlist"].uploading.in_progress}
                     use:tooltip={$locale.pages["station/playlist"].uploading.in_progress}
-                    in:fade|local={{ duration: 200 }}
+                    in:fade={{ duration: 200 }}
                   >
                     <CircularProgress />
                   </div>
@@ -1454,7 +1454,7 @@
                     class="upload-icon-error"
                     aria-errormessage={error_message}
                     use:tooltip={error_message}
-                    in:fade|local={{ duration: 200 }}
+                    in:fade={{ duration: 200 }}
                   >
                     <Icon d={mdiAlertDecagram} />
                   </div>
@@ -1498,7 +1498,7 @@
                 use:tooltip={$locale.pages["station/playlist"].actions.restart_playlist}
                 use:ripple
                 on:click={() => restart_open = true}
-                transition:shuffle_btn_transition|local
+                transition:shuffle_btn_transition
               >
                 <div class="shuffle-btn-icon">
                   <Icon d={mdiRestart} />
@@ -1514,7 +1514,7 @@
                   use:tooltip={$locale.pages["station/playlist"].actions.unshuffle_playlist}
                   use:ripple
                   on:click={() => unshuffle_open = true}
-                  transition:shuffle_btn_transition|local
+                  transition:shuffle_btn_transition
                 >
                   <div class="shuffle-btn-icon">
                     <Icon d={mdiShuffleDisabled} />
@@ -1528,7 +1528,7 @@
                 use:tooltip={$locale.pages["station/playlist"].actions.shuffle_playlist}
                 use:ripple
                 on:click={() => shuffle_open = true}
-                transition:shuffle_btn_transition|local
+                transition:shuffle_btn_transition
               >
                 <div class="shuffle-btn-icon">
                   <Icon d={mdiShuffleVariant} />
@@ -1540,7 +1540,7 @@
       </div>
 
       {#if $selected_ids.length}
-        <div class="selection-actions" transition:slide|local={{ duration: 200 }}>
+        <div class="selection-actions" transition:slide={{ duration: 200 }}>
           <button class="delete-btn selected-action selected-action-remove" use:ripple on:click={set_del_selection_open}>
             <div class="delete-btn-icon selected-action-icon">
               <Icon d={mdiTrashCanOutline} />
@@ -1631,7 +1631,7 @@
                 <th class="btn-cell"></th>
               </tr>
             </thead>
-            <tbody in:logical_fly|local={{ duration: 300, x: -50 }}>  
+            <tbody in:logical_fly={{ duration: 300, x: -50 }}>  
               {#each data.files.items as file, i (file._id)}
                 {@const selected = $selected_ids.includes(file._id)}
                 {@const player_playing = $player_playing_audio_file_id === file._id && $player_audio_state !== "paused"}
@@ -1656,8 +1656,8 @@
                   class:odd={!even}
                   class:selected
                   aria-selected={selected}
-                  in:fade|local={{ duration: 250 }}
-                  out:file_item_out|local
+                  in:fade={{ duration: 250 }}
+                  out:file_item_out
                   on:pointerenter={() => on_drag_enter(i)}
                 >
                   <td
@@ -1938,7 +1938,7 @@
 {/if}
 
 {#if dragging_item != null}
-  <div class="dragging-tag" in:dragging_tag_in|local out:dragging_tag_out|local style="top: {dragging_tag_y}px; left: {dragging_tag_x}px">
+  <div class="dragging-tag" in:dragging_tag_in out:dragging_tag_out style="top: {dragging_tag_y}px; left: {dragging_tag_x}px">
     <div class="dragging-tag-icon">
       <Icon d={mdiMusic} />
     </div>
