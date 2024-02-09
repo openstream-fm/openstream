@@ -1727,8 +1727,8 @@
       <div class="delete-dialog-text">
         {$locale.dialogs.delete.default_message}
       </div>
-      <div class="delete-dialog-btns">
 
+      <div class="delete-dialog-btns">
         <button class="delete-dialog-btn-cancel ripple-container" use:ripple on:click={() => audio_item_to_delete = null}>
           {$locale.dialogs.delete.cancel}
         </button>
@@ -1750,7 +1750,7 @@
   >
     <div class="delete-dialog">
       <div class="delete-dialog-text">
-        {$locale.dialogs.delete.cancel}
+        {$locale.dialogs.delete.default_message}
       </div>
       <div class="delete-dialog-btns">
 
