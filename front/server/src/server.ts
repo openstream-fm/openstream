@@ -27,6 +27,7 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
     app.use("/api", studio_api({ client, config, logger }))
     app.use(express.static(path.resolve(__dirname, "../../../static/studio"), { etag: true, dotfiles: "allow" }))
 
+    // TODO: remove this
     if(env.SVELTEKIT_APP_DEV) {
       app.use((req, res) => {
         res.redirect(302, `http://${req.hostname}:${env.SVELTEKIT_APP_PORT}${req.url}`)
@@ -54,6 +55,7 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
     app.use("/api", admin_api({ client, config, logger }))
     app.use(express.static(path.resolve(__dirname, "../../../static/admin"), { etag: true, dotfiles: "allow" }))
 
+    // TODO: remove this
     if(env.SVELTEKIT_ADMIN_DEV) {
       app.use((req, res) => {
         res.redirect(302, `http://${req.hostname}:${env.SVELTEKIT_ADMIN_PORT}${req.url}`)

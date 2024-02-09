@@ -64,6 +64,9 @@ export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
 
   const target = new Request(request)
 
+  const host = event.request.headers.get("host");
+  if(host) target.headers.set("x-host", host);
+
   for(const key of [
     "x-forwarded-proto",
     "x-forwarded-for",
