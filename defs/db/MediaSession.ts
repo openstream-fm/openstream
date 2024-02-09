@@ -9,11 +9,11 @@ export type MediaSession = {
   station_id: string;
   deployment_id: string;
   state: MediaSessionState;
-  now_playing: MediaSessionNowPlaying | null;
+  now_playing: MediaSessionNowPlaying | null | undefined;
   transfer_bytes: number;
-  closed_at: DateTime | null;
-  duration_ms: number | null;
-  health_checked_at: DateTime | null;
+  closed_at: DateTime | null | undefined;
+  duration_ms: number | null | undefined;
+  health_checked_at: DateTime | null | undefined;
   created_at: DateTime;
   updated_at: DateTime;
 } & MediaSessionKind;

@@ -9,8 +9,8 @@ export type RelaySession = {
   target_deployment_id: string;
   state: RelaySessionState;
   transfer_bytes: number;
-  closed_at: DateTime | null;
-  duration_ms: number | null;
+  closed_at: DateTime | null | undefined;
+  duration_ms: number | null | undefined;
   created_at: DateTime;
   updated_at: DateTime;
 };

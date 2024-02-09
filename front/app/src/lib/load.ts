@@ -23,16 +23,18 @@ export const load_call = async <T>(
     if(result.error === undefined) {
       return result.data!;
     } else {
-      if(result.error.error?.status === StatusCode.UNAUTHORIZED && redirectToLoginOnAuthErrors) {
+      if(result.error?.error?.status === StatusCode.UNAUTHORIZED && redirectToLoginOnAuthErrors) {
         const to = `${location.pathname}${location.search}`;
         const login_url = to === "/" ? "/login" : `/login#${to}`
         redirect(302, login_url);
+      } else {
+        const api_error = ApiError.from_error_payload(result.error);
+        error(api_error.status as NumericRange<400, 599>, api_error.toJSON().error);
       }
-      error(result.error.error.status as NumericRange<400, 599>, result.error.error);
     }
   } catch(e: any) {
-    const api_error = new ApiError(502, "FRONT_GATEWAY_FETCH", "Bad gateway (fetch)");
-    error(e.status as NumericRange<400, 599>, api_error.toJSON().error);
+    const api_error = new ApiError(502, "FRONT_GATEWAY_FETCH", `Bad gateway (fetch)`);
+    error(api_error.status as NumericRange<400, 599>, api_error.toJSON().error);
   }
 }
 

@@ -19,6 +19,7 @@
 	import { scale } from "svelte/transition";
 	import BooleanField from "$share/Form/BooleanField.svelte";
 	import TransferAccountSelector from "./TransferAccountSelector.svelte";
+	import { PATCH, POST, unwrap } from "$lib/client";
 
   let delete_name_input_value = "";
   
@@ -85,7 +86,11 @@
         }
       }
 
-      await _patch(`/api/stations/${data.station._id}`, payload);
+      unwrap(await PATCH("/stations/{station}", {
+        params: { path: { station: data.station._id } },
+        body: payload
+      }));
+
       await invalidateAll();
       _message($locale.misc.Settings_updated);
 
@@ -132,14 +137,10 @@
         throw new Error($locale.misc.Target_account_is_required);
       }
 
-      const payload: import("$api/stations/[station]/transfer/POST/Payload").Payload = {
-        target_account_id: transfer_selected_account._id
-      } 
-
-      const { station } = await _post<import("$api/stations/[station]/transfer/POST/Output").Output>(
-        `/api/stations/${data.station._id}/transfer`,
-        payload
-      );
+      const { station } = unwrap(await POST("/stations/{station}/transfer", {
+        params: { path: {  station: data.station._id } },
+        body: { target_account_id: transfer_selected_account._id }
+      }));
 
       _message($locale.misc.Station_transferred);
 

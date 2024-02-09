@@ -4,6 +4,6 @@ export type UnauthenticatedAcceptPayloadData = {
   token: string;
   first_name: string;
   last_name: string;
-  phone: string | null;
+  phone: string | null | undefined;
   password: string;
 };

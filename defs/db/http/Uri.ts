@@ -2,9 +2,9 @@
 
 export type Uri = {
   uri: string;
-  scheme: string | null;
-  host: string | null;
-  port: number | null;
+  scheme: string | null | undefined;
+  host: string | null | undefined;
+  port: number | null | undefined;
   path: string;
-  query: string | null;
+  query: string | null | undefined;
 };

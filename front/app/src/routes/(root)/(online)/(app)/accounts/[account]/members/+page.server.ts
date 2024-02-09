@@ -11,10 +11,10 @@ export const load = (async ({ fetch, depends, parent }) => {
     const { members } = await load_call(() => client.GET("/accounts/{account}/members", { params: { path: { account: account._id } }, fetch }));
     const invitations = await load_call(() => client.GET("/invitations", { params: { query: { account_id: account._id, limit: 10_000 } }, fetch }))
 
-    const access = { is_owner: true, members, invitations }
+    const access = { is_owner: true as const, members, invitations }
     return { access }
   } else {
-    const access = { is_owner: false, members: null, invitations: null }
+    const access = { is_owner: false as const, members: null, invitations: null }
     return { access }
   }
 }) satisfies import("./$types").PageServerLoad;

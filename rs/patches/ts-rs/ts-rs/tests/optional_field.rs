@@ -14,7 +14,10 @@ struct Optional {
 #[test]
 fn test() {
     #[cfg(not(feature = "serde-compat"))]
-    assert_eq!(Optional::inline(), "{ a?: number, b: string | null, }");
+    assert_eq!(
+        Optional::inline(),
+        "{ a?: number, b: string | null | undefined, }"
+    );
     #[cfg(feature = "serde-compat")]
     assert_eq!(Optional::inline(), "{ a?: number, b?: string, }")
 }

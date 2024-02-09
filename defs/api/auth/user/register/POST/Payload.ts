@@ -8,7 +8,7 @@ export type Payload = {
   plan_id: string;
   email: string;
   password: string;
-  phone: string | null;
+  phone: string | null | undefined;
   language?: string;
   user_user_metadata?: Metadata;
   user_system_metadata?: Metadata;

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Input from "../Input.svelte";
 
-	export let value: string | null;
+	export let value: string | null | undefined;
   export let type: string = "text";
   export let autocomplete: string | undefined = void 0;
   export let trim: boolean = false;

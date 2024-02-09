@@ -60,35 +60,35 @@
 
 	export let account_id: string;
 	export let current: {
-		picture_id: string | null;
+		picture_id: string | null | undefined;
 
-		name: string | null;
-		slogan: string | null;
-		description: string | null;
+		name: string | null | undefined;
+		slogan: string | null | undefined;
+		description: string | null | undefined;
 		
 		country_code: CountryCode | "";
 		lang_code: LangCode | "",
 
 		type_of_content: StationTypeOfContent | "",
-		frequency: StationFrequency | null,
+		frequency: StationFrequency | null | undefined,
 
-		email: string | null;
-		phone: string | null;
-		whatsapp: string | null;
+		email: string | null | undefined;
+		phone: string | null | undefined;
+		whatsapp: string | null | undefined;
 
-		website_url: string | null;
-		twitter_url: string | null;
-		facebook_url: string | null;
-		instagram_url: string | null;
-		threads_url: string | null;
-		youtube_url: string | null;
-		twitch_url: string | null;
-		tiktok_url: string | null;
-		spotify_url: string | null;
-		radiocut_url: string | null,
+		website_url: string | null | undefined;
+		twitter_url: string | null | undefined;
+		facebook_url: string | null | undefined;
+		instagram_url: string | null | undefined;
+		threads_url: string | null | undefined;
+		youtube_url: string | null | undefined;
+		twitch_url: string | null | undefined;
+		tiktok_url: string | null | undefined;
+		spotify_url: string | null | undefined;
+		radiocut_url: string | null | undefined,
 
-		google_play_url: string | null;
-		app_store_url: string | null;
+		google_play_url: string | null | undefined;
+		app_store_url: string | null | undefined;
 		
 		user_metadata: {
 			mob_app: {
@@ -96,12 +96,12 @@
 				icon_bg_color: string
 				icon_rounded: boolean
 				ads: boolean
-				admob_app_id: string | null
-				admob_banner_id: string | null
+				admob_app_id: string | null | undefined
+				admob_banner_id: string | null | undefined
 				
-				google_play_title: string | null
-				google_play_subtitle: string | null
-				google_play_description: string | null
+				google_play_title: string | null | undefined
+				google_play_subtitle: string | null | undefined
+				google_play_description: string | null | undefined
 				google_play_lang: GooglePlayLang | ""
 			}
 		}
@@ -109,7 +109,7 @@
 	
 	export let advanced_open: boolean = false;
 
-	const _validate_admob_app_id = (value: string | null): string | null => {
+	const _validate_admob_app_id = (value: string | null | undefined): string | null => {
 		if(value == null) return null;
 		if(!/^ca\-app\-pub\-[0-9]{16}\~[0-9]{10}$/.test(value)) {
 			return $locale.station_profile.validation.admob_app_id_pattern;
@@ -117,7 +117,7 @@
 		return null;
 	}
 
-	const _validate_admob_banner_id = (value: string | null): string | null => {
+	const _validate_admob_banner_id = (value: string | null | undefined): string | null => {
 		if(value == null) return null;
 		if(!/^ca\-app\-pub\-[0-9]{16}\/[0-9]{10}$/.test(value)) {
 			return $locale.station_profile.validation.admob_banner_id_pattern;

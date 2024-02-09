@@ -21,6 +21,7 @@
 	import { goto } from '$app/navigation';
   import { locale } from "$lib/locale";
 	import { VALIDATE_USER_FIRST_NAME_MAX_LEN, VALIDATE_USER_LAST_NAME_MAX_LEN, VALIDATE_USER_PASSWORD_MIN_LEN, VALIDATE_USER_PASSWORD_MAX_LEN} from '$server/defs/constants';
+	import { POST, unwrap } from '$lib/client';
 
   const logger = default_logger.scoped("recovery");
 
@@ -100,21 +101,30 @@
     sending = true;
     try {
 
-      const payload: import("$api/invitations/accept/POST/Payload").Payload = {
+      // const payload: import("$api/invitations/accept/POST/Payload").Payload = {
+      //   first_name,
+      //   last_name,
+      //   password,        
+      //   phone: null,
+      //   token: data.token,
+      // };
+
+      const { result } = unwrap(await POST("/invitations/accept", { body: {
         first_name,
         last_name,
         password,        
         phone: null,
         token: data.token,
-      };
+      } }))
 
-      const { result }: import("$api/invitations/accept/POST/Output").Output = await _post("/api/invitations/accept", payload);
       if(result === "ok") {
-        const payload: Omit<import("$api/auth/user/login/POST/Payload").Payload, "device_id"> = {
-          email: email(),
-          password,
-        };
-        await _post("/api/auth/user/login", payload);
+        unwrap(await POST("/auth/user/login", {
+          body: {
+            email: email(),
+            password,
+            device_id: undefined as any
+          }
+        }))
         goto("/", { invalidateAll: true });
         invalidate_siblings();
       } else {

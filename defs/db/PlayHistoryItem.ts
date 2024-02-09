@@ -7,6 +7,6 @@ export type PlayHistoryItem = {
   station_id: string;
   deployment_id: string;
   title: string;
-  artist: string | null;
+  artist: string | null | undefined;
   created_at: DateTime;
 } & PlayHistoryItemKind;

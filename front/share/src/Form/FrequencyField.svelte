@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let value: StationFrequency | null;
+	export let value: StationFrequency | null | undefined;
 
 	let freq = value?.freq ?? null;
 	let kind: 'am' | 'fm' | 'web' = value?.kind || "web";
@@ -21,7 +21,10 @@
 		{ id: 'fm', locale: "Frequency_FM" },
 	] as const;
 
-  import { locale } from "$lib/locale";
+	// TODO: fix this
+	// @ts-ignore
+	import { locale } from "$lib/locale";
+	
 	import type { StationFrequency } from '$server/defs/StationFrequency';
 	import { _number } from '$share/formy/validate';
 	import Validator from '$share/formy/Validator.svelte';

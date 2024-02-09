@@ -3,6 +3,6 @@
 export type PublicPaymentMethodKind = { kind: "card" } & {
   card_type: string;
   last_4: string;
-  expiration_year: string | null;
-  expiration_month: string | null;
+  expiration_year: string | null | undefined;
+  expiration_month: string | null | undefined;
 };

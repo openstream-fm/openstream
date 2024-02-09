@@ -15,6 +15,7 @@
 	import { invalidateAll } from '$lib/invalidate';
 	
   import { locale } from "$lib/locale";
+	import { POST, unwrap } from '$lib/client';
 
   const get_current = (...args: any) => {
     const map = new Map<string, Item>();
@@ -36,10 +37,8 @@
   const reject = action(async () => {
 		if (to_reject_item == null) return;
 		const item = to_reject_item;
-    const payload: import("$api/invitations/reject/POST/Payload").Payload = { invitation_id: item.id };
-    
-    await _post(`/api/invitations/reject`, payload);
-		_message($locale.pages['me/invitations'].notifier.rejected);
+    unwrap(await POST("/invitations/reject", { body: { invitation_id: item.id } }))
+    _message($locale.pages['me/invitations'].notifier.rejected);
     to_reject_item = null;
     
     await delete_siblings(item).catch(() => {});
@@ -70,11 +69,11 @@
     accepting = true;
    
     try {
-      const payload: import("$api/invitations/accept/POST/Payload").Payload = {
-        invitation_id: item.id,
-      }
+      const { result } = unwrap(await POST(
+        "/invitations/accept", 
+        { body: { invitation_id: item.id } }
+      ))
 
-      const { result } = await _post<import("$api/invitations/accept/POST/Output").Output>("/api/invitations/accept", payload);
       if(result !== "ok") {
         _error($locale.pages['me/invitations'].notifier.accept_error.replace("@error", result))
       } else {

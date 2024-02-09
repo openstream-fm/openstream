@@ -4,7 +4,8 @@
   "description": "Openstream Media Server",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "post-test": "node openapi-generator.js && openapi-typescript ./openapi.json -o ./openapi.ts"
   },
   "repository": {
     "type": "git",

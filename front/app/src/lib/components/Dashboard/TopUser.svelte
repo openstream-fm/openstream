@@ -22,9 +22,10 @@
 	import { locale } from "$lib/locale";
 	import { invalidate_siblings } from "$lib/invalidate";
 	import { logical_fly } from "$share/transition";
+	import { POST, unwrap } from "$lib/client";
 
   const sign_out = action(async () => {
-    await _post("/api/auth/user/logout", {});
+    unwrap(await POST("/auth/user/logout"))
     goto("/", { invalidateAll: true })
     invalidate_siblings();
   })

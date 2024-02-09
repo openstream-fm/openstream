@@ -10,6 +10,6 @@ fn list() {
 
     assert_eq!(
         List::decl(),
-        "interface List { data: Array<number> | null, }"
+        "interface List { data: Array<number> | null | undefined, }"
     );
 }

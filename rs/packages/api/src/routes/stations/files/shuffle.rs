@@ -27,7 +27,7 @@ pub mod post {
   #[derive(Debug, Clone, Copy, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(
     export,
-    export_to = "../../../defs/api/stations/[station]/files/suffle/POST/"
+    export_to = "../../../defs/api/stations/[station]/files/shuffle/POST/"
   )]
   #[macros::schema_ts_export]
   pub struct Output(EmptyStruct);

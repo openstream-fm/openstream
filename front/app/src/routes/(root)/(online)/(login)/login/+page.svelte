@@ -13,13 +13,19 @@
 	import { invalidate_siblings } from "$lib/invalidate";
 
   import { page } from "$app/stores";
+	import { POST, unwrap } from "$lib/client";
 
   let email = $page.url.searchParams.get("email")?.trim() || "";
   let password = "";
 
   const login = action(async () => {
-    const payload: Omit<import("$api/auth/user/login/POST/Payload").Payload, "device_id"> = { email, password };
-    await _post("/api/auth/user/login", payload);
+    unwrap(await POST("/auth/user/login", { 
+      body: {
+        email,
+        password,
+        device_id: undefined as any,
+      }
+    }));    
     const target = location.hash.replace(/^#/, "") || "/";
     goto(target, { invalidateAll: true }).then(() => {
       invalidate_siblings();

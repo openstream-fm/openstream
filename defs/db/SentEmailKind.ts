@@ -11,7 +11,7 @@ export type SentEmailKind = {
   data: {
     receiver_email: string;
     invitation_id: string;
-    user_sender_id: string | null;
-    admin_sender_id: string | null;
+    user_sender_id: string | null | undefined;
+    admin_sender_id: string | null | undefined;
   };
 };

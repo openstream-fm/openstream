@@ -5,9 +5,9 @@ import type { CountryCodeOrZZ } from "./CountryCodeOrZZ.js";
 export type Query = {
   kind: AnalyticsQueryKind;
   stations: string[] | undefined;
-  browser: string | null;
-  os: string | null;
-  domain: string | null;
-  country_code: CountryCodeOrZZ | null;
+  browser: string | null | undefined;
+  os: string | null | undefined;
+  domain: string | null | undefined;
+  country_code: CountryCodeOrZZ | null | undefined;
   min_duration_ms?: number;
 };

@@ -5,8 +5,8 @@ import type { CountryCodeOrZZ } from "./CountryCodeOrZZ.js";
 export type Query = {
   kind: AnalyticsQueryKind;
   stations: string[] | undefined;
-  app_kind: string | null;
-  app_version: string | null;
-  country_code: CountryCodeOrZZ | null;
+  app_kind: string | null | undefined;
+  app_version: string | null | undefined;
+  country_code: CountryCodeOrZZ | null | undefined;
   min_duration_ms?: number;
 };

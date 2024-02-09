@@ -7,5 +7,5 @@ export type PaymentMethod = {
   user_id: string;
   created_at: DateTime;
   updated_at: DateTime;
-  deleted_at: DateTime | null;
+  deleted_at: DateTime | null | undefined;
 } & PaymentMethodKind;

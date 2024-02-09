@@ -21,6 +21,7 @@
 	import Email from '$share/Form/Email.svelte';
 	import copy from 'copy-to-clipboard';
 	import { locale } from '$lib/locale';
+	import { DELETE, POST, unwrap } from '$lib/client';
 
 	$: current = data.api_keys.items.find(item => item.is_current);
 	
@@ -30,7 +31,7 @@
 
 	const delete_key = action(async () => {
 		if (delete_item == null) return;
-		await _delete(`/api/me/api-keys/${delete_item._id}`);
+		unwrap(await DELETE("/me/api-keys/{id}", { params: { path: { id: delete_item._id } } }));
 		_message($locale.misc.api_keys.API_key_deleted);
 		delete_item = null;
 		invalidate('resource:api-keys');
@@ -43,16 +44,15 @@
 	let api_key_show_to_save: string | null = null;
 
 	const create = action(async () => {
-		const payload: import("$api/me/api-keys/POST/Payload").Payload = {
-			title: create_title.trim(),
-			password: create_password,
-		};
 		
-		const {
-			token,
-			media_key,
-			api_key
-		} = await _post<import("$api/me/api-keys/POST/Output").Output>(`/api/me/api-keys`, payload);
+		const { token, media_key, api_key } = unwrap(
+			await POST("/me/api-keys", {
+				body: {
+					title: create_title.trim(),
+					password: create_password
+				}
+			})
+		)
 
 		invalidate('resource:api-keys');
 		create_title = "";

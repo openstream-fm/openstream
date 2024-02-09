@@ -641,7 +641,7 @@ export class StationFiles {
     return await this.client.post(ip, ua, token, `/stations/${station_id}/files/shuffle`, undefined);
   }
 
-  async unshuffle(ip: string | null, ua: string | null, token: string, station_id: string): Promise<import("./defs/api/stations/[station]/files/unsuffle/POST/Output.js").Output> {
+  async unshuffle(ip: string | null, ua: string | null, token: string, station_id: string): Promise<import("./defs/api/stations/[station]/files/unshuffle/POST/Output.js").Output> {
     return await this.client.post(ip, ua, token, `/stations/${station_id}/files/unshuffle`, undefined);
   }
 

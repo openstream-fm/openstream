@@ -22,10 +22,10 @@ export type Analytics = {
   max_concurrent_listeners?: number;
   max_concurrent_listeners_date?: DateTime;
   by_day: Array<AnalyticsItem<YearMonthDay>>;
-  by_hour: Array<AnalyticsItem<YearMonthDayHour>> | null;
-  by_browser: Array<AnalyticsItem<string | null>>;
-  by_os: Array<AnalyticsItem<string | null>>;
-  by_country: Array<AnalyticsItem<CountryCode | null>>;
+  by_hour: Array<AnalyticsItem<YearMonthDayHour>> | null | undefined;
+  by_browser: Array<AnalyticsItem<string | null | undefined>>;
+  by_os: Array<AnalyticsItem<string | null | undefined>>;
+  by_country: Array<AnalyticsItem<CountryCode | null | undefined>>;
   by_station: Array<AnalyticsItem<string>>;
-  by_domain: Array<AnalyticsItem<string | null>>;
+  by_domain: Array<AnalyticsItem<string | null | undefined>>;
 };

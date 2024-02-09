@@ -1,10 +1,12 @@
 import { browser } from "$app/environment";
-import { _get } from "$share/net.client";
 import { type Readable, type Writable, readable, writable } from "svelte/store";
 import { default_logger } from "$share/logger";
 import { sleep } from "$share/util";
+import { GET, unwrap } from "./client";
+import type { Unwrap } from "./client";
 
-export type NowPlaying = import("$api/stations/[station]/now-playing/GET/Output").Output;
+// export type NowPlaying = import("$api/stations/[station]/now-playing/GET/Output").Output;
+export type NowPlaying = Unwrap<Awaited<ReturnType<typeof GET<"/stations/{station}/now-playing">>>>;
 export type StoreValue = { station_id: string, info: NowPlaying };
 
 export const NOW_PLAYING_INTERNVAL = 3000;
@@ -50,7 +52,11 @@ export const get_now_playing_store = (station_id: string, default_info: NowPlayi
 
         if(Date.now() - last < NOW_PLAYING_INTERNVAL) continue;
         try {
-          const info = await _get<NowPlaying>(`/api/stations/${station_id}/now-playing`);
+          const info = unwrap(await GET("/stations/{station}/now-playing", {
+            params: {
+              path: { station: station_id }
+            }
+          }));
           logger.info(`info updated for ${station_id}`)
           store.set({ station_id, info });
         } catch(e) {

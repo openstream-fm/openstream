@@ -7,12 +7,12 @@ export type User = {
   first_name: string;
   last_name: string;
   email: string;
-  phone: string | null;
-  language: string | null;
-  password: string | null;
+  phone: string | null | undefined;
+  language: string | null | undefined;
+  password: string | null | undefined;
   user_metadata: Metadata;
   system_metadata: Metadata;
   created_at: DateTime;
   updated_at: DateTime;
-  deleted_at: DateTime | null;
+  deleted_at: DateTime | null | undefined;
 };

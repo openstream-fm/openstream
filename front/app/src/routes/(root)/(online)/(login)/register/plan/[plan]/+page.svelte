@@ -66,11 +66,9 @@
 		// TODO: payments
 		// view = "pay";
 		view = "code"
-		
+	
 		// TODO: payments added lines
-		let payload: import("$api/auth/email-verification/send-code/POST/Payload").Payload = { email };
-		await _post(`/api/auth/email-verification/send-code`, payload);
-
+		unwrap(await POST("/auth/email-verification/send-code", { body: { email } }));
 	});
 
 	// TODO: payments
@@ -112,24 +110,23 @@
 		if (sending_code) return;
 		sending_code = true;
 		try {
-			const payload: Omit<import("$api/auth/user/register/POST/Payload").Payload, "device_id"> = {
-				plan_id: data.plan._id,
-				first_name,
-				last_name,
-				account_name,
-				phone: null,
-				email,
-				password,
-				email_verification_code: email_verification_code.trim(),
-				// TODO: payments
-				// payment_method_nonce: payment_nonce!,
-				// payment_device_data: payment_device_data,
-			};
+			const { account } = unwrap(
+				await POST("/auth/user/register", {
+					body: {
+						plan_id: data.plan._id,
+						first_name,
+						last_name,
+						account_name,
+						phone: null,
+						email,
+						password,
+						email_verification_code: email_verification_code.trim(),
+						device_id: undefined as any,
+					}
+				})
+			)
 
-			const { account } = await _post<import("$api/auth/user/register/POST/Output").Output>(
-				"/api/auth/user/register",
-				payload
-			);
+
 			sending_code = false;
 			goto(`/accounts/${account._id}/welcome`, { invalidateAll: true });
 			invalidate_siblings();
@@ -151,6 +148,7 @@
 	import { form } from "../../../transitions";
 	import { display_fly_enter } from "$share/display_transitions";
 	import { VALIDATE_ACCOUNT_NAME_MAX_LEN, VALIDATE_ACCOUNT_NAME_MIN_LEN, VALIDATE_USER_EMAIL_MAX_LEN, VALIDATE_USER_FIRST_NAME_MAX_LEN, VALIDATE_USER_LAST_NAME_MAX_LEN, VALIDATE_USER_PASSWORD_MAX_LEN, VALIDATE_USER_PASSWORD_MIN_LEN } from "$server/defs/constants";
+	import { POST, unwrap } from "$lib/client";
 
   const format_price = (price: number): string => {
     return new Intl.NumberFormat($lang, {

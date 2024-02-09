@@ -313,6 +313,7 @@
   <div class="viewport">
     <svg viewBox="0 0 1000 660" use:click_out={() => tooltip_item = null}>
       {#each dataset.features as item (item.properties.iso2)}
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <path
           style:--fill={get_fill(stats, item)}
           style:--stroke={"#aaa"}

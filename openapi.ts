@@ -4868,7 +4868,65 @@ export interface paths {
       };
     };
   };
+  "/stations/{station}/files/shuffle": {
+    post: {
+      parameters: {
+        path: {
+          station: string;
+        };
+      };
+      responses: {
+        /** @description A successful response */
+        200: {
+          content: {
+            "application/json": Record<string, never>;
+          };
+        };
+        /** @description A client error */
+        "4XX": {
+          content: {
+            "application/json": components["schemas"]["Error"];
+          };
+        };
+        /** @description A server error */
+        "5XX": {
+          content: {
+            "application/json": components["schemas"]["Error"];
+          };
+        };
+      };
+    };
+  };
   "/stations/{station}/files/suffle": {
+    post: {
+      parameters: {
+        path: {
+          station: string;
+        };
+      };
+      responses: {
+        /** @description A successful response */
+        200: {
+          content: {
+            "application/json": Record<string, never>;
+          };
+        };
+        /** @description A client error */
+        "4XX": {
+          content: {
+            "application/json": components["schemas"]["Error"];
+          };
+        };
+        /** @description A server error */
+        "5XX": {
+          content: {
+            "application/json": components["schemas"]["Error"];
+          };
+        };
+      };
+    };
+  };
+  "/stations/{station}/files/unshuffle": {
     post: {
       parameters: {
         path: {

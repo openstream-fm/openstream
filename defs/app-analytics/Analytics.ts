@@ -22,9 +22,9 @@ export type Analytics = {
   max_concurrent_listeners?: number;
   max_concurrent_listeners_date?: DateTime;
   by_day: Array<AnalyticsItem<YearMonthDay>>;
-  by_hour: Array<AnalyticsItem<YearMonthDayHour>> | null;
-  by_country: Array<AnalyticsItem<CountryCode | null>>;
+  by_hour: Array<AnalyticsItem<YearMonthDayHour>> | null | undefined;
+  by_country: Array<AnalyticsItem<CountryCode | null | undefined>>;
   by_station: Array<AnalyticsItem<string>>;
-  by_app_kind: Array<AnalyticsItem<string | null>>;
+  by_app_kind: Array<AnalyticsItem<string | null | undefined>>;
   by_app_version: Array<AnalyticsItem<AppKindVersion>>;
 };

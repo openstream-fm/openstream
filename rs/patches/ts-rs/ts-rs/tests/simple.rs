@@ -19,6 +19,6 @@ struct Simple {
 fn test_def() {
     assert_eq!(
         Simple::inline(),
-        "{ a: number, b: string, c: [number, string, number], d: Array<string>, e: string | null, f: string, g: string | null, }"
+        "{ a: number, b: string, c: [number, string, number], d: Array<string>, e: string | null | undefined, f: string, g: string | null | undefined, }"
     )
 }

@@ -3,9 +3,9 @@
 export type ProbeResult =
   | ({ r: "ok" } & { document: Record<string, any> })
   | ({ r: "error" } & {
-    error_exit_code: number | null;
-    error_stdout: string | null;
-    error_stderr: string | null;
+    error_exit_code: number | null | undefined;
+    error_stdout: string | null | undefined;
+    error_stderr: string | null | undefined;
     error_display: string;
     error_debug: string;
   });

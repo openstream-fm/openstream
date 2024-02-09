@@ -5,6 +5,6 @@ export type EmailVerificationCode = {
   _id: string;
   email: string;
   hash: string;
-  used_at: DateTime | null;
+  used_at: DateTime | null | undefined;
   created_at: DateTime;
 };

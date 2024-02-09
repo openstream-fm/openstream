@@ -1,19 +1,17 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { locale } from '$lib/locale';
-	import { get_now_playing_store } from '$lib/now-playing';
+	import { get_now_playing_store, type NowPlaying } from '$lib/now-playing';
 	import { intersect } from '$share/actions';
 	import { ripple } from '$share/ripple';
 	import { onMount } from 'svelte';
 	import { STATION_PICTURES_VERSION } from '$defs/constants';
 
-	export let station: import('$server/defs/PublicStation').PublicStation;
+	export let station: import("./$types").PageData["stations"]["items"][number];
+	export let now_playing: import("./$types").PageData["now_playing_record"][string];
 	export let session_count: number = 0;
-	export let now_playing:
-		| import('$api/stations/[station]/now-playing/GET/Output').Output
-		| undefined = undefined;
-
-	let current_now_playing: import('$api/stations/[station]/now-playing/GET/Output').Output | null = null;
+	
+	let current_now_playing: NowPlaying | null = null;
 
 	$: merged_now_playing = current_now_playing ?? now_playing;
 

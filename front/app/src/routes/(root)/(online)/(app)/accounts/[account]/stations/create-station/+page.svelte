@@ -17,6 +17,7 @@
 	import { invalidate_siblings } from "$lib/invalidate";
 	import type { StationFrequency } from "$server/defs/StationFrequency";
 	import type { GooglePlayLang } from "$lib/components/google-play-lang";
+	import { POST, unwrap } from "$lib/client";
 
   let start = {
     name: null as string | null,
@@ -90,20 +91,20 @@
     const lang_code = current.lang_code;
     if(lang_code === "") throw new Error("Language is required");
 
-    const payload: import("$api/stations/POST/Payload").Payload = {
-      ...current,
-      name,
-      type_of_content,
-      country_code,
-      lang_code,
-      account_id: data.account._id,
-      picture_id,
-      external_relay_url: null,
-    }
-
     const {
       station
-    } = await _post<import("$api/stations/POST/Output").Output>(`/api/stations`, payload);
+    } = unwrap(await POST("/stations", {
+      body: {
+        ...current,
+        name,
+        type_of_content,
+        country_code,
+        lang_code,
+        account_id: data.account._id,
+        picture_id,
+        external_relay_url: null,  
+      }
+    })); 
 
     _message($locale.pages["stations/create_station"].notifier.station_created);
 

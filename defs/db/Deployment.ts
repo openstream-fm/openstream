@@ -12,6 +12,6 @@ export type Deployment = {
   state: DeploymentState;
   created_at: DateTime;
   updated_at: DateTime;
-  health_checked_at: DateTime | null;
-  dropped_at: DateTime | null;
+  health_checked_at: DateTime | null | undefined;
+  dropped_at: DateTime | null | undefined;
 };

@@ -42,6 +42,7 @@
 	import { onMount } from "svelte";
 	import { VALIDATE_ACCOUNT_NAME_MAX_LEN } from "$server/defs/constants";
 	import { flip } from "svelte/animate";
+	import { PATCH, unwrap } from "$lib/client";
   
   let view: View = "now";
 
@@ -150,10 +151,7 @@
   let edit_open = false;
   let current_account_name = data.account.name;
   const edit = action(async () => {
-    let payload: import("$api/accounts/[account]/PATCH/Payload").Payload = {
-      name: current_account_name,
-    };
-    await _patch(`/api/accounts/${data.account._id}`, payload);
+    unwrap(await PATCH("/accounts/{account}", { params: { path: { account: data.account._id } }, body: { name: current_account_name } }));
     data.account.name = current_account_name;
     edit_open = false;
 })

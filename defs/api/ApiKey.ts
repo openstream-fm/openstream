@@ -5,8 +5,8 @@ export type ApiKey = {
   _id: string;
   is_current: boolean;
   title: string;
-  user_id: string | null;
-  admin_id: string | null;
+  user_id: string | null | undefined;
+  admin_id: string | null | undefined;
   created_at: DateTime;
-  last_used_at: DateTime | null;
+  last_used_at: DateTime | null | undefined;
 };
