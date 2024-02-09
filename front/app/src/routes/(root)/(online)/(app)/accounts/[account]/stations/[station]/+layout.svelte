@@ -27,13 +27,23 @@
   })
 
   let actions_parent: HTMLElement | undefined = undefined;
+  let actions_scroll: HTMLElement | undefined = undefined;
   const scroll_to_current = () => {
-    const current: HTMLElement | null | undefined = actions_parent?.querySelector(".station-action.current");
-    if(current != null) scroll_into_view(current);
+    if(actions_parent == null) return;
+    const current: HTMLElement | null = actions_parent.querySelector(".station-action.current");
+    if(current == null) return;
+    scroll_into_view(current);
   }
 
   const scroll_into_view = (node: HTMLElement) => {
-    node.scrollIntoView({ behavior: "smooth", inline: "center", block: "center" });
+    if(!actions_scroll) return;
+    const parent = actions_scroll.getBoundingClientRect();
+    const child = node.getBoundingClientRect();
+    actions_scroll.scrollTo({
+       left: actions_scroll.scrollLeft + child.left + child.width / 2 - parent.left - parent.width / 2,
+       behavior: "smooth"
+    });
+    // node.scrollIntoView({ behavior: "smooth", inline: "center", block: "center" });
   }
 
   const [_enter, _leave] = crossfade({ duration: 300, fallback: (node) => fade(node, { duration: 200 }) });
@@ -93,7 +103,6 @@
   .station-scroll {
     overflow-y: visible;
     overflow-x: auto;
-    scroll-padding-inline: 4rem;
     background: #fff;
     box-shadow: var(--some-shadow);
     border-radius: 0.5rem;
@@ -256,7 +265,7 @@
 <svelte:window bind:scrollY={scroll_y} />
 
 <div class="station-out" in:fade|global={{ duration: 200 }}>
-  <div class="station-scroll super-thin-scroll" on:scroll={close_selector}>
+  <div class="station-scroll super-thin-scroll" bind:this={actions_scroll} on:scroll={close_selector}>
     <div class="station">
       <div class="station-btn-out">
         <button class="station-btn" class:station-selector-open={selector_open} on:click={toggle_selector}>
