@@ -132,7 +132,7 @@
 				</div>
 			{/if}
 			{#each devices as device (device._id)}
-				<div class="device-wrap" transition:slide|local={{ duration: 400 }}>
+				<div class="device-wrap" transition:slide={{ duration: 400 }}>
 					<Device {device} on_remove={() => (disconnect_item = device)} />
 				</div>
 			{/each}

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "prepare": "ts-patch install -s & typia patch",
-    "start": "node --no-warnings --experimental-specifier-resolution=node dist/cli.js start",
+    "start": "node dist/cli.js start",
     "dev:run": "SVELTEKIT_APP_DEV=1 SVELTEKIT_APP_PORT=3100 SVELTEKIT_ADMIN_DEV=1 SVELTEKIT_ADMIN_PORT=5100 nodemon --no-warnings --experimental-specifier-resolution=node dist/cli.js start",
     "dev:compile": "tsc -w",
     "dev": "run-p dev:compile dev:run",

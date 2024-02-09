@@ -15,6 +15,6 @@
   }
 </style>
 
-<div class="page" class:compact in:logical_fly={{ duration: 250, x: -25 }}>
+<div class="page" class:compact in:logical_fly|global={{ duration: 250, x: -25 }}>
   <slot />
 </div>

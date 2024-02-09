@@ -35,7 +35,7 @@
 
 </style>
 
-<div class="layout" in:logical_fly|local={{ x: -25, duration: 200 }}>
+<div class="layout" in:logical_fly={{ x: -25, duration: 200 }}>
   <div class="top">
     <div class="logo">
       <SimpleLogo />

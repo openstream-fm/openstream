@@ -1,10 +1,10 @@
 // This file was automatically generated from its Rust definition, do not manually edit
 // @ts-ignore
 import typia from "typia"
-import type { PaymentsClient } from "./payments-client"
-import type * as generate_client_token from "./generate-client-token/endpoint"
-import type * as ensure_customer from "./ensure-customer/endpoint"
-import type * as save_payment_method from "./save-payment-method/endpoint"
+import type { PaymentsClient } from "./payments-client.js"
+import type * as generate_client_token from "./generate-client-token/endpoint.js"
+import type * as ensure_customer from "./ensure-customer/endpoint.js"
+import type * as save_payment_method from "./save-payment-method/endpoint.js"
 
 type Request = { body: unknown };
 type Response = { json: (object: any) => void };

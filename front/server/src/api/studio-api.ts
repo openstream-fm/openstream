@@ -1,22 +1,22 @@
-import type { Config, HostConfig } from "../config";
+import type { Config, HostConfig } from "../config.js";
 import { Router, json as json_body_parser } from "express";
-import { ApiError, json_catch_handler } from "../error";
-import type { Logger } from "../logger";
-import { handler, json } from "../handler";
-import type { Client } from "../client.server";
-import { session } from "../session";
-import { ip } from "../ip";
-import { user_token } from "../token";
-import { user_id } from "../user-id";
+import { ApiError, json_catch_handler } from "../error.js";
+import type { Logger } from "../logger.js";
+import { handler, json } from "../handler.js";
+import type { Client } from "../client.server.js";
+import { session } from "../session.js";
+import { ip } from "../ip.js";
+import { user_token } from "../token.js";
+import { user_id } from "../user-id.js";
 import { StatusCodes } from "http-status-codes";
-import { user_media_key } from "../media_key";
-import { ua } from "../ua";
-import { shared_api } from "./shared-api";
-import { host } from "../host";
-import { default_studio_locale, studio_locales_map, studio_locales } from "../locale/studio/studio.locale";
-import type { StudioLocale } from "../locale/studio/studio.locale";
+import { user_media_key } from "../media_key.js";
+import { ua } from "../ua.js";
+import { shared_api } from "./shared-api.js";
+import { host } from "../host.js";
+import { default_studio_locale, studio_locales_map, studio_locales } from "../locale/studio/studio.locale.js";
+import type { StudioLocale } from "../locale/studio/studio.locale.js";
 import acceptLanguageParser from "accept-language-parser";
-import { LOCALE_DIR_HEADER, LOCALE_LANG_HEADER } from "../constants";
+import { LOCALE_DIR_HEADER, LOCALE_LANG_HEADER } from "../constants.js";
 
 export type PublicConfig = {
   storage_public_url: string

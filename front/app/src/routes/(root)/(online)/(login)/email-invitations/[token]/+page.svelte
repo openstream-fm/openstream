@@ -320,7 +320,7 @@
                 use:ripple
               >
                 {#if sending}
-                  <div class="login-page-btn-sending-progress" transition:scale|local={{ duration: 300 }}>
+                  <div class="login-page-btn-sending-progress" transition:scale={{ duration: 300 }}>
                     <CircularProgress />
                   </div>
                 {/if}

@@ -251,7 +251,7 @@
 
 <svelte:window bind:scrollY={scroll_y} />
 
-<div class="station-out" in:fade={{ duration: 200 }}>
+<div class="station-out" in:fade|global={{ duration: 200 }}>
   <div class="station-scroll super-thin-scroll" on:scroll={close_selector}>
     <div class="station">
       <div class="station-btn-out">
@@ -269,7 +269,7 @@
               class="station-selector-menu super-thin-scroll"
               style:--scroll-y="{scroll_y}px"
               use:click_out={selector_menu_click_out}
-              transition:logical_fly|local={{ duration: 200, y: -10 }}
+              transition:logical_fly={{ duration: 200, y: -10 }}
               use:autoscroll
             >
               {#each account_stations as station (station._id)}
@@ -303,7 +303,7 @@
             {$locale.station_nav.dashboard}
           </span>
           {#if current_page === "dashboard"}
-            <div class="current-action-line" in:current_enter|loal out:current_leave|local />
+            <div class="current-action-line" in:current_enter|loal out:current_leave />
           {/if}
         </a>
 
@@ -317,7 +317,7 @@
             {$locale.station_nav.profile}
           </span>
           {#if current_page === "profile"}
-            <div class="current-action-line" in:current_enter|local out:current_leave|local />
+            <div class="current-action-line" in:current_enter out:current_leave />
           {/if}
         </a>
 
@@ -331,7 +331,7 @@
             {$locale.station_nav.playlist}
           </span>
           {#if current_page === "playlist"}
-            <div class="current-action-line" in:current_enter|local out:current_leave|local />
+            <div class="current-action-line" in:current_enter out:current_leave />
           {/if}
         </a>
 
@@ -345,7 +345,7 @@
             {$locale.station_nav.broadcast}
           </span>
           {#if current_page === "broadcast"}
-            <div class="current-action-line" in:current_enter|local out:current_leave|local />
+            <div class="current-action-line" in:current_enter out:current_leave />
           {/if}
         </a>
 
@@ -359,7 +359,7 @@
             {$locale.station_nav.settings}
           </span>
           {#if current_page === "settings"}
-            <div class="current-action-line" in:current_enter|local out:current_leave|local />
+            <div class="current-action-line" in:current_enter out:current_leave />
           {/if}
         </a>
       </div>

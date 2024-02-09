@@ -35,7 +35,7 @@
   <title>{$locale.pages["accounts/create_account"].head.title}</title>
 </svelte:head>
 
-<div class="page" in:logical_fly|local={{ x: -25, duration: 300 }}>
+<div class="page" in:logical_fly={{ x: -25, duration: 300 }}>
   <div class="page-title">{$locale.pages["accounts/create_account"].title}</div>
   <div class="plans">
     <PlanSelector

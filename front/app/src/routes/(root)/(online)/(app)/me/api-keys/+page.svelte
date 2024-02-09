@@ -237,14 +237,14 @@
 			<!-- -- -->
 		{:else}
 		
-			<div class="list" transition:slide|local={{ duration: 400 }}>
+			<div class="list" transition:slide={{ duration: 400 }}>
 				{#if current != null}
-					<div class="key-wrap" aria-current transition:slide|local={{ duration: 400 }}>
+					<div class="key-wrap" aria-current transition:slide={{ duration: 400 }}>
 						<Key key={current} />
 					</div>
 				{/if}
 				{#each keys as key (key._id)}
-					<div class="key-wrap" transition:slide|local={{ duration: 400 }}>
+					<div class="key-wrap" transition:slide={{ duration: 400 }}>
 						<Key {key} on_remove={() => (delete_item = key)} />
 					</div>
 				{/each}
@@ -300,7 +300,7 @@
 	>
 		{#if api_key_show_to_save == null}
 			<Formy action={create} let:submit>
-	      <form novalidate class="create-dialog" on:submit={submit} transition:slide|local={{ duration: 300 }}>
+	      <form novalidate class="create-dialog" on:submit={submit} transition:slide={{ duration: 300 }}>
 					<div class="create-dialog-fields">
 						<div class="create-dialog-field">
 							<TextField
@@ -359,7 +359,7 @@
 				</form>
     	</Formy>
 		{:else}
-			<div class="copy-dialog" transition:slide|local={{ duration: 300 }}>
+			<div class="copy-dialog" transition:slide={{ duration: 300 }}>
 				<div class="copy-dialog-text">
 					{$locale.misc.api_keys.Copy_contents_message}
 				</div>

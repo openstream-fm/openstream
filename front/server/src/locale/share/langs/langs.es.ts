@@ -1,5 +1,5 @@
 // lista de códigos de idioma ISO-2 y sus nombres
-const locale: import("./countries.locale").LangsLocale = {
+const locale: import("./countries.locale.js").LangsLocale = {
   aa: "Afar",
   ab: "Abjasio",
   ae: "Avéstico",

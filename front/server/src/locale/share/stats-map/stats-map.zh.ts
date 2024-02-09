@@ -1,5 +1,5 @@
 /// file: stats-map.zh.ts
-const locale: import("./stats-map.locale").StatsMapLocale = {
+const locale: import("./stats-map.locale.js").StatsMapLocale = {
   "All_stations": "所有电台",
   "now": "现在",
   "24_hours": "24小时",

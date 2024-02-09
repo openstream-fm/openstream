@@ -196,7 +196,7 @@
         <div 
           class="stats-selector-menu super-thin-scroll"
           use:click_out={selector_menu_click_out}
-          transition:logical_fly|local={{ duration: 125, y: -10 }}
+          transition:logical_fly={{ duration: 125, y: -10 }}
           use:autoscroll
         >
           <button class="stats-selector-item" class:current={data.station == null} on:click={() => select(null)}>

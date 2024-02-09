@@ -14,7 +14,7 @@ export const load = (async ({ fetch, url, parent, depends, params }) => {
     load_get<import("$api/accounts/[account]/stream-stats/now/count-by-station/GET/Output").Output>(`/api/accounts/${params.account}/stream-stats/now/count-by-station`, { fetch, url }),
   ])
 
-  const now_playing_record = (async () => {
+  const now_playing_record = await (async () => {
     const { account, stations } = await parent();
     const now_playing_record: Record<string, import("$api/stations/[station]/now-playing/GET/Output").Output | undefined> = {};
     

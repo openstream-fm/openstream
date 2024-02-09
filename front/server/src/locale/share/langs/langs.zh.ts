@@ -1,6 +1,6 @@
 /// file: langs.zh.ts
 // ISO-2语言代码及其名称列表
-const locale: import("./countries.locale").LangsLocale = {
+const locale: import("./countries.locale.js").LangsLocale = {
   aa: "阿法尔语",
   ab: "阿布哈西亚语",
   ae: "阿维斯塔语",

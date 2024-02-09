@@ -333,7 +333,7 @@
 
 {#if fixed_open}
   <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <div class="drawer-overlay" transition:fade|local={{ duration: 250 }} on:click={close} />
+  <div class="drawer-overlay" transition:fade={{ duration: 250 }} on:click={close} />
 {/if}
 
 <div class="drawer" class:player-open={$player_state.type !== "closed"} class:fixed-open={fixed_open} class:static-open={static_open}>
@@ -364,7 +364,7 @@
         </button>
         <div class="account-switch-anchor">
           {#if account_switch_open}
-            <div class="account-switch-menu super-thin-scroll" transition:logical_fly|local={{ y: -15, duration: 200 }} use:click_out={account_switch_click_out}>
+            <div class="account-switch-menu super-thin-scroll" transition:logical_fly={{ y: -15, duration: 200 }} use:click_out={account_switch_click_out}>
               {#each accounts as item (item._id)}
                 <a 
                   href={account_swtich_target(account._id, item._id, $page.url)}

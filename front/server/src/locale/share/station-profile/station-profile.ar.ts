@@ -1,5 +1,5 @@
 /// file: station-profile.ar.ts
-const locale: import("./station-profile.locale").StationProfileLocale = {
+const locale: import("./station-profile.locale.js").StationProfileLocale = {
   "titles": {
     "logo": "الشعار",
     "profile_info": "الملف الشخصي",

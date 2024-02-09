@@ -1,12 +1,12 @@
-import stats_map from "../share/stats-map/stats-map.zh";
-import validate from "../share/validate/validate.zh";
-import analytics from "../share/analytics/analytics.zh";
-import countries from "../share/countries/countries.zh";
-import langs from "../share/langs/langs.zh";
-import misc from "../misc/misc.zh";
-import language from "../share/language/language.zh";
+import stats_map from "../share/stats-map/stats-map.zh.js";
+import validate from "../share/validate/validate.zh.js";
+import analytics from "../share/analytics/analytics.zh.js";
+import countries from "../share/countries/countries.zh.js";
+import langs from "../share/langs/langs.zh.js";
+import misc from "../misc/misc.zh.js";
+import language from "../share/language/language.zh.js";
 
-const locale: import("./admin.locale").AdminLocale = {
+const locale: import("./admin.locale.js").AdminLocale = {
 
   "lang": "zh",
   "region": null,

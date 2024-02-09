@@ -1,6 +1,6 @@
 /// file: langs.it.ts
 // lista dei codici di lingua ISO-2 e i loro nomi
-const locale: import("./countries.locale").LangsLocale = {
+const locale: import("./countries.locale.js").LangsLocale = {
   aa: "Afar",
   ab: "Abcaso",
   ae: "Avestan",

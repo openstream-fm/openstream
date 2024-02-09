@@ -1,5 +1,5 @@
 import type { Request } from "express";
-import { Unauthorized } from "./error";
+import { Unauthorized } from "./error.js";
 
 export const user_media_key = (req: Request): string => {
   const media_key = req.cookie_session.user?.media_key;

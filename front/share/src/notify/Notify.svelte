@@ -222,7 +222,7 @@
   {#each messages as message (message.id)}
 
     <div
-      transition:logical_fly={{ x: -200, duration: 250 }}
+      transition:logical_fly|global={{ x: -200, duration: 250 }}
       animate:flip={{ duration: 200 }}
       class="message {message.variant} {message.variant === "progress" ? "normal" : ""}" 
     >

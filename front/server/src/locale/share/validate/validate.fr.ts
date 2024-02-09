@@ -1,5 +1,5 @@
 /// file: validate.fr.ts
-const locale: import("./validate.locale").ValidateLocale = {
+const locale: import("./validate.locale.js").ValidateLocale = {
   "required": "Ce champ est requis",
   
   "number": "Ce champ doit être un nombre valide",

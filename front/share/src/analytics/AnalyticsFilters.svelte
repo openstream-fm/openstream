@@ -597,7 +597,7 @@
         }}
       >
         {#if selected_stations === "all"}
-          <div class="field-text" transition:slide|local={{ duration: 200 }}>
+          <div class="field-text" transition:slide={{ duration: 200 }}>
             {#if stations.length}
               {locale.filters.All_stations}
             {:else}  
@@ -605,10 +605,10 @@
             {/if}
           </div>
         {:else}
-          <div class="chips" transition:slide|local={{ duration: 200 }}>
+          <div class="chips" transition:slide={{ duration: 200 }}>
             {#each selected_stations as station (station._id)}
               <!-- svelte-ignore a11y-click-events-have-key-events -->
-              <div class="chip" transition:scale|local={{ duration: 200 }}>
+              <div class="chip" transition:scale={{ duration: 200 }}>
                 <div
                   class="chip-pic"
                   style:background-image="url({$page.data.config
@@ -629,7 +629,7 @@
       {#if stations_menu_open}
         <div
           class="menu super-thin-scroll"
-          transition:logical_fly={{ y: -25, duration: 200 }}
+          transition:logical_fly|global={{ y: -25, duration: 200 }}
           use:click_out={() => stations_menu_click_out()}
           use:auto_height={v => stations_menu_height = v}
           style:--space-y="{stations_menu_height}px"
@@ -651,14 +651,14 @@
                 {#if selected}
                   <div
                     class="menu-check-icon"
-                    transition:scale|local={{ duration: 300 }}
+                    transition:scale={{ duration: 300 }}
                   >
                     <Icon d={mdiCheckBold} />
                   </div>
                 {:else}
                   <div
                     class="menu-check-icon"
-                    transition:scale|local={{ duration: 300 }}
+                    transition:scale={{ duration: 300 }}
                   >
                     <Icon d={mdiCheckboxBlankOutline} />
                   </div>
@@ -702,7 +702,7 @@
       {#if time_menu_open}
         <div
           class="menu super-thin-scroll"
-          transition:logical_fly={{ y: -25, duration: 200 }}
+          transition:logical_fly|global={{ y: -25, duration: 200 }}
           use:click_out={() => time_menu_click_out()}
           use:auto_height={v => temporal_menu_height = v}
           style:--space-y="{temporal_menu_height}px"
@@ -723,14 +723,14 @@
                 {#if selected}
                   <div
                     class="menu-check-icon"
-                    transition:scale|local={{ duration: 300 }}
+                    transition:scale={{ duration: 300 }}
                   >
                     <Icon d={mdiCheckBold} />
                   </div>
                 {:else}
                   <div
                     class="menu-check-icon"
-                    transition:scale|local={{ duration: 300 }}
+                    transition:scale={{ duration: 300 }}
                   >
                     <Icon d={mdiRadioboxBlank} />
                   </div>
@@ -746,7 +746,7 @@
     </div>
 
     {#if kind === "custom"}
-      <div class="custom-dates" transition:logical_fly|local={{ y: -15, duration: 300 }}>
+      <div class="custom-dates" transition:logical_fly={{ y: -15, duration: 300 }}>
         <div class="date-field custom-date-start">
           <DateTimeField
             bind:value={custom_since}
@@ -769,9 +769,9 @@
     </div>
 
     {#if country_code !== undefined || os !== undefined || browser !== undefined || domain !== undefined}
-      <div class="more-filters" transition:slide|local={{ duration: 200 }}>
+      <div class="more-filters" transition:slide={{ duration: 200 }}>
         {#if country_code !== undefined}
-          <div class="more-chip" transition:scale|local={{ duration: 200 }}>
+          <div class="more-chip" transition:scale={{ duration: 200 }}>
             <div class="more-chip-label">
               {locale.Country}:
             </div>
@@ -785,7 +785,7 @@
         {/if}
 
         {#if type === "stream" && domain !== undefined}
-          <div class="more-chip" transition:scale|local={{ duration: 200 }}>
+          <div class="more-chip" transition:scale={{ duration: 200 }}>
             <div class="more-chip-label">
               {locale.Website}:
             </div>
@@ -800,7 +800,7 @@
 
 
         {#if type === "stream" && os !== undefined}
-          <div class="more-chip" transition:scale|local={{ duration: 200 }}>
+          <div class="more-chip" transition:scale={{ duration: 200 }}>
             <div class="more-chip-label">
               {locale.Device}:
             </div>
@@ -814,7 +814,7 @@
         {/if}
 
         {#if type === "stream" && browser !== undefined}
-          <div class="more-chip" transition:scale|local={{ duration: 200 }}>
+          <div class="more-chip" transition:scale={{ duration: 200 }}>
             <div class="more-chip-label">
               {locale.Browser}:
             </div>
@@ -828,7 +828,7 @@
         {/if}
 
         {#if type === "app" && app_kind !== undefined}
-          <div class="more-chip" transition:scale|local={{ duration: 200 }}>
+          <div class="more-chip" transition:scale={{ duration: 200 }}>
             <div class="more-chip-label">
               {locale.App_ID}:
             </div>
@@ -842,7 +842,7 @@
         {/if}
 
         {#if type === "app" && app_version !== undefined}
-          <div class="more-chip" transition:scale|local={{ duration: 200 }}>
+          <div class="more-chip" transition:scale={{ duration: 200 }}>
             <div class="more-chip-label">
               {locale.App_version}:
             </div>
@@ -866,7 +866,7 @@
           {locale.filters.submit}
         </div>
         {#if loading}
-          <div class="submit-loading" transition:scale|local={{ duration: 200 }}>
+          <div class="submit-loading" transition:scale={{ duration: 200 }}>
             <CircularProgress />
           </div>
         {/if}

@@ -3,7 +3,7 @@ import qs from "qs";
 import type { Readable } from "stream";
 import { ACCESS_TOKEN_HEADER, FORWARD_IP_HEADER } from "./defs/constants.js";
 import { ClientError, type ClientErrorCode } from "./error.js";
-// import type { Logger } from "./logger";
+// import type { Logger } from "./logger.js";
 import node_fetch, { Headers } from "node-fetch";
 import type { Response, RequestInit } from "node-fetch";
 

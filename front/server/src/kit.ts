@@ -1,6 +1,6 @@
 import type { RequestHandler } from "express";
-import { ip } from "./ip";
-import { REAL_IP_HEADER } from "./constants";
+import { ip } from "./ip.js";
+import { REAL_IP_HEADER } from "./constants.js";
 
 export const kit = (handler: RequestHandler): RequestHandler => {
   return (req, res, next) => {

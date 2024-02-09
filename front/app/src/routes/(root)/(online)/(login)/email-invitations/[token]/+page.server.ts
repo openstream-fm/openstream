@@ -15,7 +15,7 @@ export const load = (async ({ depends, url, fetch, params, parent }) => {
   if(result.kind === "ok") {
     if(result.invitation.receiver && maybe_user) {
       if(result.invitation.receiver._id === maybe_user._id) {
-        throw redirect(302, "/me/invitations");
+        redirect(302, "/me/invitations");
       }
     }
   }

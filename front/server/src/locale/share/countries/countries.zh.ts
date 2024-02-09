@@ -1,5 +1,5 @@
 /// file: countries.zh.ts
-const locale: import("./countries.locale").CountriesLocale = {
+const locale: import("./countries.locale.js").CountriesLocale = {
   _u2: "北塞浦路斯",
   _u4: "科索沃",
   _u5: "索馬里蘭",

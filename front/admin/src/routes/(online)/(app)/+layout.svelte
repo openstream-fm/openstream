@@ -73,7 +73,7 @@
 
 <div class="player-layout">
   <div class="player-layout-dashboard">
-    <div class="dashboard" in:logical_fly={{ duration: 300, x: -25 }}>
+    <div class="dashboard" in:logical_fly|global={{ duration: 300, x: -25 }}>
       <Top toggle_drawer={toggle} with_drawer={true} />
       <div class="bottom">
         <Drawer bind:fixed_open={drawer_fixed_open} bind:static_open={drawer_static_open} {open} {close} {toggle}  />

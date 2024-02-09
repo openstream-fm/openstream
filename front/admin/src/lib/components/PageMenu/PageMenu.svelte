@@ -55,7 +55,7 @@
     <Icon d={mdiDotsVertical} />
   </button>
   {#if open}
-    <div class="menu" transition:logical_fly|local={{ x: 5, y: -10, duration: 200 }} use:click_out={on_click_out}>
+    <div class="menu" transition:logical_fly={{ x: 5, y: -10, duration: 200 }} use:click_out={on_click_out}>
       <slot {close} />
     </div>
   {/if}

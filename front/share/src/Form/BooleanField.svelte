@@ -65,11 +65,11 @@
     <input type="checkbox" bind:checked={value} />
     <div class="icon-out">
       {#if value}
-        <div class="icon" transition:scale|local={{ duration: 200 }}>
+        <div class="icon" transition:scale={{ duration: 200 }}>
           <Icon d={mdiCheckBold} />
         </div>
       {:else}
-        <div class="icon" transition:scale|local={{ duration: 200 }}>
+        <div class="icon" transition:scale={{ duration: 200 }}>
           <Icon d={mdiCheckboxBlankOutline} />
         </div>
       {/if}

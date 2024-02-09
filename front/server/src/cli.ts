@@ -1,18 +1,18 @@
 import { program as cmd } from "commander";
-import { color } from "./color";
+import { color } from "./color.js";
 import fs from "fs";
 import path from "path";
 //import { promises } from "fs";
 
 import { TypeGuardError } from "typia";
 
-import * as config from "./config";
-import * as app from "./server"
-import { ConsoleLogger } from "./logger";
-import { LogLevel } from "./log-level";
+import * as config from "./config.js";
+import * as app from "./server.js"
+import { ConsoleLogger } from "./logger.js";
+import { LogLevel } from "./log-level.js";
 
 import { fileURLToPath } from  "url";
-import { env } from "./env";
+import { env } from "./env.js";
 
 const __dirname =  path.dirname(fileURLToPath(import.meta.url));
 

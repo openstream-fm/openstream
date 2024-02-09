@@ -1,4 +1,7 @@
-import { run_all } from "svelte/internal";
+export const run_all = (fns: (() => void)[]) => {
+  for(const fn of fns) fn();
+}
+
 
 export const add = <E extends Event = Event>(target: EventTarget, event: string, fn: (event: E) => void, options: AddEventListenerOptions = {}) => {
   target.addEventListener(event, fn as any, options);

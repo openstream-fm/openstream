@@ -1,5 +1,5 @@
 /// file: countries.ar.ts
-const locale: import("./countries.locale").CountriesLocale = {
+const locale: import("./countries.locale.js").CountriesLocale = {
   _u2: "شمال قبرص",
   _u4: "كوسوفو",
   _u5: "صوماليلاند",

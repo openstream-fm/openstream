@@ -11,7 +11,7 @@
   "license": "ISC",
   "devDependencies": {
     "@mdi/js": "^7.1.96",
-    "@sveltejs/kit": "^1.15.2",
+    "@sveltejs/kit": "^2.5.0",
     "@types/braintree-web": "^3.75.23",
     "@types/braintree-web-drop-in": "^1.34.2",
     "@types/color": "^3.0.4",
@@ -24,7 +24,7 @@
     "d3": "^7.8.4",
     "date-fns": "^2.30.0",
     "kleur": "^4.1.5",
-    "svelte": "^3.55.0"
+    "svelte": "^4.2.10"
   },
   "dependencies": {
     "csv-stringify": "^6.4.0"

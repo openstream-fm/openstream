@@ -224,13 +224,13 @@
 			{$locale.pages['me/invitations'].head.title}
 		</div>
 		{#if current.length === 0}
-      <div class="empty-message" transition:slide|local={{ duration: 400 }}>
+      <div class="empty-message" transition:slide={{ duration: 400 }}>
         {$locale.pages['me/invitations'].no_items_message}
       </div>
     {:else}
-      <div class="list" transition:slide|local={{ duration: 400 }}>
+      <div class="list" transition:slide={{ duration: 400 }}>
         {#each current as item (item.id)}
-          <div class="invitation" data-invitation-id={item.id} transition:slide|local={{ duration: 400 }}>
+          <div class="invitation" data-invitation-id={item.id} transition:slide={{ duration: 400 }}>
             <div class="invitation-data">
               {#if item.user_sender}
                 {@html 

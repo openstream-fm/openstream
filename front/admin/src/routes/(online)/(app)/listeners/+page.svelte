@@ -385,7 +385,7 @@
     {#each show_items as item (item._id)}
       {@const station = item_station(item)}
       {@const referer = website(item)}
-      <div class="item" class:open={item.is_open} class:closed={!item.is_open} in:enter_item|local={{}} out:leave_item|local={{}}>
+      <div class="item" class:open={item.is_open} class:closed={!item.is_open} in:enter_item={{}} out:leave_item={{}}>
         <div class="pic" class:empty={station == null} style:background-image={
             station != null ? 
             `url(${data.config.storage_public_url}/station-pictures/webp/128/${station?.picture_id}.webp?v=${STATION_PICTURES_VERSION})` :

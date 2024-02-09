@@ -1,5 +1,5 @@
 import type { Request } from "express";
-import { Unauthorized } from "./error";
+import { Unauthorized } from "./error.js";
 
 export const user_id = (req: Request): string => {
   const userId = req.cookie_session.user?._id;

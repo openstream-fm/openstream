@@ -1,5 +1,5 @@
 /// file: stats-map.fr.ts
-const locale: import("./stats-map.locale").StatsMapLocale = {
+const locale: import("./stats-map.locale.js").StatsMapLocale = {
   "All_stations": "Toutes les stations",
   "now": "Maintenant",
   "24_hours": "24 heures",

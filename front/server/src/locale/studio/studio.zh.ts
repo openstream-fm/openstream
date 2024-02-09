@@ -1,16 +1,16 @@
 /// file: studio.zh.ts
-import stats_map from "../share/stats-map/stats-map.zh";
-import validate from "../share/validate/validate.zh";
-import countries from "../share/countries/countries.zh";
-import langs from "../share/langs/langs.zh";
-import type_of_content from "../share/type-of-content/type-of-content.zh";
-import analytics from "../share/analytics/analytics.zh";
-import payments from "../share/payments/payments.zh";
-import station_profile from "../share/station-profile/station-profile.zh";
-import misc from "../misc/misc.zh";
-import language from "../share/language/language.zh";
+import stats_map from "../share/stats-map/stats-map.zh.js";
+import validate from "../share/validate/validate.zh.js";
+import countries from "../share/countries/countries.zh.js";
+import langs from "../share/langs/langs.zh.js";
+import type_of_content from "../share/type-of-content/type-of-content.zh.js";
+import analytics from "../share/analytics/analytics.zh.js";
+import payments from "../share/payments/payments.zh.js";
+import station_profile from "../share/station-profile/station-profile.zh.js";
+import misc from "../misc/misc.zh.js";
+import language from "../share/language/language.zh.js";
 
-const locale: import("./studio.locale").StudioLocale = {
+const locale: import("./studio.locale.js").StudioLocale = {
 
   "lang": "zh",
   "region": null,

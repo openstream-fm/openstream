@@ -1,4 +1,4 @@
-const locale: import("./validate.locale").ValidateLocale = {
+const locale: import("./validate.locale.js").ValidateLocale = {
   "required": "Este campo es requerido",
   
   "number": "Este campo debe ser un número válido",

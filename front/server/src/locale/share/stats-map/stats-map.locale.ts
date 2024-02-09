@@ -1,1 +1,1 @@
-export type StatsMapLocale = typeof import("./stats-map.en").default;
+export type StatsMapLocale = typeof import("./stats-map.en.js").default;

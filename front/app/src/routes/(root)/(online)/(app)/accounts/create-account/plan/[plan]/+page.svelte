@@ -223,7 +223,7 @@
   <title>{$locale.pages["accounts/create_account/plan"].head.title}</title>
 </svelte:head>
 
-<div class="page" in:logical_fly|local={{ y: -25, duration: 200 }}>
+<div class="page" in:logical_fly={{ y: -25, duration: 200 }}>
   <div class="login-page-box">
     <div class="login-page-title">
       {$locale.pages["accounts/create_account/plan"].title}

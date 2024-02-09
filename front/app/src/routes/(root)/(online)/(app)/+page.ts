@@ -6,9 +6,9 @@ export const load = (async ({ parent }) => {
   
   if(accounts.total === 1) {
     const _id = accounts.items?.[0]._id;
-    if(_id) throw redirect(302, `/accounts/${_id}`)
-    else throw redirect(302, "/accounts");
+    if(_id) redirect(302, `/accounts/${_id}`);
+    else redirect(302, "/accounts");
   } else {
-    throw redirect(302, "/accounts");
+    redirect(302, "/accounts");
   }
 }) satisfies import("./$types").PageLoad;

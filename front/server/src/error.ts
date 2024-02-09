@@ -1,9 +1,9 @@
 import StatusCode from "http-status-codes";
-import { ClientError } from "./client.server";
-import type { Logger } from "./logger";
+import { ClientError } from "./client.server.js";
+import type { Logger } from "./logger.js";
 import type { Request, Response, NextFunction } from "express";
-import type { ErrorCode } from "./types";
-import type { PublicErrorCode } from "./defs/error/PublicErrorCode";
+import type { ErrorCode } from "./types.js";
+import type { PublicErrorCode } from "./defs/error/PublicErrorCode.js";
 
 export class ApiError extends Error {
   

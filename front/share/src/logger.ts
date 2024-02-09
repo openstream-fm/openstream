@@ -1,5 +1,5 @@
-import { env } from "./env";
-import { color } from "./color";
+import { env } from "./env.js";
+import { color } from "./color.js";
 
 // fix for bug in vite about enums
 export const LogLevel = {

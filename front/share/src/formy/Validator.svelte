@@ -75,7 +75,7 @@
 <div class="validator-anchor" use:anchor aria-hidden hidden />
 
 {#if current_message != null}
-  <div class="message" transition:slide|local={{ duration: 200 }} aria-errormessage={current_message}>
+  <div class="message" transition:slide={{ duration: 200 }} aria-errormessage={current_message}>
     {current_message}
   </div>
 {/if}

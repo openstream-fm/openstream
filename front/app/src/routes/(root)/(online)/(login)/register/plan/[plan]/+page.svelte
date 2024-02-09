@@ -310,11 +310,11 @@
 	<title>{$locale.pages.register.head.title}</title>
 </svelte:head>
 
-<div class="login-page-box" in:form>
+<div class="login-page-box" in:form|global>
 	<!-- TODO: payments  -->
 	<!-- {#if view === "data" || view === "pay"} -->
 	{#if view === "data"}
-		<div class="login-page-title" in:logical_fly|local={{ duration: 250, x: -25 }}>
+		<div class="login-page-title" in:logical_fly={{ duration: 250, x: -25 }}>
 			{$locale.pages.register.title}
 		</div>
 
@@ -322,7 +322,7 @@
 			class="plan"
 			style:--bg-color={bg_color}
 			style:--color={color.toString()}
-			in:logical_fly|local={{ duration: 250, x: -25 }}
+			in:logical_fly={{ duration: 250, x: -25 }}
 		>
 			<div class="plan-pretitle">
 				{$locale.pages.register.plan.selected_plan}
@@ -469,7 +469,7 @@
 				use:ripple
 			>
 				{#if sending_data}
-					<div class="login-page-btn-sending-progress" transition:scale|local={{ duration: 300 }}>
+					<div class="login-page-btn-sending-progress" transition:scale={{ duration: 300 }}>
 						<CircularProgress />
 					</div>
 				{/if}
@@ -508,7 +508,7 @@
 				use:ripple
 			>
 				{#if sending_pay}
-					<div class="login-page-btn-sending-progress" transition:scale|local={{ duration: 300 }}>
+					<div class="login-page-btn-sending-progress" transition:scale={{ duration: 300 }}>
 						<CircularProgress />
 					</div>
 				{/if}
@@ -555,7 +555,7 @@
 				use:ripple
 			>
 				{#if sending_code}
-					<div class="login-page-btn-sending-progress" transition:scale|local={{ duration: 300 }}>
+					<div class="login-page-btn-sending-progress" transition:scale={{ duration: 300 }}>
 						<CircularProgress />
 					</div>
 				{/if}

@@ -183,6 +183,6 @@ const locale = ({
   za: "Zhuang, Chuang",
   zh: "Chinese",
   zu: "Zulu",
-} satisfies Record<import("$defs/LangCode").LangCode, string>);
+} satisfies Record<import("$defs/LangCode.js").LangCode, string>);
 
 export default locale;

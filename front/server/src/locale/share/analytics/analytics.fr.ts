@@ -1,4 +1,4 @@
-const locale: import("./analytics.locale").AnalyticsLocale = {
+const locale: import("./analytics.locale.js").AnalyticsLocale = {
   "Sessions": "Sessions",
   "Listeners": "Auditeurs",
   "Unique_IPs": "IPs uniques",

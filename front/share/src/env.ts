@@ -1,6 +1,6 @@
 // import { env as kit_env } from "$env/dynamic/public";
 import { browser, dev } from "$app/environment";
-import type { LogLevel } from "./logger";
+import type { LogLevel } from "./logger.js";
 
 const get_log_level = (): LogLevel => {
   if(browser) {

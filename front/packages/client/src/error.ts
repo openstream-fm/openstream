@@ -1,4 +1,4 @@
-import type { PublicErrorCode } from "./defs/error/PublicErrorCode";
+import type { PublicErrorCode } from "./defs/error/PublicErrorCode.js";
 
 export type ClientErrorCode = 
   | PublicErrorCode

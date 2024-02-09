@@ -1,5 +1,5 @@
 /// file: validate.zh.ts
-const locale: import("./validate.locale").ValidateLocale = {
+const locale: import("./validate.locale.js").ValidateLocale = {
   "required": "此字段是必需的",
   
   "number": "此字段必须是有效的数字",

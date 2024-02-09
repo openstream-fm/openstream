@@ -1,13 +1,13 @@
 import { type Request, Router } from "express";
-import type { Logger } from "../logger";
-import { json } from "../handler";
-import type { Client } from "../client.server";
-import { ua } from "../ua";
-import { ip } from "../ip";
-import { ACCESS_TOKEN_HEADER, FORWARD_IP_HEADER } from "../constants";
+import type { Logger } from "../logger.js";
+import { json } from "../handler.js";
+import type { Client } from "../client.server.js";
+import { ua } from "../ua.js";
+import { ip } from "../ip.js";
+import { ACCESS_TOKEN_HEADER, FORWARD_IP_HEADER } from "../constants.js";
 import { pipeline } from "stream/promises";
-import { BadRequest } from "../error";
-import { optional_token } from "../token";
+import { BadRequest } from "../error.js";
+import { optional_token } from "../token.js";
 
 export const shared_api = ({
   logger,

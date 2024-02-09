@@ -7,7 +7,7 @@ export const load = (async ({ parent, params, fetch, url }) => {
 
   const account = all_accounts.find(item => item._id === params.account);
 
-  if(account == null) throw error(404, { status: 404, message: "Account not found", code: "FRONT_RESOURCE_NOT_FOUND" })
+  if(account == null) error(404, { status: 404, message: "Account not found", code: "FRONT_RESOURCE_NOT_FOUND" });
 
   const plan = all_plans.find(plan => plan._id === account.plan_id);
 

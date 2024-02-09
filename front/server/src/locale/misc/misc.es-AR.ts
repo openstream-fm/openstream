@@ -1,5 +1,5 @@
 /// file: wip.es.ts
-const locale: typeof import("./misc.en").default = {
+const locale: typeof import("./misc.en.js").default = {
   Relay: "Relay",
   Settings_updated: "Configuración actualizada",
   Master_relay: "Relay maestro",

@@ -1,1 +1,1 @@
-export type LanguageLocale = typeof import("./language.en").default;
+export type LanguageLocale = typeof import("./language.en.js").default;

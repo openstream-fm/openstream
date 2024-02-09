@@ -375,7 +375,7 @@
               {$locale.misc.Save}
             </div>
             {#if saving_relay}
-              <div class="relay-send-sending" transition:scale|local={{ duration: 300 }}>
+              <div class="relay-send-sending" transition:scale={{ duration: 300 }}>
                 <CircularProgress />
               </div>
             {/if}

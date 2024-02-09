@@ -1,22 +1,22 @@
-import type { Config, HostConfig } from "../config";
+import type { Config, HostConfig } from "../config.js";
 import { Router, json as json_body_parser } from "express";
-import { ApiError, json_catch_handler } from "../error";
-import type { Logger } from "../logger";
-import { handler, json } from "../handler";
-import { session } from "../session";
-import { ip } from "../ip";
-import { admin_token } from "../token";
+import { ApiError, json_catch_handler } from "../error.js";
+import type { Logger } from "../logger.js";
+import { handler, json } from "../handler.js";
+import { session } from "../session.js";
+import { ip } from "../ip.js";
+import { admin_token } from "../token.js";
 import { StatusCodes } from "http-status-codes";
-import { ua } from "../ua";
-import { shared_api } from "./shared-api";
-import { admin_media_key } from "../media_key";
-import { admin_id } from "../admin-id";
-import { host } from "../host";
-import type { Client } from "../client.server";
-import type { AdminLocale } from "../locale/admin/admin.locale";
+import { ua } from "../ua.js";
+import { shared_api } from "./shared-api.js";
+import { admin_media_key } from "../media_key.js";
+import { admin_id } from "../admin-id.js";
+import { host } from "../host.js";
+import type { Client } from "../client.server.js";
+import type { AdminLocale } from "../locale/admin/admin.locale.js";
 import acceptLanguageParser from "accept-language-parser";
-import { LOCALE_DIR_HEADER, LOCALE_LANG_HEADER } from "../constants";
-import { default_admin_locale, admin_locales_map, admin_locales } from "../locale/admin/admin.locale";
+import { LOCALE_DIR_HEADER, LOCALE_LANG_HEADER } from "../constants.js";
+import { default_admin_locale, admin_locales_map, admin_locales } from "../locale/admin/admin.locale.js";
 
 export type PublicConfig = {
   studio_public_url: string

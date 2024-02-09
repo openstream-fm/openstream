@@ -1,5 +1,5 @@
 import type { Handle, HandleFetch } from "@sveltejs/kit";
-import { env } from "./env.server";
+import { env } from "./env.server.js";
 import { FORWARD_IP_HEADER, LOCALE_DIR_HEADER, LOCALE_LANG_HEADER, PROTOCOL_HEADER, REAL_IP_HEADER } from "$server/constants";
 import { server_logger } from "$lib/logger.server";
 

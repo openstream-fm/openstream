@@ -1,1 +1,1 @@
-export type AnalyticsLocale = typeof import("./analytics.en").default;
+export type AnalyticsLocale = typeof import("./analytics.en.js").default;
