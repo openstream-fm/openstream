@@ -1,7 +1,6 @@
-import { load_get } from "$lib/load";
-import { error, redirect } from "@sveltejs/kit";
+import { error } from "@sveltejs/kit";
 
-export const load = (async ({ fetch, url, parent, depends, params }) => {
+export const load = (async ({ parent, depends, params }) => {
 
   depends("api:stations/:id");
 
@@ -12,18 +11,18 @@ export const load = (async ({ fetch, url, parent, depends, params }) => {
   
   if(station == null) {
     error(404, {
-            status: 404,
-            code: "CLIENT_STATION_NOT_FOUND",
-            message: `Station with id ${params.station} does not exists or has been deleted`,
-          });
+      status: 404,
+      code: "CLIENT_STATION_NOT_FOUND",
+      message: `Station with id ${params.station} does not exists or has been deleted`,
+    });
   }
 
   if(station.account_id !== account._id) {
     error(404, {
-            status: 404,
-            code: "CLIENT_STATION_ACCOUNT_MISMATCH",
-            message: `Station with id ${station._id} doesn't belong to this account`,
-          });
+      status: 404,
+      code: "CLIENT_STATION_ACCOUNT_MISMATCH",
+      message: `Station with id ${station._id} doesn't belong to this account`,
+    });
   }
 
   return { station, current_page }

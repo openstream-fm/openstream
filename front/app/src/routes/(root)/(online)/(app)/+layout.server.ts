@@ -1,4 +1,4 @@
-import { load_get } from "$lib/load";
+import { load_call, client } from "$lib/load";
 import { redirect } from "@sveltejs/kit";
 
 export const load = (async ({ fetch, url, parent, depends }) => {
@@ -18,8 +18,8 @@ export const load = (async ({ fetch, url, parent, depends }) => {
       accounts,
       stations,
    ] = await Promise.all([
-      load_get<import("$api/accounts/GET/Output").Output>(`/api/accounts?limit=10000`, { fetch, url }),
-      load_get<import("$api/stations/GET/Output").Output>(`/api/stations?limit=10000`, { fetch, url }),
+      load_call(() => client.GET("/accounts", { params: { query: { limit: 10_000 } }, fetch })),
+      load_call(() => client.GET("/stations", { params: { query: { limit: 10_000 } }, fetch })),
    ])
 
 

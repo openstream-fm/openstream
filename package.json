@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/ramiroaisen/openstream/issues"
   },
-  "homepage": "https://github.com/ramiroaisen/openstream#readme"
+  "homepage": "https://github.com/ramiroaisen/openstream#readme",
+  "devDependencies": {
+    "openapi-typescript": "^6.7.4"
+  }
 }

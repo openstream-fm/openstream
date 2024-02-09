@@ -1,6 +1,6 @@
-import { load_get } from "$lib/load";
+import { load_call, client } from "$lib/load";
 
-export const load = (async ({ params, fetch, depends, url }) => {
+export const load = (async ({ params, fetch, depends }) => {
   depends("resource:stations")
   depends("api:stations/:id/now-playing");
   depends("api:stations/:id/files");
@@ -9,8 +9,8 @@ export const load = (async ({ params, fetch, depends, url }) => {
     { files, playlist_is_randomly_shuffled },
     now_playing, 
   ] = await Promise.all([
-    load_get<import("$api/stations/[station]/files/GET/Output").Output>(`/api/stations/${params.station}/files?limit=10000`, { fetch, url }),
-    load_get<import("$api/stations/[station]/now-playing/GET/Output").Output>(`/api/stations/${params.station}/now-playing`, { fetch, url })
+    load_call(() => client.GET("/stations/{station}/files", { params: { path: { station: params.station }, query: { limit: 10_000 } } })),
+    load_call(() => client.GET("/stations/{station}/now-playing", { params: { path: { station: params.station } }, fetch }))
   ]);
 
   return {

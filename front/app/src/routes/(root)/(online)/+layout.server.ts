@@ -1,4 +1,4 @@
-import { load_get, load_get_me } from "$lib/load";
+import { load_get_me } from "$lib/load";
 
 export const load = (async ({ depends, fetch, url }) => {
   depends("resource:users");

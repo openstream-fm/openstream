@@ -67,7 +67,7 @@ export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
   url.port = String(env.APP_API_PORT);
   url.protocol = `http:`;
   
-  server_logger.debug(`handle-fetch: ${event.request.url} => ${request.url} ip=${event.locals.ip} proto=${event.locals.protocol}`)
+  server_logger.info(`handle-fetch: ${event.request.url} => ${request.url} ip=${event.locals.ip} proto=${event.locals.protocol}`)
 
   const target = new Request(request)
 

@@ -1,10 +1,13 @@
-import { load_get } from "$lib/load";
+import { client, load_call } from "$lib/load";
 
-export const load = (async ({ fetch, url, depends, params }) => {
+export const load = (async ({ fetch, depends, params }) => {
 
   depends("api:accounts/:id");
 
-  const { account, is_owner }: import("$api/accounts/[account]/GET/Output").Output = await load_get(`/api/accounts/${params.account}`, { fetch, url });
+  const { account, is_owner } = await load_call(async () => await client.GET("/accounts/{account}", {
+    params: { path: { account: params.account } },
+    fetch,
+  }));
   
   return {
     account,
