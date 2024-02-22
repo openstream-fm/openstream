@@ -1,6 +1,6 @@
-import { load_get } from "$lib/load";
+import { load_call, client } from "$lib/load";
 
-export const load = (async ({ fetch, url, depends, params }) => {
+export const load = (async ({ fetch, depends, params }) => {
   
   depends("resource:stations")
   // depends("api:stations/:id/dashboard-stats");
@@ -11,8 +11,8 @@ export const load = (async ({ fetch, url, depends, params }) => {
     now_playing,
     { stats },
   ] = await Promise.all([
-    load_get<import("$api/stations/[station]/now-playing/GET/Output").Output>(`/api/stations/${params.station}/now-playing`, { fetch, url }),
-    load_get<import("$api/stations/[station]/stream-stats/GET/Output").Output>(`/api/stations/${params.station}/stream-stats`, { fetch, url }),
+    load_call(() => client.GET(`/stations/{station}/now-playing`, { params: { path: { station: params.station } }, fetch })),
+    load_call(() => client.GET("/stations/{station}/stream-stats", { params: { path: { station: params.station } }, fetch })),
   ]);
   
   return { 

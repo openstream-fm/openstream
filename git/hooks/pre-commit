@@ -43,9 +43,10 @@ await within(async () => {
 	await $`git add defs`
 	check();
 
-	write("Creating openapi.json file...");
-	await $`node openapi-generator.js`
+	write("Creating openapi.json and openapi.ts files...");
+	await `npm run post-test`
 	await $`git add openapi.json`
+	await $`git add openapi.ts`
 	check();
 
 	await within(async () => {

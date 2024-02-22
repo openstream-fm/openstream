@@ -241,8 +241,10 @@ pub mod post {
             let account = tx_try!(Account::get_by_id_with_session(&invitation.account_id, &mut session).await);
             match account {
               None => return Ok(Output::AccountNotFound),
-              Some(_account) => {
-                // TODO: add deleted_at.is_some() check when Account.deleted_at is added
+              Some(account) => {
+                if account.deleted_at.is_some() {
+                  return Ok(Output::AccountNotFound)
+                }
               }
             }
 

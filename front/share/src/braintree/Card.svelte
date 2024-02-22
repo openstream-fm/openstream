@@ -1,10 +1,14 @@
 <script lang="ts">
-  export let card: import("$server/defs/PublicPaymentMethod").PublicPaymentMethod;
+  export let card: PublicPaymentMethod;
   export let selected: boolean = false;
   export let on_click: () => void;
   export let locale: import("$server/locale/share/payments/payments.locale").PaymentsLocale;
 
+  type PublicPaymentMethod = Unwrap<Awaited<ReturnType<typeof GET<"/payment-methods", []>>>>["items"][number];
+
   import Icon from "$share/Icon.svelte";
+  import { Unwrap } from "$share/client";
+  import type { GET } from "$share/client";
   import { ripple } from "$share/ripple";
   import { mdiCheckBold } from "@mdi/js";
   import { scale } from "svelte/transition";
@@ -64,7 +68,6 @@
 <button
   class="card ripple-container"
   class:selected
-  aria-selected={selected}
   use:ripple
   on:click|preventDefault={on_click}
 >

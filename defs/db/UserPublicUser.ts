@@ -7,10 +7,10 @@ export type UserPublicUser = {
   first_name: string;
   last_name: string;
   email: string;
-  phone: string | null;
-  language: string | null;
+  phone: string | null | undefined;
+  language: string | null | undefined;
   user_metadata: Metadata;
   created_at: DateTime;
   updated_at: DateTime;
-  deleted_at: DateTime | null;
+  deleted_at: DateTime | null | undefined;
 };

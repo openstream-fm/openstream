@@ -24,7 +24,6 @@ pub mod get {
   #[derive(Debug, Clone, Default, Serialize, Deserialize, TS, JsonSchema)]
   #[ts(export, export_to = "../../../defs/api/plans/GET/")]
   #[macros::schema_ts_export]
-  /// TODO: add pagination
   pub struct Query {
     #[serde(flatten)]
     pub page: PaginationQs,

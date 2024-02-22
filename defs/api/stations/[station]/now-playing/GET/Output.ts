@@ -3,14 +3,17 @@
 export type Output =
   | ({ kind: "none" } & {
     start_on_connect: boolean;
-    external_relay_url: string | null;
-    external_relay_error: string | null;
+    external_relay_url: string | null | undefined;
+    external_relay_error: string | null | undefined;
   })
-  | ({ kind: "live" } & { title: string | null; artist: string | null })
+  | ({ kind: "live" } & {
+    title: string | null | undefined;
+    artist: string | null | undefined;
+  })
   | ({ kind: "external-relay" } & { url: string })
   | ({ kind: "playlist" } & {
     file_id: string;
     filename: string;
-    title: string | null;
-    artist: string | null;
+    title: string | null | undefined;
+    artist: string | null | undefined;
   });

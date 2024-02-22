@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let value: string | null;
+	export let value: string | null | undefined;
   export let label: string;
   export let type: string = "text";
   export let autocomplete: string | undefined = void 0;

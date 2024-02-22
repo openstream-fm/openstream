@@ -1,6 +1,6 @@
-import { load_get } from "$lib/load";
+import { client, load_call } from "$lib/load";
 
-export const load = (async ({ fetch, url, parent, depends, params }) => {
+export const load = (async ({ fetch, parent, depends, params }) => {
   
   depends("api:accounts/:id/stream-stats");
   depends("api:accounts/:id/stream-stats/now/count-by-station");
@@ -10,8 +10,8 @@ export const load = (async ({ fetch, url, parent, depends, params }) => {
     { stats },
     { by_station: sessions_by_station },
   ] = await Promise.all([
-    load_get<import("$api/accounts/[account]/stream-stats/GET/Output").Output>(`/api/accounts/${params.account}/stream-stats`, { fetch, url }),
-    load_get<import("$api/accounts/[account]/stream-stats/now/count-by-station/GET/Output").Output>(`/api/accounts/${params.account}/stream-stats/now/count-by-station`, { fetch, url }),
+    load_call(() => client.GET("/accounts/{account}/stream-stats", { params: { path: { account: params.account } }, fetch })),
+    load_call(() => client.GET("/accounts/{account}/stream-stats/now/count-by-station", { params: { path: { account: params.account } }, fetch })),
   ])
 
   const now_playing_record = await (async () => {
@@ -26,7 +26,8 @@ export const load = (async ({ fetch, url, parent, depends, params }) => {
     
     // fetch the now playing of first 30 satations (approx the maximum visible ones on non-scrolled screen)
     await Promise.all(to_fetch_stations.map(async station => {
-      const now_playing = await load_get<import("$api/stations/[station]/now-playing/GET/Output").Output>(`/api/stations/${station._id}/now-playing`, { url, fetch });
+      const now_playing = await load_call(() => client.GET("/stations/{station}/now-playing", { params: { path: { station: station._id } }, fetch }));
+      // @ts-ignore
       now_playing_record[station._id] = now_playing;
     }))
 

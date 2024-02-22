@@ -1,12 +1,12 @@
 import { browser } from "$app/environment";
 import { default_logger } from "$share/logger";
 import { get_now_playing_store, type NowPlaying } from "$lib/now-playing";
-import { _get } from "$share/net.client";
 import { derived, get, writable } from "svelte/store";
 import { page } from "$app/stores";
 import { equals } from "$server/util/collections";
 import { locale } from "$share/locale";
 import { STATION_PICTURES_VERSION } from "$server/defs/constants";
+import type { Unwrap, GET } from "$lib/client";
 
 export type PlayerState = PlayerState.Closed | PlayerState.Station | PlayerState.AudioFile;
 
@@ -35,10 +35,12 @@ export namespace PlayerState {
     }
   }
 
+  export type AudioFileItem = Unwrap<Awaited<ReturnType<typeof GET<"/stations/{station}/files/{file}">>>>["item"];
+
   export interface AudioFile extends Base {
     type: "track"
     audio_state: AudioState,
-    file: import("$server/defs/db/AudioFile").AudioFile
+    file: AudioFileItem,
     picture_id: string,
   }
 }
@@ -119,7 +121,7 @@ export const player_title = derived(player_state, (state): string => {
   else return assert_never(state);
 })
 
-export const player_subtitle = derived([player_state, now_playing], ([state, now_playing]): string | null => {
+export const player_subtitle = derived([player_state, now_playing], ([state, now_playing]): string | null | undefined => {
   if (state.type === "closed") return null;
   else if (state.type === "track") return state.file.metadata.artist;
   else if (state.type === "station") {
@@ -334,7 +336,7 @@ if (hasMediaSession) {
   })
 }
 
-export const play_track = (file: import("$server/defs/db/AudioFile").AudioFile, picture_id: string) => {
+export const play_track = (file: PlayerState.AudioFileItem, picture_id: string) => {
   if (!browser) throw new Error("player.play_track called in ssr context");
   destroy_audio_tag();
   now_playing_stop();

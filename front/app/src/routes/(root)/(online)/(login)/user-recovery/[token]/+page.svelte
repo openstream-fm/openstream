@@ -13,6 +13,7 @@
   import { default_logger } from "$share/logger";
 	import { locale } from "$lib/locale";
 	import { invalidate_siblings } from "$lib/invalidate";
+	import { POST, unwrap } from "$lib/client";
 
   const logger = default_logger.scoped("recovery");
 
@@ -29,26 +30,27 @@
     sending = true;
     
     try {
-      let payload: import("$api/auth/user/recovery-token/[token]/set-password/POST/Payload").Payload = {
-        new_password
-      }
+      unwrap(await POST("/auth/user/recovery-token/{token}/set-password", { params: { path: { token: data.token } }, body: { new_password } }));
 
-      await _post(`/api/auth/user/recovery-token/${data.token}/set-password`, payload);
-
-      let login_payload: Omit<import("$api/auth/user/login/POST/Payload").Payload, "device_id"> = {
-        email: data.result.user_email,
-        password: new_password,    
-      }
+      const login_password = new_password;
 
       new_password = "";
       confirm_password = "";
 
       _message($locale.pages.user_recovery.notifier.password_updated);
 
-      await _post("/api/auth/user/login", login_payload).catch(e => {
+      try {
+        unwrap(await POST("/auth/user/login", {
+          body: {
+            email: data.result.user_email,
+            password: login_password,
+            device_id: undefined as any,
+          }
+        }));
+      } catch(e: any) {
         logger.error("error on login after token password set")
         logger.error(e)
-      });
+      }
 
       goto("/", { invalidateAll: true });
       invalidate_siblings();

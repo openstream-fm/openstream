@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { afterNavigate } from "$app/navigation";
+	import { afterNavigate, onNavigate } from "$app/navigation";
   export let data: import("./$types").LayoutData;
   import { page } from "$app/stores";
 	import { locale } from "$lib/locale";
@@ -21,12 +21,29 @@
     }
   }
 
+  afterNavigate(() => {
+    close_selector();
+    scroll_to_current();
+  })
+
+  let actions_parent: HTMLElement | undefined = undefined;
+  let actions_scroll: HTMLElement | undefined = undefined;
+  const scroll_to_current = () => {
+    if(actions_parent == null) return;
+    const current: HTMLElement | null = actions_parent.querySelector(".station-action.current");
+    if(current == null) return;
+    scroll_into_view(current);
+  }
+
   const scroll_into_view = (node: HTMLElement) => {
-    // @ts-ignore
-    if(node.scrollIntoViewIfNeeded) {
-      // @ts-ignore
-      node.scrollIntoViewIfNeeded(true);
-    }
+    if(!actions_scroll) return;
+    const parent = actions_scroll.getBoundingClientRect();
+    const child = node.getBoundingClientRect();
+    actions_scroll.scrollTo({
+       left: actions_scroll.scrollLeft + child.left + child.width / 2 - parent.left - parent.width / 2,
+       behavior: "smooth"
+    });
+    // node.scrollIntoView({ behavior: "smooth", inline: "center", block: "center" });
   }
 
   const [_enter, _leave] = crossfade({ duration: 300, fallback: (node) => fade(node, { duration: 200 }) });
@@ -55,10 +72,6 @@
   const toggle_selector = () => {
     selector_open = !selector_open;
   }
-
-  afterNavigate(() => {
-    close_selector();
-  })
 
   let scroll_y = 0;
 
@@ -252,7 +265,7 @@
 <svelte:window bind:scrollY={scroll_y} />
 
 <div class="station-out" in:fade|global={{ duration: 200 }}>
-  <div class="station-scroll super-thin-scroll" on:scroll={close_selector}>
+  <div class="station-scroll super-thin-scroll" bind:this={actions_scroll} on:scroll={close_selector}>
     <div class="station">
       <div class="station-btn-out">
         <button class="station-btn" class:station-selector-open={selector_open} on:click={toggle_selector}>
@@ -292,12 +305,11 @@
           {/if}
         </div>
       </div>
-      <div class="station-actions">
+      <div class="station-actions" bind:this={actions_parent}>
         <a
           href="/accounts/{data.station.account_id}/stations/{data.station._id}"
           class="station-action"
           class:current={current_page === "dashboard"}
-          on:click={event => scroll_into_view(event.currentTarget)}
         >
           <span class="action-name ripple-container">
             {$locale.station_nav.dashboard}
@@ -311,7 +323,6 @@
           href="/accounts/{data.station.account_id}/stations/{data.station._id}/profile"
           class="station-action"
           class:current={current_page === "profile"}
-          on:click={event => scroll_into_view(event.currentTarget)}
         >
           <span class="action-name ripple-container">
             {$locale.station_nav.profile}
@@ -325,7 +336,6 @@
           href="/accounts/{data.station.account_id}/stations/{data.station._id}/playlist"
           class="station-action"
           class:current={current_page === "playlist"}
-          on:click={event => scroll_into_view(event.currentTarget)}
         >
           <span class="action-name ripple-container">
             {$locale.station_nav.playlist}
@@ -339,7 +349,6 @@
           href="/accounts/{data.station.account_id}/stations/{data.station._id}/broadcast"
           class="station-action"
           class:current={current_page === "broadcast"}
-          on:click={event => scroll_into_view(event.currentTarget)}
         >
           <span class="action-name ripple-container">
             {$locale.station_nav.broadcast}
@@ -353,7 +362,6 @@
           href="/accounts/{data.station.account_id}/stations/{data.station._id}/settings"
           class="station-action"
           class:current={current_page === "settings"}
-          on:click={event => scroll_into_view(event.currentTarget)}
         >
           <span class="action-name ripple-container">
             {$locale.station_nav.settings}

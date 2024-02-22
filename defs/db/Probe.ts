@@ -9,5 +9,5 @@ export type Probe = {
   duration_ms: number;
   created_at: DateTime;
   updated_at: DateTime;
-  deleted_at: DateTime | null;
+  deleted_at: DateTime | null | undefined;
 } & ProbeResult;

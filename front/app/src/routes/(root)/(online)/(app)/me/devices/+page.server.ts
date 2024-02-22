@@ -1,12 +1,12 @@
-import { load_get } from "$lib/load";
+import { load_call, client } from "$lib/load";
 
-export const load = (async ({ fetch, url, depends }) => {
+export const load = (async ({ fetch, depends }) => {
 
    depends("resource:devices");
    depends("api:devices")
 
    // TODO: implement pagination
-   const devices = await load_get<import("$api/me/devices/GET/Output").Output>(`/api/me/devices?limit=10000`, { fetch, url });
+   const devices = await load_call(() => client.GET("/me/devices", { params: { query: { limit: 10_000 } }, fetch }));
    
    return { devices }
 

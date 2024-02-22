@@ -13,6 +13,7 @@
 
   import _copy from "copy-to-clipboard";
 	import { page } from '$app/stores';
+	import { POST, unwrap } from '$lib/client';
 
   $: scheme = $page.url.protocol.split(":")[0] ?? "https";
 
@@ -28,11 +29,8 @@
   }
 
   let reset_password_open = false;
-
   const reset_password = action(async () => {
-    const { new_password }: import("$api/stations/[station]/reset-source-password/POST/Output").Output =
-      await _post(`/api/stations/${data.station._id}/reset-source-password`, undefined);
-    
+    const { new_password } = unwrap(await POST("/stations/{station}/reset-source-password", { params: { path: { station: data.station._id } } }));
     data.station.source_password = new_password;
     reset_password_open = false;
     _message($locale.pages["station/broadcast"].notifier.mount_password_reset);

@@ -12,6 +12,7 @@
 	import { ripple } from "$share/ripple";
 	import { mdiLogin, mdiTrashCanOutline } from "@mdi/js";
   import { STATION_PICTURES_VERSION } from "$defs/constants";
+	import { DELETE, unwrap } from "$lib/client";
 
   const date = (d: string | Date) => {
     const date = new Date(d);
@@ -43,7 +44,7 @@
     if(deleting) return;
     deleting = true;
     try {
-      await _delete(`/api/users/${data.user._id}`);
+      unwrap(await DELETE("/users/{user}", { params: { path: { user: data.user._id } } }));
       delete_open = false;
       _message("User deleted");
       await goto("/users", { invalidateAll: true });

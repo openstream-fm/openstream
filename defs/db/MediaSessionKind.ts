@@ -4,7 +4,7 @@ import type { Request } from "./http/Request.js";
 
 export type MediaSessionKind =
   | ({ kind: "playlist" } & {
-    resumed_from: string | null;
+    resumed_from: string | null | undefined;
     last_audio_file_id: string;
     last_audio_file_order: number;
     last_audio_chunk_i: number;

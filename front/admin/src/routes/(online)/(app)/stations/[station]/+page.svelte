@@ -15,6 +15,7 @@
 	import { invalidate_siblings } from "$lib/invalidate";
 	import Dialog from "$share/Dialog.svelte";
   import { STATION_PICTURES_VERSION } from "$defs/constants";
+	import { DELETE, unwrap } from "$lib/client";
 	
 
   const date = (d: string | Date) => {
@@ -36,7 +37,7 @@
     if(deleting) return;
     deleting = true;
     try {
-      await _delete(`/api/stations/${data.station._id}`);
+      unwrap(await DELETE("/stations/{station}", { params: { path: { station: data.station._id } } }));
       delete_open = false;
       _message("Station deleted");
       await goto("/stations", { invalidateAll: true });

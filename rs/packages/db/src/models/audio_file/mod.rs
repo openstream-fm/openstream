@@ -17,7 +17,6 @@ crate::register!(AudioFile);
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[ts(export, export_to = "../../../defs/db/")]
-#[serde(rename_all = "snake_case")]
 #[macros::keys]
 pub struct AudioFile {
   #[serde(rename = "_id")]

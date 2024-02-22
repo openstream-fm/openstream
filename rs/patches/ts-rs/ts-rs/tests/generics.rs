@@ -184,7 +184,7 @@ fn default() {
     }
     assert_eq!(
         B::<()>::decl(),
-        "interface B<U = A<number> | null> { u: U, }"
+        "interface B<U = A<number> | null | undefined> { u: U, }"
     );
     assert!(B::<()>::dependencies().iter().any(|dep| dep.ts_name == "A"));
 

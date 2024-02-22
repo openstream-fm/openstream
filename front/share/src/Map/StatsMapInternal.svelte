@@ -20,6 +20,7 @@
   import Map from "./Map.svelte";
   import { ripple } from "$share/ripple";
   import { intersect } from "$share/actions";
+  import { GET, unwrap } from "$share/client";
 
   let view_ids = ["now", "last_24h", "last_7d", "last_30d"] as const;
   let selector_titles = {
@@ -63,29 +64,24 @@
           break;
         }
 
-        const url =
-          kind === "all" ? `/api/stream-stats/now` :
-          kind === "account" ? `/api/accounts/${record_id}/stream-stats/now` :
-          `/api/stations/${record_id}/stream-stats/now`;
-
-        let output:
-          import("$api/stream-stats/now/GET/Output").Output | 
-          import("$api/accounts/[account]/stream-stats/now/GET/Output").Output | 
-          import("$api/stations/[station]/stream-stats/now/GET/Output").Output;
-        
         try {
-          output = await _get(url);
+          const output = unwrap(await (
+            kind === "all" ? GET("/stream-stats/now") : 
+            kind === "account" ? GET("/accounts/{account}/stream-stats/now", { params: { path: { account: record_id } } }) : 
+            GET("/stations/{station}/stream-stats/now", { params: { path: { station: record_id } } }) 
+          ));
+        
+          last = Date.now();
+        
+          if(data) {
+            data.now = output.stats;
+          } 
+
           logger.info(`now stats updated for ${kind} ${record_id}`, output.stats)
         } catch(e: any) {
           logger.error(`error updating now stats for ${kind} ${record_id}`);
           logger.error(e);
           break;
-        }
-        
-        last = Date.now();
-        
-        if(data) {
-          data.now = output.stats;
         }
       }
     }
@@ -93,18 +89,18 @@
     const load = async () => {
       if(!mounted) return;
       if(data == null) {
-        const url = 
-          kind === "all" ? "/api/stats-map" :
-          kind === "station" ? `/api/stations/${record_id}/stream-stats` : 
-          `/api/accounts/${record_id}/stream-stats`;
-        
-        let output:
-          import("$api/stream-stats/GET/Output").Output |
-          import("$api/accounts/[account]/stream-stats/GET/Output").Output |
-          import("$api/stations/[station]/stream-stats/GET/Output").Output; 
-        
-        try { 
-          output = await _get(url);
+        try {
+          const output = unwrap(await (
+            kind === "all" ? GET("/stream-stats") : 
+            kind === "account" ? GET("/accounts/{account}/stream-stats", { params: { path: { account: record_id } } }) : 
+            GET("/stations/{station}/stream-stats", { params: { path: { station: record_id } } })
+          ));
+
+          logger.info(`loaded stats map data for ${kind} ${record_id}`, output.stats);
+          data = output.stats;
+          last = Date.now();
+          last_all = Date.now();
+          start_now_timer();
         } catch(e: any) {
           logger.error(`failed to load stream stats for ${kind} ${record_id}, retrying in 1s`)
           logger.error(e);
@@ -112,11 +108,6 @@
           await load();
           return;
         }
-        logger.info(`loaded stats map data for ${kind} ${record_id}`, output.stats);
-        data = output.stats;
-        last = Date.now();
-        last_all = Date.now();
-        start_now_timer();
       } else {
         last = Date.now();
         last_all = Date.now();

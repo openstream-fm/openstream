@@ -19,6 +19,7 @@
   // import PaymentMethodSelector from "$share/braintree/PaymentMethodSelector.svelte";
 	import { display_fly_enter } from "$share/display_transitions";
 	import { VALIDATE_ACCOUNT_NAME_MAX_LEN } from "$server/defs/constants";
+	import { POST, unwrap } from "$lib/client";
   
   let account_name = "";
   // let sending_data = false;
@@ -64,15 +65,15 @@
       //   return;
       // }
 
-      const payload: import("$api/accounts/POST/Payload").Payload = {
-        plan_id: data.plan._id,
-        // TODO: payments
-        // payment_method_id,
-        name: account_name,
-      };
-
-      const { account } = await _post<import("$api/accounts/POST/Output").Output>("/api/accounts", payload);
-
+      const { account } = unwrap(await POST("/accounts", {
+        body: {
+          plan_id: data.plan._id,
+          // TODO: payments
+          // payment_method_id: null,
+          name: account_name
+        }
+      }));
+      
       // TODO: payments
       // sending_pay = false;
       sending_data = false;

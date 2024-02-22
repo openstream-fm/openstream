@@ -18897,7 +18897,7 @@
         }
       }
     },
-    "/stations/{station}/files/suffle": {
+    "/stations/{station}/files/shuffle": {
       "post": {
         "parameters": [
           {
@@ -18943,7 +18943,7 @@
         }
       }
     },
-    "/stations/{station}/files/unsuffle": {
+    "/stations/{station}/files/unshuffle": {
       "post": {
         "parameters": [
           {

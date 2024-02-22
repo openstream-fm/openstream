@@ -289,9 +289,9 @@
     }
   };
 
-  const by_hour_data = (by_hour: Exclude<typeof data.by_hour, null>) => {
+  const by_hour_data = (by_hour: Exclude<typeof data.by_hour, null | undefined>) => {
     const key = (item: { year: number, month: number, day: number, hour: number }) => `${item.year}-${item.month}-${item.day}-${item.hour}`;
-    const cache = new Map<string, Exclude<typeof data.by_hour, null>[number]>();
+    const cache = new Map<string, Exclude<typeof data.by_hour, null | undefined>[number]>();
     for(const item of by_hour) {
       cache.set(key(item.key), item);
     }
@@ -328,7 +328,7 @@
   }
 
   const hours_data = data.by_hour && by_hour_data(data.by_hour);
-  const hours_options: ApexOptions | null = hours_data && {
+  const hours_options: ApexOptions | null | undefined = hours_data && {
     series: [
       {
         name: locale.Unique_IPs,
@@ -1033,7 +1033,7 @@
   const get_by_country_grid = () => {
     const items = data.by_country;
     const common = get_common_grid_options();
-    const display_name = (iso: string | null) => iso == null ? locale.Unknown : country_names[iso] || `#${iso}`;
+    const display_name = (iso: string | null | undefined) => iso == null ? locale.Unknown : country_names[iso] || `#${iso}`;
 
     const fields = {
       "iso": {
@@ -1105,9 +1105,9 @@
     return items;
   }
 
-  const get_by_hour_items = (by_hour: Exclude<typeof data.by_hour, null>) => {
+  const get_by_hour_items = (by_hour: Exclude<typeof data.by_hour, null | undefined>) => {
     const key = (item: { year: number, month: number, day: number, hour: number }) => `${item.year}-${item.month}-${item.day}-${item.hour}`;
-    const cache = new Map<string, Exclude<typeof data.by_hour, null>[number]>();
+    const cache = new Map<string, Exclude<typeof data.by_hour, null | undefined>[number]>();
     for(const item of by_hour) {
       cache.set(key(item.key), item);
     }

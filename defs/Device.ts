@@ -8,7 +8,7 @@ export type Device = {
   ip: string;
   ua: UserAgent;
   created_at: DateTime;
-  last_used_at: DateTime | null;
-  user_id: string | null;
-  admin_id: string | null;
+  last_used_at: DateTime | null | undefined;
+  user_id: string | null | undefined;
+  admin_id: string | null | undefined;
 };

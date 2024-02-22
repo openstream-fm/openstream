@@ -5,5 +5,5 @@ export type OwnerDeploymentInfo = {
   deployment_id: string;
   task_id: string;
   content_type: string;
-  health_checked_at: DateTime | null;
+  health_checked_at: DateTime | null | undefined;
 };

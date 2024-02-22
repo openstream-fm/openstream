@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let value: number | null;
+	export let value: number | null | undefined;
   export let label: string;
   export let autocomplete: string | undefined = void 0;
   export let disabled: boolean = false;
@@ -8,7 +8,7 @@
   export let min: number | undefined = void 0;
   export let step: number | undefined = void 0;
   export let icon: string | null = null;
-  export let on_change: ((v: number | null) => void) | null =  null; 
+  export let on_change: ((v: number | null | undefined) => void) | null =  null; 
   export let btn: { icon: string, label: string, tabindex?: number, action: () => void } | null = null;
 
   let empty = Number.isNaN(value);
@@ -24,7 +24,7 @@
     set_text_value(String(value ?? ""));
   }
 
-  const set_value = (v: number | null) => {
+  const set_value = (v: number | null | undefined) => {
     prev_value = v;
     value = v;
   }

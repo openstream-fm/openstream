@@ -1,11 +1,12 @@
 <script lang="ts">
-
   export let lang: string;
   export let authorization: string | (() => Promise<string>);
   export let saved_methods: PublicPaymentMethod[];
   export let selected_method: PublicPaymentMethod | null = null;
   export let user_id: string | null = null;
   export let locale: import("$server/locale/share/payments/payments.locale").PaymentsLocale;
+
+  type PublicPaymentMethod = Unwrap<Awaited<ReturnType<typeof GET<"/payment-methods", []>>>>["items"][number];
 
   let stage: "saved" | "new" = saved_methods.length === 0 ? "new" : "saved"; 
 
@@ -18,10 +19,9 @@
   import { _post } from "$share/net.client";
   import { _error } from "$share/notify";
   import Card from "./Card.svelte";
+  import { GET, POST, Unwrap, unwrap } from "$share/client";
 
   let dropin: Dropin;
-
-  type PublicPaymentMethod = import("$server/defs/PublicPaymentMethod").PublicPaymentMethod;
 
   export const requestMethodId = async (): Promise<string> => {
     
@@ -39,13 +39,15 @@
       const { nonce, deviceData } = await dropin.requestPaymentMethod();
       
       try {
-        const payload: import("$server/defs/api/payment-methods/POST/Payload").Payload = {
-          nonce: nonce,
-          device_data: deviceData!,
-          user_id: user_id ?? undefined,
-        };
+        
+        const { payment_method } = unwrap(await POST("/payment-methods", {
+          body: {
+            nonce: nonce,
+            device_data: deviceData!,
+            user_id: user_id ?? undefined,
+          }
+        }));
 
-        const { payment_method }: import("$server/defs/api/payment-methods/POST/Output").Output = await _post("/api/payment-methods", payload);
         saved_methods = [...saved_methods, payment_method];
         selected_method = payment_method;
         stage = "saved";

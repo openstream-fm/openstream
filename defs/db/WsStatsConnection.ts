@@ -6,13 +6,13 @@ export type WsStatsConnection = {
   _id: string;
   st: string;
   dp: string;
-  du: number | null;
+  du: number | null | undefined;
   op: boolean;
-  cc: CountryCode | null;
+  cc: CountryCode | null | undefined;
   ip: string;
-  ap: string | null;
-  av: number | null;
+  ap: string | null | undefined;
+  av: number | null | undefined;
   re: number;
   ca: DateTime;
-  cl: DateTime | null;
+  cl: DateTime | null | undefined;
 };

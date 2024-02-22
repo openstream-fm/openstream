@@ -8,10 +8,10 @@ export type BaseAccessToken =
     _id: string;
     hash: string;
     media_hash: string;
-    last_used_at: DateTime | null;
+    last_used_at: DateTime | null | undefined;
     hits: number;
     created_at: DateTime;
-    deleted_at: DateTime | null;
+    deleted_at: DateTime | null | undefined;
   }
   & AccessTokenScope
   & AccessTokenGeneratedBy;

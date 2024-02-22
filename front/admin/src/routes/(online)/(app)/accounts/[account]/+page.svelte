@@ -17,6 +17,7 @@
 	import { goto } from "$app/navigation";
 	import PageMenuItem from "$lib/components/PageMenu/PageMenuItem.svelte";
   import { STATION_PICTURES_VERSION } from "$defs/constants";
+	import { DELETE, PATCH, unwrap } from "$lib/client";
 
   const date = (d: string | Date) => {
     const date = new Date(d);
@@ -40,11 +41,16 @@
     changing_plan = true;
 
     try {
-      let payload: import("$api/accounts/[account]/PATCH/Payload").Payload = {
-        plan_id: selected_plan._id,
-      };
-
-      await _patch(`/api/accounts/${data.account._id}`, payload);
+      unwrap(await PATCH("/accounts/{account}", {
+        params: {
+          path: {
+            account: data.account._id,
+          }
+        },
+        body: {
+          plan_id: selected_plan._id,
+        }
+      }));
       _message("Account plan updated");
       invalidateAll();
       selected_plan = null;
@@ -67,7 +73,13 @@
     if(deleting) return;
     deleting = true;
     try {
-      await _delete(`/api/accounts/${data.account._id}`);
+      unwrap(await DELETE("/accounts/{account}", {
+        params: {
+          path: {
+            account: data.account._id,
+          }
+        }
+      }));
       delete_open = false;
       _message("Account deleted");
       await goto("/accounts", { invalidateAll: true });

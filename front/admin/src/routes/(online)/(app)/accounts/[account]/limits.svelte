@@ -6,6 +6,7 @@
 	import { sleep } from "$share/util";
 	import type { AccountLimits } from "$server/defs/AccountLimits";
 	import CircularMeter from "$lib/components/CircularMeter/CircularMeter.svelte";
+	import { GET, unwrap } from "$lib/client";
 
   const units = [ "B", "KB", "MB", "GB", "TB" ];
   
@@ -53,7 +54,7 @@
           }
           if(Date.now() - last < LIMITS_UPDATE_INTERVAL) continue;
           try {
-            const limits: AccountLimits = await _get(`/api/accounts/${data.account._id}/limits`);
+            const { account: { limits } } = unwrap(await GET("/accounts/{account}", { params: { path: { account: data.account._id } } }));
             logger.info(`account limits updated`);
             data.account.limits = limits;
           } catch(e) {

@@ -2,8 +2,8 @@
 
 export type Response = {
   card_type: string;
-  expiration_month: string | null;
-  expiration_year: string | null;
+  expiration_month: string | null | undefined;
+  expiration_year: string | null | undefined;
   last_4: string;
   payment_method_token: string;
 };

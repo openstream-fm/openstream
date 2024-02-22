@@ -5,7 +5,7 @@ import type { DateTime } from "../DateTime.js";
 export type AudioFile = {
   _id: string;
   station_id: string;
-  sha_256: string;
+  sha256: string;
   len: number;
   duration_ms: number;
   bytes_sec: number;

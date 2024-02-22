@@ -24,6 +24,7 @@
 	import { locale } from "$lib/locale";
 	import SelectField from "$share/Form/SelectField.svelte";
 	import { VALIDATE_USER_FIRST_NAME_MAX_LEN, VALIDATE_USER_LAST_NAME_MAX_LEN, VALIDATE_USER_PASSWORD_MAX_LEN, VALIDATE_USER_PASSWORD_MIN_LEN, VALIDATE_USER_PHONE_MAX_LEN } from "$server/defs/constants";
+	import { PATCH, POST, unwrap } from "$lib/client";
 
   let show_change_password = true;
 
@@ -61,15 +62,16 @@
       else language = dif.language;
     }
 
-    // TODO: remove this partial
-    const payload: Partial<import("$api/users/[user]/PATCH/Payload").Payload> = {
-      first_name: dif.first_name,
-      last_name: dif.last_name,
-      phone: dif.phone,
-      language,
-    };
+    unwrap(await PATCH("/users/{user}", {
+      params: { path: { user: data.user._id } },
+      body: {
+        first_name: dif.first_name,
+        last_name: dif.last_name,
+        phone: dif.phone,
+        language,
+      },
+    }));
 
-    await _patch(`/api/users/${data.user._id}`, payload);
     profile_db = clone(profile_current);
     _message($locale.pages.me.notifier.profile_updated);
     invalidateAll(); 
@@ -83,12 +85,14 @@
     if(new_password === "") throw new Error("New password is required");
     if(current_password === "") throw new Error("Current password is required");
     if(new_password !== confirm_new_password) throw new Error("Confirmation password doesn't match");
-    const payload: import("$api/users/[user]/change-password/POST/Payload").Payload = {
-      current_password,
-      new_password,
-    };
+    
+    unwrap(
+      await POST("/users/{user}/change-password", {
+        params: { path: { user: data.user._id } },
+        body: { current_password, new_password },
+      })
+    );
 
-    await _post(`/api/users/${data.user._id}/change-password`, payload);
     current_password = "";
     new_password = "";
     confirm_new_password = "";

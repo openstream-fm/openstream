@@ -13,6 +13,7 @@
 	import CircularProgress from "$share/CircularProgress.svelte";
   import "$share/LoginDashboard/login-page.css";
 	import { locale } from "$lib/locale";
+	import { POST, unwrap } from "$lib/client";
 
   let email = "";
   let sent_to: string | null = null;
@@ -22,11 +23,7 @@
     if(sending) return;
     sending = true;
     try {
-      const payload: import("$api/auth/user/recover/POST/Payload").Payload = {
-        email,
-      };
-
-      await _post(`/api/auth/user/recover`, payload);
+      unwrap(await POST("/auth/user/recover", { body: { email } }));
       sent_to = email;
       email = "";
       sending = false;

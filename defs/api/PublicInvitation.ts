@@ -8,16 +8,16 @@ import type { InvitationUserSender } from "./InvitationUserSender.js";
 
 export type PublicInvitation = {
   id: string;
-  user_sender_id: string | null;
-  admin_sender_id: string | null;
+  user_sender_id: string | null | undefined;
+  admin_sender_id: string | null | undefined;
   account_id: string;
   receiver_email: string;
   created_at: DateTime;
-  deleted_at: DateTime | null;
+  deleted_at: DateTime | null | undefined;
   is_expired: boolean;
   expires_at: DateTime;
-  account: InvitationAccount | null;
-  user_sender: InvitationUserSender | null;
-  admin_sender: InvitationAdminSender | null;
-  receiver: InvitationReceiver | null;
+  account: InvitationAccount | null | undefined;
+  user_sender: InvitationUserSender | null | undefined;
+  admin_sender: InvitationAdminSender | null | undefined;
+  receiver: InvitationReceiver | null | undefined;
 } & AccountInvitationState;

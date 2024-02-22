@@ -3,7 +3,7 @@ import type { Metadata } from "../../../db/Metadata.js";
 
 export type Payload = {
   email: string;
-  phone: string | null;
+  phone: string | null | undefined;
   password: string;
   first_name: string;
   last_name: string;

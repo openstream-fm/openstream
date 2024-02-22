@@ -6,11 +6,11 @@ import type { Metadata } from "./db/Metadata.js";
 export type UserPublicAccount = {
   _id: string;
   plan_id: string;
-  payment_method_id: string | null;
+  payment_method_id: string | null | undefined;
   name: string;
   limits: AccountLimits;
   created_at: DateTime;
   updated_at: DateTime;
   user_metadata: Metadata;
-  deleted_at: DateTime | null;
+  deleted_at: DateTime | null | undefined;
 };

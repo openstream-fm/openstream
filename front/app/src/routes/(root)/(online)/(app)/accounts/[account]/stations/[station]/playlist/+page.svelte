@@ -17,6 +17,8 @@
   import { close, player_playing_audio_file_id, player_audio_state, resume, pause, play_track, player_state, play_station } from "$lib/components/Player/player";
   import { prevent_unload } from "$share/prevent-unload";
 
+  type AudioFile = typeof data.files.items[number];
+
   let dragging_i: number | null = null;
   let drag_target_i: number | null = null;
   let dragging_tag_x = 0;
@@ -38,7 +40,7 @@
   let drag_autoscroll_timer: any;
 
   $: dragging_item = dragging_i == null ? null : data.files.items[dragging_i] ?? null;
-  
+
   const drag_autoscroll = () => {
     if(pointer_y < 120) {
       document.scrollingElement!.scrollTop -= 3;
@@ -150,7 +152,7 @@
 
   const restart = action(async () => {
     restart_open = false;
-    await _post(`/api/stations/${station_id}/restart-playlist`, undefined);
+    unwrap(await POST("/stations/{station}/restart-playlist", { params: { path: { station: data.station._id } } }));
     _message($locale.pages["station/playlist"].notifier.playlist_restarted);
     if($player_state.type === "station") {
       const station = $player_state.station;
@@ -169,7 +171,7 @@
   $: if ($now_playing) data.now_playing = $now_playing.info;
 
   $: playlist_duration = getPlaylistDuration(data.files.items);
-  const getPlaylistDuration = (files: AudioFile[]): number => {
+  const getPlaylistDuration = (files: typeof data.files.items): number => {
     let d = 0;
     for(const item of files) {
       d += item.duration_ms;
@@ -200,8 +202,6 @@
 
     return `${Math.round(acc)} GB`;
   }
-
-  type AudioFile = typeof data.files.items[number];
 
   const toggle_play = (file: AudioFile) => {
     if($player_playing_audio_file_id === file._id) {
@@ -317,9 +317,9 @@
 
   const retry = (item: Item) => {
     if(item.state !== "error") return;
-    // @ts-ignore
+    // @ts-expect-error
     delete item.error;
-    // @ts-ignore
+    // @ts-ignore-error
     item.state = "waiting";
     uploading = uploading;
     next();
@@ -350,7 +350,7 @@
     _deleting = true;
 
     try {
-      await _delete(`/api/stations/${station_id}/files/${file_id}`);
+      unwrap(await DELETE("/stations/{station}/files/{file}", { params: { path: { station: station_id, file: file_id  }}}));
       unselect(file_id);
       invalidate("api:stations/:id/limits");
       invalidate("api:stations/:id/files");
@@ -401,7 +401,7 @@
         for(const id of ids) {
           //await sleep(100);
           //message.set(text(i));
-          await _delete(`/api/stations/${station_id}/files/${id}`);
+          unwrap(await DELETE("/stations/{station}/files/{file}", { params: { path: { station: station_id, file: id } }}));
           if($player_playing_audio_file_id && ids.includes($player_playing_audio_file_id)) close();
           data.files.items = data.files.items.filter(item => item._id !== id);
           data.files.total = data.files.items.length;
@@ -484,53 +484,17 @@
 
   const edit_save = action(async () => {
     if(audio_item_to_edit == null) return;
-    const payload: import("$api/stations/[station]/files/[file]/metadata/PUT/Payload").Payload = {
-      title: edit_current_title.trim() || null,
-      artist: edit_current_artist.trim() || null,
-      album: edit_current_album.trim() || null,
-    }
-    await _put(`/api/stations/${station_id}/files/${audio_item_to_edit._id}/metadata`, payload);
+    unwrap(await PUT("/stations/{station}/files/{file}/metadata", {
+      params: { path: { station: station_id, file: audio_item_to_edit._id } },
+      body: {
+        title: edit_current_title.trim() || null,
+        artist: edit_current_artist.trim() || null,
+        album: edit_current_album.trim() || null,
+      }
+    }));
     invalidate("api:stations/:id/files");
     audio_item_to_edit = null;
   })
-
-  // const move_up = async (index: number) => {
-  //   await swap(index, index - 1);
-  // }
-
-  // const move_down = async (index: number) => {
-  //   await swap(index, index + 1);
-  // };
-
-  // const move_to_first = action(async (index: number) => {
-  //   const item = data.files.items[index];
-  //   if(item == null) return;
-  //   data.files.items.splice(index, 1);
-  //   data.files.items = [item, ...data.files.items];
-  //   try {
-  //     await _post(`/api/stations/${station_id}/files/${item._id}/order/move-to-first`, undefined)
-  //   } catch(e) {
-  //     invalidate("station:files")
-  //     throw e;
-  //   }
-
-  //   invalidate("station:files");
-  // })
-
-  // const move_to_last = action(async (index: number) => {
-  //   const item = data.files.items[index];
-  //   if(item == null) return;
-  //   data.files.items.splice(index, 1);
-  //   data.files.items = [...data.files.items, item];
-  //   try {
-  //     await _post(`/api/stations/${station_id}/files/${item._id}/order/move-to-last`, undefined)
-  //   } catch(e) {
-  //     invalidate("station:files")
-  //     throw e;
-  //   }
-
-  //   invalidate("station:files");
-  // })
 
   const drag_reorder = action(async (from_i: number, to_i: number) => {
     if(from_i === to_i) return;
@@ -556,15 +520,15 @@
 
     try {
       if(from_i < to_i) {
-        const payload: import("$api/stations/[station]/files/[file]/order/move-after/POST/Payload").Payload = {
-         anchor_file_id: anchor._id
-        };
-        await _post(`/api/stations/${station_id}/files/${file._id}/order/move-after`, payload);
+        unwrap(await POST("/stations/{station}/files/{file}/order/move-after", {
+          params: { path: { station: station_id, file: file._id } },
+          body: { anchor_file_id: anchor._id }
+        }));
       } else {
-        const payload: import("$api/stations/[station]/files/[file]/order/move-before/POST/Payload").Payload = {
-           anchor_file_id: anchor._id
-        }
-        await _post(`/api/stations/${station_id}/files/${file._id}/order/move-before`, payload);
+        unwrap(await POST("/stations/{station}/files/{file}/order/move-before", {
+          params: { path: { station: station_id, file: file._id } },
+          body: { anchor_file_id: anchor._id }
+        }));
       }
     } catch(e) {
       invalidate("api:stations/:id/files");
@@ -573,28 +537,6 @@
 
     invalidate("api:stations/:id/files");
   })
-
-  // const swap = action(async (from_i: number, to_i: number) => {
-  //   const from = data.files.items[from_i];
-  //   const to = data.files.items[to_i];
-  //   if(from == null || to == null) return;
-  //   if(from._id === to._id) return;
-
-  //   const payload: import("$api/stations/[station]/files/[file]/order/swap/POST/Payload").Payload = {
-  //     other_file_id: to._id
-  //   };
-
-  //   [data.files.items[from_i], data.files.items[to_i]] = [ to, from ];
-
-  //   try {
-  //     await _post(`/api/stations/${station_id}/files/${from._id}/order/swap`, payload);
-  //   } catch(e) {
-  //     invalidate("station:files");
-  //     throw e;
-  //   }
-
-  //   invalidate("station:files");
-  // })
 
   let file_input: HTMLInputElement;
   const open_file_input = (_event: MouseEvent) => {
@@ -615,7 +557,7 @@
   const unshuffle = action(async () => {
     unshuffle_open = false;
     try {
-      await _post(`/api/stations/${station_id}/files/unshuffle`, undefined);
+       unwrap(await POST("/stations/{station}/files/unshuffle", { params: { path: { station: station_id } } }));
       _message($locale.pages["station/playlist"].notifier.playlist_unshuffled);
     } catch(e) {
       invalidate("api:stations/:id/files").then(() => {
@@ -634,7 +576,7 @@
   const shuffle = action(async () => {
     shuffle_open = false;
     try {
-      await _post(`/api/stations/${station_id}/files/shuffle`, undefined);
+      unwrap(await POST("/stations/{station}/files/shuffle", { params: { path: { station: station_id } } }));
       _message($locale.pages["station/playlist"].notifier.playlist_shuffled);
     } catch(e) {
       invalidate("api:stations/:id/files").then(() => {
@@ -651,8 +593,7 @@
   const play_shuffle_animation = () => {
     const items = document.querySelectorAll(".file-item");
     
-    // @ts-ignore
-    if(items[0]?.animate) {
+    if(items[0]?.animate != null) {
       for(let i = 0; i < items.length; i++) {
         const element = items[i] as HTMLElement;
 
@@ -804,6 +745,7 @@
   import { cubicOut } from "svelte/easing";
 	import { locale } from "$lib/locale";
 	import { logical_fly } from "$share/transition";
+	import { DELETE, POST, PUT, unwrap } from "$lib/client";
   const shuffle_btn_transition = (element: HTMLElement, _options = {}) => {
     const easing = cubicOut;
     const duration = 200;
@@ -1667,7 +1609,7 @@
                     on:pointerdown={event => {
                       pointer_x = event.x;
                       pointer_y = event.y;
-                      // @ts-ignore
+                      // @ts-expect-error
                       event.target?.releasePointerCapture?.(event.pointerId);
                       on_drag_start(i)
                     }}
@@ -1785,8 +1727,8 @@
       <div class="delete-dialog-text">
         {$locale.dialogs.delete.default_message}
       </div>
-      <div class="delete-dialog-btns">
 
+      <div class="delete-dialog-btns">
         <button class="delete-dialog-btn-cancel ripple-container" use:ripple on:click={() => audio_item_to_delete = null}>
           {$locale.dialogs.delete.cancel}
         </button>
@@ -1808,7 +1750,7 @@
   >
     <div class="delete-dialog">
       <div class="delete-dialog-text">
-        {$locale.dialogs.delete.cancel}
+        {$locale.dialogs.delete.default_message}
       </div>
       <div class="delete-dialog-btns">
 

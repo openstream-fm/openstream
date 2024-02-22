@@ -13,6 +13,7 @@
 	import { _get } from "$share/net.client";
   import { STATION_PICTURES_VERSION } from "$defs/constants";
 	import { page } from "$app/stores";
+	import { GET, unwrap } from "$lib/client";
 
   type Item = typeof data.stream_connections.items[number];
 
@@ -240,18 +241,22 @@
             if(skip !== prev_skip) {
               logger.info(`(re)starting listeners update (document: ${document.visibilityState}, on_screen: ${on_screen})`);
             }
+            
             if(Date.now() - last_update < UPDATE_INTERVAL) continue;
+
             try {
-              let _token = ++token;
+              const _token = ++token;
 
-              const params: import("$api/stream-connections/GET/Query").Query = {
-                show: "open",
-                limit: 100_000,
-                sort: "creation-desc",
-                // stations: q_station_id ? [q_station_id] : undefined,
-              };
-
-              let stream_connections = await _get<import("$api/stream-connections/GET/Output").Output>(`/api/stream-connections${qss(params)}`);
+              const stream_connections = unwrap(await GET("/stream-connections", {
+                params: {
+                  query: {
+                    show: "open",
+                    limit: 100_000,
+                    sort: "creation-desc",
+                    // stations: q_station_id ? [q_station_id] : undefined,
+                  }
+                }
+              }));
 
               if(_token === token) {
                 data.stream_connections = stream_connections;

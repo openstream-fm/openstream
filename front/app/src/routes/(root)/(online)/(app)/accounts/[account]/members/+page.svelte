@@ -2,7 +2,6 @@
   export let data: import("./$types").PageData;
 	import Email from "$share/Form/Email.svelte";
   import Page from "$lib/components/Page.svelte";
-	import type { PublicInvitation } from "$server/defs/api/PublicInvitation";
 	import CircularProgress from "$share/CircularProgress.svelte";
 	import Dialog from "$share/Dialog.svelte";
 	import Icon from "$share/Icon.svelte";
@@ -19,7 +18,9 @@
 	import { click_out } from "$share/actions";
 	import { invalidate } from "$app/navigation";
 	import { invalidateAll } from "$lib/invalidate";
+	import { DELETE, POST, unwrap } from "$lib/client";
 
+  type PublicInvitation = NonNullable<typeof data.access.invitations>["items"][number];
   type Member = Exclude<typeof data.access.members, null>[number];
   type Relation = Member["relation"];
   const relation_names: Record<Relation, string> = {
@@ -45,11 +46,10 @@
     if(roling) return;
     roling = true;
     try {
-      const payload: import("$api/accounts/[account]/members/[member]/set-role/POST/Payload").Payload = {
-        role: relation
-      }
-      
-      await _post(`/api/accounts/${data.account._id}/members/${member._id}/set-role`, payload);
+      unwrap(await POST("/accounts/{account}/members/{member}/set-role", {
+        params: { path: { account: data.account._id, member: member._id } },
+        body: { role: relation }
+      }));
       
       member_menu_open_id = null;
 
@@ -69,7 +69,10 @@
     if(deleting_member == true) return;
     deleting_member = true;
     try {
-      await _delete<import("$api/accounts/[account]/members/[member]/DELETE/Output").Output>(`/api/accounts/${data.account._id}/members/${member._id}`);
+      unwrap(await DELETE("/accounts/{account}/members/{member}", {
+        params: { path: { account: data.account._id, member: member._id } }
+      }))
+
       _message($locale.pages["account/members"].notifier.member_access_revoked)
       member_menu_open_id = null;
       deleting_member = false;
@@ -93,13 +96,8 @@
     sending = true;
 
     try {
-      let payload: import("$api/invitations/POST/Payload").Payload = {
-        account_id: data.account._id,
-        email: invite_email,
-      }
-
-      const { invitation } = await _post<import("$api/invitations/POST/Output").Output>("/api/invitations", payload);
-
+      const { invitation } = unwrap(await POST("/invitations", { body: { account_id: data.account._id, email: invite_email }}));
+      
       invite_email = "";
       invite_open = false;
 
@@ -109,7 +107,7 @@
         skip: data.access.invitations.skip,
         items: [...data.access.invitations.items, invitation],
       }
-
+    
       _message($locale.pages["account/members"].notifier.invitation_sent)
       sending = false;
     } catch(e) {
@@ -504,7 +502,7 @@
     <h2>{$locale.pages["account/members"].Pending_invitations}</h2>
 
     {@const invitations = filter_invitations(data.access.invitations.items)}
-    
+
     {#if invitations.length}
       <div class="invitations" transition:slide={{ duration: 400 }}>
         {#each invitations as item (item.id)}

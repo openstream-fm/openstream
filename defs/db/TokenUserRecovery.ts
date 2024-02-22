@@ -5,6 +5,6 @@ export type TokenUserRecovery = {
   _id: string;
   hash: string;
   user_id: string;
-  used_at: DateTime | null;
+  used_at: DateTime | null | undefined;
   created_at: DateTime;
 };

@@ -9,7 +9,7 @@ import type { Version } from "./Version.js";
 
 export type Request = {
   real_ip: string;
-  country_code: CountryCode | null;
+  country_code: CountryCode | null | undefined;
   local_addr: SocketAddr;
   remote_addr: SocketAddr;
   version: Version;

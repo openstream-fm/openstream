@@ -12,7 +12,7 @@
 	import { _progress } from "$share/notify";
 	import CircularProgress from "$share/CircularProgress.svelte";
   import "$share/LoginDashboard/login-page.css";
-
+	
   let email = "";
   let sent_to: string | null = null;
   let sending = false;
@@ -21,11 +21,12 @@
     if(sending) return;
     sending = true;
     try {
-      const payload: import("$api/auth/user/recover/POST/Payload").Payload = { email };
-      await _post(`/api/auth/admin/recover`, payload);
       sent_to = email;
       email = "";
       sending = false;
+      // TODO: implement this in backend
+      // unwrap(await POST("/auth/admin/recover", { body: { email } }));
+      throw new Error("This feature is not yet implemented");
     } catch(e) {
       sending = false;
       throw e;

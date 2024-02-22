@@ -10,6 +10,6 @@ export type SentEmailBase = {
   subject: string;
   text: string;
   html: string;
-  reply_to: SentEmailAddress | null;
+  reply_to: SentEmailAddress | null | undefined;
   created_at: DateTime;
 } & SentEmailKind;

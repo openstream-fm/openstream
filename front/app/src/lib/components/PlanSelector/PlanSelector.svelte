@@ -4,7 +4,9 @@
   export let select_btn_label: string;
   export let show_trial: boolean = false;
 
-  import type { Plan } from "$server/defs/db/Plan";
+  import type { Unwrap, GET } from "$lib/client";
+  // import type { Plan } from "$server/defs/db/Plan";
+  type Plan = Unwrap<Awaited<ReturnType<typeof GET<"/plans/{plan}">>>>["plan"]
 
   import Icon from "$share/Icon.svelte";
 	import { ripple } from "$share/ripple";

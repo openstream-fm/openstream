@@ -13,7 +13,7 @@
 
   export let data: import("./$types").PageData;
 
-  const now_playing = get_now_playing_store(data.station._id, data.now_playing);
+  const now_playing = get_now_playing_store(data.station._id, data.now_playing as any);
   $: if($now_playing) data.now_playing = $now_playing.info;
 
   $: on_air = is_on_air($now_playing);
