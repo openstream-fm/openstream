@@ -33,7 +33,7 @@
   import { logical_fly } from "$share/transition";
   import { add } from "$share/util";
   import { STATION_PICTURES_VERSION } from "$defs/constants";
-  import { GET, Unwrap, unwrap } from "$share/client";
+  import { GET, type Unwrap, unwrap } from "$share/client";
 
   let _token = 0;
 

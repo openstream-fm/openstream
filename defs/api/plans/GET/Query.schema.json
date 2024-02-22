@@ -1,5 +1,4 @@
 {
-  "description": "TODO: add pagination",
   "type": "object",
   "properties": {
     "skip": {
