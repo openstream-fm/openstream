@@ -29,14 +29,14 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   event.locals.protocol = proto;
 
-  let buffer = "";
+  let replaced = false;
   const res = await resolve(event, {
     transformPageChunk: ({ html, done }) => {
-      buffer += html;
-      if(done) {
+      if(!replaced && html.includes("%html_attrs%")) {
+        replaced = true;
         const lang = event.locals.lang  || "en";
         const dir = event.locals.dir || "ltr";
-        return buffer.replace("%html_attrs%", `lang="${lang}" dir="${dir}"`);
+        return html.replace("%html_attrs%", `lang="${lang}" dir="${dir}"`);
       } else {
         return undefined;
       }
@@ -69,10 +69,10 @@ export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
   
   server_logger.info(`handle-fetch: ${event.request.url} => ${request.url} ip=${event.locals.ip} proto=${event.locals.protocol}`)
 
-  const target = new Request(request)
+  const headers = new Headers()
 
   const host = event.request.headers.get("host");
-  if(host) target.headers.set("x-host", host);
+  if(host) headers.set("x-host", host);
 
   for(const key of [
     "x-forwarded-proto",
@@ -83,12 +83,12 @@ export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
     "cookie"
   ]) {
     const v = event.request.headers.get(key);
-    if(v) target.headers.set(key, v);
+    if(v) headers.set(key, v);
   }
   
-  target.headers.set(FORWARD_IP_HEADER, event.locals.ip);
-  target.headers.set(PROTOCOL_HEADER, event.locals.protocol);
-  target.headers.set("x-kit-url", event.request.url);
+  headers.set(FORWARD_IP_HEADER, event.locals.ip);
+  headers.set(PROTOCOL_HEADER, event.locals.protocol);
+  headers.set("x-kit-url", event.request.url);
 
   // const src_cookies = (event.request.headers.get("cookie")?.split(";") || []).map(s => s.trim());
   // const cookie = [...new Set([...src_cookies, ...event.locals.cookie])].join("; ").trim(); 
@@ -96,9 +96,9 @@ export const handleFetch: HandleFetch = async ({ event, request, fetch }) => {
     
   try {
     const res = await fetch(url, {
-      method: target.method,
-      headers: target.headers,
-      body: target.body,
+      method: request.method,
+      headers,
+      body: request.body,
       // mode: "same-origin"
     });
 

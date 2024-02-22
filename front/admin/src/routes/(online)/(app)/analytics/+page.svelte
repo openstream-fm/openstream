@@ -65,7 +65,6 @@
 	import type { CountryCode } from "$server/defs/CountryCode";
 	import type { QueryKind, StationItem } from "$share/analytics/AnalyticsFilters.svelte";
 	import type { Data } from "$share/analytics/AnalyticsData.svelte";
-	import { ripple } from "$share/ripple";
 </script>
 
 <svelte:head>

@@ -12,6 +12,7 @@
 	import { mdiTrashCanOutline } from "@mdi/js";
   import { goto } from "$app/navigation";
   import Dialog from "$share/Dialog.svelte"; 
+	import { DELETE, PATCH, unwrap } from "$lib/client";
 
   let db = {
     identifier: data.plan.identifier,
@@ -54,20 +55,30 @@
     if(transfer === null) throw new Error("Transfer is required");
     if(storage === null) throw new Error("Storage is required");
     
-    const payload: import("$api/plans/[plan]/PATCH/Payload").Payload = {
-      identifier,
-      slug,
-      display_name,
-      color,
-      price,
-      stations,
-      listeners,
-      storage,
-      transfer,
-      is_user_selectable,
-    }
+    const plan = unwrap(await PATCH(
+      "/plans/{plan}",
+      {
+        params: {
+          path: {
+            plan: data.plan._id
+          }
+        },
+       
+        body: {
+          identifier,
+          slug,
+          display_name,
+          color,
+          price,
+          stations,
+          listeners,
+          storage,
+          transfer,
+          is_user_selectable,
+        }
+      }
+    ));
 
-    const plan = await _patch(`/api/plans/${data.plan._id}`, payload);
     db = clone(current);
     _message("Plan updated");
     invalidateAll();
@@ -76,7 +87,7 @@
 
   let delete_open = false;
   const del = action(async () => {
-    await _delete(`/api/plans/${data.plan._id}`);
+    unwrap(await DELETE("/plans/{plan}", { params: { path: { plan: data.plan._id } } }));
     goto("/plans", { invalidateAll: true })
     invalidate_siblings();
   })

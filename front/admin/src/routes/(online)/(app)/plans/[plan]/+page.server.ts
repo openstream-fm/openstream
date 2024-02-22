@@ -8,4 +8,4 @@ export const load = (async ({ parent, params }) => {
   }
 
   return { plan }
-}) satisfies import("./$types").PageLoad;
+}) satisfies import("./$types").PageServerLoad;

@@ -8,6 +8,7 @@
   import { goto } from "$app/navigation";
   import PlanForm from "../PlanForm.svelte";
 	import { invalidate_siblings } from "$lib/invalidate";
+	import { POST, unwrap } from "$lib/client";
 
   let db = {
     identifier: "",
@@ -49,20 +50,22 @@
       if(transfer === null) throw new Error("Transfer is required");
       if(storage === null) throw new Error("Storage is required");
       
-      const payload: import("$api/plans/POST/Payload").Payload = {
-        identifier,
-        display_name,
-        slug,
-        color,
-        price,
-        stations,
-        listeners,
-        storage,
-        transfer,
-        is_user_selectable,
-      }
+      unwrap(await POST(
+        "/plans", { 
+        body: {
+          identifier,
+          display_name,
+          slug,
+          color,
+          price,
+          stations,
+          listeners,
+          storage,
+          transfer,
+          is_user_selectable,
+        }
+      }))
 
-      const plan = await _post(`/api/plans`, payload);
       db = clone(current);
       _message("New plan created");
       saving = false;

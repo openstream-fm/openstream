@@ -14,6 +14,7 @@
 	import { invalidate } from '$app/navigation';
 	import Page from '$lib/components/Page.svelte';
 	import { locale } from '$lib/locale';
+	import { DELETE, unwrap } from '$lib/client';
 
 	$: current = data.devices.items.find(item => item.is_current);
 
@@ -23,7 +24,7 @@
 
 	const disconnect = action(async () => {
 		if (disconnect_item == null) return;
-		await _delete(`/api/me/devices/${disconnect_item._id}`);
+		unwrap(await DELETE("/me/devices/{device}", { params: { path: { "device": disconnect_item._id } } }));
 		_message($locale.pages['me/devices'].notifier.device_disconnected);
 		disconnect_item = null;
 		invalidate('resource:devices');

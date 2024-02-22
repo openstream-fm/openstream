@@ -7,6 +7,12 @@
 
   export type Station = { _id: string, name: string, picture_id: string };
 
+  export type Stats =
+    | Unwrap<Awaited<ReturnType<typeof GET<"/stream-stats", []>>>>["stats"]
+    | Unwrap<Awaited<ReturnType<typeof GET<"/accounts/{account}/stream-stats", [{ params: { path: { account: string } } }]>>>>["stats"]
+    | Unwrap<Awaited<ReturnType<typeof GET<"/stations/{station}/stream-stats", [{ params: { path: { station: string } } }]>>>>["stats"]
+        
+
   export type Data = 
     & { 
       stats: Stats | null,
@@ -21,13 +27,13 @@
   export let data: Data;
   export let locale: import("$server/locale/share/stats-map/stats-map.locale").StatsMapLocale;
 
-	import type { Stats } from "$share/Map/StatsMap.svelte";
 	import { click_out } from "$share/actions";
 	import { _get, _patch, action } from "$share/net.client";
 	import { ripple } from "$share/ripple";
   import { logical_fly } from "$share/transition";
   import { add } from "$share/util";
   import { STATION_PICTURES_VERSION } from "$defs/constants";
+  import { GET, Unwrap, unwrap } from "$share/client";
 
   let _token = 0;
 
@@ -39,21 +45,18 @@
     if(station == null && (data.kind !== "station")) return;
     const token = ++_token;
     if(station) {
-      const { stats }: import("$api/stations/[station]/stream-stats/GET/Output").Output =
-        await _get(`/api/stations/${station._id}/stream-stats`);
+      const { stats } = unwrap(await GET("/stations/{station}/stream-stats", { params: { path: { station: station._id } } }));
       if(token === _token) {
         data = { ...data, kind: "station", record_id: station._id, station, stats };
       }
     } else if(data.all_kind === "account") {
-      const { stats }: import("$api/accounts/[account]/stream-stats/GET/Output").Output =
-        await _get(`/api/accounts/${data.account_id}/stream-stats`);
+      const { stats } = unwrap(await GET("/accounts/{account}/stream-stats", { params: { path: { account: data.account_id } } }));
       if(token === _token) {
         data = { ...data, kind: "account", record_id: data.account_id, station: null, stats };
       }
     } else if(data.all_kind === "all") {
-      const { stats }: import("$api/stream-stats/GET/Output").Output =
-        await _get(`/api/stream-stats`);
-     if(token === _token) {
+      const { stats } = unwrap(await GET("/stream-stats"));
+      if(token === _token) {
         data = { ...data, kind: "all", record_id: "", station: null, stats }; 
       }
     }

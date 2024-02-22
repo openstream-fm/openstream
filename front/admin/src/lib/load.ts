@@ -3,6 +3,12 @@ import { ApiError } from "$server/error";
 import { error, redirect, type LoadEvent, type NumericRange } from "@sveltejs/kit";
 import StatusCode from "http-status-codes";
 
+import type { paths } from  "../../../../openapi";
+import createClient from  "openapi-fetch";
+export const client = createClient<paths>({
+  baseUrl: browser ? "/api/" : "https://internal.test/api/",
+});
+
 export const load_get_me = async (
   { fetch, url }: Pick<LoadEvent, "fetch" | "url">
 ): Promise<(import("$server/defs/PublicAdmin").PublicAdmin & { media_key: string }) | null> => {
@@ -50,6 +56,34 @@ export const load_get = async <T>(
   }
 
   return body as T
+}
+
+export const load_call = async <T>(
+  fn: () => Promise<
+    | { data: T, error?: undefined }
+    | { data?: undefined, error: { error: { status: number, code: import("$defs/error/PublicErrorCode").PublicErrorCode, message: string } } }
+  >,
+  { redirectToLoginOnAuthErrors =  true } = {}
+): Promise<NonNullable<T>> => {
+  try {
+    const result = await fn();
+    if(result.error === undefined) {
+      return result.data!;
+    } else {
+      if(result.error?.error?.status === StatusCode.UNAUTHORIZED && redirectToLoginOnAuthErrors) {
+        const to = `${location.pathname}${location.search}`;
+        const login_url = to === "/" ? "/login" : `/login#${to}`
+        redirect(302, login_url);
+      } else {
+        const api_error = ApiError.from_error_payload(result.error);
+        error(api_error.status as NumericRange<400, 599>, api_error.toJSON().error);
+      }
+    }
+  } catch(e: any) {
+    console.log(e);
+    const api_error = new ApiError(502, "FRONT_GATEWAY_FETCH", `Bad gateway (fetch)`);
+    error(api_error.status as NumericRange<400, 599>, api_error.toJSON().error);
+  }
 }
 
 export const not_found_load = () => {

@@ -42,7 +42,7 @@
 	import { onMount } from "svelte";
 	import { VALIDATE_ACCOUNT_NAME_MAX_LEN } from "$server/defs/constants";
 	import { flip } from "svelte/animate";
-	import { PATCH, unwrap } from "$lib/client";
+	import { GET, PATCH, unwrap } from "$lib/client";
   
   let view: View = "now";
 
@@ -131,7 +131,7 @@
           }
           if(Date.now() - last < LIMITS_UPDATE_INTERVAL) continue;
           try {
-            const limits: AccountLimits = await _get(`/api/accounts/${data.account._id}/limits`);
+            const { account: { limits } } = unwrap(await GET(`/accounts/{account}`, { params: { path: { account: data.account._id } } }));
             logger.info(`account limits updated`);
             data.account.limits = limits;
           } catch(e) {

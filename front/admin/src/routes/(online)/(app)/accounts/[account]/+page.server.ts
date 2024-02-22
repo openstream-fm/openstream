@@ -1,7 +1,7 @@
-import { load_get } from "$lib/load";
+import { client, load_call } from "$lib/load";
 import { error } from "@sveltejs/kit";
 
-export const load = (async ({ parent, params, fetch, url }) => {
+export const load = (async ({ parent, params, fetch }) => {
   
   const { stations, all_accounts, all_plans } = await parent();
 
@@ -19,10 +19,10 @@ export const load = (async ({ parent, params, fetch, url }) => {
     { members },
     { stats }
   ] = await Promise.all([
-    load_get<import("$server/defs/api/accounts/[account]/members/GET/Output").Output>(`/api/accounts/${account._id}/members`, { fetch, url }),
-    load_get<import("$api/accounts/[account]/stream-stats/GET/Output").Output>(`/api/accounts/${params.account}/stream-stats`, { fetch, url }),
+    load_call(() => client.GET("/accounts/{account}/members", { params: { path: { account: account._id } }, fetch })),
+    load_call(() => client.GET("/accounts/{account}/stream-stats", { params: { path: { account: account._id } }, fetch })),
   ]);
 
   return { account, plan, members, stats, account_stations }
 
-}) satisfies import("./$types").PageLoad;
+}) satisfies import("./$types").PageServerLoad;
