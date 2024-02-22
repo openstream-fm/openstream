@@ -8,18 +8,18 @@
 	import { tooltip } from "$share/tooltip";
 	import { mdiTrashCanOutline } from "@mdi/js";
 
-  import icon_chrome from "$share/img/browser-icons/chrome.svg";
-  import icon_firefox from "$share/img/browser-icons/firefox.svg";
-  import icon_safari from "$share/img/browser-icons/safari.svg";
-  import icon_edge from "$share/img/browser-icons/edge.svg";
-  import icon_opera from "$share/img/browser-icons/opera.svg";
-  import icon_other from "$share/img/browser-icons/other.svg";
+  import icon_chrome from "$share/img/browser-icons/chrome.png";
+  import icon_firefox from "$share/img/browser-icons/firefox.png";
+  import icon_safari from "$share/img/browser-icons/safari.png";
+  import icon_edge from "$share/img/browser-icons/edge.png";
+  import icon_opera from "$share/img/browser-icons/opera.png";
+  import icon_other from "$share/img/browser-icons/other.png";
 
-  import icon_linux from "$share/img/os-icons/linux.svg";
-  import icon_android from "$share/img/os-icons/android.svg";
-  import icon_windows from "$share/img/os-icons/windows.svg";
-  import icon_osx from "$share/img/os-icons/osx.svg";
-  import icon_ios from "$share/img/os-icons/ios.svg";
+  import icon_linux from "$share/img/os-icons/linux.png";
+  import icon_android from "$share/img/os-icons/android.png";
+  import icon_windows from "$share/img/os-icons/windows.png";
+  import icon_osx from "$share/img/os-icons/osx.png";
+  import icon_ios from "$share/img/os-icons/ios.png";
 
   import Page from "$lib/components/Page.svelte";
 	import { locale, lang } from "$lib/locale";
