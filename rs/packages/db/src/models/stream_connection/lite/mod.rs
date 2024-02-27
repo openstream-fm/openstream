@@ -136,11 +136,8 @@ impl Model for StreamConnectionLite {
       .keys(doc! { StreamConnectionLite::KEY_STATION_ID: 1 })
       .build();
 
-    // TODO: remove this index (create index sync job on load)
-    let created_at_station_id = IndexModel::builder()
-      .keys(
-        doc! { StreamConnectionLite::KEY_CREATED_AT: 1, StreamConnectionLite::KEY_STATION_ID: 1 },
-      )
+    let open = IndexModel::builder()
+      .keys(doc! { StreamConnectionLite::KEY_IS_OPEN: 1 })
       .build();
 
     let station_id_created_at = IndexModel::builder()
@@ -149,11 +146,6 @@ impl Model for StreamConnectionLite {
       )
       .build();
 
-    vec![
-      created_at,
-      created_at_station_id,
-      station_id_created_at,
-      station_id,
-    ]
+    vec![open, created_at, station_id, station_id_created_at]
   }
 }
