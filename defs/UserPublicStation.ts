@@ -11,7 +11,7 @@ export type UserPublicStation = {
   account_id: string;
   picture_id: string;
   name: string;
-  slug: string;
+  slug: string | null | undefined;
   slogan: string | null | undefined;
   description: string | null | undefined;
   type_of_content: StationTypeOfContent;

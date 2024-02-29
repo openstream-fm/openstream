@@ -176,6 +176,10 @@ pub const IS_HLS_REDIRECT_HEADER: &str = "x-is-hls-redirect";
 
 /// validation constants
 pub mod validate {
+
+  use lazy_regex::{lazy_regex, Lazy};
+  use regex::Regex;
+
   use super::*;
 
   // name
@@ -184,6 +188,15 @@ pub mod validate {
 
   #[const_register]
   pub const VALIDATE_STATION_NAME_MAX_LEN: usize = 60;
+
+  // slug
+  #[const_register]
+  pub const VALIDATE_STATION_SLUG_MIN_LEN: usize = 1;
+
+  #[const_register]
+  pub const VALIDATE_STATION_SLUG_MAX_LEN: usize = 60;
+
+  pub static VALIDATE_STATION_SLUG_PATTERN: Lazy<Regex> = lazy_regex!(r"^([a-zA-Z0-9\-\_\.])+$");
 
   // slogan
   #[const_register]

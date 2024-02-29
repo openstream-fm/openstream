@@ -33,4 +33,5 @@ pub mod account_invitations;
 
 pub mod probe;
 
+pub mod station_slug;
 pub mod ws_stats_connection;

@@ -7,6 +7,7 @@ import type { StationTypeOfContent } from "../db/StationTypeOfContent.js";
 
 export type StationPatch = {
   name?: string;
+  slug?: string | null | undefined;
   picture_id?: string;
   slogan?: string | null | undefined;
   description?: string | null | undefined;

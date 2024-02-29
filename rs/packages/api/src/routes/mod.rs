@@ -332,6 +332,10 @@ pub fn router(
     .post(stations::post::Endpoint {}.into_handler());
 
   app
+    .at("/stations/is-slug-available")
+    .get(stations::is_slug_available::get::Endpoint {}.into_handler());
+
+  app
     .at("/stations/:station")
     .get(stations::id::get::Endpoint {}.into_handler())
     .delete(

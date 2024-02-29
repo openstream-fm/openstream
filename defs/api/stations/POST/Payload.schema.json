@@ -20,6 +20,13 @@
       "maxLength": 60,
       "minLength": 1
     },
+    "slug": {
+      "type": "string",
+      "maxLength": 60,
+      "minLength": 1,
+      "pattern": "^([a-zA-Z0-9\\-\\_\\.])+$",
+      "nullable": true
+    },
     "slogan": {
       "type": "string",
       "maxLength": 100,
