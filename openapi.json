@@ -10973,7 +10973,6 @@
                               "name",
                               "picture_id",
                               "playlist_is_randomly_shuffled",
-                              "slug",
                               "source_password",
                               "system_metadata",
                               "type_of_content",
@@ -10996,7 +10995,11 @@
                                 "minLength": 1
                               },
                               "slug": {
-                                "type": "string"
+                                "type": "string",
+                                "maxLength": 60,
+                                "minLength": 1,
+                                "pattern": "^([a-zA-Z0-9\\-\\_\\.])+$",
+                                "nullable": true
                               },
                               "slogan": {
                                 "type": "string",
@@ -11654,7 +11657,6 @@
                               "name",
                               "picture_id",
                               "playlist_is_randomly_shuffled",
-                              "slug",
                               "source_password",
                               "type_of_content",
                               "updated_at",
@@ -11674,7 +11676,8 @@
                                 "type": "string"
                               },
                               "slug": {
-                                "type": "string"
+                                "type": "string",
+                                "nullable": true
                               },
                               "slogan": {
                                 "type": "string",
@@ -12313,6 +12316,13 @@
                     "maxLength": 60,
                     "minLength": 1
                   },
+                  "slug": {
+                    "type": "string",
+                    "maxLength": 60,
+                    "minLength": 1,
+                    "pattern": "^([a-zA-Z0-9\\-\\_\\.])+$",
+                    "nullable": true
+                  },
                   "slogan": {
                     "type": "string",
                     "maxLength": 100,
@@ -12939,7 +12949,6 @@
                             "name",
                             "picture_id",
                             "playlist_is_randomly_shuffled",
-                            "slug",
                             "source_password",
                             "system_metadata",
                             "type_of_content",
@@ -12962,7 +12971,11 @@
                               "minLength": 1
                             },
                             "slug": {
-                              "type": "string"
+                              "type": "string",
+                              "maxLength": 60,
+                              "minLength": 1,
+                              "pattern": "^([a-zA-Z0-9\\-\\_\\.])+$",
+                              "nullable": true
                             },
                             "slogan": {
                               "type": "string",
@@ -13620,7 +13633,6 @@
                             "name",
                             "picture_id",
                             "playlist_is_randomly_shuffled",
-                            "slug",
                             "source_password",
                             "type_of_content",
                             "updated_at",
@@ -13640,7 +13652,8 @@
                               "type": "string"
                             },
                             "slug": {
-                              "type": "string"
+                              "type": "string",
+                              "nullable": true
                             },
                             "slogan": {
                               "type": "string",
@@ -14332,7 +14345,6 @@
                             "name",
                             "picture_id",
                             "playlist_is_randomly_shuffled",
-                            "slug",
                             "source_password",
                             "system_metadata",
                             "type_of_content",
@@ -14355,7 +14367,11 @@
                               "minLength": 1
                             },
                             "slug": {
-                              "type": "string"
+                              "type": "string",
+                              "maxLength": 60,
+                              "minLength": 1,
+                              "pattern": "^([a-zA-Z0-9\\-\\_\\.])+$",
+                              "nullable": true
                             },
                             "slogan": {
                               "type": "string",
@@ -15013,7 +15029,6 @@
                             "name",
                             "picture_id",
                             "playlist_is_randomly_shuffled",
-                            "slug",
                             "source_password",
                             "type_of_content",
                             "updated_at",
@@ -15033,7 +15048,8 @@
                               "type": "string"
                             },
                             "slug": {
-                              "type": "string"
+                              "type": "string",
+                              "nullable": true
                             },
                             "slogan": {
                               "type": "string",
@@ -15667,12 +15683,18 @@
                     "minLength": 1,
                     "nullable": true
                   },
+                  "slug": {
+                    "type": "string",
+                    "maxLength": 60,
+                    "minLength": 1,
+                    "pattern": "^([a-zA-Z0-9\\-\\_\\.])+$",
+                    "nullable": true
+                  },
                   "picture_id": {
                     "type": "string",
                     "nullable": true
                   },
                   "slogan": {
-                    "default": null,
                     "type": "string",
                     "maxLength": 100,
                     "minLength": 1,
@@ -16297,7 +16319,6 @@
                         "name",
                         "picture_id",
                         "playlist_is_randomly_shuffled",
-                        "slug",
                         "source_password",
                         "system_metadata",
                         "type_of_content",
@@ -16320,7 +16341,11 @@
                           "minLength": 1
                         },
                         "slug": {
-                          "type": "string"
+                          "type": "string",
+                          "maxLength": 60,
+                          "minLength": 1,
+                          "pattern": "^([a-zA-Z0-9\\-\\_\\.])+$",
+                          "nullable": true
                         },
                         "slogan": {
                           "type": "string",
@@ -16978,7 +17003,6 @@
                         "name",
                         "picture_id",
                         "playlist_is_randomly_shuffled",
-                        "slug",
                         "source_password",
                         "type_of_content",
                         "updated_at",
@@ -16998,7 +17022,8 @@
                           "type": "string"
                         },
                         "slug": {
-                          "type": "string"
+                          "type": "string",
+                          "nullable": true
                         },
                         "slogan": {
                           "type": "string",
@@ -19699,7 +19724,6 @@
                             "name",
                             "picture_id",
                             "playlist_is_randomly_shuffled",
-                            "slug",
                             "source_password",
                             "system_metadata",
                             "type_of_content",
@@ -19722,7 +19746,11 @@
                               "minLength": 1
                             },
                             "slug": {
-                              "type": "string"
+                              "type": "string",
+                              "maxLength": 60,
+                              "minLength": 1,
+                              "pattern": "^([a-zA-Z0-9\\-\\_\\.])+$",
+                              "nullable": true
                             },
                             "slogan": {
                               "type": "string",
@@ -20380,7 +20408,6 @@
                             "name",
                             "picture_id",
                             "playlist_is_randomly_shuffled",
-                            "slug",
                             "source_password",
                             "type_of_content",
                             "updated_at",
@@ -20400,7 +20427,8 @@
                               "type": "string"
                             },
                             "slug": {
-                              "type": "string"
+                              "type": "string",
+                              "nullable": true
                             },
                             "slogan": {
                               "type": "string",
@@ -20982,6 +21010,75 @@
                           }
                         }
                       ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "description": "A client error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "5XX": {
+            "description": "A server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stations/is-slug-available": {
+      "get": {
+        "parameters": [
+          {
+            "name": "station_id",
+            "in": "query",
+            "required": false,
+            "style": "deepObject",
+            "explode": true,
+            "allowReserved": true,
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "required": true,
+            "style": "deepObject",
+            "explode": true,
+            "allowReserved": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "is_available"
+                  ],
+                  "properties": {
+                    "is_available": {
+                      "type": "boolean"
                     }
                   }
                 }

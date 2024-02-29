@@ -21,6 +21,7 @@
 
   let start = {
     name: null as string | null,
+    slug: null  as string | null,
     slogan: null as string | null,
     description: null as string | null,
     country_code: "" as import("$server/defs/CountryCode").CountryCode | "",
@@ -188,7 +189,7 @@
     <Formy action={send} let:submit>
       <form novalidate class="create-box" on:submit={submit}>
 
-        <StationProfile account_id={data.account._id} bind:current />
+        <StationProfile account_id={data.account._id} station_id={null} bind:current />
 
         <div class="submit-wrap">
           <button class="submit ripple-container" disabled={false} use:ripple type="submit">

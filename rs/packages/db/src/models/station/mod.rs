@@ -940,6 +940,7 @@ impl Station {
     apply!(picture_id);
 
     apply!(name);
+    apply!(slug);
     apply!(slogan);
     apply!(description);
     apply!(type_of_content);

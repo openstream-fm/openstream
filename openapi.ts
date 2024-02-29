@@ -3689,7 +3689,7 @@ export interface paths {
                   account_id: string;
                   picture_id: string;
                   name: string;
-                  slug: string;
+                  slug?: string | null;
                   slogan?: string | null;
                   /** @enum {string} */
                   type_of_content: "comedy" | "educational" | "general" | "music" | "news" | "religious" | "sports" | "talk";
@@ -3749,7 +3749,7 @@ export interface paths {
                   account_id: string;
                   picture_id: string;
                   name: string;
-                  slug: string;
+                  slug?: string | null;
                   slogan?: string | null;
                   description?: string | null;
                   /** @enum {string} */
@@ -3817,6 +3817,7 @@ export interface paths {
             account_id: string;
             picture_id: string;
             name: string;
+            slug?: string | null;
             slogan?: string | null;
             description?: string | null;
             /** @enum {string} */
@@ -3867,7 +3868,7 @@ export interface paths {
                 account_id: string;
                 picture_id: string;
                 name: string;
-                slug: string;
+                slug?: string | null;
                 slogan?: string | null;
                 /** @enum {string} */
                 type_of_content: "comedy" | "educational" | "general" | "music" | "news" | "religious" | "sports" | "talk";
@@ -3927,7 +3928,7 @@ export interface paths {
                 account_id: string;
                 picture_id: string;
                 name: string;
-                slug: string;
+                slug?: string | null;
                 slogan?: string | null;
                 description?: string | null;
                 /** @enum {string} */
@@ -4006,7 +4007,7 @@ export interface paths {
                 account_id: string;
                 picture_id: string;
                 name: string;
-                slug: string;
+                slug?: string | null;
                 slogan?: string | null;
                 /** @enum {string} */
                 type_of_content: "comedy" | "educational" | "general" | "music" | "news" | "religious" | "sports" | "talk";
@@ -4066,7 +4067,7 @@ export interface paths {
                 account_id: string;
                 picture_id: string;
                 name: string;
-                slug: string;
+                slug?: string | null;
                 slogan?: string | null;
                 description?: string | null;
                 /** @enum {string} */
@@ -4164,8 +4165,8 @@ export interface paths {
         content: {
           "application/json": {
             name?: string | null;
+            slug?: string | null;
             picture_id?: string | null;
-            /** @default null */
             slogan?: string | null;
             description?: string | null;
             /** @enum {string|null} */
@@ -4215,7 +4216,7 @@ export interface paths {
               account_id: string;
               picture_id: string;
               name: string;
-              slug: string;
+              slug?: string | null;
               slogan?: string | null;
               /** @enum {string} */
               type_of_content: "comedy" | "educational" | "general" | "music" | "news" | "religious" | "sports" | "talk";
@@ -4275,7 +4276,7 @@ export interface paths {
               account_id: string;
               picture_id: string;
               name: string;
-              slug: string;
+              slug?: string | null;
               slogan?: string | null;
               description?: string | null;
               /** @enum {string} */
@@ -4897,65 +4898,7 @@ export interface paths {
       };
     };
   };
-  "/stations/{station}/files/suffle": {
-    post: {
-      parameters: {
-        path: {
-          station: string;
-        };
-      };
-      responses: {
-        /** @description A successful response */
-        200: {
-          content: {
-            "application/json": Record<string, never>;
-          };
-        };
-        /** @description A client error */
-        "4XX": {
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description A server error */
-        "5XX": {
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-  };
   "/stations/{station}/files/unshuffle": {
-    post: {
-      parameters: {
-        path: {
-          station: string;
-        };
-      };
-      responses: {
-        /** @description A successful response */
-        200: {
-          content: {
-            "application/json": Record<string, never>;
-          };
-        };
-        /** @description A client error */
-        "4XX": {
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-        /** @description A server error */
-        "5XX": {
-          content: {
-            "application/json": components["schemas"]["Error"];
-          };
-        };
-      };
-    };
-  };
-  "/stations/{station}/files/unsuffle": {
     post: {
       parameters: {
         path: {
@@ -5319,7 +5262,7 @@ export interface paths {
                 account_id: string;
                 picture_id: string;
                 name: string;
-                slug: string;
+                slug?: string | null;
                 slogan?: string | null;
                 /** @enum {string} */
                 type_of_content: "comedy" | "educational" | "general" | "music" | "news" | "religious" | "sports" | "talk";
@@ -5379,7 +5322,7 @@ export interface paths {
                 account_id: string;
                 picture_id: string;
                 name: string;
-                slug: string;
+                slug?: string | null;
                 slogan?: string | null;
                 description?: string | null;
                 /** @enum {string} */
@@ -5423,6 +5366,38 @@ export interface paths {
                 /** Format: date-time */
                 deleted_at?: string | null;
               });
+            };
+          };
+        };
+        /** @description A client error */
+        "4XX": {
+          content: {
+            "application/json": components["schemas"]["Error"];
+          };
+        };
+        /** @description A server error */
+        "5XX": {
+          content: {
+            "application/json": components["schemas"]["Error"];
+          };
+        };
+      };
+    };
+  };
+  "/stations/is-slug-available": {
+    get: {
+      parameters: {
+        query: {
+          station_id?: string | null;
+          slug: string;
+        };
+      };
+      responses: {
+        /** @description A successful response */
+        200: {
+          content: {
+            "application/json": {
+              is_available: boolean;
             };
           };
         };

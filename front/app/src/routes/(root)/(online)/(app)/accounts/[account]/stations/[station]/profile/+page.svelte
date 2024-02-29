@@ -15,6 +15,7 @@
 
   let db = {
     name: data.station.name,
+    slug: data.station.slug,
     slogan: data.station.slogan,
     description: data.station.description,
     email: data.station.email,
@@ -180,7 +181,7 @@
     <Formy action={send} let:submit>
       <form novalidate class="create-box" on:submit={submit}>
         
-        <StationProfile account_id={data.account._id} bind:current />
+        <StationProfile account_id={data.account._id} station_id={data.station._id} bind:current />
         
         <div class="submit-wrap">
           <button class="submit ripple-container" disabled={!can_save} use:ripple type="submit">

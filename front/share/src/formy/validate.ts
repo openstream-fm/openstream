@@ -1,3 +1,5 @@
+import { VALIDATE_STATION_SLUG_MAX_LEN, VALIDATE_STATION_SLUG_MIN_LEN } from "$server/defs/constants";
+import { GET, unwrap } from "$share/client";
 import { locale } from "$share/locale";
 import { _get } from "$share/net.client";
 import { get } from "svelte/store";
@@ -14,6 +16,8 @@ export const SPOTIFY = /^https?:\/\/((open|www)\.)?spotify\.com\/.+/;
 export const RADIOCUT = /^https?:\/\/(www\.)?radiocut\.fm\/.+/;
 export const GOOGLE_PLAY = /^https?:\/\/play\.google\.com\/.+/;
 export const APP_STORE = /^https?:\/\/apps\.apple\.com\/.+/;
+
+export const SLUG_PATTERN = /^([a-zA-Z0-9\.\-\_]+)$/
 
 export const is_valid_email = (str: string) => EMAIL.test(str);
 
@@ -334,3 +338,58 @@ export const _spotify_url = Pattern(SPOTIFY, () => get(locale).validate.spotify_
 export const _radiocut_url = Pattern(RADIOCUT, () => get(locale).validate.radiocut_url); 
 export const _google_play_url = Pattern(GOOGLE_PLAY, () => get(locale).validate.google_play_url);
 export const _app_store_url = Pattern(APP_STORE, () => get(locale).validate.app_store_url);
+
+
+export const _station_slug = ({
+  station_id,
+  required = false,
+  maxlen = VALIDATE_STATION_SLUG_MAX_LEN,
+  minlen = VALIDATE_STATION_SLUG_MIN_LEN,
+}: {
+  station_id?: string | null | undefined
+  maxlen?: number | null,
+  minlen?: number | null,
+  required?: boolean,
+} = {}) => {
+  return async (v: string | null | undefined) => {
+    
+    {
+      const message = _string({
+        required,
+        minlen,
+        maxlen
+      })(v);
+
+      if(message != null) {
+        return message;
+      }
+    }
+
+    {
+      const message = pattern({
+        required,
+        maxlen,
+        regex: SLUG_PATTERN,
+        // TODO: locale
+        message: () => "The station slug can only contain letters, numbers, dashes, underscores and dots",
+      })(v)
+
+      if(message != null) {
+        return message;
+      }
+    }
+
+    try {
+      const { is_available } = unwrap(await GET("/stations/is-slug-available", { params: { query: { slug: v!, station_id } } }));
+
+      if(!is_available) {
+        // TODO: locale
+        return "This slug is already in use by another station";
+      } else {
+        return null;
+      }
+    } catch(e) {
+      return null;
+    } 
+  }
+}
