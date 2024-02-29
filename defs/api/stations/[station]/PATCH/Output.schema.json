@@ -12,7 +12,6 @@
         "name",
         "picture_id",
         "playlist_is_randomly_shuffled",
-        "slug",
         "source_password",
         "system_metadata",
         "type_of_content",
@@ -35,7 +34,11 @@
           "minLength": 1
         },
         "slug": {
-          "type": "string"
+          "type": "string",
+          "maxLength": 60,
+          "minLength": 1,
+          "pattern": "^([a-zA-Z0-9\\-\\_\\.])+$",
+          "nullable": true
         },
         "slogan": {
           "type": "string",
@@ -693,7 +696,6 @@
         "name",
         "picture_id",
         "playlist_is_randomly_shuffled",
-        "slug",
         "source_password",
         "type_of_content",
         "updated_at",
@@ -713,7 +715,8 @@
           "type": "string"
         },
         "slug": {
-          "type": "string"
+          "type": "string",
+          "nullable": true
         },
         "slogan": {
           "type": "string",

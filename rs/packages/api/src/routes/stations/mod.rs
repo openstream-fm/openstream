@@ -1,6 +1,7 @@
 // pub mod dashboard_stats;
 pub mod files;
 pub mod id;
+pub mod is_slug_available;
 pub mod now_playing;
 pub mod reset_source_password;
 pub mod restart_playlist;
@@ -160,6 +161,7 @@ pub mod post {
   use db::run_transaction;
   use db::station::{Station, StationFrequency, StationTypeOfContent};
   use db::station_picture::StationPicture;
+  use db::station_slug::StationSlug;
   use geoip::CountryCode;
   use lang::LangCode;
   use modify::Modify;
@@ -190,6 +192,21 @@ pub mod post {
       non_control_character(message = "Station name cannot have control characters")
     )]
     pub name: String,
+
+    #[modify(trim)]
+    #[validate(
+      regex(
+        path = "VALIDATE_STATION_SLUG_PATTERN",
+        message = "Station slug can only contains letters, numbers, dashes, underscores and dots"
+      ),
+      length(
+        min = "VALIDATE_STATION_SLUG_MIN_LEN",
+        max = "VALIDATE_STATION_SLUG_MAX_LEN",
+        message = "Station slug is empty or too long"
+      ),
+      non_control_character(message = "Station slug cannot have control characters")
+    )]
+    pub slug: Option<String>,
 
     //#[serde(skip_serializing_if = "Option::is_none")]
     #[modify(trim)]
@@ -477,8 +494,8 @@ pub mod post {
     Token(#[from] GetAccessTokenScopeError),
     #[error("account not found ({0})")]
     AccountNotFound(String),
-    #[error("Invalid name (slug)")]
-    InvalidNameSlug,
+    #[error("Station slug is already taken")]
+    SlugAlreadyTaken,
     #[error("Picture with id {0} not found")]
     PictureNotFound(String),
     #[error("Stations limit")]
@@ -494,8 +511,8 @@ pub mod post {
         HandleError::PictureNotFound(id) => {
           ApiError::PayloadInvalid(format!("Picture with id {id} not found"))
         }
-        HandleError::InvalidNameSlug => {
-          ApiError::PayloadInvalid(String::from("Station name is invalid"))
+        HandleError::SlugAlreadyTaken => {
+          ApiError::PayloadInvalid(String::from("Station slug is not available"))
         }
         HandleError::StationLimit => ApiError::CreateStationAccountLimit,
       }
@@ -530,7 +547,10 @@ pub mod post {
       let Payload {
         account_id,
         picture_id,
+
         name,
+        slug,
+
         slogan,
         description,
 
@@ -576,20 +596,15 @@ pub mod post {
 
       let user_metadata = user_metadata.unwrap_or_default();
 
-      let slug = slugify::slugify(&name, "", "-", None);
-      if slug.is_empty() {
-        return Err(HandleError::InvalidNameSlug);
-      }
-
       let now = DateTime::now();
 
       let station = Station {
         id: Station::uid(),
         account_id: account_id.clone(),
-        picture_id,
+        picture_id: picture_id.clone(),
 
         name,
-        slug,
+        slug: slug.clone(),
         slogan,
         description,
         type_of_content,
@@ -636,26 +651,46 @@ pub mod post {
 
       run_transaction!(session => {
         {
-          let filter = doc!{ StationPicture::KEY_ACCOUNT_ID: &station.account_id, StationPicture::KEY_ID: &station.picture_id };
+          let account = match tx_try!(Account::get_by_id(&account_id).await) {
+            Some(account) => account,
+            None => return Err(HandleError::AccountNotFound(account_id))
+          };
+
+          if account.limits.stations.avail() == 0 {
+            return Err(HandleError::StationLimit);
+          }
+        }
+
+        {
+          let filter = doc!{ StationPicture::KEY_ACCOUNT_ID: &account_id, StationPicture::KEY_ID: &picture_id };
           match tx_try!(StationPicture::exists_with_session(filter, &mut session).await) {
             true => {}
             false => {
-              return Err(HandleError::PictureNotFound(station.picture_id.clone()))
+              return Err(HandleError::PictureNotFound(picture_id.clone()))
             }
           }
         };
 
-        let account = match tx_try!(Account::get_by_id(&account_id).await) {
-          Some(account) => account,
-          None => return Err(HandleError::AccountNotFound(account_id))
-        };
+        {
+          if let Some(slug) = &slug {
+            if !tx_try!(StationSlug::is_slug_available_for_station_with_session(Some(&station.id), slug, &mut session).await) {
+              return Err(HandleError::SlugAlreadyTaken);
+            }
 
-        if account.limits.stations.avail() == 0 {
-          return Err(HandleError::StationLimit);
+            let station_slug = StationSlug {
+              id: StationSlug::uid(),
+              station_id: station.id.clone(),
+              slug: slug.clone(),
+              created_at: now,
+            };
+
+            tx_try!(StationSlug::insert_with_session(station_slug, &mut session).await);
+          }
         }
 
         const LIMIT_STATION: &str = const_str::concat!(Account::KEY_LIMITS, ".", Limits::KEY_STATIONS, ".", Limit::KEY_USED);
         let account_update = doc!{ "$inc": { LIMIT_STATION: 1 } };
+
         tx_try!(Account::update_by_id_with_session(&account_id, account_update, &mut session).await);
         tx_try!(Station::insert_with_session(&station, &mut session).await);
       });

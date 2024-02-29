@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "required": [
+    "slug"
+  ],
+  "properties": {
+    "station_id": {
+      "type": "string",
+      "nullable": true
+    },
+    "slug": {
+      "type": "string"
+    }
+  }
+}

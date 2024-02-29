@@ -262,13 +262,14 @@ pub mod patch {
   use constants::ACCESS_TOKEN_HEADER;
   use db::{
     deployment::Deployment, error::ApplyPatchError, fetch_and_patch, run_transaction,
-    station::StationPatch, Model,
+    station::StationPatch, station_slug::StationSlug, Model,
   };
   use hyper::{http::HeaderValue, Body};
   use media::MediaSessionMap;
   use modify::Modify;
   use prex::request::ReadBodyJsonError;
   use schemars::JsonSchema;
+  use serde_util::DateTime;
   use validator::Validate;
 
   #[derive(Debug, Clone)]
@@ -326,6 +327,8 @@ pub mod patch {
     StationNotFound(String),
     #[error("picture not found {0}")]
     PictureNotFound(String),
+    #[error("station slug already taken")]
+    SlugTaken,
   }
 
   impl From<HandleError> for ApiError {
@@ -337,6 +340,7 @@ pub mod patch {
         HandleError::PictureNotFound(id) => {
           Self::PayloadInvalid(format!("Picture with id {id} not found"))
         }
+        HandleError::SlugTaken => Self::PayloadInvalid("Station slug is already taken".into()),
       }
     }
   }
@@ -389,6 +393,29 @@ pub mod patch {
               false => {
                 return Err(HandleError::PictureNotFound(picture_id.to_string()))
               }
+            }
+          }
+
+          if let Some(Some(slug)) = &patch.slug {
+            if Some(slug) != station.slug.as_ref() {
+              let is_available = tx_try!(StationSlug::is_slug_available_for_station_with_session(
+                Some(&station.id),
+                slug,
+                &mut session,
+              ).await);
+
+              if !is_available {
+                return Err(HandleError::SlugTaken);
+              }
+
+              let station_slug = StationSlug {
+                id: StationSlug::uid(),
+                station_id: station.id.clone(),
+                slug: slug.clone(),
+                created_at: DateTime::now(),
+              };
+
+              tx_try!(StationSlug::insert_with_session(&station_slug, &mut session).await);
             }
           }
 

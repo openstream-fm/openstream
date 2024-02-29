@@ -43,7 +43,20 @@ pub struct Station {
   )]
   pub name: String,
 
-  pub slug: String,
+  #[modify(trim)]
+  #[validate(
+    regex(
+      path = "VALIDATE_STATION_SLUG_PATTERN",
+      message = "Station slug can only contains letters, numbers, dashes, underscores and dots"
+    ),
+    length(
+      min = "VALIDATE_STATION_SLUG_MIN_LEN",
+      max = "VALIDATE_STATION_SLUG_MAX_LEN",
+      message = "Station slug is empty or too long"
+    ),
+    non_control_character(message = "Station slug cannot have control characters")
+  )]
+  pub slug: Option<String>,
 
   #[modify(trim)]
   #[validate(
@@ -352,7 +365,7 @@ pub struct UserPublicStation {
 
   // profile data
   pub name: String,
-  pub slug: String,
+  pub slug: Option<String>,
   pub slogan: Option<String>,
   pub description: Option<String>,
 
@@ -455,6 +468,27 @@ pub struct StationPatch {
   )]
   pub name: Option<String>,
 
+  #[ts(optional)]
+  #[serde(
+    default,
+    deserialize_with = "map_some",
+    skip_serializing_if = "Option::is_none"
+  )]
+  #[modify(trim)]
+  #[validate(
+    regex(
+      path = "VALIDATE_STATION_SLUG_PATTERN",
+      message = "Station slug can only contain numbers, letters, dashes, underscores and dots",
+    ),
+    length(
+      min = "VALIDATE_STATION_SLUG_MIN_LEN",
+      max = "VALIDATE_STATION_SLUG_MAX_LEN",
+      message = "Station slug is empty or too long"
+    ),
+    non_control_character(message = "Station slug cannot have control characters")
+  )]
+  pub slug: Option<Option<String>>,
+
   #[serde(skip_serializing_if = "Option::is_none")]
   pub picture_id: Option<String>,
 
@@ -462,7 +496,7 @@ pub struct StationPatch {
   #[serde(
     default,
     deserialize_with = "map_some",
-    //skip_serializing_if = "Option::is_none"
+    skip_serializing_if = "Option::is_none"
   )]
   #[modify(trim)]
   #[validate(
@@ -906,6 +940,7 @@ impl Station {
     apply!(picture_id);
 
     apply!(name);
+    apply!(slug);
     apply!(slogan);
     apply!(description);
     apply!(type_of_content);

@@ -153,6 +153,11 @@ export const shared_api = ({
       return await client.stations.post(ip(req), ua(req), get_token(req), req.body);
     }))
 
+  api.route("/stations/is-slug-available")
+    .get(json(async req => {
+      return await client.stations.is_slug_available(ip(req), ua(req), optional_token(() => get_token(req)), req.query as any);
+    }))
+
   api.route("/stations/:station")
     .get(json(async req => {
       return await client.stations.get(ip(req), ua(req), get_token(req), req.params.station);

@@ -7,12 +7,18 @@
       "minLength": 1,
       "nullable": true
     },
+    "slug": {
+      "type": "string",
+      "maxLength": 60,
+      "minLength": 1,
+      "pattern": "^([a-zA-Z0-9\\-\\_\\.])+$",
+      "nullable": true
+    },
     "picture_id": {
       "type": "string",
       "nullable": true
     },
     "slogan": {
-      "default": null,
       "type": "string",
       "maxLength": 100,
       "minLength": 1,

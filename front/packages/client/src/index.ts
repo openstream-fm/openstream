@@ -449,6 +449,10 @@ export class Stations {
     return await this.client.post(ip, ua, token, `/stations`, payload);
   }
 
+  async is_slug_available(ip: string | null, ua: string | null, token: string | null, query: import("./defs/api/stations/is-slug-available/GET/Query.js").Query): Promise<import("./defs/api/stations/is-slug-available/GET/Output.js").Output> {
+    return await this.client.get(ip, ua, token, `/stations/is-slug-available${qss(query)}`);
+  }
+
   async transfer(ip: string | null, ua: string | null, token: string, id: string, payload: import("./defs/api/stations/[station]/transfer/POST/Payload.js").Payload): Promise<import("./defs/api/stations/[station]/transfer/POST/Output.js").Output> {
     return await this.client.post(ip, ua, token, `/stations/${id}/transfer`, payload);
   }

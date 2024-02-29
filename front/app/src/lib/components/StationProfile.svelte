@@ -1,6 +1,7 @@
 <script lang="ts">
 	import {
 		mdiApple,
+		mdiAt,
 		mdiContentCut,
 		mdiFacebook,
 		mdiGooglePlay,
@@ -41,8 +42,9 @@
 		_tiktok_url,
 		_spotify_url,
 		_radiocut_url,
+		_station_slug,
 	} from '$share/formy/validate';
-	import { VALIDATE_STATION_DESC_MAX_LEN, VALIDATE_STATION_EMAIL_MAX_LEN, VALIDATE_STATION_NAME_MAX_LEN, VALIDATE_STATION_NAME_MIN_LEN, VALIDATE_STATION_PHONE_MAX_LEN, VALIDATE_STATION_SLOGAN_MAX_LEN, VALIDATE_STATION_URLS_MAX_LEN, VALIDATE_STATION_WHATSAPP_MAX_LEN } from "$server/defs/constants";
+	import { VALIDATE_STATION_DESC_MAX_LEN, VALIDATE_STATION_EMAIL_MAX_LEN, VALIDATE_STATION_NAME_MAX_LEN, VALIDATE_STATION_NAME_MIN_LEN, VALIDATE_STATION_PHONE_MAX_LEN, VALIDATE_STATION_SLOGAN_MAX_LEN, VALIDATE_STATION_SLUG_MAX_LEN, VALIDATE_STATION_URLS_MAX_LEN, VALIDATE_STATION_WHATSAPP_MAX_LEN } from "$server/defs/constants";
 	import CountryField from '$share/Form/CountryField.svelte';
 	import LangField from '$share/Form/LangField.svelte';
 	import type { CountryCode } from '$server/defs/CountryCode';
@@ -59,10 +61,13 @@
 	import GooglePlayLangField from './GooglePlayLangField.svelte';
 
 	export let account_id: string;
+	export let station_id: string | null;
 	export let current: {
 		picture_id: string | null | undefined;
 
 		name: string | null | undefined;
+		slug: string | null | undefined;
+
 		slogan: string | null | undefined;
 		description: string | null | undefined;
 		
@@ -186,6 +191,12 @@
 	.sep-one {
 		margin: 2rem auto;
 	}
+
+	.field-explain {
+		color: #999;
+		font-size: 0.8rem;
+		margin: 0.5rem 0.25rem;
+	}
 </style>
 
 
@@ -194,6 +205,29 @@
 	<div class="fields">
 		<div class="field">
 			<StationPictureField required {account_id} bind:picture_id={current.picture_id} />
+		</div>
+	</div>
+</div>
+
+<div class="section">
+	<!-- TODO: locale -->
+	<div class="section-title">Identifiers</div>
+	<div class="fields">
+		<div class="field">
+			<!-- TODO: locale -->
+			<NullTextField
+				label="Openstream @name"
+				trim
+				maxlength={VALIDATE_STATION_SLUG_MAX_LEN}
+				bind:value={current.slug}
+				icon={mdiAt}
+			/>
+			<div class="field-explain">
+				<!-- TODO: locale -->
+				This will be a unique identifier for this station, it can contain letters, numbers, dashes, underscores and dots.
+				It can be changed at any time but it will be linked to the station even after it's changed.
+			</div>
+			<Validator value={current.slug} fn={_station_slug({ station_id })} />
 		</div>
 	</div>
 </div>

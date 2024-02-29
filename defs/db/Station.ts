@@ -12,7 +12,7 @@ export type Station = {
   account_id: string;
   picture_id: string;
   name: string;
-  slug: string;
+  slug: string | null | undefined;
   slogan: string | null | undefined;
   type_of_content: StationTypeOfContent;
   country_code: CountryCode;
