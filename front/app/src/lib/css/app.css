@@ -1,22 +1,8 @@
-/* @import url("./fonts/overpass/font.css");*/
-/* @import url("./cera/font.css"); */
-/* @import url("./gilroy/font.css"); */
-/* @import url("./g/font.css");  */
-/* @import url("./cereal/font.css"); */
-/* @import url("./circular/font.css"); */
-/* @import url("./mada/font.css"); */
-/* @import url("./brandon/font.css"); */
-/* @import url("./sofia-sans/font.css"); */
-/* @import url("./euclid-circular-a/font.css"); */
-@import url("./circular-std/font.css");
-
-
-@import url("./azeret-mono/font.css");
-/* @import url("./chivo-mono/chivo-mono.css"); */
+@import url("$share/font/circ/font.css");
+@import url("$share/font/azeret-mono/font.css");
 
 :root {
-  /* --font-family:  "Sofia Sans", Arial, Helvetica, sans-serif;  */
-  --font-family: CircularStd, Arial, Helvetica, sans-serif;
+  --font-family: Circ, Arial, Helvetica, sans-serif;
   --monospace: "Azeret Mono", "Chivo Mono", monospace, ui-monospace;
 
   font-family: var(--font-family);
