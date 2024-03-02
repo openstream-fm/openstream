@@ -4,6 +4,7 @@ import type { DateTime } from "../DateTime.js";
 
 export type StreamConnectionLite = {
   _id: string;
+  dp: string | null | undefined;
   st: string;
   op: boolean;
   ip: string;
