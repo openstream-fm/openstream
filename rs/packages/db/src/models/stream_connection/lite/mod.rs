@@ -24,6 +24,10 @@ pub struct StreamConnectionLite {
   #[serde(rename = "_id")]
   pub id: String,
 
+  // TODO: change this to String with a migration
+  #[serde(rename = "dp")]
+  pub deployment_id: Option<String>,
+
   #[serde(rename = "st")]
   pub station_id: String,
 
@@ -85,6 +89,7 @@ impl StreamConnectionLite {
   pub fn from_stream_connection_ref(full: &StreamConnection) -> Self {
     Self {
       id: full.id.clone(),
+      deployment_id: Some(full.deployment_id.clone()),
       station_id: full.station_id.clone(),
       is_open: full.is_open,
       ip: full.ip,
@@ -107,6 +112,7 @@ impl From<StreamConnection> for StreamConnectionLite {
     Self {
       domain: Self::get_domain(&full),
       id: full.id,
+      deployment_id: Some(full.deployment_id),
       station_id: full.station_id,
       is_open: full.is_open,
       ip: full.ip,
