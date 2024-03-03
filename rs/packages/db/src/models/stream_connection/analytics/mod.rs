@@ -5,6 +5,7 @@ use std::{
   time::Instant,
 };
 
+use compact_str::CompactString;
 use futures_util::{StreamExt, TryStreamExt};
 use geoip::CountryCode;
 use mongodb::bson::doc;
@@ -22,7 +23,7 @@ pub struct Item {
   // #[serde(rename = "_id")]
   // pub id: String,
   #[serde(rename = "st")]
-  pub station_id: String,
+  pub station_id: CompactString,
 
   //#[serde(rename = "op")]
   //pub is_open: bool,
@@ -42,13 +43,13 @@ pub struct Item {
   pub transfer_bytes: Option<u64>,
 
   #[serde(rename = "br")]
-  pub browser: Option<String>,
+  pub browser: Option<CompactString>,
 
   #[serde(rename = "do")]
-  pub domain: Option<String>,
+  pub domain: Option<CompactString>,
 
   #[serde(rename = "os")]
-  pub os: Option<String>,
+  pub os: Option<CompactString>,
 
   #[serde(rename = "ca")]
   pub created_at: DateTime,
@@ -326,11 +327,11 @@ struct Batch {
   pub ips: HashSet<IpAddr>,
   pub by_day: KeyedAccumulatorMap<YearMonthDay>,
   pub by_hour: KeyedAccumulatorMap<YearMonthDayHour>,
-  pub by_browser: KeyedAccumulatorMap<Option<String>>,
-  pub by_os: KeyedAccumulatorMap<Option<String>>,
+  pub by_browser: KeyedAccumulatorMap<Option<CompactString>>,
+  pub by_os: KeyedAccumulatorMap<Option<CompactString>>,
   pub by_country: KeyedAccumulatorMap<Option<CountryCode>>,
-  pub by_station: KeyedAccumulatorMap<String>,
-  pub by_domain: KeyedAccumulatorMap<Option<String>>,
+  pub by_station: KeyedAccumulatorMap<CompactString>,
+  pub by_domain: KeyedAccumulatorMap<Option<CompactString>>,
   #[cfg(feature = "analytics-max-concurrent")]
   pub start_stop_events: Vec<StartStopEvent>,
 }
@@ -792,7 +793,9 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
       }
 
       macro_rules! collect {
-        ($acc:expr) => {
+        ($acc:expr, $map:expr) => {{
+          let map_key = $map;
+
           $acc
             .into_iter()
             .map(|(key, value)| {
@@ -801,7 +804,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
                 max_concurrent!(value.start_stop_events);
 
               AnalyticsItem::<_> {
-                key,
+                key: map_key(key),
                 sessions: value.sessions,
                 ips: value.ips.len() as u64,
                 total_duration_ms: value.total_duration_ms,
@@ -813,6 +816,18 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
               }
             })
             .collect::<Vec<_>>()
+        }};
+
+        ($acc:expr) => {
+          collect!($acc, |x| x)
+        };
+
+        (@string $acc:expr) => {
+          collect!($acc, |x| ToString::to_string(&x))
+        };
+
+        (@opt_string $acc:expr) => {
+          collect!($acc, |x: Option<_>| x.as_ref().map(ToString::to_string))
         };
       }
 
@@ -820,11 +835,11 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
       // let mut by_month = collect!(months_accumulator);
       let mut by_day = collect!(batch.by_day);
       let mut by_hour = collect!(batch.by_hour);
-      let mut by_browser = collect!(batch.by_browser);
-      let mut by_os = collect!(batch.by_os);
       let mut by_country = collect!(batch.by_country);
-      let mut by_station = collect!(batch.by_station);
-      let mut by_domain = collect!(batch.by_domain);
+      let mut by_station = collect!(@string batch.by_station);
+      let mut by_browser = collect!(@opt_string batch.by_browser);
+      let mut by_os = collect!(@opt_string batch.by_os);
+      let mut by_domain = collect!(@opt_string batch.by_domain);
 
       // sort
       macro_rules! sort_by_key {
