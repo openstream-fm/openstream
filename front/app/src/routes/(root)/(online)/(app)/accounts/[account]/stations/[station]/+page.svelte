@@ -102,7 +102,7 @@
   }
 
   .air-title {
-    font-weight: 700;
+    font-weight: var(--font-bold);
     font-size: 2rem;
     margin-top: 1rem;
     white-space: nowrap;

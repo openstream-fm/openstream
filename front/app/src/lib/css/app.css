@@ -8,8 +8,9 @@
   font-family: var(--font-family);
   font-size: 16px;
 
-  --font-bold: 700;
-  --font-semi: 600;
+  --font-semi: 500;
+  --font-bold: 600;
+  --font-bolder: 700;
 
   --drawer-width: 250px;
   --top-h: 4.5rem;
@@ -84,6 +85,10 @@ body, #app {
 
 p, h1, h2, h3, h4, h5, h6 {
   margin: 0;
+}
+
+h1, h2, h3 {
+  font-weight: var(--font-bold);
 }
 
 input, textarea, button, select {

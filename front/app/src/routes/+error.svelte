@@ -70,7 +70,7 @@
 
   .logo-text {
     font-size: 1.75rem;
-    font-weight: 700;
+    font-weight: var(--font-bold);
     color: #000;
   }
 

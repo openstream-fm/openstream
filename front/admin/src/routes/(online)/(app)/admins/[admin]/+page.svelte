@@ -31,7 +31,7 @@
   }
 
   .data-value {
-    font-weight: 700;
+    font-weight: var(--font-bold);
   }
 </style>
 

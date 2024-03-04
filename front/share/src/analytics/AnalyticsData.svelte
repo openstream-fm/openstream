@@ -247,7 +247,7 @@
           text: locale.Unique_IPs,
           style: {
            fontSize: "1rem",
-           fontWeight: 600,
+           fontWeight: "var(--font-semi)",
           }
         },
         labels: {
@@ -259,7 +259,7 @@
           text: locale.Total_listening_hours,
           style: {
            fontSize: "1rem",
-           fontWeight: 600,
+           fontWeight: "var(--font-semi)",
           }
         },
         labels: {
@@ -414,7 +414,7 @@
           text: locale.Unique_IPs,
           style: {
            fontSize: "1rem",
-           fontWeight: 600,
+           fontWeight: "var(--font-semi)",
           }
         },
         labels: {
@@ -426,7 +426,7 @@
           text: locale.Total_listening_hours,
           style: {
            fontSize: "1rem",
-           fontWeight: 600,
+           fontWeight: "var(--font-semi)",
           }
         },
         labels: {
@@ -525,7 +525,7 @@
         text: LocaleSessions,
         style: {
           fontSize: "1rem",
-          fontWeight: 600,
+          fontWeight: "var(--font-semi)",
         }
       },
     },
@@ -567,7 +567,7 @@
         text: LocaleSessions,
         style: {
           fontSize: "1rem",
-          fontWeight: 600,
+          fontWeight: "var(--font-semi)",
         }
       },
     },
@@ -608,7 +608,7 @@
         text: LocaleSessions,
         style: {
           fontSize: "1rem",
-          fontWeight: 600,
+          fontWeight: "var(--font-semi)",
         }
       },
     },
@@ -648,7 +648,7 @@
         text: LocaleSessions,
         style: {
           fontSize: "1rem",
-          fontWeight: 600,
+          fontWeight: "var(--font-semi)",
         }
       },
     },
@@ -688,7 +688,7 @@
         text: LocaleSessions,
         style: {
           fontSize: "1rem",
-          fontWeight: 600,
+          fontWeight: "var(--font-semi)",
         }
       },
     },
@@ -729,7 +729,7 @@
         text: LocaleSessions,
         style: {
           fontSize: "1rem",
-          fontWeight: 600,
+          fontWeight: "var(--font-semi)",
         }
       },
     },
@@ -1276,7 +1276,7 @@
 
   .total-value {
     font-size: 1.6rem;
-    font-weight: 700;
+    font-weight: var(--font-bold);
     margin-block-start: 0.75rem;
   }
 
@@ -1343,7 +1343,7 @@
   }
 
   .map-tooltip-stat-value {
-    font-weight: 700;
+    font-weight: var(--font-bold);
   }
 
   .total-max-concurrent-date {
