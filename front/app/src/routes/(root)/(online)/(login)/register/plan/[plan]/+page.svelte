@@ -207,7 +207,7 @@
 	}
 
 	.plan-price {
-		font-weight: 700;
+		font-weight: var(--font-bold);
 		font-size: 1.1rem;
 		margin-top: 0.75rem;
 	}
@@ -222,7 +222,7 @@
 	}
 
 	.plan-feature > b {
-		font-weight: 700;
+		font-weight: var(--font-bold);
 	}
 
 	.plan-back {

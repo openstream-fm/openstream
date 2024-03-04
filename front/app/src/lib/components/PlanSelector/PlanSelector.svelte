@@ -92,7 +92,7 @@
   .plan-name {
     font-size: 2rem;
     padding: 0 2rem;
-    font-weight: 700;
+    font-weight: var(--font-bold);
     margin-top: 1.25rem;
     color: var(--plan-color);
     text-shadow: #fff 0 0 3px;
@@ -104,7 +104,7 @@
 
   .plan-price-n {
     font-size: 2rem;
-    font-weight: 700;
+    font-weight: var(--font-bold);
     margin-inline-start: -1rem;
   }
 
@@ -172,7 +172,7 @@
 
   .feature-n {
     display: inline;
-    font-weight: 700;
+    font-weight: var(--font-bold);
   }
 
   .tip {
@@ -213,7 +213,7 @@
   }
 
   .plan-bottom-name {
-    font-weight: 700;
+    font-weight: var(--font-bold);
     font-size: 1.2rem;
   }
 
