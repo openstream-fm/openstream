@@ -1,8 +1,8 @@
-@import url("$share/font/circ/font.css");
+@import url("$share/font/cir/font.css");
 @import url("$share/font/azeret-mono/font.css");
 
 :root {
-  --font-family: Circ, Arial, Helvetica, sans-serif;
+  --font-family: Cir, Arial, Helvetica, sans-serif;
   --monospace: "Azeret Mono", "Chivo Mono", monospace, ui-monospace;
 
   font-family: var(--font-family);
