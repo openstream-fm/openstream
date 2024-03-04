@@ -30,15 +30,15 @@
 @font-face {
   font-family: Circ;
   font-style: normal;
-  font-weight: 500;
-  src: url("./500.woff2") format("woff2");
+  font-weight: 600;
+  src: url("./600.woff2") format("woff2");
 }
 
 @font-face {
   font-family: Circ;
   font-style: italic;
-  font-weight: 500;
-  src: url("./500i.woff2") format("woff2");
+  font-weight: 600;
+  src: url("./600i.woff2") format("woff2");
 }
 
 @font-face {
