@@ -43,6 +43,7 @@
 		_spotify_url,
 		_radiocut_url,
 		_station_slug,
+		_pattern,
 	} from '$share/formy/validate';
 	import { VALIDATE_STATION_DESC_MAX_LEN, VALIDATE_STATION_EMAIL_MAX_LEN, VALIDATE_STATION_NAME_MAX_LEN, VALIDATE_STATION_NAME_MIN_LEN, VALIDATE_STATION_PHONE_MAX_LEN, VALIDATE_STATION_SLOGAN_MAX_LEN, VALIDATE_STATION_SLUG_MAX_LEN, VALIDATE_STATION_URLS_MAX_LEN, VALIDATE_STATION_WHATSAPP_MAX_LEN } from "$server/defs/constants";
 	import CountryField from '$share/Form/CountryField.svelte';
@@ -101,9 +102,12 @@
 				icon_bg_color: string
 				icon_rounded: boolean
 				ads: boolean
+				
 				admob_app_id: string | null | undefined
 				admob_banner_id: string | null | undefined
 				
+				google_play_console_id: string | null | undefined,
+
 				google_play_title: string | null | undefined
 				google_play_subtitle: string | null | undefined
 				google_play_description: string | null | undefined
@@ -580,6 +584,22 @@
 				label={$locale.station_profile.labels.mob_app_enable_ads}
 				bind:value={current.user_metadata.mob_app.ads}
 			/>
+		</div>
+
+		<div class="field">
+			<!-- TODO: locale -->
+			<NullTextField
+				icon={mdiGooglePlay}
+				trim
+				label={"Google Play Console Id"}
+				bind:value={current.user_metadata.mob_app.google_play_console_id}
+			/>
+			<!-- TODO: locale -->
+			<Validator value={current.user_metadata.mob_app.google_play_console_id} fn={_pattern({
+				maxlen: 50,
+				regex: /^[0-9]+$/,
+				message: () => "Play Console Id must be a number",
+			})} />
 		</div>
 
 		<div class="field">
