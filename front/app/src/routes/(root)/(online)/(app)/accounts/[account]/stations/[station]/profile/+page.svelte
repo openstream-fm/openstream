@@ -49,6 +49,8 @@
         admob_app_id: String((data.station.user_metadata.mob_app as any)?.admob_app_id ?? "") || null,
         admob_banner_id: String((data.station.user_metadata.mob_app as any)?.admob_banner_id ?? "") || null,
         
+        google_play_console_id: String((data.station.user_metadata.mob_app as any)?.google_play_console_id || "") || null,
+
         google_play_title: String((data.station.user_metadata.mob_app as any)?.google_play_title || "") || null,
         google_play_subtitle: String((data.station.user_metadata.mob_app as any)?.google_play_subtitle || "") || null,
         google_play_description: String((data.station.user_metadata.mob_app as any)?.google_play_description || "") || null,
