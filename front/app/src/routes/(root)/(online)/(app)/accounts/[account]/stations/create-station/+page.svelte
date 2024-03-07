@@ -56,12 +56,14 @@
         icon_bg_color: "",
         icon_rounded: false,
         ads: false,
-        admob_app_id: null,
-        admob_banner_id: null,
+        admob_app_id: null as string | null | undefined,
+        admob_banner_id: null as string | null | undefined,
 
-        google_play_title: null,
-        google_play_subtitle: null,
-        google_play_description: null,
+        google_play_console_id: null as string | null | undefined,
+
+        google_play_title: null as string | null | undefined,
+        google_play_subtitle: null as string | null | undefined,
+        google_play_description: null as string | null | undefined,
         google_play_lang: "" as GooglePlayLang | "",
       }
     }

@@ -281,7 +281,7 @@ export const _url = ({
   }
 }
 
-export const pattern = ({
+export const _pattern = ({
   regex,
   message,
   required = false,
@@ -323,7 +323,7 @@ const Pattern = (regex: RegExp, message: () => string) => {
     required?: boolean,
     maxlen?: number | null,
   } = {}) => {  
-    return pattern({ regex, message, required, maxlen })
+    return _pattern({ regex, message, required, maxlen })
   }
 }
 
@@ -366,7 +366,7 @@ export const _station_slug = ({
     }
 
     {
-      const message = pattern({
+      const message = _pattern({
         required,
         maxlen,
         regex: SLUG_PATTERN,
