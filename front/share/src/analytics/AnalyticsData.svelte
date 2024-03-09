@@ -1089,12 +1089,12 @@
           key: item_key,
           sessions: 0,
           ips: 0,
+          users: 0,
           total_duration_ms: 0,
-          total_transfer_bytes: 0,
-          // max_concurrent_listeners: undefined,
-          // max_concurrent_listeners_date: undefined,
+          total_transfer_bytes: 0
         })
       } else {
+        // @ts-expect-error
         items.push(item)
       }
 
@@ -1131,12 +1131,12 @@
           key: item_key,
           sessions: 0,
           ips: 0,
+          users: 0,
           total_duration_ms: 0,
           total_transfer_bytes: 0,
-          // max_concurrent_listeners: undefined,
-          // max_concurrent_listeners_date: undefined,
         })
       } else {
+        // @ts-expect-error
         items.push(item)
       }
 
