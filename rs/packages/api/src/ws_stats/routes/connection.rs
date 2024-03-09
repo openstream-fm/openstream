@@ -82,6 +82,10 @@ pub struct Query {
 
   #[ts(optional)]
   #[serde(skip_serializing_if = "Option::is_none")]
+  user_id: Option<String>,
+
+  #[ts(optional)]
+  #[serde(skip_serializing_if = "Option::is_none")]
   app_kind: Option<String>,
 
   #[ts(optional)]
@@ -140,6 +144,7 @@ impl WsConnectionHandler {
       let Query {
         connection_id: prev_id,
         station_id,
+        user_id,
         app_kind,
         app_version,
       } = qs;
@@ -179,6 +184,7 @@ impl WsConnectionHandler {
             ip,
             app_kind: app_kind.clone(),
             app_version,
+            user_id,
             reconnections,
             created_at,
             closed_at: None,

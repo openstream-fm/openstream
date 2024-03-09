@@ -12,6 +12,7 @@ export type WsStatsConnection = {
   ip: string;
   ap: string | null | undefined;
   av: number | null | undefined;
+  us: string | null | undefined;
   re: number;
   ca: DateTime;
   cl: DateTime | null | undefined;

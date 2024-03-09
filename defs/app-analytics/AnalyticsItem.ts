@@ -5,6 +5,7 @@ export type AnalyticsItem<K> = {
   key: K;
   sessions: number;
   ips: number;
+  users: number;
   total_duration_ms: number;
   total_transfer_bytes: number;
   max_concurrent_listeners?: number;
