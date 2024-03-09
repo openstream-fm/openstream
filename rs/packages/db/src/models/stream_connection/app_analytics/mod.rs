@@ -49,6 +49,9 @@ pub struct Item {
   #[serde(with = "serde_util::as_f64::option")]
   pub app_version: Option<u32>,
 
+  #[serde(rename = "us")]
+  pub user_id: Option<String>,
+
   // #[serde(rename = "re")]
   // #[serde(with = "serde_util::as_f64")]
   // pub reconnections: u16,
@@ -71,6 +74,7 @@ impl Item {
       WsStatsConnection::KEY_IP: 1,
       WsStatsConnection::KEY_APP_KIND: 1,
       WsStatsConnection::KEY_APP_VERSION: 1,
+      WsStatsConnection::KEY_USER_ID: 1,
       WsStatsConnection::KEY_CREATED_AT: 1,
     }
   }
@@ -85,6 +89,7 @@ fn ws_stat_item_keys() {
   assert_eq!(Item::KEY_IP, WsStatsConnection::KEY_IP);
   assert_eq!(Item::KEY_APP_KIND, WsStatsConnection::KEY_APP_KIND);
   assert_eq!(Item::KEY_APP_VERSION, WsStatsConnection::KEY_APP_VERSION);
+  assert_eq!(Item::KEY_USER_ID, WsStatsConnection::KEY_USER_ID);
   assert_eq!(Item::KEY_CREATED_AT, WsStatsConnection::KEY_CREATED_AT);
 }
 
@@ -110,6 +115,10 @@ pub struct Analytics {
   #[serde(serialize_with = "serde_util::as_f64::serialize")]
   #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub ips: u64,
+
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
+  pub users: u64,
 
   #[serde(serialize_with = "serde_util::as_f64::serialize")]
   #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
@@ -142,12 +151,19 @@ pub struct Analytics {
 #[ts(export, export_to = "../../../defs/app-analytics/")]
 pub struct AnalyticsItem<K> {
   pub key: K,
+
   #[serde(serialize_with = "serde_util::as_f64::serialize")]
   #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub sessions: u64,
+
   #[serde(serialize_with = "serde_util::as_f64::serialize")]
   #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub ips: u64,
+
+  #[serde(serialize_with = "serde_util::as_f64::serialize")]
+  #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
+  pub users: u64,
+
   #[serde(serialize_with = "serde_util::as_f64::serialize")]
   #[serde(deserialize_with = "serde_util::as_f64::deserialize")]
   pub total_duration_ms: u64,
@@ -245,6 +261,7 @@ type KeyedAccumulatorMap<K> = HashMap<K, AccumulatorItem>;
 struct AccumulatorItem {
   sessions: u64,
   ips: HashSet<IpAddr>,
+  users: HashSet<String>,
   total_duration_ms: u64,
   total_transfer_bytes: u64,
   #[cfg(feature = "analytics-max-concurrent")]
@@ -262,6 +279,7 @@ impl AccumulatorItem {
   fn merge(&mut self, dst: Self) {
     self.sessions += dst.sessions;
     self.ips.extend(dst.ips);
+    self.users.extend(dst.users);
     self.total_duration_ms += dst.total_duration_ms;
     self.total_transfer_bytes += dst.total_transfer_bytes;
 
@@ -317,16 +335,17 @@ struct Batch {
   pub now_ms: u64,
 
   pub sessions: u64,
+  pub ips: HashSet<IpAddr>,
+  pub users: HashSet<String>,
+
   pub total_duration_ms: u64,
   pub total_transfer_bytes: u64,
-  pub ips: HashSet<IpAddr>,
+
   pub by_day: KeyedAccumulatorMap<YearMonthDay>,
   pub by_hour: KeyedAccumulatorMap<YearMonthDayHour>,
   pub by_app_kind: KeyedAccumulatorMap<Option<String>>,
   pub by_app_version: KeyedAccumulatorMap<AppKindVersion>,
-  // pub by_browser: KeyedAccumulatorMap<Option<String>>,
-  // pub by_os: KeyedAccumulatorMap<Option<String>>,
-  // pub by_domain: KeyedAccumulatorMap<Option<String>>,
+
   pub by_country: KeyedAccumulatorMap<Option<CountryCode>>,
   pub by_station: KeyedAccumulatorMap<String>,
   #[cfg(feature = "analytics-max-concurrent")]
@@ -341,9 +360,11 @@ impl Batch {
       now_ms: OffsetDateTime::now_utc().unix_timestamp() as u64 * 1000,
 
       sessions: 0,
+      ips: Default::default(),
+      users: Default::default(),
+
       total_duration_ms: 0,
       total_transfer_bytes: 0,
-      ips: Default::default(),
 
       by_day: Default::default(),
       by_hour: Default::default(),
@@ -367,13 +388,11 @@ impl Batch {
       .duration_ms
       .unwrap_or_else(|| (self.now_ms - created_at.unix_timestamp() as u64 * 1000));
 
-    // let conn_transfer_bytes = conn.transfer_bytes.unwrap_or(0);
     let conn_year = created_at.year() as u16;
     let conn_month = created_at.month() as u8;
     let conn_day = created_at.day();
     let conn_hour = created_at.hour();
-    // let conn_browser = conn.browser;
-    // let conn_os = conn.os;
+
     let conn_kind_version = AppKindVersion {
       kind: conn.app_kind.clone(),
       version: conn.app_version,
@@ -381,8 +400,11 @@ impl Batch {
 
     self.sessions += 1;
     self.total_duration_ms += conn_duration_ms;
-    // self.total_transfer_bytes += conn_transfer_bytes;
     self.ips.insert(conn.ip);
+
+    if let Some(id) = conn.user_id {
+      self.users.insert(id);
+    }
 
     #[cfg(feature = "analytics-max-concurrent")]
     let start_s = conn.created_at.unix_timestamp() as u32;
@@ -657,6 +679,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
             utc_offset_minutes: offset_date.offset().whole_minutes(),
             sessions: 0,
             ips: 0,
+            users: 0,
             total_duration_ms: 0,
             // total_transfer_bytes: 0,
             #[cfg(feature = "analytics-max-concurrent")]
@@ -820,6 +843,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
                 key,
                 sessions: value.sessions,
                 ips: value.ips.len() as u64,
+                users: value.users.len() as u64,
                 total_duration_ms: value.total_duration_ms,
                 total_transfer_bytes: value.total_transfer_bytes,
                 #[cfg(feature = "analytics-max-concurrent")]
@@ -900,6 +924,7 @@ pub async fn get_analytics(query: AnalyticsQuery) -> Result<Analytics, mongodb::
         total_duration_ms: batch.total_duration_ms,
         // total_transfer_bytes: batch.total_transfer_bytes,
         ips: batch.ips.len() as u64,
+        users: batch.users.len() as u64,
         #[cfg(feature = "analytics-max-concurrent")]
         max_concurrent_listeners,
         #[cfg(feature = "analytics-max-concurrent")]

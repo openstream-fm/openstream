@@ -3,6 +3,7 @@
 export type Query = {
   connection_id?: string;
   station_id: string;
+  user_id?: string;
   app_kind?: string;
   app_version?: number;
 };

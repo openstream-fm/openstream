@@ -21,6 +21,7 @@
         "stations",
         "total_duration_ms",
         "until",
+        "users",
         "utc_offset_minutes"
       ],
       "properties": {
@@ -123,6 +124,11 @@
           "format": "uint64",
           "minimum": 0.0
         },
+        "users": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
         "total_duration_ms": {
           "type": "integer",
           "format": "uint64",
@@ -148,7 +154,8 @@
               "max_concurrent_listeners",
               "sessions",
               "total_duration_ms",
-              "total_transfer_bytes"
+              "total_transfer_bytes",
+              "users"
             ],
             "properties": {
               "key": {
@@ -186,6 +193,11 @@
                 "format": "uint64",
                 "minimum": 0.0
               },
+              "users": {
+                "type": "integer",
+                "format": "uint64",
+                "minimum": 0.0
+              },
               "total_duration_ms": {
                 "type": "integer",
                 "format": "uint64",
@@ -219,7 +231,8 @@
               "max_concurrent_listeners",
               "sessions",
               "total_duration_ms",
-              "total_transfer_bytes"
+              "total_transfer_bytes",
+              "users"
             ],
             "properties": {
               "key": {
@@ -263,6 +276,11 @@
                 "format": "uint64",
                 "minimum": 0.0
               },
+              "users": {
+                "type": "integer",
+                "format": "uint64",
+                "minimum": 0.0
+              },
               "total_duration_ms": {
                 "type": "integer",
                 "format": "uint64",
@@ -296,7 +314,8 @@
               "max_concurrent_listeners",
               "sessions",
               "total_duration_ms",
-              "total_transfer_bytes"
+              "total_transfer_bytes",
+              "users"
             ],
             "properties": {
               "key": {
@@ -565,6 +584,11 @@
                 "format": "uint64",
                 "minimum": 0.0
               },
+              "users": {
+                "type": "integer",
+                "format": "uint64",
+                "minimum": 0.0
+              },
               "total_duration_ms": {
                 "type": "integer",
                 "format": "uint64",
@@ -598,7 +622,8 @@
               "max_concurrent_listeners",
               "sessions",
               "total_duration_ms",
-              "total_transfer_bytes"
+              "total_transfer_bytes",
+              "users"
             ],
             "properties": {
               "key": {
@@ -610,6 +635,11 @@
                 "minimum": 0.0
               },
               "ips": {
+                "type": "integer",
+                "format": "uint64",
+                "minimum": 0.0
+              },
+              "users": {
                 "type": "integer",
                 "format": "uint64",
                 "minimum": 0.0
@@ -646,7 +676,8 @@
               "max_concurrent_listeners",
               "sessions",
               "total_duration_ms",
-              "total_transfer_bytes"
+              "total_transfer_bytes",
+              "users"
             ],
             "properties": {
               "key": {
@@ -659,6 +690,11 @@
                 "minimum": 0.0
               },
               "ips": {
+                "type": "integer",
+                "format": "uint64",
+                "minimum": 0.0
+              },
+              "users": {
                 "type": "integer",
                 "format": "uint64",
                 "minimum": 0.0
@@ -696,7 +732,8 @@
               "max_concurrent_listeners",
               "sessions",
               "total_duration_ms",
-              "total_transfer_bytes"
+              "total_transfer_bytes",
+              "users"
             ],
             "properties": {
               "key": {
@@ -720,6 +757,11 @@
                 "minimum": 0.0
               },
               "ips": {
+                "type": "integer",
+                "format": "uint64",
+                "minimum": 0.0
+              },
+              "users": {
                 "type": "integer",
                 "format": "uint64",
                 "minimum": 0.0

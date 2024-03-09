@@ -18,6 +18,7 @@ export type Analytics = {
   utc_offset_minutes: number;
   sessions: number;
   ips: number;
+  users: number;
   total_duration_ms: number;
   max_concurrent_listeners?: number;
   max_concurrent_listeners_date?: DateTime;

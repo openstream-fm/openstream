@@ -22,6 +22,7 @@ pub struct WsStatsConnection {
 
   #[serde(rename = "dp")]
   pub deployment_id: String,
+
   // #[serde(with = "serde_util::as_f64::option")]
   // pub transfer_bytes: Option<u64>,
   #[serde(rename = "du")]
@@ -44,6 +45,10 @@ pub struct WsStatsConnection {
   #[serde(rename = "av")]
   #[serde(with = "serde_util::as_f64::option")]
   pub app_version: Option<u32>,
+
+  /// The user id is a client generated UID, its mainly used to count the number of different users in the stats
+  #[serde(rename = "us")]
+  pub user_id: Option<String>,
 
   #[serde(rename = "re")]
   #[serde(with = "serde_util::as_f64")]
@@ -70,6 +75,10 @@ impl Model for WsStatsConnection {
       .keys(doc! { Self::KEY_STATION_ID: 1 })
       .build();
 
+    let user_id: IndexModel = IndexModel::builder()
+      .keys(doc! { Self::KEY_USER_ID: 1 })
+      .build();
+
     let created_at = IndexModel::builder()
       .keys(doc! { Self::KEY_CREATED_AT: 1 })
       .build();
@@ -82,7 +91,13 @@ impl Model for WsStatsConnection {
       .keys(doc! { Self::KEY_IS_OPEN: 1 })
       .build();
 
-    vec![station_id, created_at, station_id_created_at, is_open]
+    vec![
+      station_id,
+      user_id,
+      created_at,
+      station_id_created_at,
+      is_open,
+    ]
   }
 }
 
