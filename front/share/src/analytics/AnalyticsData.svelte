@@ -1,18 +1,28 @@
 <svelte:options immutable={true} />
 
 <script lang="ts" context="module">
-    export type ClickEvent = 
-    | { kind: "country_code", value: CountryCode | null | undefined }
-    | { kind: "os", value: string | null | undefined }
-    | { kind: "browser", value: string | null | undefined }
-    | { kind: "domain", value: string | null | undefined }
-    | { kind: "station", value: string }
-    | { kind: "app_kind", value: string | null | undefined } 
-    | { kind: "app_version", value: { kind: string | null | undefined, version: number | null | undefined } } 
+  export type ClickEvent =
+    | { kind: "country_code"; value: CountryCode | null | undefined }
+    | { kind: "os"; value: string | null | undefined }
+    | { kind: "browser"; value: string | null | undefined }
+    | { kind: "domain"; value: string | null | undefined }
+    | { kind: "station"; value: string }
+    | { kind: "app_kind"; value: string | null | undefined }
+    | {
+        kind: "app_version";
+        value: {
+          kind: string | null | undefined;
+          version: number | null | undefined;
+        };
+      };
 
-  export type Data = 
-    | ({ type: "stream" } & import("$server/defs/analytics/Analytics").Analytics)
-    | ({ type: "app" } & import("$server/defs/app-analytics/Analytics").Analytics);
+  export type Data =
+    | ({
+        type: "stream";
+      } & import("$server/defs/analytics/Analytics").Analytics)
+    | ({
+        type: "app";
+      } & import("$server/defs/app-analytics/Analytics").Analytics);
 </script>
 
 <script lang="ts">
@@ -131,6 +141,7 @@
       cache.set(key(item.key), item);
     }
 
+    const users: (number | null)[] = [];
     const ips: (number | null)[] = [];
     const total_hours: (number | null)[] = [];
     const dates: Date[] = [];
@@ -148,9 +159,11 @@
       dates.push(current);
 
       if(item == null) {
+        users.push(null);
         ips.push(null);
         total_hours.push(null);
       } else {
+        users.push((item as any).users ?? 0)
         ips.push(item.ips);
         total_hours.push(item.total_duration_ms / 1000 / 60 / 60);
       }
@@ -159,15 +172,38 @@
 
     } while(!isSameDay(current, end));
 
-    return { dates, ips, total_hours }
+    return { dates, users, ips, total_hours }
   }
 
+  const by_date_colors = data.type === "app" ? [
+    // PURPLE
+    "rgba(119, 93, 208, 0.85)",
+    // BLUE
+    "rgba(0, 143, 251, 0.85)",
+    // GREEN
+    "rgba(0, 227, 150, 0.85)",
+  ] : [
+    // BLUE
+    "rgba(0, 143, 251, 0.85)",
+    // GREEN
+    "rgba(0, 227, 150, 0.85)",
+  ];
+
   const days_data = by_day_data(data.by_day);
-  const days_options: ApexOptions = {
+  const days_options: ApexOptions & { hide_series?: string[] } = {
+    
+    colors: by_date_colors,
+
+    hide_series: data.type === "app" ? [locale.Unique_IPs] : [],
+
     series: [
+      ...(data.type === "app" ? [{
+        name: locale.Listeners,
+        data: days_data.users
+      }] : []),
       {
         name: locale.Unique_IPs,
-        data: days_data.ips
+        data: days_data.ips,
       },
       {
         name: locale.Total_listening_hours,
@@ -242,6 +278,18 @@
       }
     },
     yaxis: [
+      ...(data.type === "app" ? [{
+        title: {
+          text: locale.Listeners,
+          style: {
+            fontSize: "1rem",
+            fontWeight: "var(--font-semi)",
+          }
+        },
+        labels: {
+          formatter: (v: number) => (v % 1 === 0 || v == null) ? String(v ?? 0) : to_fixed(v, 2),
+        }
+      }] : []),
       {
         title: {
           text: locale.Unique_IPs,
@@ -296,6 +344,7 @@
       cache.set(key(item.key), item);
     }
 
+    const users: (number | null)[] = [];
     const ips: (number | null)[] = [];
     const total_hours: (number | null)[] = [];
     const dates: Date[] = [];
@@ -313,9 +362,11 @@
       dates.push(current);
 
       if(item == null) {
+        users.push(null);
         ips.push(null);
         total_hours.push(null);
       } else {
+        users.push((item as any).users ?? 0);
         ips.push(item.ips);
         total_hours.push(item.total_duration_ms / 1000 / 60 / 60);
       }
@@ -324,12 +375,21 @@
 
     } while(!isSameHour(current, end));
 
-    return { dates, ips, total_hours }
+    return { dates, users, ips, total_hours }
   }
 
+
   const hours_data = data.by_hour && by_hour_data(data.by_hour);
-  const hours_options: ApexOptions | null | undefined = hours_data && {
+  const hours_options: (ApexOptions & { hide_series?: string[] }) | null | undefined = hours_data && {
+    colors: by_date_colors,
+    
+    hide_series: data.type === "app" ? [locale.Unique_IPs] : [],
+    
     series: [
+      ...(data.type === "app" ? [{
+        name: locale.Listeners,
+        data: hours_data.users
+      }] : []),
       {
         name: locale.Unique_IPs,
         data: hours_data.ips
@@ -409,6 +469,18 @@
       }
     },
     yaxis: [
+      ...(data.type === "app" ? [{
+        title: {
+          text: locale.Listeners,
+          style: {
+           fontSize: "1rem",
+           fontWeight: "var(--font-semi)",
+          }
+        },
+        labels: {
+          formatter: (v: number) => (v % 1 === 0 || v == null) ? String(v ?? 0) : to_fixed(v, 2),
+        } 
+      }] : []),
       {
         title: {
           text: locale.Unique_IPs,
@@ -811,10 +883,20 @@
     type Item = {
       sessions: number,
       ips: number,
+      users?: number,
       total_duration_ms: number,
       total_transfer_bytes: number,
       max_concurrent_listeners?: number
     }
+
+    const users_field = (data.type === "app" ? {
+      "users": {
+        name: locale.Listeners,
+        format: item => String(item.users ?? 0),
+        sort: (a, b) => compare_numbers(a.users ?? 0, b.users ?? 0),
+        numeric: true,
+      }
+    } : {} as Record<string, never>) satisfies Record<string, DataGridField<Item>>;
 
     const max_concurrent_field = (!data.is_now && with_max_concurrent ? {
       "max_concurrent": {
@@ -860,6 +942,8 @@
         sort: (a, b) => compare_numbers(a.sessions, b.sessions),
         numeric: true,
       },
+
+      ...users_field,
 
       "ips": {
         name: locale.Unique_IPs,
@@ -1318,7 +1402,8 @@
     font-weight: var(--font-bold);
   }
 
-  .chart-grid-daily, .chart-grid-hourly {
+  .chart-grid-daily,
+  .chart-grid-hourly {
     margin-top: 1rem;
   }
 
@@ -1330,12 +1415,12 @@
 
   .map-tooltip-name {
     font-weight: var(--font-bold);
-    font-size: 1rem;  
+    font-size: 1rem;
     margin-block-end: 0.35rem;
   }
 
   .map-tooltip-stat {
-    font-size: 0.85rem; 
+    font-size: 0.85rem;
   }
 
   .map-tooltip-stat + .map-tooltip-stat {
@@ -1368,7 +1453,7 @@
   }
 
   .day-hour-btn:hover {
-    background: rgba(0,0,0,0.05);
+    background: rgba(0, 0, 0, 0.05);
   }
 </style>
 
@@ -1385,6 +1470,15 @@
           {data.sessions}
         </div>
       </div>
+
+      {#if data.type === "app"}
+        <div class="total">
+          <div class="total-title">{locale.Listeners}</div>
+          <div class="total-value">
+            {data.users}
+          </div>
+        </div>
+      {/if}
 
       <div class="total">
         <div class="total-title">{locale.Unique_IPs}</div>
@@ -1436,14 +1530,18 @@
         </div>
       {/if}
     </div>
-    
-    <div class="charts" style:--chart-height="{chartHeight}px">
 
+    <div class="charts" style:--chart-height="{chartHeight}px">
       {#if !data.is_now}
         {#if hours_options}
           <div class="chart-box">
             <div class="chart-title with-btn">
-              <button class="day-hour-btn ripple-container" use:ripple on:click={() => selected_by_hour_chart = !selected_by_hour_chart}>
+              <button
+                class="day-hour-btn ripple-container"
+                use:ripple
+                on:click={() =>
+                  (selected_by_hour_chart = !selected_by_hour_chart)}
+              >
                 {#if selected_by_hour_chart}
                   {locale.By_hour}
                 {:else}
@@ -1472,7 +1570,12 @@
         <div class="chart-title">{locale.By_country}</div>
         <div class="map">
           <Mapp stats={map_data} {country_names} locale={stats_map_locale}>
-            <div slot="tooltip" class="map-tooltip" let:country_name let:country_code>
+            <div
+              slot="tooltip"
+              class="map-tooltip"
+              let:country_name
+              let:country_code
+            >
               <div class="map-tooltip-name">{country_name}</div>
               <div class="map-tooltip-stat">
                 <span class="map-tooltip-stat-name">
@@ -1482,7 +1585,7 @@
                   {map_country_sessions(country_code)}
                 </span>
               </div>
-              
+
               {#if !data.is_now}
                 {#if map_country_has_data(country_code)}
                   <div class="map-tooltip-stat">
@@ -1513,7 +1616,7 @@
 
       <div class="chart-box">
         <div class="chart-title">{locale.By_station}</div>
-        <div class="chart" use:chart={station_options} />
+        <div class="chart" use:chart={station_options}  />
         <div class="chart-grid">
           <DataGrid data={by_station_grid_data} locale={locale.data_grid} />
         </div>
@@ -1532,16 +1635,19 @@
       {/if}
 
       {#if by_app_version_grid_data != null}
-      <div class="chart-box">
-        <div class="chart-title">
-          {locale.By_app_version}
+        <div class="chart-box">
+          <div class="chart-title">
+            {locale.By_app_version}
+          </div>
+          <div class="chart" use:chart={app_version_options} />
+          <div class="chart-grid">
+            <DataGrid
+              data={by_app_version_grid_data}
+              locale={locale.data_grid}
+            />
+          </div>
         </div>
-        <div class="chart" use:chart={app_version_options} />
-        <div class="chart-grid">
-          <DataGrid data={by_app_version_grid_data} locale={locale.data_grid} />
-        </div>
-      </div>
-    {/if}
+      {/if}
 
       {#if by_domain_grid_data != null}
         <div class="chart-box">
@@ -1552,7 +1658,7 @@
           </div>
         </div>
       {/if}
-      
+
       {#if by_device_grid_data != null}
         <div class="chart-box">
           <div class="chart-title">{locale.By_device}</div>
@@ -1577,7 +1683,12 @@
         {#if by_hour_grid_data}
           <div class="chart-box">
             <div class="chart-title with-btn">
-              <button class="day-hour-btn ripple-container" use:ripple on:click={() => selected_by_hour_grid = !selected_by_hour_grid}>
+              <button
+                class="day-hour-btn ripple-container"
+                use:ripple
+                on:click={() =>
+                  (selected_by_hour_grid = !selected_by_hour_grid)}
+              >
                 {#if selected_by_hour_grid}
                   {locale.Hourly_stats}
                 {:else}
@@ -1609,5 +1720,4 @@
       {/if}
     </div>
   {/if}
-
 </div>
