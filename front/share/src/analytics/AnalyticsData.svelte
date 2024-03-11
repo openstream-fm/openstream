@@ -40,9 +40,25 @@
   export let app_version: number | null | undefined;
   export let selected_stations: StationItem[] | "all";
 
-  let LocaleSessions = data.is_now ? locale.Connections : locale.Sessions;
-  $: LocaleSessions = data.is_now ? locale.Connections : locale.Sessions;
+  const get_locale_main_metric = (...args: any[]): string => {
+    if(data.type === "app") {
+      if(data.is_now) {
+        return locale.Connections;
+      } else {
+        return locale.Sessions;
+      }
+    } else {
+      if(data.is_now) {
+        return locale.Listeners;
+      } else {
+        return locale.Sessions;
+      }
+    }
+  }
 
+  let locale_main_metric = get_locale_main_metric(data, locale);
+  $: locale_main_metric = get_locale_main_metric(data, locale);
+  
   const with_max_concurrent = data.max_concurrent_listeners != null;
 
   let selected_by_hour_chart = (() => {
@@ -594,7 +610,7 @@
     },
     yaxis: {
       title: {
-        text: LocaleSessions,
+        text: locale_main_metric,
         style: {
           fontSize: "1rem",
           fontWeight: "var(--font-semi)",
@@ -602,7 +618,7 @@
       },
     },
     series: [{ 
-      name: LocaleSessions,
+      name: locale_main_metric,
       data: 
         data.type === "stream" ? 
           data.by_os.map(item => {
@@ -636,7 +652,7 @@
     }, 
     yaxis: {
       title: {
-        text: LocaleSessions,
+        text: locale_main_metric,
         style: {
           fontSize: "1rem",
           fontWeight: "var(--font-semi)",
@@ -644,7 +660,7 @@
       },
     },
     series: [{
-      name: LocaleSessions,
+      name: locale_main_metric,
       data: data.type === "stream" ? 
         data.by_browser.map(item => {
           return {
@@ -677,7 +693,7 @@
     },
     yaxis: {
       title: {
-        text: LocaleSessions,
+        text: locale_main_metric,
         style: {
           fontSize: "1rem",
           fontWeight: "var(--font-semi)",
@@ -685,7 +701,7 @@
       },
     },
     series: [{ 
-      name: LocaleSessions,
+      name: locale_main_metric,
       data: data.type === "stream" ?  
         data.by_domain.map(item => {
           return {
@@ -717,7 +733,7 @@
     },
     yaxis: {
       title: {
-        text: LocaleSessions,
+        text: locale_main_metric,
         style: {
           fontSize: "1rem",
           fontWeight: "var(--font-semi)",
@@ -725,7 +741,7 @@
       },
     },
     series: [{ 
-      name: LocaleSessions,
+      name: locale_main_metric,
       data: data.type === "app" ?  
         data.by_app_kind.map(item => {
           return {
@@ -757,7 +773,7 @@
     },
     yaxis: {
       title: {
-        text: LocaleSessions,
+        text: locale_main_metric,
         style: {
           fontSize: "1rem",
           fontWeight: "var(--font-semi)",
@@ -765,7 +781,7 @@
       },
     },
     series: [{ 
-      name: LocaleSessions,
+      name: locale_main_metric,
       data: data.type === "app" ?  
         data.by_app_version.map(item => {
           return {
@@ -798,7 +814,7 @@
     }, 
     yaxis: {
       title: {
-        text: LocaleSessions,
+        text: locale_main_metric,
         style: {
           fontSize: "1rem",
           fontWeight: "var(--font-semi)",
@@ -806,7 +822,7 @@
       },
     },
     series: [{
-      name: LocaleSessions,
+      name: locale_main_metric,
       data: data.by_station.map(item => {
         const station = data.stations.find(station => station._id === item.key);
         return {
@@ -937,7 +953,7 @@
 
     const fields = {
       "sessions": {
-        name: LocaleSessions,
+        name: locale_main_metric,
         format: item => String(item.sessions || 0),
         sort: (a, b) => compare_numbers(a.sessions, b.sessions),
         numeric: true,
@@ -1465,7 +1481,7 @@
   {:else}
     <div class="totals">
       <div class="total">
-        <div class="total-title">{LocaleSessions}</div>
+        <div class="total-title">{locale_main_metric}</div>
         <div class="total-value">
           {data.sessions}
         </div>
@@ -1579,7 +1595,7 @@
               <div class="map-tooltip-name">{country_name}</div>
               <div class="map-tooltip-stat">
                 <span class="map-tooltip-stat-name">
-                  {LocaleSessions}:
+                  {locale_main_metric}:
                 </span>
                 <span class="map-tooltip-stat-value">
                   {map_country_sessions(country_code)}
