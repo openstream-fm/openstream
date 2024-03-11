@@ -60,6 +60,10 @@ pub struct WsStatsConnection {
   // pub last_transfer_at: DateTime,
   #[serde(rename = "cl")]
   pub closed_at: Option<DateTime>,
+
+  #[serde(rename = "_m")]
+  #[serde(default, skip_serializing_if = "Option::is_none")]
+  pub manually_closed: Option<bool>,
 }
 
 impl WsStatsConnection {

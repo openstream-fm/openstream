@@ -2,7 +2,8 @@ use crate::{
   account::recalculate_used_listeners_quota,
   run_transaction,
   stream_connection::{lite::StreamConnectionLite, StreamConnection},
-  IdDocument, Model,
+  ws_stats_connection::WsStatsConnection,
+  Model,
 };
 use futures_util::TryStreamExt;
 use mongodb::{bson::doc, IndexModel};
@@ -108,24 +109,6 @@ pub async fn check_now() -> Result<(), mongodb::error::Error> {
       deployment.id,
     );
 
-    let filter = doc! { StreamConnection::KEY_DEPLOYMENT_ID: &deployment.id };
-    let mut ids: Vec<String> = vec![];
-    {
-      let projection = doc! { crate::KEY_ID: 1 };
-
-      let options = mongodb::options::FindOptions::builder()
-        .projection(projection)
-        .build();
-
-      let mut cursor = StreamConnection::cl_as::<IdDocument>()
-        .find(filter, options)
-        .await?;
-
-      while let Some(item) = cursor.try_next().await? {
-        ids.push(item.id);
-      }
-    }
-    // this unwrap is enforced with the mongodb filter
     let closed_at = deployment.health_checked_at.unwrap();
 
     {
@@ -176,25 +159,19 @@ pub async fn check_now() -> Result<(), mongodb::error::Error> {
         },
       ];
 
-      let mut matched_count: u64 = 0;
+      let filter = doc! {
+        StreamConnectionLite::KEY_DEPLOYMENT_ID: &deployment.id,
+        StreamConnectionLite::KEY_IS_OPEN: true,
+      };
 
-      for chunk in ids.chunks(100_000) {
-        let filter = doc! {
-          StreamConnectionLite::KEY_ID: { "$in": chunk },
-          StreamConnectionLite::KEY_IS_OPEN: true,
-        };
-
-        let r = StreamConnectionLite::cl()
-          .update_many(filter, update.clone(), None)
-          .await?;
-
-        matched_count += r.matched_count;
-      }
+      let r = StreamConnectionLite::cl()
+        .update_many(filter, update.clone(), None)
+        .await?;
 
       log::info!(
         target: "deployment-health",
         "closed {} stream_connections_lite for deployment {}",
-        matched_count,
+        r.matched_count,
         deployment.id,
       );
     };
@@ -249,25 +226,70 @@ pub async fn check_now() -> Result<(), mongodb::error::Error> {
         },
       ];
 
-      let mut matched_count: u64 = 0;
+      let filter = doc! {
+        StreamConnection::KEY_DEPLOYMENT_ID: &deployment.id,
+        StreamConnection::KEY_IS_OPEN: true,
+      };
 
-      for chunk in ids.chunks(100_000) {
-        let filter = doc! {
-          StreamConnection::KEY_ID: { "$in": &chunk },
-          StreamConnection::KEY_IS_OPEN: true,
-        };
-
-        let r = StreamConnection::cl()
-          .update_many(filter, update.clone(), None)
-          .await?;
-
-        matched_count += r.matched_count;
-      }
+      let r = StreamConnection::cl()
+        .update_many(filter, update.clone(), None)
+        .await?;
 
       log::info!(
         target: "deployment-health",
         "closed {} stream_connections for deployment {}",
-        matched_count,
+        r.matched_count,
+        deployment.id,
+      );
+    }
+
+    {
+      const KEY_CA: &str = const_str::concat!("$", WsStatsConnection::KEY_CREATED_AT);
+
+      let update = vec![doc! {
+        "$set": {
+          WsStatsConnection::KEY_IS_OPEN: false,
+          WsStatsConnection::KEY_MANUALLY_CLOSED: true,
+          WsStatsConnection::KEY_CLOSED_AT: {
+            "$max": [
+              {
+                "$dateAdd": {
+                  "startDate": KEY_CA,
+                  "unit": "millisecond",
+                  "amount": 1,
+                }
+              },
+              closed_at
+            ]
+          },
+          WsStatsConnection::KEY_DURATION_MS: {
+            "$max": [
+              1,
+              {
+                "$dateDiff": {
+                  "startDate": KEY_CA,
+                  "endDate": closed_at,
+                  "unit": "millisecond",
+                }
+              }
+            ]
+          }
+        }
+      }];
+
+      let filter = doc! {
+        WsStatsConnection::KEY_DEPLOYMENT_ID: &deployment.id,
+        WsStatsConnection::KEY_IS_OPEN: true,
+      };
+
+      let r = WsStatsConnection::cl()
+        .update_many(filter, update.clone(), None)
+        .await?;
+
+      log::info!(
+        target: "deployment-health",
+        "closed {} ws_stats_connections for deployment {}",
+        r.matched_count,
         deployment.id,
       );
     }

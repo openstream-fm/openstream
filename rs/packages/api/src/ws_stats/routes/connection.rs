@@ -188,6 +188,7 @@ impl WsConnectionHandler {
             reconnections,
             created_at,
             closed_at: None,
+            manually_closed: None,
           };
 
           match WsStatsConnection::insert(&connection).await {

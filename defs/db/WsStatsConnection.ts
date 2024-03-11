@@ -16,4 +16,5 @@ export type WsStatsConnection = {
   re: number;
   ca: DateTime;
   cl: DateTime | null | undefined;
+  _m?: boolean;
 };
