@@ -354,8 +354,7 @@ impl WsConnectionHandler {
 
       let duration_ms = ((*DateTime::now() - *created_at).as_seconds_f64() * 1000.0).round();
 
-      // only update if this deployment is the main deployment
-      // TODO: use task ids
+      // only update if the task id is the same (not taken from another connection)
       let filter = doc! {
         WsStatsConnection::KEY_ID: &connection_id,
         WsStatsConnection::KEY_TASK_ID: &task_id,
