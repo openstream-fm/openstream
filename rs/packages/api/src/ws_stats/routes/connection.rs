@@ -177,7 +177,8 @@ impl WsConnectionHandler {
           let connection = WsStatsConnection {
             id: connection_id.clone(),
             station_id: station_id.clone(),
-            deployment_id,
+            start_deployment_id: Some(deployment_id.clone()),
+            current_deployment_id: deployment_id,
             duration_ms: None,
             is_open: true,
             country_code,
@@ -208,6 +209,7 @@ impl WsConnectionHandler {
 
           let update = doc! {
             "$set": {
+              WsStatsConnection::KEY_CURRENT_DEPLOYMENT_ID: &deployment_id,
               WsStatsConnection::KEY_IS_OPEN: true,
               WsStatsConnection::KEY_CLOSED_AT: null,
             },
