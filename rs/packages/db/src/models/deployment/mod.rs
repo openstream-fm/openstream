@@ -286,7 +286,7 @@ pub async fn check_now() -> Result<(), mongodb::error::Error> {
       }];
 
       let filter = doc! {
-        WsStatsConnection::KEY_DEPLOYMENT_ID: &deployment.id,
+        WsStatsConnection::KEY_CURRENT_DEPLOYMENT_ID: &deployment.id,
         WsStatsConnection::KEY_IS_OPEN: true,
       };
 

@@ -25,8 +25,11 @@ pub struct WsStatsConnection {
   #[serde(rename = "st")]
   pub station_id: String,
 
+  #[serde(rename = "sd")]
+  pub start_deployment_id: Option<String>,
+
   #[serde(rename = "dp")]
-  pub deployment_id: String,
+  pub current_deployment_id: String,
 
   // #[serde(with = "serde_util::as_f64::option")]
   // pub transfer_bytes: Option<u64>,
