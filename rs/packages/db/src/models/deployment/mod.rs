@@ -9,7 +9,7 @@ use futures_util::TryStreamExt;
 use mongodb::{bson::doc, IndexModel};
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
-use std::net::IpAddr;
+use std::{collections::HashSet, net::IpAddr};
 use ts_rs::TS;
 
 crate::register!(Deployment);
@@ -93,19 +93,75 @@ impl Model for Deployment {
 }
 
 pub async fn check_now() -> Result<(), mongodb::error::Error> {
-  let limit: DateTime = (time::OffsetDateTime::now_utc()
+  let active_time_limit: DateTime = (time::OffsetDateTime::now_utc()
     - time::Duration::seconds(constants::DEPLOYMENT_HEALTH_CHECK_SHUTDOWN_DELAY_SECS as i64))
   .into();
 
-  let filter = doc! {
+  let active_filter = doc! {
     "$and": [
       { Deployment::KEY_STATE: { "$ne": DeploymentState::KEY_ENUM_VARIANT_CLOSED } },
       { Deployment::KEY_HEALTH_CHECKED_AT: { "$ne": null } },
-      { Deployment::KEY_HEALTH_CHECKED_AT: { "$lt": limit } },
-    ],
+      { Deployment::KEY_HEALTH_CHECKED_AT: { "$gte": active_time_limit } },
+    ]
   };
 
-  let mut r = Deployment::cl().find(filter, None).await?;
+  let active_deployment_ids: Vec<String> =
+    Deployment::distinct_string(crate::KEY_ID, active_filter)
+      .await?
+      .into_iter()
+      .collect();
+
+  let mut to_close_deployment_ids = HashSet::<String>::new();
+
+  // StreamConnection
+  {
+    let filter = doc! {
+      StreamConnection::KEY_IS_OPEN: true,
+      StreamConnection::KEY_DEPLOYMENT_ID: { "$nin": &active_deployment_ids },
+    };
+
+    let ids =
+      StreamConnection::distinct_string(StreamConnection::KEY_DEPLOYMENT_ID, filter).await?;
+
+    to_close_deployment_ids.extend(ids);
+  };
+
+  // StreamConnectionLite
+  {
+    let filter = doc! {
+      StreamConnectionLite::KEY_IS_OPEN: true,
+      StreamConnectionLite::KEY_DEPLOYMENT_ID: { "$nin": &active_deployment_ids },
+    };
+
+    let ids =
+      StreamConnectionLite::distinct_string(StreamConnection::KEY_DEPLOYMENT_ID, filter).await?;
+
+    to_close_deployment_ids.extend(ids);
+  }
+
+  // WsStatsConnection
+  {
+    let filter = doc! {
+      WsStatsConnection::KEY_IS_OPEN: true,
+      WsStatsConnection::KEY_CURRENT_DEPLOYMENT_ID: { "$nin": &active_deployment_ids },
+    };
+
+    let ids =
+      StreamConnectionLite::distinct_string(StreamConnection::KEY_DEPLOYMENT_ID, filter).await?;
+
+    to_close_deployment_ids.extend(ids);
+  }
+
+  if to_close_deployment_ids.is_empty() {
+    return Ok(());
+  }
+
+  let deployment_ids: Vec<String> = to_close_deployment_ids.into_iter().collect();
+  let deployment_filter = doc! {
+    Deployment::KEY_ID: { "$in": deployment_ids },
+  };
+
+  let mut r = Deployment::cl().find(deployment_filter, None).await?;
 
   while let Some(deployment) = r.try_next().await? {
     log::info!(
