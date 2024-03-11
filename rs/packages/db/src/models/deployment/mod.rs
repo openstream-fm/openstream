@@ -165,7 +165,7 @@ pub async fn check_now() -> Result<(), mongodb::error::Error> {
       };
 
       let r = StreamConnectionLite::cl()
-        .update_many(filter, update.clone(), None)
+        .update_many(filter, update, None)
         .await?;
 
       log::info!(
@@ -232,7 +232,7 @@ pub async fn check_now() -> Result<(), mongodb::error::Error> {
       };
 
       let r = StreamConnection::cl()
-        .update_many(filter, update.clone(), None)
+        .update_many(filter, update, None)
         .await?;
 
       log::info!(
@@ -283,7 +283,7 @@ pub async fn check_now() -> Result<(), mongodb::error::Error> {
       };
 
       let r = WsStatsConnection::cl()
-        .update_many(filter, update.clone(), None)
+        .update_many(filter, update, None)
         .await?;
 
       log::info!(
