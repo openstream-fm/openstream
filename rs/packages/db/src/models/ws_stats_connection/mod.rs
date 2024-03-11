@@ -25,6 +25,9 @@ pub struct WsStatsConnection {
   #[serde(rename = "st")]
   pub station_id: String,
 
+  #[serde(default)]
+  pub task_id: String,
+
   #[serde(rename = "sd")]
   pub start_deployment_id: Option<String>,
 
@@ -72,6 +75,13 @@ pub struct WsStatsConnection {
   #[serde(rename = "_m")]
   #[serde(default, skip_serializing_if = "is_false")]
   pub abnormally_closed: bool,
+}
+
+impl WsStatsConnection {
+  /// create a random task id, this task id is always used with the id field, so its only unique within the same document
+  pub fn random_task_id() -> String {
+    uid::uid(6)
+  }
 }
 
 impl Model for WsStatsConnection {
