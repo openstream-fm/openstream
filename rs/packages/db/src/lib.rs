@@ -131,7 +131,7 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
   async fn distinct_string(
     key: &str,
     filter: impl Into<Option<Document>> + Send,
-  ) -> MongoResult<HashSet<String>> {
+  ) -> MongoResult<Vec<String>> {
     let items = Self::cl().distinct(key, filter, None).await?;
     let set = items
       .into_iter()
@@ -139,7 +139,7 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
         Bson::String(s) => Some(s),
         _ => None,
       })
-      .collect::<HashSet<String>>();
+      .collect();
 
     Ok(set)
   }
@@ -148,7 +148,7 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
     key: &str,
     filter: impl Into<Option<Document>> + Send,
     session: &mut ClientSession,
-  ) -> MongoResult<HashSet<String>> {
+  ) -> MongoResult<Vec<String>> {
     let items = Self::cl()
       .distinct_with_session(key, filter, None, session)
       .await?;
@@ -158,7 +158,7 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
         Bson::String(s) => Some(s),
         _ => None,
       })
-      .collect::<HashSet<String>>();
+      .collect();
 
     Ok(set)
   }
