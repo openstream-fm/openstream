@@ -2,6 +2,7 @@ use async_trait::async_trait;
 use error::CheckCollectionError;
 use futures_util::{Future, TryStreamExt};
 use log::*;
+use mongodb::bson::Bson;
 use mongodb::error::Result as MongoResult;
 use mongodb::options::{
   CountOptions, FindOptions, Hint, ReplaceOptions, SelectionCriteria, SessionOptions,
@@ -19,6 +20,7 @@ use schemars::JsonSchema;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_util::DateTime;
 use std::borrow::Borrow;
+use std::collections::HashSet;
 use ts_rs::TS;
 
 pub mod error;
@@ -124,6 +126,41 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
 
   fn cl() -> Collection<Self> {
     Self::cl_as()
+  }
+
+  async fn distinct_string<T: FromIterator<String>>(
+    key: &str,
+    filter: impl Into<Option<Document>> + Send,
+  ) -> MongoResult<T> {
+    let items = Self::cl().distinct(key, filter, None).await?;
+    let set = items
+      .into_iter()
+      .filter_map(|s| match s {
+        Bson::String(s) => Some(s),
+        _ => None,
+      })
+      .collect();
+
+    Ok(set)
+  }
+
+  async fn distinct_string_with_session<T: FromIterator<String>>(
+    key: &str,
+    filter: impl Into<Option<Document>> + Send,
+    session: &mut ClientSession,
+  ) -> MongoResult<T> {
+    let items = Self::cl()
+      .distinct_with_session(key, filter, None, session)
+      .await?;
+    let set = items
+      .into_iter()
+      .filter_map(|s| match s {
+        Bson::String(s) => Some(s),
+        _ => None,
+      })
+      .collect();
+
+    Ok(set)
   }
 
   fn indexes() -> Vec<IndexModel> {
