@@ -1,5 +1,6 @@
 const locale = {
   "Sessions": "Sessions",
+  "Connections": "Conections",
   "Listeners": "Listeners",
   "Unique_IPs": "Unique IPs",
   "Average_listening_minutes": "Average listening minutes",
