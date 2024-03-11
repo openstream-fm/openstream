@@ -19,13 +19,9 @@ use crate::{station::Station, stream_connection::lite::StreamConnectionLite, Mod
 #[derive(Debug, Serialize, Deserialize)]
 #[macros::keys]
 pub struct Item {
-  // #[serde(rename = "_id")]
-  // pub id: String,
   #[serde(rename = "st")]
   pub station_id: String,
 
-  //#[serde(rename = "op")]
-  //pub is_open: bool,
   #[serde(rename = "ip")]
   #[serde(with = "serde_util::ip")]
   pub ip: IpAddr,
@@ -52,18 +48,6 @@ pub struct Item {
 
   #[serde(rename = "ca")]
   pub created_at: DateTime,
-  // #[serde(rename = "re")]
-  // #[serde(default)]
-  // #[serde(skip_serializing_if = "is_false")]
-  // pub is_external_relay_redirect: bool,
-
-  // #[serde(rename = "_m")]
-  // #[serde(default)]
-  // #[serde(skip_serializing_if = "is_false")]
-  // pub manually_closed: bool,
-
-  // #[serde(rename = "cl")]
-  // pub closed_at: Option<DateTime>,
 }
 
 impl Item {

@@ -27,7 +27,7 @@ fn byte_string_oid() {
 }
 
 #[test]
-#[allow(clippy::eq_op)]
+#[allow(clippy::bool_comparison)]
 fn oid_equals() {
     let _guard = LOCK.run_concurrently();
     let oid = ObjectId::new();

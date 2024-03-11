@@ -328,7 +328,7 @@
             "default": false,
             "type": "boolean"
           },
-          "_manually_closed": {
+          "_m": {
             "type": "boolean"
           },
           "request": {

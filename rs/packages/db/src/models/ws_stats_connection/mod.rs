@@ -9,6 +9,11 @@ use ts_rs::TS;
 
 crate::register!(WsStatsConnection);
 
+#[allow(clippy::bool_comparison)]
+fn is_false(v: &bool) -> bool {
+  *v == false
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../defs/db/")]
 #[serde(rename_all = "snake_case")]
@@ -60,10 +65,10 @@ pub struct WsStatsConnection {
   // pub last_transfer_at: DateTime,
   #[serde(rename = "cl")]
   pub closed_at: Option<DateTime>,
-}
 
-impl WsStatsConnection {
-  pub const KEY_MANNUALLY_CLOSED: &'static str = "_m";
+  #[serde(rename = "_m")]
+  #[serde(default, skip_serializing_if = "is_false")]
+  pub abnormally_closed: bool,
 }
 
 impl Model for WsStatsConnection {

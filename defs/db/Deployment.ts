@@ -14,4 +14,5 @@ export type Deployment = {
   updated_at: DateTime;
   health_checked_at: DateTime | null | undefined;
   dropped_at: DateTime | null | undefined;
+  _m: boolean;
 };
