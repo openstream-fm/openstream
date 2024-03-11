@@ -1,5 +1,6 @@
 const locale: import("./analytics.locale.js").AnalyticsLocale = {
   "Sessions": "Sesiones",
+  "Connections": "Conexiones",
   "Listeners": "Oyentes",
   "Unique_IPs": "IPs únicas",
   "Average_listening_minutes": "Minutos promedio de escucha",

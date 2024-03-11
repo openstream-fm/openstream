@@ -6,7 +6,6 @@
 		mdiFacebook,
 		mdiGooglePlay,
 		mdiInstagram,
-		mdiPaletteOutline,
 		mdiPhoneOutline,
 		mdiSpotify,
 		mdiTwitch,

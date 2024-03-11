@@ -40,8 +40,8 @@
   export let app_version: number | null | undefined;
   export let selected_stations: StationItem[] | "all";
 
-  let LocaleSessions = data.is_now ? locale.Listeners : locale.Sessions;
-  $: LocaleSessions = data.is_now ? locale.Listeners : locale.Sessions;
+  let LocaleSessions = data.is_now ? locale.Connections : locale.Sessions;
+  $: LocaleSessions = data.is_now ? locale.Connections : locale.Sessions;
 
   const with_max_concurrent = data.max_concurrent_listeners != null;
 
