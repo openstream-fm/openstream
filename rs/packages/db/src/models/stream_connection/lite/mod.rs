@@ -62,14 +62,12 @@ pub struct StreamConnectionLite {
   pub created_at: DateTime,
 
   #[serde(rename = "re")]
-  #[serde(default)]
-  #[serde(skip_serializing_if = "is_false")]
+  #[serde(default, skip_serializing_if = "is_false")]
   pub is_external_relay_redirect: bool,
 
   #[serde(rename = "_m")]
-  #[serde(default)]
-  #[serde(skip_serializing_if = "is_false")]
-  pub manually_closed: bool,
+  #[serde(default, skip_serializing_if = "is_false")]
+  pub abnormally_closed: bool,
 
   #[serde(rename = "cl")]
   pub closed_at: Option<DateTime>,
@@ -100,7 +98,7 @@ impl StreamConnectionLite {
       duration_ms: full.duration_ms,
       transfer_bytes: full.transfer_bytes,
       is_external_relay_redirect: full.is_external_relay_redirect,
-      manually_closed: full.manually_closed,
+      abnormally_closed: full.abnornally_closed,
       created_at: full.created_at,
       closed_at: full.closed_at,
     }
@@ -122,7 +120,7 @@ impl From<StreamConnection> for StreamConnectionLite {
       transfer_bytes: full.transfer_bytes,
       country_code: full.country_code,
       is_external_relay_redirect: full.is_external_relay_redirect,
-      manually_closed: full.manually_closed,
+      abnormally_closed: full.abnornally_closed,
       created_at: full.created_at,
       closed_at: full.closed_at,
     }

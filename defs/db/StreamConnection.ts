@@ -14,7 +14,7 @@ export type StreamConnection = {
   country_code: CountryCode | null | undefined;
   ip: string;
   is_external_relay_redirect: boolean;
-  _manually_closed: boolean;
+  _m: boolean;
   request: Request;
   last_transfer_at: DateTime;
   closed_at: DateTime | null | undefined;

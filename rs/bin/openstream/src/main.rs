@@ -426,6 +426,7 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     updated_at: now,
     health_checked_at: Some(now),
     dropped_at: None,
+    abnormally_closed: false,
   };
 
   let config::Config {
