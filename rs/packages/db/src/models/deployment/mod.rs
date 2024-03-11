@@ -106,10 +106,7 @@ pub async fn check_now() -> Result<(), mongodb::error::Error> {
   };
 
   let active_deployment_ids: Vec<String> =
-    Deployment::distinct_string(crate::KEY_ID, active_filter)
-      .await?
-      .into_iter()
-      .collect();
+    Deployment::distinct_string(crate::KEY_ID, active_filter).await?;
 
   let mut to_close_deployment_ids = HashSet::<String>::new();
 
@@ -120,7 +117,7 @@ pub async fn check_now() -> Result<(), mongodb::error::Error> {
       StreamConnection::KEY_DEPLOYMENT_ID: { "$nin": &active_deployment_ids },
     };
 
-    let ids =
+    let ids: Vec<String> =
       StreamConnection::distinct_string(StreamConnection::KEY_DEPLOYMENT_ID, filter).await?;
 
     to_close_deployment_ids.extend(ids);
@@ -133,7 +130,7 @@ pub async fn check_now() -> Result<(), mongodb::error::Error> {
       StreamConnectionLite::KEY_DEPLOYMENT_ID: { "$nin": &active_deployment_ids },
     };
 
-    let ids =
+    let ids: Vec<String> =
       StreamConnectionLite::distinct_string(StreamConnection::KEY_DEPLOYMENT_ID, filter).await?;
 
     to_close_deployment_ids.extend(ids);
@@ -146,8 +143,9 @@ pub async fn check_now() -> Result<(), mongodb::error::Error> {
       WsStatsConnection::KEY_CURRENT_DEPLOYMENT_ID: { "$nin": &active_deployment_ids },
     };
 
-    let ids =
-      StreamConnectionLite::distinct_string(StreamConnection::KEY_DEPLOYMENT_ID, filter).await?;
+    let ids: Vec<String> =
+      WsStatsConnection::distinct_string(WsStatsConnection::KEY_CURRENT_DEPLOYMENT_ID, filter)
+        .await?;
 
     to_close_deployment_ids.extend(ids);
   }
@@ -157,9 +155,7 @@ pub async fn check_now() -> Result<(), mongodb::error::Error> {
   }
 
   let deployment_ids: Vec<String> = to_close_deployment_ids.into_iter().collect();
-  let deployment_filter = doc! {
-    Deployment::KEY_ID: { "$in": deployment_ids },
-  };
+  let deployment_filter = doc! { Deployment::KEY_ID: { "$in": deployment_ids } };
 
   let mut r = Deployment::cl().find(deployment_filter, None).await?;
 

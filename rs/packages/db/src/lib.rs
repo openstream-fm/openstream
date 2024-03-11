@@ -128,10 +128,10 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
     Self::cl_as()
   }
 
-  async fn distinct_string(
+  async fn distinct_string<T: FromIterator<String>>(
     key: &str,
     filter: impl Into<Option<Document>> + Send,
-  ) -> MongoResult<Vec<String>> {
+  ) -> MongoResult<T> {
     let items = Self::cl().distinct(key, filter, None).await?;
     let set = items
       .into_iter()
@@ -144,11 +144,11 @@ pub trait Model: Sized + Unpin + Send + Sync + Serialize + DeserializeOwned {
     Ok(set)
   }
 
-  async fn distinct_string_with_session(
+  async fn distinct_string_with_session<T: FromIterator<String>>(
     key: &str,
     filter: impl Into<Option<Document>> + Send,
     session: &mut ClientSession,
-  ) -> MongoResult<Vec<String>> {
+  ) -> MongoResult<T> {
     let items = Self::cl()
       .distinct_with_session(key, filter, None, session)
       .await?;
