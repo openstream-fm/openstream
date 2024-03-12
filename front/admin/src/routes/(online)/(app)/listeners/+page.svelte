@@ -4,12 +4,11 @@
 	import PageTop from "$lib/components/PageMenu/PageTop.svelte";
 	import { mdiConnection } from "@mdi/js";
   import { now } from "$share/now";
-	import { fly, slide, type TransitionConfig } from "svelte/transition";
+	import { slide, type TransitionConfig } from "svelte/transition";
 	import { onMount } from "svelte";
 	import { default_logger } from "$share/logger";
 	import { sleep } from "$share/util";
 	import { afterNavigate, beforeNavigate } from "$app/navigation";
-	import { qss } from "$share/qs";
 	import { _get } from "$share/net.client";
   import { STATION_PICTURES_VERSION } from "$defs/constants";
 	import { page } from "$app/stores";
@@ -36,20 +35,15 @@
   const get_show_items = (...args: any[]) => {
     let items = data.stream_connections.items;
     if(q_referer !== undefined) {
-      if(q_referer === null) {
-        items = items.filter(item => item.request.headers.referer == null && item.request.headers.origin == null);
-      } else {
-        const r = `//${q_referer}`;
-        items = items.filter(item => (item.request.headers.referer || item.request.headers.origin || "").includes(r))
-      }
+      items = items.filter(item => item.do === q_referer);
     }
 
     if(q_os !== undefined) {
-      items = items.filter(item => item.request.user_agent.os === q_os);
+      items = items.filter(item => item.os === q_os);
     }
 
     if(q_browser !== undefined) {
-      items = items.filter(item => item.request.user_agent.name === q_browser);
+      items = items.filter(item => item.br === q_browser);
     }
 
     if(q_ip != null) {
@@ -57,30 +51,19 @@
     }
 
     if(q_deployment_id != null) {
-      items = items.filter(item => item.deployment_id === q_deployment_id);
+      items = items.filter(item => item.dp === q_deployment_id);
     }
 
     if(q_station_id != null) {
-      items = items.filter(item => item.station_id === q_station_id);
+      items = items.filter(item => item.st === q_station_id);
     }
 
     return items;
   }
 
   const item_station = (item: Item): typeof data.stations[number] | null => {
-    const id = item.station_id;
+    const id = item.st;
     return data.all_stations.find(item => item._id === id) ?? null;
-  }
-
-  const website = (item: Item): string | null => {
-    const ref = item.request.headers.referer || item.request.headers.origin;
-    if(ref == null) return null
-
-    try {
-      return new URL(ref).host;
-    } catch(e) {}
-
-    return null
   }
 
   const qs = (qs: URLSearchParams | string) => {
@@ -103,52 +86,57 @@
     browser?: string | null | undefined,
     ip?: string | null,
   }) => {
-    const params = new URLSearchParams();
-    deployment && params.append("deployment", deployment);
-    station && params.set("station", station);
-    os && params.set("os", os);
-    browser && params.set("browser", browser);
-    ip && params.set("ip", ip);
-    referer && params.set("referer", referer);
-    return params;
+    const params: Record<string, any> = {};
+    if(deployment) params.deployment = deployment;
+    if(station) params.station = station;
+    if(referer) params.referer = referer;
+    if(os) params.os = os;
+    if(browser) params.browser = browser;
+    if(ip) params.ip = ip;
+    
+    let qs = Object.entries(params).map(([k,v]) => {
+      return `${k}=${encodeURIComponent(v)}`;
+    }).join("&");
+
+    if(qs !== "") qs = `?${qs}`;
+
+    return qs;
   }
 
   const station_toggle_link = (item: Item): string => {
-    return `/listeners${qs(make_params({
-      station: q_station_id === item.station_id ? null : item.station_id
-    }))}`
+    return `/listeners${make_params({
+      station: q_station_id === item.st ? null : item.st
+    })}`
   }
 
   const deployment_toggle_link = (item: Item): string => {
-    return `/listeners${qs(make_params({
-      deployment: q_deployment_id === item.deployment_id ? null : item.deployment_id,
-    }))}`
+    return `/listeners${make_params({
+      deployment: q_deployment_id === item.dp ? null : item.dp,
+    })}`
   }
   
-  const referer_toggle_link = (ref: string | null): string => {
-    return `/listeners${qs(make_params({
-      referer: q_referer === ref ? "" : ref === null ? "null" : ref 
-    }))}`
+  const referer_toggle_link = (item: Item): string => {
+    return `/listeners${make_params({
+      referer: q_referer === item.do ? null : item.do === null ? "null" : item.do, 
+    })}`
   }
 
   const ip_toggle_link = (item: Item): string => {
-    return `/listeners${qs(make_params({
+    return `/listeners${make_params({
       ip: q_ip === item.ip ? null : item.ip 
-    }))}`
+    })}`
   }
 
   const os_toggle_link = (item: Item): string => {
-    const v = item.request.user_agent.os;
-    return `/listeners${qs(make_params({
-      os: q_os === v ? "" : v === null ? "null" : v, 
-    }))}`
+    return `/listeners${make_params({
+      os: q_os === item.os ? null : item.os === null ? "null" : item.os, 
+    })}`
   }
 
   const browser_toggle_link = (item: Item): string => {
-    const v = item.request.user_agent.name;
-    return `/listeners${qs(make_params({
-      browser: q_browser === v ? "" : v === null ? "null" : v, 
-    }))}`
+    return `/listeners${make_params({
+      browser: q_browser === item.br ? null : item.br === null ? "null" : item.br, 
+    })}`
   }
 
   let navigating = false;
@@ -184,7 +172,7 @@
   const HOUR = MIN * 60;
   const DAY = HOUR * 24;
   const duration = (item: Item, $now: Date): string => {
-    const ms = item.duration_ms != null ? item.duration_ms : (+$now - +new Date(item.created_at));
+    const ms = item.du != null ? item.du : (+$now - +new Date(item.ca));
     if(ms >= DAY) {
       const d = Math.floor(ms / DAY);
       const h = Math.floor((ms % DAY) / HOUR);
@@ -247,7 +235,7 @@
             try {
               const _token = ++token;
 
-              const stream_connections = unwrap(await GET("/stream-connections", {
+              const stream_connections = unwrap(await GET("/stream-connections-lite", {
                 params: {
                   query: {
                     show: "open",
@@ -386,11 +374,11 @@
     </svelte:fragment>
   </PageTop>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <div class="list" on:click={item_click}>
     {#each show_items as item (item._id)}
       {@const station = item_station(item)}
-      {@const referer = website(item)}
-      <div class="item" class:open={item.is_open} class:closed={!item.is_open} in:enter_item={{}} out:leave_item={{}}>
+      <div class="item" class:open={item.op} class:closed={!item.op} in:enter_item={{}} out:leave_item={{}}>
         <div class="pic" class:empty={station == null} style:background-image={
             station != null ? 
             `url(${data.config.storage_public_url}/station-pictures/webp/128/${station?.picture_id}.webp?v=${STATION_PICTURES_VERSION})` :
@@ -399,20 +387,17 @@
         /> 
         <div class="data">
           <a class="na station-name" data-sveltekit-replacestate href={station_toggle_link(item)}>
-            {#if q_station_id === item.station_id}
+            {#if q_station_id === item.st}
               «
             {/if}
 
             {#if station != null}
               {station.name}
             {:else}
-              #{item.station_id}
+              #{item.st}
             {/if}
           </a>
           <div class="ip">
-            <!--
-              {item.request.local_addr.ip}:{item.request.local_addr.port}
-            -->
             <a
               class="na ip-link"
               data-sveltekit-replacestate
@@ -425,63 +410,63 @@
             </a>
           </div>
           <a class="na deployment" data-sveltekit-replacestate href="{deployment_toggle_link(item)}">
-            {#if q_deployment_id === item.deployment_id}
+            {#if q_deployment_id === item.dp}
               «
             {/if}
-            Deployment #{item.deployment_id}
+            Deployment #{item.dp}
           </a>
           <div class="platform">
-            {#if item.request.user_agent.name && item.request.user_agent.os}
+            {#if item.br && item.os}
               <a class="na browser" data-sveltekit-replacestate href="{browser_toggle_link(item)}">
-                {#if item.request.user_agent.name === q_browser}
+                {#if item.br === q_browser}
                   «
                 {/if}
-                {item.request.user_agent.name}
+                {item.br}
               </a>
                 on
               <a class="na os" data-sveltekit-replacestate href="{os_toggle_link(item)}">
-                {#if item.request.user_agent.os === q_os}
+                {#if item.os === q_os}
                   «
                 {/if}
-                {item.request.user_agent.os}
+                {item.os}
               </a>
             
-            {:else if item.request.user_agent.name}
+            {:else if item.br}
               <a class="na browser" data-sveltekit-replacestate href="{browser_toggle_link(item)}">
-                {#if item.request.user_agent.name === q_browser}
+                {#if item.br === q_browser}
                   «
                 {/if}
-                {item.request.user_agent.name}
+                {item.br}
               </a>
-            {:else if item.request.user_agent.os}
+            {:else if item.os}
               <a class="na os" data-sveltekit-replacestate href="{os_toggle_link(item)}">
-                {#if item.request.user_agent.os === q_os}
+                {#if item.os === q_os}
                   «
                 {/if}
-                {item.request.user_agent.os}
+                {item.os}
               </a>
             {:else}
               Unknown 
                 <a class="na browser" data-sveletkit-replacestate href="{browser_toggle_link(item)}">  
-                  {#if item.request.user_agent.name === q_browser}
+                  {#if item.br === q_browser}
                     «
                   {/if}
                   browser
                 </a>
               and
               <a class="na os" data-sveletkit-replacestate href="{os_toggle_link(item)}">  
-                {#if item.request.user_agent.os === q_os}
+                {#if item.os === q_os}
                   «
                 {/if}
                 platform
               </a>
             {/if}
           </div>
-          <a class="na referer" data-sveltekit-replacestate href="{referer_toggle_link(referer)}">
-            {#if q_referer === referer}
+          <a class="na referer" data-sveltekit-replacestate href="{referer_toggle_link(item)}">
+            {#if q_referer === item.do}
               «
             {/if}
-            {referer ?? "Unknown referer"}
+            {item.do ?? "Unknown referer"}
           </a>
           <div class="duration">
             {duration(item, $now)}

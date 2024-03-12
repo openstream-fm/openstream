@@ -1,0 +1,7 @@
+{
+  "type": "string",
+  "enum": [
+    "creation-asc",
+    "creation-desc"
+  ]
+}

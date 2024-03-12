@@ -1457,6 +1457,8 @@ export interface paths {
                 /** Format: uint64 */
                 ips: number;
                 /** Format: uint64 */
+                users: number;
+                /** Format: uint64 */
                 total_duration_ms: number;
                 /** Format: uint64 */
                 max_concurrent_listeners: number;
@@ -1475,6 +1477,8 @@ export interface paths {
                     sessions: number;
                     /** Format: uint64 */
                     ips: number;
+                    /** Format: uint64 */
+                    users: number;
                     /** Format: uint64 */
                     total_duration_ms: number;
                     /** Format: uint64 */
@@ -1500,6 +1504,8 @@ export interface paths {
                     /** Format: uint64 */
                     ips: number;
                     /** Format: uint64 */
+                    users: number;
+                    /** Format: uint64 */
                     total_duration_ms: number;
                     /** Format: uint64 */
                     total_transfer_bytes: number;
@@ -1516,6 +1522,8 @@ export interface paths {
                     /** Format: uint64 */
                     ips: number;
                     /** Format: uint64 */
+                    users: number;
+                    /** Format: uint64 */
                     total_duration_ms: number;
                     /** Format: uint64 */
                     total_transfer_bytes: number;
@@ -1531,6 +1539,8 @@ export interface paths {
                     /** Format: uint64 */
                     ips: number;
                     /** Format: uint64 */
+                    users: number;
+                    /** Format: uint64 */
                     total_duration_ms: number;
                     /** Format: uint64 */
                     total_transfer_bytes: number;
@@ -1545,6 +1555,8 @@ export interface paths {
                     sessions: number;
                     /** Format: uint64 */
                     ips: number;
+                    /** Format: uint64 */
+                    users: number;
                     /** Format: uint64 */
                     total_duration_ms: number;
                     /** Format: uint64 */
@@ -1564,6 +1576,8 @@ export interface paths {
                     sessions: number;
                     /** Format: uint64 */
                     ips: number;
+                    /** Format: uint64 */
+                    users: number;
                     /** Format: uint64 */
                     total_duration_ms: number;
                     /** Format: uint64 */
@@ -5455,7 +5469,7 @@ export interface paths {
                   ip: string;
                   /** @default false */
                   is_external_relay_redirect?: boolean;
-                  _manually_closed?: boolean;
+                  _m?: boolean;
                   request: {
                     /** Format: ip */
                     real_ip: string;
@@ -5506,6 +5520,69 @@ export interface paths {
                   last_transfer_at: string;
                   /** Format: date-time */
                   closed_at?: string | null;
+                })[];
+            };
+          };
+        };
+        /** @description A client error */
+        "4XX": {
+          content: {
+            "application/json": components["schemas"]["Error"];
+          };
+        };
+        /** @description A server error */
+        "5XX": {
+          content: {
+            "application/json": components["schemas"]["Error"];
+          };
+        };
+      };
+    };
+  };
+  "/stream-connections-lite": {
+    get: {
+      parameters: {
+        query?: {
+          show?: "all" | "open" | "closed" | null;
+          sort?: "creation-asc" | "creation-desc" | null;
+          stations?: string[] | null;
+          skip?: number;
+          limit?: number;
+        };
+      };
+      responses: {
+        /** @description A successful response */
+        200: {
+          content: {
+            "application/json": {
+              /** Format: uint64 */
+              total: number;
+              /** Format: uint64 */
+              skip: number;
+              /** Format: int64 */
+              limit: number;
+              items: ({
+                  _id: string;
+                  dp?: string | null;
+                  st: string;
+                  op: boolean;
+                  /** Format: ip */
+                  ip: string;
+                  /** @enum {string|null} */
+                  cc?: "AF" | "AX" | "AL" | "DZ" | "AS" | "AD" | "AO" | "AI" | "AQ" | "AG" | "AR" | "AM" | "AW" | "AU" | "AT" | "AZ" | "BS" | "BH" | "BD" | "BB" | "BY" | "BE" | "BZ" | "BJ" | "BM" | "BT" | "BO" | "BQ" | "BA" | "BW" | "BV" | "BR" | "IO" | "BN" | "BG" | "BF" | "BI" | "CV" | "KH" | "CM" | "CA" | "KY" | "CF" | "TD" | "CL" | "CN" | "CX" | "CC" | "CO" | "KM" | "CG" | "CD" | "CK" | "CR" | "CI" | "HR" | "CU" | "CW" | "CY" | "CZ" | "DK" | "DJ" | "DM" | "DO" | "EC" | "EG" | "EU" | "SV" | "GQ" | "ER" | "EE" | "SZ" | "ET" | "FK" | "FO" | "FJ" | "FI" | "FR" | "GF" | "PF" | "TF" | "GA" | "GM" | "GE" | "DE" | "GH" | "GI" | "GR" | "GL" | "GD" | "GP" | "GU" | "GT" | "GG" | "GN" | "GW" | "GY" | "HT" | "HM" | "VA" | "HN" | "HK" | "HU" | "IS" | "IN" | "ID" | "IR" | "IQ" | "IE" | "IM" | "IL" | "IT" | "JM" | "JP" | "JE" | "JO" | "KZ" | "KE" | "KI" | "KP" | "KR" | "KW" | "KG" | "LA" | "LV" | "LB" | "LS" | "LR" | "LY" | "LI" | "LT" | "LU" | "MO" | "MG" | "MW" | "MY" | "MV" | "ML" | "MT" | "MH" | "MQ" | "MR" | "MU" | "YT" | "MX" | "FM" | "MD" | "MC" | "MN" | "ME" | "MS" | "MA" | "MZ" | "MM" | "NA" | "NR" | "NP" | "NL" | "NC" | "NZ" | "NI" | "NE" | "NG" | "NU" | "NF" | "MK" | "MP" | "NO" | "OM" | "PK" | "PW" | "PS" | "PA" | "PG" | "PY" | "PE" | "PH" | "PN" | "PL" | "PT" | "PR" | "QA" | "RE" | "RO" | "RU" | "RW" | "BL" | "SH" | "KN" | "LC" | "MF" | "PM" | "VC" | "WS" | "SM" | "ST" | "SA" | "SN" | "RS" | "SC" | "SL" | "SG" | "SX" | "SK" | "SI" | "SB" | "SO" | "ZA" | "GS" | "SS" | "ES" | "LK" | "SD" | "SR" | "SJ" | "SE" | "CH" | "SY" | "TW" | "TJ" | "TZ" | "TH" | "TL" | "TG" | "TK" | "TO" | "TT" | "TN" | "TR" | "TM" | "TC" | "TV" | "UG" | "UA" | "AE" | "GB" | "US" | "UM" | "UY" | "UZ" | "VU" | "VE" | "VN" | "VG" | "VI" | "WF" | "EH" | "YE" | "ZM" | "ZW" | null;
+                  /** Format: uint64 */
+                  du?: number | null;
+                  /** Format: uint64 */
+                  by?: number | null;
+                  br?: string | null;
+                  do?: string | null;
+                  os?: string | null;
+                  /** Format: date-time */
+                  ca: string;
+                  re?: boolean;
+                  _m?: boolean;
+                  /** Format: date-time */
+                  cl?: string | null;
                 })[];
             };
           };
