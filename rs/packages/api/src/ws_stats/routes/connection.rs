@@ -164,6 +164,7 @@ impl WsConnectionHandler {
         }
       };
 
+      let task_id = WsStatsConnection::random_task_id();
       let reconnections: u16;
       let connection_id: String;
       let created_at: DateTime;
@@ -176,6 +177,7 @@ impl WsConnectionHandler {
 
           let connection = WsStatsConnection {
             id: connection_id.clone(),
+            task_id: task_id.clone(),
             station_id: station_id.clone(),
             start_deployment_id: Some(deployment_id.clone()),
             current_deployment_id: deployment_id,
@@ -209,6 +211,7 @@ impl WsConnectionHandler {
 
           let update = doc! {
             "$set": {
+              WsStatsConnection::KEY_TASK_ID: &task_id,
               WsStatsConnection::KEY_CURRENT_DEPLOYMENT_ID: &deployment_id,
               WsStatsConnection::KEY_IS_OPEN: true,
               WsStatsConnection::KEY_CLOSED_AT: null,
@@ -351,6 +354,12 @@ impl WsConnectionHandler {
 
       let duration_ms = ((*DateTime::now() - *created_at).as_seconds_f64() * 1000.0).round();
 
+      // only update if the task id is the same (not taken from another connection)
+      let filter = doc! {
+        WsStatsConnection::KEY_ID: &connection_id,
+        WsStatsConnection::KEY_TASK_ID: &task_id,
+      };
+
       let update = doc! {
         "$set": {
           WsStatsConnection::KEY_IS_OPEN: false,
@@ -359,7 +368,9 @@ impl WsConnectionHandler {
         }
       };
 
-      let _ = WsStatsConnection::update_by_id(&connection_id, update).await;
+      let _ = WsStatsConnection::cl()
+        .update_one(filter, update, None)
+        .await;
 
       log::info!(
         target: "ws-stats",

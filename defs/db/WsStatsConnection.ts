@@ -5,6 +5,7 @@ import type { DateTime } from "../DateTime.js";
 export type WsStatsConnection = {
   _id: string;
   st: string;
+  task_id: string;
   sd: string | null | undefined;
   dp: string;
   du: number | null | undefined;

@@ -20,7 +20,6 @@ use schemars::JsonSchema;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_util::DateTime;
 use std::borrow::Borrow;
-use std::collections::HashSet;
 use ts_rs::TS;
 
 pub mod error;
