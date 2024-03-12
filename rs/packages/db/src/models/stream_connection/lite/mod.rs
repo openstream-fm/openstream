@@ -3,6 +3,7 @@ use crate::Model;
 use geoip::CountryCode;
 use mongodb::bson::doc;
 use mongodb::IndexModel;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_util::DateTime;
 use std::net::IpAddr;
@@ -16,9 +17,10 @@ fn is_false(v: &bool) -> bool {
   *v == false
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "../../../defs/db/")]
+#[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
 #[serde(rename_all = "snake_case")]
+#[ts(export, export_to = "../../../defs/db/")]
+#[macros::schema_ts_export]
 #[macros::keys]
 pub struct StreamConnectionLite {
   #[serde(rename = "_id")]
@@ -35,18 +37,30 @@ pub struct StreamConnectionLite {
   pub is_open: bool,
 
   #[serde(rename = "ip")]
-  #[serde(with = "serde_util::ip")]
+  #[serde(
+    serialize_with = "serde_util::ip::serialize",
+    deserialize_with = "serde_util::ip::deserialize"
+  )]
+  #[ts(type = "string")]
   pub ip: IpAddr,
 
   #[serde(rename = "cc")]
   pub country_code: Option<CountryCode>,
 
   #[serde(rename = "du")]
-  #[serde(with = "serde_util::as_f64::option")]
+  #[serde(
+    serialize_with = "serde_util::as_f64::option::serialize",
+    deserialize_with = "serde_util::as_f64::option::deserialize"
+  )]
+  #[ts(type = "number | null | undefined")]
   pub duration_ms: Option<u64>,
 
   #[serde(rename = "by")]
-  #[serde(with = "serde_util::as_f64::option")]
+  #[serde(
+    serialize_with = "serde_util::as_f64::option::serialize",
+    deserialize_with = "serde_util::as_f64::option::deserialize"
+  )]
+  #[ts(type = "number | null | undefined")]
   pub transfer_bytes: Option<u64>,
 
   #[serde(rename = "br")]
@@ -63,10 +77,12 @@ pub struct StreamConnectionLite {
 
   #[serde(rename = "re")]
   #[serde(default, skip_serializing_if = "is_false")]
+  #[ts(optional)]
   pub is_external_relay_redirect: bool,
 
   #[serde(rename = "_m")]
   #[serde(default, skip_serializing_if = "is_false")]
+  #[ts(optional)]
   pub abnormally_closed: bool,
 
   #[serde(rename = "cl")]

@@ -390,5 +390,11 @@ export const shared_api = ({
       return await client.stream_connections.list(ip(req), ua(req), get_token(req), req.query as any);
     }))
 
+  api.route("/stream-connections-lite")
+    .get(json(async req => {
+      return await client.stream_connections_lite.list(ip(req), ua(req), get_token(req), req.query as any);
+    }))
+
+
   return api;
 }

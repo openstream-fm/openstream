@@ -36,6 +36,7 @@ export class Client {
   invitations: AccountInvitations;
   payment_methods: PaymentMethods;
   stream_connections: StreamConnections;
+  stream_connections_lite: StreamConnectionsLite;
 
   constructor(base_url: string, { /*ogger,*/ fetch = node_fetch }: { /*logger: Logger,*/ fetch?: typeof node_fetch } = {}) {
     this.base_url = base_url.trim().replace(/\/+$/g, "")
@@ -55,6 +56,7 @@ export class Client {
     this.invitations = new AccountInvitations(this);
     this.payment_methods = new PaymentMethods(this);
     this.stream_connections = new StreamConnections(this);
+    this.stream_connections_lite = new StreamConnectionsLite(this);
   }
 
   async fetch(_url: string, init: RequestInit = {}): Promise<Response> {
@@ -722,6 +724,17 @@ export class StreamConnections {
   
   async list(ip: string | null, ua: string | null, token: string, query: import("./defs/api/stream-connections/GET/Query.js").Query): Promise<import("./defs/api/stream-connections/GET/Output.js").Output> {
     return await this.client.get(ip, ua, token, `/stream-connections${qss(query)}`);
+  }
+}
+
+export class StreamConnectionsLite {
+  client: Client;
+  constructor(client: Client) {
+    this.client = client;
+  }
+  
+  async list(ip: string | null, ua: string | null, token: string, query: import("./defs/api/stream-connections-lite/GET/Query.js").Query): Promise<import("./defs/api/stream-connections-lite/GET/Output.js").Output> {
+    return await this.client.get(ip, ua, token, `/stream-connections-lite${qss(query)}`);
   }
 }
 

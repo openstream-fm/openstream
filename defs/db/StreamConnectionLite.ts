@@ -15,7 +15,7 @@ export type StreamConnectionLite = {
   do: string | null | undefined;
   os: string | null | undefined;
   ca: DateTime;
-  re: boolean;
-  _m: boolean;
+  re?: boolean;
+  _m?: boolean;
   cl: DateTime | null | undefined;
 };
