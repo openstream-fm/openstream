@@ -8,7 +8,6 @@ pub mod password;
 pub mod port;
 pub mod status_code;
 pub mod timezone_datetime;
-pub mod voidable;
 pub use datetime::DateTime;
 pub use mongodb::bson;
 

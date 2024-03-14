@@ -177,7 +177,7 @@ pub async fn check_now() -> Result<(), mongodb::error::Error> {
         doc! {
           "$set": {
             StreamConnectionLite::KEY_IS_OPEN: false,
-            StreamConnection::KEY_ABNORNALLY_CLOSED: true,
+            StreamConnectionLite::KEY_ABNORMALLY_CLOSED: true,
             StreamConnectionLite::KEY_CLOSED_AT: {
               "$max": [
                 {
@@ -244,7 +244,7 @@ pub async fn check_now() -> Result<(), mongodb::error::Error> {
         doc! {
           "$set": {
             StreamConnection::KEY_IS_OPEN: false,
-            StreamConnection::KEY_ABNORNALLY_CLOSED: true,
+            StreamConnection::KEY_ABNORMALLY_CLOSED: true,
             StreamConnection::KEY_CLOSED_AT: {
               "$max": [
                 {

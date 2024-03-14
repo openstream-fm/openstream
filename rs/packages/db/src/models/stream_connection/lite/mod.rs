@@ -114,7 +114,7 @@ impl StreamConnectionLite {
       duration_ms: full.duration_ms,
       transfer_bytes: full.transfer_bytes,
       is_external_relay_redirect: full.is_external_relay_redirect,
-      abnormally_closed: full.abnornally_closed,
+      abnormally_closed: full.abnormally_closed,
       created_at: full.created_at,
       closed_at: full.closed_at,
     }
@@ -136,7 +136,7 @@ impl From<StreamConnection> for StreamConnectionLite {
       transfer_bytes: full.transfer_bytes,
       country_code: full.country_code,
       is_external_relay_redirect: full.is_external_relay_redirect,
-      abnormally_closed: full.abnornally_closed,
+      abnormally_closed: full.abnormally_closed,
       created_at: full.created_at,
       closed_at: full.closed_at,
     }

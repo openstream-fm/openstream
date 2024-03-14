@@ -48,7 +48,7 @@ pub struct StreamConnection {
 
   #[serde(rename = "_m")]
   #[serde(default, skip_serializing_if = "is_false")]
-  pub abnornally_closed: bool,
+  pub abnormally_closed: bool,
 
   pub request: Request,
   pub last_transfer_at: DateTime,
