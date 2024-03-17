@@ -24,7 +24,8 @@ export const load_call = async <T>(
       return result.data!;
     } else {
       if(result.error?.error?.status === StatusCode.UNAUTHORIZED && redirectToLoginOnAuthErrors) {
-        const to = `${location.pathname}${location.search}`;
+        // TODO: this does not work on server side
+        const to = typeof location === "undefined" ? "/" : `${location.pathname}${location.search}`;
         const login_url = to === "/" ? "/login" : `/login#${to}`
         redirect(302, login_url);
       } else {
