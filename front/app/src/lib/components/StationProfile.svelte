@@ -598,16 +598,6 @@
 		<div class="advanced-sep" />
 
 		<div class="field">
-			<BooleanField
-				label={
-					// TODO: locale
-					"Enable Interstitial Ads"
-				}
-				bind:value={current.user_metadata.mob_app.interstitial_ads}
-			/>
-		</div>
-
-		<div class="field">
 			<!-- TODO: locale -->
 			<NullTextField
 				icon={mdiGooglePlay}
