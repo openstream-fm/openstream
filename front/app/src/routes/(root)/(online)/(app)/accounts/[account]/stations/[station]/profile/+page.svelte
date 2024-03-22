@@ -45,9 +45,13 @@
         base_color: String((data.station.user_metadata.mob_app as any)?.base_color ?? ""),
         icon_bg_color: String((data.station.user_metadata.mob_app as any)?.icon_bg_color ?? ""),
         icon_rounded: !!(data.station.user_metadata.mob_app as any)?.icon_rounded ?? false,
+        
         ads: !!(data.station.user_metadata.mob_app as any)?.ads ?? false,
+        interstitial_ads: !!(data.station.user_metadata.mob_app as any)?.interstitial_ads ?? false,
+
         admob_app_id: String((data.station.user_metadata.mob_app as any)?.admob_app_id ?? "") || null,
         admob_banner_id: String((data.station.user_metadata.mob_app as any)?.admob_banner_id ?? "") || null,
+        admob_interstitial_id: String((data.station.user_metadata.mob_app as any)?.admob_interstitial_id ?? "") || null,
         
         google_play_console_id: String((data.station.user_metadata.mob_app as any)?.google_play_console_id || "") || null,
 

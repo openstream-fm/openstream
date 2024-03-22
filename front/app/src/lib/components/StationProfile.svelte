@@ -59,6 +59,7 @@
 	import type { LangCode } from '$server/defs/LangCode';
 	import type { GooglePlayLang } from './google-play-lang';
 	import GooglePlayLangField from './GooglePlayLangField.svelte';
+	import { tooltip } from '$share/tooltip';
 
 	export let account_id: string;
 	export let station_id: string | null;
@@ -100,10 +101,14 @@
 				base_color: string
 				icon_bg_color: string
 				icon_rounded: boolean
-				ads: boolean
 				
+				// banners
+				ads: boolean
+				interstitial_ads: boolean
+
 				admob_app_id: string | null | undefined
 				admob_banner_id: string | null | undefined
+				admob_interstitial_id: string | null | undefined
 				
 				google_play_console_id: string | null | undefined,
 
@@ -125,7 +130,7 @@
 		return null;
 	}
 
-	const _validate_admob_banner_id = (value: string | null | undefined): string | null => {
+	const _validate_admob_ad_id = (value: string | null | undefined): string | null => {
 		if(value == null) return null;
 		if(!/^ca\-app\-pub\-[0-9]{16}\/[0-9]{10}$/.test(value)) {
 			return $locale.station_profile.validation.admob_banner_id_pattern;
@@ -151,7 +156,7 @@
 		gap: 2.5rem;
 		padding: 2rem;
 	}
-  
+
   .section-logo {
     --validator-message-font-size: 1em;
     --validator-message-margin: 0;
@@ -199,6 +204,20 @@
 		color: #999;
 		font-size: 0.8rem;
 		margin: 0.5rem 0.25rem;
+	}
+
+	.field.with-toggle {
+		position: relative;
+		padding-inline-end: 2.5rem;
+	}
+
+	.field-toggle {
+		position: absolute;
+		right: 0;
+		top: 50%;
+		transform: translateY(-50%);
+		display: flex;
+		flex: none;
 	}
 </style>
 
@@ -579,13 +598,6 @@
 		<div class="advanced-sep" />
 
 		<div class="field">
-			<BooleanField
-				label={$locale.station_profile.labels.mob_app_enable_ads}
-				bind:value={current.user_metadata.mob_app.ads}
-			/>
-		</div>
-
-		<div class="field">
 			<!-- TODO: locale -->
 			<NullTextField
 				icon={mdiGooglePlay}
@@ -612,7 +624,7 @@
 			<Validator value={current.user_metadata.mob_app.admob_app_id} fn={_validate_admob_app_id} />
 		</div>
 
-		<div class="field">
+		<div class="field with-toggle">
 			<NullTextField
 				icon={mdiAdMob}
 				icon_viewbox={mdiAdMobViewBox}
@@ -620,8 +632,42 @@
 				label={$locale.station_profile.labels.mob_app_admob_banner_id}
 				bind:value={current.user_metadata.mob_app.admob_banner_id}
 			/>
-			<Validator value={current.user_metadata.mob_app.admob_banner_id} fn={_validate_admob_banner_id} />
+			<Validator value={current.user_metadata.mob_app.admob_banner_id} fn={_validate_admob_ad_id} />
+
+			<div
+				class="field-toggle"
+				use:tooltip={
+				// TODO: locale
+				"Enable banner ads"
+				}
+			>
+				<BooleanField bind:value={current.user_metadata.mob_app.ads} />
+			</div>
 		</div>
-		
+
+
+		<div class="field with-toggle">
+			<NullTextField
+				icon={mdiAdMob}
+				icon_viewbox={mdiAdMobViewBox}
+				trim
+				label={
+					// TODO: locale
+					"Admob Interstitial Id"
+				}
+				bind:value={current.user_metadata.mob_app.admob_interstitial_id}
+			/>
+			<Validator value={current.user_metadata.mob_app.admob_interstitial_id} fn={_validate_admob_ad_id} />
+
+			<div
+				class="field-toggle"
+				use:tooltip={
+					// TODO: locale
+					"Enable interstitial ads"
+				}
+			>
+				<BooleanField bind:value={current.user_metadata.mob_app.interstitial_ads} />
+			</div>
+		</div>
 	</div>
 </div>
