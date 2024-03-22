@@ -55,9 +55,13 @@
         base_color: "",
         icon_bg_color: "",
         icon_rounded: false,
+        
         ads: false,
+        interstitial_ads: false,
+
         admob_app_id: null as string | null | undefined,
         admob_banner_id: null as string | null | undefined,
+        admob_interstitial_id: null as string | null | undefined,
 
         google_play_console_id: null as string | null | undefined,
 
