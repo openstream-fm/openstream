@@ -1,6 +1,6 @@
 <script lang="ts">
   export let value: boolean;
-  export let label: string;
+  export let label: string | null = null;
 
 	import Icon from "$share/Icon.svelte";
   import { ripple } from "$share/ripple";
@@ -40,7 +40,6 @@
   }
 
   .icon-out {
-    margin-inline-end: 1rem;
     flex: none;
     position: relative;
   }
@@ -58,6 +57,10 @@
   .checked .icon {
     color: var(--green);
   }
+
+  .label {
+    margin-inline-start: 1rem;
+  }
 </style>
 
 <div class="boolean-field" class:checked={value}>
@@ -74,8 +77,11 @@
         </div>
       {/if}
     </div>
-    <div class="label">
-      {label}
-    </div>
+
+    {#if label != null}
+      <div class="label">
+        {label}
+      </div>
+    {/if}
   </label>
 </div>
