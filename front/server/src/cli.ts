@@ -2,7 +2,6 @@ import { program as cmd } from "commander";
 import { color } from "./color.js";
 import fs from "fs";
 import path from "path";
-//import { promises } from "fs";
 
 import { TypeGuardError } from "typia";
 
