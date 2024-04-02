@@ -1,4 +1,3 @@
-/// config.test.ts
 import test from "ava";
 import { load, load_from_string, merge_env } from "./config.js";
 import type { Config } from "./config.js";
@@ -12,7 +11,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const defaultConfig: Config = {
   openstream: {
     api_base_url: "https://api.openstream.fm",
-    // token: "test_token",
   },
   session: {
     secret: "test_secret",
