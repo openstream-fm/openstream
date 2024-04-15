@@ -68,6 +68,7 @@ export class Client {
       ...init
     }).catch(e => {
       // this.logger.warn(`fetch error: ${e} | cause=${e.cause}`)
+      console.warn("client fetch failed", e, e.cause ?? null);
       throw new ClientError(StatusCode.BAD_GATEWAY, "CLIENT_GATEWAY_FETCH", "Gateway unavailable")
     })
   }
