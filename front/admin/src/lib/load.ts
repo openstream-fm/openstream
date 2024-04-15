@@ -80,7 +80,6 @@ export const load_call = async <T>(
       }
     }
   } catch(e: any) {
-    console.log(e);
     const api_error = new ApiError(502, "FRONT_GATEWAY_FETCH", `Bad gateway (fetch)`);
     error(api_error.status as NumericRange<400, 599>, api_error.toJSON().error);
   }
