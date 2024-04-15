@@ -768,7 +768,7 @@
       <AnalyticsTypeSelector bind:type {locale} />
     </div>
 
-    {#if country_code !== undefined || os !== undefined || browser !== undefined || domain !== undefined}
+    {#if country_code !== undefined || os !== undefined || browser !== undefined || domain !== undefined || app_kind !== undefined || app_version !== undefined}
       <div class="more-filters" transition:slide={{ duration: 200 }}>
         {#if country_code !== undefined}
           <div class="more-chip" transition:scale={{ duration: 200 }}>
