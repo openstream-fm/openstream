@@ -17,6 +17,9 @@ const qss = (v: any) => {
   return qs.stringify(v, { addQueryPrefix: true, skipNulls: true })
 }
 
+const http_agent = new http.Agent({ keepAlive: true });
+const https_agent = new https.Agent({ keepAlive: true });
+
 export class Client {
 
   private base_url: string;
@@ -64,7 +67,7 @@ export class Client {
     const method = init.method ?? "GET";
     // this.logger.debug(`fetch: ${method} ${url}`);
     return await this.node_fetch(url, {
-      agent: (url) => url.protocol === "http:" ? http.globalAgent : https.globalAgent,
+      agent: (url) => url.protocol === "http:" ? http_agent : https_agent,
       ...init
     }).catch(e => {
       // this.logger.warn(`fetch error: ${e} | cause=${e.cause}`)

@@ -16,7 +16,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@openstream/client": "^0.3.2",
+    "@openstream/client": "^0.3.3",
     "accept-language-parser": "^1.5.0",
     "braintree": "^3.15.0",
     "commander": "^9.4.1",
