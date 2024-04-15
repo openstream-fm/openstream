@@ -19,9 +19,7 @@ resolver = "2"
 
 members = [
     "rs/bin/openstream",
-
     "rs/config/constants",
-
     "rs/packages/openapi",
     "rs/packages/ip-counter",
     "rs/packages/macros",
@@ -38,14 +36,10 @@ members = [
     "rs/packages/upload",
     "rs/packages/api",
     "rs/packages/api2",
-
     "rs/packages/mp3",
-
     "rs/packages/http",
-
     "rs/packages/channels",
     "rs/packages/db",
-
     "rs/packages/validate",
     "rs/packages/user-agent",
     "rs/packages/spsc",
@@ -63,22 +57,16 @@ members = [
     "rs/packages/lang-util",
     "rs/packages/test-macros",
     "rs/packages/test-util",
-
     "rs/packages/proxy-protocol",
     "rs/packages/geoip",
     "rs/packages/lang",
-
     "rs/packages/mailer",
-
     "rs/packages/payments",
-
     "rs/packages/modify",
     "rs/packages/modify_derive",
-
     "rs/packages/metre",
     "rs/packages/metre-macros",
 ]
 
 [patch.crates-io]
-# bson = { path = "./rs/patches/bson" }
 ts-rs = { path = "./rs/patches/ts-rs/ts-rs" }
