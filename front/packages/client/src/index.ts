@@ -17,8 +17,8 @@ const qss = (v: any) => {
   return qs.stringify(v, { addQueryPrefix: true, skipNulls: true })
 }
 
-const http_agent = new http.Agent({ keepAlive: true });
-const https_agent = new https.Agent({ keepAlive: true });
+const http_agent = new http.Agent({ keepAlive: false });
+const https_agent = new https.Agent({ keepAlive: false });
 
 export class Client {
 
@@ -624,7 +624,7 @@ export class StationFiles {
     return await this.client.delete(ip, ua, token, `/stations/${station_id}/files/${file_id}`);
   }
 
-  async post(ip: string | null, ua: string | null, token: string, station_id: string, content_type: string, content_length: number, query: import("./defs/api/stations/[station]/files/POST/Query.js").Query, data: Readable): Promise<import("./defs/api/stations/[station]/files/POST/Output.js").Output> {
+  async post(ip: string | null, ua: string | null, token: string, station_id: string, content_type: string, content_length: number, query: import("./defs/api/stations/[station]/files/POST/Query.js").Query, data: Readable | Buffer): Promise<import("./defs/api/stations/[station]/files/POST/Output.js").Output> {
 
     const headers = new Headers();
 
