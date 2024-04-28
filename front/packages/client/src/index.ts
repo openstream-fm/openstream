@@ -11,6 +11,15 @@ import type { PublicErrorCode } from "./defs/error/PublicErrorCode.js";
 
 export { ClientError, type ClientErrorCode };
 
+import http from "http";
+import https from "https";
+
+http.globalAgent = new http.Agent({ keepAlive: false, maxSockets: Infinity });
+https.globalAgent = new https.Agent({ keepAlive: false, maxSockets: Infinity });
+
+const http_agent = new http.Agent({ keepAlive: false, maxSockets: Infinity })
+const https_agent = new https.Agent({ keepAlive: false, maxSockets: Infinity })
+
 const qss = (v: any) => {
   return qs.stringify(v, { addQueryPrefix: true, skipNulls: true })
 }
@@ -62,7 +71,7 @@ export class Client {
     const method = init.method ?? "GET";
     // this.logger.debug(`fetch: ${method} ${url}`);
     return await this.node_fetch(url, {
-      agent: false,
+      agent: url => url.protocol === "http:" ? http_agent : https_agent,
       ...init
     }).catch(e => {
       // this.logger.warn(`fetch error: ${e} | cause=${e.cause}`)
@@ -109,7 +118,6 @@ export class Client {
 
     // remove default user agent
     headers.append("user-agent", ua || "openstream-unknown")
-    headers.append("connection", "close")
 
     if (token) headers.append(ACCESS_TOKEN_HEADER, token);
 
@@ -511,7 +519,6 @@ export class StationPictures {
 
     if (ip) headers.append(FORWARD_IP_HEADER, ip)
     if (ua) headers.append("user-agent", ua)
-    headers.append("connection", "close")
     headers.append(ACCESS_TOKEN_HEADER, token)
     headers.append("content-type", "application/octet-stream")
 
@@ -627,7 +634,6 @@ export class StationFiles {
 
     if (ip) headers.append(FORWARD_IP_HEADER, ip)
     if (ua) headers.append("user-agent", ua)
-    headers.append("connection", "close")
     headers.append(ACCESS_TOKEN_HEADER, token)
     headers.append("content-type", content_type)
     headers.append("content-length", String(content_length))

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "install": "run-s install:share install:server install:admin install:app",
+    "install": "run-s install:share install:client install:server install:admin install:app",
     "install:share": "cd share && npm i",
     "install:server": "cd server && npm i",
     "install:admin": "cd admin && npm i",
