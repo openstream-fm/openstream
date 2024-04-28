@@ -7,8 +7,6 @@ import { ClientError, type ClientErrorCode } from "./error.js";
 import node_fetch, { Headers } from "node-fetch";
 import type { Response, RequestInit } from "node-fetch";
 
-import http from "http";
-import https from "https";
 import type { PublicErrorCode } from "./defs/error/PublicErrorCode.js";
 
 export { ClientError, type ClientErrorCode };
@@ -16,9 +14,6 @@ export { ClientError, type ClientErrorCode };
 const qss = (v: any) => {
   return qs.stringify(v, { addQueryPrefix: true, skipNulls: true })
 }
-
-const http_agent = new http.Agent({ keepAlive: false });
-const https_agent = new https.Agent({ keepAlive: false });
 
 export class Client {
 
@@ -67,7 +62,7 @@ export class Client {
     const method = init.method ?? "GET";
     // this.logger.debug(`fetch: ${method} ${url}`);
     return await this.node_fetch(url, {
-      agent: (url) => url.protocol === "http:" ? http_agent : https_agent,
+      agent: false,
       ...init
     }).catch(e => {
       // this.logger.warn(`fetch error: ${e} | cause=${e.cause}`)
@@ -114,6 +109,7 @@ export class Client {
 
     // remove default user agent
     headers.append("user-agent", ua || "openstream-unknown")
+    headers.append("connection", "close")
 
     if (token) headers.append(ACCESS_TOKEN_HEADER, token);
 
@@ -513,10 +509,11 @@ export class StationPictures {
   async post(ip: string | null, ua: string | null, token: string, query: import("./defs/api/station-pictures/POST/Query.js").Query, data: Readable | Buffer): Promise<import("./defs/api/station-pictures/POST/Output.js").Output> {
     const headers = new Headers();
 
-    if (ip) headers.append(FORWARD_IP_HEADER, ip);
+    if (ip) headers.append(FORWARD_IP_HEADER, ip)
     if (ua) headers.append("user-agent", ua)
-    headers.append(ACCESS_TOKEN_HEADER, token);
-    headers.append("content-type", "application/octet-stream");
+    headers.append("connection", "close")
+    headers.append(ACCESS_TOKEN_HEADER, token)
+    headers.append("content-type", "application/octet-stream")
 
     let res = await this.client.fetch(`/station-pictures${qss(query)}`, {
       method: "POST",
@@ -628,11 +625,12 @@ export class StationFiles {
 
     const headers = new Headers();
 
-    if (ip) headers.append(FORWARD_IP_HEADER, ip);
-    if (ua) headers.append("user-agent", ua);
-    headers.append(ACCESS_TOKEN_HEADER, token);
-    headers.append("content-type", content_type);
-    headers.append("content-length", String(content_length));
+    if (ip) headers.append(FORWARD_IP_HEADER, ip)
+    if (ua) headers.append("user-agent", ua)
+    headers.append("connection", "close")
+    headers.append(ACCESS_TOKEN_HEADER, token)
+    headers.append("content-type", content_type)
+    headers.append("content-length", String(content_length))
 
     let res = await this.client.fetch(`/stations/${station_id}/files${qss(query)}`, {
       method: "POST",
