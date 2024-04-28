@@ -7,6 +7,9 @@ import { ClientError, type ClientErrorCode } from "./error.js";
 import node_fetch, { Headers } from "node-fetch";
 import type { Response, RequestInit } from "node-fetch";
 
+import http from "http";
+import https from "https";
+
 import type { PublicErrorCode } from "./defs/error/PublicErrorCode.js";
 
 export { ClientError, type ClientErrorCode };
@@ -62,7 +65,7 @@ export class Client {
     const method = init.method ?? "GET";
     // this.logger.debug(`fetch: ${method} ${url}`);
     return await this.node_fetch(url, {
-      agent: false,
+      agent: url => url.protocol === "http:" ? http.globalAgent : https.globalAgent,
       ...init
     }).catch(e => {
       // this.logger.warn(`fetch error: ${e} | cause=${e.cause}`)
@@ -109,7 +112,6 @@ export class Client {
 
     // remove default user agent
     headers.append("user-agent", ua || "openstream-unknown")
-    headers.append("connection", "close")
 
     if (token) headers.append(ACCESS_TOKEN_HEADER, token);
 
@@ -511,7 +513,6 @@ export class StationPictures {
 
     if (ip) headers.append(FORWARD_IP_HEADER, ip)
     if (ua) headers.append("user-agent", ua)
-    headers.append("connection", "close")
     headers.append(ACCESS_TOKEN_HEADER, token)
     headers.append("content-type", "application/octet-stream")
 
@@ -627,7 +628,6 @@ export class StationFiles {
 
     if (ip) headers.append(FORWARD_IP_HEADER, ip)
     if (ua) headers.append("user-agent", ua)
-    headers.append("connection", "close")
     headers.append(ACCESS_TOKEN_HEADER, token)
     headers.append("content-type", content_type)
     headers.append("content-length", String(content_length))
