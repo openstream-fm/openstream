@@ -7,12 +7,18 @@ import { ClientError, type ClientErrorCode } from "./error.js";
 import node_fetch, { Headers } from "node-fetch";
 import type { Response, RequestInit } from "node-fetch";
 
-import http from "http";
-import https from "https";
-
 import type { PublicErrorCode } from "./defs/error/PublicErrorCode.js";
 
 export { ClientError, type ClientErrorCode };
+
+import http from "http";
+import https from "https";
+
+http.globalAgent = new http.Agent({ keepAlive: false, maxSockets: Infinity });
+https.globalAgent = new https.Agent({ keepAlive: false, maxSockets: Infinity });
+
+const http_agent = new http.Agent({ keepAlive: false, maxSockets: Infinity })
+const https_agent = new https.Agent({ keepAlive: false, maxSockets: Infinity })
 
 const qss = (v: any) => {
   return qs.stringify(v, { addQueryPrefix: true, skipNulls: true })
@@ -65,7 +71,7 @@ export class Client {
     const method = init.method ?? "GET";
     // this.logger.debug(`fetch: ${method} ${url}`);
     return await this.node_fetch(url, {
-      agent: url => url.protocol === "http:" ? http.globalAgent : https.globalAgent,
+      agent: url => url.protocol === "http:" ? http_agent : https_agent,
       ...init
     }).catch(e => {
       // this.logger.warn(`fetch error: ${e} | cause=${e.cause}`)
