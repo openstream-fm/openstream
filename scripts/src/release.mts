@@ -46,15 +46,14 @@ await within(async () => {
 
 await $`mkdir -p ${tmpdir}`;
 await $`mkdir -p ${frontdir.target}`;
+await $`mkdir -p ${frontdir.target}/packages`;
 await $`mkdir -p ${path.dirname(binfile.target)}`;
 
 for(const dir of ["packages/client", "server", "app", "admin"]) {
   await within(async () => {
     cd(`${frontdir.src}/${dir}`);
-    await $`FORCE_COLOR=1 npm prune --omit=dev --ignore-scripts --color always`;
     const from = `${frontdir.src}/${dir}`;
     const to = `${frontdir.target}/${dir}`;
-    await $`mkdir -p ${to}`; 
     await $`cp -r ${from} ${to}`; 
   })
 }
