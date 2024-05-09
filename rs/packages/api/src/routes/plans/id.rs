@@ -356,19 +356,19 @@ pub mod patch {
         };
 
         if let Some(ref identifier) = identifier {
-          plan.identifier = identifier.clone();
+          plan.identifier.clone_from(identifier);
         }
 
         if let Some(ref slug) = slug {
-          plan.slug = slug.clone();
+          plan.slug.clone_from(slug);
         }
 
         if let Some(ref display_name) = display_name {
-          plan.display_name = display_name.clone();
+          plan.display_name.clone_from(display_name);
         }
 
         if let Some(ref color) = color {
-          plan.color = color.clone();
+          plan.color.clone_from(color);
         }
 
         if let Some(price) = price {

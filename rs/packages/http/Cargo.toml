@@ -10,7 +10,7 @@ db = { version = "0.1.0", path = "../db" }
 # merge-streams = "0.1.2"
 # tokio-stream = "0.1.11"
 hyper = "0.14.27"
-mongodb = "2.7.0"
+mongodb = "2.8.2"
 pin-project = "1.0.12"
 prex = { version = "0.1.0", path = "../prex" }
 serde = "1.0.149"

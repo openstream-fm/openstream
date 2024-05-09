@@ -93,4 +93,4 @@ impl Metadata {
 
 #[derive(JsonSchema)]
 #[schemars(rename = "JsonDocument")]
-pub struct DocumentSchema(BTreeMap<String, serde_json::Value>);
+pub struct DocumentSchema(#[allow(unused)] BTreeMap<String, serde_json::Value>);

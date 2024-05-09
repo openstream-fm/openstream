@@ -72,9 +72,6 @@ pub struct Status {
   status: usize,
 }
 
-#[derive(Debug)]
-struct StreamServerInner {}
-
 #[derive(Debug, thiserror::Error)]
 pub enum StreamServerError {
   #[error("io error: {0}")]

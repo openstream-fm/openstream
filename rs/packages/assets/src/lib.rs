@@ -30,9 +30,6 @@ pub struct StaticServer {
   shutdown: Shutdown,
 }
 
-#[derive(Debug)]
-struct SourceServerInner {}
-
 impl StaticServer {
   pub fn new(addrs: Vec<SocketAddr>, shutdown: Shutdown) -> Self {
     Self { addrs, shutdown }

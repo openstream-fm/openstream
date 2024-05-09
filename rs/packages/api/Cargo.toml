@@ -30,7 +30,7 @@ log = "0.4.17"
 macros = { version = "0.1.0", path = "../macros" }
 mailer = { version = "0.1.0", path = "../mailer" }
 media = { version = "0.1.0", path = "../media" }
-mongodb = "2.7.0"
+mongodb = "2.8.2"
 openapi = { version = "0.1.0", path = "../openapi" }
 owo-colors = { version = "3.5.0", path = "../owo-colors" }
 parking_lot = "0.12.1"

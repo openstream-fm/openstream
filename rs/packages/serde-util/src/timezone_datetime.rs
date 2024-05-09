@@ -17,7 +17,7 @@ openapi::impl_schema_from!(TimezoneDateTime, DateTimeSchema);
 
 #[derive(JsonSchema)]
 #[schemars(rename = "TimezoneDateTime")]
-struct DateTimeSchema(chrono::DateTime<Utc>);
+struct DateTimeSchema(#[allow(unused)] chrono::DateTime<Utc>);
 
 impl Display for TimezoneDateTime {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

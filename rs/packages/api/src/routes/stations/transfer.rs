@@ -161,7 +161,7 @@ pub mod post {
 
         let used_storage = tx_try!(Station::get_used_storage_with_session(&station.id, &mut session).await);
 
-        station.account_id = target_account.id.clone();
+        station.account_id.clone_from(&target_account.id);
         // We do not update the listeners limits here, as when stream connections terminate
         // they will decrease the source account instead of the target account
         source_account.limits.stations.used = source_account.limits.stations.used.saturating_sub(1);
