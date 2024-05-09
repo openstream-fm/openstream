@@ -21,7 +21,7 @@ dotenv = "0.15.0"
 owo-colors = { version = "3.5.0", path = "../../packages/owo-colors" }
 config = { version = "0.1.0", path = "../../packages/config" }
 db = { version = "0.1.0", path = "../../packages/db" }
-mongodb = "2.7.0"
+mongodb = "2.8.2"
 drop-tracer = { version = "0.1.0", path = "../../packages/drop-tracer" }
 shutdown = { version = "0.1.0", path = "../../packages/shutdown" }
 which = "4.3.0"

@@ -1,3 +1,4 @@
+#![allow(clippy::thread_local_initializer_can_be_made_const)]
 #[macro_use]
 extern crate log;
 extern crate env_logger;

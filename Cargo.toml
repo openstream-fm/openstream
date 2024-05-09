@@ -5,14 +5,14 @@ panic = "abort"
 [profile.release]
 panic = "abort"
 
-[profile.test ]
-panic = "abort"
+# [profile.test ]
+# panic = "abort"
 
-[profile.bench]
-panic = "abort"
+# [profile.bench]
+# panic = "abort"
 
-[profile.doc]
-panic = "abort"
+# [profile.doc]
+# panic = "abort"
 
 [workspace]
 resolver = "2"

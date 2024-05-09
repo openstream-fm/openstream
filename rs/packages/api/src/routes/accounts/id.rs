@@ -201,7 +201,7 @@ pub mod patch {
             };
 
             if let Some(ref name) = patch.name {
-              account.name = name.clone();
+              account.name.clone_from(name);
             }
 
             if let Some(ref user_metadata) = patch.user_metadata {
@@ -222,7 +222,7 @@ pub mod patch {
                 return Err(HandleError::PlanNotFound(plan_id.to_string()));
               }
 
-              account.plan_id = plan.id.clone();
+              account.plan_id.clone_from(&plan.id);
 
               account.limits.stations.total = plan.limits.stations;
               account.limits.listeners.total = plan.limits.listeners;
@@ -262,7 +262,7 @@ pub mod patch {
                 return Err(HandleError::PlanNotFound(plan_id.to_string()));
               }
 
-              account.plan_id = plan.id.clone();
+              account.plan_id.clone_from(&plan.id);
               account.limits.stations.total = plan.limits.stations;
               account.limits.listeners.total = plan.limits.listeners;
               account.limits.storage.total = plan.limits.storage;

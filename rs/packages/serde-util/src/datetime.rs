@@ -35,7 +35,7 @@ openapi::impl_schema_from!(DateTime, DateTimeSchema);
 
 #[derive(JsonSchema)]
 #[schemars(rename = "DateTime")]
-struct DateTimeSchema(chrono::DateTime<Utc>);
+struct DateTimeSchema(#[allow(unused)] chrono::DateTime<Utc>);
 
 impl Display for DateTime {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

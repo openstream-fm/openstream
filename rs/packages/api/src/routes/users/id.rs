@@ -252,11 +252,11 @@ pub mod patch {
       let user = run_transaction!(session => {
         fetch_and_patch!(User, up_user, &user.id, Err(HandleError::UserNotFound(user.id)), session, {
           if let Some(first_name) = &first_name {
-            up_user.first_name = first_name.clone();
+            up_user.first_name.clone_from(first_name);
           }
 
           if let Some(last_name) = &last_name {
-            up_user.last_name = last_name.clone();
+            up_user.last_name.clone_from(last_name);
           }
 
           if let Some(opt_phone) = &phone {

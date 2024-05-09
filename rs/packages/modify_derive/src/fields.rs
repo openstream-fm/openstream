@@ -214,9 +214,7 @@ fn try_extract_option(ty: &syn::Type) -> Option<&syn::Type> {
     return None;
   };
 
-  let Some(arg) = ab.args.last() else {
-    return None;
-  };
+  let arg = ab.args.last()?;
 
   match arg {
     syn::GenericArgument::Type(ty) => Some(ty),

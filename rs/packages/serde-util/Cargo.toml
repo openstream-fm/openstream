@@ -12,7 +12,7 @@ chrono = { version = "0.4", features = ["serde"] }
 hyper = "0.14.27"
 iso8601-timestamp = "0.2.7"
 log = "0.4.17"
-mongodb = "2.7.0"
+mongodb = "2.8.2"
 openapi = { version = "0.1.0", path = "../openapi" }
 schemars = { version = "0.8.16", features = ["preserve_order", "chrono"] }
 serde = "1"
