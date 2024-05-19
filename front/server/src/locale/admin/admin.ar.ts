@@ -12,7 +12,7 @@ const locale: import("./admin.locale.js").AdminLocale = {
   "region": null,
 
   // @notranslate
-  "logo_text": "openstream",
+  "logo_text": "openstream", 
 
   // @notranslate
   "app_name": "Openstream Admin",
