@@ -119,7 +119,7 @@ for (const iso of isos) {
     })
 
     const createChatCompletion = async function* (params: {
-      model: "gpt-4" | "gpt-3.5-turbo" | "gpt-3.5-turbo-16k" | "gpt-4-1106-preview",
+      model: "gpt-4o" | "gpt-4" | "gpt-3.5-turbo" | "gpt-3.5-turbo-16k" | "gpt-4-1106-preview",
       messages: openai.ChatCompletionMessageParam[]
     }) {
       const res = await client.chat.completions.create({
@@ -175,7 +175,7 @@ for (const iso of isos) {
       }
 
       const stream = createChatCompletion({
-        model: "gpt-4-1106-preview",
+        model: "gpt-4o",
         messages
       })
 
