@@ -249,10 +249,20 @@ pub async fn recalculate_storage_quota(
     }
   }
 
-  for (account_id, v) in account_used_map.into_iter() {
-    const KEY_LIMITS_STORAGE_USED: &str =
-      crate::key!(Account::KEY_LIMITS, Limits::KEY_STORAGE, Limit::KEY_USED);
+  const KEY_LIMITS_STORAGE_USED: &str =
+    crate::key!(Account::KEY_LIMITS, Limits::KEY_STORAGE, Limit::KEY_USED);
 
+  let non_zero_account_ids = account_used_map.keys().cloned().collect::<Vec<_>>();
+
+  let filter = doc! { Account::KEY_ID: { "$nin": &non_zero_account_ids } };
+
+  let update = doc! { "$set": { KEY_LIMITS_STORAGE_USED: 0 as f64 } };
+
+  Account::cl()
+    .update_many_with_session(filter, update, None, session)
+    .await?;
+
+  for (account_id, v) in account_used_map.into_iter() {
     let update = doc! { "$set": { KEY_LIMITS_STORAGE_USED: v as f64 } };
 
     Account::update_by_id_with_session(&account_id, update, session).await?;
