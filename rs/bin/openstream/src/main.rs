@@ -6,7 +6,8 @@ use api::ws_stats::WsStatsServer;
 use clap::{Parser, Subcommand};
 use config::Config;
 use db::access_token::{AccessToken, GeneratedBy};
-use db::Model;
+use db::account::recalculate_storage_quota;
+use db::{run_transaction, Model};
 use db::admin::Admin;
 use db::registry::Registry;
 use drop_tracer::DropTracer;
@@ -583,6 +584,21 @@ async fn start_async(Start { config }: Start) -> Result<(), anyhow::Error> {
     tokio::spawn(db::station_picture::upgrade_images_if_needed());
     tokio::spawn(media::health::health_shutdown_job());
     tokio::spawn(db::probe::start_probe_background_job());
+    tokio::spawn(async {
+      info!(target: "start", "recalculating storage quota");
+
+      let r = async {
+        run_transaction!(session => {
+          tx_try!(recalculate_storage_quota(&mut session).await);
+          Ok::<(), mongodb::error::Error>(())
+        })
+      }.await;
+
+      match r {
+        Ok(_) => info!(target: "start", "recalculating storage quota done"),
+        Err(e) => error!(target: "start", "recalculating storage quota error: {}", e),
+      };
+  });
 
     tokio::spawn({
       let shutdown = shutdown.clone();

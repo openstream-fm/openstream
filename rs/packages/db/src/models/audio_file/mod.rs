@@ -1,7 +1,7 @@
 use crate::{
   account::{Account, Limit, Limits},
   audio_chunk::AudioChunk,
-  run_transaction, Model,
+  run_transaction, station, Model,
 };
 use mongodb::{
   bson::{doc, Document},
@@ -147,6 +147,14 @@ impl AudioFile {
       }
     };
 
+    let station =
+      match station::Station::get_by_id_with_session(&audio_file.station_id, session).await? {
+        None => return Ok(None),
+        Some(station) => station,
+      };
+
+    let account_id = station.account_id.clone();
+
     // delete chunks
     AudioChunk::delete_by_audio_file_id_with_session(&audio_file.id, session).await?;
 
@@ -156,7 +164,7 @@ impl AudioFile {
     // update station
     const KEY: &str = crate::key!(Account::KEY_LIMITS, Limits::KEY_STORAGE, Limit::KEY_USED);
     let update = doc! { "$inc": { KEY: (audio_file.len as f64) * -1.0 } };
-    Account::update_by_id_with_session(&audio_file.station_id, update, session).await?;
+    Account::update_by_id_with_session(&account_id, update, session).await?;
 
     Ok(Some(audio_file))
   }

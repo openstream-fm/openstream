@@ -1,3 +1,4 @@
+use crate::audio_file::AudioFile;
 use crate::station::Station;
 use crate::stream_connection::lite::StreamConnectionLite;
 use crate::Model;
@@ -217,6 +218,42 @@ pub async fn recalculate_used_listeners_quota(
       crate::key!(Account::KEY_LIMITS, Limits::KEY_LISTENERS, Limit::KEY_USED);
 
     let update = doc! { "$set": { KEY_LIMITS_LISTENERS_USED: v as f64 } };
+
+    Account::update_by_id_with_session(&account_id, update, session).await?;
+  }
+
+  Ok(())
+}
+
+pub async fn recalculate_storage_quota(
+  session: &mut ClientSession,
+) -> Result<(), mongodb::error::Error> {
+  let mut stations = Station::cl().find_with_session(None, None, session).await?;
+  let mut station_account_map = HashMap::<String, String>::new();
+  {
+    while let Some(station) = stations.next(session).await.transpose()? {
+      station_account_map.insert(station.id.clone(), station.account_id.clone());
+    }
+  }
+
+  let mut account_used_map = HashMap::<String, u64>::new();
+
+  let mut files = AudioFile::cl()
+    .find_with_session(None, None, session)
+    .await?;
+
+  while let Some(file) = files.next(session).await.transpose()? {
+    let account_id = station_account_map.get(&file.station_id);
+    if let Some(account_id) = account_id {
+      *account_used_map.entry(account_id.to_string()).or_insert(0) += file.len;
+    }
+  }
+
+  for (account_id, v) in account_used_map.into_iter() {
+    const KEY_LIMITS_STORAGE_USED: &str =
+      crate::key!(Account::KEY_LIMITS, Limits::KEY_STORAGE, Limit::KEY_USED);
+
+    let update = doc! { "$set": { KEY_LIMITS_STORAGE_USED: v as f64 } };
 
     Account::update_by_id_with_session(&account_id, update, session).await?;
   }
