@@ -6,25 +6,25 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-async-stream = "0.3.3"
-bytes = "1.2.1"
-chrono = "0.4.22"
+async-stream = { workspace = true }
+bytes = { workspace = true }
+chrono = { workspace = true }
 constants = { version = "0.1.0", path = "../../config/constants" }
 db = { version = "0.1.0", path = "../db" }
 ffmpeg = { version = "0.1.0", path = "../ffmpeg" }
-futures-util = "0.3.25"
+futures-util = { workspace = true }
 hex = "0.4.3"
 # is_ci = "1.1.1"
-log = "0.4.17"
+log = { workspace = true }
 # logger = { version = "0.1.0", path = "../logger" }
 md-5 = "0.10.5"
-mongodb = "2.8.2"
+mongodb = { workspace = true }
 serde-util = { version = "0.1.0", path = "../serde-util" }
 sha2 = "0.10.6"
 stream-util = { version = "0.1.0", path = "../stream-util" }
 # test-util = { version = "0.1.0", path = "../test-util" }
-thiserror = "1.0.38"
-tokio = { version = "1.29.0", features = ["full"] }
-tokio-stream = "0.1.11"
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tokio-stream = { workspace = true }
 
 [features]

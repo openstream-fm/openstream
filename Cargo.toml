@@ -35,7 +35,6 @@ members = [
     "rs/packages/router",
     "rs/packages/upload",
     "rs/packages/api",
-    "rs/packages/api2",
     "rs/packages/mp3",
     "rs/packages/http",
     "rs/packages/channels",
@@ -68,5 +67,34 @@ members = [
     "rs/packages/metre-macros",
 ]
 
-[patch.crates-io]
-ts-rs = { path = "./rs/patches/ts-rs/ts-rs" }
+[workspace.dependencies]
+tokio = { version = "1.33.0", features = ["full"] }
+hyper = { version = "0.14.27", features = ["full"] }
+mongodb = "2.8.2"
+serde = { version = "1.0.202", features = ["derive"] }
+serde_json = { version = "1.0.117", features = ["preserve_order"] }
+bytes = "1.6.0" 
+log = "0.4.21"
+time = { version = "0.3.36", features = ["serde-well-known", "local-offset", "macros", "parsing", "serde-human-readable"] }
+regex = "1.10.4"
+validator = { version = "0.16.1", features = ["derive", "phone", "unic"] }
+lazy-regex = "3.1.0"
+regex_static = "0.1.1"
+async-trait = "0.1.71"
+thiserror = "1.0.40"
+pin-project = "1.1.5"
+parking_lot = "0.12.3"
+url = "2.5.0"
+async-stream = "0.3.3"
+rand = "0.8.5"
+random-string = "1.0.0"
+futures = "0.3.30"
+futures-util = "0.3.30"
+static_init = "1.0.3"
+tokio-stream = "0.1.11"
+deepsize = "0.2.0"
+schemars = "0.8.21"
+chrono = "0.4.38"
+once_cell = "1.19.0"
+
+ts-rs = { path = "./rs/packages/ts-rs/ts-rs", version = "6.2.0", features = ["chrono", "chrono-impl", "format", "indexmap-impl"] }

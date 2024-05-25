@@ -7,9 +7,9 @@ edition = "2021"
 metre-macros = { version = "0.1.0", path = "../metre-macros" }
 owo-colors = { version = "3.5.0", path = "../owo-colors" }
 json_comments = "0.2.1"
-serde = { version = "1.0.177", features = ["derive"] }
-serde_json = "1.0.104"
+serde = { workspace = true }
+serde_json = { workspace = true }
 toml = "0.7.6"
 serde_yaml = "0.9.25"
-thiserror = "1.0.44"
+thiserror = { workspace = true }
 reqwest = { version = "0.11", default-features = false, features = ["blocking", "rustls-tls"] }

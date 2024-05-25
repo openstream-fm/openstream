@@ -17,14 +17,14 @@ version = "1.3.0"
 
 [dependencies]
 card-validate = { version = "2.3" }
-chrono = "0.4.24"
+chrono = { workspace = true }
 idna = "0.5"
 indexmap = { version = "2", features = ["serde"] }
 lazy_static = "1.4.0"
 phonenumber = "0.3.2"
-regex = "1.7.3"
-serde = { version = "1.0.152", features = ["derive"] }
-serde_json = "1"
+regex = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
 unic-ucd-common = { version = "0.9" }
-url = "2.3.1"
+url = { workspace = true }
 modify_derive = { path = "../modify_derive" }

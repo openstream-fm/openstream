@@ -12,10 +12,10 @@ path = "src/dev-server.rs"
 [dependencies]
 anyhow = "1.0.71"
 askama = "0.12.0"
-async-trait = "0.1.68"
+async-trait = { workspace = true }
 css-inline = "0.8.5"
 html2text = "0.5.1"
-hyper = { version = "0.14.27", features = ["server", "full"] }
+hyper = { workspace = true }
 lettre = { version = "0.10.4", features = [
   "tokio1_rustls",
   "smtp-transport",
@@ -28,6 +28,6 @@ lettre = { version = "0.10.4", features = [
 ], default-features = false }
 nanohtml2text = "0.1.4"
 prex = { version = "0.1.0", path = "../prex" }
-serde = { version = "1.0.162", features = ["derive"] }
-thiserror = "1.0.40"
-tokio = { version = "1.29.0", features = ["full"] }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }

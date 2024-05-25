@@ -13,63 +13,57 @@ test-analytics-base-measure = []
 
 
 [dependencies]
-# array-macro = "2.1.5"
-# unused = "0.1.0"
-# defer-lite = "1.0.0"
-# ip2country = "0.2.0"
-# syn = "1.0.103"
-# quote = "1.0.21"
 lazy_static = "1.4.0"
-mongodb = "2.8.2"
-serde = "1.0.145"
-tokio = { version = "1.29.0", features = [ "full" ] }
-chrono = { version = "0.4.22", features = [ "serde" ] }
+mongodb = { workspace = true }
+serde = { workspace = true }
+tokio = { workspace = true }
+chrono = { workspace = true, features = [ "serde" ] }
 serde-util = { path = "../serde-util" }
 uid = { path = "../uid" }
-once_cell = { version = "1.15.0", features = ["parking_lot"] }
-bytes = "1.2.1"
-async-trait = "0.1.58"
-log = "0.4.17"
-futures-util = "0.3.25"
+once_cell = { workspace = true, features = ["parking_lot"] }
+bytes = { workspace = true }
+async-trait = { workspace = true }
+log = { workspace = true }
+futures-util = { workspace = true }
 woothee = { version = "0.13.0", features = ["serde", "serde_derive"] }
 user-agent = { version = "0.1.0", path = "../user-agent" }
 validate = { version = "0.1.0", path = "../validate" }
-async-stream = "0.3.3"
-ts-rs = { version = "6.2.0", features = ["chrono", "chrono-impl", "format", "indexmap-impl"] }
-time = { version = "0.3.17", features = ["serde-well-known", "local-offset", "serde-human-readable"] }
+async-stream = { workspace = true }
+ts-rs = { workspace = true, features = ["chrono", "chrono-impl", "format", "indexmap-impl"] }
+time = { workspace = true, features = ["serde-well-known", "local-offset", "serde-human-readable"] }
 indexmap = { version = "1.9.2", features = ["serde"] }
-hyper = "0.14.27"
+hyper = { workspace = true }
 prex = { version = "0.1.0", path = "../prex" }
 crypt = { version = "0.1.0", path = "../crypt" }
-thiserror = "1.0.38"
+thiserror = { workspace = true }
 macros = { version = "0.1.0", path = "../macros" }
 const-str = { version = "0.5.3", features = ["all"] }
-rand = "0.8.5"
-static_init = "1.0.3"
-parking_lot = "0.12.1"
+rand = { workspace = true }
+static_init = { workspace = true }
+parking_lot = { workspace = true }
 modify = { path = "../modify" }
-validator = { version = "0.16.1", features = ["derive", "phone", "unic"] }
+validator = { workspace = true }
 ril = { version = "0.9.0", features = ["all"] }
-lazy-regex = "2.5.0"
+lazy-regex = { workspace = true }
 geoip = { version = "0.1.0", path = "../geoip" }
 rayon = "1.7.0"
-deepsize = "0.2.0"
+deepsize = { workspace = true }
 human_bytes = { version = "0.4.1", default-features = false }
 strum = "0.24.1"
 arr_macro = "0.2.1"
 drop-tracer = { version = "0.1.0", path = "../drop-tracer" }
 derive_more = "0.99.17"
-random-string = "1.0.0"
-url = "2.4.0"
+random-string = { workspace = true }
+url = { workspace = true }
 constants = { version = "0.1.0", path = "../../config/constants" }
 paste = "1.0.12"
-image = { version = "0.24.6", features = ["webp-encoder", "webp", "rgb", "dcv-color-primitives", "mp4parse"] }
+image = { version = "0.24.6", features = ["webp-encoder", "webp", "rgb", "mp4parse"] }
 lang = { version = "0.1.0", path = "../lang" }
 ffmpeg = { version = "0.1.0", path = "../ffmpeg" }
-schemars = "0.8.16"
-serde_json = "1.0"
+schemars = { workspace = true }
+serde_json = { workspace = true }
 openapi = { version = "0.1.0", path = "../openapi" }
 
 [dev-dependencies]
-serde_json = { version = "1.0", features = ["preserve_order"] }
+serde_json = { workspace = true }
 logger = { version = "0.1.0", path = "../logger" }
