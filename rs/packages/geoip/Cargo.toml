@@ -6,12 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# static_init = "1.0.3"
-deepsize = "0.2.0"
+# static_init = { workspace = true }
+deepsize = { workspace = true }
 ip2geo = "0.1.0"
-log = "0.4.17"
+log = { workspace = true }
 macros = { version = "0.1.0", path = "../macros" }
-schemars = "0.8.16"
-serde = { version = "1.0.160", features = ["derive"] }
+schemars = { workspace = true }
+serde = { workspace = true }
 strum = { version = "0.24.1", features = ["phf", "derive", "strum_macros"] }
-ts-rs = "6.2.0"
+ts-rs = { workspace = true }

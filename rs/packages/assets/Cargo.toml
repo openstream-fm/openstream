@@ -6,18 +6,18 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-async-trait = "0.1.68"
-base64-compat = "1.0.0"
-futures-util = "0.3.28"
-http = { version = "0.1.0", path = "../http" }
-hyper = "0.14.27"
-log = "0.4.19"
-mime_guess = "2.0.4"
-owo-colors = "3.5.0"
-prex = { version = "0.1.0", path = "../prex" }
+tokio = { workspace = true }
+async-trait = { workspace = true }
+futures-util = { workspace = true }
+hyper = { workspace = true }
+log = { workspace = true }
+thiserror = { workspace = true }
 rust-embed = { version = "6.7.0", features = ["debug-embed"] }
+base64-compat = "1.0.0"
+mime_guess = "2.0.4"
 rust-embed-for-web = "11.1.1"
-shutdown = { version = "0.1.0", path = "../shutdown" }
 socket2 = "0.5.3"
-thiserror = "1.0.40"
-tokio = { version = "1.29.0", features = ["full"] }
+http = { version = "0.1.0", path = "../http" }
+owo-colors = { version = "3.5.0", path = "../owo-colors" }
+prex = { version = "0.1.0", path = "../prex" }
+shutdown = { version = "0.1.0", path = "../shutdown" }

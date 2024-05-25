@@ -9,22 +9,22 @@ edition = "2021"
 # ffmpeg = { version = "0.1.0", path = "../ffmpeg" }
 # mp3 = { version = "0.1.0", path = "../mp3" }
 # channels = { version = "0.1.0", path = "../channels" }
-async-trait = "0.1.58"
-bytes = "1.2.1"
+async-trait = { workspace = true }
+bytes = { workspace = true }
 drop-tracer = { version = "0.1.0", path = "../drop-tracer" }
 constants = { version = "0.1.0", path = "../../config/constants" }
-futures = "0.3.25"
-hyper = "0.14.27"
-log = "0.4.17"
+futures = { workspace = true }
+hyper = { workspace = true }
+log = { workspace = true }
 owo-colors = { version = "3.5.0", path = "../owo-colors" }
 prex = { version = "0.1.0", path = "../prex" }
 shutdown = { version = "0.1.0", path = "../shutdown" }
 stream-util = { version = "0.1.0", path = "../stream-util" }
-tokio = { version = "1.29.0", features = ["full"] }
-tokio-stream = "0.1.10"
+tokio = { workspace = true }
+tokio-stream = { workspace = true }
 http = { version = "0.1.0", path = "../http" }
 db = { version = "0.1.0", path = "../db" }
-thiserror = "1.0.38"
+thiserror = { workspace = true }
 socket2 = "0.4.7"
 serde-util = { version = "0.1.0", path = "../serde-util" }
 geoip = { version = "0.1.0", path = "../geoip" }

@@ -7,16 +7,16 @@ edition = "2021"
 
 [dependencies]
 base64 = "0.13.0"
-bytes = "1.2.1"
-chrono = { version = "0.4", features = ["serde"] }
-hyper = "0.14.27"
+bytes = { workspace = true }
+chrono = { workspace = true, features = ["serde"] }
+hyper = { workspace = true }
 iso8601-timestamp = "0.2.7"
-log = "0.4.17"
-mongodb = "2.8.2"
+log = { workspace = true }
+mongodb = { workspace = true }
 openapi = { version = "0.1.0", path = "../openapi" }
-schemars = { version = "0.8.16", features = ["preserve_order", "chrono"] }
-serde = "1"
-serde_json = { version = "1.0", features = ["preserve_order"] }
-static_init = "1.0.3"
-time = { version = "0.3.17", features = ["serde-well-known", "local-offset", "serde-human-readable", "macros"] }
-ts-rs = "6.2.0"
+schemars = { workspace = true, features = ["preserve_order", "chrono"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+static_init = { workspace = true }
+time = { workspace = true, features = ["serde-well-known", "local-offset", "serde-human-readable", "macros"] }
+ts-rs = { workspace = true }
