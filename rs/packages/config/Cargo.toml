@@ -10,7 +10,6 @@ json_comments = "0.2.1"
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
+metre = { workspace = true }
 toml = { version = "0.5.9", features = ["indexmap", "preserve_order"] }
-
-metre = { version = "0.1.0", path = "../metre" }
 garde = "0.13.0"
