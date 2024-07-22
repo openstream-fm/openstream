@@ -47,16 +47,22 @@ jobs:
     steps:
     
     - uses: actions/checkout@v4
-    
-    - uses: actions/cache@v4
+
+    - uses: Swatinem/rust-cache@v2
       with:
-        path: |
-          ./target
-          ~/.cargo
-        key: ${{ runner.os }}-unit-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
-        restore-keys: |
-          ${{ runner.os }}-unit-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
-          ${{ runner.os }}-unit-
+        shared-key: unit
+        cache-all-crates: true
+        cache-targets: true
+        cache-on-failure: true
+    # - uses: actions/cache@v4
+    #   with:
+    #     path: |
+    #       ./target
+    #       ~/.cargo
+    #     key: ${{ runner.os }}-unit-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
+    #     restore-keys: |
+    #       ${{ runner.os }}-unit-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
+    #       ${{ runner.os }}-unit-
 
     # - name: Local cargo cache
     #   id: unit-tests-cargo-cache

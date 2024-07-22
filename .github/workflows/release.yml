@@ -8,6 +8,10 @@ on:
     tags:
       - "v*.*.*"
 
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+
 jobs:
 
   release:
@@ -34,16 +38,24 @@ jobs:
           #     key: release-cargo-target
       
       - uses: actions/checkout@v4
-          
-      - uses: actions/cache@v4
+
+      - uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ./target
-            ~/.cargo
-          key: ${{ runner.os }}-build-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
-            ${{ runner.os }}-build-
+          shared-key: build-release
+          cache-all-crates: true
+          cache-targets: true
+          cache-on-failure: true
+          save-if: ${{ github.ref == 'refs/heads/master' }}
+
+      # - uses: actions/cache@v4
+      #   with:
+      #     path: |
+      #       ./target
+      #       ~/.cargo
+      #     key: ${{ runner.os }}-build-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-build-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
+      #       ${{ runner.os }}-build-
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
