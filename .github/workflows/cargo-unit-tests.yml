@@ -37,25 +37,29 @@ jobs:
     # needs: skip_check
     # if: needs.skip_check.outputs.should_skip != 'true'
 
-    runs-on: self-hosted-unit-tests
+    # runs-on: self-hosted-unit-tests
+    runs-on: ubuntu-latest
 
     steps:
     
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
-    # - uses: actions/cache@v3
-    #   with:
-    #     path: ./target
-    #     key: "${{ runner.os }}-cargo-unit-tests-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}"
-    #     restore-keys: |
-    #       ${{ runner.os }}-cargo-unit-tests-
-
-    - name: Local cargo cache
-      id: unit-tests-cargo-cache
-      uses: MasterworksIO/action-local-cache@1.0.0
+    - uses: actions/cache@v4
       with:
-        path: ./target/
-        key: unit-tests-cargo-target
+        path: |
+          ./target
+          ~/.cargo
+        key: ${{ runner.os }}-unit-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
+        restore-keys: |
+          ${{ runner.os }}-unit-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
+          ${{ runner.os }}-unit-"
+
+    # - name: Local cargo cache
+    #   id: unit-tests-cargo-cache
+    #   uses: MasterworksIO/action-local-cache@1.0.0
+    #   with:
+    #     path: ./target/
+    #     key: unit-tests-cargo-target
 
     - name: Cargo Unit Tests
       run: cargo test --bins --lib -- --nocapture
