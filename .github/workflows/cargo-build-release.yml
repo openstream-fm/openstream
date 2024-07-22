@@ -38,15 +38,22 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - uses: actions/cache@v4
+    - uses: Swatinem/rust-cache@v2
       with:
-        path: |
-          ./target
-          ~/.cargo
-        key: ${{ runner.os }}-build-release-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
-        restore-keys: |
-          ${{ runner.os }}-build-release-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
-          ${{ runner.os }}-build-release-
+        shared-key: build-release
+        cache-all-crates: true
+        cache-targets: true
+        cache-on-failure: true
+        
+    # - uses: actions/cache@v4
+    #   with:
+    #     path: |
+    #       ./target
+    #       ~/.cargo
+    #     key: ${{ runner.os }}-build-release-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
+    #     restore-keys: |
+    #       ${{ runner.os }}-build-release-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
+    #       ${{ runner.os }}-build-release-
 
     # - name: Local cargo cache
     #   id: build-cargo-cache
