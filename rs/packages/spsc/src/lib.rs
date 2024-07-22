@@ -73,11 +73,11 @@ impl Error for TryRecvError {}
 
 #[derive(Debug)]
 struct State<T> {
-  item: Option<T>,
   send_dropped: bool,
   recv_dropped: bool,
   recv_waker: Option<Waker>,
   send_waker: Option<Waker>,
+  item: Option<T>,
 }
 
 pub struct Sender<T> {
