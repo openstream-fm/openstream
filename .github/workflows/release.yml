@@ -12,7 +12,8 @@ jobs:
 
   release:
 
-    runs-on: self-hosted-release
+    # runs-on: self-hosted-release
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -20,32 +21,35 @@ jobs:
 
     steps:
       
-      - uses: actions/checkout@v3
       # - uses: Swatinem/rust-cache@v2
       #   with:
-      #     cache-all-crates: true
-      #     shared-key: release
-
-      - name: Local cargo cache
-        id: release-cargo-cache
-        uses: MasterworksIO/action-local-cache@1.0.0
+        #     cache-all-crates: true
+        #     shared-key: release
+        
+        # - name: Local cargo cache
+        #   id: release-cargo-cache
+        #   uses: MasterworksIO/action-local-cache@1.0.0
+        #   with:
+          #     path: ./target/
+          #     key: release-cargo-target
+      
+      - uses: actions/checkout@v4
+          
+      - uses: actions/cache@v4
         with:
-          path: ./target/
-          key: release-cargo-target
+          path: |
+            ./target
+            ~/.cargo
+          key: ${{ runner.os }}-build-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
+            ${{ runner.os }}-build-
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
 
-      # cache doesn't seem to work under tag branches, not even to recover from master branch saved cache
-      # - uses: actions/cache@v3
-      #   with:
-      #     path: ./target
-      #     key: ${{ runner.os }}-cargo-build-release-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-cargo-build-release-
-          
       - run: npm ci
         working-directory: ./scripts
 

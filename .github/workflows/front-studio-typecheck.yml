@@ -1,6 +1,9 @@
 name: front-studio-typecheck
 
 on: 
+
+  workflow_dispatch:
+
   push:
     paths:
       - "defs/**"

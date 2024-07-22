@@ -1,6 +1,9 @@
 name: backend-unit-tests
 
 on: 
+
+  workflow_dispatch:
+
   push:
     paths:
       - "rs/**"
@@ -52,7 +55,7 @@ jobs:
         key: ${{ runner.os }}-unit-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
         restore-keys: |
           ${{ runner.os }}-unit-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
-          ${{ runner.os }}-unit-"
+          ${{ runner.os }}-unit-
 
     # - name: Local cargo cache
     #   id: unit-tests-cargo-cache
