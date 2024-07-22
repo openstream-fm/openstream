@@ -1,6 +1,9 @@
 name: backend-integration-tests
 
 on: 
+
+  workflow_dispatch:
+
   push:
     paths:
       - "rs/**"
@@ -51,7 +54,7 @@ jobs:
         key: ${{ runner.os }}-integration-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
         restore-keys: |
           ${{ runner.os }}-integration-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
-          ${{ runner.os }}-integration-"
+          ${{ runner.os }}-integration-
     
     # - name: Local cargo cache
     #   id: integration-tests-cargo-cache

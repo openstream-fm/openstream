@@ -1,6 +1,9 @@
 name: front-server-unit-tests
 
 on: 
+
+  workflow_dispatch:
+
   push:
     paths:
       - "defs/**"

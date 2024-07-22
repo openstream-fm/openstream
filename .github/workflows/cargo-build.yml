@@ -1,6 +1,9 @@
 name: backend-build
 
 on: 
+
+  workflow_dispatch:
+
   push:
     paths:
       - "rs/**"
@@ -50,7 +53,7 @@ jobs:
         key: ${{ runner.os }}-build-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
         restore-keys: |
           ${{ runner.os }}-build-${{ hashFiles('**/Cargo.lock', '**/Cargo.toml', './rs') }}
-          ${{ runner.os }}-build-"
+          ${{ runner.os }}-build-
 
     # - name: Local cargo cache
     #   id: build-cargo-cache
@@ -59,5 +62,6 @@ jobs:
     #     path: ./target/
     #     key: build-cargo-target
 
+    # we build in release mode to be able to use the cache from this run within the release job
     - name: Cargo Build
-      run: cargo build
+      run: cargo build --release
