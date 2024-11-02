@@ -63,8 +63,6 @@ members = [
     "rs/packages/payments",
     "rs/packages/modify",
     "rs/packages/modify_derive",
-    # "rs/packages/metre",
-    # "rs/packages/metre-macros",
 ]
 
 [workspace.dependencies]
@@ -97,5 +95,5 @@ schemars = "0.8.21"
 chrono = "0.4.38"
 once_cell = "1.19.0"
 metre = { version = "0.2.0", default-features = false, features = [ "derive", "toml", "json", "jsonc", "yaml", "env" ] }
-
-ts-rs = { path = "./rs/packages/ts-rs/ts-rs", version = "6.2.0", features = ["chrono", "chrono-impl", "format", "indexmap-impl"] }
+compact_str = { version = "0.8.0", features = ["serde"] }
+ts-rs = { path = "./rs/packages/ts-rs/ts-rs", version = "6.2.0", features = ["chrono", "chrono-impl", "format", "indexmap-impl", "compact-str"] }

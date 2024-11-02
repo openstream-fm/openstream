@@ -5,6 +5,7 @@ use std::{
   time::Instant,
 };
 
+use compact_str::CompactString;
 use futures_util::{StreamExt, TryStreamExt};
 use geoip::CountryCode;
 use mongodb::bson::doc;
@@ -33,7 +34,7 @@ pub struct Item {
   // #[serde(rename = "_id")]
   // pub id: String,
   #[serde(rename = "st")]
-  pub station_id: String,
+  pub station_id: CompactString,
 
   // #[serde(rename = "dp")]
   // pub deployment_id: String,
@@ -54,7 +55,7 @@ pub struct Item {
   pub ip: IpAddr,
 
   #[serde(rename = "ap")]
-  pub app_kind: Option<String>,
+  pub app_kind: Option<CompactString>,
 
   #[serde(rename = "av")]
   #[serde(with = "serde_util::as_f64::option")]
@@ -151,8 +152,13 @@ pub struct Analytics {
   pub by_day: Vec<AnalyticsItem<YearMonthDay>>,
   pub by_hour: Option<Vec<AnalyticsItem<YearMonthDayHour>>>,
   pub by_country: Vec<AnalyticsItem<Option<CountryCode>>>,
-  pub by_station: Vec<AnalyticsItem<String>>,
-  pub by_app_kind: Vec<AnalyticsItem<Option<String>>>,
+
+  #[schemars(with = "Vec<AnalyticsItem<String>>")]
+  pub by_station: Vec<AnalyticsItem<CompactString>>,
+
+  #[schemars(with = "Vec<AnalyticsItem<String>>")]
+  pub by_app_kind: Vec<AnalyticsItem<Option<CompactString>>>,
+
   pub by_app_version: Vec<AnalyticsItem<AppKindVersion>>,
 }
 
@@ -217,7 +223,9 @@ pub struct YearMonthDayHour {
 )]
 #[ts(export, export_to = "../../../defs/app-analytics/")]
 pub struct AppKindVersion {
-  pub kind: Option<String>,
+  #[ts(type = "string | null | undefined")]
+  #[schemars(with = "Option::<String>")]
+  pub kind: Option<CompactString>,
   pub version: Option<u32>,
 }
 
@@ -342,11 +350,11 @@ struct Batch {
 
   pub by_day: KeyedAccumulatorMap<YearMonthDay>,
   pub by_hour: KeyedAccumulatorMap<YearMonthDayHour>,
-  pub by_app_kind: KeyedAccumulatorMap<Option<String>>,
+  pub by_app_kind: KeyedAccumulatorMap<Option<CompactString>>,
   pub by_app_version: KeyedAccumulatorMap<AppKindVersion>,
 
   pub by_country: KeyedAccumulatorMap<Option<CountryCode>>,
-  pub by_station: KeyedAccumulatorMap<String>,
+  pub by_station: KeyedAccumulatorMap<CompactString>,
   #[cfg(feature = "analytics-max-concurrent")]
   pub start_stop_events: Vec<StartStopEvent>,
 }

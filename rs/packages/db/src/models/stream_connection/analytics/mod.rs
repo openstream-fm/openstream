@@ -5,6 +5,7 @@ use std::{
   time::Instant,
 };
 
+use compact_str::CompactString;
 use futures_util::{StreamExt, TryStreamExt};
 use geoip::CountryCode;
 use mongodb::bson::doc;
@@ -20,7 +21,7 @@ use crate::{station::Station, stream_connection::lite::StreamConnectionLite, Mod
 #[macros::keys]
 pub struct Item {
   #[serde(rename = "st")]
-  pub station_id: String,
+  pub station_id: CompactString,
 
   #[serde(rename = "ip")]
   #[serde(with = "serde_util::ip")]
@@ -38,13 +39,13 @@ pub struct Item {
   pub transfer_bytes: Option<u64>,
 
   #[serde(rename = "br")]
-  pub browser: Option<String>,
+  pub browser: Option<CompactString>,
 
   #[serde(rename = "do")]
-  pub domain: Option<String>,
+  pub domain: Option<CompactString>,
 
   #[serde(rename = "os")]
-  pub os: Option<String>,
+  pub os: Option<CompactString>,
 
   #[serde(rename = "ca")]
   pub created_at: DateTime,
@@ -130,11 +131,20 @@ pub struct Analytics {
 
   pub by_day: Vec<AnalyticsItem<YearMonthDay>>,
   pub by_hour: Option<Vec<AnalyticsItem<YearMonthDayHour>>>,
-  pub by_browser: Vec<AnalyticsItem<Option<String>>>,
-  pub by_os: Vec<AnalyticsItem<Option<String>>>,
+
+  #[schemars(with = "Vec<AnalyticsItem<Option<String>>>")]
+  pub by_browser: Vec<AnalyticsItem<Option<CompactString>>>,
+
+  #[schemars(with = "Vec<AnalyticsItem<Option<String>>>")]
+  pub by_os: Vec<AnalyticsItem<Option<CompactString>>>,
+
   pub by_country: Vec<AnalyticsItem<Option<CountryCode>>>,
-  pub by_station: Vec<AnalyticsItem<String>>,
-  pub by_domain: Vec<AnalyticsItem<Option<String>>>,
+
+  #[schemars(with = "Vec<AnalyticsItem<String>>")]
+  pub by_station: Vec<AnalyticsItem<CompactString>>,
+
+  #[schemars(with = "Vec<AnalyticsItem<Option<String>>>")]
+  pub by_domain: Vec<AnalyticsItem<Option<CompactString>>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS, JsonSchema)]
@@ -310,12 +320,11 @@ struct Batch {
   pub ips: HashSet<IpAddr>,
   pub by_day: KeyedAccumulatorMap<YearMonthDay>,
   pub by_hour: KeyedAccumulatorMap<YearMonthDayHour>,
-  pub by_browser: KeyedAccumulatorMap<Option<String>>,
-  pub by_os: KeyedAccumulatorMap<Option<String>>,
+  pub by_browser: KeyedAccumulatorMap<Option<CompactString>>,
+  pub by_os: KeyedAccumulatorMap<Option<CompactString>>,
   pub by_country: KeyedAccumulatorMap<Option<CountryCode>>,
-  pub by_station: KeyedAccumulatorMap<String>,
-  pub by_domain: KeyedAccumulatorMap<Option<String>>,
-  #[cfg(feature = "analytics-max-concurrent")]
+  pub by_station: KeyedAccumulatorMap<CompactString>,
+  pub by_domain: KeyedAccumulatorMap<Option<CompactString>>,
   pub start_stop_events: Vec<StartStopEvent>,
 }
 

@@ -677,6 +677,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "castaway"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0abae9be0aaf9ea96a3b1b8b1b55c602ca751eba1b1500220cea4ecbafe7c0d5"
+dependencies = [
+ "rustversion",
+]
+
+[[package]]
 name = "cc"
 version = "1.0.78"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -796,6 +805,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6a5f405d474b9d05e0a093d3120e77e9bf26461b57a84b40aa2a221ac5617fb6"
 dependencies = [
  "csscolorparser",
+]
+
+[[package]]
+name = "compact_str"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6050c3a16ddab2e412160b31f2c871015704239bca62f72f6e5f0be631d3f644"
+dependencies = [
+ "castaway",
+ "cfg-if",
+ "itoa 1.0.5",
+ "rustversion",
+ "ryu",
+ "serde",
+ "static_assertions",
 ]
 
 [[package]]
@@ -1248,6 +1272,7 @@ dependencies = [
  "async-trait",
  "bytes",
  "chrono",
+ "compact_str",
  "const-str",
  "constants",
  "crypt",
@@ -5958,6 +5983,7 @@ dependencies = [
  "bson",
  "bytes",
  "chrono",
+ "compact_str",
  "dprint-plugin-typescript",
  "indexmap 1.9.2",
  "ordered-float",

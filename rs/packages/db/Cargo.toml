@@ -62,6 +62,7 @@ lang = { version = "0.1.0", path = "../lang" }
 ffmpeg = { version = "0.1.0", path = "../ffmpeg" }
 schemars = { workspace = true }
 serde_json = { workspace = true }
+compact_str = { workspace = true }
 openapi = { version = "0.1.0", path = "../openapi" }
 
 [dev-dependencies]
