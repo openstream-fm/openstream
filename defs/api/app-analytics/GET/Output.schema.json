@@ -673,7 +673,6 @@
             "type": "object",
             "required": [
               "ips",
-              "key",
               "max_concurrent_listeners",
               "sessions",
               "total_duration_ms",
@@ -682,7 +681,8 @@
             ],
             "properties": {
               "key": {
-                "type": "string"
+                "type": "string",
+                "nullable": true
               },
               "sessions": {
                 "type": "integer",

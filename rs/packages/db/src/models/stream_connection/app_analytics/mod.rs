@@ -156,7 +156,7 @@ pub struct Analytics {
   #[schemars(with = "Vec<AnalyticsItem<String>>")]
   pub by_station: Vec<AnalyticsItem<CompactString>>,
 
-  #[schemars(with = "Vec<AnalyticsItem<String>>")]
+  #[schemars(with = "Vec<AnalyticsItem<Option<String>>>")]
   pub by_app_kind: Vec<AnalyticsItem<Option<CompactString>>>,
 
   pub by_app_version: Vec<AnalyticsItem<AppKindVersion>>,

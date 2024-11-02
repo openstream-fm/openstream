@@ -325,6 +325,7 @@ struct Batch {
   pub by_country: KeyedAccumulatorMap<Option<CountryCode>>,
   pub by_station: KeyedAccumulatorMap<CompactString>,
   pub by_domain: KeyedAccumulatorMap<Option<CompactString>>,
+  #[cfg(feature = "analytics-max-concurrent")]
   pub start_stop_events: Vec<StartStopEvent>,
 }
 
