@@ -40,6 +40,7 @@ impl StorageServer {
     }
   }
 
+  #[allow(dependency_on_unit_never_type_fallback)]
   pub fn start(
     self,
   ) -> Result<impl Future<Output = Result<(), hyper::Error>> + 'static, StorageServerError> {

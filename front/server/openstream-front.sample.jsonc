@@ -51,6 +51,18 @@
     "port": 18865
   },
 
+  "embed": {
+    // boolean (required)
+    // enable app web interface or not
+    // env.OPENSTREAM_FRONT_EMBED_ENABLED
+    "enabled": true,
+
+    // number (required)
+    // port to bind the admin interface to
+    // env.OPENSTREAM_FRONT_EMBED_PORT
+    "port": 18765
+  },
+
   // payments configuration (optional), if not provided no payments interface will be created
   "payments": { 
     // boolean (required)

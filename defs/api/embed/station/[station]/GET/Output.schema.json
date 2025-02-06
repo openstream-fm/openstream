@@ -1,0 +1,31 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "picture_id"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "slogan": {
+      "type": "string",
+      "nullable": true
+    },
+    "picture_id": {
+      "type": "string"
+    },
+    "now_playing": {
+      "type": "string",
+      "nullable": true
+    },
+    "transmission_error": {
+      "type": "string",
+      "nullable": true
+    }
+  }
+}

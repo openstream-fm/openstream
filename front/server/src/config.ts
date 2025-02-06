@@ -32,6 +32,11 @@ export type Config = {
     port: number    
   }
 
+  embed?: {
+    enabled: boolean,
+    port: number,
+  }
+
   payments?: {
     enabled: boolean
     port: number
@@ -158,6 +163,9 @@ export const merge_env = (partial: PartialDeep<Config>, { logger, env = process.
   bool("admin.enabled");
   num("admin.port");
   
+  bool("embed.enabled");
+  num("embed.port");
+
   bool("payments.enabled");
   num("payments.port");
   str("payments.access_token");
