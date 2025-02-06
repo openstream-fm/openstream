@@ -37,7 +37,7 @@ await within(async () => {
   cd(frontdir.src);
   await $`FORCE_COLOR=1 npm run ci --color always`;
 
-  for(const dir of ["packages/client", "server", "app", "admin"]) {
+  for(const dir of ["packages/client", "server", "app", "admin", "embed"]) {
     await within(async () => {
       cd(dir);
       await $`FORCE_COLOR=1 npm run build --color always`;
@@ -51,7 +51,7 @@ await $`mkdir -p ${path.dirname(binfile.target)}`;
 
 await $`mkdir -p ${frontdir.target}/packages`;
 
-for(const dir of ["packages/client", "server", "app", "admin"]) {
+for(const dir of ["packages/client", "server", "app", "admin", "embed"]) {
   await within(async () => {
 
     cd(`${frontdir.src}/${dir}`);

@@ -44,6 +44,7 @@ export class Client {
   payment_methods: PaymentMethods;
   stream_connections: StreamConnections;
   stream_connections_lite: StreamConnectionsLite;
+  embed: Embed;
 
   constructor(base_url: string, { /*ogger,*/ fetch = node_fetch }: { /*logger: Logger,*/ fetch?: typeof node_fetch } = {}) {
     this.base_url = base_url.trim().replace(/\/+$/g, "")
@@ -64,6 +65,7 @@ export class Client {
     this.payment_methods = new PaymentMethods(this);
     this.stream_connections = new StreamConnections(this);
     this.stream_connections_lite = new StreamConnectionsLite(this);
+    this.embed = new Embed(this);
   }
 
   async fetch(_url: string, init: RequestInit = {}): Promise<Response> {
@@ -779,5 +781,16 @@ export class AccountInvitations {
 
   async reject(ip: string | null, ua: string | null, token: string | null, payload: import("./defs/api/invitations/reject/POST/Payload.js").Payload): Promise<import("./defs/api/invitations/reject/POST/Output.js").Output> {
     return await this.client.post(ip, ua, token, `/invitations/reject`, payload); 
+  }
+}
+
+export class Embed {
+  client: Client;
+  constructor(client: Client) {
+    this.client = client;
+  }
+  
+  async get_station(ip: string | null, ua: string | null, token: string | null, station_id: string): Promise<import("./defs/api/embed/station/[station]/GET/Output.js").Output> {
+    return await this.client.get(ip, ua, token, `/embed/station/${station_id}`);
   }
 }

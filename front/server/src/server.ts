@@ -90,4 +90,20 @@ export const start = async ({ config, logger }: { config: Config, logger: Logger
       });
     });
   }
+
+  // embed
+  if(config.embed?.enabled){
+    process.env.EMBED_API_BASE_URL = config.openstream.api_base_url;
+    const app = express();
+    const { handler }: { handler: RequestHandler } = await import("" + "../../embed/build/handler.js")
+    app.use(kit(handler));
+
+    await new Promise<void>((resolve, reject) => {
+      app.listen(config.embed!.port, (...args: any[]) => {
+        if(args[0]) return reject(args[0])
+        logger.scoped("start").info(`embed server bound to port ${color.yellow(config.embed!.port)}`);
+        resolve();
+      });
+    })
+  }
 }

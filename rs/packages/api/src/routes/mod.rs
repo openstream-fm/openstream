@@ -8,6 +8,7 @@ pub mod users;
 
 pub mod analytics;
 pub mod app_analytics;
+pub mod embed;
 pub mod invitations;
 pub mod payment_methods;
 pub mod plans;
@@ -547,6 +548,10 @@ pub fn router(
   app
     .at("/stream-connections-lite")
     .get(stream_connections_lite::get::Endpoint {}.into_handler());
+
+  app
+    .at("/embed/station/:station")
+    .get(embed::station::id::get::Endpoint {}.into_handler());
 
   // 404 catch all
   app.with(ResourceNotFound.into_handler());
