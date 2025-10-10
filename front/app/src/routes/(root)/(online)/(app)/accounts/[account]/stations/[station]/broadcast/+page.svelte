@@ -224,9 +224,10 @@
             <div class="ice-pass-wrap">
               <TextField
                 label={$locale.pages["station/broadcast"].fields.encoding} 
-                value="MP3 {$locale.pages["station/broadcast"].encoding_or} AAC"
+                value="MP3 - 128 kbps"
                 readonly
               />
+              <!-- value="MP3 {$locale.pages["station/broadcast"].encoding_or} AAC" -->
             </div>
           </div>
         </div>
