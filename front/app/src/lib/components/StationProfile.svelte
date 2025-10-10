@@ -526,148 +526,150 @@
 	</div>
 </div>
 
-<div class="section section-advanced">
-	<button class="section-title section-advanced-title" class:open={advanced_open} on:click|preventDefault={() => advanced_open = true}>
-		{$locale.station_profile.titles.advanced}
-	</button>
+{#if false}
+	<div class="section section-advanced">
+		<button class="section-title section-advanced-title" class:open={advanced_open} on:click|preventDefault={() => advanced_open = true}>
+			{$locale.station_profile.titles.advanced}
+		</button>
 
-	<div class="fields section-advanced-fields" class:open={advanced_open} use:display_fly_enter={{ show: advanced_open, start: false, duration: 300, y: -25 }}>
+		<div class="fields section-advanced-fields" class:open={advanced_open} use:display_fly_enter={{ show: advanced_open, start: false, duration: 300, y: -25 }}>
 
-		<div class="field">
-			<!-- TODO: locale -->
-			<GooglePlayLangField
-				label={"App language for Google Play"}
-				bind:value={current.user_metadata.mob_app.google_play_lang}
-			/>
-		</div>
-
-		<div class="field">
-			<!-- TODO: locale -->
-			<NullTextField
-				icon={mdiGooglePlay}
-				label={"App title for Google Play"}
-				bind:value={current.user_metadata.mob_app.google_play_title}
-			/>
-			<Validator value={current.user_metadata.mob_app.google_play_title} fn={_string({ maxlen: 30 })} />
-		</div>
-
-		<div class="field">
-			<!-- TODO: locale -->
-			<NullTextField
-				icon={mdiGooglePlay}	
-				label={"App subtitle for Google Play"}
-				bind:value={current.user_metadata.mob_app.google_play_subtitle}
-			/>
-			<Validator value={current.user_metadata.mob_app.google_play_subtitle} fn={_string({ maxlen: 80 })} />
-		</div>
-
-		<div class="field">
-			<NullTextField
-				icon={mdiGooglePlay}
-				label={"App description for Google Play"}
-				multiline
-				minrows={5}
-				bind:value={current.user_metadata.mob_app.google_play_description}
-			/>
-			<Validator value={current.user_metadata.mob_app.google_play_description} fn={_string({ maxlen: 4000 })} />
-		</div>
-
-		<div class="advanced-sep sep-one" />
-
-		<div class="field">
-			<ColorField
-				label={$locale.station_profile.labels.mob_app_base_color}
-				bind:value={current.user_metadata.mob_app.base_color}
-			/>
-		</div>
-
-		<div class="field">
-			<ColorField
-				label={$locale.station_profile.labels.mob_app_icon_bg_color}
-				bind:value={current.user_metadata.mob_app.icon_bg_color}
-			/>
-		</div>
-
-		<div class="field">
-			<BooleanField
-				label={$locale.station_profile.labels.mob_app_icon_round}
-				bind:value={current.user_metadata.mob_app.icon_rounded}
-			/>
-		</div>
-
-		<div class="advanced-sep" />
-
-		<div class="field">
-			<!-- TODO: locale -->
-			<NullTextField
-				icon={mdiGooglePlay}
-				trim
-				label={"Google Play Console Id"}
-				bind:value={current.user_metadata.mob_app.google_play_console_id}
-			/>
-			<!-- TODO: locale -->
-			<Validator value={current.user_metadata.mob_app.google_play_console_id} fn={_pattern({
-				maxlen: 50,
-				regex: /^[0-9]+$/,
-				message: () => "Play Console Id must be a number",
-			})} />
-		</div>
-
-		<div class="field">
-			<NullTextField
-				icon={mdiAdMob}
-				icon_viewbox={mdiAdMobViewBox}
-				trim
-				label={$locale.station_profile.labels.mob_app_admob_app_id}
-				bind:value={current.user_metadata.mob_app.admob_app_id}
-			/>
-			<Validator value={current.user_metadata.mob_app.admob_app_id} fn={_validate_admob_app_id} />
-		</div>
-
-		<div class="field with-toggle">
-			<NullTextField
-				icon={mdiAdMob}
-				icon_viewbox={mdiAdMobViewBox}
-				trim
-				label={$locale.station_profile.labels.mob_app_admob_banner_id}
-				bind:value={current.user_metadata.mob_app.admob_banner_id}
-			/>
-			<Validator value={current.user_metadata.mob_app.admob_banner_id} fn={_validate_admob_ad_id} />
-
-			<div
-				class="field-toggle"
-				use:tooltip={
-				// TODO: locale
-				"Enable banner ads"
-				}
-			>
-				<BooleanField bind:value={current.user_metadata.mob_app.ads} />
+			<div class="field">
+				<!-- TODO: locale -->
+				<GooglePlayLangField
+					label={"App language for Google Play"}
+					bind:value={current.user_metadata.mob_app.google_play_lang}
+				/>
 			</div>
-		</div>
 
+			<div class="field">
+				<!-- TODO: locale -->
+				<NullTextField
+					icon={mdiGooglePlay}
+					label={"App title for Google Play"}
+					bind:value={current.user_metadata.mob_app.google_play_title}
+				/>
+				<Validator value={current.user_metadata.mob_app.google_play_title} fn={_string({ maxlen: 30 })} />
+			</div>
 
-		<div class="field with-toggle">
-			<NullTextField
-				icon={mdiAdMob}
-				icon_viewbox={mdiAdMobViewBox}
-				trim
-				label={
+			<div class="field">
+				<!-- TODO: locale -->
+				<NullTextField
+					icon={mdiGooglePlay}	
+					label={"App subtitle for Google Play"}
+					bind:value={current.user_metadata.mob_app.google_play_subtitle}
+				/>
+				<Validator value={current.user_metadata.mob_app.google_play_subtitle} fn={_string({ maxlen: 80 })} />
+			</div>
+
+			<div class="field">
+				<NullTextField
+					icon={mdiGooglePlay}
+					label={"App description for Google Play"}
+					multiline
+					minrows={5}
+					bind:value={current.user_metadata.mob_app.google_play_description}
+				/>
+				<Validator value={current.user_metadata.mob_app.google_play_description} fn={_string({ maxlen: 4000 })} />
+			</div>
+
+			<div class="advanced-sep sep-one" />
+
+			<div class="field">
+				<ColorField
+					label={$locale.station_profile.labels.mob_app_base_color}
+					bind:value={current.user_metadata.mob_app.base_color}
+				/>
+			</div>
+
+			<div class="field">
+				<ColorField
+					label={$locale.station_profile.labels.mob_app_icon_bg_color}
+					bind:value={current.user_metadata.mob_app.icon_bg_color}
+				/>
+			</div>
+
+			<div class="field">
+				<BooleanField
+					label={$locale.station_profile.labels.mob_app_icon_round}
+					bind:value={current.user_metadata.mob_app.icon_rounded}
+				/>
+			</div>
+
+			<div class="advanced-sep" />
+
+			<div class="field">
+				<!-- TODO: locale -->
+				<NullTextField
+					icon={mdiGooglePlay}
+					trim
+					label={"Google Play Console Id"}
+					bind:value={current.user_metadata.mob_app.google_play_console_id}
+				/>
+				<!-- TODO: locale -->
+				<Validator value={current.user_metadata.mob_app.google_play_console_id} fn={_pattern({
+					maxlen: 50,
+					regex: /^[0-9]+$/,
+					message: () => "Play Console Id must be a number",
+				})} />
+			</div>
+
+			<div class="field">
+				<NullTextField
+					icon={mdiAdMob}
+					icon_viewbox={mdiAdMobViewBox}
+					trim
+					label={$locale.station_profile.labels.mob_app_admob_app_id}
+					bind:value={current.user_metadata.mob_app.admob_app_id}
+				/>
+				<Validator value={current.user_metadata.mob_app.admob_app_id} fn={_validate_admob_app_id} />
+			</div>
+
+			<div class="field with-toggle">
+				<NullTextField
+					icon={mdiAdMob}
+					icon_viewbox={mdiAdMobViewBox}
+					trim
+					label={$locale.station_profile.labels.mob_app_admob_banner_id}
+					bind:value={current.user_metadata.mob_app.admob_banner_id}
+				/>
+				<Validator value={current.user_metadata.mob_app.admob_banner_id} fn={_validate_admob_ad_id} />
+
+				<div
+					class="field-toggle"
+					use:tooltip={
 					// TODO: locale
-					"Admob Interstitial Id"
-				}
-				bind:value={current.user_metadata.mob_app.admob_interstitial_id}
-			/>
-			<Validator value={current.user_metadata.mob_app.admob_interstitial_id} fn={_validate_admob_ad_id} />
+					"Enable banner ads"
+					}
+				>
+					<BooleanField bind:value={current.user_metadata.mob_app.ads} />
+				</div>
+			</div>
 
-			<div
-				class="field-toggle"
-				use:tooltip={
-					// TODO: locale
-					"Enable interstitial ads"
-				}
-			>
-				<BooleanField bind:value={current.user_metadata.mob_app.interstitial_ads} />
+
+			<div class="field with-toggle">
+				<NullTextField
+					icon={mdiAdMob}
+					icon_viewbox={mdiAdMobViewBox}
+					trim
+					label={
+						// TODO: locale
+						"Admob Interstitial Id"
+					}
+					bind:value={current.user_metadata.mob_app.admob_interstitial_id}
+				/>
+				<Validator value={current.user_metadata.mob_app.admob_interstitial_id} fn={_validate_admob_ad_id} />
+
+				<div
+					class="field-toggle"
+					use:tooltip={
+						// TODO: locale
+						"Enable interstitial ads"
+					}
+				>
+					<BooleanField bind:value={current.user_metadata.mob_app.interstitial_ads} />
+				</div>
 			</div>
 		</div>
 	</div>
-</div>
+{/if}

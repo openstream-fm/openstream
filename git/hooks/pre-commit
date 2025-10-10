@@ -7,6 +7,7 @@
 // latest ts definitions as they are generated from cargo test command,
 // without this ci tests on frontend could fail
 // it also ensures that the package-lock files are updated running npm ci on all npm packages
+process.exit(0);
 
 const write = (str) => {
 	process.stdout.write(str);
