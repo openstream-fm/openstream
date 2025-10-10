@@ -39,7 +39,7 @@ const locale: typeof import("./misc.en.js").default = {
 
   account_welcome_title_html: "Hola <b>@name</b>",
   account_welcome_message_1_html: "Bienvenido a <b>@brand</b>",
-  account_welcome_message_2_html: "Desde ahora sos el dueño de tu nueva cuenta",
+  account_welcome_message_2_html: "Esta es tu nueva cuenta de emisor en Openstream",
   account_welcome_message_3_html: "Para empezar a transmitir ahora, agregá tu primera estación a tu cuenta",
 
   Create_my_first_station: "Crear mi primera estación",

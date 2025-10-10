@@ -430,24 +430,24 @@ const locale: import("./studio.locale.js").StudioLocale = {
         },
         "shuffle_playlist": {
           "title": "Mezclar playlist",
-          "message": "¿Estás seguro que quieres mezclar aleatoriamente la lista de reproducción?",
+          "message": "¿Estás seguro que querés mezclar aleatoriamente la lista de reproducción?",
           "cancel": "Cancelar",
           "submit": "Mezclar",
         },
         "unshuffle_playlist": {
-          "title": "Unshuffle playlist",
-          "message": "¿Estás seguro que quieres des-mezclar la lista de reproducción?",
+          "title": "Des-mezclar playlist",
+          "message": "¿Estás seguro que querés des-mezclar la lista de reproducción?",
           "cancel": "Cancelar",
           "submit": "Des-mezclar",
         },
         "restart_playlist": {
           "title": "Reiniciar playlist",
-          "message": "¿Estás seguro que quieres reiniciar la lista de reproducción?",
+          "message": "¿Estás seguro que querés reiniciar la lista de reproducción?",
           "cancel": "Cancelar",
           "submit": "Reiniciar",
         }
       },
-      "upload_prevent_unload_message": "Salir de esta página cancelará las subidas pendientes. ¿Quieres salir de todas maneras?",
+      "upload_prevent_unload_message": "Salir de esta página cancelará las subidas pendientes. ¿Querés salir de todas formas?",
       "notifier": {
         "playlist_restarted": "Playlist reiniciada",
         "track_deleted": "Pista eliminada",
